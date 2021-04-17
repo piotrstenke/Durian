@@ -6,7 +6,12 @@
 
 		private static void Main()
 		{
-			//Logger<int>.Log(12);
+			Logger<int>.Log(12);
+		}
+
+		public static T Method<[DefaultParam(typeof(string))]T>(T value)
+		{
+			return value;
 		}
 	}
 }

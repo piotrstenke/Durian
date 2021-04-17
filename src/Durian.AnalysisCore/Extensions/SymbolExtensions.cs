@@ -16,6 +16,63 @@ namespace Durian.Extensions
 	/// </summary>
 	public static class SymbolExtensions
 	{
+		/// <inheritdoc cref="GetAllMembers(ITypeSymbol, string)"/>
+		public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.GetMembers().Concat(GetBaseTypes(type).SelectMany(t => t.GetMembers()));
+		}
+
+		/// <summary>
+		/// Returns all members of the specified <paramref name="type"/> including the members that are declared in base types of this <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to get the members of.</param>
+		/// <param name="name">Name of the members to find.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
+		public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol type, string name)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.GetMembers(name).Concat(GetBaseTypes(type).SelectMany(t => t.GetMembers(name)));
+		}
+
+		/// <summary>
+		/// Returns all types the specified <paramref name="symbol"/> inherits from.
+		/// </summary>
+		/// <param name="symbol"><see cref="ITypeSymbol"/> to get the base types of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>.</exception>
+		public static IEnumerable<INamedTypeSymbol> GetBaseTypes(this ITypeSymbol symbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return Yield();
+
+			IEnumerable<INamedTypeSymbol> Yield()
+			{
+				INamedTypeSymbol? type = symbol.BaseType;
+
+				if (type is not null)
+				{
+					yield return type;
+
+					while ((type = type!.BaseType) is not null)
+					{
+						yield return type;
+					}
+				}
+			}
+		}
+
 		/// <summary>
 		/// Determines whether the <paramref name="first"/> <see cref="IParameterSymbol"/> is equivalent to the <paramref name="second"/> <see cref="IParameterSymbol"/>.
 		/// </summary>

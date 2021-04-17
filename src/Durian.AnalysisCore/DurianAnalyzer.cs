@@ -1,5 +1,4 @@
 ﻿using Durian.Data;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -8,7 +7,6 @@ namespace Durian
 	/// <summary>
 	/// Base class for Durian analyzers.
 	/// </summary>
-	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	public abstract class DurianAnalyzer : DiagnosticAnalyzer
 	{
 		/// <inheritdoc/>

@@ -4,7 +4,7 @@ namespace Durian.Tests.DefaultParam.Generator
 {
 	public abstract class DefaultParamGeneratorTest : GeneratorTest<DefaultParamGenerator>
 	{
-		public DefaultParamGeneratorTest() : base(new DefaultParamGenerator() { EnableSyntaxDiagnostics = true })
+		public DefaultParamGeneratorTest() : base(new DefaultParamGenerator(), true)
 		{
 
 		}

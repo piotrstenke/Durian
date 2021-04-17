@@ -6,9 +6,11 @@ using Durian.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.DefaultParam
 {
+	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	public class DefaultParamMethodAnalyzer : DefaultParamAnalyzer
 	{
 		private readonly struct CollidingMethod
@@ -108,7 +110,7 @@ namespace Durian.DefaultParam
 
 			if (hasValidTypeParameters)
 			{
-				isValid &= ValidateMethodSignature(diagnosticReceiver, symbol, typeParameters, compilation.Configuration);
+				isValid &= ValidateMethodSignature(diagnosticReceiver, symbol, typeParameters, compilation);
 			}
 
 			return isValid;
@@ -395,22 +397,22 @@ namespace Durian.DefaultParam
 			}
 		}
 
-		public static bool ValidateMethodSignature(IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamConfiguration configuration)
+		public static bool ValidateMethodSignature(IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation)
 		{
-			return ValidateMethodSignature(symbol, in typeParameters, configuration, out _);
+			return ValidateMethodSignature(symbol, in typeParameters, compilation, out _);
 		}
 
-		public static bool ValidateMethodSignature(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamConfiguration configuration)
+		public static bool ValidateMethodSignature(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation)
 		{
-			return ValidateMethodSignature(diagnosticReceiver, symbol, in typeParameters, configuration, out _);
+			return ValidateMethodSignature(diagnosticReceiver, symbol, in typeParameters, compilation, out _);
 		}
 
-		public static bool ValidateMethodSignature(IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamConfiguration configuration, out List<int>? typeParameterIndicesToApplyNewModifier)
+		public static bool ValidateMethodSignature(IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, out List<int>? typeParameterIndicesToApplyNewModifier)
 		{
 			IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
 			int numNonDefaultParam = typeParameters.Length - typeParameters.NumDefaultParam;
 
-			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, in typeParameters, symbolParameters, numNonDefaultParam);
+			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, in typeParameters, symbolParameters, compilation, numNonDefaultParam);
 			int numMethods = collidingMethods.Length;
 
 			if (numMethods == 0)
@@ -419,15 +421,15 @@ namespace Durian.DefaultParam
 				return true;
 			}
 
-			return ValidateCollidingMethods(symbol, in typeParameters, collidingMethods, symbolParameters, configuration, numNonDefaultParam, out typeParameterIndicesToApplyNewModifier);
+			return ValidateCollidingMethods(symbol, in typeParameters, collidingMethods, symbolParameters, compilation.Configuration, numNonDefaultParam, out typeParameterIndicesToApplyNewModifier);
 		}
 
-		public static bool ValidateMethodSignature(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamConfiguration configuration, out List<int>? typeParameterIndicesToApplyNewModifier)
+		public static bool ValidateMethodSignature(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, out List<int>? typeParameterIndicesToApplyNewModifier)
 		{
 			IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
 			int numNonDefaultParam = typeParameters.Length - typeParameters.NumDefaultParam;
 
-			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, in typeParameters, symbolParameters, numNonDefaultParam);
+			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, in typeParameters, symbolParameters, compilation, numNonDefaultParam);
 			int numMethods = collidingMethods.Length;
 
 			if (numMethods == 0)
@@ -436,7 +438,7 @@ namespace Durian.DefaultParam
 				return true;
 			}
 
-			return ValidateCollidingMethods(diagnosticReceiver, symbol, in typeParameters, collidingMethods, symbolParameters, configuration, numNonDefaultParam, out typeParameterIndicesToApplyNewModifier);
+			return ValidateCollidingMethods(diagnosticReceiver, symbol, in typeParameters, collidingMethods, symbolParameters, compilation.Configuration, numNonDefaultParam, out typeParameterIndicesToApplyNewModifier);
 		}
 
 		private static bool ValidateCollidingMethods(
@@ -473,7 +475,7 @@ namespace Durian.DefaultParam
 				{
 					if (!configuration.ApplyNewToGeneratedMembersWithEquivalentSignature || SymbolEqualityComparer.Default.Equals(currentMethod.Symbol.ContainingType, symbol))
 					{
-						DurianDiagnostics.MethodWithSignatureAlreadyExists(diagnosticReceiver, symbol, GetMethodSignatureString(in typeParameters, targetIndex + 1, targetParameters));
+						DurianDiagnostics.MethodWithSignatureAlreadyExists(diagnosticReceiver, symbol, GetMethodSignatureString(symbol.Name, in typeParameters, targetIndex, targetParameters), typeParameters[targetIndex].Location);
 						diagnosedGenerationIndices.Add(targetIndex);
 						isValid = false;
 					}
@@ -537,9 +539,11 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
-		private static string GetMethodSignatureString(in TypeParameterContainer typeParameters, int numTypeParameters, ParameterGeneration[] parameters)
+		private static string GetMethodSignatureString(string name, in TypeParameterContainer typeParameters, int numTypeParameters, ParameterGeneration[] parameters)
 		{
 			StringBuilder sb = new();
+
+			sb.Append(name);
 
 			if (numTypeParameters > 0)
 			{
@@ -612,17 +616,17 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
-		private static CollidingMethod[] GetCollidingMethods(IMethodSymbol symbol, in TypeParameterContainer typeParameters, IParameterSymbol[] parameters, int numNonDefaultParam)
+		private static CollidingMethod[] GetCollidingMethods(IMethodSymbol symbol, in TypeParameterContainer typeParameters, IParameterSymbol[] parameters, DefaultParamCompilationData compilation, int numNonDefaultParam)
 		{
 			int numTypeParameters = typeParameters.Length;
 			int numParameters = parameters.Length;
 
-			return symbol.ContainingType.GetMembers(symbol.Name)
+			return symbol.ContainingType.GetAllMembers(symbol.Name)
 				.OfType<IMethodSymbol>()
 				.Select(m => ((IMethodSymbol symbol, IParameterSymbol[] parameters))(m, m.Parameters.ToArray()))
 				.Where(m => m.parameters.Length == numParameters)
 				.Select(m => new CollidingMethod(m.symbol, m.parameters, m.symbol.TypeParameters.ToArray()))
-				.Where(m => m.TypeParameters.Length >= numNonDefaultParam && m.TypeParameters.Length < numTypeParameters)
+				.Where(m => m.TypeParameters.Length >= numNonDefaultParam && m.TypeParameters.Length < numTypeParameters && !IsDefaultParamGenerated(m.Symbol, compilation))
 				.ToArray();
 		}
 

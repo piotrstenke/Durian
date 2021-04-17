@@ -16,6 +16,15 @@ namespace Durian.Tests
 		protected GeneratorTest(TGenerator generator) : base(generator)
 		{
 		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GeneratorTest{TGenerator}"/> class.
+		/// </summary>
+		/// <param name="generator"><see cref="ISourceGenerator"/> to test.</param>
+		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for this <paramref name="generator"/> if it supports any.</param>
+		protected GeneratorTest(TGenerator generator, bool enableDiagnostics) : base(generator, enableDiagnostics)
+		{
+		}
 	}
 
 	/// <summary>
@@ -34,6 +43,21 @@ namespace Durian.Tests
 		/// <param name="generator"><see cref="ISourceGenerator"/> to test.</param>
 		protected GeneratorTest(ISourceGenerator generator)
 		{
+			Generator = generator;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GeneratorTest"/> class.
+		/// </summary>
+		/// <param name="generator"><see cref="ISourceGenerator"/> to test.</param>
+		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for this <paramref name="generator"/> if it supports any.</param>
+		protected GeneratorTest(ISourceGenerator generator, bool enableDiagnostics)
+		{
+			if (enableDiagnostics && generator is IDurianSourceGenerator g)
+			{
+				g.EnableDiagnostics();
+			}
+
 			Generator = generator;
 		}
 

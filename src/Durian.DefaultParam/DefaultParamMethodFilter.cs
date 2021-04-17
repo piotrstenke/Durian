@@ -6,7 +6,6 @@ using Durian.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Immutable;
 using static Durian.DefaultParam.DefaultParamAnalyzer;
 using static Durian.DefaultParam.DefaultParamMethodAnalyzer;
 
@@ -162,7 +161,7 @@ namespace Durian.DefaultParam
 					ValidateOverrideMethod(baseMethod, ref typeParameters, compilation, cancellationToken)) ||
 					ValidateTypeParameters(in typeParameters))
 				{
-					if (ValidateMethodSignature(symbol, typeParameters, compilation.Configuration, out List<int>? newModifiers))
+					if (ValidateMethodSignature(symbol, typeParameters, compilation, out List<int>? newModifiers))
 					{
 						data = new(
 							declaration,
@@ -228,7 +227,7 @@ namespace Durian.DefaultParam
 
 			if (hasValidTypeParameters)
 			{
-				isValid &= ValidateMethodSignature(diagnosticReceiver, symbol, typeParameters, compilation.Configuration, out List<int>? newModifiers);
+				isValid &= ValidateMethodSignature(diagnosticReceiver, symbol, typeParameters, compilation, out List<int>? newModifiers);
 
 				data = new(
 					declaration,

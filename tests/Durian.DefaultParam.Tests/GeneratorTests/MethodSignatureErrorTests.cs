@@ -2,7 +2,7 @@
 
 namespace Durian.Tests.DefaultParam.Generator
 {
-	public sealed class MethodSignatureTests : DefaultParamGeneratorTest
+	public sealed class MethodSignatureErrorTests : DefaultParamGeneratorTest
 	{
 		[Fact]
 		public void MethodIsInvalid_When_AllTypeParametersAreDefaultParam_And_IsParametereless_And_MethodWithGeneratedSignatureAlreadyExistsInTheSameClass()
@@ -99,6 +99,29 @@ partial class Test
 	}
 
 	void Method<T>(int value)
+	{
+	}
+}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
+		}
+
+		[Fact]
+		public void MethodIsInvalid_When_MethodWithGeneratedSignatureAlreadyExistsInParentClass()
+		{
+			const string input =
+@"using Durian;
+
+class Parent
+{
+	void Method(string value)
+	{
+	}
+}
+
+partial class Test : Parent
+{
+	void Method<[DefaultParam(typeof(int))]T>(string value)
 	{
 	}
 }

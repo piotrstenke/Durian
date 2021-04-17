@@ -96,6 +96,18 @@ namespace Durian
 		ICompilationData IDurianSourceGenerator.TargetCompilation => TargetCompilation;
 		IDurianSyntaxReceiver IDurianSourceGenerator.SyntaxReceiver => SyntaxReceiver;
 
+		bool IDurianSourceGenerator.SupportsDiagnostics
+		{
+			get
+			{
+#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+				return true;
+#else
+				return false;
+#endif
+			}
+		}
+
 		string IDurianSourceGenerator.GeneratorName => GetGeneratorName();
 		string IDurianSourceGenerator.Version => GetVersion();
 
@@ -109,7 +121,7 @@ namespace Durian
 			ParseOptions = null!;
 
 #if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
-			DiagnosticReceiver = Durian.DiagnosticReceiverFactory.SourceGenerator();
+			DiagnosticReceiver = DiagnosticReceiverFactory.SourceGenerator();
 #endif
 		}
 
@@ -207,6 +219,12 @@ namespace Durian
 		IDurianSyntaxReceiver IDurianSourceGenerator.CreateSyntaxReceiver()
 		{
 			return CreateSyntaxReceiver();
+		}
+		void IDurianSourceGenerator.EnableDiagnostics()
+		{
+#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+			EnableSyntaxDiagnostics = true;
+#endif
 		}
 
 		/// <summary>
