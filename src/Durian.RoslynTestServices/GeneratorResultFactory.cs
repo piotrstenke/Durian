@@ -61,7 +61,7 @@ namespace Durian.Tests
 		/// <param name="syntaxTree">A <see cref="CSharpSyntaxTree"/> to be set to the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
 		/// <param name="hintName">A <see cref="string"/> value to be set to the <see cref="GeneratedSourceResult.HintName"/> property.</param>
 		/// <remarks>The needed <see cref="SourceText"/> for the <see cref="GeneratedSourceResult.SourceText"/> property is created by calling the <see cref="SyntaxTree.TryGetText(out SourceText?)"/> method.</remarks>
-		/// <exception cref="ArgumentNullException"><paramref name="syntaxTree"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="syntaxTree"/> is <c>null</c>.</exception>
 		/// <exception cref="ArgumentException">A valid <see cref="SourceText"/> couldn't be properly retrieved from the <paramref name="syntaxTree"/>.</exception>
 		public static GeneratedSourceResult CreateSourceResult(CSharpSyntaxTree syntaxTree, string? hintName)
 		{
@@ -84,7 +84,7 @@ namespace Durian.Tests
 		/// <param name="syntaxTree">A <see cref="CSharpSyntaxTree"/> to be set to the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
 		/// <param name="sourceText">A <see cref="SourceText"/> to be set to the <see cref="GeneratedSourceResult.SourceText"/> property.</param>
 		/// <param name="hintName">A <see cref="string"/> value to be set to the <see cref="GeneratedSourceResult.HintName"/> property.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="syntaxTree"/> was <c>null</c>. -or <paramref name="sourceText"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="syntaxTree"/> is <c>null</c>. -or <paramref name="sourceText"/> is <c>null</c>.</exception>
 		public static GeneratedSourceResult CreateSourceResult(CSharpSyntaxTree syntaxTree, SourceText sourceText, string? hintName)
 		{
 			if (syntaxTree is null)
@@ -107,7 +107,7 @@ namespace Durian.Tests
 		/// <param name="generatedSources">A collection of <see cref="GeneratedSourceResult"/>s to be set to the <see cref="GeneratorRunResult.GeneratedSources"/> property.</param>
 		/// <param name="diagnostics">A collection of <see cref="Diagnostic"/>s to be set to the <see cref="GeneratorRunResult.Diagnostics"/> property.</param>
 		/// <param name="exception">An <see cref="Exception"/> to be set to the <see cref="GeneratorRunResult.Exception"/> property.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <c>null</c>.</exception>
 		public static GeneratorRunResult CreateGeneratorResult(ISourceGenerator generator, IEnumerable<GeneratedSourceResult>? generatedSources, IEnumerable<Diagnostic>? diagnostics, Exception? exception)
 		{
 			if (generator is null)

@@ -2,7 +2,7 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.SourceGenerator
+namespace Durian.Tests.AnalysisCore.SourceGenerator
 {
 	public sealed class Initialize
 	{

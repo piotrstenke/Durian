@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.SymbolExtensions
+namespace Durian.Tests.AnalysisCore.SymbolExtensions
 {
 	public sealed class GetGenericName_ISymbol : CompilationTest
 	{

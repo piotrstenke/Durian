@@ -38,7 +38,7 @@ namespace Durian.Data
 		/// <param name="declaration">Target <see cref="FieldDeclarationSyntax"/>.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> was <c>null</c>. -or- <paramref name="compilation"/> was <c>null</c>
+		/// <paramref name="declaration"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>
 		/// </exception>
 		public FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation)
 			: this(declaration, compilation, GetSemanticModel(compilation, declaration), GetVariable(declaration, 0))
@@ -52,7 +52,7 @@ namespace Durian.Data
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
 		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> was <c>null</c>. -or- <paramref name="compilation"/> was <c>null</c>
+		/// <paramref name="declaration"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>
 		/// </exception>
 		/// <exception cref="IndexOutOfRangeException">
 		/// <paramref name="index"/> was out of range.

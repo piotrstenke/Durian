@@ -21,7 +21,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="first">First <see cref="IParameterSymbol"/>.</param>
 		/// <param name="second">Second <see cref="IParameterSymbol"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="first"/> was <c>null</c>. -or <paramref name="second"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="first"/> is <c>null</c>. -or <paramref name="second"/> is <c>null</c>.</exception>
 		public static bool IsEquivalentTo(this IParameterSymbol first, IParameterSymbol second)
 		{
 			if (first is null)
@@ -52,7 +52,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="first">First <see cref="IMethodSymbol"/>.</param>
 		/// <param name="second">Second <see cref="IMethodSymbol"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="first"/> was <c>null</c>. -or <paramref name="second"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="first"/> is <c>null</c>. -or <paramref name="second"/> is <c>null</c>.</exception>
 		public static bool HasEquivalentParameters(this IMethodSymbol first, IMethodSymbol second)
 		{
 			if (first is null)
@@ -89,7 +89,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="IMemberData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> was <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.</exception>
 		public static IMemberData GetMemberData(this ISymbol symbol, ICompilationData compilation)
 		{
 			if (symbol is null)
@@ -149,7 +149,7 @@ namespace Durian.Extensions
 		/// <c>true</c> for parameters, <c>false</c> for arguments.
 		/// </param>
 		/// <param name="includeParameters">If the <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>.</exception>
 		public static string GetGenericName(this ISymbol symbol, bool paramsOrArgs, bool includeParameters = false)
 		{
 			if (symbol is null)
@@ -185,7 +185,7 @@ namespace Durian.Extensions
 		/// <c>true</c> for parameters, <c>false</c> for arguments.
 		/// </param>
 		/// <param name="includeParameters">Determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <c>null</c>.</exception>
 		public static string GetGenericName(this IMethodSymbol method, bool paramsOrArgs, bool includeParameters = false)
 		{
 			if (method is null)
@@ -211,7 +211,7 @@ namespace Durian.Extensions
 		/// Determines whether to write the type parameters (e.g. "T") or the type arguments the parameters were substituted by;
 		/// <c>true</c> for parameters, <c>false</c> for arguments.
 		/// </param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
 		public static string GetGenericName(this INamedTypeSymbol type, bool paramsOrArgs)
 		{
 			if (type is null)
@@ -233,7 +233,7 @@ namespace Durian.Extensions
 		/// Returns a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeParameters"/>.
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <c>null</c>.</exception>
 		/// <exception cref="InvalidOperationException">Pointers can't be used as generic arguments.</exception>
 		public static string GetGenericName(this IEnumerable<ITypeParameterSymbol> typeParameters)
 		{
@@ -249,7 +249,7 @@ namespace Durian.Extensions
 		/// Returns a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeArguments"/>.
 		/// </summary>
 		/// <param name="typeArguments">Type arguments.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="typeArguments"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="typeArguments"/> is <c>null</c>.</exception>
 		/// <exception cref="InvalidOperationException">Pointers can't be used as generic arguments.</exception>
 		public static string GetGenericName(this IEnumerable<ITypeSymbol> typeArguments)
 		{
@@ -301,7 +301,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>
 		/// <param name="name">Actual member identifier.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <c>null</c>.</exception>
 		public static string GetGenericName(this IEnumerable<ITypeParameterSymbol> typeParameters, string? name)
 		{
 			if (typeParameters is null)
@@ -317,7 +317,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="typeArguments">Type arguments.</param>
 		/// <param name="name">Actual member identifier.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="typeArguments"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="typeArguments"/> is <c>null</c>.</exception>
 		public static string GetGenericName(this IEnumerable<ITypeSymbol> typeArguments, string? name)
 		{
 			if (typeArguments is null)
@@ -332,7 +332,7 @@ namespace Durian.Extensions
 		/// Returns a <see cref="string"/> that represents the parameter signature of the <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the signature of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <c>null</c>.</exception>
 		/// <exception cref="InvalidOperationException">Function pointers are not supported.</exception>
 		public static string GetParameterSignature(this IMethodSymbol method)
 		{
@@ -384,7 +384,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the <see cref="TypeDeclarationSyntax"/>es of.</param>
 		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
 		public static IEnumerable<T> GetPartialDeclarations<T>(this INamedTypeSymbol type, CancellationToken cancellationToken = default) where T : TypeDeclarationSyntax
 		{
 			if (type is null)
@@ -400,7 +400,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the modifiers of.</param>
 		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
 		public static IEnumerable<SyntaxToken> GetModifiers(this INamedTypeSymbol type, CancellationToken cancellationToken = default)
 		{
 			if (type is null)
@@ -415,7 +415,7 @@ namespace Durian.Extensions
 		/// Returns modifiers contained withing the given collection of <see cref="TypeDeclarationSyntax"/>es.
 		/// </summary>
 		/// <param name="decl">Collection of <see cref="TypeDeclarationSyntax"/>es to get the modifiers from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="decl"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="decl"/> is <c>null</c>.</exception>
 		public static IEnumerable<SyntaxToken> GetModifiers(this IEnumerable<TypeDeclarationSyntax> decl)
 		{
 			if (decl is null)
@@ -452,7 +452,7 @@ namespace Durian.Extensions
 		/// Determines whether the <paramref name="type"/> is a predefined type (any primitive, <see cref="string"/>, <see cref="void"/>, <see cref="object"/>).
 		/// </summary>
 		/// <param name="type">Type to check.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
 		public static bool IsPredefined(this ITypeSymbol type)
 		{
 			if (type is null)
@@ -489,7 +489,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="type">Type to check.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to get the dynamic symbol from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> was <c>null</c>. -or- <paramref name="compilation"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.</exception>
 		/// <returns><c>true</c> if the type is predefined or dynamic, otherwise <c>false</c>.</returns>
 		public static bool IsPredefinedOrDynamic(this ITypeSymbol type, ICompilationData compilation)
 		{
@@ -506,7 +506,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="type">Type to check.</param>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the dynamic symbol from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> was <c>null</c>. -or- <paramref name="compilation"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.</exception>
 		/// <returns><c>true</c> if the type is predefined or dynamic, otherwise <c>false</c>.</returns>
 		public static bool IsPredefinedOrDynamic(this ITypeSymbol type, CSharpCompilation compilation)
 		{
@@ -523,7 +523,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="type">Type to check if inherits the <paramref name="baseType"/>.</param>
 		/// <param name="baseType">Base type to check if is inherited by the target <paramref name="type"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> was <c>null</c>. -or - <paramref name="baseType"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>. -or - <paramref name="baseType"/> is <c>null</c>.</exception>
 		public static bool InheritsFrom(this ITypeSymbol type, INamedTypeSymbol baseType)
 		{
 			if (type is null)
@@ -579,7 +579,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is valid for the <paramref name="parameter"/>.</param>
 		/// <param name="parameter">Target <see cref="ITypeParameterSymbol"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> was <c>null</c>. -or - <paramref name="parameter"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>. -or - <paramref name="parameter"/> is <c>null</c>.</exception>
 		public static bool IsValidForTypeParameter(this INamedTypeSymbol type, ITypeParameterSymbol parameter)
 		{
 			if (type is null)
@@ -600,7 +600,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="arrayType"><see cref="IArrayTypeSymbol"/> to check if is valid for the <paramref name="parameter"/>.</param>
 		/// <param name="parameter">Target <see cref="ITypeParameterSymbol"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="arrayType"/> was <c>null</c>. -or - <paramref name="parameter"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="arrayType"/> is <c>null</c>. -or - <paramref name="parameter"/> is <c>null</c>.</exception>
 		public static bool IsValidForTypeParameter(this IArrayTypeSymbol arrayType, ITypeParameterSymbol parameter)
 		{
 			if (arrayType is null)
@@ -621,7 +621,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="dynamicType"><see cref="IDynamicTypeSymbol"/> to check if is valid for the <paramref name="parameter"/>.</param>
 		/// <param name="parameter">Target <see cref="ITypeParameterSymbol"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="dynamicType"/> was <c>null</c>. -or - <paramref name="parameter"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="dynamicType"/> is <c>null</c>. -or - <paramref name="parameter"/> is <c>null</c>.</exception>
 		public static bool IsValidForTypeParameter(this IDynamicTypeSymbol dynamicType, ITypeParameterSymbol parameter)
 		{
 			if (dynamicType is null)
@@ -642,7 +642,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="type"><see cref="ITypeSymbol"/> to check if is valid for the <paramref name="parameter"/>.</param>
 		/// <param name="parameter">Target <see cref="ITypeParameterSymbol"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> was <c>null</c>. -or - <paramref name="parameter"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>. -or - <paramref name="parameter"/> is <c>null</c>.</exception>
 		/// <remarks>Symbols other than <see cref="INamedTypeSymbol"/>, <see cref="IArrayTypeSymbol"/>, <see cref="ITypeParameterSymbol"/> and <see cref="IDynamicTypeSymbol"/> will never be valid.</remarks>
 		public static bool IsValidForTypeParameter(this ITypeSymbol type, ITypeParameterSymbol parameter)
 		{
@@ -668,7 +668,7 @@ namespace Durian.Extensions
 		/// Returns a <see cref="string"/> that is created by joining the names of the namespaces the provided <paramref name="symbol"/> is contained in.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the containing namespaces of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>.</exception>
 		public static string JoinNamespaces(this ISymbol symbol)
 		{
 			if (symbol is null)
@@ -688,7 +688,7 @@ namespace Durian.Extensions
 		/// Returns a <see cref="string"/> that is created by joining the names of the provided <paramref name="namespaces"/>.
 		/// </summary>
 		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s create the <see cref="string"/> from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> is <c>null</c>.</exception>
 		public static string JoinNamespaces(this IEnumerable<INamespaceSymbol> namespaces)
 		{
 			if (namespaces is null)
@@ -716,7 +716,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to create the <see cref="QualifiedNameSyntax"/> from.</param>
 		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="namespaces"/>. -or- <c>null</c> if there were less then 2 <paramref name="namespaces"/> provided.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> is <c>null</c>.</exception>
 		public static QualifiedNameSyntax? JoinIntoQualifiedName(this IEnumerable<INamespaceSymbol> namespaces)
 		{
 			if (namespaces is null)
@@ -731,7 +731,7 @@ namespace Durian.Extensions
 		/// Returns a <see cref="string"/> representing the fully qualified name of the <paramref name="symbol"/> that can be used in the XML documentation.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the fully qualified name of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>.</exception>
 		public static string GetXmlFullyQualifiedName(this ISymbol symbol)
 		{
 			if (symbol is null)
@@ -748,7 +748,7 @@ namespace Durian.Extensions
 		/// <param name="parent">Parent <see cref="ISymbol"/>.</param>
 		/// <param name="child">Child <see cref="ISymbol"/>.</param>
 		/// <returns>True if the <paramref name="parent"/> contains the <paramref name="child"/> or the <paramref name="parent"/> is equivalent to <paramref name="child"/>, otherwise false.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="parent"/> was <c>null</c>. -or- <paramref name="child"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="parent"/> is <c>null</c>. -or- <paramref name="child"/> is <c>null</c>.</exception>
 		public static bool ContainsSymbol(this ISymbol parent, ISymbol child)
 		{
 			if (parent is null)
@@ -781,7 +781,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> was <c>null</c>. -or- <paramref name="compilation"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.</exception>
 		public static IEnumerable<ITypeData> GetContainingTypes(this ISymbol symbol, ICompilationData compilation)
 		{
 			if (symbol is null)
@@ -843,7 +843,7 @@ namespace Durian.Extensions
 		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetContainingTypeSymbols(this ISymbol symbol)
 		{
 			if (symbol is null)
@@ -874,7 +874,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types and namespaces of.</param>
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>.</exception>
 		public static IEnumerable<INamespaceOrTypeSymbol> GetContainingNamespacesAndTypes(this ISymbol symbol, bool includeGlobal = false)
 		{
 			if (symbol is null)
@@ -914,7 +914,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent namespaces of.</param>
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>.</exception>
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this ISymbol symbol, bool includeGlobal = false)
 		{
 			if (symbol is null)
@@ -953,7 +953,7 @@ namespace Durian.Extensions
 		/// <param name="symbol">Target <see cref="ISymbol"/>.</param>
 		/// <param name="syntax"><see cref="AttributeSyntax"/> to get the data of.</param>
 		/// <returns>The <see cref="AttributeData"/> of the given <see cref="AttributeSyntax"/> or <c>null</c> if no such <see cref="AttributeData"/> found.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> was <c>null</c>. -or- <paramref name="syntax"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>. -or- <paramref name="syntax"/> is <c>null</c>.</exception>
 		public static AttributeData? GetAttributeData(this ISymbol symbol, AttributeSyntax syntax)
 		{
 			if (symbol is null)
@@ -990,7 +990,7 @@ namespace Durian.Extensions
 		/// <param name="symbol">Target <see cref="ISymbol"/>.</param>
 		/// <param name="attrSymbol">Type of attribute to look for.</param>
 		/// <returns>The <see cref="AttributeData"/> that corresponds to the <paramref name="attrSymbol"/> or <c>null</c> if no such <see cref="AttributeData"/> found.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> was <c>null</c>. -or- <paramref name="attrSymbol"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>. -or- <paramref name="attrSymbol"/> is <c>null</c>.</exception>
 		public static AttributeData? GetAttributeData(this ISymbol symbol, INamedTypeSymbol attrSymbol)
 		{
 			if (symbol is null)
@@ -1012,7 +1012,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check if contains the specified attribute.</param>
 		/// <param name="attrSymbol"><see cref="INamedTypeSymbol"/> of attribute to check for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> was <c>null</c>. -or- <paramref name="attrSymbol"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <c>null</c>. -or- <paramref name="attrSymbol"/> is <c>null</c>.</exception>
 		public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attrSymbol)
 		{
 			return GetAttributeData(symbol, attrSymbol) is not null;

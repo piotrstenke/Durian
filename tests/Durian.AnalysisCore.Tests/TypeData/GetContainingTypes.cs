@@ -3,7 +3,7 @@ using Durian.Data;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.TypeData
+namespace Durian.Tests.AnalysisCore.TypeData
 {
 	public sealed class GetContainingTypes : CompilationTest
 	{

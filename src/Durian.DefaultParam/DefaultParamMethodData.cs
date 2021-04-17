@@ -11,7 +11,7 @@ namespace Durian.DefaultParam
 		private readonly TypeParameterContainer _typeParameters;
 
 		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
-		public List<int>? TypeParameterIndicesToApplyNewModifier { get; }
+		public List<int>? NewModifierIndices { get; }
 
 		public DefaultParamMethodData(MethodDeclarationSyntax declaration, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters) : base(declaration, compilation)
 		{
@@ -31,7 +31,7 @@ namespace Durian.DefaultParam
 		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
 		{
 			_typeParameters = typeParameters;
-			TypeParameterIndicesToApplyNewModifier = typeParameterIndicesToApplyNewModifier;
+			NewModifierIndices = typeParameterIndicesToApplyNewModifier;
 		}
 
 		public string GetHintName()

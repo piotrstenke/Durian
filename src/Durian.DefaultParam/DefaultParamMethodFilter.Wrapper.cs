@@ -13,6 +13,7 @@ namespace Durian.DefaultParam
 		{
 			private int _numOriginalConstraints;
 			private int _numOriginalParameters;
+			private List<int>? _newModifierIndices;
 
 			public MethodDeclarationSyntax OriginalDeclaration { get; private set; }
 			public MethodDeclarationSyntax CurrentDeclaration { get; private set; }
@@ -93,6 +94,17 @@ namespace Durian.DefaultParam
 				else
 				{
 					CurrentDeclaration = CurrentDeclaration.WithTypeParameterList(SyntaxFactory.TypeParameterList(SyntaxFactory.SeparatedList(CurrentDeclaration.TypeParameterList.Parameters.Take(count))));
+
+					if (_newModifierIndices is not null && _newModifierIndices.Contains(count - 1))
+					{
+						SyntaxTokenList modifiers = CurrentDeclaration.Modifiers;
+
+						if (!modifiers.Any(m => m.IsKind(SyntaxKind.NewKeyword)))
+						{
+							modifiers = modifiers.Add(SyntaxFactory.Token(SyntaxKind.NewKeyword));
+							CurrentDeclaration = CurrentDeclaration.WithModifiers(modifiers);
+						}
+					}
 				}
 			}
 
@@ -118,6 +130,7 @@ namespace Durian.DefaultParam
 
 				CurrentDeclaration = GetDeclarationWithoutDefaultParamAttribute(data.Declaration, data.ParentCompilation, cancellationToken);
 				CurrentDeclaration = CurrentDeclaration.WithModifiers(SyntaxFactory.TokenList(CurrentDeclaration.Modifiers.Where(m => !m.IsKind(SyntaxKind.PartialKeyword))));
+				_newModifierIndices = data.NewModifierIndices;
 			}
 
 			private MethodDeclarationSyntax GetDeclarationWithoutDefaultParamAttribute(MethodDeclarationSyntax method, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)

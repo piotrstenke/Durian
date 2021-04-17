@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Moq;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.SymbolExtensions
+namespace Durian.Tests.AnalysisCore.SymbolExtensions
 {
 	public sealed class IsPredefinedOrDynamic_ICompilationData : IClassFixture<CompilationDataFixture>
 	{

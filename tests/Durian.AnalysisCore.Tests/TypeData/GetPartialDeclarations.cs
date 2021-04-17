@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.TypeData
+namespace Durian.Tests.AnalysisCore.TypeData
 {
 	public sealed class GetPartialDeclarations : CompilationTest
 	{

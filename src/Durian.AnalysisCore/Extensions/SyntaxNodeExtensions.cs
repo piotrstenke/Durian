@@ -16,7 +16,7 @@ namespace Durian.Extensions
 		/// Checks if the target <paramref name="method"/> has a body, either block or expression.
 		/// </summary>
 		/// <param name="method"><see cref="MethodDeclarationSyntax"/> to check if has a body.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <c>null</c>.</exception>
 		public static bool HasBody(this MethodDeclarationSyntax method)
 		{
 			if (method is null)
@@ -31,7 +31,7 @@ namespace Durian.Extensions
 		/// Returns parent namespaces of the specified <paramref name="node"/>.
 		/// </summary>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the parent namespaces of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="node"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="node"/> is <c>null</c>.</exception>
 		public static IEnumerable<string> GetParentNamespaces(this SyntaxNode node)
 		{
 			if (node is null)
@@ -66,7 +66,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to get the data of.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> was <c>null</c>. -or- <paramref name="compilation"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.</exception>
 		public static IMemberData GetMemberData(this MemberDeclarationSyntax member, ICompilationData compilation)
 		{
 			if (member is null)
@@ -100,7 +100,7 @@ namespace Durian.Extensions
 		/// Returns a <see cref="TypeParameterListSyntax"/> of the <paramref name="member"/> or <c>null</c> if the <paramref name="member"/> has no type parameters.
 		/// </summary>
 		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to get the <see cref="TypeParameterListSyntax"/> of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <c>null</c>.</exception>
 		public static TypeParameterListSyntax? GetTypeParameterList(this MemberDeclarationSyntax member)
 		{
 			if (member is null)

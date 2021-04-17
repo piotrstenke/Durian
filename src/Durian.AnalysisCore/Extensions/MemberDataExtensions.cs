@@ -56,7 +56,7 @@ namespace Durian.Extensions
 		/// <remarks>If the <paramref name="member"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
 		/// <param name="member"><see cref="IMemberData"/> to get the <see cref="string"/> of.</param>
 		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <c>null</c>.</exception>
 		public static string GetParentTypesString(this IMemberData member, bool includeParameters = false)
 		{
 			if (member is null)
@@ -86,7 +86,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to get the <see cref="string"/> of.</param>
 		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <c>null</c>.</exception>
 		public static string GetXmlParentTypesString(this IMemberData member, bool includeParameters = false)
 		{
 			return AnalysisUtilities.ConvertFullyQualifiedNameToXml(GetParentTypesString(member, includeParameters));
@@ -96,7 +96,7 @@ namespace Durian.Extensions
 		/// Returns a <see cref="string"/> representing the fully qualified name of the <paramref name="member"/> that can be used in the XML documentation.
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to get the fully qualified name of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <c>null</c>.</exception>
 		public static string GetXmlFullyQualifiedName(this IMemberData member)
 		{
 			if (member is null)
@@ -112,7 +112,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to get the parent namespace of.</param>
 		/// <returns>The full namespace of the target <paramref name="member"/>. -or- <c>null</c> if the <paramref name="member"/> is not contained withing a namespace. -or- <paramref name="member"/> is contained within global namespace.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <c>null</c>.</exception>
 		public static string? JoinNamespaces(this IMemberData member)
 		{
 			if (member is null)

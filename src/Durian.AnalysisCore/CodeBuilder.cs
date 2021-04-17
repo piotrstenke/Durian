@@ -92,7 +92,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="sourceGenerator">The <see cref="IDurianSourceGenerator"/> this <see cref="CodeBuilder"/> is used by.</param>
 		/// <param name="builder"><see cref="StringBuilder"/> to write the data to.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="builder"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="builder"/> is <c>null</c>.</exception>
 		public CodeBuilder(IDurianSourceGenerator? sourceGenerator, StringBuilder builder)
 		{
 			TextBuilder = builder;
@@ -168,7 +168,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="member">Target <see cref="IMemberData"/> to write the used namespaces of.</param>
 		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <c>null</c>.</exception>
 		public void WriteUsings(IMemberData member, CancellationToken cancellationToken = default)
 		{
 			if (member is null)
@@ -185,7 +185,7 @@ namespace Durian
 		/// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
 		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> was <c>null</c>. -or- <paramref name="node"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <c>null</c>. -or- <paramref name="node"/> is <c>null</c>.</exception>
 		/// <exception cref="InvalidOperationException">
 		/// Is the <see cref="SourceGenerator"/> property is <c>null</c>,
 		/// a <see cref="INamespaceSymbol"/> of the assembly's global namespace must be explicitly provided using one of WriteUsings 3-parameter overloads.
@@ -207,7 +207,7 @@ namespace Durian
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
 		/// <param name="compilationData"><see cref="ICompilationData"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> was <c>null</c>. -or- <paramref name="node"/> was <c>null</c>. -or- <paramref name="compilationData"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <c>null</c>. -or- <paramref name="node"/> is <c>null</c>. -or- <paramref name="compilationData"/> is <c>null</c>.</exception>
 		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, ICompilationData compilationData, CancellationToken cancellationToken = default)
 		{
 			WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, compilationData, true, cancellationToken));
@@ -220,7 +220,7 @@ namespace Durian
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> was <c>null</c>. -or- <paramref name="node"/> was <c>null</c>. -or- <paramref name="compilation"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <c>null</c>. -or- <paramref name="node"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.</exception>
 		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, CSharpCompilation compilation, CancellationToken cancellationToken = default)
 		{
 			WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, compilation, true, cancellationToken));
@@ -233,7 +233,7 @@ namespace Durian
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
 		/// <param name="assembly"><see cref="IAssemblySymbol"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> was <c>null</c>. -or- <paramref name="node"/> was <c>null</c>. -or- <paramref name="assembly"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <c>null</c>. -or- <paramref name="node"/> is <c>null</c>. -or- <paramref name="assembly"/> is <c>null</c>.</exception>
 		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, IAssemblySymbol assembly, CancellationToken cancellationToken = default)
 		{
 			WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, assembly, true, cancellationToken));
@@ -246,7 +246,7 @@ namespace Durian
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
 		/// <param name="globalNamespace"><see cref="INamespaceSymbol"/> that represents the assembly's global namespace.</param>
 		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> was <c>null</c>. -or- <paramref name="node"/> was <c>null</c>. -or- <paramref name="globalNamespace"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <c>null</c>. -or- <paramref name="node"/> is <c>null</c>. -or- <paramref name="globalNamespace"/> is <c>null</c>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="globalNamespace"/> is not an actual global namespace.</exception>
 		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, INamespaceSymbol globalNamespace, CancellationToken cancellationToken = default)
 		{
@@ -257,7 +257,7 @@ namespace Durian
 		/// Writes usings for all the specified <paramref name="namespaces"/>.
 		/// </summary>
 		/// <param name="namespaces">A collection of namespaces to write.</param>
-		/// <exception cref="ArgumentNullException"> <paramref name="namespaces"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"> <paramref name="namespaces"/> is <c>null</c>.</exception>
 		public void WriteUsings(IEnumerable<string> namespaces)
 		{
 			if (namespaces is null)
@@ -272,7 +272,7 @@ namespace Durian
 		/// Writes usings for all the specified <paramref name="namespaces"/>.
 		/// </summary>
 		/// <param name="namespaces">A collection of namespaces to write.</param>
-		/// <exception cref="ArgumentNullException"> <paramref name="namespaces"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"> <paramref name="namespaces"/> is <c>null</c>.</exception>
 		public void WriteUsings(IEnumerable<INamespaceSymbol> namespaces)
 		{
 			if (namespaces is null)
@@ -287,7 +287,7 @@ namespace Durian
 		/// Writes declaration of the parent namespace of the specified <paramref name="member"/>.
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to write the full namespace it is declared in.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <c>null</c>.</exception>
 		public void BeginNamespaceDeclaration(IMemberData member)
 		{
 			if (member is null)
@@ -302,7 +302,7 @@ namespace Durian
 		/// Writes declaration of the parent namespace of the specified <paramref name="member"/>.
 		/// </summary>
 		/// <param name="member"><see cref="ISymbol"/> to write the full namespace it is declared in.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <c>null</c>.</exception>
 		public void BeginNamespaceDeclaration(ISymbol member)
 		{
 			if (member is null)
@@ -317,7 +317,7 @@ namespace Durian
 		/// Writes declaration of the parent namespace of the specified <paramref name="node"/>.
 		/// </summary>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the full namespace it is declared in.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="node"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="node"/> is <c>null</c>.</exception>
 		public void BeginNamespaceDeclaration(CSharpSyntaxNode node)
 		{
 			if (node is null)
@@ -361,7 +361,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="type"><see cref="ITypeData"/> that contains all the needed info about the target type.</param>
 		/// <returns>An <see cref="int"/> that represents the modified indentation level.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
 		public void BeginTypeDeclaration(ITypeData type)
 		{
 			if (type is null)
@@ -383,7 +383,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="type"><see cref="TypeDeclarationSyntax"/> to convert to a <see cref="string"/> and append to the <see cref="TextBuilder"/>.</param>
 		/// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="type"/></param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
 		public void BeginTypeDeclaration(TypeDeclarationSyntax type, bool includeTrivia)
 		{
 			if (type is null)
@@ -409,7 +409,7 @@ namespace Durian
 		/// <c>true</c> for block, <c>false</c> for expression.
 		/// </param>
 		/// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="method"/></param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <c>null</c>.</exception>
 		public void BeginMethodDeclaration(MethodData method, bool blockOrExpression, bool includeTrivia)
 		{
 			if (method is null)
@@ -435,7 +435,7 @@ namespace Durian
 		/// <c>true</c> for block, <c>false</c> for expression.
 		/// </param>
 		/// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="method"/></param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <c>null</c>.</exception>
 		public void BeginMethodDeclaration(MethodDeclarationSyntax method, bool blockOrExpression, bool includeTrivia)
 		{
 			if (method is null)
@@ -450,7 +450,7 @@ namespace Durian
 		/// Writes declarations of the specified <paramref name="member"/>'s parent types.
 		/// </summary>
 		/// <param name="member">Target member.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <c>null</c>.</exception>
 		public void WriteParentDeclarations(IMemberData member)
 		{
 			if (member is null)
@@ -465,7 +465,7 @@ namespace Durian
 		/// Writes declarations of all the parent <paramref name="types"/>.
 		/// </summary>
 		/// <param name="types">A collection of parent <see cref="ITypeData"/>s to write the declarations of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="types"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="types"/> is <c>null</c>.</exception>
 		public void WriteParentDeclarations(IEnumerable<ITypeData> types)
 		{
 			if (types is null)
@@ -489,7 +489,7 @@ namespace Durian
 		/// <param name="usings">A collection of usings to apply.</param>
 		/// <param name="generatorName">Name of generator that created the following code.</param>
 		/// <param name="version">Version of the generator.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> was <c>null</c>. -or- <paramref name="usings"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <c>null</c>. -or- <paramref name="usings"/> is <c>null</c>.</exception>
 		public void WriteDeclarationLead(IMemberData member, IEnumerable<string> usings, string? generatorName, string? version)
 		{
 			if (member is null)

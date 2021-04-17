@@ -7,20 +7,13 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System;
 using System.CodeDom.Compiler;
-using System.Collections;
-using System.Collections.Generic;
 
 partial class Test
 {
-	/// <inheritdoc cref="Test.Method{T, U}(U)"/>
+	/// <inheritdoc cref="Test.Method{T}(string)"/>
 	[GeneratedCode("DefaultParamGenerator", "1.0.0")]
-	void Method<T>(IEnumerable value) where T : IEnumerable<IEnumerable>
+	void Method(string value)
 	{
-		IEnumerable v = default(IEnumerable);
-		object obj = (IEnumerable)2;
-		Type type = typeof(IEnumerable);
-		List<IEnumerable> list = new List<IEnumerable>();
 	}
 }

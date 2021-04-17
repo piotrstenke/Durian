@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.MethodData
+namespace Durian.Tests.AnalysisCore.MethodData
 {
 	public sealed class Body : CompilationTest
 	{

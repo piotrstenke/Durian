@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.CompilationData
+namespace Durian.Tests.AnalysisCore.CompilationData
 {
 	public sealed class UpdateCompilation : IClassFixture<CompilationFixture>
 	{

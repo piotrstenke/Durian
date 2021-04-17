@@ -207,5 +207,17 @@ namespace Durian.DefaultParam
 		{
 			return !(first == second);
 		}
+
+		public static implicit operator TypeParameterData[](in TypeParameterContainer obj)
+		{
+			TypeParameterData[] parameters = new TypeParameterData[obj.Length];
+			Array.Copy(obj._parameters, parameters, obj.Length);
+			return parameters;
+		}
+
+		public static explicit operator TypeParameterContainer(TypeParameterData[] array)
+		{
+			return new TypeParameterContainer(array);
+		}
 	}
 }

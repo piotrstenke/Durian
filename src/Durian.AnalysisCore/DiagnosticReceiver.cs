@@ -1,181 +1,95 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+﻿using System;
+using Microsoft.CodeAnalysis;
 
 namespace Durian
 {
 	/// <summary>
-	/// Contains factory methods for creating <see cref="DiagnosticReceiver{T}"/> for specific types.
+	/// Provides a mechanism for reporting diagnostic messages to a context.
 	/// </summary>
-	public static partial class DiagnosticReceiver
+	/// <typeparam name="T">Type of context this <see cref="DiagnosticReceiver{T}"/> is compliant with.</typeparam>
+	public sealed class DiagnosticReceiver<T> : IDiagnosticReceiver where T : struct
 	{
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SymbolAnalysisContext"/>.
-		/// </summary>
-		public static DiagnosticReceiver<SymbolAnalysisContext> ForSymbol()
+		private readonly DiagnosticReceiverAction<T> _action;
+		private T _context;
+		private bool _contextIsSet;
+
+		/// <inheritdoc cref="DiagnosticReceiver{T}(DiagnosticReceiverAction{T}, in T)"/>
+		public DiagnosticReceiver(DiagnosticReceiverAction<T> action)
 		{
-			return new DiagnosticReceiver<SymbolAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			if (action is null)
+			{
+				throw new ArgumentNullException(nameof(action));
+			}
+
+			_action = action;
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SymbolAnalysisContext"/>.
+		/// Initializes a new instance of the <see cref="DiagnosticReceiver{T}"/> class.
 		/// </summary>
+		/// <param name="action"><see cref="DiagnosticReceiverAction{T}"/> to be performed when the <see cref="ReportDiagnostic(DiagnosticDescriptor, Location, object[])"/> method is called.</param>
 		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<SymbolAnalysisContext> ForSymbol(SymbolAnalysisContext context)
+		/// <exception cref="ArgumentNullException"><paramref name="action"/> is <c>null</c>.</exception>
+		public DiagnosticReceiver(DiagnosticReceiverAction<T> action, in T context)
 		{
-			return new DiagnosticReceiver<SymbolAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			if (action is null)
+			{
+				throw new ArgumentNullException(nameof(action));
+			}
+
+			_action = action;
+			_context = context;
+			_contextIsSet = true;
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxNodeAnalysisContext"/>.
+		/// Returns a reference to the target context.
 		/// </summary>
-		public static DiagnosticReceiver<SyntaxNodeAnalysisContext> ForSyntaxNode()
+		/// <exception cref="InvalidOperationException">Target context not set.</exception>
+		public ref readonly T GetContext()
 		{
-			return new DiagnosticReceiver<SyntaxNodeAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			if (!_contextIsSet)
+			{
+				throw new InvalidOperationException("Target context not set!");
+			}
+
+			return ref _context;
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxNodeAnalysisContext"/>.
+		/// Sets the target context.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<SyntaxNodeAnalysisContext> ForSyntaxNode(SyntaxNodeAnalysisContext context)
+		/// <param name="context">Context to set as a target if this <see cref="DiagnosticReceiver{T}"/>.</param>
+		public void SetContext(in T context)
 		{
-			return new DiagnosticReceiver<SyntaxNodeAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			_contextIsSet = true;
+			_context = context;
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxTreeAnalysisContext"/>.
+		/// Resets the internal context to <c>default</c>.
 		/// </summary>
-		public static DiagnosticReceiver<SyntaxTreeAnalysisContext> ForSyntaxTree()
+		public void RemoveContext()
 		{
-			return new DiagnosticReceiver<SyntaxTreeAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			_contextIsSet = false;
+			_context = default;
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxTreeAnalysisContext"/>.
+		/// Reports a diagnostic.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<SyntaxTreeAnalysisContext> ForSyntaxTree(SyntaxTreeAnalysisContext context)
+		/// <param name="descriptor"><see cref="DiagnosticDescriptor"/> that is used to report the diagnostics.</param>
+		/// <param name="location">Source <see cref="Location"/> of the reported diagnostic.</param>
+		/// <param name="messageArgs">Arguments of the diagnostic message.</param>
+		/// <exception cref="InvalidOperationException">Target context not set.</exception>
+		public void ReportDiagnostic(DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs)
 		{
-			return new DiagnosticReceiver<SyntaxTreeAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
-		}
+			if (!_contextIsSet)
+			{
+				throw new InvalidOperationException("Target context not set!");
+			}
 
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="CompilationAnalysisContext"/>.
-		/// </summary>
-		public static DiagnosticReceiver<CompilationAnalysisContext> ForCompilation()
-		{
-			return new DiagnosticReceiver<CompilationAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="CompilationAnalysisContext"/>.
-		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<CompilationAnalysisContext> ForCompilation(CompilationAnalysisContext context)
-		{
-			return new DiagnosticReceiver<CompilationAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="AdditionalFileAnalysisContext"/>.
-		/// </summary>
-		public static DiagnosticReceiver<AdditionalFileAnalysisContext>.Readonly ForAdditionalFile()
-		{
-			return new DiagnosticReceiver<AdditionalFileAnalysisContext>.Readonly(DurianDiagnostics.ReportDiagnostic);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="AdditionalFileAnalysisContext"/>.
-		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<AdditionalFileAnalysisContext>.Readonly ForCompilation(AdditionalFileAnalysisContext context)
-		{
-			return new DiagnosticReceiver<AdditionalFileAnalysisContext>.Readonly(DurianDiagnostics.ReportDiagnostic, context);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="CodeBlockAnalysisContext"/>.
-		/// </summary>
-		public static DiagnosticReceiver<CodeBlockAnalysisContext> ForCodeBlock()
-		{
-			return new DiagnosticReceiver<CodeBlockAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="CodeBlockAnalysisContext"/>.
-		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<CodeBlockAnalysisContext> ForCodeBlock(CodeBlockAnalysisContext context)
-		{
-			return new DiagnosticReceiver<CodeBlockAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="GeneratorExecutionContext"/>.
-		/// </summary>
-		public static DiagnosticReceiver<GeneratorExecutionContext>.Readonly ForSourceGenerator()
-		{
-			return new DiagnosticReceiver<GeneratorExecutionContext>.Readonly(DurianDiagnostics.ReportDiagnostic);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="GeneratorExecutionContext"/>.
-		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<GeneratorExecutionContext>.Readonly ForSourceGenerator(GeneratorExecutionContext context)
-		{
-			return new DiagnosticReceiver<GeneratorExecutionContext>.Readonly(DurianDiagnostics.ReportDiagnostic, context);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="OperationAnalysisContext"/>.
-		/// </summary>
-		public static DiagnosticReceiver<OperationAnalysisContext> ForOperation()
-		{
-			return new DiagnosticReceiver<OperationAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="OperationAnalysisContext"/>.
-		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<OperationAnalysisContext> ForOperation(OperationAnalysisContext context)
-		{
-			return new DiagnosticReceiver<OperationAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="OperationBlockAnalysisContext"/>.
-		/// </summary>
-		public static DiagnosticReceiver<OperationBlockAnalysisContext> ForOperationBlock()
-		{
-			return new DiagnosticReceiver<OperationBlockAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="OperationBlockAnalysisContext"/>.
-		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<OperationBlockAnalysisContext> ForOperationBlock(OperationBlockAnalysisContext context)
-		{
-			return new DiagnosticReceiver<OperationBlockAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SemanticModelAnalysisContext"/>.
-		/// </summary>
-		public static DiagnosticReceiver<SemanticModelAnalysisContext> ForSemanticModel()
-		{
-			return new DiagnosticReceiver<SemanticModelAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SemanticModelAnalysisContext"/>.
-		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<SemanticModelAnalysisContext> ForSemanticModel(SemanticModelAnalysisContext context)
-		{
-			return new DiagnosticReceiver<SemanticModelAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			_action.Invoke(_context, descriptor, location, messageArgs);
 		}
 	}
 }

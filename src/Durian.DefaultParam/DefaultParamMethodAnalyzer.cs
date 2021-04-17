@@ -419,7 +419,7 @@ namespace Durian.DefaultParam
 				return true;
 			}
 
-			return ValidateCollidingMethods(symbol, in typeParameters, collidingMethods, symbolParameters, configuration, out typeParameterIndicesToApplyNewModifier);
+			return ValidateCollidingMethods(symbol, in typeParameters, collidingMethods, symbolParameters, configuration, numNonDefaultParam, out typeParameterIndicesToApplyNewModifier);
 		}
 
 		public static bool ValidateMethodSignature(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamConfiguration configuration, out List<int>? typeParameterIndicesToApplyNewModifier)
@@ -436,7 +436,7 @@ namespace Durian.DefaultParam
 				return true;
 			}
 
-			return ValidateCollidingMethods(diagnosticReceiver, symbol, in typeParameters, collidingMethods, symbolParameters, configuration, out typeParameterIndicesToApplyNewModifier);
+			return ValidateCollidingMethods(diagnosticReceiver, symbol, in typeParameters, collidingMethods, symbolParameters, configuration, numNonDefaultParam, out typeParameterIndicesToApplyNewModifier);
 		}
 
 		private static bool ValidateCollidingMethods(
@@ -446,6 +446,7 @@ namespace Durian.DefaultParam
 			CollidingMethod[] collidingMethods,
 			IParameterSymbol[] symbolParameters,
 			DefaultParamConfiguration configuration,
+			int numNonDefaultParam,
 			out List<int>? typeParameterIndicesToApplyNewModifier
 		)
 		{
@@ -459,7 +460,7 @@ namespace Durian.DefaultParam
 			for (int i = 0; i < numMethods; i++)
 			{
 				ref readonly CollidingMethod currentMethod = ref collidingMethods[i];
-				int targetIndex = typeParameters.NumDefaultParam - currentMethod.TypeParameters.Length;
+				int targetIndex = numNonDefaultParam - currentMethod.TypeParameters.Length;
 
 				if (diagnosedGenerationIndices.Contains(targetIndex))
 				{
@@ -472,7 +473,7 @@ namespace Durian.DefaultParam
 				{
 					if (!configuration.ApplyNewToGeneratedMembersWithEquivalentSignature || SymbolEqualityComparer.Default.Equals(currentMethod.Symbol.ContainingType, symbol))
 					{
-						DurianDiagnostics.MethodWithSignatureAlreadyExists(diagnosticReceiver, symbol, GetMethodSignatureString(in typeParameters, targetParameters));
+						DurianDiagnostics.MethodWithSignatureAlreadyExists(diagnosticReceiver, symbol, GetMethodSignatureString(in typeParameters, targetIndex + 1, targetParameters));
 						diagnosedGenerationIndices.Add(targetIndex);
 						isValid = false;
 					}
@@ -483,7 +484,15 @@ namespace Durian.DefaultParam
 				}
 			}
 
-			typeParameterIndicesToApplyNewModifier = isValid ? applyNew : null;
+			if (isValid)
+			{
+				typeParameterIndicesToApplyNewModifier = applyNew.Count > 0 ? applyNew : null;
+			}
+			else
+			{
+				typeParameterIndicesToApplyNewModifier = null;
+			}
+
 			return isValid;
 		}
 
@@ -493,6 +502,7 @@ namespace Durian.DefaultParam
 			CollidingMethod[] collidingMethods,
 			IParameterSymbol[] symbolParameters,
 			DefaultParamConfiguration configuration,
+			int numNonDefaultParam,
 			out List<int>? typeParameterIndicesToApplyNewModifier
 		)
 		{
@@ -504,7 +514,7 @@ namespace Durian.DefaultParam
 			for (int i = 0; i < numMethods; i++)
 			{
 				ref readonly CollidingMethod currentMethod = ref collidingMethods[i];
-				int targetIndex = typeParameters.NumDefaultParam - currentMethod.TypeParameters.Length;
+				int targetIndex = numNonDefaultParam - currentMethod.TypeParameters.Length;
 
 				ParameterGeneration[] targetParameters = generations[targetIndex];
 
@@ -522,23 +532,26 @@ namespace Durian.DefaultParam
 				}
 			}
 
-			typeParameterIndicesToApplyNewModifier = applyNew;
+			typeParameterIndicesToApplyNewModifier = applyNew.Count > 0 ? applyNew : null;
+
 			return true;
 		}
 
-		private static string GetMethodSignatureString(in TypeParameterContainer typeParameters, ParameterGeneration[] parameters)
+		private static string GetMethodSignatureString(in TypeParameterContainer typeParameters, int numTypeParameters, ParameterGeneration[] parameters)
 		{
 			StringBuilder sb = new();
 
-			sb.Append('<').Append(typeParameters[0].Symbol);
-			int typeLength = typeParameters.Length;
-
-			for (int i = 1; i < typeLength; i++)
+			if (numTypeParameters > 0)
 			{
-				sb.Append(", ").Append(typeParameters[i].Symbol);
-			}
+				sb.Append('<').Append(typeParameters[0].Symbol);
 
-			sb.Append('>');
+				for (int i = 1; i < numTypeParameters; i++)
+				{
+					sb.Append(", ").Append(typeParameters[i].Symbol);
+				}
+
+				sb.Append('>');
+			}
 
 			int paramLength = parameters.Length;
 

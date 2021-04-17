@@ -2,7 +2,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.FieldData
+namespace Durian.Tests.AnalysisCore.FieldData
 {
 	public sealed class GetUnderlayingFields : CompilationTest
 	{

@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace Durian.Tests.CorePackage.MemberData
+namespace Durian.Tests.AnalysisCore.MemberData
 {
 	public sealed class Validate : CompilationTest
 	{

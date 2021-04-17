@@ -119,7 +119,7 @@ namespace Durian.DefaultParam
 		{
 			string inheritdoc;
 
-			if (target.Symbol.GetDocumentationCommentXml() is null)
+			if (string.IsNullOrEmpty(target.Symbol.GetDocumentationCommentXml()))
 			{
 				inheritdoc = string.Empty;
 			}

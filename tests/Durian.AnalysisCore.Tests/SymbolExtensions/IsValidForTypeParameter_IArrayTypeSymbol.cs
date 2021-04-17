@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.SymbolExtensions
+namespace Durian.Tests.AnalysisCore.SymbolExtensions
 {
 	public sealed class IsValidForTypeParameter_IArrayTypeSymbol : CompilationTest
 	{

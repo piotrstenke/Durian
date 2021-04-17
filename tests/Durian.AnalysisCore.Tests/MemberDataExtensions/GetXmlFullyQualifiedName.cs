@@ -2,7 +2,7 @@ using System;
 using Durian.Extensions;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.MemberDataExtensions
+namespace Durian.Tests.AnalysisCore.MemberDataExtensions
 {
 	public sealed class GetXmlFullyQualifiedName : CompilationTest
 	{

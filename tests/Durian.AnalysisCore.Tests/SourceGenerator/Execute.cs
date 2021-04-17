@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.VisualBasic;
 using Moq;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.SourceGenerator
+namespace Durian.Tests.AnalysisCore.SourceGenerator
 {
 	public sealed class Execute : IClassFixture<CompilationFixture>
 	{

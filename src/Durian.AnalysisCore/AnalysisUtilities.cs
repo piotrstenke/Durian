@@ -29,7 +29,7 @@ namespace Durian
 		/// Returns a <see cref="string"/> that is created by joining the provided <paramref name="namespaces"/> using the dot (".") character.
 		/// </summary>
 		/// <param name="namespaces">Namespaces to join.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> is <c>null</c>.</exception>
 		public static string JoinNamespaces(IEnumerable<string> namespaces)
 		{
 			if (namespaces is null)
@@ -45,7 +45,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="names">A collection of <see cref="string"/>s to join into a <see cref="QualifiedNameSyntax"/>.</param>
 		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="names"/>. -or- <c>null</c> if there were less then 2 <paramref name="names"/> provided.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="names"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="names"/> is <c>null</c>.</exception>
 		public static QualifiedNameSyntax? JoinIntoQualifiedName(IEnumerable<string> names)
 		{
 			if (names is null)
@@ -148,7 +148,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>
 		/// <param name="name">Actual member identifier.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <c>null</c>.</exception>
 		public static string GetGenericName(IEnumerable<string> typeParameters, string? name)
 		{
 			return $"{name ?? string.Empty}{GetGenericName(typeParameters)}";
@@ -158,7 +158,7 @@ namespace Durian
 		/// Returns a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeParameters"/>.
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <c>null</c>.</exception>
 		public static string GetGenericName(IEnumerable<string> typeParameters)
 		{
 			if (typeParameters is null)
@@ -192,7 +192,7 @@ namespace Durian
 		/// Sorts the collection of namespace names.
 		/// </summary>
 		/// <param name="collection">A collection of namespace names.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="collection"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <c>null</c>.</exception>
 		public static IEnumerable<string> SortUsings(IEnumerable<string> collection)
 		{
 			if (collection is null)
@@ -224,7 +224,7 @@ namespace Durian
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
 		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="syntaxNode"/> was <c>null</c>. -or- <paramref name="compilation"/> was <c>null</c>.
+		/// <paramref name="syntaxNode"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.
 		/// </exception>
 		/// <exception cref="ArgumentException">
 		/// Specified <paramref name="syntaxNode"/> doesn't represent any symbols.
@@ -257,7 +257,7 @@ namespace Durian
 		/// </summary>
 		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/> to return.</typeparam>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="syntaxNode"/> was <c>null</c>. -or- <paramref name="compilation"/> was <c>null</c>.
+		/// <paramref name="syntaxNode"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.
 		/// </exception>
 		/// <exception cref="ArgumentException">
 		/// Specified <paramref name="syntaxNode"/> doesn't represent any symbols. -or-

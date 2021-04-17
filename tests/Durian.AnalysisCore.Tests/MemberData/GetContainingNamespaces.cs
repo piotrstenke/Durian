@@ -2,7 +2,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.MemberData
+namespace Durian.Tests.AnalysisCore.MemberData
 {
 	public sealed class GetContainingNamespaces : CompilationTest
 	{

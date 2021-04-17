@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Tests.CorePackage
+namespace Durian.Tests.AnalysisCore
 {
 	internal static class Utilities
 	{

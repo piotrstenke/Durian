@@ -1,7 +1,7 @@
 using System;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.AnalysisUtilities
+namespace Durian.Tests.AnalysisCore.AnalysisUtilities
 {
 	public sealed class GetGenericName_IEnumerableString
 	{

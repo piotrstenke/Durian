@@ -11,7 +11,7 @@ using Moq;
 using Xunit;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Durian.Tests.CorePackage.MemberData
+namespace Durian.Tests.AnalysisCore.MemberData
 {
 	public sealed class Constructors : IClassFixture<CompilationFixture>
 	{

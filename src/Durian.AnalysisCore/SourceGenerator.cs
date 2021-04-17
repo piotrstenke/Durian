@@ -77,7 +77,7 @@ namespace Durian
 		/// <summary>
 		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
 		/// </summary>
-		protected DiagnosticReceiver<GeneratorExecutionContext>.Readonly DiagnosticReceiver { get; }
+		protected ReadonlyDiagnosticReceiver<GeneratorExecutionContext> DiagnosticReceiver { get; }
 #endif
 		/// <inheritdoc cref="IDurianSourceGenerator.TargetCompilation"/>
 		public TCompilationData TargetCompilation { get; private set; }
@@ -109,7 +109,7 @@ namespace Durian
 			ParseOptions = null!;
 
 #if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
-			DiagnosticReceiver = Durian.DiagnosticReceiver.ForSourceGenerator();
+			DiagnosticReceiver = Durian.DiagnosticReceiverFactory.SourceGenerator();
 #endif
 		}
 

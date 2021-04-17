@@ -16,7 +16,7 @@ namespace Durian.Data
 		/// <param name="declaration">Target <see cref="StructDeclarationSyntax"/>.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> was <c>null</c>. -or- <paramref name="compilation"/> was <c>null</c>
+		/// <paramref name="declaration"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>
 		/// </exception>
 		public StructData(StructDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
 		{

@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.TypeData
+namespace Durian.Tests.AnalysisCore.TypeData
 {
 	public sealed class Modifiers : CompilationTest
 	{

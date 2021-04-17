@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.AnalysisUtilities
+namespace Durian.Tests.AnalysisCore.AnalysisUtilities
 {
 	public sealed class GetSymbolAndSemanticModel_Generic : CompilationTest
 	{

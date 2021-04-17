@@ -5,7 +5,7 @@ using Durian.Extensions;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.SemanticModelExtensions
+namespace Durian.Tests.AnalysisCore.SemanticModelExtensions
 {
 	public sealed class GetContainingNamespaces : CompilationTest
 	{

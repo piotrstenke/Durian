@@ -150,7 +150,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="group">Index of group to add the <paramref name="filter"/> to.</param>
 		/// <param name="filter"><see cref="ISyntaxFilter"/> to add.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="filter"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <c>null</c>.</exception>
 		/// <exception cref="ArgumentOutOfRangeException"><paramref name="group"/> was out of range.</exception>
 		public void AddFilter(int group, TFilter filter)
 		{
@@ -167,7 +167,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="group">Name of group to add the <paramref name="filter"/> to.</param>
 		/// <param name="filter"><see cref="ISyntaxFilter"/> to add.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="filter"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <c>null</c>.</exception>
 		/// <exception cref="ArgumentException">
 		/// Name of a filter group cannot be null or whitespace only. -or-
 		/// <see cref="ISyntaxFilter"/> group with the specified name was not found.
@@ -301,7 +301,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="filter"><see cref="ISyntaxFilter"/> to add to the newly-registered <see cref="ISyntaxFilter"/> group.</param>
 		/// <returns>An <see cref="int"/> that represents the index at which the <see cref="ISyntaxFilter"/> group was registered.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="filter"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <c>null</c>.</exception>
 		public int RegisterFilterGroup(TFilter filter)
 		{
 			if (filter is null)
@@ -320,7 +320,7 @@ namespace Durian
 		/// <param name="name">Name to be applied to the <see cref="ISyntaxFilter"/> group.</param>
 		/// <param name="filter"><see cref="ISyntaxFilter"/> to add to the newly-registered <see cref="ISyntaxFilter"/> group.</param>
 		/// <returns>An <see cref="int"/> that represents the index at which the <see cref="ISyntaxFilter"/> group was registered.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="filter"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <c>null</c>.</exception>
 		/// <exception cref="ArgumentException">
 		/// Name of a filter group cannot be null or whitespace only. -or-
 		/// Group with the specified <paramref name="name"/> already defined.

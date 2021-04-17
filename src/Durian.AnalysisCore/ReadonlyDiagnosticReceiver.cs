@@ -4,17 +4,16 @@ using Microsoft.CodeAnalysis;
 namespace Durian
 {
 	/// <summary>
-	/// Provides a mechanism for reporting diagnostic messages to a context.
+	/// A <see cref="IDiagnosticReceiver"/> that accepts see <see cref="ReadonlyDiagnosticReceiverAction{T}"/> instead of <see cref="DiagnosticReceiverAction{T}"/>.
 	/// </summary>
-	/// <typeparam name="T">Type of context this <see cref="DiagnosticReceiver{T}"/> is compliant with.</typeparam>
-	public sealed partial class DiagnosticReceiver<T> : IDiagnosticReceiver where T : struct
+	public sealed class ReadonlyDiagnosticReceiver<T> : IDiagnosticReceiver where T : struct
 	{
-		private readonly DiagnosticReceiverAction<T> _action;
+		private readonly ReadonlyDiagnosticReceiverAction<T> _action;
 		private T _context;
 		private bool _contextIsSet;
 
-		/// <inheritdoc cref="DiagnosticReceiver{T}(DiagnosticReceiverAction{T}, in T)"/>
-		public DiagnosticReceiver(DiagnosticReceiverAction<T> action)
+		/// <inheritdoc cref="ReadonlyDiagnosticReceiver(ReadonlyDiagnosticReceiverAction{T}, in T)"/>
+		public ReadonlyDiagnosticReceiver(ReadonlyDiagnosticReceiverAction<T> action)
 		{
 			if (action is null)
 			{
@@ -25,12 +24,12 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="DiagnosticReceiver{T}"/> class.
+		/// Initializes a new instance of the <see cref="ReadonlyDiagnosticReceiver{T}"/> class.
 		/// </summary>
-		/// <param name="action"><see cref="DiagnosticReceiverAction{T}"/> to be performed when the <see cref="ReportDiagnostic(DiagnosticDescriptor, Location, object[])"/> method is called.</param>
+		/// <param name="action"><see cref="ReadonlyDiagnosticReceiverAction{T}"/> to be performed when the <see cref="ReportDiagnostic(DiagnosticDescriptor, Location, object[])"/> method is called.</param>
 		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="action"/> was <c>null</c>.</exception>
-		public DiagnosticReceiver(DiagnosticReceiverAction<T> action, in T context)
+		/// <exception cref="ArgumentNullException"><paramref name="action"/> is <c>null</c>.</exception>
+		public ReadonlyDiagnosticReceiver(ReadonlyDiagnosticReceiverAction<T> action, in T context)
 		{
 			if (action is null)
 			{
@@ -59,11 +58,11 @@ namespace Durian
 		/// <summary>
 		/// Sets the target context.
 		/// </summary>
-		/// <param name="context">Context to set as a target if this <see cref="DiagnosticReceiver{T}"/>.</param>
+		/// <param name="context">Context to set as a target if this <see cref="ReadonlyDiagnosticReceiver{T}"/>.</param>
 		public void SetContext(in T context)
 		{
-			_contextIsSet = true;
 			_context = context;
+			_contextIsSet = true;
 		}
 
 		/// <summary>
@@ -89,7 +88,7 @@ namespace Durian
 				throw new InvalidOperationException("Target context not set!");
 			}
 
-			_action.Invoke(_context, descriptor, location, messageArgs);
+			_action.Invoke(in _context, descriptor, location, messageArgs);
 		}
 	}
 }

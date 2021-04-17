@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.EventData
+namespace Durian.Tests.AnalysisCore.EventData
 {
 	public sealed class Constructor_EventFieldDeclarationSyntax : CompilationTest
 	{

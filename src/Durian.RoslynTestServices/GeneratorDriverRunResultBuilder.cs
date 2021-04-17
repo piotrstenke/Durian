@@ -58,7 +58,7 @@ namespace Durian.Tests
 		/// <param name="generatedSources">A collection of <see cref="GeneratedSourceResult"/>s to be set to the <see cref="GeneratorRunResult.GeneratedSources"/> property.</param>
 		/// <param name="diagnostics">A collection of <see cref="Diagnostic"/>s to be set to the <see cref="GeneratorRunResult.Diagnostics"/> property.</param>
 		/// <param name="exception">An <see cref="Exception"/> to be set to the <see cref="GeneratorRunResult.Exception"/> property.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> was <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <c>null</c>.</exception>
 		/// <returns>This <see cref="GeneratorDriverRunResultBuilder"/>.</returns>
 		public GeneratorDriverRunResultBuilder AddResult(ISourceGenerator generator, IEnumerable<GeneratedSourceResult>? generatedSources, IEnumerable<Diagnostic>? diagnostics, Exception? exception)
 		{

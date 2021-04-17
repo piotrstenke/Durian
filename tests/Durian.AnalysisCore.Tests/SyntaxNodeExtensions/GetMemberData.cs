@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.SyntaxNodeExtensions
+namespace Durian.Tests.AnalysisCore.SyntaxNodeExtensions
 {
 	public sealed class GetMemberData : CompilationTest
 	{

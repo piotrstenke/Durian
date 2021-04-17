@@ -1,7 +1,7 @@
 using System;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.CompilationData
+namespace Durian.Tests.AnalysisCore.CompilationData
 {
 	public sealed class Constructor
 	{

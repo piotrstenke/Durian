@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.SemanticModelExtensions
+namespace Durian.Tests.AnalysisCore.SemanticModelExtensions
 {
 	public sealed class GetAllAttributesOfType_MemberDeclarationSyntax : CompilationTest
 	{

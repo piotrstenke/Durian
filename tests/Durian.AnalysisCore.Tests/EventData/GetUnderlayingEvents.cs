@@ -2,7 +2,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
-namespace Durian.Tests.CorePackage.EventData
+namespace Durian.Tests.AnalysisCore.EventData
 {
 	public sealed class GetUnderlayingEvents : CompilationTest
 	{
