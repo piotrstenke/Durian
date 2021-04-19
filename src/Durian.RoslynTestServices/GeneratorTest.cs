@@ -53,9 +53,9 @@ namespace Durian.Tests
 		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for this <paramref name="generator"/> if it supports any.</param>
 		protected GeneratorTest(ISourceGenerator generator, bool enableDiagnostics)
 		{
-			if (enableDiagnostics && generator is IDurianSourceGenerator g)
+			if (enableDiagnostics && generator is IDurianSourceGenerator g && g.SupportsDiagnostics)
 			{
-				g.EnableDiagnostics();
+				g.EnableDiagnostics = true;
 			}
 
 			Generator = generator;

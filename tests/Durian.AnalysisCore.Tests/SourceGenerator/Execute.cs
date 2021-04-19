@@ -145,7 +145,7 @@ namespace Durian.Tests.AnalysisCore.SourceGenerator
 			return mock.Object;
 		}
 
-		private static bool RunAndValidate(in GeneratorExecutionContext context, Predicate<Durian.SourceGenerator> predicate)
+		private static bool RunAndValidate(in GeneratorExecutionContext context, Predicate<DurianSourceGeneratorProxy> predicate)
 		{
 			DurianSourceGeneratorProxy generator = new();
 			generator.OnCreateCompilationData += GetValidCompilationData;

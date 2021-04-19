@@ -8,7 +8,7 @@ namespace Durian.Tests
 	/// <summary>
 	/// A simple proxy class that inherits the <see cref="SourceGenerator"/> class and leaves the actual implementation details to be defined by the user through appropriate C# events, as well as provides references to the passed <see cref="GeneratorInitializationContext"/> and <see cref="GeneratorExecutionContext"/>.
 	/// </summary>
-	public sealed class DurianSourceGeneratorProxy : SourceGenerator
+	public sealed class DurianSourceGeneratorProxy : SourceGenerator<ICompilationData, IDurianSyntaxReceiver, ISyntaxFilterWithDiagnostics>
 	{
 		private GeneratorExecutionContext _exeContext;
 		private GeneratorInitializationContext _initContext;
@@ -81,11 +81,7 @@ namespace Durian.Tests
 		/// A delegate with signature equivalent to the <see cref="SourceGenerator{TCompilationData, ISyntaxReceiver, IFilter}.GetFilters(in GeneratorExecutionContext)"/> method.
 		/// </summary>
 		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
 		public delegate FilterList<ISyntaxFilterWithDiagnostics> GetFiltersAction(in GeneratorExecutionContext context);
-#else
-		public delegate FilterList<ISyntaxFilter> GetFiltersAction(in GeneratorExecutionContext context);
-#endif
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianSourceGeneratorProxy"/> class.
@@ -122,11 +118,7 @@ namespace Durian.Tests
 		}
 
 		/// <inheritdoc/>
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
 		protected override FilterList<ISyntaxFilterWithDiagnostics>? GetFilters(in GeneratorExecutionContext context)
-#else
-		protected override FilterList<ISyntaxFilter>? GetFilters(in GeneratorExecutionContext context)
-#endif
 		{
 			return OnGetFilters?.Invoke(in context);
 		}
@@ -138,11 +130,7 @@ namespace Durian.Tests
 		}
 
 		/// <inheritdoc/>
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
 		protected override void Generate(IMemberData member, ISyntaxFilterWithDiagnostics filter, CodeBuilder builder, in GeneratorExecutionContext context)
-#else
-		protected override void Generate(IMemberData member, ISyntaxFilter filter, CodeBuilder builder, in GeneratorExecutionContext context)
-#endif
 		{
 			OnGenerate?.Invoke(member, filter, builder, in context);
 			_exeContext = context;

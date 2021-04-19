@@ -9,7 +9,7 @@
 			Logger<int>.Log(12);
 		}
 
-		public static T Method<[DefaultParam(typeof(string))]T>(T value)
+		public static T Method<T, U, [DefaultParam(typeof(string))]V>(T value) where T : class
 		{
 			return value;
 		}

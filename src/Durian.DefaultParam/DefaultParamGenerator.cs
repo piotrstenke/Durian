@@ -24,11 +24,7 @@ namespace Durian.DefaultParam
 
 		public override DefaultParamSyntaxReceiver CreateSyntaxReceiver()
 		{
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
-			return new DefaultParamSyntaxReceiver(EnableSyntaxDiagnostics);
-#else
-			return new DefaultParamSyntaxReceiver();
-#endif
+			return new DefaultParamSyntaxReceiver(EnableDiagnostics);
 		}
 
 		protected override FilterList<IDefaultParamFilter> GetFilters(in GeneratorExecutionContext context)
@@ -38,12 +34,10 @@ namespace Durian.DefaultParam
 			list.RegisterFilterGroup(new IDefaultParamFilter[] { new DefaultParamDelegateFilter(), new DefaultParamMethodFilter() });
 			list.RegisterFilterGroup(new IDefaultParamFilter[] { new DefaultParamTypeFilter() });
 
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
-			if (EnableSyntaxDiagnostics)
+			if (EnableDiagnostics)
 			{
 				list.RegisterFilterGroup(new IDefaultParamFilter[] { new DefaultParamLocalFunctionFilter() });
 			}
-#endif
 
 			return list;
 		}
@@ -79,9 +73,10 @@ namespace Durian.DefaultParam
 		{
 			_rewriter.ParentCompilation = TargetCompilation;
 
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
-			DiagnosticReceiver.SetContext(in context);
-#endif
+			if (EnableDiagnostics)
+			{
+				DiagnosticReceiver.SetContext(in context);
+			}
 		}
 
 		protected override void Generate(IMemberData data, IDefaultParamFilter filter, CodeBuilder builder, in GeneratorExecutionContext context)

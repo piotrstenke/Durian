@@ -74,6 +74,11 @@ namespace Durian
 #endif
 	{
 #if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+
+#pragma warning disable IDE0032 // Use auto property
+		private bool _enableDiagnostics;
+#pragma warning restore IDE0032 // Use auto property
+
 		/// <summary>
 		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
 		/// </summary>
@@ -88,15 +93,8 @@ namespace Durian
 		/// <inheritdoc/>
 		public CSharpParseOptions ParseOptions { get; private set; }
 
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
 		/// <inheritdoc/>
-		public bool EnableSyntaxDiagnostics { get; set; }
-#endif
-
-		ICompilationData IDurianSourceGenerator.TargetCompilation => TargetCompilation;
-		IDurianSyntaxReceiver IDurianSourceGenerator.SyntaxReceiver => SyntaxReceiver;
-
-		bool IDurianSourceGenerator.SupportsDiagnostics
+		public bool SupportsDiagnostics
 		{
 			get
 			{
@@ -108,6 +106,35 @@ namespace Durian
 			}
 		}
 
+		/// <inheritdoc/>
+		public bool EnableDiagnostics
+		{
+			get
+			{
+#pragma warning disable IDE0027 // Use expression body for accessors
+
+#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+				return _enableDiagnostics;
+#else
+				return false;
+#endif
+
+#pragma warning restore IDE0027 // Use expression body for accessors
+			}
+			set
+			{
+#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+
+#pragma warning disable IDE0027 // Use expression body for accessors
+				_enableDiagnostics = value;
+#pragma warning restore IDE0027 // Use expression body for accessors
+
+#endif
+			}
+		}
+
+		ICompilationData IDurianSourceGenerator.TargetCompilation => TargetCompilation;
+		IDurianSyntaxReceiver IDurianSourceGenerator.SyntaxReceiver => SyntaxReceiver;
 		string IDurianSourceGenerator.GeneratorName => GetGeneratorName();
 		string IDurianSourceGenerator.Version => GetVersion();
 
@@ -182,7 +209,7 @@ namespace Durian
 				IMemberData[][] data = new IMemberData[length][];
 
 #if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
-				if (EnableSyntaxDiagnostics)
+				if (_enableDiagnostics)
 				{
 					for (int i = 0; i < length; i++)
 					{
@@ -219,12 +246,6 @@ namespace Durian
 		IDurianSyntaxReceiver IDurianSourceGenerator.CreateSyntaxReceiver()
 		{
 			return CreateSyntaxReceiver();
-		}
-		void IDurianSourceGenerator.EnableDiagnostics()
-		{
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
-			EnableSyntaxDiagnostics = true;
-#endif
 		}
 
 		/// <summary>

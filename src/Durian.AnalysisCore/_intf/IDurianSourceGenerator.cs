@@ -40,13 +40,13 @@ namespace Durian
 		bool SupportsDiagnostics { get; }
 
 		/// <summary>
+		/// Enables diagnostics if this <see cref="IDurianSourceGenerator"/> supports any.
+		/// </summary>
+		bool EnableDiagnostics { get; set; }
+
+		/// <summary>
 		/// Creates a new <see cref="IDurianSyntaxReceiver"/> to be used during the generator execution pass.
 		/// </summary>
 		IDurianSyntaxReceiver CreateSyntaxReceiver();
-
-		/// <summary>
-		/// Enables diagnostics if this <see cref="IDurianSourceGenerator"/> supports any.
-		/// </summary>
-		void EnableDiagnostics();
 	}
 }
