@@ -109,7 +109,6 @@ partial class Test
 	}
 }
 ";
-
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0018"));
 		}
 

@@ -213,7 +213,11 @@ dotnet_naming_style.camelcase.capitalization                                = ca
 dotnet_naming_style._camelcase.required_prefix                              = _
 dotnet_naming_style._camelcase.capitalization                               = camel_case
 
-# Roslynator rules
-
+# RCS1146: Use conditional access.
 dotnet_diagnostic.RCS1146.severity                                          = none
+
+# RCS1123: Add parentheses when necessary.
 dotnet_diagnostic.RCS1123.severity                                          = none
+
+# IDE0072: Remove unnecessary suppression
+dotnet_diagnostic.IDE0079.severity                                          = none

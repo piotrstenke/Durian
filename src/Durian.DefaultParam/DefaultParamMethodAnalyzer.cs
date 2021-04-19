@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -42,7 +43,7 @@ namespace Durian.DefaultParam
 
 			public override string ToString()
 			{
-				return $"{(RefKind != RefKind.None ? $"{RefKind} " : "")}{Type.Name}";
+				return (RefKind != RefKind.None ? $"{RefKind} " : "") + Type.Name;
 			}
 		}
 
@@ -410,7 +411,7 @@ namespace Durian.DefaultParam
 		public static bool ValidateMethodSignature(IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, out List<int>? typeParameterIndicesToApplyNewModifier)
 		{
 			IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
-			int numNonDefaultParam = typeParameters.Length - typeParameters.NumDefaultParam;
+			int numNonDefaultParam = typeParameters.NumNonDefaultParam;
 
 			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, in typeParameters, symbolParameters, compilation, numNonDefaultParam);
 			int numMethods = collidingMethods.Length;
@@ -427,7 +428,7 @@ namespace Durian.DefaultParam
 		public static bool ValidateMethodSignature(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, out List<int>? typeParameterIndicesToApplyNewModifier)
 		{
 			IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
-			int numNonDefaultParam = typeParameters.Length - typeParameters.NumDefaultParam;
+			int numNonDefaultParam = typeParameters.NumNonDefaultParam;
 
 			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, in typeParameters, symbolParameters, compilation, numNonDefaultParam);
 			int numMethods = collidingMethods.Length;
@@ -462,7 +463,7 @@ namespace Durian.DefaultParam
 			for (int i = 0; i < numMethods; i++)
 			{
 				ref readonly CollidingMethod currentMethod = ref collidingMethods[i];
-				int targetIndex = numNonDefaultParam - currentMethod.TypeParameters.Length;
+				int targetIndex = currentMethod.TypeParameters.Length - numNonDefaultParam;
 
 				if (diagnosedGenerationIndices.Contains(targetIndex))
 				{
@@ -473,9 +474,9 @@ namespace Durian.DefaultParam
 
 				if (HasCollidingParameters(targetParameters, in currentMethod, numParameters))
 				{
-					if (!configuration.ApplyNewToGeneratedMembersWithEquivalentSignature || SymbolEqualityComparer.Default.Equals(currentMethod.Symbol.ContainingType, symbol))
+					if (!configuration.ApplyNewToGeneratedMembersWithEquivalentSignature || SymbolEqualityComparer.Default.Equals(currentMethod.Symbol.ContainingType, symbol.ContainingType))
 					{
-						DurianDiagnostics.MethodWithSignatureAlreadyExists(diagnosticReceiver, symbol, GetMethodSignatureString(symbol.Name, in typeParameters, targetIndex, targetParameters), typeParameters[targetIndex].Location);
+						DurianDiagnostics.MethodWithSignatureAlreadyExists(diagnosticReceiver, symbol, GetMethodSignatureString(symbol.Name, in typeParameters, targetIndex, targetParameters), symbol.Locations.FirstOrDefault());
 						diagnosedGenerationIndices.Add(targetIndex);
 						isValid = false;
 					}
@@ -566,16 +567,28 @@ namespace Durian.DefaultParam
 			}
 
 			ref readonly ParameterGeneration first = ref parameters[0];
-			sb.Append('(').Append(first.Type);
+			sb.Append('(');
+			WriteParameter(in first);
 
 			for (int i = 1; i < paramLength; i++)
 			{
 				ref readonly ParameterGeneration parameter = ref parameters[i];
-				sb.Append(", ").Append(parameter.Type);
+				sb.Append(", ");
+				WriteParameter(in parameter);
 			}
 
 			sb.Append(')');
 			return sb.ToString();
+
+			void WriteParameter(in ParameterGeneration param)
+			{
+				if (param.RefKind != RefKind.None)
+				{
+					sb.Append(param.RefKind.ToString().ToLower());
+				}
+
+				sb.Append(param.Type);
+			}
 		}
 
 		private static bool HasCollidingParameters(ParameterGeneration[] targetParameters, in CollidingMethod currentMethod, int numParameters)
@@ -623,10 +636,10 @@ namespace Durian.DefaultParam
 
 			return symbol.ContainingType.GetAllMembers(symbol.Name)
 				.OfType<IMethodSymbol>()
-				.Select(m => ((IMethodSymbol symbol, IParameterSymbol[] parameters))(m, m.Parameters.ToArray()))
-				.Where(m => m.parameters.Length == numParameters)
-				.Select(m => new CollidingMethod(m.symbol, m.parameters, m.symbol.TypeParameters.ToArray()))
-				.Where(m => m.TypeParameters.Length >= numNonDefaultParam && m.TypeParameters.Length < numTypeParameters && !IsDefaultParamGenerated(m.Symbol, compilation))
+				.Select(m => ((IMethodSymbol symbol, ITypeParameterSymbol[] typeParameters))(m, m.TypeParameters.ToArray()))
+				.Where(m => m.typeParameters.Length >= numNonDefaultParam && m.typeParameters.Length < numTypeParameters)
+				.Select(m => new CollidingMethod(m.symbol, m.symbol.Parameters.ToArray(), m.symbol.TypeParameters.ToArray()))
+				.Where(m => m.Parameters.Length == numParameters && !IsDefaultParamGenerated(m.Symbol, compilation))
 				.ToArray();
 		}
 
@@ -634,13 +647,57 @@ namespace Durian.DefaultParam
 		{
 			int numParameters = symbolParameters.Length;
 			ParameterGeneration[] defaultParameters = new ParameterGeneration[numParameters];
+			bool hasTypeArgumentAsParameter = false;
 
 			for (int i = 0; i < numParameters; i++)
 			{
-				defaultParameters[i] = CreateDefaultGenerationForParameter(symbolParameters[i], in typeParameters);
+				IParameterSymbol parameter = symbolParameters[i];
+				ITypeSymbol type = parameter.Type;
+
+				if (type is ITypeParameterSymbol)
+				{
+					hasTypeArgumentAsParameter = true;
+					defaultParameters[i] = CreateDefaultGenerationForTypeArgumentParameter(parameter, in typeParameters);
+				}
+				else
+				{
+					defaultParameters[i] = new ParameterGeneration(type, parameter.RefKind, -1);
+				}
 			}
 
-			return CreateParameterGenerationsForTypeParameters(in typeParameters, defaultParameters, numParameters);
+			if (!hasTypeArgumentAsParameter)
+			{
+				int numTypeParameters = typeParameters.Length;
+				ParameterGeneration[][] generations = new ParameterGeneration[numTypeParameters][];
+
+				for (int i = 0; i < numTypeParameters; i++)
+				{
+					generations[i] = defaultParameters;
+				}
+
+				return generations;
+			}
+			else
+			{
+				return CreateParameterGenerationsForTypeParameters(in typeParameters, defaultParameters, numParameters);
+			}
+		}
+
+		private static ParameterGeneration CreateDefaultGenerationForTypeArgumentParameter(IParameterSymbol parameter, in TypeParameterContainer typeParameters)
+		{
+			ITypeSymbol type = parameter.Type;
+
+			for (int j = 0; j < typeParameters.Length; j++)
+			{
+				ref readonly TypeParameterData data = ref typeParameters[j];
+
+				if (SymbolEqualityComparer.Default.Equals(data.Symbol, type))
+				{
+					return new ParameterGeneration(type, parameter.RefKind, j);
+				}
+			}
+
+			throw new InvalidOperationException($"Unknown type parameter used as argument for parameter '{parameter.Name}'");
 		}
 
 		private static ParameterGeneration[][] CreateParameterGenerationsForTypeParameters(in TypeParameterContainer typeParameters, ParameterGeneration[] defaultParameters, int numParameters)
@@ -679,26 +736,6 @@ namespace Durian.DefaultParam
 			}
 
 			return generations;
-		}
-
-		private static ParameterGeneration CreateDefaultGenerationForParameter(IParameterSymbol parameter, in TypeParameterContainer typeParameters)
-		{
-			ITypeSymbol type = parameter.Type;
-
-			if (type is ITypeParameterSymbol)
-			{
-				for (int j = typeParameters.FirstDefaultParamIndex; j < typeParameters.Length; j++)
-				{
-					ref readonly TypeParameterData data = ref typeParameters[j];
-
-					if (SymbolEqualityComparer.Default.Equals(data.Symbol, type))
-					{
-						return new ParameterGeneration(type, parameter.RefKind, j);
-					}
-				}
-			}
-
-			return new ParameterGeneration(type, parameter.RefKind, -1);
 		}
 
 		private static int GetIndexOfTypeParameterInCollidingMethod(in CollidingMethod method, IParameterSymbol parameter)

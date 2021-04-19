@@ -8,7 +8,7 @@ namespace Durian
 {
 	/// <inheritdoc cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/>
 	public abstract class SourceGenerator
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+#if ENABLE_GENERATOR_DIAGNOSTICS
 		: SourceGenerator<ICompilationData, IDurianSyntaxReceiver, ISyntaxFilterWithDiagnostics>
 #else
 		: SourceGenerator<ICompilationData, IDurianSyntaxReceiver, ISyntaxFilter>
@@ -24,7 +24,7 @@ namespace Durian
 
 	/// <inheritdoc cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/>
 	public abstract class SourceGenerator<TCompilationData>
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+#if ENABLE_GENERATOR_DIAGNOSTICS
 		: SourceGenerator<TCompilationData, IDurianSyntaxReceiver, ISyntaxFilterWithDiagnostics>
 #else
 		: SourceGenerator<TCompilationData, IDurianSyntaxReceiver, ISyntaxFilter>
@@ -41,7 +41,7 @@ namespace Durian
 
 	/// <inheritdoc cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/>
 	public abstract class SourceGenerator<TCompilationData, TSyntaxReceiver>
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+#if ENABLE_GENERATOR_DIAGNOSTICS
 		: SourceGenerator<TCompilationData, TSyntaxReceiver, ISyntaxFilterWithDiagnostics>
 #else
 		: SourceGenerator<TCompilationData, TSyntaxReceiver, ISyntaxFilter>
@@ -67,13 +67,13 @@ namespace Durian
 	public abstract class SourceGenerator<TCompilationData, TSyntaxReceiver, TFilter> : IDurianSourceGenerator
 		where TCompilationData : class, ICompilationData
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+#if ENABLE_GENERATOR_DIAGNOSTICS
 		where TFilter : ISyntaxFilterWithDiagnostics
 #else
 		where TFilter : ISyntaxFilter
 #endif
 	{
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+#if ENABLE_GENERATOR_DIAGNOSTICS
 
 #pragma warning disable IDE0032 // Use auto property
 		private bool _enableDiagnostics;
@@ -98,7 +98,7 @@ namespace Durian
 		{
 			get
 			{
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+#if ENABLE_GENERATOR_DIAGNOSTICS
 				return true;
 #else
 				return false;
@@ -113,7 +113,7 @@ namespace Durian
 			{
 #pragma warning disable IDE0027 // Use expression body for accessors
 
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+#if ENABLE_GENERATOR_DIAGNOSTICS
 				return _enableDiagnostics;
 #else
 				return false;
@@ -123,7 +123,7 @@ namespace Durian
 			}
 			set
 			{
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+#if ENABLE_GENERATOR_DIAGNOSTICS
 
 #pragma warning disable IDE0027 // Use expression body for accessors
 				_enableDiagnostics = value;
@@ -147,7 +147,7 @@ namespace Durian
 			SyntaxReceiver = null!;
 			ParseOptions = null!;
 
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+#if ENABLE_GENERATOR_DIAGNOSTICS
 			DiagnosticReceiver = DiagnosticReceiverFactory.SourceGenerator();
 #endif
 		}
@@ -208,7 +208,7 @@ namespace Durian
 				int length = filterGroup.Length;
 				IMemberData[][] data = new IMemberData[length][];
 
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+#if ENABLE_GENERATOR_DIAGNOSTICS
 				if (_enableDiagnostics)
 				{
 					for (int i = 0; i < length; i++)
@@ -219,12 +219,12 @@ namespace Durian
 				else
 				{
 #endif
-					for (int i = 0; i < length; i++)
-					{
-						data[i] = filterGroup[i].Filtrate(TargetCompilation, SyntaxReceiver, context.CancellationToken).ToArray();
-					}
+				for (int i = 0; i < length; i++)
+				{
+					data[i] = filterGroup[i].Filtrate(TargetCompilation, SyntaxReceiver, context.CancellationToken).ToArray();
+				}
 
-#if ENABLE_GENERATOR_SYNTAX_DIAGNOSTICS
+#if ENABLE_GENERATOR_DIAGNOSTICS
 				}
 #endif
 

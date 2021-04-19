@@ -5,7 +5,7 @@ namespace Durian.Tests.DefaultParam.Generator
 	public sealed class MethodSignatureErrorTests : DefaultParamGeneratorTest
 	{
 		[Fact]
-		public void MethodIsInvalid_When_AllTypeParametersAreDefaultParam_And_IsParametereless_And_MethodWithGeneratedSignatureAlreadyExistsInTheSameClass()
+		public void Error_When_IsParameterless_And_OtherParameterlessExists()
 		{
 			const string input =
 @"using Durian;
@@ -25,7 +25,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_MethodWithGeneratedSignatureButOtherReturnTypeAlreadyExistsInTheSameClass()
+		public void Error_When_IsParameterless_And_OtherParameterlessExistsWithOtherReturnType()
 		{
 			const string input =
 @"using Durian;
@@ -46,7 +46,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_AllTypeParametersAreDefaultParam_And_HasParametersThatAreNotTypeArguments_And_MethodWithGeneratedSignatureAlreadyExistsInTheSameClass()
+		public void Error_When_HasOnlyNonTypeArgumentParameters_And_SignatureAlreadyExists()
 		{
 			const string input =
 @"using Durian;
@@ -62,12 +62,11 @@ partial class Test
 	}
 }
 ";
-			//System.IO.File.WriteAllText("../../tests/generated.cs", RunGenerator(input).SourceText.ToString());
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_AllTypeParametersAreDefaultParam_And_AllParametersAreTypeArguments_And_MethodWithGeneratedSignatureAlreadyExistsInTheSameClass()
+		public void Error_When_HasOnlyTypeArgumentParameters_And_GeneratedSignatureExists()
 		{
 			const string input =
 @"using Durian;
@@ -87,7 +86,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_NotAllTypeParametersAreDefaultParam_And_MethodWithGeneratedSignatureAlreadyExistsInTheSameClass()
+		public void Error_When_NotAllTypeParametersAreDefaultParam_And_HasDefaultParamParameters()
 		{
 			const string input =
 @"using Durian;
@@ -107,7 +106,27 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_MethodWithGeneratedSignatureAlreadyExistsInParentClass()
+		public void Error_When_NotAllTypeParametersAreDefaultParam_And_HasNonDefaultParamParameters()
+		{
+			const string input =
+@"using Durian;
+
+partial class Test
+{
+	void Method<T, [DefaultParam(typeof(int))]U>(T value)
+	{
+	}
+
+	void Method<T>(T value)
+	{
+	}
+}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
+		}
+
+		[Fact]
+		public void Error_When_SignatureExistsInBaseClass()
 		{
 			const string input =
 @"using Durian;

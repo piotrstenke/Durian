@@ -18,7 +18,7 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode IDefaultParamTargetWrapper.CurrentNode => CurrentDeclaration;
 			CSharpSyntaxNode IDefaultParamTargetWrapper.OriginalNode => OriginalDeclaration;
 
-			internal Wrapper()
+			public Wrapper()
 			{
 				CurrentDeclaration = null!;
 				OriginalDeclaration = null!;
@@ -28,7 +28,7 @@ namespace Durian.DefaultParam
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
 			public Wrapper(DefaultParamTypeData data, CancellationToken cancellationToken = default)
 			{
-				SetDataAndRemoveDefaultParamAttribute(data, cancellationToken);
+				SetData(data, cancellationToken);
 			}
 #pragma warning restore CS8618
 
@@ -55,6 +55,36 @@ namespace Durian.DefaultParam
 			public void Reset()
 			{
 				CurrentDeclaration = OriginalDeclaration;
+			}
+
+			public void SetData(DefaultParamTypeData data, CancellationToken cancellationToken = default)
+			{
+				SemanticModel = data.SemanticModel;
+				OriginalDeclaration = data.Declaration;
+
+				if (data.Declaration.TypeParameterList is null)
+				{
+					CurrentDeclaration = data.Declaration;
+				}
+				else
+				{
+					SeparatedSyntaxList<TypeParameterSyntax> typeParameters = data.Declaration.TypeParameterList.Parameters;
+
+					if (typeParameters.Any())
+					{
+						typeParameters = SyntaxFactory.SeparatedList(typeParameters
+							.Select(p =>
+								p.WithAttributeLists(SyntaxFactory.List(p.AttributeLists
+									.Where(l => l.Attributes
+										.Any(a => !SymbolEqualityComparer.Default.Equals(SemanticModel.GetTypeInfo(a, cancellationToken).Type, data.ParentCompilation.Attribute))
+									)
+								))
+							)
+						);
+
+						CurrentDeclaration = data.Declaration.WithTypeParameterList(data.Declaration.TypeParameterList.WithParameters(typeParameters));
+					}
+				}
 			}
 
 			public void WithConstraintClauses(IEnumerable<TypeParameterConstraintClauseSyntax> constraintClauses)
@@ -99,36 +129,6 @@ namespace Durian.DefaultParam
 			void IDefaultParamTargetWrapper.Emplace(CSharpSyntaxNode node)
 			{
 				CurrentDeclaration = (TypeDeclarationSyntax)node;
-			}
-
-			internal void SetDataAndRemoveDefaultParamAttribute(DefaultParamTypeData data, CancellationToken cancellationToken = default)
-			{
-				SemanticModel = data.SemanticModel;
-				OriginalDeclaration = data.Declaration;
-
-				if (data.Declaration.TypeParameterList is null)
-				{
-					CurrentDeclaration = data.Declaration;
-				}
-				else
-				{
-					SeparatedSyntaxList<TypeParameterSyntax> typeParameters = data.Declaration.TypeParameterList.Parameters;
-
-					if (typeParameters.Any())
-					{
-						typeParameters = SyntaxFactory.SeparatedList(typeParameters
-							.Select(p =>
-								p.WithAttributeLists(SyntaxFactory.List(p.AttributeLists
-									.Where(l => l.Attributes
-										.Any(a => !SymbolEqualityComparer.Default.Equals(SemanticModel.GetTypeInfo(a, cancellationToken).Type, data.ParentCompilation.Attribute))
-									)
-								))
-							)
-						);
-
-						CurrentDeclaration = data.Declaration.WithTypeParameterList(data.Declaration.TypeParameterList.WithParameters(typeParameters));
-					}
-				}
 			}
 		}
 	}

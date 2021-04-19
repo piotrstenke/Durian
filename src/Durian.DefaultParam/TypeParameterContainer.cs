@@ -16,6 +16,7 @@ namespace Durian.DefaultParam
 
 		public readonly bool HasDefaultParams { get; }
 		public readonly int NumDefaultParam { get; }
+		public readonly int NumNonDefaultParam => _parameters.Length - NumDefaultParam;
 		public readonly int Length => _parameters.Length;
 		public readonly int FirstDefaultParamIndex { get; }
 

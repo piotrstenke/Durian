@@ -1,6 +1,15 @@
-﻿namespace Durian.Samples.DefaultParam
+﻿[assembly: Durian.Configuration.DefaultParamConfiguration(ApplyNewToGeneratedMembersWithEquivalentSignature = true)]
+namespace Durian.Samples.DefaultParam
 {
-	internal partial class Program
+	internal class Parent
+	{
+		public static void Method(int value)
+		{
+
+		}
+	}
+
+	internal partial class Program : Parent
 	{
 		public delegate void D<T>(T value);
 
@@ -9,9 +18,8 @@
 			Logger<int>.Log(12);
 		}
 
-		public static T Method<T, U, [DefaultParam(typeof(string))]V>(T value) where T : class
+		public static void Method<[DefaultParam(typeof(int))]U>(U value)
 		{
-			return value;
 		}
 	}
 }

@@ -255,6 +255,10 @@ namespace Durian.DefaultParam
 						return false;
 					}
 				}
+				else
+				{
+					return false;
+				}
 			}
 
 			return true;
@@ -291,11 +295,10 @@ namespace Durian.DefaultParam
 				}
 				else if (lastDefaultParam != -1)
 				{
-					DefaultParamDiagnostics.TypeParameterWithDefaultParamAttributeMustBeLast(diagnosticReceiver, data.Symbol, data.Location);
-
-					// lastDefaultParam is set to -1 to avoid reporting multiple diagnostics for the same parameter
-					lastDefaultParam = -1;
+					ref readonly TypeParameterData errorData = ref typeParameters[lastDefaultParam];
+					DefaultParamDiagnostics.TypeParameterWithDefaultParamAttributeMustBeLast(diagnosticReceiver, errorData.Symbol, errorData.Location);
 					isValid = false;
+					lastDefaultParam = -1;
 				}
 			}
 

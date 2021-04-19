@@ -13,6 +13,7 @@ namespace Durian.DefaultParam
 		{
 			private int _numOriginalConstraints;
 			private int _numOriginalParameters;
+			private int _numNonDefaultParam;
 			private List<int>? _newModifierIndices;
 
 			public MethodDeclarationSyntax OriginalDeclaration { get; private set; }
@@ -22,7 +23,7 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode IDefaultParamTargetWrapper.CurrentNode => CurrentDeclaration;
 			CSharpSyntaxNode IDefaultParamTargetWrapper.OriginalNode => OriginalDeclaration;
 
-			internal Wrapper()
+			public Wrapper()
 			{
 				CurrentDeclaration = null!;
 				OriginalDeclaration = null!;
@@ -32,7 +33,7 @@ namespace Durian.DefaultParam
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
 			public Wrapper(DefaultParamMethodData data, CancellationToken cancellationToken = default)
 			{
-				SetDataAndRemoveDefaultParamAttribute(data, cancellationToken);
+				SetData(data, cancellationToken);
 			}
 #pragma warning restore CS8618
 
@@ -54,6 +55,17 @@ namespace Durian.DefaultParam
 			public void Reset()
 			{
 				CurrentDeclaration = OriginalDeclaration;
+			}
+
+			public void SetData(DefaultParamMethodData data, CancellationToken cancellationToken = default)
+			{
+				SemanticModel = data.SemanticModel;
+				OriginalDeclaration = data.Declaration;
+
+				CurrentDeclaration = GetDeclarationWithoutDefaultParamAttribute(data.Declaration, data.ParentCompilation, cancellationToken);
+				CurrentDeclaration = CurrentDeclaration.WithModifiers(SyntaxFactory.TokenList(CurrentDeclaration.Modifiers.Where(m => !m.IsKind(SyntaxKind.PartialKeyword))));
+				_newModifierIndices = data.NewModifierIndices;
+				_numNonDefaultParam = data.GetTypeParameters().NumNonDefaultParam;
 			}
 
 			public void WithConstraintClauses(IEnumerable<TypeParameterConstraintClauseSyntax> constraintClauses)
@@ -94,16 +106,16 @@ namespace Durian.DefaultParam
 				else
 				{
 					CurrentDeclaration = CurrentDeclaration.WithTypeParameterList(SyntaxFactory.TypeParameterList(SyntaxFactory.SeparatedList(CurrentDeclaration.TypeParameterList.Parameters.Take(count))));
+				}
 
-					if (_newModifierIndices is not null && _newModifierIndices.Contains(count - 1))
+				if (_newModifierIndices is not null && _newModifierIndices.Contains(count - _numNonDefaultParam))
+				{
+					SyntaxTokenList modifiers = CurrentDeclaration.Modifiers;
+
+					if (!modifiers.Any(m => m.IsKind(SyntaxKind.NewKeyword)))
 					{
-						SyntaxTokenList modifiers = CurrentDeclaration.Modifiers;
-
-						if (!modifiers.Any(m => m.IsKind(SyntaxKind.NewKeyword)))
-						{
-							modifiers = modifiers.Add(SyntaxFactory.Token(SyntaxKind.NewKeyword));
-							CurrentDeclaration = CurrentDeclaration.WithModifiers(modifiers);
-						}
+						modifiers = modifiers.Add(SyntaxFactory.Token(SyntaxKind.NewKeyword).WithTrailingTrivia(SyntaxFactory.Space));
+						CurrentDeclaration = CurrentDeclaration.WithModifiers(modifiers);
 					}
 				}
 			}
@@ -121,16 +133,6 @@ namespace Durian.DefaultParam
 			void IDefaultParamTargetWrapper.Emplace(CSharpSyntaxNode node)
 			{
 				CurrentDeclaration = (MethodDeclarationSyntax)node;
-			}
-
-			internal void SetDataAndRemoveDefaultParamAttribute(DefaultParamMethodData data, CancellationToken cancellationToken = default)
-			{
-				SemanticModel = data.SemanticModel;
-				OriginalDeclaration = data.Declaration;
-
-				CurrentDeclaration = GetDeclarationWithoutDefaultParamAttribute(data.Declaration, data.ParentCompilation, cancellationToken);
-				CurrentDeclaration = CurrentDeclaration.WithModifiers(SyntaxFactory.TokenList(CurrentDeclaration.Modifiers.Where(m => !m.IsKind(SyntaxKind.PartialKeyword))));
-				_newModifierIndices = data.NewModifierIndices;
 			}
 
 			private MethodDeclarationSyntax GetDeclarationWithoutDefaultParamAttribute(MethodDeclarationSyntax method, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)

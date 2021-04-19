@@ -11,9 +11,13 @@ using System.CodeDom.Compiler;
 
 partial class Test
 {
-	/// <inheritdoc cref="Test.Method{T}(string)"/>
 	[GeneratedCode("DefaultParamGenerator", "1.0.0")]
-	void Method(string value)
+	new void Method<T, U>(int value)
+	{
+	}
+
+	[GeneratedCode("DefaultParamGenerator", "1.0.0")]
+	new void Method<T>(int value)
 	{
 	}
 }

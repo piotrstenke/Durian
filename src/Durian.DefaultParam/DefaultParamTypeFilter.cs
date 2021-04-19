@@ -103,7 +103,7 @@ namespace Durian.DefaultParam
 
 		public Wrapper GetWrapper(DefaultParamTypeData target, CancellationToken cancellationToken = default)
 		{
-			_wrapper.SetDataAndRemoveDefaultParamAttribute(target, cancellationToken);
+			_wrapper.SetData(target, cancellationToken);
 
 			return _wrapper;
 		}
