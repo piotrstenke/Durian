@@ -12,11 +12,11 @@ namespace Durian.DefaultParam
 {
 	public partial class DefaultParamDelegateFilter : IDefaultParamFilter
 	{
-		private readonly Wrapper _wrapper;
+		private readonly DeclarationBuilder _declBuilder;
 
 		public DefaultParamDelegateFilter()
 		{
-			_wrapper = new();
+			_declBuilder = new();
 		}
 
 		public static DefaultParamDelegateData[] GetValidDelegates(DefaultParamCompilationData compilation, DefaultParamSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken = default)
@@ -101,16 +101,16 @@ namespace Durian.DefaultParam
 			return list.ToArray();
 		}
 
-		public Wrapper GetWrapper(DefaultParamDelegateData target, CancellationToken cancellationToken = default)
+		public DeclarationBuilder GetDeclarationBuilder(DefaultParamDelegateData target, CancellationToken cancellationToken = default)
 		{
-			_wrapper.SetData(target, cancellationToken);
+			_declBuilder.SetData(target, cancellationToken);
 
-			return _wrapper;
+			return _declBuilder;
 		}
 
-		IDefaultParamTargetWrapper IDefaultParamFilter.GetWrapper(IDefaultParamTarget target, CancellationToken cancellationToken)
+		IDefaultParamDeclarationBuilder IDefaultParamFilter.GetDeclarationBuilder(IDefaultParamTarget target, CancellationToken cancellationToken)
 		{
-			return GetWrapper((DefaultParamDelegateData)target, cancellationToken);
+			return GetDeclarationBuilder((DefaultParamDelegateData)target, cancellationToken);
 		}
 
 		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)

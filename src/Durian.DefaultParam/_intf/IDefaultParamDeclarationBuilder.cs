@@ -5,11 +5,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
 {
-	public interface IDefaultParamTargetWrapper
+	public interface IDefaultParamDeclarationBuilder
 	{
 		CSharpSyntaxNode OriginalNode { get; }
 		CSharpSyntaxNode CurrentNode { get; }
 		SemanticModel SemanticModel { get; }
+		bool VisitDeclarationBody { get; }
 
 		void WithTypeParameters(int length);
 		void WithConstraintClauses(IEnumerable<TypeParameterConstraintClauseSyntax> constraintClauses);

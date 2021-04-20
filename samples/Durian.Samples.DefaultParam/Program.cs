@@ -1,4 +1,6 @@
-﻿[assembly: Durian.Configuration.DefaultParamConfiguration(ApplyNewToGeneratedMembersWithEquivalentSignature = true)]
+﻿using System;
+[assembly: Durian.Configuration.DefaultParamConfiguration(ApplyNewToGeneratedMembersWithEquivalentSignature = true)]
+
 namespace Durian.Samples.DefaultParam
 {
 	internal class Parent
@@ -20,6 +22,12 @@ namespace Durian.Samples.DefaultParam
 
 		public static void Method<[DefaultParam(typeof(int))]U>(U value)
 		{
+			System.Collections.Generic.List<DateTime> d = new();
+		}
+
+		public static void Method<T>(int value)
+		{
+			Method<T>(value);
 		}
 	}
 }

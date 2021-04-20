@@ -91,6 +91,28 @@ namespace Durian.DefaultParam
 			return ValidateInternal(diagnosticReceiver, symbol, compilation, ref typeParameters, cancellationToken);
 		}
 
+		public static bool CheckShouldCallInsteadOfCopying(IMethodSymbol method, DefaultParamCompilationData compilation)
+		{
+			return CheckShouldCallInsteadOfCopying(method.GetAttributes(), compilation);
+		}
+
+		public static bool CheckShouldCallInsteadOfCopying(IEnumerable<AttributeData> attributes, DefaultParamCompilationData compilation)
+		{
+			if (attributes is null)
+			{
+				return compilation.Configuration.CallInsteadOfCopying;
+			}
+
+			AttributeData? attr = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MethodConfigurationAttribute));
+
+			if (attr is not null && attr.TryGetNamedArgumentValue(DefaultParamMethodConfigurationAttribute.CallInsteadOfCopyingProperty, out bool value))
+			{
+				return value;
+			}
+
+			return compilation.Configuration.CallInsteadOfCopying;
+		}
+
 		private static bool ValidateInternal(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
 		{
 			bool isValid = ValidateIsPartialOrExtern(diagnosticReceiver, symbol, cancellationToken);

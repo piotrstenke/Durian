@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
 
 namespace Durian.DefaultParam
 {
@@ -9,18 +10,56 @@ namespace Durian.DefaultParam
 	{
 		public ITypeParameterSymbol? ParameterToReplace { get; set; }
 		public IdentifierNameSyntax? Replacement { get; set; }
-		public List<ISymbol?> InputSymbols { get; }
+		public List<ISymbol?> InputSymbols { get; set; }
 		public int Count => InputSymbols.Count;
 		public bool HasChangedConstraints => ChangedConstraintIndices.Count > 0;
+		public bool VisitDeclarationBody { get; set; } = true;
 		public List<int> ChangedConstraintIndices { get; }
 
 		private int _identifierCounter;
 		private int _constraintCounter;
+		private bool _skip;
 
 		public TypeParameterReplacer(List<ISymbol?> inputSymbols)
 		{
 			InputSymbols = inputSymbols;
-			ChangedConstraintIndices = new List<int>();
+			ChangedConstraintIndices = new();
+		}
+
+		public TypeParameterReplacer(IEnumerable<ISymbol> inputSymbols)
+		{
+			InputSymbols = inputSymbols?.ToList() ?? new();
+			ChangedConstraintIndices = new();
+		}
+
+		public override SyntaxNode? VisitBlock(BlockSyntax node)
+		{
+			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
+			{
+				return base.VisitBlock(node);
+			}
+			else
+			{
+				_skip = true;
+				SyntaxNode? n = base.VisitBlock(node);
+				_skip = false;
+				return n;
+			}
+		}
+
+		public override SyntaxNode? VisitArrowExpressionClause(ArrowExpressionClauseSyntax node)
+		{
+			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
+			{
+				return base.VisitArrowExpressionClause(node);
+			}
+			else
+			{
+				_skip = true;
+				SyntaxNode? n = base.VisitArrowExpressionClause(node);
+				_skip = false;
+				return n;
+			}
 		}
 
 		public override SyntaxNode? VisitTypeParameterConstraintClause(TypeParameterConstraintClauseSyntax node)
@@ -60,7 +99,7 @@ namespace Durian.DefaultParam
 
 		public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node)
 		{
-			if (Count == 0)
+			if (_skip || Count == 0)
 			{
 				return base.VisitIdentifierName(node);
 			}
@@ -111,6 +150,7 @@ namespace Durian.DefaultParam
 			Replacement = null!;
 			InputSymbols.Clear();
 			_identifierCounter = 0;
+			VisitDeclarationBody = true;
 		}
 
 		public void ResetCounter()

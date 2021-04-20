@@ -10,6 +10,7 @@ namespace Durian.DefaultParam
 		public List<ISymbol?> OutputSymbols { get; }
 		public SemanticModel? SemanticModel { get; set; }
 		public DefaultParamCompilationData? ParentCompilation { get; set; }
+		public bool VisitDeclarationBody { get; set; } = true;
 
 		public TypeParameterIdentifierCollector()
 		{
@@ -35,6 +36,22 @@ namespace Durian.DefaultParam
 			OutputSymbols = new List<ISymbol?>();
 		}
 
+		public override void VisitBlock(BlockSyntax node)
+		{
+			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
+			{
+				base.VisitBlock(node);
+			}
+		}
+
+		public override void VisitArrowExpressionClause(ArrowExpressionClauseSyntax node)
+		{
+			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
+			{
+				base.VisitArrowExpressionClause(node);
+			}
+		}
+
 		public override void VisitTypeParameterConstraintClause(TypeParameterConstraintClauseSyntax node)
 		{
 			foreach (TypeParameterConstraintSyntax constraint in node.Constraints)
@@ -47,8 +64,8 @@ namespace Durian.DefaultParam
 		{
 			ISymbol? symbol = SemanticModel.GetSymbolInfo(node).Symbol;
 
-			// The DefaultParam attributes will be removes later, so they don't need to be stored.
-			if (SymbolEqualityComparer.Default.Equals(symbol, ParentCompilation?.AttributeConstructor))
+			// The DefaultParam attributes will be removed later, so they don't need to be stored.
+			if (SymbolEqualityComparer.Default.Equals(symbol, ParentCompilation?.AttributeConstructor) || SymbolEqualityComparer.Default.Equals(symbol, ParentCompilation?.MethodConfigurationConstructor))
 			{
 				return;
 			}

@@ -91,7 +91,7 @@ namespace Durian.DefaultParam
 		}
 
 #pragma warning disable RCS1079 // Throwing of new NotImplementedException.
-		IDefaultParamTargetWrapper IDefaultParamFilter.GetWrapper(IDefaultParamTarget target, CancellationToken cancellationToken)
+		IDefaultParamDeclarationBuilder IDefaultParamFilter.GetDeclarationBuilder(IDefaultParamTarget target, CancellationToken cancellationToken)
 		{
 			// This method should never be called, so its OK to throw an exception here.
 			throw new NotImplementedException();

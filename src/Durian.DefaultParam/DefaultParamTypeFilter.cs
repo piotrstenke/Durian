@@ -12,11 +12,11 @@ namespace Durian.DefaultParam
 {
 	public partial class DefaultParamTypeFilter : IDefaultParamFilter
 	{
-		private readonly Wrapper _wrapper;
+		private readonly DeclarationBuilder _declBuilder;
 
 		public DefaultParamTypeFilter()
 		{
-			_wrapper = new();
+			_declBuilder = new();
 		}
 
 		public static DefaultParamTypeData[] GetValidTypes(DefaultParamCompilationData compilation, IEnumerable<TypeDeclarationSyntax> collectedTypes, CancellationToken cancellationToken = default)
@@ -101,16 +101,16 @@ namespace Durian.DefaultParam
 			return list.ToArray();
 		}
 
-		public Wrapper GetWrapper(DefaultParamTypeData target, CancellationToken cancellationToken = default)
+		public DeclarationBuilder GetDeclarationBuilder(DefaultParamTypeData target, CancellationToken cancellationToken = default)
 		{
-			_wrapper.SetData(target, cancellationToken);
+			_declBuilder.SetData(target, cancellationToken);
 
-			return _wrapper;
+			return _declBuilder;
 		}
 
-		IDefaultParamTargetWrapper IDefaultParamFilter.GetWrapper(IDefaultParamTarget target, CancellationToken cancellationToken)
+		IDefaultParamDeclarationBuilder IDefaultParamFilter.GetDeclarationBuilder(IDefaultParamTarget target, CancellationToken cancellationToken)
 		{
-			return GetWrapper((DefaultParamTypeData)target, cancellationToken);
+			return GetDeclarationBuilder((DefaultParamTypeData)target, cancellationToken);
 		}
 
 		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)

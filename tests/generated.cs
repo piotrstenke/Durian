@@ -12,12 +12,8 @@ using System.CodeDom.Compiler;
 partial class Test
 {
 	[GeneratedCode("DefaultParamGenerator", "1.0.0")]
-	new void Method<T, U>(int value)
+	void Method()
 	{
-	}
-
-	[GeneratedCode("DefaultParamGenerator", "1.0.0")]
-	new void Method<T>(int value)
-	{
+		int value = default;
 	}
 }

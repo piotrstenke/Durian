@@ -12,11 +12,7 @@ namespace Durian.DefaultParam
 
 		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
 		public List<int>? NewModifierIndices { get; }
-
-		public DefaultParamMethodData(MethodDeclarationSyntax declaration, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters) : base(declaration, compilation)
-		{
-			_typeParameters = typeParameters;
-		}
+		public bool CallInsteadOfCopying { get; }
 
 		public DefaultParamMethodData(
 			MethodDeclarationSyntax declaration,
@@ -27,10 +23,12 @@ namespace Durian.DefaultParam
 			IEnumerable<INamespaceSymbol>? containingNamespaces,
 			IEnumerable<AttributeData>? attributes,
 			in TypeParameterContainer typeParameters,
-			List<int>? typeParameterIndicesToApplyNewModifier
+			List<int>? typeParameterIndicesToApplyNewModifier,
+			bool callInsteadOfCopying
 		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
 		{
 			_typeParameters = typeParameters;
+			CallInsteadOfCopying = callInsteadOfCopying;
 			NewModifierIndices = typeParameterIndicesToApplyNewModifier;
 		}
 

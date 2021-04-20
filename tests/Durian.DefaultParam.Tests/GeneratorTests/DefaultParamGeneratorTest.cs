@@ -11,7 +11,7 @@ namespace Durian.Tests.DefaultParam.Generator
 
 		public override SingletonGeneratorTestResult RunGenerator(string? input)
 		{
-			return RunGenerator(input, 2);
+			return RunGenerator(input, 3);
 		}
 	}
 }

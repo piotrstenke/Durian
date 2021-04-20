@@ -2,6 +2,7 @@ using Durian.Data;
 using Durian.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Linq;
 
 namespace Durian.DefaultParam
 {
@@ -11,9 +12,12 @@ namespace Durian.DefaultParam
 		public IMethodSymbol AttributeConstructor { get; }
 		public INamedTypeSymbol GeneratedCodeAttribute { get; }
 		public INamedTypeSymbol ConfigurationAttribute { get; }
-		public override bool HasErrors => Attribute is null || GeneratedCodeAttribute is null || ConfigurationAttribute is null;
+		public INamedTypeSymbol MethodConfigurationAttribute { get; }
+		public IMethodSymbol MethodConfigurationConstructor { get; }
+		public override bool HasErrors => Attribute is null || GeneratedCodeAttribute is null || ConfigurationAttribute is null || MethodConfigurationAttribute is null;
 		public DefaultParamConfiguration Configuration { get; }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		public DefaultParamCompilationData(CSharpCompilation compilation) : base(compilation)
 		{
 			INamedTypeSymbol? attr = compilation.Assembly.GetTypeByMetadataName(DefaultParamAttribute.FullyQualifiedName);
@@ -21,9 +25,12 @@ namespace Durian.DefaultParam
 			AttributeConstructor = attr?.InstanceConstructors[0]!;
 			GeneratedCodeAttribute = compilation.GetTypeByMetadataName("System.CodeDom.Compiler.GeneratedCodeAttribute")!;
 			ConfigurationAttribute = compilation.GetTypeByMetadataName(DefaultParamConfigurationAttribute.FullyQualifiedName)!;
+			MethodConfigurationAttribute = compilation.GetTypeByMetadataName(DefaultParamMethodConfigurationAttribute.FullyQualifiedName)!;
+			MethodConfigurationConstructor = MethodConfigurationAttribute?.InstanceConstructors.FirstOrDefault(ctor => ctor.Parameters.Length == 0)!;
 
 			Configuration = GetConfiguration(compilation, ConfigurationAttribute);
 		}
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 		public static DefaultParamConfiguration GetConfiguration(CSharpCompilation compilation)
 		{
@@ -51,7 +58,8 @@ namespace Durian.DefaultParam
 					{
 						AllowOverridingOfDefaultParamValues = attribute.GetNamedArgumentValue<bool>(DefaultParamConfigurationAttribute.AllowOverridingOfDefaultParamValuesProperty),
 						AllowAddingDefaultParamToNewParameters = attribute.GetNamedArgumentValue<bool>(DefaultParamConfigurationAttribute.AllowAddingDefaultParamToNewParametersProperty),
-						ApplyNewToGeneratedMembersWithEquivalentSignature = attribute.GetNamedArgumentValue<bool>(DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty)
+						ApplyNewToGeneratedMembersWithEquivalentSignature = attribute.GetNamedArgumentValue<bool>(DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty),
+						CallInsteadOfCopying = attribute.GetNamedArgumentValue<bool>(DefaultParamConfigurationAttribute.CallInsteadOfCopyingProperty)
 					};
 				}
 			}

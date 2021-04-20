@@ -1,4 +1,5 @@
 ﻿using Xunit;
+using Durian.DefaultParam;
 
 namespace Durian.Tests.DefaultParam.Generator
 {
@@ -7,13 +8,13 @@ namespace Durian.Tests.DefaultParam.Generator
 		[Fact]
 		public void MethodIsInvalid_When_IsExtern()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test 
-{
-	public static extern void Method<[DefaultParam(typeof(string))]T>();
-}
+{{
+	public static extern void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+}}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0011"));
 		}
@@ -21,13 +22,13 @@ partial class Test
 		[Fact]
 		public void MethodIsInvalid_When_IsPartial_And_HasNoImplementation()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test 
-{
-	partial void Method<[DefaultParam(typeof(string))]T>();
-}
+{{
+	partial void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+}}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0011"));
 		}
@@ -35,20 +36,20 @@ partial class Test
 		[Fact]
 		public void MethodIsInvalid_When_IsPartial_And_HasImplementation_And_AttributeIsDeclaradOnDefinitionPart()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	partial void Method<[DefaultParam(typeof(string))]T>();
-}
+{{
+	partial void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+}}
 
 partial class Test
-{
+{{
 	partial void Method<T>()
-	{
-	}
-}
+	{{
+	}}
+}}
 ";
 
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0011"));
@@ -57,20 +58,20 @@ partial class Test
 		[Fact]
 		public void MethodIsInvalid_When_IsPartial_And_HasImplementation_And_AttributeIsDeclaradOnImplementationPart()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
+{{
 	partial void Method<T>();
-}
+}}
 
 partial class Test
-{
-	partial void Method<[DefaultParam(typeof(string))]T>()
-	{
-	}
-}
+{{
+	partial void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>()
+	{{
+	}}
+}}
 ";
 
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0011"));
@@ -79,18 +80,18 @@ partial class Test
 		[Fact]
 		public void MethodIsInvalid_When_IsLocalFunction()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
+{{
 	void Method()
-	{
-		void Local<[DefaultParam(typeof(string))]T>(T value)
-		{
-		}
-	}
-}
+	{{
+		void Local<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>(T value)
+		{{
+		}}
+	}}
+}}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0016"));
 		}
@@ -98,16 +99,15 @@ partial class Test
 		[Fact]
 		public void MethodIsInvalid_When_DefaultParamAttributeIsNotLast()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	void Method<[DefaultParam(typeof(string)]T, U>()
-	{
-
-	}
-}
+{{
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(string)]T, U>()
+	{{
+	}}
+}}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0018"));
 		}
@@ -115,16 +115,15 @@ partial class Test
 		[Fact]
 		public void MethodIsInvalid_When_OneOfMultipleDefaultParamAttributeIsNotLast()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	void Method<[DefaultParam(typeof(string))]T, U, [DefaultParam(typeof(int))]V>()
-	{
-
-	}
-}
+{{
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T, U, [{DefaultParamAttribute.AttributeName}(typeof(int))]V>()
+	{{
+	}}
+}}
 ";
 
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0018"));
@@ -133,17 +132,16 @@ partial class Test
 		[Fact]
 		public void MethodIsInvalid_When_HasGeneratedCodeAttribute()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
+{{
 	[System.CodeDom.Compiler.GeneratedCode("", "")]
-	void Method<[DefaultParam(typeof(int))]T>()
-	{
-
-	}
-}
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	{{
+	}}
+}}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0017"));
 		}
@@ -151,16 +149,15 @@ partial class Test
 		[Fact]
 		public void MethodIsInvalid_When_ContainingTypeIsNotPartial()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 class Test
-{
-	void Method<[DefaultParam(typeof(int))]T>()
-	{
-
-	}
-}
+{{
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	{{
+	}}
+}}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0014"));
 		}
@@ -168,19 +165,18 @@ class Test
 		[Fact]
 		public void MethodIsInvalid_When_OneOfContainingTypesIsNotPartial()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 class Parent
-{
+{{
 	partial class Test
-	{
-		void Method<[DefaultParam(typeof(int))]T>()
-		{
-
-		}
-	}
-}
+	{{
+		void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+		{{
+		}}
+	}}
+}}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0014"));
 		}
@@ -188,16 +184,15 @@ class Parent
 		[Fact]
 		public void MethodIsInvalid_When_DefaultParamArgumentIsInvalidForConstraint()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	void Method<[DefaultParam(typeof(int))]T>() where T : class
-	{
-
-	}
-}
+{{
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>() where T : class
+	{{
+	}}
+}}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0019"));
 		}
@@ -205,16 +200,15 @@ partial class Test
 		[Fact]
 		public void MethodIsInvalid_When_OneOfDefaultParamArgumentsIsInvalidForConstraint()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	void Method<[DefaultParam(typeof(int))]T, [DefaultParam(typeof(string))]>() where T : class where U : class
-	{
-
-	}
-}
+{{
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]>() where T : class where U : class
+	{{
+	}}
+}}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0019"));
 		}

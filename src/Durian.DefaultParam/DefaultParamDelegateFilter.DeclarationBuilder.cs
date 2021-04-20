@@ -9,16 +9,17 @@ namespace Durian.DefaultParam
 {
 	public partial class DefaultParamDelegateFilter
 	{
-		public sealed class Wrapper : IDefaultParamTargetWrapper
+		public sealed class DeclarationBuilder : IDefaultParamDeclarationBuilder
 		{
 			public DelegateDeclarationSyntax OriginalDeclaration { get; private set; }
 			public DelegateDeclarationSyntax CurrentDeclaration { get; private set; }
 			public SemanticModel SemanticModel { get; private set; }
 
-			CSharpSyntaxNode IDefaultParamTargetWrapper.CurrentNode => CurrentDeclaration;
-			CSharpSyntaxNode IDefaultParamTargetWrapper.OriginalNode => OriginalDeclaration;
+			CSharpSyntaxNode IDefaultParamDeclarationBuilder.CurrentNode => CurrentDeclaration;
+			CSharpSyntaxNode IDefaultParamDeclarationBuilder.OriginalNode => OriginalDeclaration;
+			bool IDefaultParamDeclarationBuilder.VisitDeclarationBody => true;
 
-			public Wrapper()
+			public DeclarationBuilder()
 			{
 				CurrentDeclaration = null!;
 				OriginalDeclaration = null!;
@@ -26,7 +27,7 @@ namespace Durian.DefaultParam
 			}
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
-			public Wrapper(DefaultParamDelegateData data, CancellationToken cancellationToken = default)
+			public DeclarationBuilder(DefaultParamDelegateData data, CancellationToken cancellationToken = default)
 			{
 				SetData(data, cancellationToken);
 			}
@@ -126,7 +127,7 @@ namespace Durian.DefaultParam
 				CurrentDeclaration = declaration;
 			}
 
-			void IDefaultParamTargetWrapper.Emplace(CSharpSyntaxNode node)
+			void IDefaultParamDeclarationBuilder.Emplace(CSharpSyntaxNode node)
 			{
 				CurrentDeclaration = (DelegateDeclarationSyntax)node;
 			}

@@ -3,21 +3,16 @@ using Durian.DefaultParam;
 
 namespace Durian.Tests.DefaultParam.Generator
 {
-	public sealed class MethodInheritanceConfigurationTests : DefaultParamGeneratorTest
-	{
-
-	}
-
 	public sealed class MethodNewModifierConfigurationTests : DefaultParamGeneratorTest
 	{
 		[Fact]
 		public void AppliesNewModifier_When_SignatureExistsInBaseClass()
 		{
 			string input =
-@$"using Durian;
-using Durian.Configuration;
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
 
-[assembly: DefaultParamConfiguration({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
+[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
 
 class Parent
 {{
@@ -28,7 +23,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<[DefaultParam(typeof(int))]T>(T value)
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -53,10 +48,10 @@ partial class Test
 		public void AppliesNewModifier_When_HasNonDefaultParamParameters()
 		{
 			string input =
-@$"using Durian;
-using Durian.Configuration;
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
 
-[assembly: DefaultParamConfiguration({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
+[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
 
 class Parent
 {{
@@ -67,7 +62,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, [DefaultParam(typeof(int))]U>(U value)
+	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U>(U value)
 	{{
 	}}
 }}
@@ -81,7 +76,6 @@ partial class Test
 	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
 	new void Method<T>(int value)
 	{{
-
 	}}
 }}
 ";
@@ -92,10 +86,10 @@ partial class Test
 		public void AppliesNewModifier_When_HasMultipleNonDefaultParamParameters()
 		{
 			string input =
-@$"using Durian;
-using Durian.Configuration;
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
 
-[assembly: DefaultParamConfiguration({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
+[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
 
 class Parent
 {{
@@ -110,7 +104,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, U, [DefaultParam(typeof(int))]V>(V value)
+	void Method<T, U, [{DefaultParamAttribute.AttributeName}(typeof(int))]V>(V value)
 	{{
 	}}
 }}
@@ -134,10 +128,10 @@ partial class Test
 		public void AppliesNewModifierToSingleDefaultParam_When_HasMultipleDefaultParams_And_OnlyOneHasExistingSignature()
 		{
 			string input =
-@$"using Durian;
-using Durian.Configuration;
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
 
-[assembly: DefaultParamConfiguration({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
+[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
 
 class Parent
 {{
@@ -148,7 +142,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, [DefaultParam(typeof(int))]U, [DefaultParam(typeof(string))]V>(U value)
+	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U, [{DefaultParamAttribute.AttributeName}(typeof(string))]V>(U value)
 	{{
 	}}
 }}
@@ -178,10 +172,10 @@ partial class Test
 		public void AppliesNewModifierToAllDefaultParam_When_HasMultipleDefaultParams_And_AllHaveExistingSignature()
 		{
 			string input =
-@$"using Durian;
-using Durian.Configuration;
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
 
-[assembly: DefaultParamConfiguration({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
+[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
 
 class Parent
 {{
@@ -196,7 +190,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, [DefaultParam(typeof(string))]U, [DefaultParam(typeof(int))]V>(V value)
+	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U, [{DefaultParamAttribute.AttributeName}(typeof(int))]V>(V value)
 	{{
 	}}
 }}
@@ -219,7 +213,6 @@ partial class Test
 	}}
 }}
 ";
-			//System.IO.File.WriteAllText("../../tests/generated.cs", RunGenerator(input).SourceText.ToString());
 			Assert.True(RunGenerator(input).Compare(expected));
 		}
 
@@ -227,14 +220,14 @@ partial class Test
 		public void Error_When_SignatureExistsInSameClass()
 		{
 			string input =
-$@"using Durian;
-using Durian.Configuration;
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
 
-[assembly: DefaultParamConfiguration({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
+[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty} = true)]
 
 partial class Test : Parent
 {{
-	void Method<[DefaultParam(typeof(int))]T>(T value)
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
 	{{
 	}}
 

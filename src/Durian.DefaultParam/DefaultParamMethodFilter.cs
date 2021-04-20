@@ -13,11 +13,11 @@ namespace Durian.DefaultParam
 {
 	public partial class DefaultParamMethodFilter : IDefaultParamFilter
 	{
-		private readonly Wrapper _wrapper;
+		private readonly DeclarationBuilder _declBuilder;
 
 		public DefaultParamMethodFilter()
 		{
-			_wrapper = new();
+			_declBuilder = new();
 		}
 
 		public static DefaultParamMethodData[] GetValidMethods(DefaultParamCompilationData compilation, DefaultParamSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken = default)
@@ -97,16 +97,16 @@ namespace Durian.DefaultParam
 			return list.ToArray();
 		}
 
-		public Wrapper GetWrapper(DefaultParamMethodData target, CancellationToken cancellationToken = default)
+		public DeclarationBuilder GetDeclarationBuilder(DefaultParamMethodData target, CancellationToken cancellationToken = default)
 		{
-			_wrapper.SetData(target, cancellationToken);
+			_declBuilder.SetData(target, cancellationToken);
 
-			return _wrapper;
+			return _declBuilder;
 		}
 
-		IDefaultParamTargetWrapper IDefaultParamFilter.GetWrapper(IDefaultParamTarget target, CancellationToken cancellationToken)
+		IDefaultParamDeclarationBuilder IDefaultParamFilter.GetDeclarationBuilder(IDefaultParamTarget target, CancellationToken cancellationToken)
 		{
-			return GetWrapper((DefaultParamMethodData)target, cancellationToken);
+			return GetDeclarationBuilder((DefaultParamMethodData)target, cancellationToken);
 		}
 
 		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
@@ -172,7 +172,8 @@ namespace Durian.DefaultParam
 							null,
 							attributes,
 							in typeParameters,
-							newModifiers
+							newModifiers,
+							CheckShouldCallInsteadOfCopying(attributes!, compilation)
 						);
 
 						return true;
@@ -238,7 +239,8 @@ namespace Durian.DefaultParam
 					null,
 					attributes,
 					in typeParameters,
-					newModifiers
+					newModifiers,
+					CheckShouldCallInsteadOfCopying(attributes!, compilation)
 				);
 			}
 			else

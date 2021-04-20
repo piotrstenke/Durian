@@ -8,16 +8,15 @@ namespace Durian.Tests.DefaultParam.Generator
 		[Fact]
 		public void SkipsMethod_When_HasNoDefaultParamAttribute()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
+{{
 	void Method<T>(T value)
-	{
-
-	}
-}";
+	{{
+	}}
+}}";
 
 			Assert.False(RunGenerator(input).IsGenerated);
 		}
@@ -25,16 +24,15 @@ partial class Test
 		[Fact]
 		public void HandlesMethodWithOneTypeParameter()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	void Method<[DefaultParam(typeof(int))]T>(T value)
-	{
-
-	}
-}
+{{
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	{{
+	}}
+}}
 ";
 
 			string expected =
@@ -55,16 +53,16 @@ partial class Test
 		[Fact]
 		public void HandlesMethodWithMultipleTypeParameters_When_AllParametersAreDefaultParam()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	void Method<[DefaultParam(typeof(int))]T, [DefaultParam(typeof(string))]U>(T value)
-	{
+{{
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U>(T value)
+	{{
 		U name = default;
-	}
-}
+	}}
+}}
 ";
 
 			string expected =
@@ -91,16 +89,16 @@ partial class Test
 		[Fact]
 		public void HandlesMethodWithMultipleTypeParameters_When_OnlySomeParametersAreDefaultParam()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	void Method<T, [DefaultParam(typeof(string))]U>(T value)
-	{
+{{
+	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U>(T value)
+	{{
 		U name = default;
-	}
-}
+	}}
+}}
 ";
 
 			string expected =
@@ -121,22 +119,22 @@ partial class Test
 		[Fact]
 		public void ReplacesAllReferencesToTypeParameter()
 		{
-			const string input =
-@"using System;
-using Durian;
+			string input =
+@$"using System;
+using {DurianStrings.MainNamespace};
 using System.Collections;
 using System.Collections.Generic;
 
 partial class Test
-{
-	void Method<T, [DefaultParam(typeof(System.Collections.IEnumerable))]U>(U value) where T : IEnumerable<U>
-	{
+{{
+	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(System.Collections.IEnumerable))]U>(U value) where T : IEnumerable<U>
+	{{
 		U v = default(U);
 		object obj = (U)2;
 		Type type = typeof(U);
 		List<U> list = new List<U>();
-	}
-}
+	}}
+}}
 ";
 
 			string expected =
@@ -163,16 +161,15 @@ partial class Test
 		[Fact]
 		public void RemovesConstraintsOfSingleDefaultParam()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	void Method<[DefaultParam(typeof(int))]T>() where T : unmanaged
-	{
-	
-	}
-}
+{{
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>() where T : unmanaged
+	{{
+	}}
+}}
 ";
 
 			string expected =
@@ -194,16 +191,15 @@ partial class Test
 		[Fact]
 		public void RemovesConstraintsOfMultipleDefaultParams()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	void Method<[DefaultParam(typeof(int))]T, [DefaultParam(typeof(string))]U, [DefaultParam(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
-	{
-	
-	}
-}
+{{
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U, [{DefaultParamAttribute.AttributeName}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
+	{{
+	}}
+}}
 ";
 
 			string expected =
@@ -214,19 +210,16 @@ partial class Test
 	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
 	void Method<T, U>() where T : unmanaged where U : class
 	{{
-
 	}}
 
 	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
 	void Method<T>() where T : unmanaged
 	{{
-
 	}}
 
 	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
 	void Method()
 	{{
-
 	}}
 }}
 ";
@@ -236,16 +229,15 @@ partial class Test
 		[Fact]
 		public void DoesNotRemoveConstraintOfNonDefaultParam()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	void Method<T, [DefaultParam(typeof(string))]U, [DefaultParam(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
-	{
-	
-	}
-}
+{{
+	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U, [{DefaultParamAttribute.AttributeName}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
+	{{
+	}}
+}}
 ";
 			string expected =
 @$"using System.CodeDom.Compiler;
@@ -255,13 +247,11 @@ partial class Test
 	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
 	void Method<T, U>() where T : unmanaged where U : class
 	{{
-
 	}}
 
 	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
 	void Method<T>() where T : unmanaged
 	{{
-
 	}}
 }}
 ";
@@ -271,15 +261,15 @@ partial class Test
 		[Fact]
 		public void PreservesAccessibilityAndStaticModifiers()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 
 partial class Test
-{
-	public static void Method<[DefaultParam(typeof(string)]T>(T value)
-	{
-	}
-}
+{{
+	public static void Method<[{DefaultParamAttribute.AttributeName}(typeof(string)]T>(T value)
+	{{
+	}}
+}}
 ";
 
 			string expected =
@@ -290,7 +280,6 @@ partial class Test
 	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
 	public static void Method(string value)
 	{{
-
 	}}
 }}
 ";
@@ -300,18 +289,18 @@ partial class Test
 		[Fact]
 		public void WritesSortedUsings()
 		{
-			const string input =
-@"using Durian;
+			string input =
+@$"using {DurianStrings.MainNamespace};
 using System.Collections;
 using System.Numerics;
 
 partial class Test
-{
-	void Method<[DefaultParam(typeof(System.Int32))]T>()
-	{
+{{
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(System.Int32))]T>()
+	{{
 		System.Collections.Generic.List<BigInteger> list = new();
-	}
-}
+	}}
+}}
 ";
 
 			string expected =
@@ -333,26 +322,25 @@ partial class Test
 		[Fact]
 		public void WritesAllContainingNamespacesAndTypes()
 		{
-			const string input =
-@"namespace N1
-{
+			string input =
+@$"namespace N1
+{{
 	namespace N2
-	{
+	{{
 		public partial interface Parent
-		{
+		{{
 			public partial struct Child
-			{
+			{{
 				public partial class Child
-				{
+				{{
 					public void Method<[Durian.DefaultParam((typeof(int)))]T>()
-					{
-
-					}
-				}
-			}
-		}
-	}
-}
+					{{
+					}}
+				}}
+			}}
+		}}
+	}}
+}}
 ";
 
 			string expected =
@@ -369,7 +357,6 @@ namespace N1.N2
 				[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
 				public void Method()
 				{{
-
 				}}
 			}}
 		}}

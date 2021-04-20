@@ -219,10 +219,10 @@ namespace Durian
 				else
 				{
 #endif
-				for (int i = 0; i < length; i++)
-				{
-					data[i] = filterGroup[i].Filtrate(TargetCompilation, SyntaxReceiver, context.CancellationToken).ToArray();
-				}
+					for (int i = 0; i < length; i++)
+					{
+						data[i] = filterGroup[i].Filtrate(TargetCompilation, SyntaxReceiver, context.CancellationToken).ToArray();
+					}
 
 #if ENABLE_GENERATOR_DIAGNOSTICS
 				}

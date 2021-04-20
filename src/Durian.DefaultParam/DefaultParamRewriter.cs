@@ -14,10 +14,10 @@ namespace Durian.DefaultParam
 		private int _numParameters;
 		private int _numConstraints;
 
-		public CSharpSyntaxNode CurrentNode => Wrapper.CurrentNode;
-		public CSharpSyntaxNode OriginalNode => Wrapper.OriginalNode;
-		public SemanticModel SemanticModel => Wrapper.SemanticModel;
-		public IDefaultParamTargetWrapper Wrapper { get; private set; }
+		public CSharpSyntaxNode CurrentNode => DeclarationBuilder.CurrentNode;
+		public CSharpSyntaxNode OriginalNode => DeclarationBuilder.OriginalNode;
+		public SemanticModel SemanticModel => DeclarationBuilder.SemanticModel;
+		public IDefaultParamDeclarationBuilder DeclarationBuilder { get; private set; }
 		public DefaultParamCompilationData? ParentCompilation
 		{
 			get => _collector.ParentCompilation;
@@ -32,18 +32,18 @@ namespace Durian.DefaultParam
 		{
 		}
 
-		public DefaultParamRewriter(DefaultParamCompilationData? compilation, IDefaultParamTargetWrapper? wrapper)
+		public DefaultParamRewriter(DefaultParamCompilationData? compilation, IDefaultParamDeclarationBuilder? wrapper)
 		{
 			_includedConstraints = new List<TypeParameterConstraintClauseSyntax>();
 			_includedConstraintSymbols = new List<ITypeParameterSymbol>();
-			Wrapper = wrapper!;
+			DeclarationBuilder = wrapper!;
 			_collector = new(compilation);
 			_replacer = new(_collector.OutputSymbols);
 		}
 
 		public void Reset()
 		{
-			Wrapper = null!;
+			DeclarationBuilder = null!;
 			_numParameters = 0;
 			_includedConstraints.Clear();
 			_includedConstraintSymbols.Clear();
@@ -55,18 +55,18 @@ namespace Durian.DefaultParam
 
 		public void Emplace(CSharpSyntaxNode node)
 		{
-			Wrapper.Emplace(node);
+			DeclarationBuilder.Emplace(node);
 		}
 
-		public void Acquire(IDefaultParamTargetWrapper wrapper)
+		public void Acquire(IDefaultParamDeclarationBuilder declBuilder)
 		{
 			_includedConstraints.Clear();
 			_includedConstraintSymbols.Clear();
 
-			Wrapper = wrapper;
-			_numParameters = wrapper.GetOriginalTypeParameterCount();
+			DeclarationBuilder = declBuilder;
+			_numParameters = declBuilder.GetOriginalTypeParameterCount();
 
-			SyntaxList<TypeParameterConstraintClauseSyntax> constraints = wrapper.GetOriginalConstraintClauses();
+			SyntaxList<TypeParameterConstraintClauseSyntax> constraints = declBuilder.GetOriginalConstraintClauses();
 			_numConstraints = constraints.Count;
 
 			for (int i = 0; i < _numConstraints; i++)
@@ -79,8 +79,10 @@ namespace Durian.DefaultParam
 			}
 
 			_replacer.Reset();
-			_collector.SemanticModel = wrapper.SemanticModel;
-			_collector.Visit(wrapper.OriginalNode);
+			_replacer.VisitDeclarationBody = declBuilder.VisitDeclarationBody;
+			_collector.VisitDeclarationBody = declBuilder.VisitDeclarationBody;
+			_collector.SemanticModel = declBuilder.SemanticModel;
+			_collector.Visit(declBuilder.OriginalNode);
 		}
 
 		public void ReplaceType(ITypeParameterSymbol oldType, string newType)
@@ -89,7 +91,7 @@ namespace Durian.DefaultParam
 			_replacer.Replacement = SyntaxFactory.IdentifierName(newType ?? string.Empty);
 			_replacer.ResetCounter();
 
-			Wrapper.AcceptTypeParameterReplacer(_replacer);
+			DeclarationBuilder.AcceptTypeParameterReplacer(_replacer);
 
 			if (_replacer.HasChangedConstraints)
 			{
@@ -97,7 +99,7 @@ namespace Durian.DefaultParam
 
 				for (int i = 0; i < length; i++)
 				{
-					_includedConstraints[i] = Wrapper.GetCurrentConstraintClause(_replacer.ChangedConstraintIndices[i]);
+					_includedConstraints[i] = DeclarationBuilder.GetCurrentConstraintClause(_replacer.ChangedConstraintIndices[i]);
 				}
 			}
 		}
@@ -121,7 +123,7 @@ namespace Durian.DefaultParam
 				}
 			}
 
-			Wrapper.WithConstraintClauses(_includedConstraints);
+			DeclarationBuilder.WithConstraintClauses(_includedConstraints);
 		}
 
 		public void RemoveLastParameter()
@@ -132,7 +134,7 @@ namespace Durian.DefaultParam
 			}
 
 			_numParameters--;
-			Wrapper.WithTypeParameters(_numParameters);
+			DeclarationBuilder.WithTypeParameters(_numParameters);
 		}
 	}
 }
