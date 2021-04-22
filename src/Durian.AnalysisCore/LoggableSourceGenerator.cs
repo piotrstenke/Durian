@@ -1,8 +1,10 @@
 ﻿#if ENABLE_GENERATOR_LOGS
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
+#endif
+#if DEBUG
+using System.Reflection;
 #endif
 using System;
 using System.Collections.Generic;
@@ -26,7 +28,11 @@ namespace Durian
 		/// <param name="checkforConfigurationAttribute">If <c>true</c>, the value defined on this class using the <see cref="SourceGeneratorConfigurationAttribute"/> is used as the target <see cref="LoggingConfiguration"/>.</param>
 		protected LoggableSourceGenerator(bool checkforConfigurationAttribute)
 		{
+#if DEBUG
 			LoggingConfiguration = checkforConfigurationAttribute ? GetConfigurationFromAttribute() : SourceGeneratorLoggingConfiguration.Default;
+#else
+			LoggingConfiguration = SourceGeneratorLoggingConfiguration.Default;
+#endif
 		}
 
 		/// <summary>
@@ -74,8 +80,7 @@ namespace Durian
 #if ENABLE_GENERATOR_LOGS
 			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
 			{
-				Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
-				File.AppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString());
+				LogException_Internal(exception);
 			}
 #endif
 		}
@@ -91,36 +96,7 @@ namespace Durian
 #if ENABLE_GENERATOR_LOGS
 			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node) && !(input is null && output is null))
 			{
-				StringBuilder sb = new();
-
-				if (input is not null)
-				{
-					sb.AppendLine("input::");
-					sb.AppendLine();
-
-					sb.AppendLine(input.ToFullString());
-					sb.AppendLine();
-
-					for (int i = 0; i < 100; i++)
-					{
-						sb.Append('-');
-					}
-
-					sb.AppendLine();
-				}
-
-				if (output is not null)
-				{
-					sb.AppendLine("output::");
-					sb.AppendLine();
-					sb.AppendLine(output.ToFullString());
-				}
-
-				string name = string.IsNullOrWhiteSpace(hintName) ? "generated" : hintName;
-				string path = LoggingConfiguration.LogDirectory + "/.generated";
-				Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
-				Directory.CreateDirectory(path);
-				File.WriteAllText(path + $"/{name}.log", sb.ToString());
+				LogNode_Internal(input!, output, hintName);
 			}
 #endif
 		}
@@ -149,44 +125,91 @@ namespace Durian
 #if ENABLE_GENERATOR_LOGS
 			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Diagnostics) && diagnostics is not null && diagnostics.Length > 0)
 			{
-				StringBuilder sb = new();
-
-				if (node is not null)
-				{
-					sb.AppendLine("input::");
-					sb.AppendLine();
-
-					sb.AppendLine(node.ToFullString());
-					sb.AppendLine();
-
-					for (int i = 0; i < 100; i++)
-					{
-						sb.Append('-');
-					}
-
-					sb.AppendLine();
-				}
-
-				sb.AppendLine("diagnostics::");
-				sb.AppendLine();
-
-				foreach (Diagnostic diagnostic in diagnostics)
-				{
-					sb.AppendLine(diagnostic.ToString());
-				}
-
-				sb.AppendLine();
-
-				string name = string.IsNullOrWhiteSpace(hintName) ? "generated" : hintName;
-				string path = LoggingConfiguration.LogDirectory + "/.diag";
-				Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
-				Directory.CreateDirectory(path);
-				File.WriteAllText(path + $"/{name}.log", sb.ToString());
+				LogDiagnostics_Internal(node, hintName, diagnostics);
 			}
 #endif
 		}
 
 #if ENABLE_GENERATOR_LOGS
+		internal void LogException_Internal(Exception exception)
+		{
+			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
+			File.AppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString());
+		}
+
+		internal void LogNode_Internal(SyntaxNode input, SyntaxNode output, string hintName)
+		{
+			StringBuilder sb = new();
+
+			if (input is not null)
+			{
+				sb.AppendLine("input::");
+				sb.AppendLine();
+
+				sb.AppendLine(input.ToFullString());
+				sb.AppendLine();
+
+				for (int i = 0; i < 100; i++)
+				{
+					sb.Append('-');
+				}
+
+				sb.AppendLine();
+			}
+
+			if (output is not null)
+			{
+				sb.AppendLine("output::");
+				sb.AppendLine();
+				sb.AppendLine(output.ToFullString());
+			}
+
+			string name = string.IsNullOrWhiteSpace(hintName) ? "generated" : hintName;
+			string path = LoggingConfiguration.LogDirectory + "/.generated";
+			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
+			Directory.CreateDirectory(path);
+			File.WriteAllText(path + $"/{name}.log", sb.ToString());
+		}
+
+		internal void LogDiagnostics_Internal(SyntaxNode node, string hintName, Diagnostic[] diagnostics)
+		{
+			StringBuilder sb = new();
+
+			if (node is not null)
+			{
+				sb.AppendLine("input::");
+				sb.AppendLine();
+
+				sb.AppendLine(node.ToFullString());
+				sb.AppendLine();
+
+				for (int i = 0; i < 100; i++)
+				{
+					sb.Append('-');
+				}
+
+				sb.AppendLine();
+			}
+
+			sb.AppendLine("diagnostics::");
+			sb.AppendLine();
+
+			foreach (Diagnostic diagnostic in diagnostics)
+			{
+				sb.AppendLine(diagnostic.ToString());
+			}
+
+			sb.AppendLine();
+
+			string name = string.IsNullOrWhiteSpace(hintName) ? "generated" : hintName;
+			string path = LoggingConfiguration.LogDirectory + "/.diag";
+			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
+			Directory.CreateDirectory(path);
+			File.WriteAllText(path + $"/{name}.log", sb.ToString());
+		}
+#endif
+
+#if DEBUG
 		private SourceGeneratorLoggingConfiguration GetConfigurationFromAttribute()
 		{
 			return GetType().GetCustomAttribute<SourceGeneratorConfigurationAttribute>()?.GetConfiguration() ?? SourceGeneratorLoggingConfiguration.Default;

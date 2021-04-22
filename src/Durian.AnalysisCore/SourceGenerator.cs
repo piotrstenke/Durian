@@ -220,8 +220,6 @@ namespace Durian
 				return;
 			}
 
-			CodeBuilder builder = new(this);
-
 			foreach (TFilter[] filterGroup in filters)
 			{
 				IMemberData[][] data = FiltrateUsingGroup(filterGroup, in context);
@@ -229,7 +227,7 @@ namespace Durian
 
 				for (int i = 0; i < length; i++)
 				{
-					GenerateFromFilterResult(data[i], filterGroup[i], builder, in context);
+					GenerateFromFilterResult(data[i], filterGroup[i], in context);
 				}
 			}
 		}
@@ -262,7 +260,7 @@ namespace Durian
 			return data;
 		}
 
-		private void GenerateFromFilterResult(IMemberData[] result, TFilter parentFilter, CodeBuilder builder, in GeneratorExecutionContext context)
+		private void GenerateFromFilterResult(IMemberData[] result, TFilter parentFilter, in GeneratorExecutionContext context)
 		{
 			foreach (IMemberData d in result)
 			{
@@ -270,7 +268,7 @@ namespace Durian
 				try
 				{
 #endif
-					Generate(d, parentFilter, builder, in context);
+					Generate(d, parentFilter, in context);
 #if ENABLE_GENERATOR_LOGS
 				}
 				catch (Exception e)
@@ -284,6 +282,104 @@ namespace Durian
 		IDurianSyntaxReceiver IDurianSourceGenerator.CreateSyntaxReceiver()
 		{
 			return CreateSyntaxReceiver();
+		}
+
+		/// <summary>
+		/// Adds the source created using the <paramref name="builder"/> to the <paramref name="context"/>.
+		/// </summary>
+		/// <param name="builder"><see cref="CodeBuilder"/> that was used to build the generated code.</param>
+		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
+		protected void AddSource(CodeBuilder builder, string hintName, in GeneratorExecutionContext context)
+		{
+			CSharpSyntaxTree tree = builder.ParseSyntaxTree();
+			builder.Clear();
+			AddSource(tree, hintName, in context);
+		}
+
+		/// <summary>
+		/// Adds the generated <paramref name="text"/> to the <paramref name="context"/>.
+		/// </summary>
+		/// <param name="text">The generated text.</param>
+		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
+		protected void AddSource(string text, string hintName, in GeneratorExecutionContext context)
+		{
+			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
+			AddSource(tree, hintName, in context);
+		}
+
+		/// <summary>
+		/// Adds the generated <paramref name="tree"/> to the <paramref name="context"/>.
+		/// </summary>
+		/// <param name="tree">The generated <see cref="CSharpSyntaxTree"/>.</param>
+		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
+		protected void AddSource(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+		{
+			context.AddSource(hintName, tree.GetText(context.CancellationToken));
+			TargetCompilation.UpdateCompilation(tree);
+		}
+
+		/// <summary>
+		/// Adds the source created using the <paramref name="builder"/> to the <paramref name="context"/>.
+		/// </summary>
+		/// <param name="original">The <see cref="CSharpSyntaxNode"/> the source was generated from.</param>
+		/// <param name="builder"><see cref="CodeBuilder"/> that was used to build the generated code.</param>
+		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
+		protected void AddSource(CSharpSyntaxNode original, CodeBuilder builder, string hintName, in GeneratorExecutionContext context)
+		{
+			CSharpSyntaxTree tree = builder.ParseSyntaxTree();
+			builder.Clear();
+			AddSource(tree, hintName, in context);
+
+#if ENABLE_GENERATOR_LOGS
+			LogGeneratedNode(original, tree, hintName, context.CancellationToken);
+#endif
+		}
+
+		/// <summary>
+		/// Adds the generated <paramref name="text"/> to the <paramref name="context"/>.
+		/// </summary>
+		/// <param name="original">The <see cref="CSharpSyntaxNode"/> the source was generated from.</param>
+		/// <param name="text">The generated text.</param>
+		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
+		protected void AddSource(CSharpSyntaxNode original, string text, string hintName, in GeneratorExecutionContext context)
+		{
+			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
+			AddSource(tree, hintName, in context);
+
+#if ENABLE_GENERATOR_LOGS
+			LogGeneratedNode(original, tree, hintName, context.CancellationToken);
+#endif
+		}
+
+		/// <summary>
+		/// Adds the generated <paramref name="tree"/> to the <paramref name="context"/>.
+		/// </summary>
+		/// <param name="original">The <see cref="CSharpSyntaxNode"/> the source was generated from.</param>
+		/// <param name="tree">The generated <see cref="CSharpSyntaxTree"/>.</param>
+		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
+		protected void AddSource(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+		{
+			AddSource(tree, hintName, in context);
+
+#if ENABLE_GENERATOR_LOGS
+			LogGeneratedNode(original, tree, hintName, context.CancellationToken);
+#endif
+		}
+
+		private void LogGeneratedNode(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, CancellationToken cancellationToken)
+		{
+#if ENABLE_GENERATOR_LOGS
+			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
+			{
+				LogNode_Internal(original, tree.GetRoot(cancellationToken), hintName);
+			}
+#endif
 		}
 
 		/// <summary>
@@ -320,9 +416,8 @@ namespace Durian
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to generate the source for.</param>
 		/// <param name="filter"><see cref="ISyntaxFilter"/> that collected the target <paramref name="member"/>.</param>
-		/// <param name="builder"><see cref="CodeBuilder"/> that should be used to generate the source code.</param>
 		/// <param name="context">The <see cref="GeneratorExecutionContext"/> to add source to.</param>
-		protected abstract void Generate(IMemberData member, TFilter filter, CodeBuilder builder, in GeneratorExecutionContext context);
+		protected abstract void Generate(IMemberData member, TFilter filter, in GeneratorExecutionContext context);
 
 		/// <summary>
 		/// Creates new instance of <see cref="ICompilationData"/>.

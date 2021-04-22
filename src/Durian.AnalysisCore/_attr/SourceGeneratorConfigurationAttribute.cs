@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Durian
 {
@@ -6,6 +7,7 @@ namespace Durian
 	/// Determines how the source generator should behave.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+	[Conditional("DEBUG")]
 	public sealed class SourceGeneratorConfigurationAttribute : Attribute
 	{
 		/// <summary>

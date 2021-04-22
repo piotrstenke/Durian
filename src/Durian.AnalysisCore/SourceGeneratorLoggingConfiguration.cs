@@ -1,12 +1,34 @@
-﻿namespace Durian
+﻿using System;
+using System.IO;
+
+namespace Durian
 {
 	/// <summary>
 	/// Determines how the source generator should behave when logging information.
 	/// </summary>
 	public sealed class SourceGeneratorLoggingConfiguration
 	{
+		private readonly string _logDirectory;
+
 		/// <inheritdoc cref="SourceGeneratorConfigurationAttribute.LogDirectory"/>
-		public string LogDirectory { get; init; }
+		public string LogDirectory
+		{
+			get => _logDirectory;
+			init
+			{
+				if (string.IsNullOrWhiteSpace(value))
+				{
+					throw new ArgumentException($"{nameof(LogDirectory)} cannot be null or empty!");
+				}
+
+				if (!Directory.Exists(value))
+				{
+					throw new DirectoryNotFoundException($"Directory '{value}' not found!");
+				}
+
+				_logDirectory = value;
+			}
+		}
 
 		/// <inheritdoc cref="SourceGeneratorConfigurationAttribute.SupportedLogs"/>
 		public GeneratorLogs SupportedLogs { get; init; }

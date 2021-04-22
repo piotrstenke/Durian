@@ -69,13 +69,12 @@ namespace Durian.Tests
 		public event GetFiltersAction? OnGetFilters;
 
 		/// <summary>
-		/// A delegate with signature equivalent to the <see cref="SourceGenerator{TCompilationData, ISyntaxReceiver, IFilter}.Generate(IMemberData, IFilter, CodeBuilder, in GeneratorExecutionContext)"/> method.
+		/// A delegate with signature equivalent to the <see cref="SourceGenerator{TCompilationData, ISyntaxReceiver, IFilter}.Generate(IMemberData, IFilter, in GeneratorExecutionContext)"/> method.
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to generate the source for.</param>
 		/// <param name="filter"><see cref="ISyntaxFilter"/> that collected the target <paramref name="member"/>.</param>
-		/// <param name="builder"><see cref="CodeBuilder"/> that should be used to generate the source code.</param>
 		/// <param name="context">The <see cref="GeneratorExecutionContext"/> to add source to.</param>
-		public delegate void GenerateAction(IMemberData member, ISyntaxFilter filter, CodeBuilder builder, in GeneratorExecutionContext context);
+		public delegate void GenerateAction(IMemberData member, ISyntaxFilter filter, in GeneratorExecutionContext context);
 
 		/// <summary>
 		/// A delegate with signature equivalent to the <see cref="SourceGenerator{TCompilationData, ISyntaxReceiver, IFilter}.GetFilters(in GeneratorExecutionContext)"/> method.
@@ -130,9 +129,9 @@ namespace Durian.Tests
 		}
 
 		/// <inheritdoc/>
-		protected override void Generate(IMemberData member, ISyntaxFilterWithDiagnostics filter, CodeBuilder builder, in GeneratorExecutionContext context)
+		protected override void Generate(IMemberData member, ISyntaxFilterWithDiagnostics filter, in GeneratorExecutionContext context)
 		{
-			OnGenerate?.Invoke(member, filter, builder, in context);
+			OnGenerate?.Invoke(member, filter, in context);
 			_exeContext = context;
 		}
 
