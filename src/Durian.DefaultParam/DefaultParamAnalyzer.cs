@@ -46,7 +46,7 @@ namespace Durian.DefaultParam
 
 		private void AnalyzeSymbol(SymbolAnalysisContext context, DefaultParamCompilationData compilation)
 		{
-			DiagnosticReceiver<SymbolAnalysisContext> diagnosticReceiver = DiagnosticReceiverFactory.Symbol(context);
+			ContextualDiagnosticReceiver<SymbolAnalysisContext> diagnosticReceiver = DiagnosticReceiverFactory.Symbol(context);
 			Validate(diagnosticReceiver, context.Symbol, compilation, context.CancellationToken);
 		}
 

@@ -221,3 +221,6 @@ dotnet_diagnostic.RCS1123.severity                                          = no
 
 # IDE0072: Remove unnecessary suppression
 dotnet_diagnostic.IDE0079.severity                                          = none
+
+# RCS1096: Convert 'HasFlag' call to bitwise operation (or vice versa).
+dotnet_diagnostic.RCS1096.severity                                          = none

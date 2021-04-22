@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using Durian.Data;
 using Durian.Extensions;
@@ -11,7 +13,7 @@ namespace Durian.Tests
 	/// <summary>
 	/// A <see cref="ICompilationData"/> that is unit-test friendly and can be used without worries of encountering an exception.
 	/// </summary>
-	public sealed partial class TestableCompilationData : ICompilationData
+	public sealed class TestableCompilationData : ICompilationData
 	{
 		private CSharpCompilation? _originalCompilation;
 		private CSharpCompilation? _currentCompilation;
@@ -283,6 +285,62 @@ namespace Durian.Tests
 		public IMemberData? GetMemberData<TNode>(string? source, int index = 0) where TNode : MemberDeclarationSyntax
 		{
 			return GetNode<TNode>(source, index)?.GetMemberData(this);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// </summary>
+		/// <param name="includeDefaultAssemblies">Determines whether to include all the default assemblies returned bu the <see cref="RoslynUtilities.GetBaseReferences()"/> method.</param>
+		public static TestableCompilationData Create(bool includeDefaultAssemblies = true)
+		{
+			return new TestableCompilationData(includeDefaultAssemblies ? RoslynUtilities.CreateBaseCompilation() : null);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// </summary>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the newly-created <see cref="TestableCompilationData"/>.</param>
+		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the newly-created <see cref="TestableCompilationData"/>.</param>
+		public static TestableCompilationData Create(IEnumerable<string>? sources, IEnumerable<Assembly>? assemblies)
+		{
+			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(sources, assemblies?.ToArray()));
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// </summary>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the newly-created <see cref="TestableCompilationData"/>.</param>
+		public static TestableCompilationData Create(IEnumerable<string>? sources)
+		{
+			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(sources));
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// </summary>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the newly-created <see cref="TestableCompilationData"/>.</param>
+		public static TestableCompilationData Create(string? source)
+		{
+			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(source));
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// </summary>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the newly-created <see cref="TestableCompilationData"/>.</param>
+		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the newly-created <see cref="TestableCompilationData"/>.</param>
+		public static TestableCompilationData Create(string? source, IEnumerable<Assembly>? assemblies)
+		{
+			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(source, assemblies?.ToArray()));
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// </summary>
+		/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used as the base compilation of the newly-created <see cref="TestableCompilationData"/>.</param>
+		public static TestableCompilationData Create(CSharpCompilation? compilation)
+		{
+			return new TestableCompilationData(compilation);
 		}
 	}
 }

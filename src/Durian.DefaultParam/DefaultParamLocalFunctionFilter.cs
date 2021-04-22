@@ -11,6 +11,49 @@ namespace Durian.DefaultParam
 {
 	public class DefaultParamLocalFunctionFilter : IDefaultParamFilter
 	{
+		private readonly DefaultParamGenerator _generator;
+		private readonly LoggableSourceGenerator.DiagnosticReceiver? _loggableReceiver;
+		private readonly IDirectDiagnosticReceiver? _diagnosticReceiver;
+
+		public DefaultParamLocalFunctionFilter(DefaultParamGenerator generator)
+		{
+			_generator = generator;
+
+			if (generator.LoggingConfiguration.EnableLogging)
+			{
+				_loggableReceiver = new LoggableSourceGenerator.DiagnosticReceiver(generator);
+				_diagnosticReceiver = generator.SupportsDiagnostics ? DiagnosticReceiverFactory.Direct(ReportForBothReceivers) : _loggableReceiver;
+			}
+			else if (generator.SupportsDiagnostics)
+			{
+				_diagnosticReceiver = generator.DiagnosticReceiver!;
+			}
+		}
+
+		private void ReportForBothReceivers(Diagnostic diagnostic)
+		{
+			_loggableReceiver!.ReportDiagnostic(diagnostic);
+			_generator.DiagnosticReceiver!.ReportDiagnostic(diagnostic);
+		}
+
+		public void ReportDiagnosticsForLocalFunctions()
+		{
+			if (_generator.SyntaxReceiver is null || _generator.TargetCompilation is null)
+			{
+				return;
+			}
+
+			if (_loggableReceiver is not null)
+			{
+				IDirectDiagnosticReceiver diagnosticReceiver = _generator.EnableDiagnostics ? _diagnosticReceiver! : _loggableReceiver;
+				ReportDiagnosticsForLocalFunctions(diagnosticReceiver, _generator.TargetCompilation, _generator.SyntaxReceiver, _generator.CancellationToken);
+			}
+			else if (_diagnosticReceiver is not null && _generator.EnableDiagnostics)
+			{
+				ReportDiagnosticsForLocalFunctions(_diagnosticReceiver, _generator.TargetCompilation, _generator.SyntaxReceiver, _generator.CancellationToken);
+			}
+		}
+
 		public static void ReportDiagnosticsForLocalFunctions(IDiagnosticReceiver diagnosticReceiver, DefaultParamCompilationData compilation, IEnumerable<LocalFunctionStatementSyntax> collectedLocalFunctions, CancellationToken cancellationToken = default)
 		{
 			if (collectedLocalFunctions is null || compilation is null || diagnosticReceiver is null)
@@ -86,7 +129,7 @@ namespace Durian.DefaultParam
 
 		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken)
 		{
-			ReportDiagnosticsForLocalFunctions(diagnosticReceiver, (DefaultParamCompilationData)compilation, collectedNodes.Cast<LocalFunctionStatementSyntax>(), cancellationToken);
+			ReportDiagnosticsForLocalFunctions(diagnosticReceiver, (DefaultParamCompilationData)compilation, collectedNodes.OfType<LocalFunctionStatementSyntax>(), cancellationToken);
 			return Array.Empty<IMemberData>();
 		}
 

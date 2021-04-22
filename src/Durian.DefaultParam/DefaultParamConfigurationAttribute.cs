@@ -6,13 +6,13 @@ namespace Durian.DefaultParam
 {
 	public static class DefaultParamConfigurationAttribute
 	{
-		public static readonly string AttributeName = "DefaultParamConfiguration";
-		public static readonly string FullTypeName = DurianStrings.GetFullAttributeType(AttributeName);
-		public static readonly string FullyQualifiedName = DurianStrings.GetFullyQualifiedConfigurationAttribute(AttributeName);
-		public static readonly string AllowOverridingOfDefaultParamValuesProperty = "AllowOverridingOfDefaultParamValues";
-		public static readonly string AllowAddingDefaultParamToNewParametersProperty = "AllowAddingDefaultParamToNewParameters";
-		public static readonly string ApplyNewToGeneratedMembersWithEquivalentSignatureProperty = "ApplyNewToGeneratedMembersWithEquivalentSignature";
-		public static readonly string CallInsteadOfCopyingProperty = "CallInsteadOfCopying";
+		public static string AttributeName => "DefaultParamConfiguration";
+		public static string FullTypeName => DurianStrings.GetFullAttributeType(AttributeName);
+		public static string FullyQualifiedName => DurianStrings.GetFullyQualifiedConfigurationAttribute(AttributeName);
+		public static string AllowOverridingOfDefaultParamValuesProperty => "AllowOverridingOfDefaultParamValues";
+		public static string AllowAddingDefaultParamToNewParametersProperty => "AllowAddingDefaultParamToNewParameters";
+		public static string ApplyNewToGeneratedMembersWithEquivalentSignatureProperty => "ApplyNewToGeneratedMembersWithEquivalentSignature";
+		public static string CallInsteadOfCopyingProperty => "CallInsteadOfCopying";
 
 		public static string GetText()
 		{
@@ -101,7 +101,7 @@ namespace {DurianStrings.ConfigurationNamespace}
 		/// <code>
 		/// partial class Test
 		///	{{
-		///			public virtual void Method&lt;T&gt;(T value, string obj)
+		///		public virtual void Method&lt;T&gt;(T value, string obj)
 		///		{{
 		///		}}
 		///	}}

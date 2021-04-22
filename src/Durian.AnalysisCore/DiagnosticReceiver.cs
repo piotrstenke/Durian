@@ -4,92 +4,36 @@ using Microsoft.CodeAnalysis;
 namespace Durian
 {
 	/// <summary>
-	/// Provides a mechanism for reporting diagnostic messages to a context.
+	/// A <see cref="IDirectDiagnosticReceiver"/> that invokes a <see cref="DirectReportAction"/> when the <see cref="ReportDiagnostic(Diagnostic)"/> method is called.
 	/// </summary>
-	/// <typeparam name="T">Type of context this <see cref="DiagnosticReceiver{T}"/> is compliant with.</typeparam>
-	public sealed class DiagnosticReceiver<T> : IDiagnosticReceiver where T : struct
+	public sealed class DiagnosticReceiver : IDirectDiagnosticReceiver
 	{
-		private readonly DiagnosticReceiverAction<T> _action;
-		private T _context;
-		private bool _contextIsSet;
-
-		/// <inheritdoc cref="DiagnosticReceiver{T}(DiagnosticReceiverAction{T}, in T)"/>
-		public DiagnosticReceiver(DiagnosticReceiverAction<T> action)
-		{
-			if (action is null)
-			{
-				throw new ArgumentNullException(nameof(action));
-			}
-
-			_action = action;
-		}
+		private readonly DirectReportAction _action;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="DiagnosticReceiver{T}"/> class.
+		/// Initializes a new instance of the <see cref="ReadonlyContextualDiagnosticReceiver{T}"/> class.
 		/// </summary>
-		/// <param name="action"><see cref="DiagnosticReceiverAction{T}"/> to be performed when the <see cref="ReportDiagnostic(DiagnosticDescriptor, Location, object[])"/> method is called.</param>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="action"/> is <c>null</c>.</exception>
-		public DiagnosticReceiver(DiagnosticReceiverAction<T> action, in T context)
+		public DiagnosticReceiver(DirectReportAction action)
 		{
-			if (action is null)
+			if(action is null)
 			{
 				throw new ArgumentNullException(nameof(action));
 			}
 
 			_action = action;
-			_context = context;
-			_contextIsSet = true;
 		}
 
-		/// <summary>
-		/// Returns a reference to the target context.
-		/// </summary>
-		/// <exception cref="InvalidOperationException">Target context not set.</exception>
-		public ref readonly T GetContext()
-		{
-			if (!_contextIsSet)
-			{
-				throw new InvalidOperationException("Target context not set!");
-			}
-
-			return ref _context;
-		}
-
-		/// <summary>
-		/// Sets the target context.
-		/// </summary>
-		/// <param name="context">Context to set as a target if this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public void SetContext(in T context)
-		{
-			_contextIsSet = true;
-			_context = context;
-		}
-
-		/// <summary>
-		/// Resets the internal context to <c>default</c>.
-		/// </summary>
-		public void RemoveContext()
-		{
-			_contextIsSet = false;
-			_context = default;
-		}
-
-		/// <summary>
-		/// Reports a diagnostic.
-		/// </summary>
-		/// <param name="descriptor"><see cref="DiagnosticDescriptor"/> that is used to report the diagnostics.</param>
-		/// <param name="location">Source <see cref="Location"/> of the reported diagnostic.</param>
-		/// <param name="messageArgs">Arguments of the diagnostic message.</param>
-		/// <exception cref="InvalidOperationException">Target context not set.</exception>
+		/// <inheritdoc/>
 		public void ReportDiagnostic(DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs)
 		{
-			if (!_contextIsSet)
-			{
-				throw new InvalidOperationException("Target context not set!");
-			}
+			_action.Invoke(Diagnostic.Create(descriptor, location, messageArgs));
+		}
 
-			_action.Invoke(_context, descriptor, location, messageArgs);
+		/// <inheritdoc/>
+		public void ReportDiagnostic(Diagnostic diagnostic)
+		{
+			_action.Invoke(diagnostic);
 		}
 	}
 }

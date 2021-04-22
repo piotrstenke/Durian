@@ -1,0 +1,28 @@
+﻿using System;
+
+namespace Durian
+{
+	/// <summary>
+	/// Types of logs that a source generator can produce.
+	/// </summary>
+	[Flags]
+	public enum GeneratorLogs
+	{
+		/// <summary>
+		/// No logs.
+		/// </summary>
+		None = 0,
+		/// <summary>
+		/// Log containing exceptions.
+		/// </summary>
+		Exception = 1,
+		/// <summary>
+		/// Log containing input and output syntax node.
+		/// </summary>
+		Node = 1 << 1,
+		/// <summary>
+		/// Log containing diagnostics that were produced.
+		/// </summary>
+		Diagnostics = 1 << 2,
+	}
+}

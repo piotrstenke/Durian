@@ -6,10 +6,10 @@ namespace Durian.DefaultParam
 {
 	public static class DefaultParamMethodConfigurationAttribute
 	{
-		public static readonly string AttributeName = "DefaultParamMethodConfiguration";
-		public static readonly string FullTypeName = DurianStrings.GetFullAttributeType(AttributeName);
-		public static readonly string FullyQualifiedName = DurianStrings.GetFullyQualifiedConfigurationAttribute(AttributeName);
-		public static readonly string CallInsteadOfCopyingProperty = "CallInsteadOfCopying";
+		public static string AttributeName => "DefaultParamMethodConfiguration";
+		public static string FullTypeName => DurianStrings.GetFullAttributeType(AttributeName);
+		public static string FullyQualifiedName => DurianStrings.GetFullyQualifiedConfigurationAttribute(AttributeName);
+		public static string CallInsteadOfCopyingProperty => "CallInsteadOfCopying";
 
 		public static string GetText()
 		{

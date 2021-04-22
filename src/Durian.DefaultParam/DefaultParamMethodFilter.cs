@@ -14,10 +14,77 @@ namespace Durian.DefaultParam
 	public partial class DefaultParamMethodFilter : IDefaultParamFilter
 	{
 		private readonly DeclarationBuilder _declBuilder;
+		private readonly DefaultParamGenerator _generator;
+		private readonly LoggableSourceGenerator.DiagnosticReceiver? _loggableReceiver;
+		private readonly IDirectDiagnosticReceiver? _diagnosticReceiver;
 
-		public DefaultParamMethodFilter()
+		public DefaultParamMethodFilter(DefaultParamGenerator generator)
 		{
 			_declBuilder = new();
+			_generator = generator;
+
+			if (generator.LoggingConfiguration.EnableLogging)
+			{
+				_loggableReceiver = new LoggableSourceGenerator.DiagnosticReceiver(generator);
+				_diagnosticReceiver = generator.SupportsDiagnostics ? DiagnosticReceiverFactory.Direct(ReportForBothReceivers) : _loggableReceiver;
+			}
+			else if (generator.SupportsDiagnostics)
+			{
+				_diagnosticReceiver = generator.DiagnosticReceiver!;
+			}
+		}
+
+		private void ReportForBothReceivers(Diagnostic diagnostic)
+		{
+			_loggableReceiver!.ReportDiagnostic(diagnostic);
+			_generator.DiagnosticReceiver!.ReportDiagnostic(diagnostic);
+		}
+
+		public DefaultParamMethodData[] GetValidMethods()
+		{
+			if (_generator.SyntaxReceiver is null || _generator.TargetCompilation is null)
+			{
+				return Array.Empty<DefaultParamMethodData>();
+			}
+
+			DefaultParamCompilationData compilation = _generator.TargetCompilation;
+			CancellationToken cancellationToken = _generator.CancellationToken;
+
+			if (_loggableReceiver is not null)
+			{
+				List<DefaultParamMethodData> list = new(_generator.SyntaxReceiver.CandidateMethods.Count);
+				IDirectDiagnosticReceiver diagnosticReceiver = _generator.EnableDiagnostics ? _diagnosticReceiver! : _loggableReceiver;
+
+				foreach (MethodDeclarationSyntax method in _generator.SyntaxReceiver.CandidateMethods)
+				{
+					if (method is null)
+					{
+						continue;
+					}
+
+					if (!GetValidationData(compilation, method, out SemanticModel semanticModel, out TypeParameterContainer typeParameters, out IMethodSymbol symbol, cancellationToken))
+					{
+						continue;
+					}
+
+					_loggableReceiver.SetTargetNode(method, method.Identifier.ToString());
+
+					if (ValidateAndCreateWithDiagnostics(diagnosticReceiver, compilation, method, semanticModel, symbol, ref typeParameters, out DefaultParamMethodData? data, cancellationToken))
+					{
+						list.Add(data!);
+					}
+				}
+
+				return list.ToArray();
+			}
+			else if (_diagnosticReceiver is not null && _generator.EnableDiagnostics)
+			{
+				return GetValidMethods(_diagnosticReceiver, compilation, _generator.SyntaxReceiver, cancellationToken);
+			}
+			else
+			{
+				return GetValidMethods(compilation, _generator.SyntaxReceiver, cancellationToken);
+			}
 		}
 
 		public static DefaultParamMethodData[] GetValidMethods(DefaultParamCompilationData compilation, DefaultParamSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken = default)
@@ -116,7 +183,7 @@ namespace Durian.DefaultParam
 
 		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken)
 		{
-			return GetValidMethods((DefaultParamCompilationData)compilation, collectedNodes.Cast<MethodDeclarationSyntax>(), cancellationToken);
+			return GetValidMethods((DefaultParamCompilationData)compilation, collectedNodes.OfType<MethodDeclarationSyntax>(), cancellationToken);
 		}
 
 		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
@@ -126,33 +193,51 @@ namespace Durian.DefaultParam
 
 		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken)
 		{
-			return GetValidMethods(diagnosticReceiver, (DefaultParamCompilationData)compilation, collectedNodes.Cast<MethodDeclarationSyntax>(), cancellationToken);
+			return GetValidMethods(diagnosticReceiver, (DefaultParamCompilationData)compilation, collectedNodes.OfType<MethodDeclarationSyntax>(), cancellationToken);
+		}
+
+		private static bool GetValidationData(DefaultParamCompilationData compilation, MethodDeclarationSyntax declaration, out SemanticModel semanticModel, out TypeParameterContainer typeParameters, out IMethodSymbol symbol, CancellationToken cancellationToken)
+		{
+			semanticModel = compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
+			typeParameters = GetParameters(declaration, semanticModel, compilation, cancellationToken);
+
+			if (!typeParameters.HasDefaultParams)
+			{
+				symbol = null!;
+				return false;
+			}
+
+			symbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken)!;
+
+			return symbol is not null;
 		}
 
 		private static bool ValidateAndCreateWithoutDiagnostics(
 			DefaultParamCompilationData compilation,
 			MethodDeclarationSyntax declaration,
 			out DefaultParamMethodData? data,
-			CancellationToken cancellationToken = default
+			CancellationToken cancellationToken
 		)
 		{
-			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
-			TypeParameterContainer typeParameters = GetParameters(declaration, semanticModel, compilation, cancellationToken);
-
-			if (!typeParameters.HasDefaultParams)
+			if (!GetValidationData(compilation, declaration, out SemanticModel semanticModel, out TypeParameterContainer typeParameters, out IMethodSymbol symbol, cancellationToken))
 			{
 				data = null;
 				return false;
 			}
 
-			IMethodSymbol? symbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken);
+			return ValidateAndCreateWithoutDiagnostics(compilation, declaration, semanticModel, symbol, ref typeParameters, out data, cancellationToken);
+		}
 
-			if (symbol is null)
-			{
-				data = null;
-				return false;
-			}
-
+		private static bool ValidateAndCreateWithoutDiagnostics(
+			DefaultParamCompilationData compilation,
+			MethodDeclarationSyntax declaration,
+			SemanticModel semanticModel,
+			IMethodSymbol symbol,
+			ref TypeParameterContainer typeParameters,
+			out DefaultParamMethodData? data,
+			CancellationToken cancellationToken
+		)
+		{
 			if (ValidateIsPartialOrExtern(symbol, declaration) &&
 				ValidateHasGeneratedCodeAttribute(symbol, compilation, out AttributeData[]? attributes) &&
 				ValidateContainingTypes(symbol, compilation, out ITypeData[]? containingTypes))
@@ -190,26 +275,29 @@ namespace Durian.DefaultParam
 			DefaultParamCompilationData compilation,
 			MethodDeclarationSyntax declaration,
 			out DefaultParamMethodData? data,
-			CancellationToken cancellationToken = default
+			CancellationToken cancellationToken
 		)
 		{
-			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
-			TypeParameterContainer typeParameters = GetParameters(declaration, semanticModel, compilation, cancellationToken);
-
-			if (!typeParameters.HasDefaultParams)
+			if (!GetValidationData(compilation, declaration, out SemanticModel semanticModel, out TypeParameterContainer typeParameters, out IMethodSymbol symbol, cancellationToken))
 			{
 				data = null;
 				return false;
 			}
 
-			IMethodSymbol? symbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken);
+			return ValidateAndCreateWithDiagnostics(diagnosticReceiver, compilation, declaration, semanticModel, symbol, ref typeParameters, out data, cancellationToken);
+		}
 
-			if (symbol is null)
-			{
-				data = null;
-				return false;
-			}
-
+		private static bool ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			DefaultParamCompilationData compilation,
+			MethodDeclarationSyntax declaration,
+			SemanticModel semanticModel,
+			IMethodSymbol symbol,
+			ref TypeParameterContainer typeParameters,
+			out DefaultParamMethodData? data,
+			CancellationToken cancellationToken
+		)
+		{
 			bool isValid = ValidateIsPartialOrExtern(diagnosticReceiver, symbol, declaration);
 			isValid &= ValidateHasGeneratedCodeAttribute(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
 			isValid &= ValidateContainingTypes(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);

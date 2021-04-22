@@ -1,5 +1,6 @@
-using System.Diagnostics;
+using System;
 using System.Linq;
+using System.Threading;
 using Durian.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -63,8 +64,7 @@ namespace Durian
 	/// <typeparam name="TCompilationData">User-defined type of <see cref="ICompilationData"/> this <see cref="IDurianSourceGenerator"/> operates on.</typeparam>
 	/// <typeparam name="TSyntaxReceiver">User-defined type of <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="CSharpSyntaxNode"/>s to perform the generation on.</typeparam>
 	/// <typeparam name="TFilter">User-defined type of <see cref="ISyntaxFilter"/> that decides what <see cref="CSharpSyntaxNode"/>s collected by the <see cref="SyntaxReceiver"/> are valid for generation.</typeparam>
-	[DebuggerDisplay("{GetGeneratorName()}, {GetVersion()}")]
-	public abstract class SourceGenerator<TCompilationData, TSyntaxReceiver, TFilter> : IDurianSourceGenerator
+	public abstract class SourceGenerator<TCompilationData, TSyntaxReceiver, TFilter> : LoggableSourceGenerator, IDurianSourceGenerator
 		where TCompilationData : class, ICompilationData
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
 #if ENABLE_GENERATOR_DIAGNOSTICS
@@ -78,12 +78,15 @@ namespace Durian
 #pragma warning disable IDE0032 // Use auto property
 		private bool _enableDiagnostics;
 #pragma warning restore IDE0032 // Use auto property
-
+#endif
 		/// <summary>
 		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
 		/// </summary>
-		protected ReadonlyDiagnosticReceiver<GeneratorExecutionContext> DiagnosticReceiver { get; }
+		public new ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? DiagnosticReceiver { get; }
+#if ENABLE_GENERATOR_DIAGNOSTICS
+			= DiagnosticReceiverFactory.SourceGenerator();
 #endif
+
 		/// <inheritdoc cref="IDurianSourceGenerator.TargetCompilation"/>
 		public TCompilationData TargetCompilation { get; private set; }
 
@@ -133,6 +136,11 @@ namespace Durian
 			}
 		}
 
+		/// <summary>
+		/// A <see cref="System.Threading.CancellationToken"/> that can be checked to see if the generation should be canceled.
+		/// </summary>
+		public CancellationToken CancellationToken { get; private set; }
+
 		ICompilationData IDurianSourceGenerator.TargetCompilation => TargetCompilation;
 		IDurianSyntaxReceiver IDurianSourceGenerator.SyntaxReceiver => SyntaxReceiver;
 		string IDurianSourceGenerator.GeneratorName => GetGeneratorName();
@@ -141,22 +149,32 @@ namespace Durian
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
 		/// </summary>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		protected SourceGenerator()
-		{
-			TargetCompilation = null!;
-			SyntaxReceiver = null!;
-			ParseOptions = null!;
-
-#if ENABLE_GENERATOR_DIAGNOSTICS
-			DiagnosticReceiver = DiagnosticReceiverFactory.SourceGenerator();
+#if ENABLE_GENERATOR_LOGS
+			: base(true)
+#else
+			: base(false)
 #endif
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
+		/// </summary>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information. If <c>null</c>, <see cref="SourceGeneratorLoggingConfiguration.Default"/> is used instead.</param>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+		protected SourceGenerator(SourceGeneratorLoggingConfiguration loggingConfiguration) : base(loggingConfiguration)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+		{
 		}
 
 		/// <summary>
 		/// Initializes the source generator.
 		/// </summary>
 		/// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
-		public virtual void Initialize(GeneratorInitializationContext context)
+		public override void Initialize(GeneratorInitializationContext context)
 		{
 			context.RegisterForSyntaxNotifications(CreateSyntaxReceiver);
 		}
@@ -165,7 +183,7 @@ namespace Durian
 		/// Begins the generation.
 		/// </summary>
 		/// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
-		public void Execute(in GeneratorExecutionContext context)
+		public sealed override void Execute(in GeneratorExecutionContext context)
 		{
 			if (context.SyntaxReceiver is not TSyntaxReceiver receiver || !ValidateSyntaxReceiver(receiver))
 			{
@@ -187,6 +205,7 @@ namespace Durian
 			TargetCompilation = data;
 			ParseOptions = context.ParseOptions as CSharpParseOptions ?? CSharpParseOptions.Default;
 			SyntaxReceiver = receiver;
+			CancellationToken = context.CancellationToken;
 
 			BeforeFiltration(in context);
 			Filtrate(in context);
@@ -205,42 +224,61 @@ namespace Durian
 
 			foreach (TFilter[] filterGroup in filters)
 			{
+				IMemberData[][] data = FiltrateUsingGroup(filterGroup, in context);
 				int length = filterGroup.Length;
-				IMemberData[][] data = new IMemberData[length][];
-
-#if ENABLE_GENERATOR_DIAGNOSTICS
-				if (_enableDiagnostics)
-				{
-					for (int i = 0; i < length; i++)
-					{
-						data[i] = filterGroup[i].Filtrate(DiagnosticReceiver, TargetCompilation, SyntaxReceiver, context.CancellationToken).ToArray();
-					}
-				}
-				else
-				{
-#endif
-					for (int i = 0; i < length; i++)
-					{
-						data[i] = filterGroup[i].Filtrate(TargetCompilation, SyntaxReceiver, context.CancellationToken).ToArray();
-					}
-
-#if ENABLE_GENERATOR_DIAGNOSTICS
-				}
-#endif
 
 				for (int i = 0; i < length; i++)
 				{
-					foreach (IMemberData d in data[i])
-					{
-						Generate(d, filterGroup[i], builder, in context);
-					}
+					GenerateFromFilterResult(data[i], filterGroup[i], builder, in context);
 				}
 			}
 		}
 
-		void ISourceGenerator.Execute(GeneratorExecutionContext context)
+		private IMemberData[][] FiltrateUsingGroup(TFilter[] filterGroup, in GeneratorExecutionContext context)
 		{
-			Execute(in context);
+			int length = filterGroup.Length;
+			IMemberData[][] data = new IMemberData[length][];
+
+#if ENABLE_GENERATOR_DIAGNOSTICS
+			if (_enableDiagnostics)
+			{
+				for (int i = 0; i < length; i++)
+				{
+					data[i] = filterGroup[i].Filtrate(DiagnosticReceiver!, TargetCompilation, SyntaxReceiver, context.CancellationToken).ToArray();
+				}
+			}
+			else
+			{
+#endif
+				for (int i = 0; i < length; i++)
+				{
+					data[i] = filterGroup[i].Filtrate(TargetCompilation, SyntaxReceiver, context.CancellationToken).ToArray();
+				}
+
+#if ENABLE_GENERATOR_DIAGNOSTICS
+			}
+#endif
+
+			return data;
+		}
+
+		private void GenerateFromFilterResult(IMemberData[] result, TFilter parentFilter, CodeBuilder builder, in GeneratorExecutionContext context)
+		{
+			foreach (IMemberData d in result)
+			{
+#if ENABLE_GENERATOR_LOGS
+				try
+				{
+#endif
+					Generate(d, parentFilter, builder, in context);
+#if ENABLE_GENERATOR_LOGS
+				}
+				catch (Exception e)
+				{
+					LogException(e);
+				}
+#endif
+			}
 		}
 
 		IDurianSyntaxReceiver IDurianSourceGenerator.CreateSyntaxReceiver()
@@ -252,22 +290,6 @@ namespace Durian
 		/// Creates a new <see cref="IDurianSyntaxReceiver"/> to be used during the current generation pass.
 		/// </summary>
 		public abstract TSyntaxReceiver CreateSyntaxReceiver();
-
-		/// <summary>
-		/// Returns version of this <see cref="IDurianSourceGenerator"/>.
-		/// </summary>
-		protected virtual string GetVersion()
-		{
-			return "1.0.0";
-		}
-
-		/// <summary>
-		/// Returns name of this <see cref="IDurianSourceGenerator"/>.
-		/// </summary>
-		protected virtual string GetGeneratorName()
-		{
-			return nameof(SourceGenerator);
-		}
 
 		/// <summary>
 		/// Returns a list of <see cref="ISyntaxFilter"/>s to be used during the current generation pass.

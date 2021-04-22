@@ -3,12 +3,12 @@
 namespace Durian
 {
 	/// <summary>
-	/// Provides a method for reporting a diagnostic messages.
+	/// Provides a method for reporting a <see cref="Diagnostic"/> using a <see cref="DiagnosticDescriptor"/>.
 	/// </summary>
 	public interface IDiagnosticReceiver
 	{
 		/// <summary>
-		/// Reports a diagnostic.
+		/// Reports a <see cref="Diagnostic"/>.
 		/// </summary>
 		/// <param name="descriptor"><see cref="DiagnosticDescriptor"/> that is used to report the diagnostics.</param>
 		/// <param name="location">Source <see cref="Location"/> of the reported diagnostic.</param>

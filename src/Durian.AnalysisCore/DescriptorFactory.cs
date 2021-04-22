@@ -18,11 +18,11 @@ namespace Durian
 		public static DiagnosticDescriptor MemberWithAttributeMustHaveModifier(string attributeName, string modifier)
 		{
 			return CopyDescriptor(
-Descriptors.MemberWithAttributeMustHaveModifier,
-("'memberType'", "Member"),
-(nameof(attributeName), attributeName),
-(nameof(modifier), modifier)
-);
+				Descriptors.MemberWithAttributeMustHaveModifier,
+				("'memberType'", "Member"),
+				(nameof(attributeName), attributeName),
+				(nameof(modifier), modifier)
+			);
 		}
 
 		/// <summary>
@@ -51,11 +51,11 @@ Descriptors.MemberWithAttributeMustHaveModifier,
 		public static DiagnosticDescriptor MemberWithAttributeCannotHaveModifier(string attributeName, string modifier)
 		{
 			return CopyDescriptor(
-Descriptors.MemberWithAttributeCannotHaveModifier,
-("'memberType'", "Member"),
-(nameof(attributeName), attributeName),
-(nameof(modifier), modifier)
-);
+				Descriptors.MemberWithAttributeCannotHaveModifier,
+				("'memberType'", "Member"),
+				(nameof(attributeName), attributeName),
+				(nameof(modifier), modifier)
+			);
 		}
 
 		/// <summary>
@@ -68,11 +68,11 @@ Descriptors.MemberWithAttributeCannotHaveModifier,
 		public static DiagnosticDescriptor MemberWithAttributeCannotHaveModifier(string attributeName, string modifier, string memberType)
 		{
 			return CopyDescriptor(
-Descriptors.MemberWithAttributeCannotHaveModifier,
-("'memberType'", memberType),
-(nameof(attributeName), attributeName),
-(nameof(modifier), modifier)
-);
+				Descriptors.MemberWithAttributeCannotHaveModifier,
+				("'memberType'", memberType),
+				(nameof(attributeName), attributeName),
+				(nameof(modifier), modifier)
+			);
 		}
 
 		/// <summary>
@@ -83,10 +83,10 @@ Descriptors.MemberWithAttributeCannotHaveModifier,
 		public static DiagnosticDescriptor MemberWithAttributeMustHaveImplementation(string attributeName)
 		{
 			return CopyDescriptor(
-Descriptors.MemberWithAttributeMustHaveImplementation,
-("'memberType'", "Member"),
-(nameof(attributeName), attributeName)
-);
+				Descriptors.MemberWithAttributeMustHaveImplementation,
+				("'memberType'", "Member"),
+				(nameof(attributeName), attributeName)
+			);
 		}
 
 		/// <summary>
@@ -98,10 +98,10 @@ Descriptors.MemberWithAttributeMustHaveImplementation,
 		public static DiagnosticDescriptor MemberWithAttributeMustHaveImplementation(string attributeName, string memberType)
 		{
 			return CopyDescriptor(
-Descriptors.MemberWithAttributeMustHaveImplementation,
-("'memberType'", memberType),
-(nameof(attributeName), attributeName)
-);
+				Descriptors.MemberWithAttributeMustHaveImplementation,
+				("'memberType'", memberType),
+				(nameof(attributeName), attributeName)
+			);
 		}
 
 		/// <summary>
@@ -112,10 +112,10 @@ Descriptors.MemberWithAttributeMustHaveImplementation,
 		public static DiagnosticDescriptor MemberWithAttributeCannotHaveImplementation(string attributeName)
 		{
 			return CopyDescriptor(
-Descriptors.MemberWithAttributeCannotHaveImplementation,
-("'memberType'", "Member"),
-(nameof(attributeName), attributeName)
-);
+				Descriptors.MemberWithAttributeCannotHaveImplementation,
+				("'memberType'", "Member"),
+				(nameof(attributeName), attributeName)
+			);
 		}
 
 		/// <summary>
@@ -127,10 +127,10 @@ Descriptors.MemberWithAttributeCannotHaveImplementation,
 		public static DiagnosticDescriptor MemberWithAttributeCannotHaveImplementation(string attributeName, string memberType)
 		{
 			return CopyDescriptor(
-Descriptors.MemberWithAttributeCannotHaveImplementation,
-("'memberType'", memberType),
-(nameof(attributeName), attributeName)
-);
+				Descriptors.MemberWithAttributeCannotHaveImplementation,
+				("'memberType'", memberType),
+				(nameof(attributeName), attributeName)
+			);
 		}
 
 		/// <summary>
@@ -141,9 +141,9 @@ Descriptors.MemberWithAttributeCannotHaveImplementation,
 		public static DiagnosticDescriptor ParentTypeOfMemberWithAttributeMustBePartial(string attributeName)
 		{
 			return CopyDescriptor(
-Descriptors.ParentTypeOfMemberWithAttributeMustBePartial,
-(nameof(attributeName), attributeName)
-);
+				Descriptors.ParentTypeOfMemberWithAttributeMustBePartial,
+				(nameof(attributeName), attributeName)
+			);
 		}
 
 		/// <summary>
@@ -155,10 +155,10 @@ Descriptors.ParentTypeOfMemberWithAttributeMustBePartial,
 		public static DiagnosticDescriptor TargetOfAttributeMustBeOfSpecifiedMemberType(string attributeName, string memberType)
 		{
 			return CopyDescriptor(
-Descriptors.TargetOfAttributeMustBeOfSpecifiedMemberType,
-(nameof(attributeName), attributeName),
-("'memberType'", memberType)
-);
+				Descriptors.TargetOfAttributeMustBeOfSpecifiedMemberType,
+				(nameof(attributeName), attributeName),
+				("'memberType'", memberType)
+			);
 		}
 
 		/// <summary>
@@ -170,10 +170,10 @@ Descriptors.TargetOfAttributeMustBeOfSpecifiedMemberType,
 		public static DiagnosticDescriptor AttributeCannotBeAppliedToMembersOfType(string attributeName, string memberType)
 		{
 			return CopyDescriptor(
-Descriptors.AttributeCannotBeAppliedToMembersOfType,
-(nameof(attributeName), attributeName),
-("'memberType'", memberType)
-);
+				Descriptors.AttributeCannotBeAppliedToMembersOfType,
+				(nameof(attributeName), attributeName),
+				("'memberType'", memberType)
+			);
 		}
 
 		/// <summary>
@@ -185,10 +185,10 @@ Descriptors.AttributeCannotBeAppliedToMembersOfType,
 		public static DiagnosticDescriptor AttributeCannotBeAppliedToMembersWithAttribute(string attributeName1, string attributeName2)
 		{
 			return CopyDescriptor(
-Descriptors.AttributeCannotBeAppliedToMembersWithAttribute,
-(nameof(attributeName1), attributeName1),
-(nameof(attributeName2), attributeName2)
-);
+				Descriptors.AttributeCannotBeAppliedToMembersWithAttribute,
+				(nameof(attributeName1), attributeName1),
+				(nameof(attributeName2), attributeName2)
+			);
 		}
 
 		/// <summary>
@@ -199,9 +199,9 @@ Descriptors.AttributeCannotBeAppliedToMembersWithAttribute,
 		public static DiagnosticDescriptor TypeParameterWithAttributeMustBeLast(string attributeName)
 		{
 			return CopyDescriptor(
-Descriptors.TypeParameterWithAttributeMustBeLast,
-(nameof(attributeName), attributeName)
-);
+				Descriptors.TypeParameterWithAttributeMustBeLast,
+				(nameof(attributeName), attributeName)
+			);
 		}
 
 		/// <summary>
@@ -212,9 +212,9 @@ Descriptors.TypeParameterWithAttributeMustBeLast,
 		public static DiagnosticDescriptor AttributeOfOverridenMemberShouldBeAddedForClarity(string attributeName)
 		{
 			return CopyDescriptor(
-Descriptors.AttributeOfOverridenMemberShouldBeAddedForClarity,
-(nameof(attributeName), attributeName)
-);
+				Descriptors.AttributeOfOverridenMemberShouldBeAddedForClarity,
+				(nameof(attributeName), attributeName)
+			);
 		}
 
 		/// <summary>
@@ -225,9 +225,9 @@ Descriptors.AttributeOfOverridenMemberShouldBeAddedForClarity,
 		public static DiagnosticDescriptor DoNotOverrideMembersGeneratedUsingSpecifiedAttribute(string attributeName)
 		{
 			return CopyDescriptor(
-Descriptors.DoNotOverrideMembersGeneratedUsingSpecifiedAttribute,
-(nameof(attributeName), attributeName)
-);
+				Descriptors.DoNotOverrideMembersGeneratedUsingSpecifiedAttribute,
+				(nameof(attributeName), attributeName)
+			);
 		}
 
 		/// <summary>
@@ -238,9 +238,9 @@ Descriptors.DoNotOverrideMembersGeneratedUsingSpecifiedAttribute,
 		public static DiagnosticDescriptor ValueOfAttributeMustBeTheSameAsValueOfTheOverridenMember(string attributeName)
 		{
 			return CopyDescriptor(
-Descriptors.ValueOfAttributeMustBeTheSameAsValueOfTheOverridenMember,
-(nameof(attributeName), attributeName)
-);
+				Descriptors.ValueOfAttributeMustBeTheSameAsValueOfTheOverridenMember,
+				(nameof(attributeName), attributeName)
+			);
 		}
 
 		/// <summary>
@@ -251,9 +251,9 @@ Descriptors.ValueOfAttributeMustBeTheSameAsValueOfTheOverridenMember,
 		public static DiagnosticDescriptor DoNotAddAttributeOnVirtualTypeParameter(string attributeName)
 		{
 			return CopyDescriptor(
-Descriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter,
-(nameof(attributeName), attributeName)
-);
+				Descriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter,
+				(nameof(attributeName), attributeName)
+			);
 		}
 
 		private static DiagnosticDescriptor CopyDescriptor(DiagnosticDescriptor descriptor, params (string original, string target)[] replacements)

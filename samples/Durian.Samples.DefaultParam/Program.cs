@@ -1,17 +1,9 @@
-﻿using System;
-[assembly: Durian.Configuration.DefaultParamConfiguration(ApplyNewToGeneratedMembersWithEquivalentSignature = true)]
+﻿using Durian.Configuration;
+[assembly: DefaultParamConfiguration(ApplyNewToGeneratedMembersWithEquivalentSignature = true, CallInsteadOfCopying = true)]
 
 namespace Durian.Samples.DefaultParam
 {
-	internal class Parent
-	{
-		public static void Method(int value)
-		{
-
-		}
-	}
-
-	internal partial class Program : Parent
+	internal partial class Program
 	{
 		public delegate void D<T>(T value);
 
@@ -20,14 +12,10 @@ namespace Durian.Samples.DefaultParam
 			Logger<int>.Log(12);
 		}
 
+		[DefaultParamMethodConfiguration(CallInsteadOfCopying = true)]
 		public static void Method<[DefaultParam(typeof(int))]U>(U value)
 		{
-			System.Collections.Generic.List<DateTime> d = new();
-		}
 
-		public static void Method<T>(int value)
-		{
-			Method<T>(value);
 		}
 	}
 }

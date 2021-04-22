@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Durian.DefaultParam;
+﻿using Durian.DefaultParam;
+using Xunit;
 
 namespace Durian.Tests.DefaultParam.Generator
 {

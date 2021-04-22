@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Durian.DefaultParam;
+﻿using Durian.DefaultParam;
+using Xunit;
 
 namespace Durian.Tests.DefaultParam.Generator
 {
@@ -18,7 +18,7 @@ partial class Test
 {{
 	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(int a, float b, T value)
 	{{
-		T t = defualt;
+		T t = default;
 	}}
 }}
 ";
@@ -39,6 +39,40 @@ partial class Test
 		}
 
 		[Fact]
+		public void AppliesReturn_When_MethodIsNotVoid_And_HasArguments()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.CallInsteadOfCopyingProperty} = true)]
+
+partial class Test
+{{
+	int Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(int a, float b, T value)
+	{{
+		T t = default;
+		return 2;
+	}}
+}}
+";
+
+			string expected =
+@$"using System.CodeDom.Compiler;
+
+partial class Test
+{{
+	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	int Method(int a, float b, int value)
+	{{
+		return Method<int>(a, b, value);
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
 		public void AppliesReturn_When_MethodIsNotVoid()
 		{
 			string input =
@@ -51,7 +85,7 @@ partial class Test
 {{
 	int Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
 	{{
-		T t = defualt;
+		T t = default;
 		return 2;
 	}}
 }}

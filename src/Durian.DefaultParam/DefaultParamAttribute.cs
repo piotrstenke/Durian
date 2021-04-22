@@ -6,10 +6,10 @@ namespace Durian.DefaultParam
 {
 	public static class DefaultParamAttribute
 	{
-		public static readonly string AttributeName = "DefaultParam";
-		public static readonly string FullTypeName = DurianStrings.GetFullAttributeType(AttributeName);
-		public static readonly string FullyQualifiedName = DurianStrings.GetFullyQualifiedAttribute(AttributeName);
-		public static readonly string TypeProperty = "Type";
+		public static string AttributeName => "DefaultParam";
+		public static string FullTypeName => DurianStrings.GetFullAttributeType(AttributeName);
+		public static string FullyQualifiedName => DurianStrings.GetFullyQualifiedAttribute(AttributeName);
+		public static string TypeProperty => "Type";
 
 		public static string GetText()
 		{

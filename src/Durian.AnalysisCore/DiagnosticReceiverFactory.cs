@@ -5,178 +5,178 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Durian
 {
 	/// <summary>
-	/// Contains factory methods for creating <see cref="DiagnosticReceiver{T}"/> for specific types.
+	/// Contains factory methods for creating <see cref="ContextualDiagnosticReceiver{T}"/> for specific types.
 	/// </summary>
 	public static class DiagnosticReceiverFactory
 	{
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SymbolAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="SymbolAnalysisContext"/>.
 		/// </summary>
-		public static DiagnosticReceiver<SymbolAnalysisContext> Symbol()
+		public static ContextualDiagnosticReceiver<SymbolAnalysisContext> Symbol()
 		{
-			return new DiagnosticReceiver<SymbolAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			return new ContextualDiagnosticReceiver<SymbolAnalysisContext>((context, diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SymbolAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="SymbolAnalysisContext"/>.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<SymbolAnalysisContext> Symbol(SymbolAnalysisContext context)
+		/// <param name="context">Context of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
+		public static ContextualDiagnosticReceiver<SymbolAnalysisContext> Symbol(SymbolAnalysisContext context)
 		{
-			return new DiagnosticReceiver<SymbolAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			return new ContextualDiagnosticReceiver<SymbolAnalysisContext>((context, diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxNodeAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxNodeAnalysisContext"/>.
 		/// </summary>
-		public static DiagnosticReceiver<SyntaxNodeAnalysisContext> SyntaxNode()
+		public static ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> SyntaxNode()
 		{
-			return new DiagnosticReceiver<SyntaxNodeAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			return new ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext>((context, diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxNodeAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxNodeAnalysisContext"/>.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<SyntaxNodeAnalysisContext> SyntaxNode(SyntaxNodeAnalysisContext context)
+		/// <param name="context">Context of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
+		public static ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> SyntaxNode(SyntaxNodeAnalysisContext context)
 		{
-			return new DiagnosticReceiver<SyntaxNodeAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			return new ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext>((context, diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxTreeAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxTreeAnalysisContext"/>.
 		/// </summary>
-		public static DiagnosticReceiver<SyntaxTreeAnalysisContext> SyntaxTree()
+		public static ContextualDiagnosticReceiver<SyntaxTreeAnalysisContext> SyntaxTree()
 		{
-			return new DiagnosticReceiver<SyntaxTreeAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			return new ContextualDiagnosticReceiver<SyntaxTreeAnalysisContext>((context, diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxTreeAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="SyntaxTreeAnalysisContext"/>.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<SyntaxTreeAnalysisContext> SyntaxTree(SyntaxTreeAnalysisContext context)
+		/// <param name="context">Context of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
+		public static ContextualDiagnosticReceiver<SyntaxTreeAnalysisContext> SyntaxTree(SyntaxTreeAnalysisContext context)
 		{
-			return new DiagnosticReceiver<SyntaxTreeAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			return new ContextualDiagnosticReceiver<SyntaxTreeAnalysisContext>((context, diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="CompilationAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="CompilationAnalysisContext"/>.
 		/// </summary>
-		public static DiagnosticReceiver<CompilationAnalysisContext> Compilation()
+		public static ContextualDiagnosticReceiver<CompilationAnalysisContext> Compilation()
 		{
-			return new DiagnosticReceiver<CompilationAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			return new ContextualDiagnosticReceiver<CompilationAnalysisContext>((context, diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="CompilationAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="CompilationAnalysisContext"/>.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<CompilationAnalysisContext> Compilation(CompilationAnalysisContext context)
+		/// <param name="context">Context of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
+		public static ContextualDiagnosticReceiver<CompilationAnalysisContext> Compilation(CompilationAnalysisContext context)
 		{
-			return new DiagnosticReceiver<CompilationAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			return new ContextualDiagnosticReceiver<CompilationAnalysisContext>((context, diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="AdditionalFileAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="AdditionalFileAnalysisContext"/>.
 		/// </summary>
-		public static ReadonlyDiagnosticReceiver<AdditionalFileAnalysisContext> AdditionalFile()
+		public static ReadonlyContextualDiagnosticReceiver<AdditionalFileAnalysisContext> AdditionalFile()
 		{
-			return new ReadonlyDiagnosticReceiver<AdditionalFileAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			return new ReadonlyContextualDiagnosticReceiver<AdditionalFileAnalysisContext>((in AdditionalFileAnalysisContext context, Diagnostic diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="AdditionalFileAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="AdditionalFileAnalysisContext"/>.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static ReadonlyDiagnosticReceiver<AdditionalFileAnalysisContext> AdditionalFile(AdditionalFileAnalysisContext context)
+		/// <param name="context">Context of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
+		public static ReadonlyContextualDiagnosticReceiver<AdditionalFileAnalysisContext> AdditionalFile(AdditionalFileAnalysisContext context)
 		{
-			return new ReadonlyDiagnosticReceiver<AdditionalFileAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			return new ReadonlyContextualDiagnosticReceiver<AdditionalFileAnalysisContext>((in AdditionalFileAnalysisContext context, Diagnostic diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="CodeBlockAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="CodeBlockAnalysisContext"/>.
 		/// </summary>
-		public static DiagnosticReceiver<CodeBlockAnalysisContext> CodeBlock()
+		public static ContextualDiagnosticReceiver<CodeBlockAnalysisContext> CodeBlock()
 		{
-			return new DiagnosticReceiver<CodeBlockAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			return new ContextualDiagnosticReceiver<CodeBlockAnalysisContext>((context, diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="CodeBlockAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="CodeBlockAnalysisContext"/>.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<CodeBlockAnalysisContext> CodeBlock(CodeBlockAnalysisContext context)
+		/// <param name="context">Context of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
+		public static ContextualDiagnosticReceiver<CodeBlockAnalysisContext> CodeBlock(CodeBlockAnalysisContext context)
 		{
-			return new DiagnosticReceiver<CodeBlockAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			return new ContextualDiagnosticReceiver<CodeBlockAnalysisContext>((context, diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="GeneratorExecutionContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="GeneratorExecutionContext"/>.
 		/// </summary>
-		public static ReadonlyDiagnosticReceiver<GeneratorExecutionContext> SourceGenerator()
+		public static ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext> SourceGenerator()
 		{
-			return new ReadonlyDiagnosticReceiver<GeneratorExecutionContext>(DurianDiagnostics.ReportDiagnostic);
+			return new ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>((in GeneratorExecutionContext context, Diagnostic diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="GeneratorExecutionContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="GeneratorExecutionContext"/>.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static ReadonlyDiagnosticReceiver<GeneratorExecutionContext> SourceGenerator(GeneratorExecutionContext context)
+		/// <param name="context">Context of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
+		public static ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext> SourceGenerator(GeneratorExecutionContext context)
 		{
-			return new ReadonlyDiagnosticReceiver<GeneratorExecutionContext>(DurianDiagnostics.ReportDiagnostic, context);
+			return new ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>((in GeneratorExecutionContext context, Diagnostic diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="OperationAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="OperationAnalysisContext"/>.
 		/// </summary>
-		public static DiagnosticReceiver<OperationAnalysisContext> Operation()
+		public static ContextualDiagnosticReceiver<OperationAnalysisContext> Operation()
 		{
-			return new DiagnosticReceiver<OperationAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			return new ContextualDiagnosticReceiver<OperationAnalysisContext>((context, diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="OperationAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="OperationAnalysisContext"/>.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<OperationAnalysisContext> Operation(OperationAnalysisContext context)
+		/// <param name="context">Context of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
+		public static ContextualDiagnosticReceiver<OperationAnalysisContext> Operation(OperationAnalysisContext context)
 		{
-			return new DiagnosticReceiver<OperationAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			return new ContextualDiagnosticReceiver<OperationAnalysisContext>((context, diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="OperationBlockAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="OperationBlockAnalysisContext"/>.
 		/// </summary>
-		public static DiagnosticReceiver<OperationBlockAnalysisContext> OperationBlock()
+		public static ContextualDiagnosticReceiver<OperationBlockAnalysisContext> OperationBlock()
 		{
-			return new DiagnosticReceiver<OperationBlockAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			return new ContextualDiagnosticReceiver<OperationBlockAnalysisContext>((context, diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="OperationBlockAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="OperationBlockAnalysisContext"/>.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<OperationBlockAnalysisContext> OperationBlock(OperationBlockAnalysisContext context)
+		/// <param name="context">Context of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
+		public static ContextualDiagnosticReceiver<OperationBlockAnalysisContext> OperationBlock(OperationBlockAnalysisContext context)
 		{
-			return new DiagnosticReceiver<OperationBlockAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			return new ContextualDiagnosticReceiver<OperationBlockAnalysisContext>((context, diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SemanticModelAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="SemanticModelAnalysisContext"/>.
 		/// </summary>
-		public static DiagnosticReceiver<SemanticModelAnalysisContext> SemanticModel()
+		public static ContextualDiagnosticReceiver<SemanticModelAnalysisContext> SemanticModel()
 		{
-			return new DiagnosticReceiver<SemanticModelAnalysisContext>(DurianDiagnostics.ReportDiagnostic);
+			return new ContextualDiagnosticReceiver<SemanticModelAnalysisContext>((context, diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DiagnosticReceiver{T}"/> class that accepts only <see cref="SemanticModelAnalysisContext"/>.
+		/// Creates a new instance of the <see cref="ContextualDiagnosticReceiver{T}"/> class that accepts only <see cref="SemanticModelAnalysisContext"/>.
 		/// </summary>
-		/// <param name="context">Context of this <see cref="DiagnosticReceiver{T}"/>.</param>
-		public static DiagnosticReceiver<SemanticModelAnalysisContext> SemanticModel(SemanticModelAnalysisContext context)
+		/// <param name="context">Context of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
+		public static ContextualDiagnosticReceiver<SemanticModelAnalysisContext> SemanticModel(SemanticModelAnalysisContext context)
 		{
-			return new DiagnosticReceiver<SemanticModelAnalysisContext>(DurianDiagnostics.ReportDiagnostic, context);
+			return new ContextualDiagnosticReceiver<SemanticModelAnalysisContext>((context, diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>
@@ -206,13 +206,13 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Returns a new instance of the <see cref="DiagnosticBag"/> class.
+		/// Returns a new instance of the <see cref="DiagnosticReceiver"/> class.
 		/// </summary>
-		/// <param name="reportAction">Action that is performed when <see cref="ContextlessDiagnosticReceiver.ReportDiagnostic(DiagnosticDescriptor, Location, object[])"/> is called.</param>
+		/// <param name="reportAction">Action that is performed when <see cref="DiagnosticReceiver.ReportDiagnostic(Diagnostic)"/>is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="reportAction"/> is <c>null</c>.</exception>
-		public static ContextlessDiagnosticReceiver ReportAction(ReportAction reportAction)
+		public static DiagnosticReceiver Direct(DirectReportAction reportAction)
 		{
-			return new ContextlessDiagnosticReceiver(reportAction);
+			return new DiagnosticReceiver(reportAction);
 		}
 	}
 }
