@@ -30,27 +30,48 @@ namespace Durian.DefaultParam
 			}
 		}
 
-		private void ReportForBothReceivers(Diagnostic diagnostic)
-		{
-			_loggableReceiver!.ReportDiagnostic(diagnostic);
-			_generator.DiagnosticReceiver!.ReportDiagnostic(diagnostic);
-		}
-
 		public void ReportDiagnosticsForLocalFunctions()
 		{
-			if (_generator.SyntaxReceiver is null || _generator.TargetCompilation is null)
+			if (_generator.SyntaxReceiver is null || _generator.TargetCompilation is null || _generator.SyntaxReceiver.CandidateLocalFunctions is null || _generator.SyntaxReceiver.CandidateLocalFunctions.Count == 0)
 			{
 				return;
 			}
 
+			DefaultParamCompilationData compilation = _generator.TargetCompilation;
+			List<LocalFunctionStatementSyntax> candidates = _generator.SyntaxReceiver.CandidateLocalFunctions;
+			CancellationToken cancellationToken = _generator.CancellationToken;
+
 			if (_loggableReceiver is not null)
 			{
 				IDirectDiagnosticReceiver diagnosticReceiver = _generator.EnableDiagnostics ? _diagnosticReceiver! : _loggableReceiver;
-				ReportDiagnosticsForLocalFunctions(diagnosticReceiver, _generator.TargetCompilation, _generator.SyntaxReceiver, _generator.CancellationToken);
+
+				foreach (LocalFunctionStatementSyntax fn in candidates)
+				{
+					if (fn is null)
+					{
+						continue;
+					}
+
+					SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(fn.SyntaxTree);
+
+					if (HasDefaultParamAttrbiute(fn, semanticModel, compilation.AttributeConstructor))
+					{
+						ISymbol? symbol = semanticModel.GetDeclaredSymbol(fn, cancellationToken);
+
+						if (symbol is not IMethodSymbol s)
+						{
+							continue;
+						}
+
+						_loggableReceiver.SetTargetNode(fn, symbol.ToString());
+						DefaultParamMethodAnalyzer.ReportDiagnosticForLocalFunction(diagnosticReceiver, s);
+						_loggableReceiver.Push();
+					}
+				}
 			}
 			else if (_diagnosticReceiver is not null && _generator.EnableDiagnostics)
 			{
-				ReportDiagnosticsForLocalFunctions(_diagnosticReceiver, _generator.TargetCompilation, _generator.SyntaxReceiver, _generator.CancellationToken);
+				ReportDiagnosticsForLocalFunctions_Internal(_diagnosticReceiver, compilation, _generator.SyntaxReceiver.CandidateLocalFunctions, cancellationToken);
 			}
 		}
 
@@ -61,55 +82,20 @@ namespace Durian.DefaultParam
 				return;
 			}
 
-			foreach (LocalFunctionStatementSyntax fn in collectedLocalFunctions)
-			{
-				if (fn is null)
-				{
-					continue;
-				}
-
-				SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(fn.SyntaxTree);
-
-				if (HasDefaultParamAttrbiute(fn, semanticModel, compilation.AttributeConstructor))
-				{
-					ISymbol? symbol = semanticModel.GetDeclaredSymbol(fn, cancellationToken);
-
-					if (symbol is not IMethodSymbol s)
-					{
-						continue;
-					}
-
-					DefaultParamMethodAnalyzer.ReportDiagnosticForLocalFunction(diagnosticReceiver, s);
-				}
-			}
+			ReportDiagnosticsForLocalFunctions_Internal(diagnosticReceiver, compilation, collectedLocalFunctions, cancellationToken);
 		}
 
 		public static void ReportDiagnosticsForLocalFunctions(IDiagnosticReceiver diagnosticReceiver, DefaultParamCompilationData compilation, DefaultParamSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken = default)
 		{
-			if (syntaxReceiver is null || syntaxReceiver.CandidateLocalFunctions is null)
+			if (diagnosticReceiver is null || compilation is null || syntaxReceiver is null || syntaxReceiver.CandidateLocalFunctions is null || syntaxReceiver.CandidateLocalFunctions.Count == 0)
 			{
 				return;
 			}
 
-			ReportDiagnosticsForLocalFunctions(diagnosticReceiver, compilation, syntaxReceiver.CandidateLocalFunctions, cancellationToken);
+			ReportDiagnosticsForLocalFunctions_Internal(diagnosticReceiver, compilation, syntaxReceiver.CandidateLocalFunctions, cancellationToken);
 		}
 
-		private static bool HasDefaultParamAttrbiute(LocalFunctionStatementSyntax decl, SemanticModel semanticModel, IMethodSymbol attrCtor)
-		{
-			if (decl.TypeParameterList is null)
-			{
-				return false;
-			}
-
-			return decl.TypeParameterList.Parameters
-				.SelectMany(p => p.AttributeLists)
-				.SelectMany(attr => attr.Attributes)
-				.Any(attr =>
-				{
-					SymbolInfo info = semanticModel.GetSymbolInfo(attr);
-					return info.Symbol is IMethodSymbol m && SymbolEqualityComparer.Default.Equals(m, attrCtor);
-				});
-		}
+		#region -Interface Implementations-
 
 		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
 		{
@@ -140,5 +126,55 @@ namespace Durian.DefaultParam
 			throw new NotImplementedException();
 		}
 #pragma warning restore RCS1079 // Throwing of new NotImplementedException.
+
+		#endregion
+
+		private static void ReportDiagnosticsForLocalFunctions_Internal(IDiagnosticReceiver diagnosticReceiver, DefaultParamCompilationData compilation, IEnumerable<LocalFunctionStatementSyntax> collectedLocalFunctions, CancellationToken cancellationToken)
+		{
+			foreach (LocalFunctionStatementSyntax fn in collectedLocalFunctions)
+			{
+				if (fn is null)
+				{
+					continue;
+				}
+
+				SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(fn.SyntaxTree);
+
+				if (HasDefaultParamAttrbiute(fn, semanticModel, compilation.AttributeConstructor))
+				{
+					ISymbol? symbol = semanticModel.GetDeclaredSymbol(fn, cancellationToken);
+
+					if (symbol is not IMethodSymbol s)
+					{
+						continue;
+					}
+
+					DefaultParamMethodAnalyzer.ReportDiagnosticForLocalFunction(diagnosticReceiver, s);
+				}
+			}
+		}
+
+		private static bool HasDefaultParamAttrbiute(LocalFunctionStatementSyntax decl, SemanticModel semanticModel, IMethodSymbol attrCtor)
+		{
+			if (decl.TypeParameterList is null)
+			{
+				return false;
+			}
+
+			return decl.TypeParameterList.Parameters
+				.SelectMany(p => p.AttributeLists)
+				.SelectMany(attr => attr.Attributes)
+				.Any(attr =>
+				{
+					SymbolInfo info = semanticModel.GetSymbolInfo(attr);
+					return info.Symbol is IMethodSymbol m && SymbolEqualityComparer.Default.Equals(m, attrCtor);
+				});
+		}
+
+		private void ReportForBothReceivers(Diagnostic diagnostic)
+		{
+			_loggableReceiver!.ReportDiagnostic(diagnostic);
+			_generator.DiagnosticReceiver!.ReportDiagnostic(diagnostic);
+		}
 	}
 }

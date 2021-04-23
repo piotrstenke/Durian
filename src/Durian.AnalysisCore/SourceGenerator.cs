@@ -1,4 +1,6 @@
+#if ENABLE_GENERATOR_LOGS
 using System;
+#endif
 using System.Linq;
 using System.Threading;
 using Durian.Data;
@@ -74,7 +76,6 @@ namespace Durian
 #endif
 	{
 #if ENABLE_GENERATOR_DIAGNOSTICS
-
 #pragma warning disable IDE0032 // Use auto property
 		private bool _enableDiagnostics;
 #pragma warning restore IDE0032 // Use auto property
@@ -109,32 +110,28 @@ namespace Durian
 			}
 		}
 
+#pragma warning disable IDE0027 // Use expression body for accessors
 		/// <inheritdoc/>
 		public bool EnableDiagnostics
 		{
 			get
 			{
-#pragma warning disable IDE0027 // Use expression body for accessors
-
 #if ENABLE_GENERATOR_DIAGNOSTICS
 				return _enableDiagnostics;
 #else
 				return false;
 #endif
 
-#pragma warning restore IDE0027 // Use expression body for accessors
 			}
 			set
 			{
 #if ENABLE_GENERATOR_DIAGNOSTICS
 
-#pragma warning disable IDE0027 // Use expression body for accessors
 				_enableDiagnostics = value;
-#pragma warning restore IDE0027 // Use expression body for accessors
-
 #endif
 			}
 		}
+#pragma warning restore IDE0027 // Use expression body for accessors
 
 		/// <summary>
 		/// A <see cref="System.Threading.CancellationToken"/> that can be checked to see if the generation should be canceled.
@@ -163,9 +160,9 @@ namespace Durian
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
 		/// </summary>
-		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information. If <c>null</c>, <see cref="SourceGeneratorLoggingConfiguration.Default"/> is used instead.</param>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information. If <c>null</c>, <see cref="GeneratorLoggingConfiguration.Default"/> is used instead.</param>
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-		protected SourceGenerator(SourceGeneratorLoggingConfiguration loggingConfiguration) : base(loggingConfiguration)
+		protected SourceGenerator(GeneratorLoggingConfiguration loggingConfiguration) : base(loggingConfiguration)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
 		}
@@ -321,6 +318,10 @@ namespace Durian
 			TargetCompilation.UpdateCompilation(tree);
 		}
 
+#if !ENABLE_GENERATOR_LOGS
+#pragma warning disable RCS1163 // Unused parameter.
+#endif
+
 		/// <summary>
 		/// Adds the source created using the <paramref name="builder"/> to the <paramref name="context"/>.
 		/// </summary>
@@ -372,15 +373,19 @@ namespace Durian
 #endif
 		}
 
+#if !ENABLE_GENERATOR_LOGS
+#pragma warning restore RCS1163 // Unused parameter.
+#endif
+
+#if ENABLE_GENERATOR_LOGS
 		private void LogGeneratedNode(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, CancellationToken cancellationToken)
 		{
-#if ENABLE_GENERATOR_LOGS
 			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
 			{
 				LogNode_Internal(original, tree.GetRoot(cancellationToken), hintName);
 			}
-#endif
 		}
+#endif
 
 		/// <summary>
 		/// Creates a new <see cref="IDurianSyntaxReceiver"/> to be used during the current generation pass.

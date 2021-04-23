@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace Durian
@@ -11,13 +12,24 @@ namespace Durian
 		public sealed class DiagnosticReceiver : IDirectDiagnosticReceiver
 		{
 			private readonly DiagnosticBag _bag;
-			private SyntaxNode? _node;
-			private string? _hintName;
 
 			/// <summary>
 			/// <see cref="LoggableSourceGenerator"/> this <see cref="DiagnosticReceiver"/> reports the diagnostics to.
 			/// </summary>
 			public LoggableSourceGenerator Generator { get; }
+
+			/// <inheritdoc cref="DiagnosticBag.Diagnostics"/>
+			public List<Diagnostic> Diagnostics => _bag.Diagnostics;
+
+			/// <summary>
+			/// Target <see cref="SyntaxNode"/>.
+			/// </summary>
+			public SyntaxNode? Node { get; private set; }
+
+			/// <summary>
+			/// Name of the log file to log to.
+			/// </summary>
+			public string? HintName { get; private set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="LoggableSourceGenerator"/> class.
@@ -41,33 +53,31 @@ namespace Durian
 			/// <param name="hintName">Name of the log file to log to.</param>
 			public void SetTargetNode(SyntaxNode? node, string? hintName)
 			{
-				_node = node;
-				_hintName = hintName;
+				Node = node;
+				HintName = hintName;
 			}
 
 			/// <inheritdoc/>
 			public void ReportDiagnostic(DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs)
 			{
-#if ENABLE_GENERATOR_LOGS
 				_bag.ReportDiagnostic(descriptor, location, messageArgs);
-#endif
 			}
 
 			/// <inheritdoc/>
 			public void ReportDiagnostic(Diagnostic diagnostic)
 			{
-#if ENABLE_GENERATOR_LOGS
 				_bag.ReportDiagnostic(diagnostic);
-#endif
 			}
 
 			/// <summary>
 			/// Actually writes the diagnostics to the target file.
 			/// </summary>
+#pragma warning disable CA1822 // Mark members as static
 			public void Push()
+#pragma warning restore CA1822 // Mark members as static
 			{
 #if ENABLE_GENERATOR_LOGS
-				Generator.LogDiagnostics(_node!, _hintName!, _bag.Diagnostics.ToArray());
+				Generator.LogDiagnostics(Node!, HintName!, _bag.Diagnostics.ToArray());
 #endif
 			}
 		}

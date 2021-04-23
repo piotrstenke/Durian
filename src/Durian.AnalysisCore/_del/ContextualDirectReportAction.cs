@@ -8,5 +8,5 @@ namespace Durian
 	/// <typeparam name="T">Type of the <paramref name="context"/>.</typeparam>
 	/// <param name="context">Context to report the diagnostics to.</param>
 	/// <param name="diagnostic"><see cref="Diagnostic"/> to report.</param>
-	public delegate void ContextualDirectReportAction<T>(T context, Diagnostic diagnostic) where T : struct;
+	public delegate void ContextualDirectReportAction<in T>(T context, Diagnostic diagnostic) where T : struct;
 }

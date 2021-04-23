@@ -10,5 +10,5 @@ namespace Durian
 	/// <param name="descriptor"><see cref="DiagnosticDescriptor"/> that is used to report the diagnostics.</param>
 	/// <param name="location">Source <see cref="Location"/> of the reported diagnostic.</param>
 	/// <param name="messageArgs">Arguments of the diagnostic message.</param>
-	public delegate void ContextualReportAction<T>(T context, DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs) where T : struct;
+	public delegate void ContextualReportAction<in T>(T context, DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs) where T : struct;
 }

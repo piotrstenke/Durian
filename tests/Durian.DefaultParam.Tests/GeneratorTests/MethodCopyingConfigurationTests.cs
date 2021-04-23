@@ -231,7 +231,6 @@ partial class Test
 	}}
 }}
 ";
-			//System.IO.File.WriteAllText("../../tests/generated.cs", RunGenerator(input).SourceText.ToString());
 			Assert.True(RunGenerator(input).Compare(expected));
 		}
 

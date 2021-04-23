@@ -36,7 +36,7 @@ namespace Durian.Tests
 		/// <summary>
 		/// Event invoked when the <see cref="Generate"/> method is called.
 		/// </summary>
-		public event GenerateAction? OnGenerate;
+		public event Action<IMemberData, ISyntaxFilterWithDiagnostics, GeneratorExecutionContext>? OnGenerate;
 
 		/// <summary>
 		/// Event invoked when the <see cref="Initialize"/> method is called.
@@ -66,21 +66,7 @@ namespace Durian.Tests
 		/// <summary>
 		/// Event invoked when the <see cref="GetFilters(in GeneratorExecutionContext)"/> method is called.
 		/// </summary>
-		public event GetFiltersAction? OnGetFilters;
-
-		/// <summary>
-		/// A delegate with signature equivalent to the <see cref="SourceGenerator{TCompilationData, ISyntaxReceiver, IFilter}.Generate(IMemberData, IFilter, in GeneratorExecutionContext)"/> method.
-		/// </summary>
-		/// <param name="member"><see cref="IMemberData"/> to generate the source for.</param>
-		/// <param name="filter"><see cref="ISyntaxFilter"/> that collected the target <paramref name="member"/>.</param>
-		/// <param name="context">The <see cref="GeneratorExecutionContext"/> to add source to.</param>
-		public delegate void GenerateAction(IMemberData member, ISyntaxFilter filter, in GeneratorExecutionContext context);
-
-		/// <summary>
-		/// A delegate with signature equivalent to the <see cref="SourceGenerator{TCompilationData, ISyntaxReceiver, IFilter}.GetFilters(in GeneratorExecutionContext)"/> method.
-		/// </summary>
-		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-		public delegate FilterList<ISyntaxFilterWithDiagnostics> GetFiltersAction(in GeneratorExecutionContext context);
+		public event Func<GeneratorExecutionContext, FilterList<ISyntaxFilterWithDiagnostics>>? OnGetFilters;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianSourceGeneratorProxy"/> class.
@@ -119,7 +105,7 @@ namespace Durian.Tests
 		/// <inheritdoc/>
 		protected override FilterList<ISyntaxFilterWithDiagnostics>? GetFilters(in GeneratorExecutionContext context)
 		{
-			return OnGetFilters?.Invoke(in context);
+			return OnGetFilters?.Invoke(context);
 		}
 
 		/// <inheritdoc/>
@@ -131,7 +117,7 @@ namespace Durian.Tests
 		/// <inheritdoc/>
 		protected override void Generate(IMemberData member, ISyntaxFilterWithDiagnostics filter, in GeneratorExecutionContext context)
 		{
-			OnGenerate?.Invoke(member, filter, in context);
+			OnGenerate?.Invoke(member, filter, context);
 			_exeContext = context;
 		}
 

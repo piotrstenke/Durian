@@ -1,10 +1,9 @@
 ﻿#if ENABLE_GENERATOR_LOGS
+using Durian.Configuration;
 using System.IO;
 using System.Linq;
-using System.Text;
-#endif
-#if DEBUG
 using System.Reflection;
+using System.Text;
 #endif
 using System;
 using System.Collections.Generic;
@@ -19,17 +18,17 @@ namespace Durian
 	[DebuggerDisplay("{GetGeneratorName()}, {GetVersion()}")]
 	public abstract partial class LoggableSourceGenerator : ISourceGenerator
 	{
-		/// <inheritdoc cref="SourceGeneratorLoggingConfiguration"/>
-		public SourceGeneratorLoggingConfiguration LoggingConfiguration { get; }
+		/// <inheritdoc cref="GeneratorLoggingConfiguration"/>
+		public GeneratorLoggingConfiguration LoggingConfiguration { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableSourceGenerator"/> class.
 		/// </summary>
-		/// <param name="checkforConfigurationAttribute">If <c>true</c>, the value defined on this class using the <see cref="SourceGeneratorConfigurationAttribute"/> is used as the target <see cref="LoggingConfiguration"/>.</param>
+		/// <param name="checkforConfigurationAttribute">If <c>true</c>, the value defined on this class using the <see cref="GeneratorLoggingConfigurationAttribute"/> is used as the target <see cref="LoggingConfiguration"/>.</param>
 		protected LoggableSourceGenerator(bool checkforConfigurationAttribute)
 		{
-#if DEBUG
-			LoggingConfiguration = checkforConfigurationAttribute ? GetConfigurationFromAttribute() : SourceGeneratorLoggingConfiguration.Default;
+#if ENABLE_GENERATOR_LOGS
+			LoggingConfiguration = checkforConfigurationAttribute ? GetConfigurationFromAttribute() : GeneratorLoggingConfiguration.Default;
 #else
 			LoggingConfiguration = SourceGeneratorLoggingConfiguration.Default;
 #endif
@@ -38,10 +37,10 @@ namespace Durian
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableSourceGenerator"/> class.
 		/// </summary>
-		/// <param name="configuration">Determines how the source generator should behave when logging information. If <c>null</c>, <see cref="SourceGeneratorLoggingConfiguration.Default"/> is used instead.</param>
-		protected LoggableSourceGenerator(SourceGeneratorLoggingConfiguration? configuration)
+		/// <param name="configuration">Determines how the source generator should behave when logging information. If <c>null</c>, <see cref="GeneratorLoggingConfiguration.Default"/> is used instead.</param>
+		protected LoggableSourceGenerator(GeneratorLoggingConfiguration? configuration)
 		{
-			LoggingConfiguration = configuration ?? SourceGeneratorLoggingConfiguration.Default;
+			LoggingConfiguration = configuration ?? GeneratorLoggingConfiguration.Default;
 		}
 
 		/// <inheritdoc/>
@@ -70,6 +69,11 @@ namespace Durian
 		{
 			return nameof(LoggableSourceGenerator);
 		}
+
+#if !ENABLE_GENERATOR_LOGS
+#pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable CA1822 // Mark members as static
+#endif
 
 		/// <summary>
 		/// Logs an <see cref="Exception"/>.
@@ -129,6 +133,11 @@ namespace Durian
 			}
 #endif
 		}
+
+#if !ENABLE_GENERATOR_LOGS
+#pragma warning restore CA1822 // Mark members as static
+#pragma warning restore RCS1163 // Unused parameter.
+#endif
 
 #if ENABLE_GENERATOR_LOGS
 		internal void LogException_Internal(Exception exception)
@@ -207,12 +216,10 @@ namespace Durian
 			Directory.CreateDirectory(path);
 			File.WriteAllText(path + $"/{name}.log", sb.ToString());
 		}
-#endif
 
-#if DEBUG
-		private SourceGeneratorLoggingConfiguration GetConfigurationFromAttribute()
+		private GeneratorLoggingConfiguration GetConfigurationFromAttribute()
 		{
-			return GetType().GetCustomAttribute<SourceGeneratorConfigurationAttribute>()?.GetConfiguration() ?? SourceGeneratorLoggingConfiguration.Default;
+			return GetType().GetCustomAttribute<GeneratorLoggingConfigurationAttribute>()?.GetLoggingConfiguration() ?? GeneratorLoggingConfiguration.Default;
 		}
 #endif
 	}

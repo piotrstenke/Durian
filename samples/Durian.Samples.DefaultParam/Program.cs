@@ -1,5 +1,5 @@
-﻿using Durian.Configuration;
-[assembly: DefaultParamConfiguration(ApplyNewToGeneratedMembersWithEquivalentSignature = true, CallInsteadOfCopying = true)]
+﻿using System;
+using System.IO;
 
 namespace Durian.Samples.DefaultParam
 {
@@ -9,13 +9,12 @@ namespace Durian.Samples.DefaultParam
 
 		private static void Main()
 		{
-			Logger<int>.Log(12);
-		}
-
-		[DefaultParamMethodConfiguration(CallInsteadOfCopying = true)]
-		public static void Method<[DefaultParam(typeof(int))]U>(U value)
-		{
 
 		}
+
+		//public static void Method<[Durian.DefaultParam(typeof(int))]U>(U value)
+		//{
+
+		//}
 	}
 }
