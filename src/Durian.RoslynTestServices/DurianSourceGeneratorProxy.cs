@@ -8,7 +8,7 @@ namespace Durian.Tests
 	/// <summary>
 	/// A simple proxy class that inherits the <see cref="SourceGenerator"/> class and leaves the actual implementation details to be defined by the user through appropriate C# events, as well as provides references to the passed <see cref="GeneratorInitializationContext"/> and <see cref="GeneratorExecutionContext"/>.
 	/// </summary>
-	public sealed class DurianSourceGeneratorProxy : SourceGenerator<ICompilationData, IDurianSyntaxReceiver, ISyntaxFilterWithDiagnostics>
+	public class DurianSourceGeneratorProxy : SourceGenerator
 	{
 		private GeneratorExecutionContext _exeContext;
 		private GeneratorInitializationContext _initContext;

@@ -319,6 +319,11 @@ namespace Durian.DefaultParam
 			return GetDeclarationBuilder((DefaultParamMethodData)target, cancellationToken);
 		}
 
+		IEnumerable<IDefaultParamTarget> IDefaultParamFilter.Filtrate()
+		{
+			return GetValidMethods();
+		}
+
 		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
 		{
 			return GetValidMethods((DefaultParamCompilationData)compilation, (DefaultParamSyntaxReceiver)syntaxReceiver, cancellationToken);

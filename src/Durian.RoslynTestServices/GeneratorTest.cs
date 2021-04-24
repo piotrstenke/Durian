@@ -3,30 +3,6 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Tests
 {
-	/// <inheritdoc cref="GeneratorTest"/>
-	/// <typeparam name="TGenerator">Type of <see cref="ISourceGenerator"/> to test.</typeparam>
-	public abstract class GeneratorTest<TGenerator> : GeneratorTest where TGenerator : ISourceGenerator, new()
-	{
-		/// <inheritdoc cref="GeneratorTest.Generator"/>
-		public new TGenerator Generator => (TGenerator)base.Generator;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GeneratorTest{TGenerator}"/> class.
-		/// </summary>
-		protected GeneratorTest(TGenerator generator) : base(generator)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GeneratorTest{TGenerator}"/> class.
-		/// </summary>
-		/// <param name="generator"><see cref="ISourceGenerator"/> to test.</param>
-		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for this <paramref name="generator"/> if it supports any.</param>
-		protected GeneratorTest(TGenerator generator, bool enableDiagnostics) : base(generator, enableDiagnostics)
-		{
-		}
-	}
-
 	/// <summary>
 	/// An abstract class that provides methods to test <see cref="ISourceGenerator"/>s.
 	/// </summary>
@@ -40,19 +16,19 @@ namespace Durian.Tests
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorTest"/> class.
 		/// </summary>
-		/// <param name="generator"><see cref="ISourceGenerator"/> to test.</param>
-		protected GeneratorTest(ISourceGenerator generator)
+		protected GeneratorTest()
 		{
-			Generator = generator;
+			Generator = CreateGenerator();
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorTest"/> class.
 		/// </summary>
-		/// <param name="generator"><see cref="ISourceGenerator"/> to test.</param>
-		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for this <paramref name="generator"/> if it supports any.</param>
-		protected GeneratorTest(ISourceGenerator generator, bool enableDiagnostics)
+		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for the created <see cref="ISourceGenerator"/> if it supports any.</param>
+		protected GeneratorTest(bool enableDiagnostics)
 		{
+			ISourceGenerator generator = CreateGenerator();
+
 			if (enableDiagnostics && generator is IDurianSourceGenerator g && g.SupportsDiagnostics)
 			{
 				g.EnableDiagnostics = true;
@@ -60,6 +36,11 @@ namespace Durian.Tests
 
 			Generator = generator;
 		}
+
+		/// <summary>
+		/// Creates a new instance of <see cref="ISourceGenerator"/> for the current test.
+		/// </summary>
+		protected abstract ISourceGenerator CreateGenerator();
 
 		/// <summary>
 		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.

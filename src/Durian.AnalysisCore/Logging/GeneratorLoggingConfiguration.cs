@@ -9,6 +9,7 @@ namespace Durian.Logging
 	public sealed partial record GeneratorLoggingConfiguration
 	{
 		private readonly string _logDirectory;
+		private readonly bool _enableLogging;
 
 		/// <summary>
 		/// The directory the source generator logs will be written to.
@@ -37,7 +38,18 @@ namespace Durian.Logging
 		/// <summary>
 		/// Determines whether to enable logging.
 		/// </summary>
-		public bool EnableLogging { get; init; }
+		/// <exception cref="InvalidOperationException"><see cref="EnableLogging"/> cannot be set to <see langword="true"/> when generator logging is globally disabled.</exception>
+		public bool EnableLogging
+		{
+			get => _enableLogging;
+			init
+			{
+				if(!IsEnabled)
+				{
+					throw new InvalidOperationException($"{nameof(EnableLogging)} cannot be set to true when generator logging is globally disabled!");
+				}
+			}
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLoggingConfiguration"/> class.

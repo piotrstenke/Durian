@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 #endif
 using System;
 using System.Collections.Generic;
@@ -10,13 +11,11 @@ using Microsoft.CodeAnalysis;
 
 namespace Durian.Logging
 {
-	/// <summary>
-	/// An <see cref="ISourceGenerator"/> that can create log files.
-	/// </summary>
+	/// <inheritdoc cref="ILoggableSourceGenerator"/>
 	[DebuggerDisplay("{GetGeneratorName()}, {GetVersion()}")]
-	public abstract partial class LoggableSourceGenerator : ISourceGenerator
+	public abstract partial class LoggableSourceGenerator : ILoggableSourceGenerator
 	{
-		/// <inheritdoc cref="GeneratorLoggingConfiguration"/>
+		/// <inheritdoc/>
 		public GeneratorLoggingConfiguration LoggingConfiguration { get; }
 
 		/// <summary>
@@ -72,11 +71,8 @@ namespace Durian.Logging
 #pragma warning disable CA1822 // Mark members as static
 #endif
 
-		/// <summary>
-		/// Logs an <see cref="Exception"/>.
-		/// </summary>
-		/// <param name="exception"></param>
-		protected void LogException(Exception exception)
+		/// <inheritdoc/>
+		public void LogException(Exception exception)
 		{
 #if ENABLE_GENERATOR_LOGS
 			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
@@ -86,13 +82,8 @@ namespace Durian.Logging
 #endif
 		}
 
-		/// <summary>
-		/// Logs an input and output <see cref="SyntaxNode"/>.
-		/// </summary>
-		/// <param name="input">Input <see cref="SyntaxNode"/>.</param>
-		/// <param name="output">Output <see cref="SyntaxNode"/>.</param>
-		/// <param name="hintName">Name of the log file to log to.</param>
-		protected void LogNode(SyntaxNode input, SyntaxNode output, string hintName)
+		/// <inheritdoc/>
+		public void LogNode(SyntaxNode input, SyntaxNode output, string hintName)
 		{
 #if ENABLE_GENERATOR_LOGS
 			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node) && !(input is null && output is null))
@@ -102,13 +93,8 @@ namespace Durian.Logging
 #endif
 		}
 
-		/// <summary>
-		/// Logs an input <see cref="SyntaxNode"/> and <see cref="Diagnostic"/>s that were created for that node.
-		/// </summary>
-		/// <param name="node"><see cref="SyntaxNode"/> the diagnostics were created for.</param>
-		/// <param name="hintName">Name of the log file to log to.</param>
-		/// <param name="diagnostics">A collection of <see cref="Diagnostic"/>s that were created for this <paramref name="node"/>.</param>
-		protected void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics)
+		/// <inheritdoc/>
+		public void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics)
 		{
 #if ENABLE_GENERATOR_LOGS
 			LogDiagnostics(node, hintName, diagnostics?.ToArray()!);
@@ -121,7 +107,7 @@ namespace Durian.Logging
 		/// <param name="node"><see cref="SyntaxNode"/> the diagnostics were created for.</param>
 		/// <param name="hintName">Name of the log file to log to.</param>
 		/// <param name="diagnostics">An array of <see cref="Diagnostic"/>s that were created for this <paramref name="node"/>.</param>
-		protected void LogDiagnostics(SyntaxNode node, string hintName, params Diagnostic[] diagnostics)
+		public void LogDiagnostics(SyntaxNode node, string hintName, params Diagnostic[] diagnostics)
 		{
 #if ENABLE_GENERATOR_LOGS
 			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Diagnostics) && diagnostics is not null && diagnostics.Length > 0)
@@ -140,7 +126,7 @@ namespace Durian.Logging
 		internal void LogException_Internal(Exception exception)
 		{
 			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
-			File.AppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString());
+			TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString() + "\n\n");
 		}
 
 		internal void LogNode_Internal(SyntaxNode input, SyntaxNode output, string hintName)
@@ -149,24 +135,15 @@ namespace Durian.Logging
 
 			if (input is not null)
 			{
-				sb.AppendLine("input::");
-				sb.AppendLine();
+				AppendSection(sb, "input");
 
 				sb.AppendLine(input.ToFullString());
-				sb.AppendLine();
-
-				for (int i = 0; i < 100; i++)
-				{
-					sb.Append('-');
-				}
-
 				sb.AppendLine();
 			}
 
 			if (output is not null)
 			{
-				sb.AppendLine("output::");
-				sb.AppendLine();
+				AppendSection(sb, "output");
 				sb.AppendLine(output.ToFullString());
 			}
 
@@ -174,7 +151,7 @@ namespace Durian.Logging
 			string path = LoggingConfiguration.LogDirectory + "/.generated";
 			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
 			Directory.CreateDirectory(path);
-			File.WriteAllText(path + $"/{name}.log", sb.ToString());
+			TryWriteAllText(path + $"/{name}.log", sb.ToString());
 		}
 
 		internal void LogDiagnostics_Internal(SyntaxNode node, string hintName, Diagnostic[] diagnostics)
@@ -183,22 +160,11 @@ namespace Durian.Logging
 
 			if (node is not null)
 			{
-				sb.AppendLine("input::");
-				sb.AppendLine();
-
+				AppendSection(sb, "input");
 				sb.AppendLine(node.ToFullString());
-				sb.AppendLine();
-
-				for (int i = 0; i < 100; i++)
-				{
-					sb.Append('-');
-				}
-
-				sb.AppendLine();
 			}
 
-			sb.AppendLine("diagnostics::");
-			sb.AppendLine();
+			AppendSection(sb, "diagnostics");
 
 			foreach (Diagnostic diagnostic in diagnostics)
 			{
@@ -211,7 +177,80 @@ namespace Durian.Logging
 			string path = LoggingConfiguration.LogDirectory + "/.diag";
 			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
 			Directory.CreateDirectory(path);
-			File.WriteAllText(path + $"/{name}.log", sb.ToString());
+			TryWriteAllText(path + $"/{name}.log", sb.ToString());
+		}
+
+		private static void AppendSection(StringBuilder sb, string sectionName)
+		{
+			for (int i = 0; i < 100; i++)
+			{
+				sb.Append('-');
+			}
+
+			sb.AppendLine();
+			sb.Append(sectionName).AppendLine("::");
+
+			for (int i = 0; i < 100; i++)
+			{
+				sb.Append('-');
+			}
+
+			sb.AppendLine();
+			sb.AppendLine();
+		}
+
+		private static void TryAppendAllText(string file, string text)
+		{
+			try
+			{
+				File.AppendAllText(file, text);
+			}
+			catch (IOException e) when (e.GetType() == typeof(IOException))
+			{
+				Thread.Sleep(50);
+
+				int numTries = 1;
+
+				while (true)
+				{
+					try
+					{
+						File.AppendAllText(file, text);
+					}
+					catch (IOException) when (numTries < 10)
+					{
+						numTries++;
+						Thread.Sleep(50);
+					}
+				}
+			}
+		}
+
+		private static void TryWriteAllText(string file, string text)
+		{
+			try
+			{
+				File.WriteAllText(file, text);
+			}
+			catch (IOException e) when (e.GetType() == typeof(IOException))
+			{
+				Thread.Sleep(50);
+
+				int numTries = 1;
+
+				while (true)
+				{
+					try
+					{
+						File.WriteAllText(file, text);
+					}
+					catch (IOException) when (numTries < 10)
+					{
+						numTries++;
+						Thread.Sleep(50);
+					}
+				}
+			}
 		}
 #endif
 	}

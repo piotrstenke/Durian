@@ -138,15 +138,18 @@ namespace Durian.Logging
 				throw new ArgumentNullException(nameof(assembly));
 			}
 
-			if (_assemblyConfigurations.TryGetValue(assembly, out GeneratorLoggingConfiguration config))
+			lock(_assemblyConfigurations)
 			{
-				return config;
-			}
-			else
-			{
-				config = CreateConfigurationForAssembly(assembly);
-				_assemblyConfigurations.Add(assembly, config);
-				return config;
+				if (_assemblyConfigurations.TryGetValue(assembly, out GeneratorLoggingConfiguration config))
+				{
+					return config;
+				}
+				else
+				{
+					config = CreateConfigurationForAssembly(assembly);
+					_assemblyConfigurations.Add(assembly, config);
+					return config;
+				}
 			}
 		}
 

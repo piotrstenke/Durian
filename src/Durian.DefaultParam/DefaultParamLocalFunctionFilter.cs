@@ -98,6 +98,11 @@ namespace Durian.DefaultParam
 
 		#region -Interface Implementations-
 
+		IEnumerable<IDefaultParamTarget> IDefaultParamFilter.Filtrate()
+		{
+			return Array.Empty<IDefaultParamTarget>();
+		}
+
 		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
 		{
 			return Array.Empty<IMemberData>();

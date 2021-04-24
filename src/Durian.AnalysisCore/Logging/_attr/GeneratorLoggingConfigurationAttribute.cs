@@ -22,7 +22,7 @@ namespace Durian.Logging
 		/// <summary>
 		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="GeneratorLoggingConfiguration.DefaultLogDirectory"/>. Defaults to <see langword="false"/>.
 		/// </summary>
-		/// <remarks>If <see cref="RelativeToDefault"/> is set to <see langword="true"/>, value of <see cref="RelativeToGlobal"/> is irrelevelant.</remarks>
+		/// <remarks>If <see cref="RelativeToDefault"/> is set to <see langword="true"/>, value of <see cref="RelativeToGlobal"/> is irrelevant.</remarks>
 		public bool RelativeToDefault { get; set; }
 
 		/// <inheritdoc cref="GeneratorLoggingConfiguration.SupportedLogs"/>
