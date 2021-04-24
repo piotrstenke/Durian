@@ -13,7 +13,7 @@ namespace Durian
 		/// <param name="diagnostic">Diagnostics to report.</param>
 		/// <param name="location">Location where the error occurred.</param>
 		/// <param name="messageArgs">Arguments to use when formatting the diagnostic message.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		public static void ReportDiagnostic(in GeneratorExecutionContext context, DiagnosticDescriptor diagnostic, Location? location, params object?[]? messageArgs)
 		{
 			if (diagnostic is null)
@@ -31,7 +31,7 @@ namespace Durian
 		/// <param name="diagnostic">Diagnostics to report.</param>
 		/// <param name="location">Location where the error occurred.</param>
 		/// <param name="messageArgs">Arguments to use when formatting the diagnostic message.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		public static void ReportDiagnostic(SymbolAnalysisContext context, DiagnosticDescriptor diagnostic, Location? location, params object?[]? messageArgs)
 		{
 			if (diagnostic is null)
@@ -49,7 +49,7 @@ namespace Durian
 		/// <param name="diagnostic">Diagnostics to report.</param>
 		/// <param name="location">Location where the error occurred.</param>
 		/// <param name="messageArgs">Arguments to use when formatting the diagnostic message.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		public static void ReportDiagnostic(SyntaxNodeAnalysisContext context, DiagnosticDescriptor diagnostic, Location? location, params object?[]? messageArgs)
 		{
 			if (diagnostic is null)
@@ -67,7 +67,7 @@ namespace Durian
 		/// <param name="diagnostic">Diagnostics to report.</param>
 		/// <param name="location">Location where the error occurred.</param>
 		/// <param name="messageArgs">Arguments to use when formatting the diagnostic message.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		public static void ReportDiagnostic(CompilationAnalysisContext context, DiagnosticDescriptor diagnostic, Location? location, params object?[]? messageArgs)
 		{
 			if (diagnostic is null)
@@ -85,7 +85,7 @@ namespace Durian
 		/// <param name="diagnostic">Diagnostics to report.</param>
 		/// <param name="location">Location where the error occurred.</param>
 		/// <param name="messageArgs">Arguments to use when formatting the diagnostic message.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		public static void ReportDiagnostic(in AdditionalFileAnalysisContext context, DiagnosticDescriptor diagnostic, Location? location, params object?[]? messageArgs)
 		{
 			if (diagnostic is null)
@@ -103,7 +103,7 @@ namespace Durian
 		/// <param name="diagnostic">Diagnostics to report.</param>
 		/// <param name="location">Location where the error occurred.</param>
 		/// <param name="messageArgs">Arguments to use when formatting the diagnostic message.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		public static void ReportDiagnostic(CodeBlockAnalysisContext context, DiagnosticDescriptor diagnostic, Location? location, params object?[]? messageArgs)
 		{
 			if (diagnostic is null)
@@ -121,7 +121,7 @@ namespace Durian
 		/// <param name="diagnostic">Diagnostics to report.</param>
 		/// <param name="location">Location where the error occurred.</param>
 		/// <param name="messageArgs">Arguments to use when formatting the diagnostic message.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		public static void ReportDiagnostic(OperationAnalysisContext context, DiagnosticDescriptor diagnostic, Location? location, params object?[]? messageArgs)
 		{
 			if (diagnostic is null)
@@ -139,7 +139,7 @@ namespace Durian
 		/// <param name="diagnostic">Diagnostics to report.</param>
 		/// <param name="location">Location where the error occurred.</param>
 		/// <param name="messageArgs">Arguments to use when formatting the diagnostic message.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		public static void ReportDiagnostic(OperationBlockAnalysisContext context, DiagnosticDescriptor diagnostic, Location? location, params object?[]? messageArgs)
 		{
 			if (diagnostic is null)
@@ -157,7 +157,7 @@ namespace Durian
 		/// <param name="diagnostic">Diagnostics to report.</param>
 		/// <param name="location">Location where the error occurred.</param>
 		/// <param name="messageArgs">Arguments to use when formatting the diagnostic message.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		public static void ReportDiagnostic(SemanticModelAnalysisContext context, DiagnosticDescriptor diagnostic, Location? location, params object?[]? messageArgs)
 		{
 			if (diagnostic is null)
@@ -175,7 +175,7 @@ namespace Durian
 		/// <param name="diagnostic">Diagnostics to report.</param>
 		/// <param name="location">Location where the error occurred.</param>
 		/// <param name="messageArgs">Arguments to use when formatting the diagnostic message.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		public static void ReportDiagnostic(SyntaxTreeAnalysisContext context, DiagnosticDescriptor diagnostic, Location? location, params object?[]? messageArgs)
 		{
 			if (diagnostic is null)

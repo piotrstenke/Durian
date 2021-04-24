@@ -24,5 +24,9 @@ namespace Durian
 		/// Log containing diagnostics that were produced.
 		/// </summary>
 		Diagnostics = 1 << 2,
+		/// <summary>
+		/// Includes all types of logs.
+		/// </summary>
+		All = Exception | Node | Diagnostics
 	}
 }

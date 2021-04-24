@@ -35,7 +35,7 @@ namespace {DurianStrings.ConfigurationNamespace}
 		public bool {CallInsteadOfCopyingProperty} {{ get; set; }}
 
 		/// <summary>
-		/// Determines whether to allow to override values of <see cref=""{DefaultParamAttribute.FullTypeName}""/>s for virtual methods. Defaults to <c>false</c>.
+		/// Determines whether to allow to override values of <see cref=""{DefaultParamAttribute.FullTypeName}""/>s for virtual methods. Defaults to <see langword=""false""/>.
 		/// </summary>
 		/// <example>
 		/// The following sample...
@@ -78,7 +78,7 @@ namespace {DurianStrings.ConfigurationNamespace}
 		public bool {AllowOverridingOfDefaultParamValuesProperty} {{ get; set; }}
 
 		/// <summary>
-		/// Determines whether to allow adding new <see cref=""{DefaultParamAttribute.FullTypeName}""/>s to type parameters that don't have the <see cref=""{DefaultParamAttribute.FullTypeName}""/> defined on the base method. Defaults to <c>false</c>.
+		/// Determines whether to allow adding new <see cref=""{DefaultParamAttribute.FullTypeName}""/>s to type parameters that don't have the <see cref=""{DefaultParamAttribute.FullTypeName}""/> defined on the base method. Defaults to <see langword=""false""/>.
 		/// </summary>
 		/// <example>
 		/// The following sample...
@@ -121,7 +121,7 @@ namespace {DurianStrings.ConfigurationNamespace}
 		public bool {AllowAddingDefaultParamToNewParametersProperty} {{ get; set; }}
 
 		/// <summary>
-		/// Determines whether to apply the 'new' modifier to the generated member when possible instead of reporting an error. Defaults to <c>false</c>.
+		/// Determines whether to apply the 'new' modifier to the generated member when possible instead of reporting an error. Defaults to <see langword=""false""/>.
 		/// </summary>
 		/// <example>
 		/// The following sample...

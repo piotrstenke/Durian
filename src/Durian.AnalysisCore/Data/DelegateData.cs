@@ -26,7 +26,7 @@ namespace Durian.Data
 		/// <param name="declaration">Target <see cref="DelegateDeclarationSyntax"/>.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
 		public DelegateData(DelegateDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
 		{

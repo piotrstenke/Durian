@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using Durian.Data;
-using Durian.Configuration;
 using Durian.Extensions;
+using Durian.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.DefaultParam
 {
 	[Generator]
-	[GeneratorLoggingConfiguration(true, SupportedLogs = GeneratorLogs.Exception | GeneratorLogs.Node | GeneratorLogs.Diagnostics)]
+	[GeneratorLoggingConfiguration(RelativeToGlobal = true, SupportedLogs = GeneratorLogs.Exception | GeneratorLogs.Node | GeneratorLogs.Diagnostics)]
 	public sealed class DefaultParamGenerator : SourceGenerator<DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>
 	{
 		public static string Version => "1.0.0";
@@ -25,15 +25,9 @@ namespace Durian.DefaultParam
 			_builder = new(this);
 		}
 
-		public DefaultParamGenerator(GeneratorLoggingConfiguration loggingConfiguration) : base(loggingConfiguration)
-		{
-			_rewriter = new();
-			_builder = new(this);
-		}
-
 		public override DefaultParamSyntaxReceiver CreateSyntaxReceiver()
 		{
-			return new DefaultParamSyntaxReceiver(EnableDiagnostics);
+			return new DefaultParamSyntaxReceiver(SupportsDiagnostics && EnableDiagnostics);
 		}
 
 		protected override FilterList<IDefaultParamFilter> GetFilters(in GeneratorExecutionContext context)

@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using Durian.Data;
+using Durian.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -80,6 +81,10 @@ namespace Durian
 		private bool _enableDiagnostics;
 #pragma warning restore IDE0032 // Use auto property
 #endif
+
+#if ENABLE_GENERATOR_LOGS
+#endif
+
 		/// <summary>
 		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
 		/// </summary>
@@ -153,16 +158,6 @@ namespace Durian
 #else
 			: base(false)
 #endif
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
-		/// </summary>
-		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information. If <c>null</c>, <see cref="GeneratorLoggingConfiguration.Default"/> is used instead.</param>
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-		protected SourceGenerator(GeneratorLoggingConfiguration loggingConfiguration) : base(loggingConfiguration)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
 		}
@@ -377,16 +372,6 @@ namespace Durian
 #pragma warning restore RCS1163 // Unused parameter.
 #endif
 
-#if ENABLE_GENERATOR_LOGS
-		private void LogGeneratedNode(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, CancellationToken cancellationToken)
-		{
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
-			{
-				LogNode_Internal(original, tree.GetRoot(cancellationToken), hintName);
-			}
-		}
-#endif
-
 		/// <summary>
 		/// Creates a new <see cref="IDurianSyntaxReceiver"/> to be used during the current generation pass.
 		/// </summary>
@@ -429,5 +414,15 @@ namespace Durian
 		/// </summary>
 		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
 		protected abstract TCompilationData? CreateCompilationData(CSharpCompilation compilation);
+
+#if ENABLE_GENERATOR_LOGS
+		private void LogGeneratedNode(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, CancellationToken cancellationToken)
+		{
+			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
+			{
+				LogNode_Internal(original, tree.GetRoot(cancellationToken), hintName);
+			}
+		}
+#endif
 	}
 }

@@ -1,8 +1,6 @@
 ﻿#if ENABLE_GENERATOR_LOGS
-using Durian.Configuration;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 #endif
 using System;
@@ -10,7 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
-namespace Durian
+namespace Durian.Logging
 {
 	/// <summary>
 	/// An <see cref="ISourceGenerator"/> that can create log files.
@@ -24,20 +22,19 @@ namespace Durian
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableSourceGenerator"/> class.
 		/// </summary>
-		/// <param name="checkforConfigurationAttribute">If <c>true</c>, the value defined on this class using the <see cref="GeneratorLoggingConfigurationAttribute"/> is used as the target <see cref="LoggingConfiguration"/>.</param>
-		protected LoggableSourceGenerator(bool checkforConfigurationAttribute)
+		protected LoggableSourceGenerator(bool checkForConfigurationAttribute)
 		{
 #if ENABLE_GENERATOR_LOGS
-			LoggingConfiguration = checkforConfigurationAttribute ? GetConfigurationFromAttribute() : GeneratorLoggingConfiguration.Default;
+			LoggingConfiguration = checkForConfigurationAttribute ? GeneratorLoggingConfiguration.CreateConfigurationForGenerator(this) : GeneratorLoggingConfiguration.Default;
 #else
-			LoggingConfiguration = SourceGeneratorLoggingConfiguration.Default;
+			LoggingConfiguration = GeneratorLoggingConfiguration.Default;
 #endif
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableSourceGenerator"/> class.
 		/// </summary>
-		/// <param name="configuration">Determines how the source generator should behave when logging information. If <c>null</c>, <see cref="GeneratorLoggingConfiguration.Default"/> is used instead.</param>
+		/// <param name="configuration">Determines how the source generator should behave when logging information. If <see langword="null"/>, <see cref="GeneratorLoggingConfiguration.Default"/> is used instead.</param>
 		protected LoggableSourceGenerator(GeneratorLoggingConfiguration? configuration)
 		{
 			LoggingConfiguration = configuration ?? GeneratorLoggingConfiguration.Default;
@@ -82,7 +79,7 @@ namespace Durian
 		protected void LogException(Exception exception)
 		{
 #if ENABLE_GENERATOR_LOGS
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
+			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
 			{
 				LogException_Internal(exception);
 			}
@@ -98,7 +95,7 @@ namespace Durian
 		protected void LogNode(SyntaxNode input, SyntaxNode output, string hintName)
 		{
 #if ENABLE_GENERATOR_LOGS
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node) && !(input is null && output is null))
+			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node) && !(input is null && output is null))
 			{
 				LogNode_Internal(input!, output, hintName);
 			}
@@ -127,7 +124,7 @@ namespace Durian
 		protected void LogDiagnostics(SyntaxNode node, string hintName, params Diagnostic[] diagnostics)
 		{
 #if ENABLE_GENERATOR_LOGS
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Diagnostics) && diagnostics is not null && diagnostics.Length > 0)
+			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Diagnostics) && diagnostics is not null && diagnostics.Length > 0)
 			{
 				LogDiagnostics_Internal(node, hintName, diagnostics);
 			}
@@ -215,11 +212,6 @@ namespace Durian
 			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
 			Directory.CreateDirectory(path);
 			File.WriteAllText(path + $"/{name}.log", sb.ToString());
-		}
-
-		private GeneratorLoggingConfiguration GetConfigurationFromAttribute()
-		{
-			return GetType().GetCustomAttribute<GeneratorLoggingConfigurationAttribute>()?.GetLoggingConfiguration() ?? GeneratorLoggingConfiguration.Default;
 		}
 #endif
 	}

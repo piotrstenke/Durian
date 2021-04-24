@@ -166,7 +166,7 @@ namespace Durian.Tests
 		/// <typeparam name="TNode">Type of <see cref="CSharpSyntaxNode"/> to find and return.</typeparam>
 		/// <returns>
 		/// The <see cref="CSharpSyntaxNode"/> of type <typeparamref name="TNode"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
-		/// <c>null</c> if no such <see cref="CSharpSyntaxNode"/> exists.
+		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
 		/// </returns>
 		public TNode? GetNode<TNode>(string? source, int index = 0) where TNode : CSharpSyntaxNode
 		{
@@ -186,7 +186,7 @@ namespace Durian.Tests
 		/// <typeparam name="TNode">Type of <see cref="CSharpSyntaxNode"/> to find and return.</typeparam>
 		/// <returns>
 		/// The <see cref="CSharpSyntaxNode"/> of type <typeparamref name="TNode"/> found at the specified index in the specified <paramref name="syntaxTree"/> -or-
-		/// <c>null</c> if no such <see cref="CSharpSyntaxNode"/> exists.
+		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
 		/// </returns>
 		public TNode? GetNode<TNode>(CSharpSyntaxTree? syntaxTree, int index = 0) where TNode : CSharpSyntaxNode
 		{
@@ -208,7 +208,7 @@ namespace Durian.Tests
 		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/> to retrieve from the specified <paramref name="node"/>.</typeparam>
 		/// <returns>
 		/// An <see cref="ISymbol"/> of type <typeparamref name="TSymbol"/> retrieved from the target <paramref name="node"/> -or-
-		/// <c>null</c> if no such <see cref="CSharpSyntaxNode"/> exists.
+		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
 		/// </returns>
 		public TSymbol? GetSymbol<TSymbol>(CSharpSyntaxNode? node) where TSymbol : class, ISymbol
 		{
@@ -249,7 +249,7 @@ namespace Durian.Tests
 		/// <typeparam name="TNode">Type of <see cref="CSharpSyntaxNode"/> to find and convert to a <see cref="ISymbol"/> of type <typeparamref name="TSymbol"/>.</typeparam>
 		/// <returns>
 		/// An <see cref="ISymbol"/> of type <typeparamref name="TSymbol"/> retrieved from the target <paramref name="syntaxTree"/> -or-
-		/// <c>null</c> if no such <see cref="CSharpSyntaxNode"/> exists.
+		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
 		/// </returns>
 		public TSymbol? GetSymbol<TSymbol, TNode>(CSharpSyntaxTree? syntaxTree, int index = 0) where TSymbol : class, ISymbol where TNode : CSharpSyntaxNode
 		{
@@ -265,7 +265,7 @@ namespace Durian.Tests
 		/// <typeparam name="TNode">Type of <see cref="CSharpSyntaxNode"/> to find and convert to a <see cref="ISymbol"/> of type <typeparamref name="TSymbol"/>.</typeparam>
 		/// <returns>
 		/// An <see cref="ISymbol"/> of type <typeparamref name="TSymbol"/> retrieved from a <see cref="CSharpSyntaxTree"/> of type <typeparamref name="TNode"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
-		/// <c>null</c> if no such <see cref="CSharpSyntaxNode"/> exists.
+		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
 		/// </returns>
 		public TSymbol? GetSymbol<TSymbol, TNode>(string? source, int index = 0) where TSymbol : class, ISymbol where TNode : CSharpSyntaxNode
 		{
@@ -280,7 +280,7 @@ namespace Durian.Tests
 		/// <typeparam name="TNode">Type of <see cref="CSharpSyntaxNode"/> to find and convert to a <see cref="IMemberData"/>.</typeparam>
 		/// <returns>
 		/// A new <see cref="IMemberData"/> created from a <see cref="CSharpSyntaxTree"/> of type <typeparamref name="TNode"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
-		/// <c>null</c> if no such <see cref="CSharpSyntaxNode"/> exists.
+		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
 		/// </returns>
 		public IMemberData? GetMemberData<TNode>(string? source, int index = 0) where TNode : MemberDeclarationSyntax
 		{

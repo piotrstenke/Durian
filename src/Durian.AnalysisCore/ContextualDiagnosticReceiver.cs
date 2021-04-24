@@ -29,7 +29,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="action"><see cref="ContextualDirectReportAction{T}"/> to be performed when the <see cref="ReportDiagnostic(Diagnostic)"/> method is called.</param>
 		/// <param name="context">Context of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="action"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="action"/> is <see langword="null"/>.</exception>
 		public ContextualDiagnosticReceiver(ContextualDirectReportAction<T> action, in T context)
 		{
 			if (action is null)
@@ -63,7 +63,7 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Resets the internal context to <c>default</c>.
+		/// Resets the internal context to <see langword="default"/>.
 		/// </summary>
 		public void RemoveContext()
 		{

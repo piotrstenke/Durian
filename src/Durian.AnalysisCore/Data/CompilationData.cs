@@ -20,7 +20,7 @@ namespace Durian.Data
 		/// Initializes a new instance of the <see cref="CompilationData"/> class.
 		/// </summary>
 		/// <param name="compilation">Current <see cref="Microsoft.CodeAnalysis.Compilation"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public CompilationData(CSharpCompilation compilation)
 		{
 			if (compilation is null)

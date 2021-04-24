@@ -15,12 +15,12 @@ namespace Durian.Tests
 		private static readonly Regex _diagnosticMessageRegex = new(@"\(\d+,\d+\):.+?: ", RegexOptions.Singleline);
 
 		/// <summary>
-		/// Checks if the <see cref="IGeneratorTestResult.IsGenerated"/> property of the <paramref name="result"/> is <c>true</c> and if it contains any diagnostics with the specified <paramref name="ids"/>.
+		/// Checks if the <see cref="IGeneratorTestResult.IsGenerated"/> property of the <paramref name="result"/> is <see langword="true"/> and if it contains any diagnostics with the specified <paramref name="ids"/>.
 		/// </summary>
 		/// <typeparam name="T">Type of <see cref="IGeneratorTestResult"/> to work on.</typeparam>
 		/// <param name="result">The <see cref="IGeneratorTestResult"/> to check if has generated any sources and if contains diagnostics with the specified <paramref name="ids"/>.</param>
 		/// <param name="ids">Diagnostic IDs to be checked for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
 		public static bool HasFailedAndContainsDiagnosticIDs<T>(this T result, params string[]? ids) where T : IGeneratorTestResult
 		{
 			return ContainsDiagnosticIDs(result, ids) && !result.IsGenerated;
@@ -32,7 +32,7 @@ namespace Durian.Tests
 		/// <param name="result">The <see cref="IGeneratorTestResult"/> to check if contains diagnostics with the specified <paramref name="ids"/>.</param>
 		/// <param name="ids">Diagnostic IDs to be checked for.</param>
 		/// <typeparam name="T">Type of <see cref="IGeneratorTestResult"/> to work on.</typeparam>
-		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
 		public static bool ContainsDiagnosticIDs<T>(this T result, params string[]? ids) where T : IGeneratorTestResult
 		{
 			if (result is null)
@@ -59,7 +59,7 @@ namespace Durian.Tests
 		/// <param name="result">The <see cref="IGeneratorTestResult"/> to check if contains the specified <paramref name="diagnosticMessages"/>.</param>
 		/// <param name="diagnosticMessages">Diagnostic messages to be checked for.</param>
 		/// <typeparam name="T">Type of <see cref="IGeneratorTestResult"/> to work on.</typeparam>
-		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
 		public static bool ContainsDiagnosticMessages<T>(this T result, params string[]? diagnosticMessages) where T : IGeneratorTestResult
 		{
 			return ContainsDiagnosticMessages(result, true, diagnosticMessages);
@@ -72,7 +72,7 @@ namespace Durian.Tests
 		/// <param name="ignoreLocationAndName">Determines whether to ignore the location of the diagnostic and the name of the symbol it applies to.</param>
 		/// <param name="diagnosticMessages">Diagnostic messages to be checked for.</param>
 		/// <typeparam name="T">Type of <see cref="IGeneratorTestResult"/> to work on.</typeparam>
-		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
 		public static bool ContainsDiagnosticMessages<T>(this T result, bool ignoreLocationAndName, params string[]? diagnosticMessages) where T : IGeneratorTestResult
 		{
 			if (result is null)

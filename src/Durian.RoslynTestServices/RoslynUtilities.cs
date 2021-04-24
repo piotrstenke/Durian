@@ -304,7 +304,7 @@ namespace Durian.Tests
 		/// <typeparam name="TNode">Type of <see cref="CSharpSyntaxNode"/> to find and return.</typeparam>
 		/// <returns>
 		/// The first <see cref="CSharpSyntaxNode"/> of type <typeparamref name="TNode"/> found in the parsed <see cref="CSharpSyntaxTree"/> -or-
-		/// <c>null</c> if no such <see cref="CSharpSyntaxNode"/> exists.
+		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
 		/// </returns>
 		public static TNode? ParseNode<TNode>(string? source) where TNode : CSharpSyntaxNode
 		{
@@ -319,7 +319,7 @@ namespace Durian.Tests
 		/// <typeparam name="TNode">Type of <see cref="CSharpSyntaxNode"/> to find and return.</typeparam>
 		/// <returns>
 		/// The <see cref="CSharpSyntaxNode"/> of type <typeparamref name="TNode"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
-		/// <c>null</c> if no such <see cref="CSharpSyntaxNode"/> exists.
+		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
 		/// </returns>
 		public static TNode? ParseNode<TNode>(string? source, int index) where TNode : CSharpSyntaxNode
 		{
@@ -338,7 +338,7 @@ namespace Durian.Tests
 		/// <typeparam name="TNode">Type of <see cref="CSharpSyntaxNode"/> to find and return.</typeparam>
 		/// <returns>
 		/// The <see cref="CSharpSyntaxNode"/> of type <typeparamref name="TNode"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
-		/// <c>null</c> if no such <see cref="CSharpSyntaxNode"/> exists.
+		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
 		/// </returns>
 		public static TNode? ParseNode<TNode>(CSharpSyntaxTree? tree) where TNode : CSharpSyntaxNode
 		{
@@ -353,7 +353,7 @@ namespace Durian.Tests
 		/// <typeparam name="TNode">Type of <see cref="CSharpSyntaxNode"/> to find and return.</typeparam>
 		/// <returns>
 		/// The <see cref="CSharpSyntaxNode"/> of type <typeparamref name="TNode"/> found at the specified index in the specified <paramref name="syntaxTree"/> -or-
-		/// <c>null</c> if no such <see cref="CSharpSyntaxNode"/> exists.
+		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
 		/// </returns>
 		public static TNode? ParseNode<TNode>(CSharpSyntaxTree? syntaxTree, int index) where TNode : CSharpSyntaxNode
 		{

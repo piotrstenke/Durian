@@ -29,7 +29,7 @@ namespace Durian
 		/// Returns a <see cref="string"/> that is created by joining the provided <paramref name="namespaces"/> using the dot (".") character.
 		/// </summary>
 		/// <param name="namespaces">Namespaces to join.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> is <see langword="null"/>.</exception>
 		public static string JoinNamespaces(IEnumerable<string> namespaces)
 		{
 			if (namespaces is null)
@@ -44,8 +44,8 @@ namespace Durian
 		/// Joins the collection of <see cref="string"/>s into a <see cref="QualifiedNameSyntax"/>.
 		/// </summary>
 		/// <param name="names">A collection of <see cref="string"/>s to join into a <see cref="QualifiedNameSyntax"/>.</param>
-		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="names"/>. -or- <c>null</c> if there were less then 2 <paramref name="names"/> provided.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="names"/> is <c>null</c>.</exception>
+		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="names"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="names"/> provided.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="names"/> is <see langword="null"/>.</exception>
 		public static QualifiedNameSyntax? JoinIntoQualifiedName(IEnumerable<string> names)
 		{
 			if (names is null)
@@ -72,10 +72,10 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Converts the type keyword to its proper .NET type (<c>int</c> to <c>Int32</c>, <c>float</c> to <c>Single</c> etc.).
+		/// Converts the type keyword to its proper .NET type (<see langword="int"/> to <c>Int32</c>, <see langword="float"/> to <c>Single</c> etc.).
 		/// </summary>
 		/// <param name="keyword">C# keyword to convert.</param>
-		/// <returns>Name of the type behind the given <paramref name="keyword"/>. -or- <paramref name="keyword"/> if it's not a C# type keyword. -or- <see cref="string.Empty"/> of the <paramref name="keyword"/> is <c>null</c>.</returns>
+		/// <returns>Name of the type behind the given <paramref name="keyword"/>. -or- <paramref name="keyword"/> if it's not a C# type keyword. -or- <see cref="string.Empty"/> of the <paramref name="keyword"/> is <see langword="null"/>.</returns>
 		public static string KeywordToType(string? keyword)
 		{
 			if (keyword is null)
@@ -108,10 +108,10 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Converts the type name to its proper C# keyword (<c>Int32</c> to <c>int</c>, <c>Single</c> to <c>float</c> etc.).
+		/// Converts the type name to its proper C# keyword (<c>Int32</c> to <see langword="int"/>, <c>Single</c> to <see langword="float"/> etc.).
 		/// </summary>
 		/// <param name="type">Type to get the associated C# keyword of.</param>
-		/// <returns>Keyword that represents the given <paramref name="type"/>. -or- <paramref name="type"/> if the type name is not associated with a C# keyword. -or- <see cref="string.Empty"/> of the <paramref name="type"/> is <c>null</c>.</returns>
+		/// <returns>Keyword that represents the given <paramref name="type"/>. -or- <paramref name="type"/> if the type name is not associated with a C# keyword. -or- <see cref="string.Empty"/> of the <paramref name="type"/> is <see langword="null"/>.</returns>
 		public static string TypeToKeyword(string? type)
 		{
 			if (type is null)
@@ -148,7 +148,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>
 		/// <param name="name">Actual member identifier.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <see langword="null"/>.</exception>
 		public static string GetGenericName(IEnumerable<string> typeParameters, string? name)
 		{
 			return $"{name ?? string.Empty}{GetGenericName(typeParameters)}";
@@ -158,7 +158,7 @@ namespace Durian
 		/// Returns a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeParameters"/>.
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <see langword="null"/>.</exception>
 		public static string GetGenericName(IEnumerable<string> typeParameters)
 		{
 			if (typeParameters is null)
@@ -192,7 +192,7 @@ namespace Durian
 		/// Sorts the collection of namespace names.
 		/// </summary>
 		/// <param name="collection">A collection of namespace names.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<string> SortUsings(IEnumerable<string> collection)
 		{
 			if (collection is null)
@@ -224,7 +224,7 @@ namespace Durian
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
 		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="syntaxNode"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.
+		/// <paramref name="syntaxNode"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="ArgumentException">
 		/// Specified <paramref name="syntaxNode"/> doesn't represent any symbols.
@@ -257,7 +257,7 @@ namespace Durian
 		/// </summary>
 		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/> to return.</typeparam>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="syntaxNode"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.
+		/// <paramref name="syntaxNode"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="ArgumentException">
 		/// Specified <paramref name="syntaxNode"/> doesn't represent any symbols. -or-

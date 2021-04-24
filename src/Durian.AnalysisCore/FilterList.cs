@@ -89,8 +89,8 @@ namespace Durian
 		/// </summary>
 		/// <param name="filters">A collection of <see cref="ISyntaxFilter"/>s that represent the initial <see cref="ISyntaxFilter"/> group of the <see cref="FilterList{TFilter}"/>.</param>
 		/// <exception cref="ArgumentException">
-		/// An <see cref="ISyntaxFilter"/> group cannot be <c>null</c> or empty. -or-
-		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <c>null</c>.
+		/// An <see cref="ISyntaxFilter"/> group cannot be <see langword="null"/> or empty. -or-
+		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <see langword="null"/>.
 		/// </exception>
 		public FilterList(IEnumerable<TFilter> filters)
 		{
@@ -102,8 +102,8 @@ namespace Durian
 		/// </summary>
 		/// <param name="groups">Initial <see cref="ISyntaxFilter"/> groups of this <see cref="FilterList{TFilter}"/>.</param>
 		/// <exception cref="ArgumentException">
-		/// An <see cref="ISyntaxFilter"/> group cannot be <c>null</c> or empty. -or-
-		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <c>null</c>.
+		/// An <see cref="ISyntaxFilter"/> group cannot be <see langword="null"/> or empty. -or-
+		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <see langword="null"/>.
 		/// </exception>
 		public FilterList(IEnumerable<IEnumerable<TFilter>> groups)
 		{
@@ -123,8 +123,8 @@ namespace Durian
 		/// </summary>
 		/// <param name="groups">Initial <see cref="ISyntaxFilter"/> groups of this <see cref="FilterList{TFilter}"/>.</param>
 		/// <exception cref="ArgumentException">
-		/// An <see cref="ISyntaxFilter"/> group cannot be <c>null</c> or empty. -or-
-		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <c>null</c>. -or-
+		/// An <see cref="ISyntaxFilter"/> group cannot be <see langword="null"/> or empty. -or-
+		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <see langword="null"/>. -or-
 		/// Group with the specified name already defined.
 		/// </exception>
 		public FilterList(IEnumerable<(string name, IEnumerable<TFilter> group)> groups)
@@ -150,7 +150,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="group">Index of group to add the <paramref name="filter"/> to.</param>
 		/// <param name="filter"><see cref="ISyntaxFilter"/> to add.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentOutOfRangeException"><paramref name="group"/> was out of range.</exception>
 		public void AddFilter(int group, TFilter filter)
 		{
@@ -167,7 +167,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="group">Name of group to add the <paramref name="filter"/> to.</param>
 		/// <param name="filter"><see cref="ISyntaxFilter"/> to add.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">
 		/// Name of a filter group cannot be null or whitespace only. -or-
 		/// <see cref="ISyntaxFilter"/> group with the specified name was not found.
@@ -188,8 +188,8 @@ namespace Durian
 		/// <param name="group">Index of group to add the <paramref name="filters"/> to.</param>
 		/// <param name="filters">A collection of <see cref="ISyntaxFilter"/> to add.</param>
 		/// <exception cref="ArgumentException">
-		/// An <see cref="ISyntaxFilter"/> group cannot be <c>null</c> or empty. -or-
-		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <c>null</c>.
+		/// An <see cref="ISyntaxFilter"/> group cannot be <see langword="null"/> or empty. -or-
+		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <see langword="null"/>.
 		/// </exception>
 		public void AddFilters(int group, IEnumerable<TFilter> filters)
 		{
@@ -204,8 +204,8 @@ namespace Durian
 		/// <exception cref="ArgumentException">
 		/// Name of a filter group cannot be null or whitespace only. -or-
 		/// <see cref="ISyntaxFilter"/> group with the specified name was not found.
-		/// An <see cref="ISyntaxFilter"/> group cannot be <c>null</c> or empty. -or-
-		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <c>null</c>.
+		/// An <see cref="ISyntaxFilter"/> group cannot be <see langword="null"/> or empty. -or-
+		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <see langword="null"/>.
 		/// </exception>
 		public void AddFilters(string group, IEnumerable<TFilter> filters)
 		{
@@ -301,7 +301,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="filter"><see cref="ISyntaxFilter"/> to add to the newly-registered <see cref="ISyntaxFilter"/> group.</param>
 		/// <returns>An <see cref="int"/> that represents the index at which the <see cref="ISyntaxFilter"/> group was registered.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <see langword="null"/>.</exception>
 		public int RegisterFilterGroup(TFilter filter)
 		{
 			if (filter is null)
@@ -320,7 +320,7 @@ namespace Durian
 		/// <param name="name">Name to be applied to the <see cref="ISyntaxFilter"/> group.</param>
 		/// <param name="filter"><see cref="ISyntaxFilter"/> to add to the newly-registered <see cref="ISyntaxFilter"/> group.</param>
 		/// <returns>An <see cref="int"/> that represents the index at which the <see cref="ISyntaxFilter"/> group was registered.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filter"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">
 		/// Name of a filter group cannot be null or whitespace only. -or-
 		/// Group with the specified <paramref name="name"/> already defined.
@@ -345,8 +345,8 @@ namespace Durian
 		/// <param name="filters">A collection of <see cref="ISyntaxFilter"/>s to add to the newly-register <see cref="ISyntaxFilter"/> group.</param>
 		/// <returns>An <see cref="int"/> that represents the index at which the <see cref="ISyntaxFilter"/> group was registered.</returns>
 		/// <exception cref="ArgumentException">
-		/// An <see cref="ISyntaxFilter"/> group cannot be <c>null</c> or empty. -or-
-		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <c>null</c>.
+		/// An <see cref="ISyntaxFilter"/> group cannot be <see langword="null"/> or empty. -or-
+		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <see langword="null"/>.
 		/// </exception>
 		public int RegisterFilterGroup(IEnumerable<TFilter> filters)
 		{
@@ -364,8 +364,8 @@ namespace Durian
 		/// <exception cref="ArgumentException">
 		/// Name of a filter group cannot be null or whitespace only. -or-
 		/// Group with the specified <paramref name="name"/> already defined.
-		/// An <see cref="ISyntaxFilter"/> group cannot be <c>null</c> or empty. -or-
-		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <c>null</c>.
+		/// An <see cref="ISyntaxFilter"/> group cannot be <see langword="null"/> or empty. -or-
+		/// An <see cref="ISyntaxFilter"/> inside a group cannot be <see langword="null"/>.
 		/// </exception>
 		public int RegisterFilterGroup(string name, IEnumerable<TFilter> filters)
 		{
@@ -472,7 +472,7 @@ namespace Durian
 		/// Returns name of the group at the specified <paramref name="index"/>.
 		/// </summary>
 		/// <param name="index"></param>
-		/// <returns>Name of the group at the specified <paramref name="index"/>. -or- <c>null</c> if group at the specified index doesn't have a name.</returns>
+		/// <returns>Name of the group at the specified <paramref name="index"/>. -or- <see langword="null"/> if group at the specified index doesn't have a name.</returns>
 		/// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> was out of range.</exception>
 		public string? GetName(int index)
 		{

@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-namespace Durian.Samples.DefaultParam
+﻿namespace Durian.Samples.DefaultParam
 {
 	internal partial class Program
 	{
@@ -12,9 +9,9 @@ namespace Durian.Samples.DefaultParam
 
 		}
 
-		//public static void Method<[Durian.DefaultParam(typeof(int))]U>(U value)
-		//{
+		public static void Method<[Durian.DefaultParam(typeof(int))]U>(U value)
+		{
 
-		//}
+		}
 	}
 }

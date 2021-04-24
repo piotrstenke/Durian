@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Durian
+namespace Durian.Logging
 {
 	public abstract partial class LoggableSourceGenerator
 	{

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
 
-namespace Durian
+namespace Durian.Logging
 {
 	/// <summary>
 	/// Determines how the source generator should behave when logging information.
 	/// </summary>
-	public sealed class GeneratorLoggingConfiguration
+	public sealed partial record GeneratorLoggingConfiguration
 	{
 		private readonly string _logDirectory;
 
@@ -38,11 +38,6 @@ namespace Durian
 		/// Determines whether to enable logging.
 		/// </summary>
 		public bool EnableLogging { get; init; }
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="GeneratorLoggingConfiguration"/> class with its values set to default.
-		/// </summary>
-		public static GeneratorLoggingConfiguration Default => new();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLoggingConfiguration"/> class.

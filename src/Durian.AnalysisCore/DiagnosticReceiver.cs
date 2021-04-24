@@ -13,10 +13,10 @@ namespace Durian
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ReadonlyContextualDiagnosticReceiver{T}"/> class.
 		/// </summary>
-		/// <exception cref="ArgumentNullException"><paramref name="action"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="action"/> is <see langword="null"/>.</exception>
 		public DiagnosticReceiver(DirectReportAction action)
 		{
-			if(action is null)
+			if (action is null)
 			{
 				throw new ArgumentNullException(nameof(action));
 			}

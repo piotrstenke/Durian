@@ -18,7 +18,7 @@ namespace Durian.Tests
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <c>null</c>. -or- <paramref name="resultProvider"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider resultProvider, string? source, params Assembly[]? assemblies)
 		{
 			return RunTest(generatorDriver, resultProvider, RoslynUtilities.CreateCompilationWithAssemblies(source, assemblies));
@@ -31,7 +31,7 @@ namespace Durian.Tests
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <c>null</c>. -or- <paramref name="resultProvider"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider resultProvider, IEnumerable<string>? sources, params Assembly[]? assemblies)
 		{
 			return RunTest(generatorDriver, resultProvider, RoslynUtilities.CreateCompilationWithAssemblies(sources, assemblies));
@@ -43,7 +43,7 @@ namespace Durian.Tests
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used a input of the tested <paramref name="generatorDriver"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <c>null</c>. -or- <paramref name="resultProvider"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider resultProvider, CSharpCompilation compilation)
 		{
 			if (generatorDriver is null)
@@ -74,7 +74,7 @@ namespace Durian.Tests
 		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
-		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <c>null</c>. -or- <paramref name="resultProvider"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static TResult RunTest<TResult>(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider<TResult> resultProvider, string? source, params Assembly[]? assemblies) where TResult : IGeneratorTestResult
 		{
 			return RunTest(generatorDriver, resultProvider, RoslynUtilities.CreateCompilationWithAssemblies(source, assemblies));
@@ -88,7 +88,7 @@ namespace Durian.Tests
 		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
-		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <c>null</c>. -or- <paramref name="resultProvider"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static TResult RunTest<TResult>(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider<TResult> resultProvider, IEnumerable<string>? sources, params Assembly[]? assemblies) where TResult : IGeneratorTestResult
 		{
 			return RunTest(generatorDriver, resultProvider, RoslynUtilities.CreateCompilationWithAssemblies(sources, assemblies));
@@ -101,7 +101,7 @@ namespace Durian.Tests
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used a input of the tested <paramref name="generatorDriver"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
-		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <c>null</c>. -or- <paramref name="resultProvider"/> is <c>null</c>. -or- <paramref name="compilation"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static TResult RunTest<TResult>(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider<TResult> resultProvider, CSharpCompilation compilation) where TResult : IGeneratorTestResult
 		{
 			if (generatorDriver is null)
