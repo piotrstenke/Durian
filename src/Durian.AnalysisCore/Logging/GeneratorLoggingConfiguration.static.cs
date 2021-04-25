@@ -138,7 +138,7 @@ namespace Durian.Logging
 				throw new ArgumentNullException(nameof(assembly));
 			}
 
-			lock(_assemblyConfigurations)
+			lock (_assemblyConfigurations)
 			{
 				if (_assemblyConfigurations.TryGetValue(assembly, out GeneratorLoggingConfiguration config))
 				{

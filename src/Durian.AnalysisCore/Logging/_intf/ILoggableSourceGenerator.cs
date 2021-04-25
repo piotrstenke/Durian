@@ -19,7 +19,7 @@ namespace Durian.Logging
 		/// <param name="hintName">Name of the log file to log to.</param>
 		/// <param name="diagnostics">A collection of <see cref="Diagnostic"/>s that were created for this <paramref name="node"/>.</param>
 		void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics);
-	
+
 		/// <summary>
 		/// Logs an <see cref="Exception"/>.
 		/// </summary>

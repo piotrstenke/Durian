@@ -331,7 +331,7 @@ partial class Test
 		{{
 			public partial struct Child
 			{{
-				public partial class Child
+				public partial class Test
 				{{
 					public void Method<[Durian.DefaultParam((typeof(int)))]T>()
 					{{
@@ -352,7 +352,7 @@ namespace N1.N2
 	{{
 		public partial struct Child
 		{{
-			public partial class Child
+			public partial class Test
 			{{
 				[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
 				public void Method()

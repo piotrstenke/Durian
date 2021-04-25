@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using System.Threading;
-using Durian.Data;
 
 namespace Durian.DefaultParam
 {
-	public interface IDefaultParamFilter : ISyntaxFilterWithDiagnostics
+	public interface IDefaultParamFilter : IGeneratorSyntaxFilterWithDiagnostics
 	{
 		IDefaultParamDeclarationBuilder GetDeclarationBuilder(IDefaultParamTarget target, CancellationToken cancellationToken = default);
-		IEnumerable<IDefaultParamTarget> Filtrate();
+		new IEnumerable<IDefaultParamTarget> Filtrate();
 	}
 }

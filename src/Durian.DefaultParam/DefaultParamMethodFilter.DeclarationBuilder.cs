@@ -68,7 +68,9 @@ namespace Durian.DefaultParam
 				SemanticModel = data.SemanticModel;
 				OriginalDeclaration = data.Declaration;
 
+				_indentLevel = DefaultParamUtilities.GetIndentWithoutMultipleNamespaces(data.Declaration);
 				SetDeclarationWithoutDefaultParamAttribute(data.Declaration, data.ParentCompilation, cancellationToken);
+				NormalizeIndent();
 				_newModifierIndices = data.NewModifierIndices;
 				_numNonDefaultParam = data.GetTypeParameters().NumNonDefaultParam;
 
@@ -82,7 +84,6 @@ namespace Durian.DefaultParam
 					_callMethodSyntax = null;
 					_callArguments = null;
 					_newType = null;
-					_indentLevel = 0;
 				}
 			}
 
@@ -177,7 +178,6 @@ namespace Durian.DefaultParam
 				_callMethodSyntax = SyntaxFactory.GenericName(data.Declaration.Identifier, SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(typeArguments)));
 				_callArguments = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments));
 				_applyReturnSyntax = CurrentDeclaration.ReturnType is not PredefinedTypeSyntax t || !t.Keyword.IsKind(SyntaxKind.VoidKeyword);
-				_indentLevel = GetIndent(data);
 
 				if (CurrentDeclaration.ExpressionBody is not null)
 				{
@@ -190,7 +190,7 @@ namespace Durian.DefaultParam
 
 				BlockSyntax GetBlock()
 				{
-					SyntaxTrivia[] indent = GetTabs(_indentLevel - 1);
+					SyntaxTrivia[] indent = GetTabs(_indentLevel);
 
 					return SyntaxFactory.Block(
 						SyntaxFactory.Token(SyntaxKind.OpenBraceToken).WithLeadingTrivia(indent).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed),
@@ -209,24 +209,6 @@ namespace Durian.DefaultParam
 				}
 
 				return trivia;
-			}
-
-			private static int GetIndent(DefaultParamMethodData data)
-			{
-				SyntaxNode? parent = data.Declaration;
-				int indent = 0;
-
-				while ((parent = parent!.Parent) is not null)
-				{
-					indent++;
-				}
-
-				if (indent < 0)
-				{
-					indent = 0;
-				}
-
-				return indent;
 			}
 
 			private void CheckDirectCall(int count)
@@ -252,7 +234,7 @@ namespace Durian.DefaultParam
 						statement = SyntaxFactory.ExpressionStatement(inv);
 					}
 
-					statement = statement.WithLeadingTrivia(GetTabs(_indentLevel)).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+					statement = statement.WithLeadingTrivia(GetTabs(_indentLevel + 1)).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
 
 					CurrentDeclaration = CurrentDeclaration.WithBody(SyntaxFactory.Block(CurrentDeclaration.Body!.OpenBraceToken, SyntaxFactory.SingletonList(statement), CurrentDeclaration.Body.CloseBraceToken));
 				}
@@ -314,6 +296,27 @@ namespace Durian.DefaultParam
 				CurrentDeclaration = method
 					.WithAttributeLists(SyntaxFactory.List(GetValidAttributes(method, compilation, cancellationToken)))
 					.WithTypeParameterList(SyntaxFactory.TypeParameterList(list)).WithoutTrivia();
+			}
+
+			private void NormalizeIndent()
+			{
+				if (CurrentDeclaration.Body is null)
+				{
+					return;
+				}
+
+				SyntaxTriviaList openBrace = CurrentDeclaration.Body.CloseBraceToken.LeadingTrivia.NormalizeWhitespace();
+				SyntaxTriviaList closedBrace = CurrentDeclaration.Body.OpenBraceToken.LeadingTrivia.NormalizeWhitespace();
+
+				for (int i = 0; i < _indentLevel; i++)
+				{
+					closedBrace = closedBrace.Add(SyntaxFactory.Tab);
+					openBrace = openBrace.Add(SyntaxFactory.Tab);
+				}
+
+				CurrentDeclaration = CurrentDeclaration.WithBody(CurrentDeclaration.Body
+					.WithOpenBraceToken(CurrentDeclaration.Body.OpenBraceToken.WithLeadingTrivia(openBrace))
+					.WithCloseBraceToken(CurrentDeclaration.Body.CloseBraceToken.WithLeadingTrivia(closedBrace)));
 			}
 
 			private IEnumerable<AttributeListSyntax> GetValidAttributes(MethodDeclarationSyntax method, DefaultParamCompilationData compilation, CancellationToken cancellationToken)

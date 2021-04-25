@@ -96,7 +96,11 @@ namespace Durian.Logging
 				dir = LogDirectory;
 			}
 
-			Directory.CreateDirectory(dir);
+			if (GeneratorLoggingConfiguration.IsEnabled)
+			{
+				Directory.CreateDirectory(dir);
+			}
+
 			_validatedDirectory = dir;
 			return dir;
 		}
@@ -163,7 +167,11 @@ namespace Durian.Logging
 				dir = LogDirectory;
 			}
 
-			Directory.CreateDirectory(dir);
+			if(GeneratorLoggingConfiguration.IsEnabled)
+			{
+				Directory.CreateDirectory(dir);
+			}
+
 			_validatedDirectory = dir;
 			return dir;
 		}

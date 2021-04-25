@@ -25,7 +25,12 @@ namespace Durian.Logging
 				}
 
 				string dir = Path.GetFullPath(value);
-				Directory.CreateDirectory(dir);
+
+				if(IsEnabled)
+				{
+					Directory.CreateDirectory(dir);
+				}
+
 				_logDirectory = dir;
 			}
 		}
@@ -44,10 +49,12 @@ namespace Durian.Logging
 			get => _enableLogging;
 			init
 			{
-				if(!IsEnabled)
+				if (value && !IsEnabled)
 				{
 					throw new InvalidOperationException($"{nameof(EnableLogging)} cannot be set to true when generator logging is globally disabled!");
 				}
+
+				_enableLogging = value;
 			}
 		}
 

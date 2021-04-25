@@ -3,11 +3,71 @@ using System.Linq;
 using System.Threading;
 using Durian.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
 {
 	internal static class DefaultParamUtilities
 	{
+		public static int GetIndent(SyntaxNode? node)
+		{
+			SyntaxNode? parent = node;
+			int indent = 0;
+
+			while ((parent = parent!.Parent) is not null)
+			{
+				if (parent is CompilationUnitSyntax)
+				{
+					continue;
+				}
+
+				indent++;
+			}
+
+			if (indent < 0)
+			{
+				indent = 0;
+			}
+
+			return indent;
+		}
+
+		public static int GetIndentWithoutMultipleNamespaces(SyntaxNode? node)
+		{
+			bool isNamespace = false;
+			SyntaxNode? parent = node;
+			int indent = 0;
+
+			while ((parent = parent!.Parent) is not null)
+			{
+				if (parent is CompilationUnitSyntax)
+				{
+					continue;
+				}
+
+				if (parent is NamespaceDeclarationSyntax)
+				{
+					if (isNamespace)
+					{
+						continue;
+					}
+					else
+					{
+						isNamespace = true;
+					}
+				}
+
+				indent++;
+			}
+
+			if (indent < 0)
+			{
+				indent = 0;
+			}
+
+			return indent;
+		}
+
 		public static string GetHintName(ISymbol symbol)
 		{
 			string? parentName = symbol.ContainingType?.Name;

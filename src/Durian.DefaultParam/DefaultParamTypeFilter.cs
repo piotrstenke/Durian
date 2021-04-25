@@ -14,14 +14,21 @@ namespace Durian.DefaultParam
 	public partial class DefaultParamTypeFilter : IDefaultParamFilter
 	{
 		private readonly DeclarationBuilder _declBuilder;
-		private readonly DefaultParamGenerator _generator;
 		private readonly LoggableSourceGenerator.DiagnosticReceiver? _loggableReceiver;
 		private readonly IDirectDiagnosticReceiver? _diagnosticReceiver;
+		private readonly IFileNameProvider _fileNameProvider;
 
-		public DefaultParamTypeFilter(DefaultParamGenerator generator)
+		public DefaultParamGenerator Generator { get; }
+		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
+
+		public DefaultParamTypeFilter(DefaultParamGenerator generator) : this(generator, SymbolNameToFile.Instance)
+		{
+		}
+
+		public DefaultParamTypeFilter(DefaultParamGenerator generator, IFileNameProvider fileNameProvider)
 		{
 			_declBuilder = new();
-			_generator = generator;
+			Generator = generator;
 
 			if (generator.LoggingConfiguration.EnableLogging)
 			{
@@ -32,6 +39,8 @@ namespace Durian.DefaultParam
 			{
 				_diagnosticReceiver = generator.DiagnosticReceiver!;
 			}
+
+			_fileNameProvider = fileNameProvider;
 		}
 
 		public DeclarationBuilder GetDeclarationBuilder(DefaultParamTypeData target, CancellationToken cancellationToken = default)
@@ -43,20 +52,20 @@ namespace Durian.DefaultParam
 
 		public DefaultParamTypeData[] GetValidTypes()
 		{
-			if (_generator.SyntaxReceiver is null || _generator.TargetCompilation is null || _generator.SyntaxReceiver.CandidateTypes.Count == 0)
+			if (Generator.SyntaxReceiver is null || Generator.TargetCompilation is null || Generator.SyntaxReceiver.CandidateTypes.Count == 0)
 			{
 				return Array.Empty<DefaultParamTypeData>();
 			}
 
-			DefaultParamCompilationData compilation = _generator.TargetCompilation;
-			CancellationToken cancellationToken = _generator.CancellationToken;
+			DefaultParamCompilationData compilation = Generator.TargetCompilation;
+			CancellationToken cancellationToken = Generator.CancellationToken;
 
 			if (_loggableReceiver is not null)
 			{
-				List<DefaultParamTypeData> list = new(_generator.SyntaxReceiver.CandidateTypes.Count);
-				IDirectDiagnosticReceiver diagnosticReceiver = _generator.EnableDiagnostics ? _diagnosticReceiver! : _loggableReceiver;
+				List<DefaultParamTypeData> list = new(Generator.SyntaxReceiver.CandidateTypes.Count);
+				IDirectDiagnosticReceiver diagnosticReceiver = Generator.EnableDiagnostics ? _diagnosticReceiver! : _loggableReceiver;
 
-				foreach (TypeDeclarationSyntax type in _generator.SyntaxReceiver.CandidateTypes)
+				foreach (TypeDeclarationSyntax type in Generator.SyntaxReceiver.CandidateTypes)
 				{
 					if (type is null)
 					{
@@ -68,7 +77,7 @@ namespace Durian.DefaultParam
 						continue;
 					}
 
-					_loggableReceiver.SetTargetNode(type, symbol.ToString());
+					_loggableReceiver.SetTargetNode(type, _fileNameProvider.GetFileName(symbol));
 
 					if (ValidateAndCreateWithDiagnostics(diagnosticReceiver, compilation, type, semanticModel, symbol, ref typeParameters, out DefaultParamTypeData? data))
 					{
@@ -80,13 +89,13 @@ namespace Durian.DefaultParam
 
 				return list.ToArray();
 			}
-			else if (_diagnosticReceiver is not null && _generator.EnableDiagnostics)
+			else if (_diagnosticReceiver is not null && Generator.EnableDiagnostics)
 			{
-				return GetValidTypesWithDiagnostics_Internal(_diagnosticReceiver, compilation, _generator.SyntaxReceiver.CandidateTypes.ToArray(), cancellationToken);
+				return GetValidTypesWithDiagnostics_Internal(_diagnosticReceiver, compilation, Generator.SyntaxReceiver.CandidateTypes.ToArray(), cancellationToken);
 			}
 			else
 			{
-				return GetValidTypes_Internal(compilation, _generator.SyntaxReceiver.CandidateTypes.ToArray(), cancellationToken);
+				return GetValidTypes_Internal(compilation, Generator.SyntaxReceiver.CandidateTypes.ToArray(), cancellationToken);
 			}
 		}
 
@@ -305,6 +314,11 @@ namespace Durian.DefaultParam
 			return GetValidTypes();
 		}
 
+		IEnumerable<IMemberData> IGeneratorSyntaxFilter.Filtrate()
+		{
+			return GetValidTypes();
+		}
+
 		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
 		{
 			return GetValidTypes((DefaultParamCompilationData)compilation, (DefaultParamSyntaxReceiver)syntaxReceiver, cancellationToken);
@@ -364,7 +378,7 @@ namespace Durian.DefaultParam
 		private void ReportForBothReceivers(Diagnostic diagnostic)
 		{
 			_loggableReceiver!.ReportDiagnostic(diagnostic);
-			_generator.DiagnosticReceiver!.ReportDiagnostic(diagnostic);
+			Generator.DiagnosticReceiver!.ReportDiagnostic(diagnostic);
 		}
 	}
 }

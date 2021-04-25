@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian
 {
 	/// <summary>
-	/// A <see cref="ISyntaxFilter"/> that reports diagnostics about the receiver <see cref="CSharpSyntaxNode"/>s.
+	/// A <see cref="ISyntaxFilter"/> that reports diagnostics about the received <see cref="CSharpSyntaxNode"/>s.
 	/// </summary>
 	public interface ISyntaxFilterWithDiagnostics : ISyntaxFilter
 	{

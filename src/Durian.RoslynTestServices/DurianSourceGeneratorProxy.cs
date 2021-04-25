@@ -36,7 +36,7 @@ namespace Durian.Tests
 		/// <summary>
 		/// Event invoked when the <see cref="Generate"/> method is called.
 		/// </summary>
-		public event Action<IMemberData, ISyntaxFilterWithDiagnostics, GeneratorExecutionContext>? OnGenerate;
+		public event Action<IMemberData, IGeneratorSyntaxFilterWithDiagnostics, GeneratorExecutionContext>? OnGenerate;
 
 		/// <summary>
 		/// Event invoked when the <see cref="Initialize"/> method is called.
@@ -66,7 +66,7 @@ namespace Durian.Tests
 		/// <summary>
 		/// Event invoked when the <see cref="GetFilters(in GeneratorExecutionContext)"/> method is called.
 		/// </summary>
-		public event Func<GeneratorExecutionContext, FilterList<ISyntaxFilterWithDiagnostics>>? OnGetFilters;
+		public event Func<GeneratorExecutionContext, FilterList<IGeneratorSyntaxFilterWithDiagnostics>>? OnGetFilters;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianSourceGeneratorProxy"/> class.
@@ -103,7 +103,7 @@ namespace Durian.Tests
 		}
 
 		/// <inheritdoc/>
-		protected override FilterList<ISyntaxFilterWithDiagnostics>? GetFilters(in GeneratorExecutionContext context)
+		protected override FilterList<IGeneratorSyntaxFilterWithDiagnostics>? GetFilters(in GeneratorExecutionContext context)
 		{
 			return OnGetFilters?.Invoke(context);
 		}
@@ -115,7 +115,7 @@ namespace Durian.Tests
 		}
 
 		/// <inheritdoc/>
-		protected override void Generate(IMemberData member, ISyntaxFilterWithDiagnostics filter, in GeneratorExecutionContext context)
+		protected override void Generate(IMemberData member, IGeneratorSyntaxFilterWithDiagnostics filter, in GeneratorExecutionContext context)
 		{
 			OnGenerate?.Invoke(member, filter, context);
 			_exeContext = context;
