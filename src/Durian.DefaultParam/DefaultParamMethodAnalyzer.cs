@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using static Durian.Logging.LoggableSourceGenerator;
 
 namespace Durian.DefaultParam
 {
@@ -53,8 +54,7 @@ namespace Durian.DefaultParam
 		{
 			return new[]
 			{
-				DefaultParamDiagnostics.Descriptors.DefaultParamMethodCannotBeExtern,
-				DefaultParamDiagnostics.Descriptors.DefaultParamMethodCannotBePartial,
+				DefaultParamDiagnostics.Descriptors.DefaultParamMethodCannotBePartialOrExtern,
 				DefaultParamDiagnostics.Descriptors.DefaultParamAttributeIsNotValidOnLocalFunctions,
 				DefaultParamDiagnostics.Descriptors.OverriddenDefaultParamAttributeShouldBeAddedForClarity,
 				DefaultParamDiagnostics.Descriptors.DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute,
@@ -153,7 +153,19 @@ namespace Durian.DefaultParam
 
 			TypeParameterContainer baseTypeParameters = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
 
-			if (HasAddedDefaultParamAttributes(in typeParameters, in baseTypeParameters))
+			if (typeParameters.FirstDefaultParamIndex == -1)
+			{
+				bool isValid = ValidateTypeParameters(in baseTypeParameters);
+
+				if (isValid)
+				{
+					isValid &= ValidateBaseMethodParameters(compilation.Configuration, in typeParameters, in baseTypeParameters);
+				}
+
+				typeParameters = TypeParameterContainer.Combine(in typeParameters, in baseTypeParameters);
+				return isValid;
+			}
+			else if (HasAddedDefaultParamAttributes(in typeParameters, in baseTypeParameters))
 			{
 				return
 					TryUpdateTypeParameters(ref typeParameters, in baseTypeParameters, compilation.Configuration) &&
@@ -172,7 +184,7 @@ namespace Durian.DefaultParam
 		{
 			if (baseMethod is null)
 			{
-				hasValidTypeParameters = ValidateTypeParameters(diagnosticReceiver, in typeParameters);
+				hasValidTypeParameters = false;
 				return false;
 			}
 
@@ -186,7 +198,19 @@ namespace Durian.DefaultParam
 			TypeParameterContainer baseTypeParameters = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
 			bool isValid;
 
-			if (HasAddedDefaultParamAttributes(in typeParameters, in baseTypeParameters))
+			if(typeParameters.FirstDefaultParamIndex == -1)
+			{
+				isValid = ValidateTypeParameters(diagnosticReceiver, in baseTypeParameters);
+				hasValidTypeParameters = isValid;
+
+				if(isValid)
+				{
+					isValid &= ValidateBaseMethodParameters(diagnosticReceiver, compilation.Configuration, in typeParameters, in baseTypeParameters);
+				}
+
+				typeParameters = TypeParameterContainer.Combine(in typeParameters, in baseTypeParameters);
+			}
+			else if (HasAddedDefaultParamAttributes(in typeParameters, in baseTypeParameters))
 			{
 				bool addingTypeParametersIsValid = TryUpdateTypeParameters(ref typeParameters, in baseTypeParameters, compilation.Configuration);
 				isValid = ValidateTypeParameters(diagnosticReceiver, in typeParameters);
@@ -253,12 +277,12 @@ namespace Durian.DefaultParam
 		{
 			if (symbol.IsExtern)
 			{
-				DefaultParamDiagnostics.DefaultParamMethodCannotBeExtern(diagnosticReceiver, symbol);
+				DefaultParamDiagnostics.DefaultParamMethodCannotBePartialOrExtern(diagnosticReceiver, symbol);
 				return false;
 			}
 			else if (IsPartialMethod(symbol, declaration))
 			{
-				DefaultParamDiagnostics.DefaultParamMethodCannotBePartial(diagnosticReceiver, symbol);
+				DefaultParamDiagnostics.DefaultParamMethodCannotBePartialOrExtern(diagnosticReceiver, symbol);
 				return false;
 			}
 

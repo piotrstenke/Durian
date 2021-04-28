@@ -71,9 +71,9 @@ namespace Durian
 		where TCompilationData : class, ICompilationData
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
 #if ENABLE_GENERATOR_DIAGNOSTICS
-		where TFilter : IGeneratorSyntaxFilterWithDiagnostics
+		where TFilter : notnull, IGeneratorSyntaxFilterWithDiagnostics
 #else
-		where TFilter : IGeneratorSyntaxFilter
+		where TFilter : notnull, IGeneratorSyntaxFilter
 #endif
 	{
 #if ENABLE_GENERATOR_DIAGNOSTICS
@@ -88,9 +88,10 @@ namespace Durian
 		/// <summary>
 		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
 		/// </summary>
-		public new ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? DiagnosticReceiver { get; }
 #if ENABLE_GENERATOR_DIAGNOSTICS
-			= DiagnosticReceiverFactory.SourceGenerator();
+		public new ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext> DiagnosticReceiver { get; } = DiagnosticReceiverFactory.SourceGenerator();
+#else
+		public new ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? DiagnosticReceiver { get; } = null;
 #endif
 
 		/// <inheritdoc cref="IDurianSourceGenerator.TargetCompilation"/>
@@ -211,63 +212,121 @@ namespace Durian
 			Filtrate(in context);
 		}
 
-		private void Filtrate(in GeneratorExecutionContext context)
-		{
-			FilterList<TFilter>? filters = GetFilters(in context);
-
-			if (filters is null || filters.NumGroups == 0)
-			{
-				return;
-			}
-
-			foreach (TFilter[] filterGroup in filters)
-			{
-				IMemberData[][] data = FiltrateUsingGroup(filterGroup);
-				int length = filterGroup.Length;
-
-				for (int i = 0; i < length; i++)
-				{
-					GenerateFromFilterResult(data[i], filterGroup[i], in context);
-				}
-			}
-		}
-
-		private static IMemberData[][] FiltrateUsingGroup(TFilter[] filterGroup)
-		{
-			int length = filterGroup.Length;
-			IMemberData[][] data = new IMemberData[length][];
-
-			for (int i = 0; i < length; i++)
-			{
-				data[i] = filterGroup[i].Filtrate().ToArray();
-			}
-
-			return data;
-		}
-
-		private void GenerateFromFilterResult(IMemberData[] result, TFilter parentFilter, in GeneratorExecutionContext context)
-		{
-			foreach (IMemberData d in result)
-			{
-#if ENABLE_GENERATOR_LOGS
-				try
-				{
-#endif
-					Generate(d, parentFilter, in context);
-#if ENABLE_GENERATOR_LOGS
-				}
-				catch (Exception e)
-				{
-					LogException(e);
-					throw;
-				}
-#endif
-			}
-		}
+		/// <summary>
+		/// Creates a new <see cref="IDurianSyntaxReceiver"/> to be used during the current generation pass.
+		/// </summary>
+		public abstract TSyntaxReceiver CreateSyntaxReceiver();
 
 		IDurianSyntaxReceiver IDurianSourceGenerator.CreateSyntaxReceiver()
 		{
 			return CreateSyntaxReceiver();
+		}
+
+		/// <summary>
+		/// Returns a list of <see cref="ISyntaxFilter"/>s to be used during the current generation pass.
+		/// </summary>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		protected abstract FilterContainer<TFilter>? GetFilters(in GeneratorExecutionContext context);
+
+		/// <summary>
+		/// Validates the <paramref name="syntaxReceiver"/>.
+		/// </summary>
+		/// <param name="syntaxReceiver"><typeparamref name="TSyntaxReceiver"/> to validate.</param>
+		protected virtual bool ValidateSyntaxReceiver(TSyntaxReceiver syntaxReceiver)
+		{
+			return !syntaxReceiver.IsEmpty();
+		}
+
+		/// <summary>
+		/// Method called before node filtration is performed.
+		/// </summary>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		protected virtual void BeforeFiltration(in GeneratorExecutionContext context)
+		{
+			// Do nothing by default.
+		}
+
+		/// <summary>
+		/// Method called before the execution of <paramref name="filterGroup"/> is started.
+		/// </summary>
+		/// <param name="filterGroup">Current filter group. The group is sealed, so it is impossible to change its state.</param>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		protected virtual void BeforeFiltrationOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
+		{
+			// Do nothing by default.
+		}
+
+		/// <summary>
+		/// Method called after the <paramref name="filterGroup"/> is done executing.
+		/// </summary>
+		/// <param name="filterGroup">Current filter group. The group is unsealed, so it is possible to change its state.</param>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		protected virtual void AfterFiltrationOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
+		{
+			// Do nothing by default.
+		}
+
+		/// <summary>
+		/// Method called after node filtration is performed.
+		/// </summary>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		protected virtual void AfterFiltration(in GeneratorExecutionContext context)
+		{
+			// Do nothing by default.
+		}
+
+		/// <summary>
+		/// Actually begins the generator execution.
+		/// </summary>
+		/// <param name="member"><see cref="IMemberData"/> to generate the source for.</param>
+		/// <param name="filter"><see cref="ISyntaxFilter"/> that collected the target <paramref name="member"/>.</param>
+		/// <param name="context">The <see cref="GeneratorExecutionContext"/> to add source to.</param>
+		protected abstract void Generate(IMemberData member, TFilter filter, in GeneratorExecutionContext context);
+
+		/// <summary>
+		/// Creates new instance of <see cref="ICompilationData"/>.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
+		protected abstract TCompilationData? CreateCompilationData(CSharpCompilation compilation);
+
+		/// <summary>
+		/// Adds the specified <paramref name="source"/> to the <paramref name="context"/>.
+		/// </summary>
+		/// <param name="source">A <see cref="string"/> representation of the generated code.</param>
+		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+		/// <param name="context"><see cref="GeneratorPostInitializationContext"/> to add the source to.</param>
+		protected void InitializeSource(string source, string hintName, in GeneratorPostInitializationContext context)
+		{
+			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(source);
+			InitializeSource(tree, hintName, in context);
+		}
+
+		/// <summary>
+		/// Adds the specified <paramref name="tree"/> to the <paramref name="context"/>.
+		/// </summary>
+		/// <param name="tree"><see cref="CSharpSyntaxTree"/> to add to the <paramref name="context"/>.</param>
+		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+		/// <param name="context"><see cref="GeneratorPostInitializationContext"/> to add the source to.</param>
+		protected void InitializeSource(CSharpSyntaxTree tree, string hintName, in GeneratorPostInitializationContext context)
+		{
+			context.AddSource(hintName, tree.GetText(context.CancellationToken));
+
+#if ENABLE_GENERATOR_LOGS
+			LogNode(tree.GetRoot(context.CancellationToken), hintName);
+#endif
+		}
+
+		/// <summary>
+		/// Adds the text of the specified <paramref name="builder"/> to the <paramref name="context"/>.
+		/// </summary>
+		/// <param name="builder"><see cref="CodeBuilder"/> that was used to build the generated code.</param>
+		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+		/// <param name="context"><see cref="GeneratorPostInitializationContext"/> to add the source to.</param>
+		protected void InitializeSource(CodeBuilder builder, string hintName, in GeneratorPostInitializationContext context)
+		{
+			CSharpSyntaxTree tree = builder.ParseSyntaxTree();
+			builder.Clear();
+			InitializeSource(tree, hintName, in context);
 		}
 
 		/// <summary>
@@ -284,14 +343,14 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Adds the generated <paramref name="text"/> to the <paramref name="context"/>.
+		/// Adds the generated <paramref name="source"/> to the <paramref name="context"/>.
 		/// </summary>
-		/// <param name="text">The generated text.</param>
+		/// <param name="source">The generated text.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-		protected void AddSource(string text, string hintName, in GeneratorExecutionContext context)
+		protected void AddSource(string source, string hintName, in GeneratorExecutionContext context)
 		{
-			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
+			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(source, ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
 			AddSource(tree, hintName, in context);
 		}
 
@@ -325,7 +384,7 @@ namespace Durian
 			AddSource(tree, hintName, in context);
 
 #if ENABLE_GENERATOR_LOGS
-			LogGeneratedNode(original, tree, hintName, context.CancellationToken);
+			LogGeneratedTree(original, tree, hintName, context.CancellationToken);
 #endif
 		}
 
@@ -342,7 +401,7 @@ namespace Durian
 			AddSource(tree, hintName, in context);
 
 #if ENABLE_GENERATOR_LOGS
-			LogGeneratedNode(original, tree, hintName, context.CancellationToken);
+			LogGeneratedTree(original, tree, hintName, context.CancellationToken);
 #endif
 		}
 
@@ -358,7 +417,7 @@ namespace Durian
 			AddSource(tree, hintName, in context);
 
 #if ENABLE_GENERATOR_LOGS
-			LogGeneratedNode(original, tree, hintName, context.CancellationToken);
+			LogGeneratedTree(original, tree, hintName, context.CancellationToken);
 #endif
 		}
 
@@ -366,55 +425,74 @@ namespace Durian
 #pragma warning restore RCS1163 // Unused parameter.
 #endif
 
-		/// <summary>
-		/// Creates a new <see cref="IDurianSyntaxReceiver"/> to be used during the current generation pass.
-		/// </summary>
-		public abstract TSyntaxReceiver CreateSyntaxReceiver();
-
-		/// <summary>
-		/// Returns a list of <see cref="ISyntaxFilter"/>s to be used during the current generation pass.
-		/// </summary>
-		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-		protected abstract FilterList<TFilter>? GetFilters(in GeneratorExecutionContext context);
-
-		/// <summary>
-		/// Validates the <paramref name="syntaxReceiver"/>.
-		/// </summary>
-		/// <param name="syntaxReceiver"><typeparamref name="TSyntaxReceiver"/> to validate.</param>
-		protected virtual bool ValidateSyntaxReceiver(TSyntaxReceiver syntaxReceiver)
+		private void Filtrate(in GeneratorExecutionContext context)
 		{
-			return !syntaxReceiver.IsEmpty();
+			FilterContainer<TFilter>? filters = GetFilters(in context);
+
+			if (filters is null || filters.NumGroups == 0)
+			{
+				return;
+			}
+
+			foreach (FilterGroup<TFilter> filterGroup in filters)
+			{
+				IMemberData[][] data = FiltrateUsingGroup(filterGroup);
+				int length = filterGroup.Count;
+
+				filterGroup.Seal();
+				BeforeFiltrationOfGroup(filterGroup, in context);
+
+				for (int i = 0; i < length; i++)
+				{
+					GenerateFromFilterResult(data[i], filterGroup[i], in context);
+				}
+
+				filterGroup.Unseal();
+				AfterFiltrationOfGroup(filterGroup, in context);
+			}
+
+			AfterFiltration(in context);
 		}
 
-		/// <summary>
-		/// Method called before node filtration is performed.
-		/// </summary>
-		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-		protected virtual void BeforeFiltration(in GeneratorExecutionContext context)
+		private static IMemberData[][] FiltrateUsingGroup(FilterGroup<TFilter> filterGroup)
 		{
-			// Do nothing by default.
+			int length = filterGroup.Count;
+			IMemberData[][] data = new IMemberData[length][];
+
+			for (int i = 0; i < length; i++)
+			{
+				data[i] = filterGroup[i].Filtrate().ToArray();
+			}
+
+			return data;
 		}
 
-		/// <summary>
-		/// Actually begins the generator execution.
-		/// </summary>
-		/// <param name="member"><see cref="IMemberData"/> to generate the source for.</param>
-		/// <param name="filter"><see cref="ISyntaxFilter"/> that collected the target <paramref name="member"/>.</param>
-		/// <param name="context">The <see cref="GeneratorExecutionContext"/> to add source to.</param>
-		protected abstract void Generate(IMemberData member, TFilter filter, in GeneratorExecutionContext context);
-
-		/// <summary>
-		/// Creates new instance of <see cref="ICompilationData"/>.
-		/// </summary>
-		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
-		protected abstract TCompilationData? CreateCompilationData(CSharpCompilation compilation);
+		private void GenerateFromFilterResult(IMemberData[] result, TFilter parentFilter, in GeneratorExecutionContext context)
+		{
+			foreach (IMemberData d in result)
+			{
+#if ENABLE_GENERATOR_LOGS
+				try
+				{
+#endif
+					Generate(d, parentFilter, in context);
+#if ENABLE_GENERATOR_LOGS
+				}
+				catch (Exception e)
+				{
+					LogException(e);
+					throw;
+				}
+#endif
+			}
+		}
 
 #if ENABLE_GENERATOR_LOGS
-		private void LogGeneratedNode(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, CancellationToken cancellationToken)
+		private void LogGeneratedTree(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, CancellationToken cancellationToken)
 		{
-			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
+			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput))
 			{
-				LogNode_Internal(original, tree.GetRoot(cancellationToken), hintName);
+				LogInputOutput_Internal(original, tree.GetRoot(cancellationToken), hintName);
 			}
 		}
 #endif

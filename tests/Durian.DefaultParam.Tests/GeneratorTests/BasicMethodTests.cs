@@ -365,5 +365,29 @@ namespace N1.N2
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
 		}
+
+		[Fact]
+		public void GeneratesForAbstractMethod()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using System.Collections;
+
+partial abstract class Test
+{{
+	abstract void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>();
+}}
+";
+			string expected =
+@$"using System.CodeDom.Compiler;
+
+partial abstract class Test
+{{
+	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	abstract void Method();
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 	}
 }

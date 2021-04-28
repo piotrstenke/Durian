@@ -16,11 +16,8 @@ namespace Durian.DefaultParam
 			public static readonly DiagnosticDescriptor TypeParameterWithDefaultParamAttributeMustBeLast =
 				DescriptorFactory.TypeParameterWithAttributeMustBeLast(DefaultParamAttribute.AttributeName);
 
-			public static readonly DiagnosticDescriptor DefaultParamMethodCannotBePartial =
-				DescriptorFactory.MemberWithAttributeCannotHaveModifier(DefaultParamAttribute.AttributeName, "partial");
-
-			public static readonly DiagnosticDescriptor DefaultParamMethodCannotBeExtern =
-				DescriptorFactory.MemberWithAttributeCannotHaveModifier(DefaultParamAttribute.AttributeName, "extern");
+			public static readonly DiagnosticDescriptor DefaultParamMethodCannotBePartialOrExtern =
+				DescriptorFactory.MemberWithAttributeCannotHaveModifier(DefaultParamAttribute.AttributeName, "partial or extern");
 
 			public static readonly DiagnosticDescriptor DefaultParamAttributeIsNotValidOnLocalFunctions =
 				DescriptorFactory.AttributeCannotBeAppliedToMembersOfType(DefaultParamAttribute.AttributeName, "local function");
@@ -56,15 +53,9 @@ namespace Durian.DefaultParam
 			diagnosticReceiver.ReportDiagnostic(d, location, symbol);
 		}
 
-		public static void DefaultParamMethodCannotBePartial(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol? symbol)
+		public static void DefaultParamMethodCannotBePartialOrExtern(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol? symbol)
 		{
-			DiagnosticDescriptor d = Descriptors.DefaultParamMethodCannotBePartial;
-			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol);
-		}
-
-		public static void DefaultParamMethodCannotBeExtern(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol? symbol)
-		{
-			DiagnosticDescriptor d = Descriptors.DefaultParamMethodCannotBeExtern;
+			DiagnosticDescriptor d = Descriptors.DefaultParamMethodCannotBePartialOrExtern;
 			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol);
 		}
 

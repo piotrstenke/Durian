@@ -14,17 +14,17 @@ namespace Durian.Logging
 		/// <summary>
 		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="GeneratorLoggingConfiguration.DefaultLogDirectory"/>. Defaults to <see langword="true"/>.
 		/// </summary>
-		public bool RelativeToDefault { get; set; }
+		public bool RelativeToDefault { get; init; }
 
 		/// <summary>
 		/// Default directory where the generator log files are to be found.
 		/// </summary>
-		public string? LogDirectory { get; set; }
+		public string? LogDirectory { get; init; }
 
 		/// <summary>
 		/// Defaults types of logs for this assembly.
 		/// </summary>
-		public GeneratorLogs SupportedLogs { get; set; }
+		public GeneratorLogs SupportedLogs { get; init; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GlobalGeneratorLoggingConfigurationAttribute"/> class.

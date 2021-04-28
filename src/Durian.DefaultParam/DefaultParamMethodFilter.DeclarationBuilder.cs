@@ -11,15 +11,15 @@ namespace Durian.DefaultParam
 	{
 		public sealed class DeclarationBuilder : IDefaultParamDeclarationBuilder
 		{
-			private int _numOriginalConstraints;
-			private int _numOriginalParameters;
-			private int _numNonDefaultParam;
 			private List<int>? _newModifierIndices;
 			private GenericNameSyntax? _callMethodSyntax;
 			private ArgumentListSyntax? _callArguments;
-			private bool _applyReturnSyntax;
 			private IdentifierNameSyntax? _newType;
+			private int _numOriginalConstraints;
+			private int _numOriginalParameters;
+			private int _numNonDefaultParam;
 			private int _indentLevel;
+			private bool _applyReturnSyntax;
 
 			public MethodDeclarationSyntax OriginalDeclaration { get; private set; }
 			public MethodDeclarationSyntax CurrentDeclaration { get; private set; }
@@ -68,9 +68,9 @@ namespace Durian.DefaultParam
 				SemanticModel = data.SemanticModel;
 				OriginalDeclaration = data.Declaration;
 
-				_indentLevel = DefaultParamUtilities.GetIndentWithoutMultipleNamespaces(data.Declaration);
+				_indentLevel = DefaultParamUtilities.GetIndent(data.Declaration);
 				SetDeclarationWithoutDefaultParamAttribute(data.Declaration, data.ParentCompilation, cancellationToken);
-				NormalizeIndent();
+
 				_newModifierIndices = data.NewModifierIndices;
 				_numNonDefaultParam = data.GetTypeParameters().NumNonDefaultParam;
 
@@ -296,27 +296,6 @@ namespace Durian.DefaultParam
 				CurrentDeclaration = method
 					.WithAttributeLists(SyntaxFactory.List(GetValidAttributes(method, compilation, cancellationToken)))
 					.WithTypeParameterList(SyntaxFactory.TypeParameterList(list)).WithoutTrivia();
-			}
-
-			private void NormalizeIndent()
-			{
-				if (CurrentDeclaration.Body is null)
-				{
-					return;
-				}
-
-				SyntaxTriviaList openBrace = CurrentDeclaration.Body.CloseBraceToken.LeadingTrivia.NormalizeWhitespace();
-				SyntaxTriviaList closedBrace = CurrentDeclaration.Body.OpenBraceToken.LeadingTrivia.NormalizeWhitespace();
-
-				for (int i = 0; i < _indentLevel; i++)
-				{
-					closedBrace = closedBrace.Add(SyntaxFactory.Tab);
-					openBrace = openBrace.Add(SyntaxFactory.Tab);
-				}
-
-				CurrentDeclaration = CurrentDeclaration.WithBody(CurrentDeclaration.Body
-					.WithOpenBraceToken(CurrentDeclaration.Body.OpenBraceToken.WithLeadingTrivia(openBrace))
-					.WithCloseBraceToken(CurrentDeclaration.Body.CloseBraceToken.WithLeadingTrivia(closedBrace)));
 			}
 
 			private IEnumerable<AttributeListSyntax> GetValidAttributes(MethodDeclarationSyntax method, DefaultParamCompilationData compilation, CancellationToken cancellationToken)

@@ -18,9 +18,6 @@ namespace Durian.Logging
 			/// </summary>
 			public LoggableSourceGenerator Generator { get; }
 
-			/// <inheritdoc cref="DiagnosticBag.Diagnostics"/>
-			public List<Diagnostic> Diagnostics => _bag.Diagnostics;
-
 			/// <summary>
 			/// Target <see cref="SyntaxNode"/>.
 			/// </summary>
@@ -30,6 +27,11 @@ namespace Durian.Logging
 			/// Name of the log file to log to.
 			/// </summary>
 			public string? HintName { get; private set; }
+
+			/// <summary>
+			/// Returns the number of <see cref="Diagnostic"/> that weren't pushed using the <see cref="Push"/> method yet.
+			/// </summary>
+			public int Count => _bag.Count;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="LoggableSourceGenerator"/> class.
@@ -72,13 +74,33 @@ namespace Durian.Logging
 			/// <summary>
 			/// Actually writes the diagnostics to the target file.
 			/// </summary>
-#pragma warning disable CA1822 // Mark members as static
 			public void Push()
-#pragma warning restore CA1822 // Mark members as static
+			{
+				PushWithoutClear();
+				Clear();
+			}
+
+			/// <summary>
+			/// Actually writes the diagnostics to the target file without clearing the bag afterwards.
+			/// </summary>
+#pragma warning disable CS1822 // Make members as static
+			public void PushWithoutClear()
+#pragma warning restore CS1822 // Mark members as static
 			{
 #if ENABLE_GENERATOR_LOGS
-				Generator.LogDiagnostics(Node!, HintName!, _bag.Diagnostics.ToArray());
+				if (_bag.Count > 0)
+				{
+					Generator.LogDiagnostics(Node!, HintName!, _bag.GetDiagnostics());
+				}
 #endif
+			}
+
+			/// <summary>
+			/// Removes all <see cref="Diagnostic"/>s that weren't logged using the <see cref="Push"/> method.
+			/// </summary>
+			public void Clear()
+			{
+				_bag.Clear();
 			}
 		}
 	}

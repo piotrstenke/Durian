@@ -73,9 +73,15 @@ namespace Durian.DefaultParam
 							continue;
 						}
 
-						_loggableReceiver.SetTargetNode(fn, _fileNameProvider.GetFileName(symbol));
+						string fileName = _fileNameProvider.GetFileName(symbol);
+						_loggableReceiver.SetTargetNode(fn, fileName);
 						DefaultParamMethodAnalyzer.ReportDiagnosticForLocalFunction(diagnosticReceiver, s);
-						_loggableReceiver.Push();
+
+						if (_loggableReceiver.Count > 0)
+						{
+							_loggableReceiver.Push();
+							_fileNameProvider.Success();
+						}
 					}
 				}
 			}

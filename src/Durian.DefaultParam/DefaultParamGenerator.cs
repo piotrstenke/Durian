@@ -9,11 +9,12 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.DefaultParam
 {
 	[Generator]
-	[GeneratorLoggingConfiguration(RelativeToGlobal = true, LogDirectory = "DefaultParam", SupportedLogs = GeneratorLogs.Exception | GeneratorLogs.Node | GeneratorLogs.Diagnostics)]
+	[GeneratorLoggingConfiguration(RelativeToGlobal = true, LogDirectory = "DefaultParam", SupportedLogs = GeneratorLogs.All)]
 	public class DefaultParamGenerator : SourceGenerator<DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>
 	{
 		public static string Version => "1.0.0";
 		public static string GeneratorName => nameof(DefaultParamGenerator);
+		public const int NumDefaultParamAttributes = 3;
 
 		private readonly DefaultParamRewriter _rewriter;
 		private readonly CodeBuilder _builder;
@@ -36,9 +37,9 @@ namespace Durian.DefaultParam
 			return new DefaultParamSyntaxReceiver(SupportsDiagnostics && EnableDiagnostics);
 		}
 
-		protected override FilterList<IDefaultParamFilter> GetFilters(in GeneratorExecutionContext context)
+		protected override FilterContainer<IDefaultParamFilter> GetFilters(in GeneratorExecutionContext context)
 		{
-			FilterList<IDefaultParamFilter> list = new();
+			FilterContainer<IDefaultParamFilter> list = new();
 
 			list.RegisterFilterGroup(new IDefaultParamFilter[] { new DefaultParamDelegateFilter(this), new DefaultParamMethodFilter(this) });
 			list.RegisterFilterGroup(new IDefaultParamFilter[] { new DefaultParamTypeFilter(this) });
@@ -72,11 +73,11 @@ namespace Durian.DefaultParam
 			context.RegisterForPostInitialization(AddAttributeSources);
 		}
 
-		private static void AddAttributeSources(GeneratorPostInitializationContext context)
+		private void AddAttributeSources(GeneratorPostInitializationContext context)
 		{
-			context.AddSource(DefaultParamAttribute.FullTypeName, DefaultParamAttribute.CreateSourceText());
-			context.AddSource(DefaultParamConfigurationAttribute.FullTypeName, DefaultParamConfigurationAttribute.CreateSourceText());
-			context.AddSource(DefaultParamMethodConfigurationAttribute.FullTypeName, DefaultParamMethodConfigurationAttribute.CreateSourceText());
+			InitializeSource(DefaultParamAttribute.CreateSyntaxTree(), DefaultParamAttribute.FullTypeName, in context);
+			InitializeSource(DefaultParamConfigurationAttribute.CreateSyntaxTree(), DefaultParamConfigurationAttribute.FullTypeName, in context);
+			InitializeSource(DefaultParamMethodConfigurationAttribute.CreateSyntaxTree(), DefaultParamMethodConfigurationAttribute.FullTypeName, in context);
 		}
 
 		protected override void BeforeFiltration(in GeneratorExecutionContext context)

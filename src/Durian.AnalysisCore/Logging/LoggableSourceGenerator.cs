@@ -83,12 +83,23 @@ namespace Durian.Logging
 		}
 
 		/// <inheritdoc/>
-		public void LogNode(SyntaxNode input, SyntaxNode output, string hintName)
+		public void LogNode(SyntaxNode node, string hintName)
 		{
 #if ENABLE_GENERATOR_LOGS
-			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node) && !(input is null && output is null))
+			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node) && node is not null)
 			{
-				LogNode_Internal(input!, output, hintName);
+				LogNode_Internal(node, hintName);
+			}
+#endif
+		}
+
+		/// <inheritdoc/>
+		public void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName)
+		{
+#if ENABLE_GENERATOR_LOGS
+			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput) && !(input is null && output is null))
+			{
+				LogInputOutput_Internal(input!, output, hintName);
 			}
 #endif
 		}
@@ -129,7 +140,19 @@ namespace Durian.Logging
 			TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString() + "\n\n");
 		}
 
-		internal void LogNode_Internal(SyntaxNode input, SyntaxNode output, string hintName)
+		internal void LogNode_Internal(SyntaxNode node, string hintName)
+		{
+			StringBuilder sb = new();
+
+			AppendSection(sb, "generated");
+
+			sb.AppendLine(node.ToFullString());
+			sb.AppendLine();
+
+			WriteToFile(hintName, sb, ".generated");
+		}
+
+		internal void LogInputOutput_Internal(SyntaxNode input, SyntaxNode output, string hintName)
 		{
 			StringBuilder sb = new();
 
@@ -147,11 +170,7 @@ namespace Durian.Logging
 				sb.AppendLine(output.ToFullString());
 			}
 
-			string name = string.IsNullOrWhiteSpace(hintName) ? "generated" : hintName;
-			string path = LoggingConfiguration.LogDirectory + "/.generated";
-			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
-			Directory.CreateDirectory(path);
-			TryWriteAllText(path + $"/{name}.log", sb.ToString());
+			WriteToFile(hintName, sb, ".generated");
 		}
 
 		internal void LogDiagnostics_Internal(SyntaxNode node, string hintName, Diagnostic[] diagnostics)
@@ -173,8 +192,13 @@ namespace Durian.Logging
 
 			sb.AppendLine();
 
+			WriteToFile(hintName, sb, ".diag");
+		}
+
+		private void WriteToFile(string hintName, StringBuilder sb, string subDirectory)
+		{
 			string name = string.IsNullOrWhiteSpace(hintName) ? "generated" : hintName;
-			string path = LoggingConfiguration.LogDirectory + "/.diag";
+			string path = LoggingConfiguration.LogDirectory + $"/{subDirectory}";
 			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
 			Directory.CreateDirectory(path);
 			TryWriteAllText(path + $"/{name}.log", sb.ToString());
@@ -244,7 +268,7 @@ namespace Durian.Logging
 					{
 						File.WriteAllText(file, text);
 					}
-					catch (IOException) when (numTries < 10)
+					catch (IOException) when (numTries < 20)
 					{
 						numTries++;
 						Thread.Sleep(50);

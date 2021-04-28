@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
+using System.Diagnostics;
 
 namespace Durian.Logging
 {
@@ -27,6 +28,16 @@ namespace Durian.Logging
 			}
 
 			return symbol.Name;
+		}
+
+		void IFileNameProvider.Success()
+		{
+			// Do nothing.
+		}
+
+		void IFileNameProvider.Reset()
+		{
+			// Do nothing.
 		}
 	}
 }

@@ -32,7 +32,7 @@ namespace Durian.DefaultParam
 			return indent;
 		}
 
-		public static int GetIndentWithoutMultipleNamespaces(SyntaxNode? node)
+		public static int GetIndentWithoutMultipleNamespaces(SyntaxNode? node, out bool hasMultipleNamespaces)
 		{
 			bool isNamespace = false;
 			SyntaxNode? parent = node;
@@ -65,6 +65,7 @@ namespace Durian.DefaultParam
 				indent = 0;
 			}
 
+			hasMultipleNamespaces = isNamespace;
 			return indent;
 		}
 

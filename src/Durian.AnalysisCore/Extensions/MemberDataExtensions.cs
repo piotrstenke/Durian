@@ -15,6 +15,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="type"><see cref="ITypeData"/> to get the generic name of.</param>
 		/// <returns>If the <paramref name="type"/> has no type parameters, returns the name of the <paramref name="type"/> instead.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 		public static string GetGenericName(this ITypeData type)
 		{
 			if (type is null)
@@ -31,6 +32,7 @@ namespace Durian.Extensions
 		/// <param name="member"><see cref="IMemberData"/> to get the generic name of.</param>
 		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
 		/// <returns>If the <see cref="IMemberData.Symbol"/> is not of type <see cref="INamedTypeSymbol"/> or <see cref="IMethodSymbol"/> or the symbol has no type parameters, returns the name of the symbol instead.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
 		public static string GetGenericName(this IMemberData member, bool includeParameters = false)
 		{
 			if (member is null)

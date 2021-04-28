@@ -12,21 +12,21 @@ namespace Durian.Logging
 		/// <summary>
 		/// The directory the source generator logs will be written to. If not specified, <see cref="GeneratorLoggingConfiguration.DefaultLogDirectory"/> is used instead.
 		/// </summary>
-		public string? LogDirectory { get; set; }
+		public string? LogDirectory { get; init; }
 
 		/// <summary>
 		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="GlobalGeneratorLoggingConfigurationAttribute.LogDirectory"/>. Defaults to <see langword="true"/>.
 		/// </summary>
-		public bool RelativeToGlobal { get; set; } = true;
+		public bool RelativeToGlobal { get; init; } = true;
 
 		/// <summary>
 		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="GeneratorLoggingConfiguration.DefaultLogDirectory"/>. Defaults to <see langword="false"/>.
 		/// </summary>
 		/// <remarks>If <see cref="RelativeToDefault"/> is set to <see langword="true"/>, value of <see cref="RelativeToGlobal"/> is irrelevant.</remarks>
-		public bool RelativeToDefault { get; set; }
+		public bool RelativeToDefault { get; init; }
 
 		/// <inheritdoc cref="GeneratorLoggingConfiguration.SupportedLogs"/>
-		public GeneratorLogs SupportedLogs { get; set; }
+		public GeneratorLogs SupportedLogs { get; init; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLoggingConfigurationAttribute"/> class.

@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿
+using System.Linq;
 using Durian.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.SyntaxVisitors
 {
@@ -15,6 +17,7 @@ namespace Durian.SyntaxVisitors
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> that is used to identify <see cref="ISymbol"/>s.
 		/// </summary>
+		[MaybeNull]
 		public SemanticModel SemanticModel { get; set; }
 
 		/// <summary>
@@ -65,7 +68,6 @@ namespace Durian.SyntaxVisitors
 		public override SyntaxNode? VisitQualifiedCref(QualifiedCrefSyntax node)
 		{
 			SymbolInfo info = SemanticModel.GetSymbolInfo(node);
-
 			if (info.Symbol is not INamedTypeSymbol symbol)
 			{
 				return base.VisitQualifiedCref(node);

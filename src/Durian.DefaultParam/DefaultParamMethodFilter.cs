@@ -78,14 +78,19 @@ namespace Durian.DefaultParam
 						continue;
 					}
 
-					_loggableReceiver.SetTargetNode(method, _fileNameProvider.GetFileName(symbol));
+					string fileName = _fileNameProvider.GetFileName(symbol);
+					_loggableReceiver.SetTargetNode(method, fileName);
 
 					if (ValidateAndCreateWithDiagnostics(diagnosticReceiver, compilation, method, semanticModel, symbol, ref typeParameters, out DefaultParamMethodData? data, cancellationToken))
 					{
 						list.Add(data!);
 					}
 
-					_loggableReceiver.Push();
+					if(_loggableReceiver.Count > 0)
+					{
+						_loggableReceiver.Push();
+						_fileNameProvider.Success();
+					}
 				}
 
 				return list.ToArray();
@@ -299,25 +304,27 @@ namespace Durian.DefaultParam
 			{
 				isValid &= ValidateMethodSignature(diagnosticReceiver, symbol, typeParameters, compilation, out List<int>? newModifiers);
 
-				data = new(
-					declaration,
-					compilation,
-					symbol,
-					semanticModel,
-					containingTypes,
-					null,
-					attributes,
-					in typeParameters,
-					newModifiers,
-					CheckShouldCallInsteadOfCopying(attributes!, compilation)
-				);
-			}
-			else
-			{
-				data = null;
+				if(isValid)
+				{
+					data = new(
+						declaration,
+						compilation,
+						symbol,
+						semanticModel,
+						containingTypes,
+						null,
+						attributes,
+						in typeParameters,
+						newModifiers,
+						CheckShouldCallInsteadOfCopying(attributes!, compilation)
+					);
+
+					return true;
+				}
 			}
 
-			return isValid;
+			data = null;
+			return false;
 		}
 		#endregion
 
@@ -371,27 +378,27 @@ namespace Durian.DefaultParam
 			semanticModel = compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
 			typeParameters = GetParameters(declaration, semanticModel, compilation, cancellationToken);
 
-			if (!typeParameters.HasDefaultParams)
+			if (typeParameters.HasDefaultParams || declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
 			{
-				symbol = null!;
-				return false;
+				symbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken)!;
+
+				return symbol is not null;
 			}
 
-			symbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken)!;
-
-			return symbol is not null;
+			symbol = null!;
+			return false;
 		}
 
 		private static TypeParameterContainer GetParameters(MethodDeclarationSyntax declaration, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			TypeParameterListSyntax? parameters = declaration.TypeParameterList;
+			TypeParameterListSyntax? typeParameters = declaration.TypeParameterList;
 
-			if (parameters is null)
+			if(typeParameters is null)
 			{
 				return new TypeParameterContainer(null);
 			}
 
-			return new TypeParameterContainer(parameters.Parameters.Select(p => TypeParameterData.CreateFrom(p, semanticModel, compilation, cancellationToken)));
+			return new TypeParameterContainer(typeParameters.Parameters.Select(p => TypeParameterData.CreateFrom(p, semanticModel, compilation, cancellationToken)));
 		}
 
 		private void ReportForBothReceivers(Diagnostic diagnostic)

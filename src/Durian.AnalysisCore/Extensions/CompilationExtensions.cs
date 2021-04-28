@@ -10,9 +10,10 @@ namespace Durian.Extensions
 	public static class CompilationExtensions
 	{
 		/// <summary>
-		/// Returns all special types in the compilation. See: <see cref="SpecialType"/>.
+		/// Returns all special types in the <paramref name="compilation"/>. See: <see cref="SpecialType"/>.
 		/// </summary>
-		/// <param name="compilation"></param>
+		/// <param name="compilation"><see cref="Compilation"/> to get the special types from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetSpecialTypes(this Compilation compilation)
 		{
 			if (compilation is null)

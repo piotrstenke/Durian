@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
@@ -7,29 +8,39 @@ namespace Durian
 	/// <summary>
 	/// A <see cref="IDiagnosticReceiver"/> that holds all the reported diagnostics in a publicly-visible <see cref="List{T}"/>.
 	/// </summary>
-	public sealed class DiagnosticBag : IDiagnosticReceiver
+	public sealed class DiagnosticBag : IDiagnosticReceiver, IEnumerable<Diagnostic>
 	{
+		private readonly List<Diagnostic> _diagnostics;
+
 		/// <summary>
-		/// A <see cref="List{T}"/> of all reported diagnostics.
+		/// Number of reported <see cref="Diagnostic"/>s.
 		/// </summary>
-		public List<Diagnostic> Diagnostics { get; }
+		public int Count => _diagnostics.Count;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DiagnosticBag"/> class.
 		/// </summary>
 		public DiagnosticBag()
 		{
-			Diagnostics = new();
+			_diagnostics = new();
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DiagnosticBag"/> class.
 		/// </summary>
-		/// <param name="capacity">Capacity of the list of <see cref="Diagnostics"/>.</param>
+		/// <param name="capacity">Capacity of the list of <see cref="_diagnostics"/>.</param>
 		/// <exception cref="ArgumentOutOfRangeException"><paramref name="capacity"/> is less than <c>0</c>.</exception>
 		public DiagnosticBag(int capacity)
 		{
-			Diagnostics = new(capacity);
+			_diagnostics = new(capacity);
+		}
+
+		/// <summary>
+		/// Returns all <see cref="Diagnostic"/> contained within this <see cref="DiagnosticBag"/>.
+		/// </summary>
+		public Diagnostic[] GetDiagnostics()
+		{
+			return _diagnostics.ToArray();
 		}
 
 		/// <summary>
@@ -43,7 +54,7 @@ namespace Durian
 				return;
 			}
 
-			Diagnostics.Add(diagnostic);
+			_diagnostics.Add(diagnostic);
 		}
 
 		/// <inheritdoc/>
@@ -54,7 +65,29 @@ namespace Durian
 				return;
 			}
 
-			Diagnostics.Add(Diagnostic.Create(descriptor, location, messageArgs));
+			_diagnostics.Add(Diagnostic.Create(descriptor, location, messageArgs));
+		}
+
+		/// <summary>
+		/// Clears the bag.
+		/// </summary>
+		public void Clear()
+		{
+			_diagnostics.Clear();
+		}
+
+		/// <inheritdoc/>
+		public IEnumerator<Diagnostic> GetEnumerator()
+		{
+			foreach (Diagnostic diag in _diagnostics)
+			{
+				yield return diag;
+			}
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
 		}
 	}
 }

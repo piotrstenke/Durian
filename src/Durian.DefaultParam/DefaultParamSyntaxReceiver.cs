@@ -74,14 +74,18 @@ namespace Durian.DefaultParam
 
 		private void CollectMethod(MethodDeclarationSyntax decl)
 		{
-			if (decl.TypeParameterList is null)
+			if (decl.TypeParameterList is not null)
 			{
-				return;
+				SeparatedSyntaxList<TypeParameterSyntax> parameters = decl.TypeParameterList.Parameters;
+
+				if (parameters.Any() && parameters.Any(p => p.AttributeLists.Any()))
+				{
+					CandidateMethods.Add(decl);
+					return;
+				}
 			}
 
-			SeparatedSyntaxList<TypeParameterSyntax> parameters = decl.TypeParameterList.Parameters;
-
-			if (parameters.Any() && parameters.Any(p => p.AttributeLists.Any()))
+			if(decl.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
 			{
 				CandidateMethods.Add(decl);
 			}

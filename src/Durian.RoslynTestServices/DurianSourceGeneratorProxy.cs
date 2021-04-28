@@ -66,7 +66,7 @@ namespace Durian.Tests
 		/// <summary>
 		/// Event invoked when the <see cref="GetFilters(in GeneratorExecutionContext)"/> method is called.
 		/// </summary>
-		public event Func<GeneratorExecutionContext, FilterList<IGeneratorSyntaxFilterWithDiagnostics>>? OnGetFilters;
+		public event Func<GeneratorExecutionContext, FilterContainer<IGeneratorSyntaxFilterWithDiagnostics>>? OnGetFilters;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianSourceGeneratorProxy"/> class.
@@ -103,7 +103,7 @@ namespace Durian.Tests
 		}
 
 		/// <inheritdoc/>
-		protected override FilterList<IGeneratorSyntaxFilterWithDiagnostics>? GetFilters(in GeneratorExecutionContext context)
+		protected override FilterContainer<IGeneratorSyntaxFilterWithDiagnostics>? GetFilters(in GeneratorExecutionContext context)
 		{
 			return OnGetFilters?.Invoke(context);
 		}

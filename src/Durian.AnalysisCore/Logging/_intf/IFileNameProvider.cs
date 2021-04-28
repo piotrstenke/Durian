@@ -12,5 +12,15 @@ namespace Durian.Logging
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the file name for.</param>
 		string GetFileName(ISymbol symbol);
+
+		/// <summary>
+		/// A callback method that changes the state of the current <see cref="IFileNameProvider"/>.
+		/// </summary>
+		void Success();
+
+		/// <summary>
+		/// Resets the <see cref="IFileNameProvider"/> to its original state.
+		/// </summary>
+		void Reset();
 	}
 }

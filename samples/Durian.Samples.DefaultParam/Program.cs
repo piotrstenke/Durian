@@ -1,5 +1,11 @@
-﻿namespace Durian.Samples.DefaultParam
+﻿[assembly: Durian.Configuration.DefaultParamConfiguration(CallInsteadOfCopying = true)]
+namespace Durian.Samples
 {
+	internal class Parent
+	{
+
+	}
+
 	internal partial class Program
 	{
 		public delegate void D<T>(T value);
@@ -9,9 +15,11 @@
 
 		}
 
-		public static void Method<[Durian.DefaultParam(typeof(int))]U>(U value)
+		public static void Method<[Durian.DefaultParam(typeof(int))]T>(T value)
 		{
-
+			// test
+			int a = 2;
 		}
+
 	}
 }

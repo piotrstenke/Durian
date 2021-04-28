@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using System.Collections.Generic;
 
 namespace Durian.Extensions
 {
@@ -16,14 +17,21 @@ namespace Durian.Extensions
 		/// <param name="attribute"><see cref="AttributeData"/> to get the <see cref="TypedConstant"/> from.</param>
 		/// <param name="argumentName">Name of the argument to get the <see cref="TypedConstant"/> of.</param>
 		/// <param name="value">Returned <see cref="TypedConstant"/> that represents the argument with the specified <paramref name="argumentName"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static bool TryGetNamedArgument(this AttributeData attribute, string argumentName, out TypedConstant value)
 		{
-			TypedConstant? arg = attribute?.NamedArguments.FirstOrDefault(arg => arg.Key == argumentName).Value;
-
-			if (arg is not null)
+			if(attribute is null)
 			{
-				value = arg.Value;
-				return true;
+				throw new ArgumentNullException(nameof(attribute));
+			}
+
+			foreach (KeyValuePair<string, TypedConstant> arg in attribute.NamedArguments)
+			{
+				if(arg.Key == argumentName)
+				{
+					value = arg.Value;
+					return true;
+				}
 			}
 
 			value = default;
@@ -35,6 +43,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="attribute"><see cref="AttributeData"/> to get the <see cref="TypedConstant"/> from.</param>
 		/// <param name="argumentName">Name of the argument to get the <see cref="TypedConstant"/> of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static TypedConstant GetNamedArgument(this AttributeData attribute, string argumentName)
 		{
 			TryGetNamedArgument(attribute, argumentName, out TypedConstant value);
@@ -48,14 +57,26 @@ namespace Durian.Extensions
 		/// <param name="attribute"><see cref="AttributeData"/> to get the <paramref name="value"/> from.</param>
 		/// <param name="argumentName">Name of the argument to get the <paramref name="value"/> of.</param>
 		/// <param name="value">Value of the argument.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static bool TryGetNamedArgumentValue<T>(this AttributeData attribute, string argumentName, out T value)
 		{
-			object? obj = attribute?.NamedArguments.FirstOrDefault(arg => arg.Key == argumentName).Value.Value;
-
-			if (obj is not null and T t)
+			if (attribute is null)
 			{
-				value = t;
-				return true;
+				throw new ArgumentNullException(nameof(attribute));
+			}
+
+			foreach (KeyValuePair<string, TypedConstant> arg in attribute.NamedArguments)
+			{
+				if (arg.Key == argumentName)
+				{
+					if(arg.Value.Value is T t)
+					{
+						value = t;
+						return true;
+					}
+
+					break;
+				}
 			}
 
 			value = default!;
@@ -68,6 +89,7 @@ namespace Durian.Extensions
 		/// <typeparam name="T">Type of value to return.</typeparam>
 		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
 		/// <param name="argumentName">Name of the argument to get the value of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static T GetNamedArgumentValue<T>(this AttributeData attribute, string argumentName)
 		{
 			TryGetNamedArgumentValue(attribute, argumentName, out T value);
@@ -81,14 +103,26 @@ namespace Durian.Extensions
 		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
 		/// <param name="argumentName">Name of the argument to get the value of.</param>
 		/// <param name="symbol">Symbol that represents the <see cref="Type"/> value of the argument.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static bool TryGetNamedArgumentTypeValue<T>(this AttributeData attribute, string argumentName, out T? symbol) where T : ITypeSymbol
 		{
-			ITypeSymbol? obj = attribute?.NamedArguments.FirstOrDefault(arg => arg.Key == argumentName).Value.Type;
-
-			if (obj is not null and T t)
+			if (attribute is null)
 			{
-				symbol = t;
-				return true;
+				throw new ArgumentNullException(nameof(attribute));
+			}
+
+			foreach (KeyValuePair<string, TypedConstant> arg in attribute.NamedArguments)
+			{
+				if (arg.Key == argumentName)
+				{
+					if (arg.Value.Type is T t)
+					{
+						symbol = t;
+						return true;
+					}
+
+					break;
+				}
 			}
 
 			symbol = default;
@@ -101,6 +135,7 @@ namespace Durian.Extensions
 		/// <typeparam name="T">Type of <see cref="ITypeSymbol"/> to return.</typeparam>
 		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
 		/// <param name="argumentName">Name of the argument to get the value of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static T? GetNamedArgumentTypeValue<T>(this AttributeData attribute, string argumentName) where T : ITypeSymbol
 		{
 			TryGetNamedArgumentTypeValue(attribute, argumentName, out T? symbol);
@@ -113,14 +148,26 @@ namespace Durian.Extensions
 		/// <param name="attribute"><see cref="AttributeData"/> to get the values from.</param>
 		/// <param name="argumentName">Name of the argument to get the values of.</param>
 		/// <param name="values">Values contained within array value of the argument.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static bool TryGetNamedArgumentArrayValue(this AttributeData attribute, string argumentName, out ImmutableArray<TypedConstant> values)
 		{
-			ImmutableArray<TypedConstant>? array = attribute?.NamedArguments.FirstOrDefault(arg => arg.Key == argumentName).Value.Values;
-
-			if (array is not null)
+			if (attribute is null)
 			{
-				values = array.Value;
-				return true;
+				throw new ArgumentNullException(nameof(attribute));
+			}
+
+			foreach (KeyValuePair<string, TypedConstant> arg in attribute.NamedArguments)
+			{
+				if (arg.Key == argumentName)
+				{
+					if (!arg.Value.Values.IsDefault)
+					{
+						values = arg.Value.Values;
+						return true;
+					}
+
+					break;
+				}
 			}
 
 			values = ImmutableArray.Create<TypedConstant>();
@@ -132,6 +179,7 @@ namespace Durian.Extensions
 		/// </summary>
 		/// <param name="attribute"><see cref="AttributeData"/> to get the values from.</param>
 		/// <param name="argumentName">Name of the argument to get the values of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static ImmutableArray<TypedConstant> GetNamedArgumentArrayValue(this AttributeData attribute, string argumentName)
 		{
 			TryGetNamedArgumentArrayValue(attribute, argumentName, out ImmutableArray<TypedConstant> array);
@@ -145,6 +193,7 @@ namespace Durian.Extensions
 		/// <param name="attribute"><see cref="AttributeData"/> to get the values from.</param>
 		/// <param name="argumentName">Name of the argument to get the values of.</param>
 		/// <param name="values">Values contained within array value of the argument.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static bool TryGetNamedArgumentArrayValue<T>(this AttributeData attribute, string argumentName, out ImmutableArray<T> values)
 		{
 			if (!TryGetNamedArgumentArrayValue(attribute, argumentName, out ImmutableArray<TypedConstant> constants))
@@ -185,6 +234,7 @@ namespace Durian.Extensions
 		/// <typeparam name="T">Type of array's elements.</typeparam>
 		/// <param name="attribute"><see cref="AttributeData"/> to get the values from.</param>
 		/// <param name="argumentName">Name of the argument to get the values of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static ImmutableArray<T> GetNamedArgumentArrayValue<T>(this AttributeData attribute, string argumentName)
 		{
 			TryGetNamedArgumentArrayValue(attribute, argumentName, out ImmutableArray<T> array);

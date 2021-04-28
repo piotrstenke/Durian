@@ -21,7 +21,7 @@ namespace Durian
 				Descriptors.MemberWithAttributeMustHaveModifier,
 				("'memberType'", "Member"),
 				(nameof(attributeName), attributeName),
-				(nameof(modifier), modifier)
+				("'modifier'", modifier)
 			);
 		}
 
@@ -35,11 +35,11 @@ namespace Durian
 		public static DiagnosticDescriptor MemberWithAttributeMustHaveModifier(string attributeName, string modifier, string memberType)
 		{
 			return CopyDescriptor(
-Descriptors.MemberWithAttributeMustHaveModifier,
-("'memberType'", memberType),
-(nameof(attributeName), attributeName),
-(nameof(modifier), modifier)
-);
+				Descriptors.MemberWithAttributeMustHaveModifier,
+				("'memberType'", memberType),
+				(nameof(attributeName), attributeName),
+				("'modifier'", modifier)
+			);
 		}
 
 		/// <summary>
@@ -54,7 +54,7 @@ Descriptors.MemberWithAttributeMustHaveModifier,
 				Descriptors.MemberWithAttributeCannotHaveModifier,
 				("'memberType'", "Member"),
 				(nameof(attributeName), attributeName),
-				(nameof(modifier), modifier)
+				("'modifier'", modifier)
 			);
 		}
 
@@ -71,7 +71,7 @@ Descriptors.MemberWithAttributeMustHaveModifier,
 				Descriptors.MemberWithAttributeCannotHaveModifier,
 				("'memberType'", memberType),
 				(nameof(attributeName), attributeName),
-				(nameof(modifier), modifier)
+				("'modifier'", modifier)
 			);
 		}
 

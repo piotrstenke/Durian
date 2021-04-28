@@ -351,5 +351,4 @@ namespace Durian.Logging
 			}
 		}
 	}
-
 }

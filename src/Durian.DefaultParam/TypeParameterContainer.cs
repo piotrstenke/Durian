@@ -40,8 +40,8 @@ namespace Durian.DefaultParam
 			{
 				_parameters = parameters.ToArray();
 				FirstDefaultParamIndex = FindFirstDefaultParamIndex(_parameters);
-				NumDefaultParam = _parameters.Length - FirstDefaultParamIndex;
 				HasDefaultParams = FirstDefaultParamIndex > -1;
+				NumDefaultParam = HasDefaultParams ? _parameters.Length - FirstDefaultParamIndex : 0;
 			}
 		}
 
@@ -58,17 +58,20 @@ namespace Durian.DefaultParam
 
 			for (int i = 0; i < length; i++)
 			{
-				if (this[i].IsDefaultParam)
+				ref readonly TypeParameterData thisData = ref this[i];
+
+				if (thisData.IsDefaultParam)
 				{
-					parameters[i] = this[i];
+					parameters[i] = thisData;
 				}
 				else if (target[i].IsDefaultParam)
 				{
-					parameters[i] = target[i];
+					ref readonly TypeParameterData targetData = ref target[i];
+					parameters[i] = new(thisData.Syntax, thisData.Symbol, thisData.SemanticModel, targetData.Attribute, targetData.TargetType);
 				}
 				else
 				{
-					parameters[i] = this[i];
+					parameters[i] = thisData;
 				}
 			}
 
