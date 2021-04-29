@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using static Durian.Logging.LoggableSourceGenerator;
 
 namespace Durian.DefaultParam
 {
@@ -198,12 +197,12 @@ namespace Durian.DefaultParam
 			TypeParameterContainer baseTypeParameters = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
 			bool isValid;
 
-			if(typeParameters.FirstDefaultParamIndex == -1)
+			if (typeParameters.FirstDefaultParamIndex == -1)
 			{
 				isValid = ValidateTypeParameters(diagnosticReceiver, in baseTypeParameters);
 				hasValidTypeParameters = isValid;
 
-				if(isValid)
+				if (isValid)
 				{
 					isValid &= ValidateBaseMethodParameters(diagnosticReceiver, compilation.Configuration, in typeParameters, in baseTypeParameters);
 				}

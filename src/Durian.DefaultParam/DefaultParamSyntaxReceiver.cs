@@ -85,7 +85,7 @@ namespace Durian.DefaultParam
 				}
 			}
 
-			if(decl.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
+			if (decl.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
 			{
 				CandidateMethods.Add(decl);
 			}

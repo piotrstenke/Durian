@@ -12,7 +12,7 @@ namespace Durian.DefaultParam
 {
 	public class DefaultParamLocalFunctionFilter : IDefaultParamFilter
 	{
-		private readonly LoggableSourceGenerator.DiagnosticReceiver? _loggableReceiver;
+		private readonly LoggableGeneratorDiagnosticReceiver? _loggableReceiver;
 		private readonly IDirectDiagnosticReceiver? _diagnosticReceiver;
 		private readonly IFileNameProvider _fileNameProvider;
 
@@ -29,7 +29,7 @@ namespace Durian.DefaultParam
 
 			if (generator.LoggingConfiguration.EnableLogging)
 			{
-				_loggableReceiver = new LoggableSourceGenerator.DiagnosticReceiver(generator);
+				_loggableReceiver = new LoggableGeneratorDiagnosticReceiver(generator);
 				_diagnosticReceiver = generator.SupportsDiagnostics ? DiagnosticReceiverFactory.Direct(ReportForBothReceivers) : _loggableReceiver;
 			}
 			else if (generator.SupportsDiagnostics)

@@ -10,6 +10,7 @@
     <MSBuildProjectExtensionsPath>..\..\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
     <Nullable>enable</Nullable>
     <LangVersion>9.0</LangVersion>
+    <PreferredUILang>en-US</PreferredUILang>
   </PropertyGroup>
 
 </Project>

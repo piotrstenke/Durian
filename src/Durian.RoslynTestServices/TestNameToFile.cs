@@ -1,14 +1,14 @@
-﻿using Durian.Logging;
-using Microsoft.CodeAnalysis;
-using System;
+﻿using System;
 using System.Diagnostics;
+using Durian.Logging;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Tests
 {
 	/// <summary>
 	/// A <see cref="IFileNameProvider"/> that returns name of the current test.
 	/// </summary>
-	[DebuggerDisplay("{_current}")]
+	[DebuggerDisplay("TestName = {TestName}, Counter = {Counter}")]
 	public sealed class TestNameToFile : IFileNameProvider
 	{
 		private int _counter = 0;
@@ -24,7 +24,7 @@ namespace Durian.Tests
 			get => _counter;
 			set
 			{
-				if(value < 0)
+				if (value < 0)
 				{
 					throw new ArgumentOutOfRangeException(nameof(Counter), $"{nameof(Counter)} cannot be less than 0!");
 				}
@@ -43,12 +43,12 @@ namespace Durian.Tests
 			get => _testName;
 			set
 			{
-				if(string.IsNullOrWhiteSpace(value))
+				if (string.IsNullOrWhiteSpace(value))
 				{
 					throw new ArgumentException($"{nameof(TestName)} cannot be null or empty!");
 				}
 
-				if(value != _testName)
+				if (value != _testName)
 				{
 					_counter = 0;
 					_testName = value;

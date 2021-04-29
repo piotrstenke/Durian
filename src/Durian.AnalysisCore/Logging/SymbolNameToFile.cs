@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
-using System.Diagnostics;
 
 namespace Durian.Logging
 {

@@ -1,3 +1,4 @@
+using System.Threading;
 using Durian.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -25,6 +26,11 @@ namespace Durian
 		CSharpParseOptions ParseOptions { get; }
 
 		/// <summary>
+		/// A <see cref="System.Threading.CancellationToken"/> that can be checked to see if the generation should be canceled.
+		/// </summary>
+		CancellationToken CancellationToken { get; }
+
+		/// <summary>
 		/// Version of this <see cref="IDurianSourceGenerator"/>.
 		/// </summary>
 		string Version { get; }
@@ -35,12 +41,13 @@ namespace Durian
 		string GeneratorName { get; }
 
 		/// <summary>
-		/// Determines whether this <see cref="IDurianSourceGenerator"/> can report any diagnostics.
+		/// Determines whether this <see cref="IDurianSourceGenerator"/> supports reporting of <see cref="Diagnostic"/>s.
 		/// </summary>
+		/// <remarks>Value of this property should never change.</remarks>
 		bool SupportsDiagnostics { get; }
 
 		/// <summary>
-		/// Enables diagnostics if this <see cref="IDurianSourceGenerator"/> supports any.
+		/// Determines whether this <see cref="IDurianSourceGenerator"/> allows to report any <see cref="Diagnostic"/>s during the current execution pass.
 		/// </summary>
 		bool EnableDiagnostics { get; set; }
 

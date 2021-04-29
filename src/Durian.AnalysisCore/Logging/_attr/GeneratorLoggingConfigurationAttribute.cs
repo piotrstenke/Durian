@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Logging
 {
@@ -14,8 +15,11 @@ namespace Durian.Logging
 		/// </summary>
 		public string? LogDirectory { get; init; }
 
+		/// <inheritdoc cref="GeneratorLoggingConfiguration.SupportedLogs"/>
+		public GeneratorLogs SupportedLogs { get; init; }
+
 		/// <summary>
-		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="GlobalGeneratorLoggingConfigurationAttribute.LogDirectory"/>. Defaults to <see langword="true"/>.
+		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/>. Defaults to <see langword="true"/>.
 		/// </summary>
 		public bool RelativeToGlobal { get; init; } = true;
 
@@ -25,8 +29,10 @@ namespace Durian.Logging
 		/// <remarks>If <see cref="RelativeToDefault"/> is set to <see langword="true"/>, value of <see cref="RelativeToGlobal"/> is irrelevant.</remarks>
 		public bool RelativeToDefault { get; init; }
 
-		/// <inheritdoc cref="GeneratorLoggingConfiguration.SupportedLogs"/>
-		public GeneratorLogs SupportedLogs { get; init; }
+		/// <summary>
+		/// Determines whether the <see cref="ISourceGenerator"/> supports reporting <see cref="Diagnostic"/>s. Defaults to <see langword="false"/>
+		/// </summary>
+		public bool SupportsDiagnostics { get; init; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLoggingConfigurationAttribute"/> class.
@@ -111,10 +117,10 @@ namespace Durian.Logging
 		/// <exception cref="ArgumentException">
 		/// <see cref="LogDirectory"/> cannot be empty or white space only. -or-
 		/// <paramref name="globalConfiguration"/> must be specified if <see cref="RelativeToGlobal"/> is set to <see langword="true"/> -or-
-		/// <see cref="GlobalGeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if <see cref="GlobalGeneratorLoggingConfigurationAttribute.RelativeToDefault"/> is set to <see langword="false"/>. -or-
+		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if <see cref="DefaultGeneratorLoggingConfigurationAttribute.RelativeToDefault"/> is set to <see langword="false"/>. -or-
 		/// <see cref="LogDirectory"/> must be specified if both <see cref="RelativeToDefault"/> and <see cref="RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
-		public string GetAndValidateFullLogDirectory(GlobalGeneratorLoggingConfigurationAttribute? globalConfiguration)
+		public string GetAndValidateFullLogDirectory(DefaultGeneratorLoggingConfigurationAttribute? globalConfiguration)
 		{
 			if (_validatedDirectory is not null)
 			{
@@ -167,7 +173,7 @@ namespace Durian.Logging
 				dir = LogDirectory;
 			}
 
-			if(GeneratorLoggingConfiguration.IsEnabled)
+			if (GeneratorLoggingConfiguration.IsEnabled)
 			{
 				Directory.CreateDirectory(dir);
 			}

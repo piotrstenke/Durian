@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -9,7 +10,6 @@ using Durian.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Durian
 {
@@ -17,7 +17,7 @@ namespace Durian
 	/// A wrapper for the <see cref="StringBuilder"/> class that helps generating C# code.
 	/// </summary>
 	[DebuggerDisplay("{TextBuilder}")]
-	public sealed partial class CodeBuilder
+	public sealed class CodeBuilder
 	{
 		private int _currentIndent;
 

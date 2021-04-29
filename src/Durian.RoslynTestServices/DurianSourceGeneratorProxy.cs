@@ -6,9 +6,9 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.Tests
 {
 	/// <summary>
-	/// A simple proxy class that inherits the <see cref="SourceGenerator"/> class and leaves the actual implementation details to be defined by the user through appropriate C# events, as well as provides references to the passed <see cref="GeneratorInitializationContext"/> and <see cref="GeneratorExecutionContext"/>.
+	/// A simple proxy class that inherits the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class and leaves the actual implementation details to be defined by the user through appropriate C# events, as well as provides references to the passed <see cref="GeneratorInitializationContext"/> and <see cref="GeneratorExecutionContext"/>.
 	/// </summary>
-	public class DurianSourceGeneratorProxy : SourceGenerator
+	public class DurianSourceGeneratorProxy : SourceGenerator<ICompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
 	{
 		private GeneratorExecutionContext _exeContext;
 		private GeneratorInitializationContext _initContext;

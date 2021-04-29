@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -10,9 +11,10 @@ namespace Durian
 	/// A collection of <see cref="ISyntaxFilter"/>s.
 	/// </summary>
 	/// <typeparam name="TFilter">Type of <see cref="ISyntaxFilter"/> this <see cref="FilterGroup{TFilter}"/> can store.</typeparam>
+	[DebuggerDisplay("Name = {_name}, {_filters}")]
 	public class FilterGroup<TFilter> : ICollection<TFilter> where TFilter : notnull, ISyntaxFilter
 	{
-		internal List<FilterContainer<TFilter>> _parents;
+		internal List<FilterContainer<TFilter>> _containers;
 		private readonly List<TFilter> _filters;
 		private string? _name;
 
@@ -26,14 +28,14 @@ namespace Durian
 			get => _name;
 			set
 			{
-				if(value is not null)
+				if (value is not null)
 				{
-					if(string.IsNullOrWhiteSpace(value))
+					if (string.IsNullOrWhiteSpace(value))
 					{
 						throw new ArgumentException($"{nameof(Name)} cannot be empty or white space only!");
 					}
 
-					if(_parents is not null && _parents.Any(p => p.ContainsFilterGroup(value)))
+					if (_containers is not null && _containers.Any(p => p.ContainsFilterGroup(value)))
 					{
 						throw new InvalidOperationException("Filter group with the specified name already defined in the parent container!");
 					}
@@ -70,7 +72,7 @@ namespace Durian
 		public FilterGroup()
 		{
 			_filters = new();
-			_parents = new();
+			_containers = new();
 		}
 
 		/// <summary>
@@ -81,7 +83,7 @@ namespace Durian
 		public FilterGroup(string? name)
 		{
 			_filters = new();
-			_parents = new();
+			_containers = new();
 			Name = name;
 		}
 
@@ -92,13 +94,13 @@ namespace Durian
 		/// <exception cref="ArgumentNullException" ><paramref name="filters"/> is <see langword="null"/>.</exception>
 		public FilterGroup(IEnumerable<TFilter> filters)
 		{
-			if(filters is null)
+			if (filters is null)
 			{
 				throw new ArgumentNullException(nameof(filters));
 			}
 
 			_filters = new(filters);
-			_parents = new();
+			_containers = new();
 		}
 
 		/// <summary>
@@ -123,7 +125,7 @@ namespace Durian
 		{
 			ThrowIfSealed();
 
-			if(filter is null)
+			if (filter is null)
 			{
 				throw new ArgumentNullException(nameof(filter));
 			}
@@ -141,7 +143,7 @@ namespace Durian
 		{
 			ThrowIfSealed();
 
-			if(filters is null)
+			if (filters is null)
 			{
 				throw new ArgumentNullException(nameof(filters));
 			}
@@ -283,12 +285,12 @@ namespace Durian
 
 		private void ThrowIfSealed()
 		{
-			if(IsSealed)
+			if (IsSealed)
 			{
 				throw new InvalidOperationException("Filter group is sealed!");
 			}
 
-			if (_parents.Any(p => p.IsSealed))
+			if (_containers.Any(p => p.IsSealed))
 			{
 				throw new InvalidOperationException("Parent filter container is sealed!");
 			}

@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Durian.DefaultParam;
+﻿using Durian.DefaultParam;
+using Xunit;
 
 namespace Durian.Tests.DefaultParam.Generator
 {
@@ -27,7 +27,7 @@ partial class Child : Parent
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0021"));
 		}
 
-[Fact]
+		[Fact]
 		public void GeneratesOverridesForVirtualDefaultParamMethod_When_HasNoBaseAttribute()
 		{
 			string input =

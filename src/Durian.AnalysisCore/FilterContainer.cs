@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace Durian
 {
@@ -13,7 +10,7 @@ namespace Durian
 	/// A collection of <see cref="ISyntaxFilter"/>s that binds its elements into separate <see cref="FilterGroup{TFilter}"/>s.
 	/// </summary>
 	/// <typeparam name="TFilter">Type of <see cref="ISyntaxFilter"/> that can be stored in this list.</typeparam>
-	[DebuggerDisplay("{_filterGroups}")]
+	[DebuggerDisplay("NumGroups = {NumGroups}")]
 	public class FilterContainer<TFilter> : ICollection<FilterGroup<TFilter>> where TFilter : ISyntaxFilter
 	{
 		private readonly List<FilterGroup<TFilter>> _filterGroups;
@@ -75,8 +72,8 @@ namespace Durian
 		/// <param name="filters">A collection of <typeparamref name="TFilter"/>s that represent the initial <see cref="FilterGroup{TFilter}"/> of the <see cref="FilterContainer{TFilter}"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="filters"/> is <see langword="null"/>.</exception>
 		public FilterContainer(IEnumerable<TFilter> filters)
-{
-			if(filters is null)
+		{
+			if (filters is null)
 			{
 				throw new ArgumentNullException(nameof(filters));
 			}
@@ -112,7 +109,7 @@ namespace Durian
 		/// <exception cref="ArgumentException"><see cref="FilterGroup{TFilter}"/> with the specified name already defined.</exception>
 		public FilterContainer(IEnumerable<FilterGroup<TFilter>> groups)
 		{
-			if(groups is null)
+			if (groups is null)
 			{
 				throw new ArgumentNullException(nameof(groups));
 			}
@@ -274,7 +271,7 @@ namespace Durian
 		{
 			ThrowIfNullOrWhiteSpace(name);
 
-			if(_filterGroups.Find(g => g.Name == name) is not FilterGroup<TFilter> group)
+			if (_filterGroups.Find(g => g.Name == name) is not FilterGroup<TFilter> group)
 			{
 				throw new ArgumentNullException($"Filter group with name '{name}' not found!");
 			}
@@ -303,12 +300,12 @@ namespace Durian
 		{
 			ThrowIfSealed();
 
-			if(group is null)
+			if (group is null)
 			{
 				throw new ArgumentNullException(nameof(group));
 			}
 
-			if(group.Name is not null && _filterGroups.Any(g => g.Name == group.Name))
+			if (group.Name is not null && _filterGroups.Any(g => g.Name == group.Name))
 			{
 				throw Exc_GroupWithNameAlreadyDefined(group.Name);
 			}
@@ -368,7 +365,7 @@ namespace Durian
 			int index = _filterGroups.Count;
 			FilterGroup<TFilter> group = new();
 
-			if(filter is not null)
+			if (filter is not null)
 			{
 				group.AddFilter(filter);
 			}
@@ -410,7 +407,7 @@ namespace Durian
 		{
 			ThrowIfSealed();
 
-			if(name is not null)
+			if (name is not null)
 			{
 				ThrowIfEmptyOrWhiteSpace(name);
 				ThrowIfNameExists(name);
@@ -434,7 +431,7 @@ namespace Durian
 		{
 			ThrowIfSealed();
 
-			if(groups is null)
+			if (groups is null)
 			{
 				throw new ArgumentNullException(nameof(groups));
 			}
@@ -479,7 +476,7 @@ namespace Durian
 		{
 			ThrowIfSealed();
 
-			if(group is null)
+			if (group is null)
 			{
 				throw new ArgumentNullException(nameof(group));
 			}
@@ -495,7 +492,7 @@ namespace Durian
 
 			if (!_filterGroups.Contains(group))
 			{
-				group._parents.Remove(this);
+				group._containers.Remove(this);
 			}
 
 			return index;
@@ -649,7 +646,7 @@ namespace Durian
 		/// <exception cref="ArgumentNullException"><paramref name="group"/> is <see langword="null"/>.</exception>
 		public bool ContainsFilterGroup(FilterGroup<TFilter> group)
 		{
-			if(group is null)
+			if (group is null)
 			{
 				throw new ArgumentNullException(nameof(group));
 			}
@@ -735,7 +732,7 @@ namespace Durian
 
 		private static void ThrowIfNullOrWhiteSpace(string name)
 		{
-			if(string.IsNullOrWhiteSpace(name))
+			if (string.IsNullOrWhiteSpace(name))
 			{
 				throw new ArgumentException($"{nameof(name)} cannot be null or whitespace only!");
 			}
@@ -767,22 +764,22 @@ namespace Durian
 
 		private void RemoveParent(FilterGroup<TFilter> group)
 		{
-			if(!_filterGroups.Remove(group))
+			if (!_filterGroups.Remove(group))
 			{
 				throw Exc_UnknownGroup();
 			}
 
-			if(!_filterGroups.Contains(group))
+			if (!_filterGroups.Contains(group))
 			{
-				group._parents.Remove(this);
+				group._containers.Remove(this);
 			}
 		}
 
 		private void AddParent(FilterGroup<TFilter> group)
 		{
-			if(!group._parents.Contains(this))
+			if (!group._containers.Contains(this))
 			{
-				group._parents.Add(this);
+				group._containers.Add(this);
 			}
 		}
 	}

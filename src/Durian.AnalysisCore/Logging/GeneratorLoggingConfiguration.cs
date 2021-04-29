@@ -1,10 +1,11 @@
 ﻿using System;
 using System.IO;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Logging
 {
 	/// <summary>
-	/// Determines how the source generator should behave when logging information.
+	/// Determines the behavior of the target <see cref="ISourceGenerator"/> when creating log files.
 	/// </summary>
 	public sealed partial record GeneratorLoggingConfiguration
 	{
@@ -26,7 +27,7 @@ namespace Durian.Logging
 
 				string dir = Path.GetFullPath(value);
 
-				if(IsEnabled)
+				if (IsEnabled)
 				{
 					Directory.CreateDirectory(dir);
 				}
@@ -57,6 +58,11 @@ namespace Durian.Logging
 				_enableLogging = value;
 			}
 		}
+
+		/// <summary>
+		/// Determines whether the <see cref="ISourceGenerator"/> supports reporting <see cref="Diagnostic"/>s.
+		/// </summary>
+		public bool SupportsDiagnostics { get; init; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLoggingConfiguration"/> class.

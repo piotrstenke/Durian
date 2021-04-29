@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Immutable;
-using System.Linq;
-using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Extensions
 {
@@ -20,14 +19,14 @@ namespace Durian.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static bool TryGetNamedArgument(this AttributeData attribute, string argumentName, out TypedConstant value)
 		{
-			if(attribute is null)
+			if (attribute is null)
 			{
 				throw new ArgumentNullException(nameof(attribute));
 			}
 
 			foreach (KeyValuePair<string, TypedConstant> arg in attribute.NamedArguments)
 			{
-				if(arg.Key == argumentName)
+				if (arg.Key == argumentName)
 				{
 					value = arg.Value;
 					return true;
@@ -69,7 +68,7 @@ namespace Durian.Extensions
 			{
 				if (arg.Key == argumentName)
 				{
-					if(arg.Value.Value is T t)
+					if (arg.Value.Value is T t)
 					{
 						value = t;
 						return true;

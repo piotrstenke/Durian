@@ -13,7 +13,7 @@ namespace Durian.Logging
 		/// <summary>
 		/// Default directory where the generator log files are placed, which is '<c>&lt;documents&gt;/Durian/logs</c>'.
 		/// </summary>
-		public static string DefaultLogDirectory { get; } = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/Durian/logs";
+		public static string DefaultLogDirectory => Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/Durian/logs";
 
 		/// <summary>
 		/// Determines whether there is any assembly in the current <see cref="AppDomain"/> has applied the <see cref="GloballyDisableGeneratorLoggingAttribute"/>.
@@ -27,7 +27,8 @@ namespace Durian.Logging
 		{
 			EnableLogging = false,
 			LogDirectory = DefaultLogDirectory,
-			SupportedLogs = GeneratorLogs.None
+			SupportedLogs = GeneratorLogs.None,
+			SupportsDiagnostics = false
 		};
 
 		/// <summary>
@@ -129,7 +130,7 @@ namespace Durian.Logging
 		/// Returns a reference to the <see cref="GeneratorLoggingConfiguration"/> for the specified <paramref name="assembly"/>.
 		/// </summary>
 		/// <param name="assembly"><see cref="Assembly"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</param>
-		/// <exception cref="ArgumentException"><see cref="GlobalGeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only.</exception>
+		/// <exception cref="ArgumentException"><see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only.</exception>
 		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
 		public static GeneratorLoggingConfiguration GetConfigurationForAssembly(Assembly assembly)
 		{
@@ -159,7 +160,7 @@ namespace Durian.Logging
 		/// <typeparam name="T">Type of <see cref="ISourceGenerator"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</typeparam>
 		/// <exception cref="ArgumentException">
 		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
-		/// <see cref="GlobalGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
 		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="GeneratorLoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
 		public static GeneratorLoggingConfiguration CreateConfigurationForGenerator<T>() where T : ISourceGenerator
@@ -174,7 +175,7 @@ namespace Durian.Logging
 		/// <exception cref="ArgumentException">
 		/// <paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface. -or-
 		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
-		/// <see cref="GlobalGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
 		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="GeneratorLoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
@@ -195,7 +196,7 @@ namespace Durian.Logging
 		/// <param name="generator"><see cref="ISourceGenerator"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</param>
 		/// <exception cref="ArgumentException">
 		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
-		/// <see cref="GlobalGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
 		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="GeneratorLoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
@@ -214,8 +215,8 @@ namespace Durian.Logging
 		/// </summary>
 		/// <param name="assembly"><see cref="Assembly"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</param>
 		/// <exception cref="ArgumentException">
-		/// <see cref="GlobalGeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only. -or-
-		/// <see cref="GlobalGeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if <see cref="GlobalGeneratorLoggingConfigurationAttribute.RelativeToDefault"/> is set to <see langword="false"/>.
+		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only. -or-
+		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if <see cref="DefaultGeneratorLoggingConfigurationAttribute.RelativeToDefault"/> is set to <see langword="false"/>.
 		/// </exception>
 		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
 		public static GeneratorLoggingConfiguration CreateConfigurationForAssembly(Assembly assembly)
@@ -225,7 +226,7 @@ namespace Durian.Logging
 				throw new ArgumentNullException(nameof(assembly));
 			}
 
-			GlobalGeneratorLoggingConfigurationAttribute? attr = assembly.GetCustomAttribute<GlobalGeneratorLoggingConfigurationAttribute>();
+			DefaultGeneratorLoggingConfigurationAttribute? attr = assembly.GetCustomAttribute<DefaultGeneratorLoggingConfigurationAttribute>();
 
 			if (attr is null)
 			{
@@ -237,7 +238,8 @@ namespace Durian.Logging
 				{
 					LogDirectory = attr.GetAndValidateFullLogDirectory(),
 					SupportedLogs = attr.SupportedLogs,
-					EnableLogging = IsEnabled && assembly.GetCustomAttribute(typeof(DisableGeneratorLoggingAttribute)) is null
+					EnableLogging = IsEnabled && assembly.GetCustomAttribute(typeof(DisableGeneratorLoggingAttribute)) is null,
+					SupportsDiagnostics = attr.SupportsDiagnostics
 				};
 			}
 		}
@@ -296,7 +298,8 @@ namespace Durian.Logging
 				{
 					LogDirectory = attr.GetAndValidateFullLogDirectory(GetConfigurationForAssembly(type.Assembly)),
 					SupportedLogs = attr.SupportedLogs,
-					EnableLogging = IsEnabled && !HasDisableAttribute_Internal(type)
+					EnableLogging = IsEnabled && !HasDisableAttribute_Internal(type),
+					SupportsDiagnostics = attr.SupportsDiagnostics
 				};
 			}
 		}

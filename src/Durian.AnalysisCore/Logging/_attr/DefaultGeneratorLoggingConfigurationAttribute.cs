@@ -1,20 +1,16 @@
 ﻿using System;
 using System.IO;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Logging
 {
 	/// <summary>
-	/// Globally determines how the source generator should behave when logging information.
+	/// Determines the default behavior of <see cref="ISourceGenerator"/>s in the current assembly when creating log files.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
-	public sealed class GlobalGeneratorLoggingConfigurationAttribute : Attribute
+	public sealed class DefaultGeneratorLoggingConfigurationAttribute : Attribute
 	{
 		private string? _validatedDirectory;
-
-		/// <summary>
-		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="GeneratorLoggingConfiguration.DefaultLogDirectory"/>. Defaults to <see langword="true"/>.
-		/// </summary>
-		public bool RelativeToDefault { get; init; }
 
 		/// <summary>
 		/// Default directory where the generator log files are to be found.
@@ -27,9 +23,19 @@ namespace Durian.Logging
 		public GeneratorLogs SupportedLogs { get; init; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="GlobalGeneratorLoggingConfigurationAttribute"/> class.
+		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="GeneratorLoggingConfiguration.DefaultLogDirectory"/>. Defaults to <see langword="true"/>.
 		/// </summary>
-		public GlobalGeneratorLoggingConfigurationAttribute()
+		public bool RelativeToDefault { get; init; }
+
+		/// <summary>
+		/// Determines whether the <see cref="ISourceGenerator"/> supports reporting <see cref="Diagnostic"/>s. Defaults to <see langword="false"/>
+		/// </summary>
+		public bool SupportsDiagnostics { get; init; }
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> class.
+		/// </summary>
+		public DefaultGeneratorLoggingConfigurationAttribute()
 		{
 		}
 
@@ -59,7 +65,7 @@ namespace Durian.Logging
 
 			if (string.IsNullOrWhiteSpace(LogDirectory))
 			{
-				throw new ArgumentException($"{nameof(LogDirectory)} of the {nameof(GlobalGeneratorLoggingConfigurationAttribute)} cannot be empty or whitespace only!");
+				throw new ArgumentException($"{nameof(LogDirectory)} of the {nameof(DefaultGeneratorLoggingConfigurationAttribute)} cannot be empty or whitespace only!");
 			}
 
 			string? dir;

@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
 {
-	[DebuggerDisplay("{_parameters}")]
+	[DebuggerDisplay("Length = {Length}, NumDefaultParam = {NumDefaultParam}")]
 	public readonly struct TypeParameterContainer : IEquatable<TypeParameterContainer>
 	{
 		private readonly TypeParameterData[] _parameters;

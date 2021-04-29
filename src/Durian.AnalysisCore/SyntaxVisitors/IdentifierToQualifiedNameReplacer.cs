@@ -1,11 +1,11 @@
 ﻿
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.SyntaxVisitors
 {

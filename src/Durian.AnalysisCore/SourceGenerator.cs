@@ -1,6 +1,5 @@
-#if ENABLE_GENERATOR_LOGS
 using System;
-#endif
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Data;
@@ -11,52 +10,46 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian
 {
 	/// <inheritdoc cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/>
-	public abstract class SourceGenerator
-#if ENABLE_GENERATOR_DIAGNOSTICS
-		: SourceGenerator<ICompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
-#else
-		: SourceGenerator<ICompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilter>
-#endif
+	public abstract class SourceGenerator : SourceGenerator<ICompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SourceGenerator"/> class.
 		/// </summary>
-		protected SourceGenerator()
+		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
+		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
+		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.EnableDiagnostics"/> to <see langword="true"/> if <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SupportsDiagnostics"/> is <see langword="true"/>.</param>
+		protected SourceGenerator(bool checkForConfigurationAttribute = false, bool enableDiagnosticsIfSupported = true) : base(checkForConfigurationAttribute, enableDiagnosticsIfSupported)
 		{
 		}
 	}
 
 	/// <inheritdoc cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/>
-	public abstract class SourceGenerator<TCompilationData>
-#if ENABLE_GENERATOR_DIAGNOSTICS
-		: SourceGenerator<TCompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
-#else
-		: SourceGenerator<TCompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilter>
-#endif
+	public abstract class SourceGenerator<TCompilationData> : SourceGenerator<TCompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
 		where TCompilationData : class, ICompilationData
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData}"/> class.
 		/// </summary>
-		protected SourceGenerator()
+		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
+		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
+		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.EnableDiagnostics"/> to <see langword="true"/> if <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SupportsDiagnostics"/> is <see langword="true"/>.</param>
+		protected SourceGenerator(bool checkForConfigurationAttribute = false, bool enableDiagnosticsIfSupported = true) : base(checkForConfigurationAttribute, enableDiagnosticsIfSupported)
 		{
 		}
 	}
 
 	/// <inheritdoc cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/>
-	public abstract class SourceGenerator<TCompilationData, TSyntaxReceiver>
-#if ENABLE_GENERATOR_DIAGNOSTICS
-		: SourceGenerator<TCompilationData, TSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
-#else
-		: SourceGenerator<TCompilationData, TSyntaxReceiver, IGeneratorSyntaxFilter>
-#endif
+	public abstract class SourceGenerator<TCompilationData, TSyntaxReceiver> : SourceGenerator<TCompilationData, TSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
 		where TCompilationData : class, ICompilationData
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver}"/> class.
 		/// </summary>
-		protected SourceGenerator()
+		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
+		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
+		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.EnableDiagnostics"/> to <see langword="true"/> if <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SupportsDiagnostics"/> is <see langword="true"/>.</param>
+		protected SourceGenerator(bool checkForConfigurationAttribute = false, bool enableDiagnosticsIfSupported = true) : base(checkForConfigurationAttribute, enableDiagnosticsIfSupported)
 		{
 		}
 	}
@@ -70,82 +63,95 @@ namespace Durian
 	public abstract class SourceGenerator<TCompilationData, TSyntaxReceiver, TFilter> : LoggableSourceGenerator, IDurianSourceGenerator
 		where TCompilationData : class, ICompilationData
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
-#if ENABLE_GENERATOR_DIAGNOSTICS
 		where TFilter : notnull, IGeneratorSyntaxFilterWithDiagnostics
-#else
-		where TFilter : notnull, IGeneratorSyntaxFilter
-#endif
 	{
-#if ENABLE_GENERATOR_DIAGNOSTICS
-#pragma warning disable IDE0032 // Use auto property
+		private ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? _diagnosticReceiver;
 		private bool _enableDiagnostics;
-#pragma warning restore IDE0032 // Use auto property
-#endif
-
-#if ENABLE_GENERATOR_LOGS
-#endif
 
 		/// <summary>
 		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
 		/// </summary>
-#if ENABLE_GENERATOR_DIAGNOSTICS
-		public new ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext> DiagnosticReceiver { get; } = DiagnosticReceiverFactory.SourceGenerator();
-#else
-		public new ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? DiagnosticReceiver { get; } = null;
-#endif
+		/// <remarks>Can be set only if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.</remarks>
+		/// <exception cref="InvalidOperationException">
+		/// <see cref="DiagnosticReceiver"/> cannot be set if <see cref="SupportsDiagnostics"/> is <see langword="false"/>. -or-
+		/// <see cref="DiagnosticReceiver"/> cannot be set to <see langword="null"/> if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.
+		/// </exception>
+		[DisallowNull]
+		public ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? DiagnosticReceiver
+		{
+			get => _diagnosticReceiver;
+			set
+			{
+				if (!SupportsDiagnostics)
+				{
+					throw new InvalidOperationException($"{nameof(DiagnosticReceiver)} cannot be set if {nameof(SupportsDiagnostics)} is false!");
+				}
+
+				if (value is null)
+				{
+					if (SupportsDiagnostics)
+					{
+						throw new InvalidOperationException($"{nameof(DiagnosticReceiver)} cannot be set to null if {nameof(SupportsDiagnostics)} is true!");
+					}
+				}
+				else
+				{
+					_diagnosticReceiver = value;
+				}
+			}
+		}
 
 		/// <inheritdoc cref="IDurianSourceGenerator.TargetCompilation"/>
+		[MaybeNull]
 		public TCompilationData TargetCompilation { get; private set; }
 
 		/// <inheritdoc cref="IDurianSourceGenerator.SyntaxReceiver"/>
+		[MaybeNull]
 		public TSyntaxReceiver SyntaxReceiver { get; private set; }
 
-		/// <inheritdoc/>
+		/// <inheritdoc cref="IDurianSourceGenerator.ParseOptions"/>
+		[MaybeNull]
 		public CSharpParseOptions ParseOptions { get; private set; }
 
 		/// <inheritdoc/>
-		public bool SupportsDiagnostics
-		{
-			get
-			{
-#if ENABLE_GENERATOR_DIAGNOSTICS
-				return true;
-#else
-				return false;
-#endif
-			}
-		}
-
-#pragma warning disable IDE0027 // Use expression body for accessors
-		/// <inheritdoc/>
-		public bool EnableDiagnostics
-		{
-			get
-			{
-#if ENABLE_GENERATOR_DIAGNOSTICS
-				return _enableDiagnostics;
-#else
-				return false;
-#endif
-
-			}
-			set
-			{
-#if ENABLE_GENERATOR_DIAGNOSTICS
-
-				_enableDiagnostics = value;
-#endif
-			}
-		}
-#pragma warning restore IDE0027 // Use expression body for accessors
-
-		/// <summary>
-		/// A <see cref="System.Threading.CancellationToken"/> that can be checked to see if the generation should be canceled.
-		/// </summary>
 		public CancellationToken CancellationToken { get; private set; }
 
-		ICompilationData IDurianSourceGenerator.TargetCompilation => TargetCompilation;
-		IDurianSyntaxReceiver IDurianSourceGenerator.SyntaxReceiver => SyntaxReceiver;
+		/// <summary>
+		/// Determines whether the last execution of the <see cref="Execute(in GeneratorExecutionContext)"/> method was a success.
+		/// </summary>
+		[MemberNotNullWhen(true, nameof(TargetCompilation), nameof(SyntaxReceiver), nameof(ParseOptions))]
+		public bool IsSuccess { get; private set; }
+
+		/// <summary>
+		/// Determines whether data of this <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> was successfully initialized by the last call to the <see cref="Execute(in GeneratorExecutionContext)"/> method.
+		/// </summary>
+		[MemberNotNullWhen(true, nameof(TargetCompilation), nameof(SyntaxReceiver), nameof(ParseOptions))]
+		public bool HasValidData { get; private set; }
+
+		/// <inheritdoc/>
+		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
+		public bool SupportsDiagnostics => LoggingConfiguration.SupportsDiagnostics;
+
+		/// <inheritdoc/>
+		/// <exception cref="InvalidOperationException"><see cref="EnableDiagnostics"/> cannot be set if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</exception>
+		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
+		public bool EnableDiagnostics
+		{
+			get => _enableDiagnostics;
+			set
+			{
+				if (!SupportsDiagnostics)
+				{
+					throw new InvalidOperationException($"{nameof(EnableDiagnostics)} cannot be set if {nameof(SupportsDiagnostics)} is false!");
+				}
+
+				_enableDiagnostics = value;
+			}
+		}
+
+		CSharpParseOptions IDurianSourceGenerator.ParseOptions => ParseOptions!;
+		ICompilationData IDurianSourceGenerator.TargetCompilation => TargetCompilation!;
+		IDurianSyntaxReceiver IDurianSourceGenerator.SyntaxReceiver => SyntaxReceiver!;
 		string IDurianSourceGenerator.GeneratorName => GetGeneratorName();
 		string IDurianSourceGenerator.Version => GetVersion();
 
@@ -153,13 +159,16 @@ namespace Durian
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
 		/// </summary>
-		protected SourceGenerator()
-#if ENABLE_GENERATOR_LOGS
-			: base(true)
-#else
-			: base(false)
-#endif
+		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
+		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
+		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="EnableDiagnostics"/> to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.</param>
+		protected SourceGenerator(bool checkForConfigurationAttribute = false, bool enableDiagnosticsIfSupported = true) : base(checkForConfigurationAttribute)
 		{
+			if (SupportsDiagnostics)
+			{
+				_diagnosticReceiver = DiagnosticReceiverFactory.SourceGenerator();
+				_enableDiagnostics = enableDiagnosticsIfSupported;
+			}
 		}
 
 		/// <summary>
@@ -168,6 +177,11 @@ namespace Durian
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		protected SourceGenerator(GeneratorLoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
+			if (SupportsDiagnostics)
+			{
+				_diagnosticReceiver = DiagnosticReceiverFactory.SourceGenerator();
+				_enableDiagnostics = true;
+			}
 		}
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
@@ -186,6 +200,8 @@ namespace Durian
 		/// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
 		public sealed override void Execute(in GeneratorExecutionContext context)
 		{
+			ResetData();
+
 			if (context.SyntaxReceiver is not TSyntaxReceiver receiver || !ValidateSyntaxReceiver(receiver))
 			{
 				return;
@@ -207,9 +223,11 @@ namespace Durian
 			ParseOptions = context.ParseOptions as CSharpParseOptions ?? CSharpParseOptions.Default;
 			SyntaxReceiver = receiver;
 			CancellationToken = context.CancellationToken;
+			HasValidData = true;
 
 			BeforeFiltration(in context);
 			Filtrate(in context);
+			IsSuccess = true;
 		}
 
 		/// <summary>
@@ -276,6 +294,22 @@ namespace Durian
 		}
 
 		/// <summary>
+		/// Returns version of this <see cref="IDurianSourceGenerator"/>.
+		/// </summary>
+		protected virtual string GetVersion()
+		{
+			return "1.0.0";
+		}
+
+		/// <summary>
+		/// Returns name of this <see cref="IDurianSourceGenerator"/>.
+		/// </summary>
+		protected virtual string GetGeneratorName()
+		{
+			return nameof(LoggableSourceGenerator);
+		}
+
+		/// <summary>
 		/// Actually begins the generator execution.
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to generate the source for.</param>
@@ -311,9 +345,10 @@ namespace Durian
 		{
 			context.AddSource(hintName, tree.GetText(context.CancellationToken));
 
-#if ENABLE_GENERATOR_LOGS
-			LogNode(tree.GetRoot(context.CancellationToken), hintName);
-#endif
+			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
+			{
+				LogNode_Internal(tree.GetRoot(context.CancellationToken), hintName);
+			}
 		}
 
 		/// <summary>
@@ -337,9 +372,11 @@ namespace Durian
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		protected void AddSource(CodeBuilder builder, string hintName, in GeneratorExecutionContext context)
 		{
+			ThrowIfHasNoValidData();
+
 			CSharpSyntaxTree tree = builder.ParseSyntaxTree();
 			builder.Clear();
-			AddSource(tree, hintName, in context);
+			AddSource_Internal(tree, hintName, in context);
 		}
 
 		/// <summary>
@@ -350,8 +387,10 @@ namespace Durian
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		protected void AddSource(string source, string hintName, in GeneratorExecutionContext context)
 		{
+			ThrowIfHasNoValidData();
+
 			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(source, ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
-			AddSource(tree, hintName, in context);
+			AddSource_Internal(tree, hintName, in context);
 		}
 
 		/// <summary>
@@ -362,13 +401,9 @@ namespace Durian
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		protected void AddSource(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
-			context.AddSource(hintName, tree.GetText(context.CancellationToken));
-			TargetCompilation.UpdateCompilation(tree);
+			ThrowIfHasNoValidData();
+			AddSource_Internal(tree, hintName, in context);
 		}
-
-#if !ENABLE_GENERATOR_LOGS
-#pragma warning disable RCS1163 // Unused parameter.
-#endif
 
 		/// <summary>
 		/// Adds the source created using the <paramref name="builder"/> to the <paramref name="context"/>.
@@ -379,13 +414,10 @@ namespace Durian
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		protected void AddSource(CSharpSyntaxNode original, CodeBuilder builder, string hintName, in GeneratorExecutionContext context)
 		{
+			ThrowIfHasNoValidData();
 			CSharpSyntaxTree tree = builder.ParseSyntaxTree();
 			builder.Clear();
-			AddSource(tree, hintName, in context);
-
-#if ENABLE_GENERATOR_LOGS
-			LogGeneratedTree(original, tree, hintName, context.CancellationToken);
-#endif
+			AddSource_Internal(original, tree, hintName, in context);
 		}
 
 		/// <summary>
@@ -397,12 +429,9 @@ namespace Durian
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		protected void AddSource(CSharpSyntaxNode original, string text, string hintName, in GeneratorExecutionContext context)
 		{
+			ThrowIfHasNoValidData();
 			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
-			AddSource(tree, hintName, in context);
-
-#if ENABLE_GENERATOR_LOGS
-			LogGeneratedTree(original, tree, hintName, context.CancellationToken);
-#endif
+			AddSource_Internal(original, tree, hintName, in context);
 		}
 
 		/// <summary>
@@ -414,16 +443,9 @@ namespace Durian
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		protected void AddSource(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
-			AddSource(tree, hintName, in context);
-
-#if ENABLE_GENERATOR_LOGS
-			LogGeneratedTree(original, tree, hintName, context.CancellationToken);
-#endif
+			ThrowIfHasNoValidData();
+			AddSource_Internal(original, tree, hintName, in context);
 		}
-
-#if !ENABLE_GENERATOR_LOGS
-#pragma warning restore RCS1163 // Unused parameter.
-#endif
 
 		private void Filtrate(in GeneratorExecutionContext context)
 		{
@@ -471,30 +493,58 @@ namespace Durian
 		{
 			foreach (IMemberData d in result)
 			{
-#if ENABLE_GENERATOR_LOGS
 				try
 				{
-#endif
 					Generate(d, parentFilter, in context);
-#if ENABLE_GENERATOR_LOGS
 				}
 				catch (Exception e)
 				{
 					LogException(e);
+					IsSuccess = false;
 					throw;
 				}
-#endif
 			}
 		}
 
-#if ENABLE_GENERATOR_LOGS
-		private void LogGeneratedTree(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, CancellationToken cancellationToken)
+		private void ResetData()
 		{
-			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput))
+			SyntaxReceiver = null!;
+			TargetCompilation = null!;
+			ParseOptions = null!;
+			CancellationToken = default;
+			IsSuccess = false;
+			HasValidData = false;
+		}
+
+		[MemberNotNull(nameof(TargetCompilation), nameof(SyntaxReceiver), nameof(ParseOptions))]
+		private void ThrowIfHasNoValidData()
+		{
+			if (!HasValidData)
 			{
-				LogInputOutput_Internal(original, tree.GetRoot(cancellationToken), hintName);
+				throw new InvalidOperationException($"{nameof(HasValidData)} must return true in order to add a new source!");
 			}
 		}
-#endif
+
+		private void AddSource_Internal(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+		{
+			context.AddSource(hintName, tree.GetText(context.CancellationToken));
+			TargetCompilation!.UpdateCompilation(tree);
+
+			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
+			{
+				LogNode_Internal(tree.GetRoot(context.CancellationToken), hintName);
+			}
+		}
+
+		private void AddSource_Internal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+		{
+			context.AddSource(hintName, tree.GetText(context.CancellationToken));
+			TargetCompilation!.UpdateCompilation(tree);
+
+			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput))
+			{
+				LogInputOutput_Internal(original, tree.GetRoot(context.CancellationToken), hintName);
+			}
+		}
 	}
 }

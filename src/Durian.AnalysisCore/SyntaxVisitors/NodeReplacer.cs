@@ -1,5 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.SyntaxVisitors
 {

@@ -1,18 +1,16 @@
-﻿#if ENABLE_GENERATOR_LOGS
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-#endif
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Logging
 {
 	/// <inheritdoc cref="ILoggableSourceGenerator"/>
-	[DebuggerDisplay("{GetGeneratorName()}, {GetVersion()}")]
+	[DebuggerDisplay("Name = {GetGeneratorName()}, Version = {GetVersion()}")]
 	public abstract partial class LoggableSourceGenerator : ILoggableSourceGenerator
 	{
 		/// <inheritdoc/>
@@ -21,13 +19,11 @@ namespace Durian.Logging
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableSourceGenerator"/> class.
 		/// </summary>
+		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
+		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
 		protected LoggableSourceGenerator(bool checkForConfigurationAttribute)
 		{
-#if ENABLE_GENERATOR_LOGS
 			LoggingConfiguration = checkForConfigurationAttribute ? GeneratorLoggingConfiguration.CreateConfigurationForGenerator(this) : GeneratorLoggingConfiguration.Default;
-#else
-			LoggingConfiguration = GeneratorLoggingConfiguration.Default;
-#endif
 		}
 
 		/// <summary>
@@ -50,97 +46,54 @@ namespace Durian.Logging
 			Execute(in context);
 		}
 
-		/// <summary>
-		/// Returns version of this <see cref="IDurianSourceGenerator"/>.
-		/// </summary>
-		protected virtual string GetVersion()
-		{
-			return "1.0.0";
-		}
-
-		/// <summary>
-		/// Returns name of this <see cref="IDurianSourceGenerator"/>.
-		/// </summary>
-		protected virtual string GetGeneratorName()
-		{
-			return nameof(LoggableSourceGenerator);
-		}
-
-#if !ENABLE_GENERATOR_LOGS
-#pragma warning disable RCS1163 // Unused parameter.
-#pragma warning disable CA1822 // Mark members as static
-#endif
-
 		/// <inheritdoc/>
 		public void LogException(Exception exception)
 		{
-#if ENABLE_GENERATOR_LOGS
-			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
+			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
 			{
 				LogException_Internal(exception);
 			}
-#endif
 		}
 
 		/// <inheritdoc/>
 		public void LogNode(SyntaxNode node, string hintName)
 		{
-#if ENABLE_GENERATOR_LOGS
-			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node) && node is not null)
+			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node) && node is not null)
 			{
 				LogNode_Internal(node, hintName);
 			}
-#endif
 		}
 
 		/// <inheritdoc/>
 		public void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName)
 		{
-#if ENABLE_GENERATOR_LOGS
-			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput) && !(input is null && output is null))
+			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput) && !(input is null && output is null))
 			{
 				LogInputOutput_Internal(input!, output, hintName);
 			}
-#endif
 		}
 
 		/// <inheritdoc/>
 		public void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics)
 		{
-#if ENABLE_GENERATOR_LOGS
-			LogDiagnostics(node, hintName, diagnostics?.ToArray()!);
-#endif
-		}
-
-		/// <summary>
-		/// Logs an input <see cref="SyntaxNode"/> and <see cref="Diagnostic"/>s that were created for that node.
-		/// </summary>
-		/// <param name="node"><see cref="SyntaxNode"/> the diagnostics were created for.</param>
-		/// <param name="hintName">Name of the log file to log to.</param>
-		/// <param name="diagnostics">An array of <see cref="Diagnostic"/>s that were created for this <paramref name="node"/>.</param>
-		public void LogDiagnostics(SyntaxNode node, string hintName, params Diagnostic[] diagnostics)
-		{
-#if ENABLE_GENERATOR_LOGS
-			if (GeneratorLoggingConfiguration.IsEnabled && LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Diagnostics) && diagnostics is not null && diagnostics.Length > 0)
+			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Diagnostics) && diagnostics is not null)
 			{
-				LogDiagnostics_Internal(node, hintName, diagnostics);
+				Diagnostic[] array = diagnostics.ToArray();
+
+				if (array.Length > 0)
+				{
+					LogDiagnostics_Internal(node, hintName, array);
+				}
 			}
-#endif
 		}
 
-#if !ENABLE_GENERATOR_LOGS
-#pragma warning restore CA1822 // Mark members as static
-#pragma warning restore RCS1163 // Unused parameter.
-#endif
-
-#if ENABLE_GENERATOR_LOGS
-		internal void LogException_Internal(Exception exception)
+		private protected void LogException_Internal(Exception exception)
 		{
 			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
 			TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString() + "\n\n");
 		}
 
-		internal void LogNode_Internal(SyntaxNode node, string hintName)
+		private protected void LogNode_Internal(SyntaxNode node, string hintName)
 		{
 			StringBuilder sb = new();
 
@@ -152,7 +105,7 @@ namespace Durian.Logging
 			WriteToFile(hintName, sb, ".generated");
 		}
 
-		internal void LogInputOutput_Internal(SyntaxNode input, SyntaxNode output, string hintName)
+		private protected void LogInputOutput_Internal(SyntaxNode input, SyntaxNode output, string hintName)
 		{
 			StringBuilder sb = new();
 
@@ -276,6 +229,5 @@ namespace Durian.Logging
 				}
 			}
 		}
-#endif
 	}
 }

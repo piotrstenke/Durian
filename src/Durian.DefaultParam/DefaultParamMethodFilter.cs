@@ -15,7 +15,7 @@ namespace Durian.DefaultParam
 	public partial class DefaultParamMethodFilter : IDefaultParamFilter
 	{
 		private readonly DeclarationBuilder _declBuilder;
-		private readonly LoggableSourceGenerator.DiagnosticReceiver? _loggableReceiver;
+		private readonly LoggableGeneratorDiagnosticReceiver? _loggableReceiver;
 		private readonly IDirectDiagnosticReceiver? _diagnosticReceiver;
 		private readonly IFileNameProvider _fileNameProvider;
 
@@ -33,7 +33,7 @@ namespace Durian.DefaultParam
 
 			if (generator.LoggingConfiguration.EnableLogging)
 			{
-				_loggableReceiver = new LoggableSourceGenerator.DiagnosticReceiver(generator);
+				_loggableReceiver = new LoggableGeneratorDiagnosticReceiver(generator);
 				_diagnosticReceiver = generator.SupportsDiagnostics ? DiagnosticReceiverFactory.Direct(ReportForBothReceivers) : _loggableReceiver;
 			}
 			else if (generator.SupportsDiagnostics)
@@ -86,7 +86,7 @@ namespace Durian.DefaultParam
 						list.Add(data!);
 					}
 
-					if(_loggableReceiver.Count > 0)
+					if (_loggableReceiver.Count > 0)
 					{
 						_loggableReceiver.Push();
 						_fileNameProvider.Success();
@@ -304,7 +304,7 @@ namespace Durian.DefaultParam
 			{
 				isValid &= ValidateMethodSignature(diagnosticReceiver, symbol, typeParameters, compilation, out List<int>? newModifiers);
 
-				if(isValid)
+				if (isValid)
 				{
 					data = new(
 						declaration,
@@ -393,7 +393,7 @@ namespace Durian.DefaultParam
 		{
 			TypeParameterListSyntax? typeParameters = declaration.TypeParameterList;
 
-			if(typeParameters is null)
+			if (typeParameters is null)
 			{
 				return new TypeParameterContainer(null);
 			}

@@ -10,7 +10,6 @@ namespace Durian.Tests.DefaultParam.Generator
 	{
 		public DefaultParamGeneratorTest() : base(true)
 		{
-
 		}
 
 		public sealed override SingletonGeneratorTestResult RunGenerator(string? input, int index, [CallerMemberName] string testName = "")

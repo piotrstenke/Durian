@@ -20,6 +20,5 @@ namespace Durian.Samples
 			// test
 			int a = 2;
 		}
-
 	}
 }
