@@ -26,6 +26,7 @@ namespace Durian.Logging
 		public static GeneratorLoggingConfiguration Default => new()
 		{
 			EnableLogging = false,
+			EnableDiagnostics = false,
 			LogDirectory = DefaultLogDirectory,
 			SupportedLogs = GeneratorLogs.None,
 			SupportsDiagnostics = false
@@ -239,7 +240,8 @@ namespace Durian.Logging
 					LogDirectory = attr.GetAndValidateFullLogDirectory(),
 					SupportedLogs = attr.SupportedLogs,
 					EnableLogging = IsEnabled && assembly.GetCustomAttribute(typeof(DisableGeneratorLoggingAttribute)) is null,
-					SupportsDiagnostics = attr.SupportsDiagnostics
+					SupportsDiagnostics = attr.SupportsDiagnostics,
+					EnableDiagnostics = attr.SupportsDiagnostics
 				};
 			}
 		}
@@ -299,7 +301,8 @@ namespace Durian.Logging
 					LogDirectory = attr.GetAndValidateFullLogDirectory(GetConfigurationForAssembly(type.Assembly)),
 					SupportedLogs = attr.SupportedLogs,
 					EnableLogging = IsEnabled && !HasDisableAttribute_Internal(type),
-					SupportsDiagnostics = attr.SupportsDiagnostics
+					SupportsDiagnostics = attr.SupportsDiagnostics,
+					EnableDiagnostics = attr.SupportsDiagnostics
 				};
 			}
 		}

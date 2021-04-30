@@ -10,7 +10,7 @@ namespace Durian
 	/// A collection of <see cref="ISyntaxFilter"/>s that binds its elements into separate <see cref="FilterGroup{TFilter}"/>s.
 	/// </summary>
 	/// <typeparam name="TFilter">Type of <see cref="ISyntaxFilter"/> that can be stored in this list.</typeparam>
-	[DebuggerDisplay("NumGroups = {NumGroups}")]
+	[DebuggerDisplay("NumGroups = {NumGroups}, IsSealed = {IsSealed}")]
 	public class FilterContainer<TFilter> : ICollection<FilterGroup<TFilter>> where TFilter : ISyntaxFilter
 	{
 		private readonly List<FilterGroup<TFilter>> _filterGroups;

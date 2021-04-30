@@ -32,49 +32,6 @@ namespace Durian.DefaultParam
 			return indent;
 		}
 
-		public static int GetIndentWithoutMultipleNamespaces(SyntaxNode? node, out bool hasMultipleNamespaces)
-		{
-			bool isNamespace = false;
-			SyntaxNode? parent = node;
-			int indent = 0;
-
-			while ((parent = parent!.Parent) is not null)
-			{
-				if (parent is CompilationUnitSyntax)
-				{
-					continue;
-				}
-
-				if (parent is NamespaceDeclarationSyntax)
-				{
-					if (isNamespace)
-					{
-						continue;
-					}
-					else
-					{
-						isNamespace = true;
-					}
-				}
-
-				indent++;
-			}
-
-			if (indent < 0)
-			{
-				indent = 0;
-			}
-
-			hasMultipleNamespaces = isNamespace;
-			return indent;
-		}
-
-		public static string GetHintName(ISymbol symbol)
-		{
-			string? parentName = symbol.ContainingType?.Name;
-			return $"{(parentName is not null ? $"{parentName}." : string.Empty)}{symbol.Name}";
-		}
-
 		public static IEnumerable<string> GetUsedNamespaces(IDefaultParamTarget target, in TypeParameterContainer parameters, CancellationToken cancellationToken = default)
 		{
 			int defaultParamCount = parameters.NumDefaultParam;

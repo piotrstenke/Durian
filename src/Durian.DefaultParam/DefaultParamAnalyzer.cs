@@ -47,43 +47,26 @@ namespace Durian.DefaultParam
 		private void AnalyzeSymbol(SymbolAnalysisContext context, DefaultParamCompilationData compilation)
 		{
 			ContextualDiagnosticReceiver<SymbolAnalysisContext> diagnosticReceiver = DiagnosticReceiverFactory.Symbol(context);
-			Validate(diagnosticReceiver, context.Symbol, compilation, context.CancellationToken);
+			Analyze(diagnosticReceiver, context.Symbol, compilation, context.CancellationToken);
 		}
 
-		public virtual bool Validate(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		public virtual void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			return DefaultValidate(diagnosticReceiver, symbol, compilation, cancellationToken);
+			DefaultAnalyzeWithDiagnostics(diagnosticReceiver, symbol, compilation, cancellationToken);
 		}
 
-		public static bool DefaultValidate(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		#region -Without Diagnostics-
+		public static bool DefaultAnalyze(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			TypeParameterContainer typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
-
-			return DefaultValidate(diagnosticReceiver, symbol, compilation, in typeParameters, cancellationToken);
-		}
-
-		public static bool DefaultValidate(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters, CancellationToken cancellationToken = default)
-		{
-			if (!typeParameters.HasDefaultParams)
+			if (!TryGetTypeParameters(symbol, compilation, cancellationToken, out TypeParameterContainer typeParameters))
 			{
 				return false;
 			}
 
-			bool isValid = ValidateHasGeneratedCodeAttribute(diagnosticReceiver, symbol, compilation);
-			isValid &= ValidateContainingTypes(diagnosticReceiver, symbol, cancellationToken);
-			isValid &= ValidateTypeParameters(diagnosticReceiver, in typeParameters);
-
-			return isValid;
+			return DefaultAnalyze(symbol, compilation, in typeParameters, cancellationToken);
 		}
 
-		public static bool DefaultValidate(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-		{
-			TypeParameterContainer typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
-
-			return DefaultValidate(symbol, compilation, in typeParameters, cancellationToken);
-		}
-
-		public static bool DefaultValidate(ISymbol symbol, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters, CancellationToken cancellationToken = default)
+		public static bool DefaultAnalyze(ISymbol symbol, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters, CancellationToken cancellationToken = default)
 		{
 			if (!typeParameters.HasDefaultParams)
 			{
@@ -91,40 +74,17 @@ namespace Durian.DefaultParam
 			}
 
 			return
-				ValidateHasGeneratedCodeAttribute(symbol, compilation) &&
-				ValidateContainingTypes(symbol, cancellationToken) &&
-				ValidateTypeParameters(in typeParameters);
+				AnalyzeAgainstGeneratedCodeAttribute(symbol, compilation) &&
+				AnalyzeContainingTypes(symbol, cancellationToken) &&
+				AnalyzeTypeParameters(in typeParameters);
 		}
 
-		public static bool ValidateHasGeneratedCodeAttribute(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compialation)
+		public static bool AnalyzeAgainstGeneratedCodeAttribute(ISymbol symbol, DefaultParamCompilationData compilation)
 		{
-			return ValidateHasGeneratedCodeAttribute(diagnosticReceiver, symbol, compialation, out _);
+			return AnalyzeAgainstGeneratedCodeAttribute(symbol, compilation, out _);
 		}
 
-		public static bool ValidateHasGeneratedCodeAttribute(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, out AttributeData[]? attributes)
-		{
-			AttributeData[] attrs = symbol.GetAttributes().ToArray();
-
-			foreach (AttributeData attr in attrs)
-			{
-				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.GeneratedCodeAttribute))
-				{
-					DefaultParamDiagnostics.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeAttribute(diagnosticReceiver, symbol);
-					attributes = null;
-					return false;
-				}
-			}
-
-			attributes = attrs;
-			return true;
-		}
-
-		public static bool ValidateHasGeneratedCodeAttribute(ISymbol symbol, DefaultParamCompilationData compilation)
-		{
-			return ValidateHasGeneratedCodeAttribute(symbol, compilation, out _);
-		}
-
-		public static bool ValidateHasGeneratedCodeAttribute(ISymbol symbol, DefaultParamCompilationData compilation, out AttributeData[]? attributes)
+		public static bool AnalyzeAgainstGeneratedCodeAttribute(ISymbol symbol, DefaultParamCompilationData compilation, out AttributeData[]? attributes)
 		{
 			AttributeData[] attrs = symbol.GetAttributes().ToArray();
 
@@ -141,7 +101,7 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
-		public static bool ValidateContainingTypes(ISymbol symbol, CancellationToken cancellationToken = default)
+		public static bool AnalyzeContainingTypes(ISymbol symbol, CancellationToken cancellationToken = default)
 		{
 			INamedTypeSymbol[] types = symbol.GetContainingTypeSymbols().ToArray();
 
@@ -159,27 +119,7 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
-		public static bool ValidateContainingTypes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, CancellationToken cancellationToken = default)
-		{
-			INamedTypeSymbol[] types = symbol.GetContainingTypeSymbols().ToArray();
-			bool isValid = true;
-
-			if (types.Length > 0)
-			{
-				foreach (INamedTypeSymbol parent in types)
-				{
-					if (!HasPartialKeyword(parent, cancellationToken))
-					{
-						DefaultParamDiagnostics.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial(diagnosticReceiver, parent);
-						isValid = false;
-					}
-				}
-			}
-
-			return isValid;
-		}
-
-		public static bool ValidateContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, out ITypeData[]? containingTypes)
+		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, out ITypeData[]? containingTypes)
 		{
 			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
 
@@ -199,39 +139,7 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
-		public static bool ValidateContainingTypes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, out ITypeData[]? containingTypes)
-		{
-			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
-			bool isValid = true;
-
-			if (types.Length > 0)
-			{
-				foreach (ITypeData parent in types)
-				{
-					if (!parent.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
-					{
-						DefaultParamDiagnostics.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial(diagnosticReceiver, parent.Symbol);
-						isValid = false;
-					}
-				}
-			}
-
-			containingTypes = isValid ? types : null;
-
-			return isValid;
-		}
-
-		private static bool HasPartialKeyword(ITypeData data)
-		{
-			return data.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
-		}
-
-		private static bool HasPartialKeyword(INamedTypeSymbol symbol, CancellationToken cancellationToken)
-		{
-			return symbol.GetModifiers(cancellationToken).Any(m => m.IsKind(SyntaxKind.PartialKeyword));
-		}
-
-		public static bool ValidateTypeParameters(in TypeParameterContainer typeParameters)
+		public static bool AnalyzeTypeParameters(in TypeParameterContainer typeParameters)
 		{
 			if (!typeParameters.HasDefaultParams)
 			{
@@ -263,8 +171,99 @@ namespace Durian.DefaultParam
 
 			return true;
 		}
+		#endregion
 
-		public static bool ValidateTypeParameters(IDiagnosticReceiver diagnosticReceiver, in TypeParameterContainer typeParameters)
+		#region -With Diagnostics-
+		public static bool DefaultAnalyzeWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			if (!TryGetTypeParameters(symbol, compilation, cancellationToken, out TypeParameterContainer typeParameters))
+			{
+				return false;
+			}
+
+			return DefaultAnalyzeWithDiagnostics(diagnosticReceiver, symbol, compilation, in typeParameters, cancellationToken);
+		}
+
+		public static bool DefaultAnalyzeWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters, CancellationToken cancellationToken = default)
+		{
+			if (!typeParameters.HasDefaultParams)
+			{
+				return false;
+			}
+
+			bool isValid = AnalyzeAgainstGeneratedCodeAttributeWithDiagnostics(diagnosticReceiver, symbol, compilation);
+			isValid &= AnalyzeContainingTypesWithDiagnostics(diagnosticReceiver, symbol, cancellationToken);
+			isValid &= AnalyzeTypeParametersWithDiagnostics(diagnosticReceiver, in typeParameters);
+
+			return isValid;
+		}
+
+		public static bool AnalyzeAgainstGeneratedCodeAttributeWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compialation)
+		{
+			return AnalyzeAgainstGeneratedCodeAttributeWithDiagnostics(diagnosticReceiver, symbol, compialation, out _);
+		}
+
+		public static bool AnalyzeAgainstGeneratedCodeAttributeWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, out AttributeData[]? attributes)
+		{
+			AttributeData[] attrs = symbol.GetAttributes().ToArray();
+
+			foreach (AttributeData attr in attrs)
+			{
+				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.GeneratedCodeAttribute))
+				{
+					DefaultParamDiagnostics.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeAttribute(diagnosticReceiver, symbol);
+					attributes = null;
+					return false;
+				}
+			}
+
+			attributes = attrs;
+			return true;
+		}
+
+		public static bool AnalyzeContainingTypesWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, CancellationToken cancellationToken = default)
+		{
+			INamedTypeSymbol[] types = symbol.GetContainingTypeSymbols().ToArray();
+			bool isValid = true;
+
+			if (types.Length > 0)
+			{
+				foreach (INamedTypeSymbol parent in types)
+				{
+					if (!HasPartialKeyword(parent, cancellationToken))
+					{
+						DefaultParamDiagnostics.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial(diagnosticReceiver, parent);
+						isValid = false;
+					}
+				}
+			}
+
+			return isValid;
+		}
+
+		public static bool AnalyzeContainingTypesWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, out ITypeData[]? containingTypes)
+		{
+			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
+			bool isValid = true;
+
+			if (types.Length > 0)
+			{
+				foreach (ITypeData parent in types)
+				{
+					if (!parent.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+					{
+						DefaultParamDiagnostics.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial(diagnosticReceiver, parent.Symbol);
+						isValid = false;
+					}
+				}
+			}
+
+			containingTypes = isValid ? types : null;
+
+			return isValid;
+		}
+
+		public static bool AnalyzeTypeParametersWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, in TypeParameterContainer typeParameters)
 		{
 			if (!typeParameters.HasDefaultParams)
 			{
@@ -304,6 +303,7 @@ namespace Durian.DefaultParam
 
 			return isValid;
 		}
+		#endregion
 
 		public static bool IsDefaultParamGenerated(ISymbol symbol, DefaultParamCompilationData compilation)
 		{
@@ -320,6 +320,33 @@ namespace Durian.DefaultParam
 			}
 
 			return tool == DefaultParamGenerator.GeneratorName;
+		}
+
+		private static bool HasPartialKeyword(ITypeData data)
+		{
+			return data.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+		}
+
+		private static bool HasPartialKeyword(INamedTypeSymbol symbol, CancellationToken cancellationToken)
+		{
+			return symbol.GetModifiers(cancellationToken).Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+		}
+
+		private static bool TryGetTypeParameters(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken, out TypeParameterContainer typeParameters)
+		{
+			if (symbol is IMethodSymbol m)
+			{
+				typeParameters = TypeParameterContainer.CreateFrom(m, compilation, cancellationToken);
+				return true;
+			}
+			else if (symbol is INamedTypeSymbol t)
+			{
+				typeParameters = TypeParameterContainer.CreateFrom(t, compilation, cancellationToken);
+				return true;
+			}
+
+			typeParameters = default;
+			return false;
 		}
 	}
 }

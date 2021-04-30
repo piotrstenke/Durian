@@ -11,6 +11,7 @@ namespace Durian.DefaultParam
 		private readonly TypeParameterContainer _typeParameters;
 
 		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
+		public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
 
 		public DefaultParamDelegateData(DelegateDeclarationSyntax declaration, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters) : base(declaration, compilation)
 		{
@@ -29,16 +30,6 @@ namespace Durian.DefaultParam
 		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
 		{
 			_typeParameters = typeParameters;
-		}
-
-		public string GetHintName()
-		{
-			return DefaultParamUtilities.GetHintName(Symbol);
-		}
-
-		public ref readonly TypeParameterContainer GetTypeParameters()
-		{
-			return ref _typeParameters;
 		}
 
 		public IEnumerable<string> GetUsedNamespaces(CancellationToken cancellationToken = default)

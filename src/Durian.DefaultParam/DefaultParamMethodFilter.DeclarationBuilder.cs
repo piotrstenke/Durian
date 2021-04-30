@@ -11,7 +11,7 @@ namespace Durian.DefaultParam
 	{
 		public sealed class DeclarationBuilder : IDefaultParamDeclarationBuilder
 		{
-			private List<int>? _newModifierIndices;
+			private HashSet<int>? _newModifierIndices;
 			private GenericNameSyntax? _callMethodSyntax;
 			private ArgumentListSyntax? _callArguments;
 			private IdentifierNameSyntax? _newType;
@@ -69,10 +69,10 @@ namespace Durian.DefaultParam
 				OriginalDeclaration = data.Declaration;
 
 				_indentLevel = DefaultParamUtilities.GetIndent(data.Declaration);
-				SetDeclarationWithoutDefaultParamAttribute(data.Declaration, data.ParentCompilation, cancellationToken);
-
 				_newModifierIndices = data.NewModifierIndices;
-				_numNonDefaultParam = data.GetTypeParameters().NumNonDefaultParam;
+				_numNonDefaultParam = data.TypeParameters.NumNonDefaultParam;
+
+				SetDeclarationWithoutDefaultParamAttribute(data.Declaration, data.ParentCompilation, cancellationToken);
 
 				if (data.CallInsteadOfCopying)
 				{
@@ -149,7 +149,7 @@ namespace Durian.DefaultParam
 
 			private void InitializeCallData(DefaultParamMethodData data)
 			{
-				ref readonly TypeParameterContainer typeParameters = ref data.GetTypeParameters();
+				ref readonly TypeParameterContainer typeParameters = ref data.TypeParameters;
 				TypeSyntax[] typeArguments = new TypeSyntax[typeParameters.Length];
 				SeparatedSyntaxList<ParameterSyntax> parameters = data.Declaration.ParameterList.Parameters;
 				ArgumentSyntax[] arguments = new ArgumentSyntax[parameters.Count];
@@ -296,6 +296,11 @@ namespace Durian.DefaultParam
 				CurrentDeclaration = method
 					.WithAttributeLists(SyntaxFactory.List(GetValidAttributes(method, compilation, cancellationToken)))
 					.WithTypeParameterList(SyntaxFactory.TypeParameterList(list)).WithoutTrivia();
+
+				if (_newModifierIndices is null || _newModifierIndices.Count == 0)
+				{
+					CurrentDeclaration = CurrentDeclaration.WithModifiers(SyntaxFactory.TokenList(CurrentDeclaration.Modifiers.Where(m => !m.IsKind(SyntaxKind.NewKeyword))));
+				}
 			}
 
 			private IEnumerable<AttributeListSyntax> GetValidAttributes(MethodDeclarationSyntax method, DefaultParamCompilationData compilation, CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.CodeAnalysis;
 
@@ -7,10 +8,12 @@ namespace Durian.Logging
 	/// <summary>
 	/// Determines the behavior of the target <see cref="ISourceGenerator"/> when creating log files.
 	/// </summary>
+	[DebuggerDisplay("Enabled = {EnableLogging}, Supported = {SupportedLogs}")]
 	public sealed partial record GeneratorLoggingConfiguration
 	{
-		private readonly string _logDirectory;
-		private readonly bool _enableLogging;
+		private string _logDirectory;
+		private bool _enableLogging;
+		private bool _enableDiagnostics;
 
 		/// <summary>
 		/// The directory the source generator logs will be written to.
@@ -18,7 +21,7 @@ namespace Durian.Logging
 		public string LogDirectory
 		{
 			get => _logDirectory;
-			init
+			set
 			{
 				if (string.IsNullOrWhiteSpace(value))
 				{
@@ -27,7 +30,7 @@ namespace Durian.Logging
 
 				string dir = Path.GetFullPath(value);
 
-				if (IsEnabled)
+				if (EnableLogging)
 				{
 					Directory.CreateDirectory(dir);
 				}
@@ -39,23 +42,41 @@ namespace Durian.Logging
 		/// <summary>
 		/// Types of logs this source generator can produce.
 		/// </summary>
-		public GeneratorLogs SupportedLogs { get; init; }
+		public GeneratorLogs SupportedLogs { get; set; }
 
 		/// <summary>
 		/// Determines whether to enable logging.
 		/// </summary>
-		/// <exception cref="InvalidOperationException"><see cref="EnableLogging"/> cannot be set to <see langword="true"/> when generator logging is globally disabled.</exception>
+		/// <exception cref="InvalidOperationException"><see cref="EnableLogging"/> cannot be set to <see langword="true"/> if generator logging is globally disabled.</exception>
 		public bool EnableLogging
 		{
 			get => _enableLogging;
-			init
+			set
 			{
 				if (value && !IsEnabled)
 				{
-					throw new InvalidOperationException($"{nameof(EnableLogging)} cannot be set to true when generator logging is globally disabled!");
+					throw new InvalidOperationException($"{nameof(EnableLogging)} cannot be set to true if generator logging is globally disabled!");
 				}
 
 				_enableLogging = value;
+			}
+		}
+
+		/// <summary>
+		/// Determines whether this <see cref="IDurianSourceGenerator"/> allows to report any <see cref="Diagnostic"/>s during the current execution pass.
+		/// </summary>
+		/// <exception cref="InvalidOperationException"><see cref="EnableDiagnostics"/> cannot be set to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</exception>
+		public bool EnableDiagnostics
+		{
+			get => _enableDiagnostics;
+			set
+			{
+				if (value && !SupportsDiagnostics)
+				{
+					throw new InvalidOperationException($"{nameof(EnableDiagnostics)} cannot be set to true if {nameof(SupportsDiagnostics)} is false!");
+				}
+
+				_enableDiagnostics = value;
 			}
 		}
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,7 +11,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.DefaultParam
 {
 	[DebuggerDisplay("Length = {Length}, NumDefaultParam = {NumDefaultParam}")]
-	public readonly struct TypeParameterContainer : IEquatable<TypeParameterContainer>
+	public readonly struct TypeParameterContainer : IEquatable<TypeParameterContainer>, IEnumerable<TypeParameterData>
 	{
 		private readonly TypeParameterData[] _parameters;
 
@@ -171,18 +172,19 @@ namespace Durian.DefaultParam
 			return CreateFrom(member, compilation.Compilation.GetSemanticModel(member.SyntaxTree), compilation, cancellationToken);
 		}
 
-		public static TypeParameterContainer CreateFrom(ISymbol? symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		public static TypeParameterContainer CreateFrom(IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			if (symbol is INamedTypeSymbol type)
-			{
-				return new TypeParameterContainer(type.TypeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
-			}
-			else if (symbol is IMethodSymbol method)
-			{
-				return new TypeParameterContainer(method.TypeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
-			}
+			return new TypeParameterContainer(symbol.TypeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
+		}
 
-			return default;
+		public static TypeParameterContainer CreateFrom(INamedTypeSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			return new TypeParameterContainer(symbol.TypeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
+		}
+
+		public static TypeParameterContainer CreateFrom(IEnumerable<ITypeParameterSymbol> typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			return new TypeParameterContainer(typeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
 		}
 
 		private static int FindFirstDefaultParamIndex(TypeParameterData[] parameters)
@@ -200,6 +202,16 @@ namespace Durian.DefaultParam
 			}
 
 			return -1;
+		}
+
+		public IEnumerator<TypeParameterData> GetEnumerator()
+		{
+			return ((IEnumerable<TypeParameterData>)_parameters).GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _parameters.GetEnumerator();
 		}
 
 		public static bool operator ==(in TypeParameterContainer first, in TypeParameterContainer second)

@@ -1,24 +1,21 @@
-﻿[assembly: Durian.Configuration.DefaultParamConfiguration(CallInsteadOfCopying = true)]
-namespace Durian.Samples
+﻿[assembly: Durian.Configuration.DefaultParamConfiguration(ApplyNewToGeneratedMembersWithEquivalentSignature = true)]
+
+namespace Durian.Samples.DefaultParam
 {
-	internal class Parent
-	{
-
-	}
-
 	internal partial class Program
 	{
-		public delegate void D<T>(T value);
-
 		private static void Main()
 		{
 
 		}
 
-		public static void Method<[Durian.DefaultParam(typeof(int))]T>(T value)
+		public void Method<U, [DefaultParam(typeof(int))] T>(T value)
 		{
-			// test
-			int a = 2;
+		}
+
+		public void Method<[DefaultParam(typeof(string))]T>(T value)
+		{
+
 		}
 	}
 }

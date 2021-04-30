@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,8 +9,7 @@ using Microsoft.CodeAnalysis;
 namespace Durian.Logging
 {
 	/// <inheritdoc cref="ILoggableSourceGenerator"/>
-	[DebuggerDisplay("Name = {GetGeneratorName()}, Version = {GetVersion()}")]
-	public abstract partial class LoggableSourceGenerator : ILoggableSourceGenerator
+	public abstract class LoggableSourceGenerator : ILoggableSourceGenerator
 	{
 		/// <inheritdoc/>
 		public GeneratorLoggingConfiguration LoggingConfiguration { get; }
@@ -21,9 +19,29 @@ namespace Durian.Logging
 		/// </summary>
 		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
 		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
-		protected LoggableSourceGenerator(bool checkForConfigurationAttribute)
+		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="LoggableSourceGenerator"/> instance if logging is supported.</param>
+		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="GeneratorLoggingConfiguration.EnableDiagnostics"/> to <see langword="true"/> if <see cref="GeneratorLoggingConfiguration.SupportsDiagnostics"/> is <see langword="true"/>.</param>
+		protected LoggableSourceGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported = true, bool enableDiagnosticsIfSupported = true)
 		{
 			LoggingConfiguration = checkForConfigurationAttribute ? GeneratorLoggingConfiguration.CreateConfigurationForGenerator(this) : GeneratorLoggingConfiguration.Default;
+
+			if (!enableLoggingIfSupported)
+			{
+				LoggingConfiguration.EnableLogging = false;
+			}
+			else if (GeneratorLoggingConfiguration.IsEnabled)
+			{
+				LoggingConfiguration.EnableLogging = true;
+			}
+
+			if (!enableDiagnosticsIfSupported)
+			{
+				LoggingConfiguration.EnableDiagnostics = false;
+			}
+			else if (LoggingConfiguration.SupportsDiagnostics)
+			{
+				LoggingConfiguration.EnableDiagnostics = true;
+			}
 		}
 
 		/// <summary>
@@ -44,6 +62,28 @@ namespace Durian.Logging
 		void ISourceGenerator.Execute(GeneratorExecutionContext context)
 		{
 			Execute(in context);
+		}
+
+		/// <summary>
+		/// Enables generator logging if <see cref="GeneratorLoggingConfiguration.IsEnabled"/> is <see langword="true"/>.
+		/// </summary>
+		public void EnableLoggingIfSupported()
+		{
+			if (GeneratorLoggingConfiguration.IsEnabled)
+			{
+				LoggingConfiguration.EnableLogging = true;
+			}
+		}
+
+		/// <summary>
+		/// Enables diagnostics if <see cref="GeneratorLoggingConfiguration.SupportedLogs"/> of the <see cref="LoggingConfiguration"/> is <see langword="true"/>.
+		/// </summary>
+		public void EnableDiagnosticsIfSupported()
+		{
+			if (LoggingConfiguration.SupportsDiagnostics)
+			{
+				LoggingConfiguration.EnableLogging = true;
+			}
 		}
 
 		/// <inheritdoc/>

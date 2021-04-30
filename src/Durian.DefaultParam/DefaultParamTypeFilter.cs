@@ -21,7 +21,7 @@ namespace Durian.DefaultParam
 		public DefaultParamGenerator Generator { get; }
 		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
-		public DefaultParamTypeFilter(DefaultParamGenerator generator) : this(generator, SymbolNameToFile.Instance)
+		public DefaultParamTypeFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())
 		{
 		}
 
@@ -142,7 +142,7 @@ namespace Durian.DefaultParam
 					continue;
 				}
 
-				if (ValidateAndCreateWithoutDiagnostics(compilation, decl, out DefaultParamTypeData? data, cancellationToken))
+				if (ValidateAndCreate(compilation, decl, out DefaultParamTypeData? data, cancellationToken))
 				{
 					list.Add(data!);
 				}
@@ -151,7 +151,7 @@ namespace Durian.DefaultParam
 			return list.ToArray();
 		}
 
-		private static bool ValidateAndCreateWithoutDiagnostics(
+		private static bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			TypeDeclarationSyntax declaration,
 			out DefaultParamTypeData? data,
@@ -164,10 +164,10 @@ namespace Durian.DefaultParam
 				return false;
 			}
 
-			return ValidateAndCreateWithoutDiagnostics(compilation, declaration, semanticModel, symbol, ref typeParameters, out data);
+			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, ref typeParameters, out data);
 		}
 
-		private static bool ValidateAndCreateWithoutDiagnostics(
+		private static bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			TypeDeclarationSyntax declaration,
 			SemanticModel semanticModel,
@@ -176,9 +176,9 @@ namespace Durian.DefaultParam
 			out DefaultParamTypeData? data
 		)
 		{
-			if (ValidateHasGeneratedCodeAttribute(symbol, compilation, out AttributeData[]? attributes) &&
-				ValidateContainingTypes(symbol, compilation, out ITypeData[]? containingTypes) &&
-				ValidateTypeParameters(in typeParameters))
+			if (AnalyzeAgainstGeneratedCodeAttribute(symbol, compilation, out AttributeData[]? attributes) &&
+				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes) &&
+				AnalyzeTypeParameters(in typeParameters))
 			{
 				data = new DefaultParamTypeData(
 						declaration,
@@ -281,9 +281,9 @@ namespace Durian.DefaultParam
 			out DefaultParamTypeData? data
 		)
 		{
-			bool isValid = ValidateHasGeneratedCodeAttribute(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
-			isValid &= ValidateContainingTypes(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
-			isValid &= ValidateTypeParameters(diagnosticReceiver, in typeParameters);
+			bool isValid = AnalyzeAgainstGeneratedCodeAttributeWithDiagnostics(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
+			isValid &= AnalyzeContainingTypesWithDiagnostics(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
+			isValid &= AnalyzeTypeParametersWithDiagnostics(diagnosticReceiver, in typeParameters);
 
 			if (isValid)
 			{

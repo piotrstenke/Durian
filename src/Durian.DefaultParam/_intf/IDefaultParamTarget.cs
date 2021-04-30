@@ -5,8 +5,7 @@ namespace Durian.DefaultParam
 {
 	public interface IDefaultParamTarget : IMemberData
 	{
-		string GetHintName();
+		ref readonly TypeParameterContainer TypeParameters { get; }
 		IEnumerable<string> GetUsedNamespaces();
-		ref readonly TypeParameterContainer GetTypeParameters();
 	}
 }

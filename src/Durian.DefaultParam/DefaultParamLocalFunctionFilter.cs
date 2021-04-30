@@ -19,7 +19,7 @@ namespace Durian.DefaultParam
 		public DefaultParamGenerator Generator { get; }
 		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
-		public DefaultParamLocalFunctionFilter(DefaultParamGenerator generator) : this(generator, SymbolNameToFile.Instance)
+		public DefaultParamLocalFunctionFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())
 		{
 		}
 

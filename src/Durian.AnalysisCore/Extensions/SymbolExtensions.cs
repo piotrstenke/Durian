@@ -16,6 +16,67 @@ namespace Durian.Extensions
 	/// </summary>
 	public static class SymbolExtensions
 	{
+		/// <summary>
+		/// Returns all <see cref="IMethodSymbol"/> this <paramref name="method"/> overrides.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the base methods of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<IMethodSymbol> GetBaseMethods(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return Yield();
+
+			IEnumerable<IMethodSymbol> Yield()
+			{
+				IMethodSymbol? m = method;
+
+				while ((m = m!.OverriddenMethod) is not null)
+				{
+					yield return m;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="method"/> is partial.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
+		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool IsPartial(this IMethodSymbol method, CancellationToken cancellationToken = default)
+		{
+			return IsPartial(method, (method?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as MethodDeclarationSyntax)!);
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="method"/> is partial.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
+		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="declaration"/> is <see langword="null"/>.</exception>
+		public static bool IsPartial(this IMethodSymbol method, MethodDeclarationSyntax declaration)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			if (declaration is null)
+			{
+				throw new ArgumentNullException(nameof(declaration));
+			}
+
+			return
+				method.DeclaringSyntaxReferences.Length > 1 ||
+				method.PartialImplementationPart is not null ||
+				method.PartialDefinitionPart is not null ||
+				declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+		}
+
 		/// <inheritdoc cref="GetAllMembers(ITypeSymbol, string)"/>
 		public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol type)
 		{

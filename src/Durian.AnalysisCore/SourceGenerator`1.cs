@@ -5,21 +5,22 @@ using Durian.Logging;
 namespace Durian
 {
 	/// <inheritdoc cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/>
-	public abstract class SourceGenerator : SourceGenerator<ICompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
+	public abstract class SourceGenerator<TCompilationData> : SourceGenerator<TCompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
+		where TCompilationData : class, ICompilationData
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SourceGenerator"/> class.
+		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData}"/> class.
 		/// </summary>
 		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
 		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
-		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="SourceGenerator"/> instance if logging is supported.</param>
+		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="SourceGenerator{TCompilationData}"/> instance if logging is supported.</param>
 		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.EnableDiagnostics"/> to <see langword="true"/> if <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SupportsDiagnostics"/> is <see langword="true"/>.</param>
 		protected SourceGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported = true, bool enableDiagnosticsIfSupported = true) : base(checkForConfigurationAttribute, enableLoggingIfSupported, enableDiagnosticsIfSupported)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SourceGenerator"/> class.
+		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData}"/> class.
 		/// </summary>
 		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
 		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>

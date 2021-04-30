@@ -22,7 +22,7 @@ namespace Durian.DefaultParam
 		public DefaultParamGenerator Generator { get; }
 		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
-		public DefaultParamMethodFilter(DefaultParamGenerator generator) : this(generator, SymbolNameToFile.Instance)
+		public DefaultParamMethodFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())
 		{
 		}
 
@@ -144,7 +144,7 @@ namespace Durian.DefaultParam
 					continue;
 				}
 
-				if (ValidateAndCreateWithoutDiagnostics(compilation, decl, out DefaultParamMethodData? data, cancellationToken))
+				if (ValidateAndCreate(compilation, decl, out DefaultParamMethodData? data, cancellationToken))
 				{
 					list.Add(data!);
 				}
@@ -153,7 +153,7 @@ namespace Durian.DefaultParam
 			return list.ToArray();
 		}
 
-		private static bool ValidateAndCreateWithoutDiagnostics(DefaultParamCompilationData compilation, MethodDeclarationSyntax declaration, out DefaultParamMethodData? data, CancellationToken cancellationToken)
+		private static bool ValidateAndCreate(DefaultParamCompilationData compilation, MethodDeclarationSyntax declaration, out DefaultParamMethodData? data, CancellationToken cancellationToken)
 		{
 			if (!GetValidationData(compilation, declaration, out SemanticModel semanticModel, out TypeParameterContainer typeParameters, out IMethodSymbol symbol, cancellationToken))
 			{
@@ -161,10 +161,10 @@ namespace Durian.DefaultParam
 				return false;
 			}
 
-			return ValidateAndCreateWithoutDiagnostics(compilation, declaration, semanticModel, symbol, ref typeParameters, out data, cancellationToken);
+			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, ref typeParameters, out data, cancellationToken);
 		}
 
-		private static bool ValidateAndCreateWithoutDiagnostics(
+		private static bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			MethodDeclarationSyntax declaration,
 			SemanticModel semanticModel,
@@ -174,15 +174,15 @@ namespace Durian.DefaultParam
 			CancellationToken cancellationToken
 		)
 		{
-			if (ValidateIsPartialOrExtern(symbol, declaration) &&
-				ValidateHasGeneratedCodeAttribute(symbol, compilation, out AttributeData[]? attributes) &&
-				ValidateContainingTypes(symbol, compilation, out ITypeData[]? containingTypes))
+			if (AnalyzeAgaintsPartialOrExtern(symbol, declaration) &&
+				AnalyzeAgainstGeneratedCodeAttribute(symbol, compilation, out AttributeData[]? attributes) &&
+				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes))
 			{
 				if ((IsOverride(symbol, out IMethodSymbol? baseMethod) &&
-					ValidateOverrideMethod(baseMethod, ref typeParameters, compilation, cancellationToken)) ||
-					ValidateTypeParameters(in typeParameters))
+					AnalyzeOverrideMethod(baseMethod, ref typeParameters, compilation, cancellationToken)) ||
+					AnalyzeTypeParameters(in typeParameters))
 				{
-					if (ValidateMethodSignature(symbol, typeParameters, compilation, out List<int>? newModifiers))
+					if (AnalyzeMethodSignature(symbol, typeParameters, compilation, out HashSet<int>? newModifiers, cancellationToken))
 					{
 						data = new(
 							declaration,
@@ -284,25 +284,25 @@ namespace Durian.DefaultParam
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = ValidateIsPartialOrExtern(diagnosticReceiver, symbol, declaration);
-			isValid &= ValidateHasGeneratedCodeAttribute(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
-			isValid &= ValidateContainingTypes(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
+			bool isValid = AnalyzeAgaintsPartialOrExternWithDiagnostics(diagnosticReceiver, symbol, declaration);
+			isValid &= AnalyzeAgainstGeneratedCodeAttributeWithDiagnostics(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
+			isValid &= AnalyzeContainingTypesWithDiagnostics(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
 
 			bool hasValidTypeParameters;
 
 			if (IsOverride(symbol, out IMethodSymbol? baseMethod))
 			{
-				isValid &= ValidateOverrideMethod(diagnosticReceiver, symbol, baseMethod, ref typeParameters, compilation, cancellationToken, out hasValidTypeParameters);
+				isValid &= AnalyzeOverrideMethodWithDiagnostics(diagnosticReceiver, symbol, baseMethod, ref typeParameters, compilation, cancellationToken, out hasValidTypeParameters);
 			}
 			else
 			{
-				hasValidTypeParameters = ValidateTypeParameters(diagnosticReceiver, in typeParameters);
+				hasValidTypeParameters = AnalyzeTypeParametersWithDiagnostics(diagnosticReceiver, in typeParameters);
 				isValid &= hasValidTypeParameters;
 			}
 
 			if (hasValidTypeParameters)
 			{
-				isValid &= ValidateMethodSignature(diagnosticReceiver, symbol, typeParameters, compilation, out List<int>? newModifiers);
+				isValid &= AnalyzeMethodSignatureWithDiagnostics(diagnosticReceiver, symbol, typeParameters, compilation, out HashSet<int>? newModifiers);
 
 				if (isValid)
 				{
