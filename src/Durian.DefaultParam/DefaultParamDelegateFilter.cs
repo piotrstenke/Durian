@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Data;
@@ -13,12 +14,10 @@ namespace Durian.DefaultParam
 {
 	public partial class DefaultParamDelegateFilter : IDefaultParamFilter
 	{
-		private readonly DeclarationBuilder _declBuilder;
-		private readonly LoggableGeneratorDiagnosticReceiver? _loggableReceiver;
-		private readonly IDirectDiagnosticReceiver? _diagnosticReceiver;
-		private readonly IFileNameProvider _fileNameProvider;
-
 		public DefaultParamGenerator Generator { get; }
+		public IFileNameProvider FileNameProvider { get; }
+		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
+		public bool IncludeGeneratedSymbols { get; }
 		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
 		public DefaultParamDelegateFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())
@@ -27,27 +26,13 @@ namespace Durian.DefaultParam
 
 		public DefaultParamDelegateFilter(DefaultParamGenerator generator, IFileNameProvider fileNameProvider)
 		{
-			_declBuilder = new();
 			Generator = generator;
-
-			if (generator.LoggingConfiguration.EnableLogging)
-			{
-				_loggableReceiver = new LoggableGeneratorDiagnosticReceiver(generator);
-				_diagnosticReceiver = generator.SupportsDiagnostics ? DiagnosticReceiverFactory.Direct(ReportForBothReceivers) : _loggableReceiver;
-			}
-			else if (generator.SupportsDiagnostics)
-			{
-				_diagnosticReceiver = generator.DiagnosticReceiver!;
-			}
-
-			_fileNameProvider = fileNameProvider;
+			FileNameProvider = fileNameProvider;
 		}
 
-		public DeclarationBuilder GetDeclarationBuilder(DefaultParamDelegateData target, CancellationToken cancellationToken = default)
+		public DelegateDeclarationSyntax[] GetCandidateDelegates()
 		{
-			_declBuilder.SetData(target, cancellationToken);
-
-			return _declBuilder;
+			return Generator.SyntaxReceiver?.CandidateDelegates?.ToArray() ?? Array.Empty<DelegateDeclarationSyntax>();
 		}
 
 		public DefaultParamDelegateData[] GetValidDelegates()
@@ -57,55 +42,37 @@ namespace Durian.DefaultParam
 				return Array.Empty<DefaultParamDelegateData>();
 			}
 
-			DefaultParamCompilationData compilation = Generator.TargetCompilation;
-			CancellationToken cancellationToken = Generator.CancellationToken;
-
-			if (_loggableReceiver is not null)
-			{
-				List<DefaultParamDelegateData> list = new(Generator.SyntaxReceiver.CandidateDelegates.Count);
-				IDirectDiagnosticReceiver diagnosticReceiver = Generator.EnableDiagnostics ? _diagnosticReceiver! : _loggableReceiver;
-
-				foreach (DelegateDeclarationSyntax del in Generator.SyntaxReceiver.CandidateDelegates)
-				{
-					if (del is null)
-					{
-						continue;
-					}
-
-					if (!GetValidationData(compilation, del, out SemanticModel semanticModel, out TypeParameterContainer typeParameters, out INamedTypeSymbol symbol, cancellationToken))
-					{
-						continue;
-					}
-
-					string fileName = _fileNameProvider.GetFileName(symbol);
-					_loggableReceiver.SetTargetNode(del, fileName);
-
-					if (ValidateAndCreateWithDiagnostics(diagnosticReceiver, compilation, del, semanticModel, symbol, ref typeParameters, out DefaultParamDelegateData? data))
-					{
-						list.Add(data!);
-					}
-
-					if (_loggableReceiver.Count > 0)
-					{
-						_loggableReceiver.Push();
-						_fileNameProvider.Success();
-					}
-				}
-
-				return list.ToArray();
-			}
-			else if (_diagnosticReceiver is not null && Generator.EnableDiagnostics)
-			{
-				return GetValidDelegatesWithDiagnostics_Internal(_diagnosticReceiver, compilation, Generator.SyntaxReceiver.CandidateDelegates.ToArray(), cancellationToken);
-			}
-			else
-			{
-				return GetValidDelegates_Internal(compilation, Generator.SyntaxReceiver.CandidateDelegates.ToArray(), cancellationToken);
-			}
+			return DefaultParamUtilities.IterateFilter<DefaultParamDelegateData>(this);
 		}
 
-		#region -Without Diagnostics-
-		public static DefaultParamDelegateData[] GetValidDelegates(DefaultParamCompilationData compilation, IEnumerable<DelegateDeclarationSyntax> collectedDelegates, CancellationToken cancellationToken = default)
+		public static bool GetValidationData(
+			DefaultParamCompilationData compilation,
+			DelegateDeclarationSyntax declaration,
+			[NotNullWhen(true)] out SemanticModel? semanticModel,
+			out TypeParameterContainer typeParameters,
+			[NotNullWhen(true)] out INamedTypeSymbol? symbol,
+			CancellationToken cancellationToken
+		)
+		{
+			semanticModel = compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
+			typeParameters = GetParameters(declaration, semanticModel, compilation, cancellationToken);
+
+			if (!typeParameters.HasDefaultParams)
+			{
+				symbol = null!;
+				return false;
+			}
+
+			symbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken)!;
+
+			return symbol is not null;
+		}
+
+		public static DefaultParamDelegateData[] GetValidDelegates(
+			DefaultParamCompilationData compilation,
+			IEnumerable<DelegateDeclarationSyntax> collectedDelegates,
+			CancellationToken cancellationToken = default
+		)
 		{
 			if (compilation is null || collectedDelegates is null || compilation is null)
 			{
@@ -122,7 +89,11 @@ namespace Durian.DefaultParam
 			return GetValidDelegates_Internal(compilation, collected, cancellationToken);
 		}
 
-		public static DefaultParamDelegateData[] GetValidDelegates(DefaultParamCompilationData compilation, DefaultParamSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken = default)
+		public static DefaultParamDelegateData[] GetValidDelegates(
+			DefaultParamCompilationData compilation,
+			DefaultParamSyntaxReceiver syntaxReceiver,
+			CancellationToken cancellationToken = default
+		)
 		{
 			if (compilation is null || syntaxReceiver is null || syntaxReceiver.CandidateDelegates.Count == 0)
 			{
@@ -131,34 +102,15 @@ namespace Durian.DefaultParam
 
 			return GetValidDelegates_Internal(compilation, syntaxReceiver.CandidateDelegates.ToArray(), cancellationToken);
 		}
-		private static DefaultParamDelegateData[] GetValidDelegates_Internal(DefaultParamCompilationData compilation, DelegateDeclarationSyntax[] collectedDelegates, CancellationToken cancellationToken)
-		{
-			List<DefaultParamDelegateData> list = new(collectedDelegates.Length);
 
-			foreach (DelegateDeclarationSyntax decl in collectedDelegates)
-			{
-				if (decl is null)
-				{
-					continue;
-				}
-
-				if (ValidateAndCreate(compilation, decl, out DefaultParamDelegateData? data, cancellationToken))
-				{
-					list.Add(data!);
-				}
-			}
-
-			return list.ToArray();
-		}
-
-		private static bool ValidateAndCreate(
+		public static bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			DelegateDeclarationSyntax declaration,
-			out DefaultParamDelegateData? data,
-			CancellationToken cancellationToken
+			[NotNullWhen(true)] out DefaultParamDelegateData? data,
+			CancellationToken cancellationToken = default
 		)
 		{
-			if (!GetValidationData(compilation, declaration, out SemanticModel semanticModel, out TypeParameterContainer typeParameters, out INamedTypeSymbol symbol, cancellationToken))
+			if (!GetValidationData(compilation, declaration, out SemanticModel? semanticModel, out TypeParameterContainer typeParameters, out INamedTypeSymbol? symbol, cancellationToken))
 			{
 				data = null;
 				return false;
@@ -173,7 +125,7 @@ namespace Durian.DefaultParam
 			SemanticModel semanticModel,
 			INamedTypeSymbol symbol,
 			ref TypeParameterContainer typeParameters,
-			out DefaultParamDelegateData? data
+			[NotNullWhen(true)] out DefaultParamDelegateData? data
 		)
 		{
 			if (AnalyzeAgainstGeneratedCodeAttribute(symbol, compilation, out AttributeData[]? attributes) &&
@@ -198,42 +150,28 @@ namespace Durian.DefaultParam
 			return false;
 		}
 
-		#endregion
-
-		#region -With Diagnostics-
-		public static DefaultParamDelegateData[] GetValidDelegatesWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, DefaultParamCompilationData compilation, DefaultParamSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken = default)
-		{
-			if (compilation is null || diagnosticReceiver is null || syntaxReceiver is null || syntaxReceiver.CandidateDelegates.Count == 0)
-			{
-				return Array.Empty<DefaultParamDelegateData>();
-			}
-
-			return GetValidDelegatesWithDiagnostics_Internal(diagnosticReceiver, compilation, syntaxReceiver.CandidateDelegates.ToArray(), cancellationToken);
-		}
-
-		public static DefaultParamDelegateData[] GetValidDelegatesWithDiagnostics(
-			IDiagnosticReceiver diagnosticReceiver,
+		private static TypeParameterContainer GetParameters(
+			DelegateDeclarationSyntax declaration,
+			SemanticModel semanticModel,
 			DefaultParamCompilationData compilation,
-			IEnumerable<DelegateDeclarationSyntax> collectedDelegates,
-			CancellationToken cancellationToken = default
+			CancellationToken cancellationToken
 		)
 		{
-			if (compilation is null || diagnosticReceiver is null || collectedDelegates is null)
+			TypeParameterListSyntax? parameters = declaration.TypeParameterList;
+
+			if (parameters is null)
 			{
-				return Array.Empty<DefaultParamDelegateData>();
+				return new TypeParameterContainer(null);
 			}
 
-			DelegateDeclarationSyntax[] collected = collectedDelegates.ToArray();
-
-			if (collected.Length == 0)
-			{
-				return Array.Empty<DefaultParamDelegateData>();
-			}
-
-			return GetValidDelegatesWithDiagnostics_Internal(diagnosticReceiver, compilation, collected, cancellationToken);
+			return new TypeParameterContainer(parameters.Parameters.Select(p => TypeParameterData.CreateFrom(p, semanticModel, compilation, cancellationToken)));
 		}
 
-		private static DefaultParamDelegateData[] GetValidDelegatesWithDiagnostics_Internal(IDiagnosticReceiver diagnosticReceiver, DefaultParamCompilationData compilation, DelegateDeclarationSyntax[] collectedDelegates, CancellationToken cancellationToken)
+		private static DefaultParamDelegateData[] GetValidDelegates_Internal(
+			DefaultParamCompilationData compilation,
+			DelegateDeclarationSyntax[] collectedDelegates,
+			CancellationToken cancellationToken
+		)
 		{
 			List<DefaultParamDelegateData> list = new(collectedDelegates.Length);
 
@@ -244,7 +182,7 @@ namespace Durian.DefaultParam
 					continue;
 				}
 
-				if (ValidateAndCreateWithDiagnostics(diagnosticReceiver, compilation, decl, out DefaultParamDelegateData? data, cancellationToken))
+				if (ValidateAndCreate(compilation, decl, out DefaultParamDelegateData? data, cancellationToken))
 				{
 					list.Add(data!);
 				}
@@ -252,70 +190,20 @@ namespace Durian.DefaultParam
 
 			return list.ToArray();
 		}
-		private static bool ValidateAndCreateWithDiagnostics(
-			IDiagnosticReceiver diagnosticReceiver,
-			DefaultParamCompilationData compilation,
-			DelegateDeclarationSyntax declaration,
-			out DefaultParamDelegateData? data,
-			CancellationToken cancellationToken
-		)
-		{
-			if (!GetValidationData(compilation, declaration, out SemanticModel semanticModel, out TypeParameterContainer typeParameters, out INamedTypeSymbol symbol, cancellationToken))
-			{
-				data = null;
-				return false;
-			}
 
-			return ValidateAndCreateWithDiagnostics(diagnosticReceiver, compilation, declaration, semanticModel, symbol, ref typeParameters, out data);
+		#region -Interface Implementations-
+
+		CSharpSyntaxNode[] IDefaultParamFilter.GetCandidateNodes()
+		{
+			return GetCandidateDelegates();
 		}
 
-		private static bool ValidateAndCreateWithDiagnostics(
-			IDiagnosticReceiver diagnosticReceiver,
-			DefaultParamCompilationData compilation,
-			DelegateDeclarationSyntax declaration,
-			SemanticModel semanticModel,
-			INamedTypeSymbol symbol,
-			ref TypeParameterContainer typeParameters,
-			out DefaultParamDelegateData? data
-		)
+		IEnumerator<IMemberData> IGeneratorSyntaxFilter.GetEnumerator()
 		{
-			bool isValid = AnalyzeAgainstGeneratedCodeAttributeWithDiagnostics(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
-			isValid &= AnalyzeContainingTypesWithDiagnostics(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
-			isValid &= AnalyzeTypeParametersWithDiagnostics(diagnosticReceiver, in typeParameters);
-
-			if (isValid)
-			{
-				data = new DefaultParamDelegateData(
-					declaration,
-					compilation,
-					symbol,
-					semanticModel,
-					containingTypes,
-					null,
-					attributes,
-					typeParameters
-				);
-
-				return true;
-			}
-
-			data = null;
-			return false;
-		}
-		#endregion
-
-		#region -Interface Implementations
-		IDefaultParamDeclarationBuilder IDefaultParamFilter.GetDeclarationBuilder(IDefaultParamTarget target, CancellationToken cancellationToken)
-		{
-			return GetDeclarationBuilder((DefaultParamDelegateData)target, cancellationToken);
+			return DefaultParamUtilities.GetFilterEnumerator(this);
 		}
 
-		IEnumerable<IDefaultParamTarget> IDefaultParamFilter.Filtrate()
-		{
-			return GetValidDelegates();
-		}
-
-		IEnumerable<IMemberData> IGeneratorSyntaxFilter.Filtrate()
+		IMemberData[] IGeneratorSyntaxFilter.Filtrate()
 		{
 			return GetValidDelegates();
 		}
@@ -332,54 +220,84 @@ namespace Durian.DefaultParam
 
 		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
 		{
-			return GetValidDelegatesWithDiagnostics(diagnosticReceiver, (DefaultParamCompilationData)compilation, (DefaultParamSyntaxReceiver)syntaxReceiver, cancellationToken);
+			return WithDiagnostics.GetValidDelegates(diagnosticReceiver, (DefaultParamCompilationData)compilation, (DefaultParamSyntaxReceiver)syntaxReceiver, cancellationToken);
 		}
 
 		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken)
 		{
-			return GetValidDelegatesWithDiagnostics(diagnosticReceiver, (DefaultParamCompilationData)compilation, collectedNodes.OfType<DelegateDeclarationSyntax>(), cancellationToken);
+			return WithDiagnostics.GetValidDelegates(diagnosticReceiver, (DefaultParamCompilationData)compilation, collectedNodes.OfType<DelegateDeclarationSyntax>(), cancellationToken);
 		}
-		#endregion
 
-		private static bool GetValidationData(
+		bool IDefaultParamFilter.ValidateAndCreate(
 			DefaultParamCompilationData compilation,
-			DelegateDeclarationSyntax declaration,
-			out SemanticModel semanticModel,
-			out TypeParameterContainer typeParameters,
-			out INamedTypeSymbol symbol,
+			CSharpSyntaxNode node,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken
 		)
 		{
-			semanticModel = compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
-			typeParameters = GetParameters(declaration, semanticModel, compilation, cancellationToken);
-
-			if (!typeParameters.HasDefaultParams)
-			{
-				symbol = null!;
-				return false;
-			}
-
-			symbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken)!;
-
-			return symbol is not null;
+			bool isValid = ValidateAndCreate(compilation, (DelegateDeclarationSyntax)node, out DefaultParamDelegateData? d, cancellationToken);
+			data = d;
+			return isValid;
 		}
 
-		private static TypeParameterContainer GetParameters(DelegateDeclarationSyntax declaration, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		bool IDefaultParamFilter.ValidateAndCreate(
+			DefaultParamCompilationData compilation,
+			CSharpSyntaxNode node,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			ref TypeParameterContainer typeParameters,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
 		{
-			TypeParameterListSyntax? parameters = declaration.TypeParameterList;
-
-			if (parameters is null)
-			{
-				return new TypeParameterContainer(null);
-			}
-
-			return new TypeParameterContainer(parameters.Parameters.Select(p => TypeParameterData.CreateFrom(p, semanticModel, compilation, cancellationToken)));
+			bool isValid = ValidateAndCreate(compilation, (DelegateDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, ref typeParameters, out DefaultParamDelegateData? d);
+			data = d;
+			return isValid;
 		}
 
-		private void ReportForBothReceivers(Diagnostic diagnostic)
+		bool IDefaultParamFilter.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			DefaultParamCompilationData compilation,
+			CSharpSyntaxNode node,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
 		{
-			_loggableReceiver!.ReportDiagnostic(diagnostic);
-			Generator.DiagnosticReceiver!.ReportDiagnostic(diagnostic);
+			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, (DelegateDeclarationSyntax)node, out DefaultParamDelegateData? d, cancellationToken);
+			data = d;
+			return isValid;
 		}
+
+		bool IDefaultParamFilter.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			DefaultParamCompilationData compilation,
+			CSharpSyntaxNode node,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			ref TypeParameterContainer typeParameters,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
+		{
+			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, (DelegateDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, ref typeParameters, out DefaultParamDelegateData? d);
+			data = d;
+			return isValid;
+		}
+
+		bool IDefaultParamFilter.GetValidationData(
+			DefaultParamCompilationData compilation,
+			CSharpSyntaxNode node,
+			[NotNullWhen(true)] out SemanticModel? semanticModel,
+			out TypeParameterContainer typeParameters,
+			[NotNullWhen(true)] out ISymbol? symbol,
+			CancellationToken cancellationToken
+		)
+		{
+			bool isValid = GetValidationData(compilation, (DelegateDeclarationSyntax)node, out semanticModel, out typeParameters, out INamedTypeSymbol? s, cancellationToken);
+			symbol = s;
+			return isValid;
+		}
+
+		#endregion
 	}
 }

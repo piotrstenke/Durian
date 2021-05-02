@@ -307,7 +307,7 @@ namespace Durian.DefaultParam
 
 		public static bool IsDefaultParamGenerated(ISymbol symbol, DefaultParamCompilationData compilation)
 		{
-			AttributeData? attr = symbol.GetAttributeData(compilation.GeneratedCodeAttribute);
+			AttributeData? attr = symbol.GetAttributeData(compilation.GeneratedCodeAttribute!);
 
 			if (attr is null)
 			{

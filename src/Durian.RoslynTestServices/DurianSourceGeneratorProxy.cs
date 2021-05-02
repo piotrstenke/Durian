@@ -10,7 +10,7 @@ namespace Durian.Tests
 	/// A simple proxy class that inherits the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class and leaves the actual implementation details to be defined by the user through appropriate C# events, as well as provides references to the passed <see cref="GeneratorInitializationContext"/> and <see cref="GeneratorExecutionContext"/>.
 	/// </summary>
 	[GeneratorLoggingConfiguration(SupportsDiagnostics = true, LogDirectory = "test", RelativeToDefault = true, SupportedLogs = GeneratorLogs.All)]
-	public class DurianSourceGeneratorProxy : SourceGenerator<ICompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
+	public class DurianSourceGeneratorProxy : SourceGenerator
 	{
 		private GeneratorExecutionContext _exeContext;
 		private GeneratorInitializationContext _initContext;
@@ -38,7 +38,7 @@ namespace Durian.Tests
 		/// <summary>
 		/// Event invoked when the <see cref="Generate"/> method is called.
 		/// </summary>
-		public event Func<IMemberData, string, IGeneratorSyntaxFilterWithDiagnostics, GeneratorExecutionContext, bool>? OnGenerate;
+		public event Func<IMemberData, string, GeneratorExecutionContext, bool>? OnGenerate;
 
 		/// <summary>
 		/// Event invoked when the <see cref="Initialize"/> method is called.
@@ -51,9 +51,9 @@ namespace Durian.Tests
 		public event GeneratorExecute? OnBeforeFiltration;
 
 		/// <summary>
-		/// Event invoked when the <see cref="AfterFiltration(in GeneratorExecutionContext)"/> method is called.
+		/// Event invoked when the <see cref="AfterExecution(in GeneratorExecutionContext)"/> method is called.
 		/// </summary>
-		public event GeneratorExecute? OnAfterFiltration;
+		public event GeneratorExecute? OnAfterExecution;
 
 		/// <summary>
 		/// Event invoked when the <see cref="BeforeFiltrationOfGroup(FilterGroup{IGeneratorSyntaxFilterWithDiagnostics}, in GeneratorExecutionContext)"/> method is called.
@@ -84,6 +84,11 @@ namespace Durian.Tests
 		/// Event invoked when the <see cref="GetFilters(in GeneratorExecutionContext)"/> method is called.
 		/// </summary>
 		public event Func<GeneratorExecutionContext, FilterContainer<IGeneratorSyntaxFilterWithDiagnostics>>? OnGetFilters;
+
+		/// <summary>
+		/// Event invoked when the <see cref="IterateThroughFilter(IGeneratorSyntaxFilterWithDiagnostics, in GeneratorExecutionContext)"/> method is called.
+		/// </summary>
+		public event Action<IGeneratorSyntaxFilterWithDiagnostics, GeneratorExecutionContext>? OnIterateThroughFilter;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianSourceGeneratorProxy"/> class.
@@ -136,9 +141,9 @@ namespace Durian.Tests
 		}
 
 		/// <inheritdoc/>
-		protected override bool Generate(IMemberData member, string hintName, IGeneratorSyntaxFilterWithDiagnostics filter, in GeneratorExecutionContext context)
+		protected override bool Generate(IMemberData member, string hintName, in GeneratorExecutionContext context)
 		{
-			bool value = OnGenerate?.Invoke(member, hintName, filter, context) ?? false;
+			bool value = OnGenerate?.Invoke(member, hintName, context) ?? false;
 			_exeContext = context;
 
 			return value;
@@ -163,9 +168,22 @@ namespace Durian.Tests
 		}
 
 		/// <inheritdoc/>
-		protected override void AfterFiltration(in GeneratorExecutionContext context)
+		protected override void AfterExecution(in GeneratorExecutionContext context)
 		{
-			OnAfterFiltration?.Invoke(in context);
+			OnAfterExecution?.Invoke(in context);
+		}
+
+		/// <inheritdoc/>
+		protected override void IterateThroughFilter(IGeneratorSyntaxFilterWithDiagnostics filter, in GeneratorExecutionContext context)
+		{
+			if (OnIterateThroughFilter is null)
+			{
+				base.IterateThroughFilter(filter, context);
+			}
+			else
+			{
+				OnIterateThroughFilter.Invoke(filter, context);
+			}
 		}
 
 		/// <inheritdoc/>

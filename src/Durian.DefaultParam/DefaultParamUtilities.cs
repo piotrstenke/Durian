@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Durian.Data;
 using Durian.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,6 +10,40 @@ namespace Durian.DefaultParam
 {
 	internal static class DefaultParamUtilities
 	{
+		public static IEnumerator<IMemberData> GetFilterEnumerator(IDefaultParamFilter filter)
+		{
+			return filter.Mode switch
+			{
+				FilterMode.None => new FilterEnumerator(filter),
+				FilterMode.Diagnostics => new DiagnosticEnumerator(filter),
+				FilterMode.Logs => new LoggableEnumerator(filter),
+				FilterMode.Both => new LoggableDiagnosticEnumerator(filter),
+				_ => new FilterEnumerator(filter)
+			};
+		}
+
+		public static T[] IterateFilter<T>(IDefaultParamFilter filter) where T : IDefaultParamTarget
+		{
+			IEnumerable<IDefaultParamTarget> collection = filter.Mode switch
+			{
+				FilterMode.None => IterateFilter(new FilterEnumerator(filter)),
+				FilterMode.Diagnostics => IterateFilter(new DiagnosticEnumerator(filter)),
+				FilterMode.Logs => IterateFilter(new LoggableEnumerator(filter)),
+				FilterMode.Both => IterateFilter(new LoggableDiagnosticEnumerator(filter)),
+				_ => IterateFilter(new FilterEnumerator(filter))
+			};
+
+			return collection.Cast<T>().ToArray();
+		}
+
+		private static IEnumerable<IDefaultParamTarget> IterateFilter<T>(T iter) where T : IEnumerator<IDefaultParamTarget>
+		{
+			while (iter.MoveNext())
+			{
+				yield return iter.Current;
+			}
+		}
+
 		public static int GetIndent(SyntaxNode? node)
 		{
 			SyntaxNode? parent = node;

@@ -18,6 +18,8 @@ namespace Durian.Logging
 		/// <summary>
 		/// The directory the source generator logs will be written to.
 		/// </summary>
+		/// <remarks>The input value gets converted to a full path.</remarks>
+		/// <exception cref="ArgumentException"><see cref="LogDirectory"/> cannot be <see langword="null"/> or empty.</exception>
 		public string LogDirectory
 		{
 			get => _logDirectory;
@@ -43,6 +45,29 @@ namespace Durian.Logging
 		/// Types of logs this source generator can produce.
 		/// </summary>
 		public GeneratorLogs SupportedLogs { get; set; }
+
+		/// <summary>
+		/// Gets the <see cref="FilterMode"/> the current configuration is valid for.
+		/// </summary>
+		public FilterMode CurrentFilterMode
+		{
+			get
+			{
+				FilterMode mode = FilterMode.None;
+
+				if (EnableDiagnostics)
+				{
+					mode += (int)FilterMode.Diagnostics;
+				}
+
+				if (EnableLogging)
+				{
+					mode += (int)FilterMode.Logs;
+				}
+
+				return mode;
+			}
+		}
 
 		/// <summary>
 		/// Determines whether to enable logging.

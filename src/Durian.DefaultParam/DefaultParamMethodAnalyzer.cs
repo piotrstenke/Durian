@@ -15,22 +15,22 @@ namespace Durian.DefaultParam
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	public class DefaultParamMethodAnalyzer : DefaultParamAnalyzer
 	{
-		[DebuggerDisplay("{Symbol}")]
-		private sealed class DefaultParamCollidingMethod
-		{
-			private readonly TypeParameterContainer _typeParameters;
+		//[DebuggerDisplay("{Symbol}")]
+		//private sealed class DefaultParamCollidingMethod
+		//{
+		//	private readonly TypeParameterContainer _typeParameters;
 
-			public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
-			public IParameterSymbol[] Parameters { get; }
-			public IMethodSymbol Symbol { get; }
+		//	public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
+		//	public IParameterSymbol[] Parameters { get; }
+		//	public IMethodSymbol Symbol { get; }
 
-			public DefaultParamCollidingMethod(IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
-			{
-				_typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
-				Parameters = symbol.Parameters.ToArray();
-				Symbol = symbol;
-			}
-		}
+		//	public DefaultParamCollidingMethod(IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
+		//	{
+		//		_typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
+		//		Parameters = symbol.Parameters.ToArray();
+		//		Symbol = symbol;
+		//	}
+		//}
 
 		[DebuggerDisplay("{Symbol}")]
 		private readonly struct CollidingMethod
@@ -200,64 +200,28 @@ namespace Durian.DefaultParam
 			IMethodSymbol symbol,
 			in TypeParameterContainer typeParameters,
 			DefaultParamCompilationData compilation,
-			out HashSet<int>? typeParameterIndicesToApplyNewModifier,
+			out HashSet<int>? applyNew,
 			CancellationToken cancellationToken = default
 		)
 		{
 			IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
-			int numNonDefaultParam = typeParameters.NumNonDefaultParam;
+			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, symbolParameters.Length, typeParameters.Length, typeParameters.NumNonDefaultParam);
 
-			IMethodSymbol[] potentiallyCollidingMethods = GetMethodsWithSameName(symbol, symbolParameters.Length);
-
-			if (potentiallyCollidingMethods.Length == 0)
+			if (collidingMethods.Length == 0)
 			{
-				typeParameterIndicesToApplyNewModifier = null;
+				applyNew = null;
 				return true;
 			}
 
-			DefaultParamCollidingMethod[] collidingDefaultParams = GetCollidingDefaultParamMethods(symbol, potentiallyCollidingMethods, numNonDefaultParam, compilation, cancellationToken);
-			CollidingMethod[] collidingNormalMethods = GetCollidingMethods(symbol, in typeParameters, symbolParameters, compilation, numNonDefaultParam);
-
-			if (collidingDefaultParams.Length == 0 && collidingNormalMethods.Length == 0)
-			{
-				typeParameterIndicesToApplyNewModifier = null;
-				return true;
-			}
-
-			ParameterGeneration[][] generations = GetParameterGenerations(in typeParameters, symbolParameters);
-			HashSet<int> applyNew = new();
-
-			if (!AnalyzeCollidingDefaultParamMethods(
+			return AnalyzeCollidingMethods(
 				symbol,
 				in typeParameters,
-				collidingDefaultParams,
-				generations,
-				symbolParameters.Length,
-				applyNew,
-				compilation.Configuration,
-				cancellationToken)
-			)
-			{
-				typeParameterIndicesToApplyNewModifier = GetApplyNewOrNull(applyNew);
-				return false;
-			}
-
-			if (!AnalyzeCollidingMethods(
-				symbol,
-				in typeParameters,
-				collidingNormalMethods,
+				collidingMethods,
 				symbolParameters,
-				generations, applyNew,
 				compilation.Configuration,
-				cancellationToken)
-			)
-			{
-				typeParameterIndicesToApplyNewModifier = GetApplyNewOrNull(applyNew);
-				return false;
-			}
-
-			typeParameterIndicesToApplyNewModifier = GetApplyNewOrNull(applyNew);
-			return true;
+				cancellationToken,
+				out applyNew
+			);
 		}
 
 		private static bool AnalyzeBaseMethodParameters(DefaultParamConfiguration configuration, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
@@ -287,72 +251,19 @@ namespace Durian.DefaultParam
 
 			return true;
 		}
-
-		private static bool AnalyzeCollidingDefaultParamMethods(
-			IMethodSymbol symbol,
-			in TypeParameterContainer typeParameters,
-			DefaultParamCollidingMethod[] collidingMethods,
-			ParameterGeneration[][] generations,
-			int numParameters,
-			HashSet<int> applyNew,
-			DefaultParamConfiguration configuration,
-			CancellationToken cancellationToken
-		)
-		{
-			if (collidingMethods.Length == 0)
-			{
-				return true;
-			}
-
-			int numMethods = collidingMethods.Length;
-
-			for (int i = 0; i < numMethods; i++)
-			{
-				DefaultParamCollidingMethod m = collidingMethods[i];
-				ParameterGeneration[][] collidingGenerations = GetParameterGenerations(in m.TypeParameters, m.Parameters);
-				int length = collidingGenerations.Length;
-				int firstLegalIndex = collidingGenerations.Length - typeParameters.NumNonDefaultParam + 1;
-
-				for (int j = firstLegalIndex, currentIndex = 0; j < length; j++, currentIndex++)
-				{
-					ParameterGeneration[] collidingParameters = collidingGenerations[j];
-					ParameterGeneration[] targetParameters = generations[currentIndex];
-
-					if (HasCollidingParameters(targetParameters, collidingParameters, m, numParameters))
-					{
-						if (!configuration.ApplyNewToGeneratedMembersWithEquivalentSignature || SymbolEqualityComparer.Default.Equals(m.Symbol.ContainingType, symbol))
-						{
-							if (!HasNewModifier(symbol, m.Symbol, cancellationToken))
-							{
-								return false;
-							}
-						}
-
-						applyNew.Add(currentIndex);
-					}
-				}
-			}
-
-			return true;
-		}
-
 		private static bool AnalyzeCollidingMethods(
 			IMethodSymbol symbol,
 			in TypeParameterContainer typeParameters,
 			CollidingMethod[] collidingMethods,
 			IParameterSymbol[] symbolParameters,
-			ParameterGeneration[][] generations,
-			HashSet<int> applyNew,
 			DefaultParamConfiguration configuration,
-			CancellationToken cancellationToken
+			CancellationToken cancellationToken,
+			out HashSet<int>? applyNew
 		)
 		{
-			if (collidingMethods.Length == 0)
-			{
-				return true;
-			}
+			ParameterGeneration[][] generations = GetParameterGenerations(in typeParameters, symbolParameters);
 
-			int numParameters = symbolParameters.Length;
+			HashSet<int> applyNewLocal = new();
 			int numMethods = collidingMethods.Length;
 
 			for (int i = 0; i < numMethods; i++)
@@ -362,20 +273,22 @@ namespace Durian.DefaultParam
 
 				ParameterGeneration[] targetParameters = generations[targetIndex];
 
-				if (HasCollidingParameters(targetParameters, in currentMethod, numParameters))
+				if (HasCollidingParameters(targetParameters, in currentMethod))
 				{
 					if (!configuration.ApplyNewToGeneratedMembersWithEquivalentSignature || SymbolEqualityComparer.Default.Equals(currentMethod.Symbol.ContainingType, symbol))
 					{
 						if (!HasNewModifier(symbol, currentMethod.Symbol, cancellationToken))
 						{
+							applyNew = null;
 							return false;
 						}
 					}
 
-					applyNew.Add(targetIndex);
+					applyNewLocal.Add(targetIndex);
 				}
 			}
 
+			applyNew = GetApplyNewOrNull(applyNewLocal);
 			return true;
 		}
 		#endregion
@@ -535,135 +448,34 @@ namespace Durian.DefaultParam
 			IMethodSymbol symbol,
 			in TypeParameterContainer typeParameters,
 			DefaultParamCompilationData compilation,
-			out HashSet<int>? typeParameterIndicesToApplyNewModifier,
+			out HashSet<int>? applyNew,
 			CancellationToken cancellationToken = default
 		)
 		{
 			IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
-			int numNonDefaultParam = typeParameters.NumNonDefaultParam;
+			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, symbolParameters.Length, typeParameters.Length, typeParameters.NumNonDefaultParam);
 
-			IMethodSymbol[] potentiallyCollidingMethods = GetMethodsWithSameName(symbol, symbolParameters.Length);
-
-			if (potentiallyCollidingMethods.Length == 0)
+			if (collidingMethods.Length == 0)
 			{
-				typeParameterIndicesToApplyNewModifier = null;
+				applyNew = null;
 				return true;
 			}
 
-			DefaultParamCollidingMethod[] collidingDefaultParams = GetCollidingDefaultParamMethods(symbol, potentiallyCollidingMethods, numNonDefaultParam, compilation, cancellationToken);
-			CollidingMethod[] collidingNormalMethods = GetCollidingMethods(symbol, in typeParameters, symbolParameters, compilation, numNonDefaultParam);
-
-			if (collidingDefaultParams.Length == 0 && collidingNormalMethods.Length == 0)
-			{
-				typeParameterIndicesToApplyNewModifier = null;
-				return true;
-			}
-
-			ParameterGeneration[][] generations = GetParameterGenerations(in typeParameters, symbolParameters);
-			HashSet<int> diagnosed = new();
-			HashSet<int> applyNew = new();
-
-			bool isValid = AnalyzeCollidingDefaultParamMethodsWithDiagnostics(
+			return AnalyzeCollidingMethodsWithDiagnostics(
 				diagnosticReceiver,
 				symbol,
 				in typeParameters,
-				collidingDefaultParams,
-				generations,
-				symbolParameters.Length,
-				diagnosed,
-				applyNew,
-				compilation.Configuration,
-				cancellationToken
-			);
-
-			if (diagnosed.Count == typeParameters.NumDefaultParam)
-			{
-				typeParameterIndicesToApplyNewModifier = GetApplyNewOrNull(applyNew);
-				return false;
-			}
-
-			isValid &= AnalyzeCollidingMethodsWithDiagnostics(
-				diagnosticReceiver,
-				symbol,
-				in typeParameters,
-				collidingNormalMethods,
+				collidingMethods,
 				symbolParameters,
-				generations,
-				diagnosed,
-				applyNew,
 				compilation.Configuration,
-				cancellationToken
+				cancellationToken,
+				out applyNew
 			);
-
-			typeParameterIndicesToApplyNewModifier = GetApplyNewOrNull(applyNew);
-			return isValid;
 		}
 
 		public static void ReportDiagnosticForLocalFunction(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol)
 		{
 			DefaultParamDiagnostics.DefaultParamAttributeIsNotValidOnLocalFunctions(diagnosticReceiver, symbol);
-		}
-
-		private static bool AnalyzeCollidingDefaultParamMethodsWithDiagnostics(
-			IDiagnosticReceiver diagnosticReceiver,
-			IMethodSymbol symbol,
-			in TypeParameterContainer typeParameters,
-			DefaultParamCollidingMethod[] collidingMethods,
-			ParameterGeneration[][] generations,
-			int numParameters,
-			HashSet<int> diagnosed,
-			HashSet<int> applyNew,
-			DefaultParamConfiguration configuration,
-			CancellationToken cancellationToken
-		)
-		{
-			if (collidingMethods.Length == 0)
-			{
-				return true;
-			}
-
-			bool isValid = true;
-			int numMethods = collidingMethods.Length;
-
-			for (int i = 0; i < numMethods; i++)
-			{
-				DefaultParamCollidingMethod m = collidingMethods[i];
-				ParameterGeneration[][] collidingGenerations = GetParameterGenerations(in m.TypeParameters, m.Parameters);
-				int length = collidingGenerations.Length;
-				int firstLegalIndex = collidingGenerations.Length - typeParameters.NumNonDefaultParam + 1;
-
-				for (int j = firstLegalIndex, currentIndex = 0; j < length; j++, currentIndex++)
-				{
-					if (diagnosed.Contains(currentIndex))
-					{
-						continue;
-					}
-
-					ParameterGeneration[] collidingParameters = collidingGenerations[j];
-					ParameterGeneration[] targetParameters = generations[currentIndex];
-
-					if (HasCollidingParameters(targetParameters, collidingParameters, m, numParameters) &&
-						!ApplyNewOrDiagnostic(
-							diagnosticReceiver,
-							symbol,
-							m.Symbol,
-							in typeParameters,
-							targetParameters,
-							currentIndex,
-							diagnosed,
-							applyNew,
-							configuration,
-							ref isValid,
-							cancellationToken
-						)
-					)
-					{
-						break;
-					}
-				}
-			}
-
-			return isValid;
 		}
 
 		private static bool AnalyzeCollidingMethodsWithDiagnostics(
@@ -672,21 +484,17 @@ namespace Durian.DefaultParam
 			in TypeParameterContainer typeParameters,
 			CollidingMethod[] collidingMethods,
 			IParameterSymbol[] symbolParameters,
-			ParameterGeneration[][] generations,
-			HashSet<int> diagnosed,
-			HashSet<int> applyNew,
 			DefaultParamConfiguration configuration,
-			CancellationToken cancellationToken
+			CancellationToken cancellationToken,
+			out HashSet<int>? applyNew
 		)
 		{
-			if (collidingMethods.Length == 0)
-			{
-				return true;
-			}
-
-			int numParameters = symbolParameters.Length;
+			HashSet<int> diagnosed = new();
+			HashSet<int> applyNewLocal = new();
 			int numMethods = collidingMethods.Length;
 			bool isValid = true;
+
+			ParameterGeneration[][] generations = GetParameterGenerations(in typeParameters, symbolParameters);
 
 			for (int i = 0; i < numMethods; i++)
 			{
@@ -700,33 +508,32 @@ namespace Durian.DefaultParam
 
 				ParameterGeneration[] targetParameters = generations[targetIndex];
 
-				if (HasCollidingParameters(targetParameters, in currentMethod, numParameters) &&
-					!ApplyNewOrDiagnostic(
-						diagnosticReceiver,
-						symbol,
-						currentMethod.Symbol,
-						in typeParameters,
-						targetParameters,
-						targetIndex,
-						diagnosed,
-						applyNew,
-						configuration,
-						ref isValid,
-						cancellationToken
-					)
+				if (!AnalyzeCollidingMethodParametersWithDiagnostics(
+					diagnosticReceiver,
+					symbol,
+					in currentMethod,
+					in typeParameters,
+					targetParameters,
+					targetIndex,
+					diagnosed,
+					applyNewLocal,
+					configuration,
+					ref isValid,
+					cancellationToken)
 				)
 				{
 					break;
 				}
 			}
 
+			applyNew = GetApplyNewOrNull(applyNewLocal);
 			return isValid;
 		}
 
-		private static bool ApplyNewOrDiagnostic(
+		private static bool AnalyzeCollidingMethodParametersWithDiagnostics(
 			IDiagnosticReceiver diagnosticReceiver,
 			IMethodSymbol symbol,
-			IMethodSymbol collidingMethod,
+			in CollidingMethod collidingMethod,
 			in TypeParameterContainer typeParameters,
 			ParameterGeneration[] targetGeneration,
 			int targetIndex,
@@ -737,9 +544,14 @@ namespace Durian.DefaultParam
 			CancellationToken cancellationToken
 		)
 		{
-			if (!configuration.ApplyNewToGeneratedMembersWithEquivalentSignature || SymbolEqualityComparer.Default.Equals(collidingMethod.ContainingType, symbol.ContainingType))
+			if (!HasCollidingParameters(targetGeneration, in collidingMethod))
 			{
-				if (HasNewModifier(symbol, collidingMethod, cancellationToken))
+				return true;
+			}
+
+			if (!configuration.ApplyNewToGeneratedMembersWithEquivalentSignature || SymbolEqualityComparer.Default.Equals(collidingMethod.Symbol.ContainingType, symbol.ContainingType))
+			{
+				if (HasNewModifier(symbol, collidingMethod.Symbol, cancellationToken))
 				{
 					applyNew.Add(targetIndex);
 					return true;
@@ -785,7 +597,9 @@ namespace Durian.DefaultParam
 			int length = baseTypeParameters.Length;
 			bool isValid = true;
 
-			for (int i = baseTypeParameters.FirstDefaultParamIndex; i < length; i++)
+			int firstIndex = GetFirstDefaultParamIndex(in typeParameters, in baseTypeParameters);
+
+			for (int i = firstIndex; i < length; i++)
 			{
 				ref readonly TypeParameterData baseData = ref baseTypeParameters[i];
 				ref readonly TypeParameterData thisData = ref typeParameters[i];
@@ -797,6 +611,26 @@ namespace Durian.DefaultParam
 			}
 
 			return isValid;
+		}
+
+		private static int GetFirstDefaultParamIndex(in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
+		{
+			if (typeParameters.FirstDefaultParamIndex == -1)
+			{
+				return baseTypeParameters.FirstDefaultParamIndex;
+			}
+
+			if (baseTypeParameters.FirstDefaultParamIndex == -1)
+			{
+				return typeParameters.FirstDefaultParamIndex;
+			}
+
+			if (typeParameters.FirstDefaultParamIndex < baseTypeParameters.FirstDefaultParamIndex)
+			{
+				return typeParameters.FirstDefaultParamIndex;
+			}
+
+			return baseTypeParameters.FirstDefaultParamIndex;
 		}
 
 		private static bool AnalyzeParameterInBaseMethodWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, in TypeParameterData thisData, in TypeParameterData baseData, DefaultParamConfiguration configuration)
@@ -958,8 +792,10 @@ namespace Durian.DefaultParam
 			}
 		}
 
-		private static bool HasCollidingParameters(ParameterGeneration[] targetParameters, in CollidingMethod collidingMethod, int numParameters)
+		private static bool HasCollidingParameters(ParameterGeneration[] targetParameters, in CollidingMethod collidingMethod)
 		{
+			int numParameters = targetParameters.Length;
+
 			for (int i = 0; i < numParameters; i++)
 			{
 				ref readonly ParameterGeneration generation = ref targetParameters[i];
@@ -969,43 +805,6 @@ namespace Durian.DefaultParam
 				{
 					return false;
 				}
-			}
-
-			return true;
-		}
-
-		private static bool HasCollidingParameters(ParameterGeneration[] targetParameters, ParameterGeneration[] collidingGeneration, DefaultParamCollidingMethod collidingMethod, int numParameters)
-		{
-			for (int i = 0; i < numParameters; i++)
-			{
-				ref readonly ParameterGeneration generation = ref targetParameters[i];
-
-				if (IsValidParameterInCollidingMethod(in collidingMethod.TypeParameters, in collidingGeneration[i], in generation))
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		private static bool IsValidParameterInCollidingMethod(in TypeParameterContainer typeParameters, in ParameterGeneration parameterGeneration, in ParameterGeneration targetGeneration)
-		{
-			if (parameterGeneration.Type is ITypeParameterSymbol)
-			{
-				if (targetGeneration.GenericParameterIndex > -1)
-				{
-					int typeParameterIndex = GetIndexOfTypeParameterInCollidingMethod(in typeParameters, in parameterGeneration);
-
-					if (targetGeneration.GenericParameterIndex == typeParameterIndex && !AnalysisUtilities.IsValidRefKindForOverload(parameterGeneration.RefKind, targetGeneration.RefKind))
-					{
-						return false;
-					}
-				}
-			}
-			else if (SymbolEqualityComparer.Default.Equals(parameterGeneration.Type, targetGeneration.Type) && !AnalysisUtilities.IsValidRefKindForOverload(parameterGeneration.RefKind, targetGeneration.RefKind))
-			{
-				return false;
 			}
 
 			return true;
@@ -1033,47 +832,14 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
-		private static IMethodSymbol[] GetMethodsWithSameName(IMethodSymbol symbol, int numParameters)
+		private static CollidingMethod[] GetCollidingMethods(IMethodSymbol symbol, int numParameters, int numTypeParameters, int numNonDefaultParam)
 		{
-			return symbol.ContainingType
-				.GetAllMembers(symbol.Name)
-				.OfType<IMethodSymbol>()
-				.Where(m => m.Parameters.Length == numParameters && !SymbolEqualityComparer.Default.Equals(symbol, m))
-				.ToArray();
-		}
-
-		private static DefaultParamCollidingMethod[] GetCollidingDefaultParamMethods(IMethodSymbol symbol, IMethodSymbol[] methods, int numNonDefaultParam, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
-		{
-			IEnumerable<DefaultParamCollidingMethod> collidingMethods = methods
-				.Where(m => m.TypeParameters.Length > 0)
-				.Select(m => new DefaultParamCollidingMethod(m, compilation, cancellationToken))
-				.Where(m =>
-					m.TypeParameters.HasDefaultParams &&
-					m.TypeParameters.NumNonDefaultParam <= numNonDefaultParam &&
-					!m.Symbol.IsPartial(cancellationToken)
-				);
-
-			if (symbol.IsOverride)
-			{
-				HashSet<IMethodSymbol> baseMethods = new(symbol.GetBaseMethods(), SymbolEqualityComparer.Default);
-
-				collidingMethods = collidingMethods.Where(m => !baseMethods.Contains(m.Symbol));
-			}
-
-			return collidingMethods.ToArray();
-		}
-
-		private static CollidingMethod[] GetCollidingMethods(IMethodSymbol symbol, in TypeParameterContainer typeParameters, IParameterSymbol[] parameters, DefaultParamCompilationData compilation, int numNonDefaultParam)
-		{
-			int numTypeParameters = typeParameters.Length;
-			int numParameters = parameters.Length;
-
 			return symbol.ContainingType.GetAllMembers(symbol.Name)
 				.OfType<IMethodSymbol>()
 				.Select(m => ((IMethodSymbol symbol, ITypeParameterSymbol[] typeParameters))(m, m.TypeParameters.ToArray()))
 				.Where(m => m.typeParameters.Length >= numNonDefaultParam && m.typeParameters.Length < numTypeParameters)
-				.Select(m => new CollidingMethod(m.symbol, m.symbol.Parameters.ToArray(), m.symbol.TypeParameters.ToArray()))
-				.Where(m => m.Parameters.Length == numParameters && !IsDefaultParamGenerated(m.Symbol, compilation))
+				.Select(m => new CollidingMethod(m.symbol, m.symbol.Parameters.ToArray(), m.typeParameters))
+				.Where(m => m.Parameters.Length == numParameters)
 				.ToArray();
 		}
 
@@ -1170,23 +936,6 @@ namespace Durian.DefaultParam
 			}
 
 			return generations;
-		}
-
-		private static int GetIndexOfTypeParameterInCollidingMethod(in TypeParameterContainer typeParameters, in ParameterGeneration parameter)
-		{
-			int currentTypeParameterCount = typeParameters.Length;
-
-			for (int i = 0; i < currentTypeParameterCount; i++)
-			{
-				ref readonly TypeParameterData typeParameter = ref typeParameters[i];
-
-				if (SymbolEqualityComparer.Default.Equals(parameter.Type, typeParameter.Symbol))
-				{
-					return i;
-				}
-			}
-
-			throw new InvalidOperationException($"Unknown parameter: {parameter}");
 		}
 
 		private static int GetIndexOfTypeParameterInCollidingMethod(ITypeParameterSymbol[] typeParameters, IParameterSymbol parameter)

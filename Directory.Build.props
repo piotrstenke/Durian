@@ -13,4 +13,8 @@
     <PreferredUILang>en-US</PreferredUILang>
   </PropertyGroup>
 
+  <ItemGroup Condition="$(TargetFramework)=='netstandard2.0'">
+    <Compile Include="$(MSBuildThisFileDirectory)/MissingSymbols.cs"/>
+  </ItemGroup>
+
 </Project>

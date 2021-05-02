@@ -45,9 +45,10 @@ namespace Durian.Logging
 		/// Gets the full <see cref="LogDirectory"/> and checks if its valid.
 		/// </summary>
 		/// <exception cref="ArgumentException">
-		/// <see cref="LogDirectory"/> cannot be empty or white space only. -or-
+		/// <see cref="LogDirectory"/> of the <see cref="GeneratorLoggingConfigurationAttribute"/> cannot be empty or white space only. -or-
 		/// <paramref name="globalConfiguration"/> must be specified if <see cref="RelativeToGlobal"/> is set to <see langword="true"/> -or-
-		/// <see cref="LogDirectory"/> must be specified if both <see cref="RelativeToDefault"/> and <see cref="RelativeToGlobal"/> are set to <see langword="false"/>.
+		/// <see cref="LogDirectory"/> must be specified if both <see cref="RelativeToDefault"/> and <see cref="RelativeToGlobal"/> are set to <see langword="false"/>. -or-
+		/// <see cref="LogDirectory"/> contains one or more of invalid characters defined in the <see cref="Path.GetInvalidPathChars"/>.
 		/// </exception>
 		public string GetAndValidateFullLogDirectory(GeneratorLoggingConfiguration? globalConfiguration)
 		{
@@ -79,7 +80,7 @@ namespace Durian.Logging
 
 			if (string.IsNullOrWhiteSpace(LogDirectory))
 			{
-				throw new ArgumentException($"{nameof(LogDirectory)} of the {nameof(GeneratorLoggingConfigurationAttribute)} cannot be empty!");
+				throw new ArgumentException($"{nameof(LogDirectory)} of the {nameof(GeneratorLoggingConfigurationAttribute)} cannot be empty or white space only!");
 			}
 
 			string? dir;
@@ -91,7 +92,7 @@ namespace Durian.Logging
 					throw Exc_GlobalNotSpecified(nameof(globalConfiguration));
 				}
 
-				dir = CombineWithRoot(globalConfiguration!.LogDirectory);
+				dir = CombineWithRoot(globalConfiguration.LogDirectory);
 			}
 			else if (RelativeToDefault)
 			{
@@ -102,84 +103,16 @@ namespace Durian.Logging
 				dir = LogDirectory;
 			}
 
-			if (GeneratorLoggingConfiguration.IsEnabled)
-			{
-				Directory.CreateDirectory(dir);
-			}
+			// Checks if the directory is valid.
+			Path.GetFullPath(dir);
 
 			_validatedDirectory = dir;
 			return dir;
-		}
 
-		/// <summary>
-		/// Gets the full <see cref="LogDirectory"/> and checks if its valid.
-		/// </summary>
-		/// <exception cref="ArgumentException">
-		/// <see cref="LogDirectory"/> cannot be empty or white space only. -or-
-		/// <paramref name="globalConfiguration"/> must be specified if <see cref="RelativeToGlobal"/> is set to <see langword="true"/> -or-
-		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if <see cref="DefaultGeneratorLoggingConfigurationAttribute.RelativeToDefault"/> is set to <see langword="false"/>. -or-
-		/// <see cref="LogDirectory"/> must be specified if both <see cref="RelativeToDefault"/> and <see cref="RelativeToGlobal"/> are set to <see langword="false"/>.
-		/// </exception>
-		public string GetAndValidateFullLogDirectory(DefaultGeneratorLoggingConfigurationAttribute? globalConfiguration)
-		{
-			if (_validatedDirectory is not null)
+			static ArgumentException Exc_GlobalNotSpecified(string argName)
 			{
-				return _validatedDirectory;
+				return new ArgumentException($"{argName} must be specified if {nameof(RelativeToGlobal)} is set to true!");
 			}
-
-			if (LogDirectory is null)
-			{
-				if (RelativeToGlobal)
-				{
-					if (globalConfiguration is null)
-					{
-						throw Exc_GlobalNotSpecified(nameof(globalConfiguration));
-					}
-
-					return globalConfiguration!.GetAndValidateFullLogDirectory();
-				}
-				else if (RelativeToDefault)
-				{
-					return GeneratorLoggingConfiguration.DefaultLogDirectory;
-				}
-				else
-				{
-					throw new ArgumentException($"{nameof(LogDirectory)} must be specified if both {nameof(RelativeToDefault)} and {nameof(RelativeToGlobal)} are set to false.");
-				}
-			}
-
-			if (string.IsNullOrWhiteSpace(LogDirectory))
-			{
-				throw new ArgumentException($"{nameof(LogDirectory)} of the {nameof(GeneratorLoggingConfigurationAttribute)} cannot be empty!");
-			}
-
-			string? dir;
-
-			if (RelativeToGlobal)
-			{
-				if (globalConfiguration is null)
-				{
-					throw Exc_GlobalNotSpecified(nameof(globalConfiguration));
-				}
-
-				dir = CombineWithRoot(globalConfiguration!.GetAndValidateFullLogDirectory());
-			}
-			else if (RelativeToDefault)
-			{
-				dir = CombineWithRoot(GeneratorLoggingConfiguration.DefaultLogDirectory);
-			}
-			else
-			{
-				dir = LogDirectory;
-			}
-
-			if (GeneratorLoggingConfiguration.IsEnabled)
-			{
-				Directory.CreateDirectory(dir);
-			}
-
-			_validatedDirectory = dir;
-			return dir;
 		}
 
 		private string CombineWithRoot(string root)
@@ -192,11 +125,6 @@ namespace Durian.Logging
 			{
 				return root + "/" + LogDirectory;
 			}
-		}
-
-		private static ArgumentException Exc_GlobalNotSpecified(string argName)
-		{
-			return new ArgumentException($"{argName} must be specified if {nameof(RelativeToGlobal)} is set to true!");
 		}
 	}
 }

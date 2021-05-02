@@ -36,7 +36,9 @@ namespace Durian.Data
 		{
 			if (tree is not null)
 			{
+				CSharpCompilation compilation = Compilation;
 				Compilation = Compilation.AddSyntaxTrees(tree);
+				OnUpdate(compilation);
 			}
 		}
 
@@ -48,7 +50,9 @@ namespace Durian.Data
 				return;
 			}
 
+			CSharpCompilation compilation = Compilation;
 			Compilation = Compilation.ReplaceSyntaxTree(original, updated);
+			OnUpdate(compilation);
 		}
 
 		/// <inheritdoc/>
@@ -56,7 +60,9 @@ namespace Durian.Data
 		{
 			if (trees is not null)
 			{
+				CSharpCompilation compilation = Compilation;
 				Compilation = Compilation.AddSyntaxTrees(trees);
+				OnUpdate(compilation);
 			}
 		}
 
@@ -65,7 +71,9 @@ namespace Durian.Data
 		{
 			if (reference is not null)
 			{
+				CSharpCompilation compilation = Compilation;
 				Compilation = Compilation.AddReferences(reference);
+				OnUpdate(compilation);
 			}
 		}
 
@@ -77,7 +85,9 @@ namespace Durian.Data
 				return;
 			}
 
+			CSharpCompilation compilation = Compilation;
 			Compilation = Compilation.ReplaceReference(original, updated);
+			OnUpdate(compilation);
 		}
 
 		/// <inheritdoc/>
@@ -85,8 +95,19 @@ namespace Durian.Data
 		{
 			if (references is not null)
 			{
+				CSharpCompilation compilation = Compilation;
 				Compilation = Compilation.AddReferences(references);
+				OnUpdate(compilation);
 			}
+		}
+
+		/// <summary>
+		/// Methods executed when the <see cref="Compilation"/> has changed using one of the <c>Update...</c> methods.
+		/// </summary>
+		/// <param name="oldCompilation"><see cref="CSharpCompilation"/> that was updated.</param>
+		protected virtual void OnUpdate(CSharpCompilation oldCompilation)
+		{
+			// Do nothing.
 		}
 	}
 }

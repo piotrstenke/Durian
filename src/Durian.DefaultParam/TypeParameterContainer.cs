@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
 {
-	[DebuggerDisplay("Length = {Length}, NumDefaultParam = {NumDefaultParam}")]
+	[DebuggerDisplay("Length = {GetLength()}, NumDefaultParam = {NumDefaultParam}")]
 	public readonly struct TypeParameterContainer : IEquatable<TypeParameterContainer>, IEnumerable<TypeParameterData>
 	{
 		private readonly TypeParameterData[] _parameters;
@@ -117,6 +117,11 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
+		private int GetLength()
+		{
+			return _parameters?.Length ?? 0;
+		}
+
 		bool IEquatable<TypeParameterContainer>.Equals(TypeParameterContainer other)
 		{
 			return IsEquivalentTo(in other);
@@ -164,7 +169,7 @@ namespace Durian.DefaultParam
 
 		public static TypeParameterContainer CreateFrom(MemberDeclarationSyntax member, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			return CreateFrom(member, semanticModel, compilation.Attribute, cancellationToken);
+			return CreateFrom(member, semanticModel, compilation.Attribute!, cancellationToken);
 		}
 
 		public static TypeParameterContainer CreateFrom(MemberDeclarationSyntax member, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)

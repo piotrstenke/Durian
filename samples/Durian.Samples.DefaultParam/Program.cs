@@ -9,13 +9,15 @@ namespace Durian.Samples.DefaultParam
 
 		}
 
-		public void Method<U, [DefaultParam(typeof(int))] T>(T value)
-		{
-		}
+		//public void Method<[DefaultParam(typeof(int))]U, [DefaultParam(typeof(int))] T>(T value)
+		//{
+		//}
 
-		public void Method<[DefaultParam(typeof(string))]T>(T value)
-		{
-
-		}
+		//public void Method<[DefaultParam(typeof(int))]T>(T value)
+		//{
+		//	if(value is int i)
+		//	{
+		//	}
+		//}
 	}
 }

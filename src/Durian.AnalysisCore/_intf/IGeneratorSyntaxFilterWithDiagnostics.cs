@@ -7,5 +7,9 @@ namespace Durian
 	/// </summary>
 	public interface IGeneratorSyntaxFilterWithDiagnostics : IGeneratorSyntaxFilter, ISyntaxFilterWithDiagnostics
 	{
+		/// <summary>
+		/// <see cref="FilterMode"/> of this <see cref="IGeneratorSyntaxFilterWithDiagnostics"/>.
+		/// </summary>
+		FilterMode Mode { get; }
 	}
 }

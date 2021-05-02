@@ -213,37 +213,5 @@ partial class Child
 
 			Assert.True(RunGenerator(input, 1).Compare(expected));
 		}
-
-		[Fact]
-		public void RemovesUnnecessaryNewModifier()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Parent
-{{	
-}}
-
-partial class Child : Parent
-{{
-	public new void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
-	{{
-	}}
-}}
-";
-
-			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Child
-{{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
-	public void Method(int value)
-	{{
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
 	}
 }

@@ -41,5 +41,15 @@ namespace Durian.DefaultParam
 		{
 			return GetUsedNamespaces();
 		}
+
+		public DelegateDeclarationBuilder GetDeclarationBuilder(CancellationToken cancellationToken)
+		{
+			return new DelegateDeclarationBuilder(this, cancellationToken);
+		}
+
+		IDefaultParamDeclarationBuilder IDefaultParamTarget.GetDeclarationBuilder(CancellationToken cancellationToken)
+		{
+			return GetDeclarationBuilder(cancellationToken);
+		}
 	}
 }

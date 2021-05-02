@@ -224,3 +224,6 @@ dotnet_diagnostic.IDE0079.severity                                          = no
 
 # RCS1096: Convert 'HasFlag' call to bitwise operation (or vice versa).
 dotnet_diagnostic.RCS1096.severity                                          = none
+
+# RCS1180: Inline lazy initialization.
+dotnet_diagnostic.RCS1180.severity											= none

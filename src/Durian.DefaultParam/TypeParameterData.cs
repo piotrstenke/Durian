@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Durian.Extensions;
@@ -42,7 +43,7 @@ namespace Durian.DefaultParam
 
 		public static TypeParameterData CreateFrom(TypeParameterSyntax typeParameter, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			return CreateFrom(typeParameter, semanticModel, compilation.Attribute, cancellationToken);
+			return CreateFrom(typeParameter, semanticModel, compilation.Attribute!, cancellationToken);
 		}
 
 		public static TypeParameterData CreateFrom(TypeParameterSyntax typeParameter, SemanticModel semanticModel, INamedTypeSymbol defaultParamAttribute, CancellationToken cancellationToken = default)
@@ -66,7 +67,8 @@ namespace Durian.DefaultParam
 				return default;
 			}
 
-			AttributeData? data = symbol.GetAttributes().FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.Attribute));
+			ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
+			AttributeData? data = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.Attribute));
 			AttributeSyntax? attrSyntax = data?.ApplicationSyntaxReference?.GetSyntax(cancellationToken) as AttributeSyntax;
 			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(syntax.SyntaxTree);
 

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Data;
 using Durian.Extensions;
@@ -8,29 +9,36 @@ namespace Durian.DefaultParam
 {
 	public sealed class DefaultParamCompilationData : CompilationData
 	{
-		public INamedTypeSymbol Attribute { get; }
-		public IMethodSymbol AttributeConstructor { get; }
-		public INamedTypeSymbol GeneratedCodeAttribute { get; }
-		public INamedTypeSymbol ConfigurationAttribute { get; }
-		public INamedTypeSymbol MethodConfigurationAttribute { get; }
-		public IMethodSymbol MethodConfigurationConstructor { get; }
-		public override bool HasErrors => Attribute is null || GeneratedCodeAttribute is null || ConfigurationAttribute is null || MethodConfigurationAttribute is null;
+		public INamedTypeSymbol? Attribute { get; private set; }
+		public IMethodSymbol? AttributeConstructor { get; private set; }
+		public INamedTypeSymbol? GeneratedCodeAttribute { get; private set; }
+		public INamedTypeSymbol? ConfigurationAttribute { get; private set; }
+		public INamedTypeSymbol? MethodConfigurationAttribute { get; private set; }
+		public IMethodSymbol? MethodConfigurationConstructor { get; private set; }
+
+		[MemberNotNullWhen(false,
+			nameof(Attribute),
+			nameof(AttributeConstructor),
+			nameof(GeneratedCodeAttribute),
+			nameof(ConfigurationAttribute),
+			nameof(MethodConfigurationAttribute),
+			nameof(MethodConfigurationConstructor)
+		)]
+		public override bool HasErrors =>
+			Attribute is null ||
+			AttributeConstructor is null ||
+			GeneratedCodeAttribute is null ||
+			ConfigurationAttribute is null ||
+			MethodConfigurationAttribute is null ||
+			MethodConfigurationConstructor is null;
+
 		public DefaultParamConfiguration Configuration { get; }
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		public DefaultParamCompilationData(CSharpCompilation compilation) : base(compilation)
 		{
-			INamedTypeSymbol? attr = compilation.Assembly.GetTypeByMetadataName(DefaultParamAttribute.FullyQualifiedName);
-			Attribute = attr!;
-			AttributeConstructor = attr?.InstanceConstructors[0]!;
-			GeneratedCodeAttribute = compilation.GetTypeByMetadataName("System.CodeDom.Compiler.GeneratedCodeAttribute")!;
-			ConfigurationAttribute = compilation.GetTypeByMetadataName(DefaultParamConfigurationAttribute.FullyQualifiedName)!;
-			MethodConfigurationAttribute = compilation.GetTypeByMetadataName(DefaultParamMethodConfigurationAttribute.FullyQualifiedName)!;
-			MethodConfigurationConstructor = MethodConfigurationAttribute?.InstanceConstructors.FirstOrDefault(ctor => ctor.Parameters.Length == 0)!;
-
+			Reset();
 			Configuration = GetConfiguration(compilation, ConfigurationAttribute);
 		}
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 		public static DefaultParamConfiguration GetConfiguration(CSharpCompilation compilation)
 		{
@@ -43,7 +51,23 @@ namespace Durian.DefaultParam
 			return GetConfiguration(compilation, configurationAttribute);
 		}
 
-		private static DefaultParamConfiguration GetConfiguration(CSharpCompilation compilation, INamedTypeSymbol configurationAttribute)
+		public void Reset()
+		{
+			INamedTypeSymbol? attr = Compilation.Assembly.GetTypeByMetadataName(DefaultParamAttribute.FullyQualifiedName);
+			Attribute = attr;
+			AttributeConstructor = attr?.InstanceConstructors[0]!;
+			GeneratedCodeAttribute = Compilation.GetTypeByMetadataName("System.CodeDom.Compiler.GeneratedCodeAttribute");
+			ConfigurationAttribute = Compilation.GetTypeByMetadataName(DefaultParamConfigurationAttribute.FullyQualifiedName);
+			MethodConfigurationAttribute = Compilation.GetTypeByMetadataName(DefaultParamMethodConfigurationAttribute.FullyQualifiedName);
+			MethodConfigurationConstructor = MethodConfigurationAttribute?.InstanceConstructors.FirstOrDefault(ctor => ctor.Parameters.Length == 0);
+		}
+
+		protected override void OnUpdate(CSharpCompilation oldCompilation)
+		{
+			Reset();
+		}
+
+		private static DefaultParamConfiguration GetConfiguration(CSharpCompilation compilation, INamedTypeSymbol? configurationAttribute)
 		{
 			if (configurationAttribute is null)
 			{

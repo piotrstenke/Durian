@@ -43,8 +43,9 @@ namespace Durian.Logging
 		/// Gets the full <see cref="LogDirectory"/> and checks if its valid.
 		/// </summary>
 		/// <exception cref="ArgumentException">
-		/// <see cref="LogDirectory"/> cannot be empty or whitespace only. -or-
-		/// <see cref="LogDirectory"/> must be specified if <see cref="RelativeToDefault"/> is set to <see langword="false"/>.
+		/// <see cref="LogDirectory"/> of the <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> cannot be empty or whitespace only. -or-
+		/// <see cref="LogDirectory"/> must be specified if <see cref="RelativeToDefault"/> is set to <see langword="false"/>. -or-
+		/// <see cref="LogDirectory"/> contains one or more of invalid characters defined in the <see cref="Path.GetInvalidPathChars"/>.
 		/// </exception>
 		public string GetAndValidateFullLogDirectory()
 		{
@@ -86,7 +87,9 @@ namespace Durian.Logging
 				dir = LogDirectory;
 			}
 
-			Directory.CreateDirectory(dir);
+			// Checks if the directory is valid.
+			Path.GetFullPath(dir);
+
 			_validatedDirectory = dir;
 			return dir;
 		}

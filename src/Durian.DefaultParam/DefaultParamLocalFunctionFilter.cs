@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Data;
@@ -12,11 +13,10 @@ namespace Durian.DefaultParam
 {
 	public class DefaultParamLocalFunctionFilter : IDefaultParamFilter
 	{
-		private readonly LoggableGeneratorDiagnosticReceiver? _loggableReceiver;
-		private readonly IDirectDiagnosticReceiver? _diagnosticReceiver;
-		private readonly IFileNameProvider _fileNameProvider;
-
 		public DefaultParamGenerator Generator { get; }
+		public IFileNameProvider FileNameProvider { get; }
+		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
+		public bool IncludeGeneratedSymbols { get; }
 		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
 		public DefaultParamLocalFunctionFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())
@@ -26,161 +26,93 @@ namespace Durian.DefaultParam
 		public DefaultParamLocalFunctionFilter(DefaultParamGenerator generator, IFileNameProvider fileNameProvider)
 		{
 			Generator = generator;
+			FileNameProvider = fileNameProvider;
+		}
 
-			if (generator.LoggingConfiguration.EnableLogging)
+		public LocalFunctionStatementSyntax[] GetCandidateLocalFunctions()
+		{
+			if (Mode == FilterMode.None)
 			{
-				_loggableReceiver = new LoggableGeneratorDiagnosticReceiver(generator);
-				_diagnosticReceiver = generator.SupportsDiagnostics ? DiagnosticReceiverFactory.Direct(ReportForBothReceivers) : _loggableReceiver;
-			}
-			else if (generator.SupportsDiagnostics)
-			{
-				_diagnosticReceiver = generator.DiagnosticReceiver!;
+				return Array.Empty<LocalFunctionStatementSyntax>();
 			}
 
-			_fileNameProvider = fileNameProvider;
+			return Generator.SyntaxReceiver?.CandidateLocalFunctions?.ToArray() ?? Array.Empty<LocalFunctionStatementSyntax>();
 		}
 
 		public void ReportDiagnosticsForLocalFunctions()
 		{
-			if (Generator.SyntaxReceiver is null || Generator.TargetCompilation is null || Generator.SyntaxReceiver.CandidateLocalFunctions is null || Generator.SyntaxReceiver.CandidateLocalFunctions.Count == 0)
+			if (Generator.SyntaxReceiver is null ||
+				Generator.TargetCompilation is null ||
+				Generator.SyntaxReceiver.CandidateLocalFunctions is null ||
+				Generator.SyntaxReceiver.CandidateLocalFunctions.Count == 0
+			)
 			{
 				return;
 			}
 
-			DefaultParamCompilationData compilation = Generator.TargetCompilation;
-			List<LocalFunctionStatementSyntax> candidates = Generator.SyntaxReceiver.CandidateLocalFunctions;
-			CancellationToken cancellationToken = Generator.CancellationToken;
-
-			if (_loggableReceiver is not null)
-			{
-				IDirectDiagnosticReceiver diagnosticReceiver = Generator.EnableDiagnostics ? _diagnosticReceiver! : _loggableReceiver;
-
-				foreach (LocalFunctionStatementSyntax fn in candidates)
-				{
-					if (fn is null)
-					{
-						continue;
-					}
-
-					SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(fn.SyntaxTree);
-
-					if (HasDefaultParamAttrbiute(fn, semanticModel, compilation.AttributeConstructor))
-					{
-						ISymbol? symbol = semanticModel.GetDeclaredSymbol(fn, cancellationToken);
-
-						if (symbol is not IMethodSymbol s)
-						{
-							continue;
-						}
-
-						string fileName = _fileNameProvider.GetFileName(symbol);
-						_loggableReceiver.SetTargetNode(fn, fileName);
-						DefaultParamMethodAnalyzer.ReportDiagnosticForLocalFunction(diagnosticReceiver, s);
-
-						if (_loggableReceiver.Count > 0)
-						{
-							_loggableReceiver.Push();
-							_fileNameProvider.Success();
-						}
-					}
-				}
-			}
-			else if (_diagnosticReceiver is not null && Generator.EnableDiagnostics)
-			{
-				ReportDiagnosticsForLocalFunctions_Internal(_diagnosticReceiver, compilation, Generator.SyntaxReceiver.CandidateLocalFunctions, cancellationToken);
-			}
+			DefaultParamUtilities.IterateFilter<IDefaultParamTarget>(this);
 		}
 
-		public static void ReportDiagnosticsForLocalFunctions(IDiagnosticReceiver diagnosticReceiver, DefaultParamCompilationData compilation, IEnumerable<LocalFunctionStatementSyntax> collectedLocalFunctions, CancellationToken cancellationToken = default)
+		public static void ReportDiagnosticsForLocalFunctions(
+			IDiagnosticReceiver diagnosticReceiver,
+			DefaultParamCompilationData compilation,
+			IEnumerable<LocalFunctionStatementSyntax> collectedLocalFunctions,
+			CancellationToken cancellationToken = default
+		)
 		{
 			if (collectedLocalFunctions is null || compilation is null || diagnosticReceiver is null)
 			{
 				return;
 			}
 
-			ReportDiagnosticsForLocalFunctions_Internal(diagnosticReceiver, compilation, collectedLocalFunctions, cancellationToken);
+			foreach (LocalFunctionStatementSyntax fn in collectedLocalFunctions)
+			{
+				ReportDiagnosticsForLocalFunction(diagnosticReceiver, compilation, fn, cancellationToken);
+			}
 		}
 
-		public static void ReportDiagnosticsForLocalFunctions(IDiagnosticReceiver diagnosticReceiver, DefaultParamCompilationData compilation, DefaultParamSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken = default)
+		public static void ReportDiagnosticsForLocalFunctions(
+			IDiagnosticReceiver diagnosticReceiver,
+			DefaultParamCompilationData compilation,
+			DefaultParamSyntaxReceiver syntaxReceiver,
+			CancellationToken cancellationToken = default
+		)
 		{
 			if (diagnosticReceiver is null || compilation is null || syntaxReceiver is null || syntaxReceiver.CandidateLocalFunctions is null || syntaxReceiver.CandidateLocalFunctions.Count == 0)
 			{
 				return;
 			}
 
-			ReportDiagnosticsForLocalFunctions_Internal(diagnosticReceiver, compilation, syntaxReceiver.CandidateLocalFunctions, cancellationToken);
-		}
-
-		#region -Interface Implementations-
-
-		IEnumerable<IDefaultParamTarget> IDefaultParamFilter.Filtrate()
-		{
-			ReportDiagnosticsForLocalFunctions();
-			return Array.Empty<IDefaultParamTarget>();
-		}
-
-		IEnumerable<IMemberData> IGeneratorSyntaxFilter.Filtrate()
-		{
-			ReportDiagnosticsForLocalFunctions();
-			return Array.Empty<IMemberData>();
-		}
-
-		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
-		{
-			ReportDiagnosticsForLocalFunctions(new EmptyDiagnosticReceiver(), (DefaultParamCompilationData)compilation, (DefaultParamSyntaxReceiver)syntaxReceiver, cancellationToken);
-			return Array.Empty<IMemberData>();
-		}
-
-		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken)
-		{
-			ReportDiagnosticsForLocalFunctions(new EmptyDiagnosticReceiver(), (DefaultParamCompilationData)compilation, collectedNodes.OfType<LocalFunctionStatementSyntax>(), cancellationToken);
-			return Array.Empty<IMemberData>();
-		}
-
-		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
-		{
-			ReportDiagnosticsForLocalFunctions(diagnosticReceiver, (DefaultParamCompilationData)compilation, (DefaultParamSyntaxReceiver)syntaxReceiver, cancellationToken);
-			return Array.Empty<IMemberData>();
-		}
-
-		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken)
-		{
-			ReportDiagnosticsForLocalFunctions(diagnosticReceiver, (DefaultParamCompilationData)compilation, collectedNodes.OfType<LocalFunctionStatementSyntax>(), cancellationToken);
-			return Array.Empty<IMemberData>();
-		}
-
-#pragma warning disable RCS1079 // Throwing of new NotImplementedException.
-		IDefaultParamDeclarationBuilder IDefaultParamFilter.GetDeclarationBuilder(IDefaultParamTarget target, CancellationToken cancellationToken)
-		{
-			// This method should never be called, so its OK to throw an exception here.
-			throw new NotImplementedException();
-		}
-#pragma warning restore RCS1079 // Throwing of new NotImplementedException.
-
-		#endregion
-
-		private static void ReportDiagnosticsForLocalFunctions_Internal(IDiagnosticReceiver diagnosticReceiver, DefaultParamCompilationData compilation, IEnumerable<LocalFunctionStatementSyntax> collectedLocalFunctions, CancellationToken cancellationToken)
-		{
-			foreach (LocalFunctionStatementSyntax fn in collectedLocalFunctions)
+			foreach (LocalFunctionStatementSyntax fn in syntaxReceiver.CandidateLocalFunctions)
 			{
-				if (fn is null)
+				ReportDiagnosticsForLocalFunction(diagnosticReceiver, compilation, fn, cancellationToken);
+			}
+		}
+
+		public static void ReportDiagnosticsForLocalFunction(
+			IDiagnosticReceiver diagnosticReceiver,
+			DefaultParamCompilationData compilation,
+			LocalFunctionStatementSyntax localFunction,
+			CancellationToken cancellationToken = default
+		)
+		{
+			if (localFunction is null)
+			{
+				return;
+			}
+
+			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(localFunction.SyntaxTree);
+
+			if (HasDefaultParamAttrbiute(localFunction, semanticModel, compilation.AttributeConstructor!))
+			{
+				ISymbol? symbol = semanticModel.GetDeclaredSymbol(localFunction, cancellationToken);
+
+				if (symbol is not IMethodSymbol s)
 				{
-					continue;
+					return;
 				}
 
-				SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(fn.SyntaxTree);
-
-				if (HasDefaultParamAttrbiute(fn, semanticModel, compilation.AttributeConstructor))
-				{
-					ISymbol? symbol = semanticModel.GetDeclaredSymbol(fn, cancellationToken);
-
-					if (symbol is not IMethodSymbol s)
-					{
-						continue;
-					}
-
-					DefaultParamMethodAnalyzer.ReportDiagnosticForLocalFunction(diagnosticReceiver, s);
-				}
+				DefaultParamMethodAnalyzer.ReportDiagnosticForLocalFunction(diagnosticReceiver, s);
 			}
 		}
 
@@ -201,10 +133,117 @@ namespace Durian.DefaultParam
 				});
 		}
 
-		private void ReportForBothReceivers(Diagnostic diagnostic)
+		#region -Interface Implementations-
+
+		IEnumerator<IMemberData> IGeneratorSyntaxFilter.GetEnumerator()
 		{
-			_loggableReceiver!.ReportDiagnostic(diagnostic);
-			Generator.DiagnosticReceiver!.ReportDiagnostic(diagnostic);
+			return DefaultParamUtilities.GetFilterEnumerator(this);
 		}
+
+		IMemberData[] IGeneratorSyntaxFilter.Filtrate()
+		{
+			ReportDiagnosticsForLocalFunctions();
+			return Array.Empty<IMemberData>();
+		}
+
+		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
+		{
+			return Array.Empty<IMemberData>();
+		}
+
+		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken)
+		{
+			return Array.Empty<IMemberData>();
+		}
+
+		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
+		{
+			ReportDiagnosticsForLocalFunctions(diagnosticReceiver, (DefaultParamCompilationData)compilation, (DefaultParamSyntaxReceiver)syntaxReceiver, cancellationToken);
+			return Array.Empty<IMemberData>();
+		}
+
+		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken)
+		{
+			ReportDiagnosticsForLocalFunctions(diagnosticReceiver, (DefaultParamCompilationData)compilation, collectedNodes.OfType<LocalFunctionStatementSyntax>(), cancellationToken);
+			return Array.Empty<IMemberData>();
+		}
+
+		CSharpSyntaxNode[] IDefaultParamFilter.GetCandidateNodes()
+		{
+			return GetCandidateLocalFunctions();
+		}
+
+		bool IDefaultParamFilter.ValidateAndCreate(
+			DefaultParamCompilationData compilation,
+			CSharpSyntaxNode node,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
+		{
+			data = null;
+			return false;
+		}
+
+		bool IDefaultParamFilter.ValidateAndCreate(
+			DefaultParamCompilationData compilation,
+			CSharpSyntaxNode node,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			ref TypeParameterContainer typeParameters,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
+		{
+			data = null;
+			return false;
+		}
+
+		bool IDefaultParamFilter.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			DefaultParamCompilationData compilation,
+			CSharpSyntaxNode node,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
+		{
+			ReportDiagnosticsForLocalFunction(diagnosticReceiver, compilation, (LocalFunctionStatementSyntax)node, cancellationToken);
+
+			data = null;
+			return false;
+		}
+
+		bool IDefaultParamFilter.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			DefaultParamCompilationData compilation,
+			CSharpSyntaxNode node,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			ref TypeParameterContainer typeParameters,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
+		{
+			ReportDiagnosticsForLocalFunction(diagnosticReceiver, compilation, (LocalFunctionStatementSyntax)node, cancellationToken);
+
+			data = null;
+			return false;
+		}
+
+		bool IDefaultParamFilter.GetValidationData(
+			DefaultParamCompilationData compilation,
+			CSharpSyntaxNode node,
+			[NotNullWhen(true)] out SemanticModel? semanticModel,
+			out TypeParameterContainer typeParameters,
+			[NotNullWhen(true)] out ISymbol? symbol,
+			CancellationToken cancellationToken
+		)
+		{
+			typeParameters = default;
+			semanticModel = null!;
+			symbol = null!;
+			return true;
+		}
+
+		#endregion
 	}
 }

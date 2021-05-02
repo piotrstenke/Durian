@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using Durian.Data;
 using Durian.Logging;
@@ -57,6 +57,11 @@ namespace Durian
 				}
 			}
 		}
+
+		/// <summary>
+		/// A <see cref="IDiagnosticReceiver"/> that is used to create log files outside of this <see cref="ISourceGenerator"/>.
+		/// </summary>
+		public LoggableGeneratorDiagnosticReceiver LogReceiver { get; }
 
 		/// <summary>
 		/// Creates names for generated files.
@@ -165,6 +170,7 @@ namespace Durian
 			}
 
 			_fileNameProvider = fileNameProvider;
+			LogReceiver = new(this);
 		}
 
 		/// <summary>
@@ -194,6 +200,7 @@ namespace Durian
 			}
 
 			_fileNameProvider = fileNameProvider;
+			LogReceiver = new LoggableGeneratorDiagnosticReceiver(this);
 		}
 
 		/// <summary>
@@ -238,8 +245,13 @@ namespace Durian
 				CancellationToken = context.CancellationToken;
 				HasValidData = true;
 
-				BeforeFiltration(in context);
+				if (EnableDiagnostics)
+				{
+					DiagnosticReceiver.SetContext(in context);
+				}
+
 				Filtrate(in context);
+				AfterExecution(in context);
 				IsSuccess = true;
 			}
 			catch (Exception e)
@@ -276,7 +288,7 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Method called before node filtration is performed.
+		/// Method called before any node filtration takes places.
 		/// </summary>
 		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
 		protected virtual void BeforeFiltration(in GeneratorExecutionContext context)
@@ -287,8 +299,9 @@ namespace Durian
 		/// <summary>
 		/// Method called before the execution of <paramref name="filterGroup"/> is started.
 		/// </summary>
-		/// <param name="filterGroup">Current filter group. The group is sealed, so it is impossible to change its state.</param>
+		/// <param name="filterGroup">Current filter group. The group is sealed, so it is impossible to change its contents.</param>
 		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		/// <exception cref="InvalidOperationException"><see cref="FilterGroup{TFilter}"/> is sealed. -or- Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
 		protected virtual void BeforeFiltrationOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
 		{
 			// Do nothing by default.
@@ -297,18 +310,19 @@ namespace Durian
 		/// <summary>
 		/// Method called after the <paramref name="filterGroup"/> is done executing.
 		/// </summary>
-		/// <param name="filterGroup">Current filter group. The group is unsealed, so it is possible to change its state.</param>
+		/// <param name="filterGroup">Current filter group. The group is unsealed, so it is possible to change its contents.</param>
 		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		/// <exception cref="InvalidOperationException">Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
 		protected virtual void AfterFiltrationOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
 		{
 			// Do nothing by default.
 		}
 
 		/// <summary>
-		/// Method called after node filtration is performed.
+		/// Method called after all code is generated.
 		/// </summary>
 		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-		protected virtual void AfterFiltration(in GeneratorExecutionContext context)
+		protected virtual void AfterExecution(in GeneratorExecutionContext context)
 		{
 			// Do nothing by default.
 		}
@@ -330,14 +344,43 @@ namespace Durian
 		}
 
 		/// <summary>
+		/// Manually iterates through a <typeparamref name="TFilter"/> that has the <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> property set to <see langword="true"/>.
+		/// </summary>
+		/// <param name="filter"><typeparamref name="TFilter"/> to iterate through.</param>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		protected virtual void IterateThroughFilter(TFilter filter, in GeneratorExecutionContext context)
+		{
+			IEnumerator<IMemberData> iter = filter.GetEnumerator();
+
+			while (iter.MoveNext())
+			{
+				GenerateFromData(iter.Current, in context);
+			}
+		}
+
+		/// <summary>
+		/// Performs the generation for the specified <paramref name="data"/>.
+		/// </summary>
+		/// <param name="data"><see cref="IMemberData"/> to perform the generation for.</param>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		protected void GenerateFromData(IMemberData data, in GeneratorExecutionContext context)
+		{
+			string name = FileNameProvider.GetFileName(data.Symbol);
+
+			if (Generate(data, name, in context))
+			{
+				FileNameProvider.Success();
+			}
+		}
+
+		/// <summary>
 		/// Actually begins the generator execution.
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to generate the source for.</param>
 		/// <param name="hintName">A <see cref="string"/> that was generated using the <see cref="FileNameProvider"/>.</param>
-		/// <param name="filter"><see cref="ISyntaxFilter"/> that collected the target <paramref name="member"/>.</param>
 		/// <param name="context">The <see cref="GeneratorExecutionContext"/> to add source to.</param>
 		/// <returns>A <see cref="bool"/> value indicating whether the generation process was successful.</returns>
-		protected abstract bool Generate(IMemberData member, string hintName, TFilter filter, in GeneratorExecutionContext context);
+		protected abstract bool Generate(IMemberData member, string hintName, in GeneratorExecutionContext context);
 
 		/// <summary>
 		/// Creates new instance of <see cref="ICompilationData"/>.
@@ -484,49 +527,54 @@ namespace Durian
 				return;
 			}
 
+			BeforeFiltration(in context);
+
 			foreach (FilterGroup<TFilter> filterGroup in filters)
 			{
-				IMemberData[][] data = FiltrateUsingGroup(filterGroup);
-				int length = filterGroup.Count;
-
 				filterGroup.Seal();
 				BeforeFiltrationOfGroup(filterGroup, in context);
 
-				for (int i = 0; i < length; i++)
-				{
-					GenerateFromFilterResult(data[i], filterGroup[i], in context);
-				}
+				HandleFilterGroup(filterGroup, in context);
 
 				filterGroup.Unseal();
 				AfterFiltrationOfGroup(filterGroup, in context);
 			}
-
-			AfterFiltration(in context);
 		}
 
-		private static IMemberData[][] FiltrateUsingGroup(FilterGroup<TFilter> filterGroup)
+		private void HandleFilterGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
 		{
-			int length = filterGroup.Count;
-			IMemberData[][] data = new IMemberData[length][];
+			int numFilters = filterGroup.Count;
+			List<TFilter> filtersWithGeneratedSymbols = new(numFilters);
+			List<IMemberData[]> filtrated = new(numFilters);
 
-			for (int i = 0; i < length; i++)
+			foreach (TFilter filter in filterGroup)
 			{
-				data[i] = filterGroup[i].Filtrate().ToArray();
+				if (filter.IncludeGeneratedSymbols)
+				{
+					filtersWithGeneratedSymbols.Add(filter);
+				}
+				else
+				{
+					filtrated.Add(filter.Filtrate());
+				}
 			}
 
-			return data;
+			foreach (IMemberData[] data in filtrated)
+			{
+				GenerateFromFilterResult(data, in context);
+			}
+
+			foreach (TFilter filter in filtersWithGeneratedSymbols)
+			{
+				IterateThroughFilter(filter, in context);
+			}
 		}
 
-		private void GenerateFromFilterResult(IMemberData[] result, TFilter parentFilter, in GeneratorExecutionContext context)
+		private void GenerateFromFilterResult(IMemberData[] filtrated, in GeneratorExecutionContext context)
 		{
-			foreach (IMemberData d in result)
+			foreach (IMemberData d in filtrated)
 			{
-				string name = FileNameProvider.GetFileName(d.Symbol);
-
-				if (Generate(d, name, parentFilter, in context))
-				{
-					FileNameProvider.Success();
-				}
+				GenerateFromData(d, in context);
 			}
 		}
 
