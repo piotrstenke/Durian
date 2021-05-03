@@ -4,10 +4,10 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <PackageId>Durian.Core</PackageId>
+    <PackageId>Durian.AnalysisCore</PackageId>
     <Authors>Piotr Stenke</Authors>
     <Company>Piotr Stenke</Company>
-    <Product>Durian.Core</Product>
+    <Product>Durian.AnalysisCore</Product>
     <Description>Base package for all Durian analyzers.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>$(BaseIntermediateOutputPath)$(AssemblyName).xml</DocumentationFile>

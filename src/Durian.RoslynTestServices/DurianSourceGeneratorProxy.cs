@@ -46,9 +46,9 @@ namespace Durian.Tests
 		public event GeneratorInitialize? OnInitialize;
 
 		/// <summary>
-		/// Event invoked when the <see cref="BeforeFiltration(in GeneratorExecutionContext)"/> method is called.
+		/// Event invoked when the <see cref="BeforeExecution(in GeneratorExecutionContext)"/> method is called.
 		/// </summary>
-		public event GeneratorExecute? OnBeforeFiltration;
+		public event GeneratorExecute? OnBeforeExecution;
 
 		/// <summary>
 		/// Event invoked when the <see cref="AfterExecution(in GeneratorExecutionContext)"/> method is called.
@@ -61,9 +61,19 @@ namespace Durian.Tests
 		public event GeneratorFiltrate<IGeneratorSyntaxFilterWithDiagnostics>? OnBeforeFiltrationOfGroup;
 
 		/// <summary>
-		/// Event invoked when the <see cref="AfterFiltrationOfGroup(FilterGroup{IGeneratorSyntaxFilterWithDiagnostics}, in GeneratorExecutionContext)"/> method is called.
+		/// Event invoked when the <see cref="BeforeExecutionOfGroup(FilterGroup{IGeneratorSyntaxFilterWithDiagnostics}, in GeneratorExecutionContext)"/> method is called.
 		/// </summary>
-		public event GeneratorFiltrate<IGeneratorSyntaxFilterWithDiagnostics>? OnAfterFiltrationOfGroup;
+		public event GeneratorFiltrate<IGeneratorSyntaxFilterWithDiagnostics>? OnBeforeExecutionOfGroup;
+
+		/// <summary>
+		/// Event invoked when the <see cref="AfterExecutionOfGroup(FilterGroup{IGeneratorSyntaxFilterWithDiagnostics}, in GeneratorExecutionContext)"/> method is called.
+		/// </summary>
+		public event GeneratorFiltrate<IGeneratorSyntaxFilterWithDiagnostics>? OnAfterExecutinoOfGroup;
+
+		/// <summary>
+		/// Event invoked when the <see cref="BeforeFiltrationAndExecutionOfFiltersWithGeneratedSymbols(FilterGroup{IGeneratorSyntaxFilterWithDiagnostics}, in GeneratorExecutionContext)"/> method is called.
+		/// </summary>
+		public event GeneratorFiltrate<IGeneratorSyntaxFilterWithDiagnostics>? OnBeforeFiltrationAndExecutionOfFiltersWithGeneratedSymbols;
 
 		/// <summary>
 		/// Event invoked when the <see cref="GetVersion"/> method is called.
@@ -162,15 +172,39 @@ namespace Durian.Tests
 		}
 
 		/// <inheritdoc/>
-		protected override void BeforeFiltration(in GeneratorExecutionContext context)
+		protected override void BeforeExecution(in GeneratorExecutionContext context)
 		{
-			OnBeforeFiltration?.Invoke(in context);
+			OnBeforeExecution?.Invoke(in context);
 		}
 
 		/// <inheritdoc/>
 		protected override void AfterExecution(in GeneratorExecutionContext context)
 		{
 			OnAfterExecution?.Invoke(in context);
+		}
+
+		/// <inheritdoc/>
+		protected override void BeforeExecutionOfGroup(FilterGroup<IGeneratorSyntaxFilterWithDiagnostics> filterGroup, in GeneratorExecutionContext context)
+		{
+			OnBeforeExecutionOfGroup?.Invoke(filterGroup, in context);
+		}
+
+		/// <inheritdoc/>
+		protected override void AfterExecutionOfGroup(FilterGroup<IGeneratorSyntaxFilterWithDiagnostics> filterGroup, in GeneratorExecutionContext context)
+		{
+			OnAfterExecutinoOfGroup?.Invoke(filterGroup, in context);
+		}
+
+		/// <inheritdoc/>
+		protected override void BeforeFiltrationOfGroup(FilterGroup<IGeneratorSyntaxFilterWithDiagnostics> filterGroup, in GeneratorExecutionContext context)
+		{
+			OnBeforeFiltrationOfGroup?.Invoke(filterGroup, context);
+		}
+
+		/// <inheritdoc/>
+		protected override void BeforeFiltrationAndExecutionOfFiltersWithGeneratedSymbols(FilterGroup<IGeneratorSyntaxFilterWithDiagnostics> filterGroup, in GeneratorExecutionContext context)
+		{
+			OnBeforeFiltrationAndExecutionOfFiltersWithGeneratedSymbols?.Invoke(filterGroup, context);
 		}
 
 		/// <inheritdoc/>
@@ -184,18 +218,6 @@ namespace Durian.Tests
 			{
 				OnIterateThroughFilter.Invoke(filter, context);
 			}
-		}
-
-		/// <inheritdoc/>
-		protected override void BeforeFiltrationOfGroup(FilterGroup<IGeneratorSyntaxFilterWithDiagnostics> filterGroup, in GeneratorExecutionContext context)
-		{
-			OnBeforeFiltrationOfGroup?.Invoke(filterGroup, in context);
-		}
-
-		/// <inheritdoc/>
-		protected override void AfterFiltrationOfGroup(FilterGroup<IGeneratorSyntaxFilterWithDiagnostics> filterGroup, in GeneratorExecutionContext context)
-		{
-			OnAfterFiltrationOfGroup?.Invoke(filterGroup, in context);
 		}
 
 		/// <inheritdoc/>

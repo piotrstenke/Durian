@@ -14,7 +14,7 @@ using {DurianStrings.MainNamespace};
 
 partial abstract class Parent
 {{	
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	[global::System.CodeDom.Compiler.GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
 	public abstract void Method<T>(T value);
 }}
 
@@ -49,16 +49,14 @@ partial class Child : Parent
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Child
+@$"partial class Child
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method<T>(T value)
 	{{
 	}}
 
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method(int value)
 	{{
 	}}
@@ -89,16 +87,14 @@ partial class Child : Parent
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Child
+@$"partial class Child
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method<T>(T value)
 	{{
 	}}
 
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method(int value)
 	{{
 	}}
@@ -200,11 +196,9 @@ partial class Child : Parent
 }}
 ";
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Child
+@$"partial class Child
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
 	public new void Method(int value)
 	{{
 	}}

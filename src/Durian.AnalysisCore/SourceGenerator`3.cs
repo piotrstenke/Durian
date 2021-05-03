@@ -6,6 +6,7 @@ using System.Threading;
 using Durian.Data;
 using Durian.Logging;
 using Microsoft.CodeAnalysis;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian
@@ -17,13 +18,15 @@ namespace Durian
 	/// <typeparam name="TSyntaxReceiver">User-defined type of <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="CSharpSyntaxNode"/>s to perform the generation on.</typeparam>
 	/// <typeparam name="TFilter">User-defined type of <see cref="ISyntaxFilter"/> that decides what <see cref="CSharpSyntaxNode"/>s collected by the <see cref="SyntaxReceiver"/> are valid for generation.</typeparam>
 	[DebuggerDisplay("Name = {GetGeneratorName()}, Version = {GetVersion()}")]
-	public abstract class SourceGenerator<TCompilationData, TSyntaxReceiver, TFilter> : LoggableSourceGenerator, IDurianSourceGenerator
+	public abstract partial class SourceGenerator<TCompilationData, TSyntaxReceiver, TFilter> : LoggableSourceGenerator, IDurianSourceGenerator
 		where TCompilationData : class, ICompilationData
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
 		where TFilter : notnull, IGeneratorSyntaxFilterWithDiagnostics
 	{
 		private ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? _diagnosticReceiver;
 		private IFileNameProvider _fileNameProvider;
+		private bool _isFilterWithGeneratedSymbols;
+		private readonly List<CSharpSyntaxTree> _generatedDuringCurrentPass;
 
 		/// <summary>
 		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
@@ -170,6 +173,7 @@ namespace Durian
 			}
 
 			_fileNameProvider = fileNameProvider;
+			_generatedDuringCurrentPass = new();
 			LogReceiver = new(this);
 		}
 
@@ -200,6 +204,7 @@ namespace Durian
 			}
 
 			_fileNameProvider = fileNameProvider;
+			_generatedDuringCurrentPass = new();
 			LogReceiver = new LoggableGeneratorDiagnosticReceiver(this);
 		}
 
@@ -218,40 +223,22 @@ namespace Durian
 		/// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
 		public sealed override void Execute(in GeneratorExecutionContext context)
 		{
+			if(!CheckReferencesDurianCore(in context))
+			{
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.ProjectMustReferenceDurianCore, Location.None));
+				return;
+			}
+
 			try
 			{
-				ResetData();
+				InitializeExecutionData(in context);
 
-				if (context.SyntaxReceiver is not TSyntaxReceiver receiver || !ValidateSyntaxReceiver(receiver))
+				if(!HasValidData)
 				{
 					return;
-				}
-
-				if (context.Compilation is not CSharpCompilation currentCompilation)
-				{
-					return;
-				}
-
-				TCompilationData? data = CreateCompilationData(currentCompilation);
-
-				if (data is null || data.HasErrors)
-				{
-					return;
-				}
-
-				TargetCompilation = data;
-				ParseOptions = context.ParseOptions as CSharpParseOptions ?? CSharpParseOptions.Default;
-				SyntaxReceiver = receiver;
-				CancellationToken = context.CancellationToken;
-				HasValidData = true;
-
-				if (EnableDiagnostics)
-				{
-					DiagnosticReceiver.SetContext(in context);
 				}
 
 				Filtrate(in context);
-				AfterExecution(in context);
 				IsSuccess = true;
 			}
 			catch (Exception e)
@@ -288,32 +275,10 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Method called before any node filtration takes places.
+		/// Method called before any generation takes places.
 		/// </summary>
 		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-		protected virtual void BeforeFiltration(in GeneratorExecutionContext context)
-		{
-			// Do nothing by default.
-		}
-
-		/// <summary>
-		/// Method called before the execution of <paramref name="filterGroup"/> is started.
-		/// </summary>
-		/// <param name="filterGroup">Current filter group. The group is sealed, so it is impossible to change its contents.</param>
-		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-		/// <exception cref="InvalidOperationException"><see cref="FilterGroup{TFilter}"/> is sealed. -or- Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
-		protected virtual void BeforeFiltrationOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
-		{
-			// Do nothing by default.
-		}
-
-		/// <summary>
-		/// Method called after the <paramref name="filterGroup"/> is done executing.
-		/// </summary>
-		/// <param name="filterGroup">Current filter group. The group is unsealed, so it is possible to change its contents.</param>
-		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-		/// <exception cref="InvalidOperationException">Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
-		protected virtual void AfterFiltrationOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
+		protected virtual void BeforeExecution(in GeneratorExecutionContext context)
 		{
 			// Do nothing by default.
 		}
@@ -323,6 +288,55 @@ namespace Durian
 		/// </summary>
 		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
 		protected virtual void AfterExecution(in GeneratorExecutionContext context)
+		{
+			// Do nothing by default.
+		}
+
+		/// <summary>
+		/// Method called before the filtration of <paramref name="filterGroup"/> is started.
+		/// </summary>
+		/// <remarks>The <paramref name="filterGroup"/> is unsealed, so it is possible to change its state.</remarks>
+		/// <param name="filterGroup">Current <see cref="FilterGroup{TFilter}"/>.</param>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		/// <exception cref="InvalidOperationException">Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
+		protected virtual void BeforeFiltrationOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
+		{
+			// Do nothing by default.
+		}
+
+		/// <summary>
+		/// Method called after <typeparamref name="TFilter"/>s with <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> set to <see langword="false"/> are filtrated, but before actual generation.
+		/// </summary>
+		/// <remarks>The <paramref name="filterGroup"/> is sealed, so it is not possible to change its state.</remarks>
+		/// <param name="filterGroup">Current <see cref="FilterGroup{TFilter}"/>.</param>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		/// <exception cref="InvalidOperationException"><see cref="FilterGroup{TFilter}"/> is sealed. -or- Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
+		protected virtual void BeforeExecutionOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
+		{
+			// Do nothing by default.
+		}
+
+		/// <summary>
+		/// Method called after <typeparamref name="TFilter"/>s with <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> set to <see langword="false"/> generated their code,
+		/// but before <typeparamref name="TFilter"/>s with <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> set to <see langword="true"/> are filtrated and executed.
+		/// </summary>
+		/// <remarks>The <paramref name="filterGroup"/> is sealed, so it is not possible to change its state.</remarks>
+		/// <param name="filterGroup">Current <see cref="FilterGroup{TFilter}"/>.</param>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		/// <exception cref="InvalidOperationException"><see cref="FilterGroup{TFilter}"/> is sealed. -or- Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
+		protected virtual void BeforeFiltrationAndExecutionOfFiltersWithGeneratedSymbols(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
+		{
+			// Do nothing by default.
+		}
+
+		/// <summary>
+		/// Method called after the <paramref name="filterGroup"/> is done executing.
+		/// </summary>
+		/// <remarks>The <paramref name="filterGroup"/> is unsealed, so it is possible to change its state.</remarks>
+		/// <param name="filterGroup">Current filter group. The group is unsealed, so it is possible to change its contents.</param>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		/// <exception cref="InvalidOperationException">Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
+		protected virtual void AfterExecutionOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
 		{
 			// Do nothing by default.
 		}
@@ -417,35 +431,6 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Adds the text of the specified <paramref name="builder"/> to the <paramref name="context"/>.
-		/// </summary>
-		/// <param name="builder"><see cref="CodeBuilder"/> that was used to build the generated code.</param>
-		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
-		/// <param name="context"><see cref="GeneratorPostInitializationContext"/> to add the source to.</param>
-		protected void InitializeSource(CodeBuilder builder, string hintName, in GeneratorPostInitializationContext context)
-		{
-			CSharpSyntaxTree tree = builder.ParseSyntaxTree();
-			builder.Clear();
-			InitializeSource(tree, hintName, in context);
-		}
-
-		/// <summary>
-		/// Adds the source created using the <paramref name="builder"/> to the <paramref name="context"/>.
-		/// </summary>
-		/// <param name="builder"><see cref="CodeBuilder"/> that was used to build the generated code.</param>
-		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
-		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-		/// <exception cref="InvalidOperationException"><see cref="HasValidData"/> must be <see langword="true"/> in order to add new source.</exception>
-		protected void AddSource(CodeBuilder builder, string hintName, in GeneratorExecutionContext context)
-		{
-			ThrowIfHasNoValidData();
-
-			CSharpSyntaxTree tree = builder.ParseSyntaxTree();
-			builder.Clear();
-			AddSource_Internal(tree, hintName, in context);
-		}
-
-		/// <summary>
 		/// Adds the generated <paramref name="source"/> to the <paramref name="context"/>.
 		/// </summary>
 		/// <param name="source">The generated text.</param>
@@ -474,22 +459,6 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Adds the source created using the <paramref name="builder"/> to the <paramref name="context"/>.
-		/// </summary>
-		/// <param name="original">The <see cref="CSharpSyntaxNode"/> the source was generated from.</param>
-		/// <param name="builder"><see cref="CodeBuilder"/> that was used to build the generated code.</param>
-		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
-		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-		/// <exception cref="InvalidOperationException"><see cref="HasValidData"/> must be <see langword="true"/> in order to add new source.</exception>
-		protected void AddSource(CSharpSyntaxNode original, CodeBuilder builder, string hintName, in GeneratorExecutionContext context)
-		{
-			ThrowIfHasNoValidData();
-			CSharpSyntaxTree tree = builder.ParseSyntaxTree();
-			builder.Clear();
-			AddSource_Internal(original, tree, hintName, in context);
-		}
-
-		/// <summary>
 		/// Adds the generated <paramref name="text"/> to the <paramref name="context"/>.
 		/// </summary>
 		/// <param name="original">The <see cref="CSharpSyntaxNode"/> the source was generated from.</param>
@@ -497,7 +466,7 @@ namespace Durian
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		/// <exception cref="InvalidOperationException"><see cref="HasValidData"/> must be <see langword="true"/> in order to add new source.</exception>
-		protected void AddSource(CSharpSyntaxNode original, string text, string hintName, in GeneratorExecutionContext context)
+		protected void AddSourceWithOriginal(CSharpSyntaxNode original, string text, string hintName, in GeneratorExecutionContext context)
 		{
 			ThrowIfHasNoValidData();
 			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
@@ -512,7 +481,7 @@ namespace Durian
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		/// <exception cref="InvalidOperationException"><see cref="HasValidData"/> must be <see langword="true"/> in order to add new source.</exception>
-		protected void AddSource(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+		protected void AddSourceWithOriginal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
 			ThrowIfHasNoValidData();
 			AddSource_Internal(original, tree, hintName, in context);
@@ -527,18 +496,14 @@ namespace Durian
 				return;
 			}
 
-			BeforeFiltration(in context);
+			BeforeExecution(in context);
 
 			foreach (FilterGroup<TFilter> filterGroup in filters)
 			{
-				filterGroup.Seal();
-				BeforeFiltrationOfGroup(filterGroup, in context);
-
 				HandleFilterGroup(filterGroup, in context);
-
-				filterGroup.Unseal();
-				AfterFiltrationOfGroup(filterGroup, in context);
 			}
+
+			AfterExecution(in context);
 		}
 
 		private void HandleFilterGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
@@ -546,6 +511,10 @@ namespace Durian
 			int numFilters = filterGroup.Count;
 			List<TFilter> filtersWithGeneratedSymbols = new(numFilters);
 			List<IMemberData[]> filtrated = new(numFilters);
+
+			filterGroup.Unseal();
+			BeforeFiltrationOfGroup(filterGroup, in context);
+			filterGroup.Seal();
 
 			foreach (TFilter filter in filterGroup)
 			{
@@ -559,23 +528,92 @@ namespace Durian
 				}
 			}
 
+			BeforeExecutionOfGroup(filterGroup, in context);
+
+			GenerateFromFilterGroup(filterGroup, filtrated, filtersWithGeneratedSymbols, in context);
+
+			filterGroup.Unseal();
+			AfterExecutionOfGroup(filterGroup, in context);
+		}
+
+		private void GenerateFromFilterGroup(FilterGroup<TFilter> filterGroup, List<IMemberData[]> filtrated, List<TFilter> filtersWithGeneratedSymbols, in GeneratorExecutionContext context)
+		{
 			foreach (IMemberData[] data in filtrated)
 			{
 				GenerateFromFilterResult(data, in context);
 			}
 
+			if(_generatedDuringCurrentPass.Count > 0)
+			{
+				// Generated sources should be added AFTER all filters that don't include generated symbols were executed to avoid conflicts with SemanticModels.
+				foreach (CSharpSyntaxTree generatedTree in _generatedDuringCurrentPass)
+				{
+					TargetCompilation!.UpdateCompilation(generatedTree);
+				}
+
+				_generatedDuringCurrentPass.Clear();
+			}
+
+			BeforeFiltrationAndExecutionOfFiltersWithGeneratedSymbols(filterGroup, in context);
+			_isFilterWithGeneratedSymbols = true;
+
 			foreach (TFilter filter in filtersWithGeneratedSymbols)
 			{
 				IterateThroughFilter(filter, in context);
 			}
+
+			_isFilterWithGeneratedSymbols = false;
 		}
 
 		private void GenerateFromFilterResult(IMemberData[] filtrated, in GeneratorExecutionContext context)
 		{
+			if(filtrated.Length == 0)
+			{
+				return;
+			}
+
 			foreach (IMemberData d in filtrated)
 			{
 				GenerateFromData(d, in context);
 			}
+		}
+
+		private void InitializeExecutionData(in GeneratorExecutionContext context)
+		{
+			ResetData();
+
+			if (context.SyntaxReceiver is not TSyntaxReceiver receiver || !ValidateSyntaxReceiver(receiver))
+			{
+				return;
+			}
+
+			if (context.Compilation is not CSharpCompilation currentCompilation)
+			{
+				return;
+			}
+
+			TCompilationData? data = CreateCompilationData(currentCompilation);
+
+			if (data is null || data.HasErrors)
+			{
+				return;
+			}
+
+			TargetCompilation = data;
+			ParseOptions = context.ParseOptions as CSharpParseOptions ?? CSharpParseOptions.Default;
+			SyntaxReceiver = receiver;
+			CancellationToken = context.CancellationToken;
+			HasValidData = true;
+
+			if (EnableDiagnostics)
+			{
+				DiagnosticReceiver.SetContext(in context);
+			}
+		}
+
+		private static bool CheckReferencesDurianCore(in GeneratorExecutionContext context)
+		{
+			return context.Compilation.ReferencedAssemblyNames.Any(a => a.Name == "Durian.Core");
 		}
 
 		private void ResetData()
@@ -601,7 +639,15 @@ namespace Durian
 		private void AddSource_Internal(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
 			context.AddSource(hintName, tree.GetText(context.CancellationToken));
-			TargetCompilation!.UpdateCompilation(tree);
+
+			if(_isFilterWithGeneratedSymbols)
+			{
+				TargetCompilation!.UpdateCompilation(tree);
+			}
+			else
+			{
+				_generatedDuringCurrentPass.Add(tree);
+			}
 
 			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
 			{
@@ -612,7 +658,15 @@ namespace Durian
 		private void AddSource_Internal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
 			context.AddSource(hintName, tree.GetText(context.CancellationToken));
-			TargetCompilation!.UpdateCompilation(tree);
+
+			if(_isFilterWithGeneratedSymbols)
+			{
+				TargetCompilation!.UpdateCompilation(tree);
+			}
+			else
+			{
+				_generatedDuringCurrentPass.Add(tree);
+			}
 
 			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput))
 			{

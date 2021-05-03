@@ -28,3 +28,4 @@ DUR0022 |  Durian  |  Error   |  [Core]: Value of attribute 'attributeName' must
 DUR0023 |  Durian  |  Error   |  [Core]: Essential type 'typeName' is missing. Try reimporting the 'packageName' package.
 DUR0024 |  Durian  |  Error   |  [Core]: Method with the specified signature already exists
 DUR0025 |  Durian  |  Error   |  [Core]: Do not add the 'attributeName' attribute on type parameters of overridden virtual methods
+DUR0026 |  Durian  |  Error   |  [Core]: Projects with any Durian analyzer must reference the Durian.Core package

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <PackageId>Durian.Core</PackageId>
+    <Authors>Piotr Stenke</Authors>
+    <Company>Piotr Stenke</Company>
+    <Product>Durian.Core</Product>
+    <Description>Contains basic classes needed for Durian analyzers to work properly.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>$(BaseIntermediateOutputPath)$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
+
+</Project>

@@ -262,7 +262,7 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Reports diagnostics indicating that the attribute cannot be applies to members of specific declaration type. (rule DUR0016).
+		/// Reports diagnostics indicating that the attribute cannot be applies to members of specific declaration type (rule DUR0016).
 		/// <para>See: <see cref="Descriptors.AttributeCannotBeAppliedToMembersOfType"/></para>
 		/// </summary>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the diagnostics to.</param>
@@ -351,7 +351,7 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Reports diagnostics indicating that the member with the 'override' keyword should define a specified attribute to preserve clarity. (rule DUR0020).
+		/// Reports diagnostics indicating that the member with the 'override' keyword should define a specified attribute to preserve clarity (rule DUR0020).
 		/// <para>See: <see cref="Descriptors.AttributeOfOverridenMemberShouldBeAddedForClarity"/></para>
 		/// </summary>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the diagnostics to.</param>
@@ -370,7 +370,7 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Reports diagnostics indicating that the user shouldn't override members generated using a specific attribute. (rule DUR0021).
+		/// Reports diagnostics indicating that the user shouldn't override members generated using a specific attribute (rule DUR0021).
 		/// <para>See: <see cref="Descriptors.DoNotOverrideMembersGeneratedUsingSpecifiedAttribute"/></para>
 		/// </summary>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the diagnostics to.</param>
@@ -389,7 +389,7 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Reports diagnostics indicating that value of a specified attribute must be the same as the value defined on the overridden member. (rule DUR0022).
+		/// Reports diagnostics indicating that value of a specified attribute must be the same as the value defined on the overridden member (rule DUR0022).
 		/// <para>See: <see cref="Descriptors.ValueOfAttributeMustBeTheSameAsValueOfTheOverridenMember"/></para>
 		/// </summary>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the diagnostics to.</param>
@@ -402,7 +402,7 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Reports diagnostics indicating that an essential type is missing and a specific package should be re-imported. (rule DUR0023).
+		/// Reports diagnostics indicating that an essential type is missing and a specific package should be re-imported (rule DUR0023).
 		/// <para>See: <see cref="Descriptors.EssentialTypeIsMissing"/></para>
 		/// </summary>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the diagnostics to.</param>
@@ -420,7 +420,7 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Reports diagnostics indicating that a method with the specified signature already exists. (rule DUR0024).
+		/// Reports diagnostics indicating that a method with the specified signature already exists (rule DUR0024).
 		/// <para>See: <see cref="Descriptors.MethodWithSignatureAlreadyExists"/></para>
 		/// </summary>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the diagnostics to.</param>
@@ -439,7 +439,7 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Reports diagnostics indicating that the user shouldn't add new attributes on a type parameter of an overridden virtual method. (rule DUR0025).
+		/// Reports diagnostics indicating that the user shouldn't add new attributes on a type parameter of an overridden virtual method (rule DUR0025).
 		/// <para>See: <see cref="Descriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter"/></para>
 		/// </summary>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the diagnostics to.</param>
@@ -449,6 +449,16 @@ namespace Durian
 		public static void DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter(IDiagnosticReceiver diagnosticReceiver, ITypeParameterSymbol? symbol, string? attributeName, Location? location)
 		{
 			diagnosticReceiver.ReportDiagnostic(Descriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter, location, symbol, attributeName);
+		}
+
+		/// <summary>
+		/// Reports diagnostics indicating that the target project must reference the <c>Durian.Core</c> package. (rule DUR0026).
+		/// <para>See: <see cref="Descriptors.ProjectMustReferenceDurianCore"/></para>
+		/// </summary>
+		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the diagnostics to.</param>
+		public static void ProjectMustReferenceDurianCore(IDiagnosticReceiver diagnosticReceiver)
+		{
+			diagnosticReceiver.ReportDiagnostic(Descriptors.ProjectMustReferenceDurianCore, Location.None);
 		}
 	}
 }

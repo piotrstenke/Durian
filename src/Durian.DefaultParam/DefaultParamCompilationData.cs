@@ -4,30 +4,23 @@ using Durian.Data;
 using Durian.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System;
 
 namespace Durian.DefaultParam
 {
-	public sealed class DefaultParamCompilationData : CompilationData
+	public sealed class DefaultParamCompilationData : CompilationDataWithSymbols
 	{
 		public INamedTypeSymbol? Attribute { get; private set; }
 		public IMethodSymbol? AttributeConstructor { get; private set; }
-		public INamedTypeSymbol? GeneratedCodeAttribute { get; private set; }
 		public INamedTypeSymbol? ConfigurationAttribute { get; private set; }
 		public INamedTypeSymbol? MethodConfigurationAttribute { get; private set; }
 		public IMethodSymbol? MethodConfigurationConstructor { get; private set; }
 
-		[MemberNotNullWhen(false,
-			nameof(Attribute),
-			nameof(AttributeConstructor),
-			nameof(GeneratedCodeAttribute),
-			nameof(ConfigurationAttribute),
-			nameof(MethodConfigurationAttribute),
-			nameof(MethodConfigurationConstructor)
-		)]
+		[MemberNotNullWhen(false, nameof(Attribute), nameof(AttributeConstructor), nameof(ConfigurationAttribute), nameof(MethodConfigurationAttribute), nameof(MethodConfigurationConstructor))]
 		public override bool HasErrors =>
+			base.HasErrors ||
 			Attribute is null ||
 			AttributeConstructor is null ||
-			GeneratedCodeAttribute is null ||
 			ConfigurationAttribute is null ||
 			MethodConfigurationAttribute is null ||
 			MethodConfigurationConstructor is null;
@@ -40,7 +33,19 @@ namespace Durian.DefaultParam
 			Configuration = GetConfiguration(compilation, ConfigurationAttribute);
 		}
 
-		public static DefaultParamConfiguration GetConfiguration(CSharpCompilation compilation)
+		public override void Reset()
+		{
+			base.Reset();
+
+			INamedTypeSymbol? attr = Compilation.Assembly.GetTypeByMetadataName(DefaultParamAttribute.FullyQualifiedName);
+			Attribute = attr;
+			AttributeConstructor = attr?.InstanceConstructors[0]!;
+			ConfigurationAttribute = Compilation.Assembly.GetTypeByMetadataName(DefaultParamConfigurationAttribute.FullyQualifiedName);
+			MethodConfigurationAttribute = Compilation.Assembly.GetTypeByMetadataName(DefaultParamMethodConfigurationAttribute.FullyQualifiedName);
+			MethodConfigurationConstructor = MethodConfigurationAttribute?.InstanceConstructors.FirstOrDefault(ctor => ctor.Parameters.Length == 0);
+		}
+
+		public static DefaultParamConfiguration GetConfiguration(CSharpCompilation? compilation)
 		{
 			if (compilation is null)
 			{
@@ -49,22 +54,6 @@ namespace Durian.DefaultParam
 
 			INamedTypeSymbol configurationAttribute = compilation.GetTypeByMetadataName(DefaultParamConfigurationAttribute.FullyQualifiedName)!;
 			return GetConfiguration(compilation, configurationAttribute);
-		}
-
-		public void Reset()
-		{
-			INamedTypeSymbol? attr = Compilation.Assembly.GetTypeByMetadataName(DefaultParamAttribute.FullyQualifiedName);
-			Attribute = attr;
-			AttributeConstructor = attr?.InstanceConstructors[0]!;
-			GeneratedCodeAttribute = Compilation.GetTypeByMetadataName("System.CodeDom.Compiler.GeneratedCodeAttribute");
-			ConfigurationAttribute = Compilation.GetTypeByMetadataName(DefaultParamConfigurationAttribute.FullyQualifiedName);
-			MethodConfigurationAttribute = Compilation.GetTypeByMetadataName(DefaultParamMethodConfigurationAttribute.FullyQualifiedName);
-			MethodConfigurationConstructor = MethodConfigurationAttribute?.InstanceConstructors.FirstOrDefault(ctor => ctor.Parameters.Length == 0);
-		}
-
-		protected override void OnUpdate(CSharpCompilation oldCompilation)
-		{
-			Reset();
 		}
 
 		private static DefaultParamConfiguration GetConfiguration(CSharpCompilation compilation, INamedTypeSymbol? configurationAttribute)

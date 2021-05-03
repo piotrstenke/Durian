@@ -307,5 +307,17 @@ namespace Durian
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true
 		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the target project must reference the <c>Durian.Core</c> package.
+		/// </summary>
+		public static readonly DiagnosticDescriptor ProjectMustReferenceDurianCore = new(
+			id: "DUR0026",
+			title: "Projects with any Durian analyzer must reference the Durian.Core package",
+			messageFormat: "Projects with any Durian analyzer must reference the Durian.Core package",
+			category: "Durian",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true
+		);
 	}
 }

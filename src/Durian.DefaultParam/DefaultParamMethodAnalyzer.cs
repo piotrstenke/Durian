@@ -205,7 +205,7 @@ namespace Durian.DefaultParam
 		)
 		{
 			IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
-			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, symbolParameters.Length, typeParameters.Length, typeParameters.NumNonDefaultParam);
+			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, compilation, symbolParameters.Length, typeParameters.Length, typeParameters.NumNonDefaultParam);
 
 			if (collidingMethods.Length == 0)
 			{
@@ -453,7 +453,7 @@ namespace Durian.DefaultParam
 		)
 		{
 			IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
-			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, symbolParameters.Length, typeParameters.Length, typeParameters.NumNonDefaultParam);
+			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, compilation, symbolParameters.Length, typeParameters.Length, typeParameters.NumNonDefaultParam);
 
 			if (collidingMethods.Length == 0)
 			{
@@ -832,14 +832,16 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
-		private static CollidingMethod[] GetCollidingMethods(IMethodSymbol symbol, int numParameters, int numTypeParameters, int numNonDefaultParam)
+		private static CollidingMethod[] GetCollidingMethods(IMethodSymbol symbol, DefaultParamCompilationData compilation, int numParameters, int numTypeParameters, int numNonDefaultParam)
 		{
+			INamedTypeSymbol durianGenerated = compilation.DurianGeneratedAttribute!;
+
 			return symbol.ContainingType.GetAllMembers(symbol.Name)
 				.OfType<IMethodSymbol>()
 				.Select(m => ((IMethodSymbol symbol, ITypeParameterSymbol[] typeParameters))(m, m.TypeParameters.ToArray()))
 				.Where(m => m.typeParameters.Length >= numNonDefaultParam && m.typeParameters.Length < numTypeParameters)
 				.Select(m => new CollidingMethod(m.symbol, m.symbol.Parameters.ToArray(), m.typeParameters))
-				.Where(m => m.Parameters.Length == numParameters)
+				.Where(m => m.Parameters.Length == numParameters && !symbol.HasAttribute(durianGenerated))
 				.ToArray();
 		}
 

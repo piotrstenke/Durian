@@ -19,7 +19,7 @@ namespace Durian.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CompilationData"/> class.
 		/// </summary>
-		/// <param name="compilation">Current <see cref="Microsoft.CodeAnalysis.Compilation"/>.</param>
+		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public CompilationData(CSharpCompilation compilation)
 		{
@@ -107,7 +107,7 @@ namespace Durian.Data
 		/// <param name="oldCompilation"><see cref="CSharpCompilation"/> that was updated.</param>
 		protected virtual void OnUpdate(CSharpCompilation oldCompilation)
 		{
-			// Do nothing.
+			// Do nothing by default.
 		}
 	}
 }

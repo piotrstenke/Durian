@@ -36,11 +36,9 @@ partial class Test
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	void Method(int value)
 	{{
 
@@ -66,17 +64,15 @@ partial class Test
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U>(T)")}
 	void Method<T>(T value)
 	{{
 		string name = default;
 	}}
 
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U>(T)")}
 	void Method(int value)
 	{{
 		string name = default;
@@ -102,11 +98,9 @@ partial class Test
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U>(T)")}
 	void Method<T>(T value)
 	{{
 		string name = default;
@@ -139,13 +133,12 @@ partial class Test
 
 			string expected =
 @$"using System;
-using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
 
 partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U>(U)")}
 	void Method<T>(IEnumerable value) where T : IEnumerable<IEnumerable>
 	{{
 		IEnumerable v = default(IEnumerable);
@@ -173,11 +166,9 @@ partial class Test
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
 	{{
 
@@ -203,21 +194,19 @@ partial class Test
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U, V>()")}
 	void Method<T, U>() where T : unmanaged where U : class
 	{{
 	}}
 
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U, V>()")}
 	void Method<T>() where T : unmanaged
 	{{
 	}}
 
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U, V>()")}
 	void Method()
 	{{
 	}}
@@ -240,16 +229,14 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U, V>()")}
 	void Method<T, U>() where T : unmanaged where U : class
 	{{
 	}}
 
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U, V>()")}
 	void Method<T>() where T : unmanaged
 	{{
 	}}
@@ -273,11 +260,9 @@ partial class Test
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(string value)
 	{{
 	}}
@@ -304,12 +289,11 @@ partial class Test
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-using System.Numerics;
+@$"using System.Numerics;
 
 partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
 	{{
 		System.Collections.Generic.List<BigInteger> list = new();
@@ -344,9 +328,7 @@ partial class Test
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-namespace N1.N2
+@$"namespace N1.N2
 {{
 	public partial interface Parent
 	{{
@@ -354,7 +336,7 @@ namespace N1.N2
 		{{
 			public partial class Test
 			{{
-				[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+				{GetCodeGenerationAttributes("N1.N2.Parent.Child.Test.Method<T>()", 4)}
 				public void Method()
 				{{
 				}}
@@ -379,11 +361,9 @@ partial abstract class Test
 }}
 ";
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial abstract class Test
+@$"partial abstract class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	abstract void Method();
 }}
 ";

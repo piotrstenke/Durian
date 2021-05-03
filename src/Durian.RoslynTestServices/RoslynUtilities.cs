@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Durian.Generator;
 
 namespace Durian.Tests
 {
@@ -252,13 +253,14 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Returns an array of some essential .NET assemblies, that is:
+		/// Returns an array of some essential assemblies, that is:
 		/// <list type="bullet">
-		/// <item>System.Runtime.dll</item>
-		/// <item>System.Collections.dll</item>
-		/// <item>System.IO.FileSystem.dll</item>
-		/// <item>System.Linq.dll</item>
+		/// <item>System.Runtime</item>
+		/// <item>System.Collections</item>
+		/// <item>System.IO.FileSystem</item>
+		/// <item>System.Linq</item>
 		/// <item>System.Runtime.Numerics</item>
+		/// <item>Durian.Core</item>
 		/// </list>
 		/// </summary>
 		public static Assembly[] GetBaseAssemblies()
@@ -269,18 +271,20 @@ namespace Durian.Tests
 				typeof(HashSet<>).Assembly,
 				typeof(File).Assembly,
 				typeof(Enumerable).Assembly,
-				typeof(BigInteger).Assembly
+				typeof(BigInteger).Assembly,
+				typeof(GeneratedFromAttribute).Assembly
 			};
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="MetadataReference"/> to all essential .NET assemblies, that is:
+		/// Returns an array of <see cref="MetadataReference"/> to some essential assemblies, that is:
 		/// <list type="bullet">
-		/// <item>System.Runtime.dll</item>
-		/// <item>System.Collections.dll</item>
-		/// <item>System.IO.FileSystem.dll</item>
-		/// <item>System.Linq.dll</item>
+		/// <item>System.Runtime</item>
+		/// <item>System.Collections</item>
+		/// <item>System.IO.FileSystem</item>
+		/// <item>System.Linq</item>
 		/// <item>System.Runtime.Numerics</item>
+		/// <item>Durian.Core</item>
 		/// </list>
 		/// </summary>
 		public static MetadataReference[] GetBaseReferences()

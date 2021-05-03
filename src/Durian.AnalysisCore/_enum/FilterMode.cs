@@ -24,7 +24,7 @@ namespace Durian
 		Logs,
 
 		/// <summary>
-		/// Filter both creates files and reports <see cref="Diagnostic"/>s for the invalid <see cref="CSharpSyntaxNode"/>s.
+		/// Filter both creates log files and reports <see cref="Diagnostic"/>s for the invalid <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
 		Both
 	}

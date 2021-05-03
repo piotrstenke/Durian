@@ -264,14 +264,13 @@ namespace Durian.DefaultParam
 			}
 
 			SeparatedSyntaxList<TypeParameterSyntax> list = parameters.Parameters;
+			list = SyntaxFactory.SeparatedList(list.Select(p => p.WithAttributeLists(SyntaxFactory.List(p.AttributeLists.Where(attrList => attrList.Attributes.Any(attr =>
+			{
+				SymbolInfo info = SemanticModel.GetSymbolInfo(attr, cancellationToken);
+				return !SymbolEqualityComparer.Default.Equals(info.Symbol, compilation.AttributeConstructor);
+			}
+			))))));
 
-			list = SyntaxFactory.SeparatedList(list.Select(p =>
-				p.WithAttributeLists(SyntaxFactory.List(p.AttributeLists
-					.Where(l => l.Attributes
-						.Any(a => !SymbolEqualityComparer.Default.Equals(SemanticModel.GetSymbolInfo(a, cancellationToken).Symbol, compilation.AttributeConstructor))
-					)
-				))
-			));
 
 			int length = list.Count;
 

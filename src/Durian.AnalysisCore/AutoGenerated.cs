@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Durian
 {
 	/// <summary>
@@ -82,37 +84,65 @@ $@"//---------------------------------------------------------------------------
 		}
 
 		/// <summary>
-		/// Returns a <see cref="string"/> that represents the <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/> with empty strings as its arguments.
-		/// </summary>
-		public static string GetAttribute()
-		{
-			return GetAttribute(null, null, false);
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> that represents the <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/> with the specified <paramref name="generatorName"/> as its argument.
-		/// </summary>
-		/// <param name="generatorName">Name of generator that created the following code.</param>
-		public static string GetAttribute(string? generatorName)
-		{
-			return GetAttribute(generatorName, null, false);
-		}
-
-		/// <inheritdoc cref="GetAttribute(string?, string?, bool)"/>
-		public static string GetAttribute(string? generatorName, string? version)
-		{
-			return GetAttribute(generatorName, version, false);
-		}
-
-		/// <summary>
 		/// Returns a <see cref="string"/> that represents the <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/> with the specified <paramref name="generatorName"/> and <paramref name="version"/> as its arguments.
 		/// </summary>
 		/// <param name="generatorName">Name of generator that created the following code.</param>
 		/// <param name="version">Version of the generator that created the following code.</param>
-		/// <param name="includeFullyQualifiedName">Determines whether to write the name of the attribute using the fully qualified name or the sole attribute name.</param>
-		public static string GetAttribute(string? generatorName, string? version, bool includeFullyQualifiedName)
+		public static string GetGeneratedCodeAttribute(string? generatorName, string? version)
 		{
-			return $"[{(includeFullyQualifiedName ? "System.CodeDom.Compiler." : "")}GeneratedCode(\"{generatorName ?? string.Empty}\", \"{version ?? string.Empty}\")]";
+			return $"[global::System.CodeCom.Compiler.GeneratedCode(\"{generatorName ?? string.Empty}\", \"{version ?? string.Empty}\")]";
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> that represents the <c>Durian.Generator.GeneratedFromAttribute</c> with the specified <paramref name="source"/> as its argument.
+		/// </summary>
+		/// <param name="source">Member this code was generated from.</param>
+		public static string GetGeneratedFromAttribute(string? source)
+		{
+			return $"[global::Durian.Generator.GeneratedFrom(\"{source}\")]";
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> that represents the <c>Durian.Generator.DurianGeneratedAttribute</c>.
+		/// </summary>
+		public static string GetDurianGeneratedAttribute()
+		{
+			return "[global::Durian.Generator.DurianGenerated]";
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> that combines the results of the <see cref="GetGeneratedCodeAttribute(string?, string?)"/> and <see cref="GetDurianGeneratedAttribute"/> methods with the specified <paramref name="indent"/> applied.
+		/// </summary>
+		/// <param name="generatorName">Name of generator that created the following code.</param>
+		/// <param name="version">Version of the generator that created the following code.</param>
+		/// <param name="indent">Number of tab characters to apply before the attributes (first attribute is not affected).</param>
+		public static string GetCodeGenerationAttributes(string? generatorName, string? version, int indent)
+		{
+			StringBuilder sb = new();
+			sb.AppendLine(GetGeneratedCodeAttribute(generatorName, version));
+			Indent(sb, indent);
+			sb.AppendLine(GetDurianGeneratedAttribute());
+
+			return sb.ToString();
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> that combines the results of the <see cref="GetGeneratedCodeAttribute(string?, string?)"/>, <see cref="GetDurianGeneratedAttribute"/> and <see cref="GetGeneratedFromAttribute(string?)"/> methods with the specified <paramref name="indent"/> applied.
+		/// </summary>
+		/// <param name="generatorName">Name of generator that created the following code.</param>
+		/// <param name="version">Version of the generator that created the following code.</param>
+		/// <param name="source">Member this code was generated from.</param>
+		/// <param name="indent">Number of tab characters to apply before the attributes (first attribute is not affected).</param>
+		public static string GetCodeGenerationAttributes(string? generatorName, string? version, string? source, int indent)
+		{
+			StringBuilder sb = new();
+			sb.AppendLine(GetGeneratedCodeAttribute(generatorName, version));
+			Indent(sb, indent);
+			sb.AppendLine(GetDurianGeneratedAttribute());
+			Indent(sb, indent);
+			sb.AppendLine(GetGeneratedFromAttribute(source));
+
+			return sb.ToString();
 		}
 
 		/// <inheritdoc cref="GetInheritdoc(string?)"/>
@@ -133,6 +163,14 @@ $@"//---------------------------------------------------------------------------
 			}
 
 			return $"/// <inheritdoc cref=\"{source}\"/>";
+		}
+
+		private static void Indent(StringBuilder sb, int indent)
+		{
+			for (int i = 0; i < indent; i++)
+			{
+				sb.Append('\t');
+			}
 		}
 	}
 }

@@ -30,11 +30,9 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
 	{{
 
@@ -69,11 +67,9 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U>(U)")}
 	new void Method<T>(int value)
 	{{
 	}}
@@ -111,11 +107,9 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U, V>(V)")}
 	new void Method<T, U>(int value)
 	{{
 	}}
@@ -149,16 +143,14 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U, V>(U)")}
 	void Method<T, U>(U value)
 	{{
 	}}
 
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U, V>(U)")}
 	new void Method<T>(int value)
 	{{
 
@@ -197,16 +189,14 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U, V>(V)")}
 	new void Method<T, U>(int value)
 	{{
 	}}
 
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T, U, V>(V)")}
 	new void Method<T>(int value)
 	{{
 

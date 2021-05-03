@@ -24,11 +24,9 @@ partial class Test
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>(int, float, T)")}
 	void Method(int a, float b, int value)
 	{{
 		Method<int>(a, b, value);
@@ -58,11 +56,9 @@ partial class Test
 ";
 
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>(int, float, T)")}
 	int Method(int a, float b, int value)
 	{{
 		return Method<int>(a, b, value);
@@ -91,11 +87,9 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	int Method()
 	{{
 		return Method<int>();
@@ -123,11 +117,9 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
 	{{
 		Method<int>();
@@ -154,11 +146,9 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
 	{{
 		Method<int>();
@@ -187,11 +177,9 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
 	{{
 		Method<int>();
@@ -220,11 +208,9 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
 	{{
 		int value = default;
@@ -253,11 +239,9 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using System.CodeDom.Compiler;
-
-partial class Test
+@$"partial class Test
 {{
-	[GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
 	{{
 		int value = default;
