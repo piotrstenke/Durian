@@ -90,7 +90,7 @@ $@"//---------------------------------------------------------------------------
 		/// <param name="version">Version of the generator that created the following code.</param>
 		public static string GetGeneratedCodeAttribute(string? generatorName, string? version)
 		{
-			return $"[global::System.CodeCom.Compiler.GeneratedCode(\"{generatorName ?? string.Empty}\", \"{version ?? string.Empty}\")]";
+			return $"[global::System.CodeDom.Compiler.GeneratedCode(\"{generatorName ?? string.Empty}\", \"{version ?? string.Empty}\")]";
 		}
 
 		/// <summary>

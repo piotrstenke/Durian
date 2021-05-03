@@ -18,7 +18,7 @@ namespace Durian.DefaultParam
 		public DefaultParamGenerator Generator { get; }
 		public IFileNameProvider FileNameProvider { get; }
 		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
-		public bool IncludeGeneratedSymbols { get; } = false;
+		public bool IncludeGeneratedSymbols { get; } = true;
 
 		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 

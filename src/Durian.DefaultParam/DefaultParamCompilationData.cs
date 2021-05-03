@@ -4,7 +4,6 @@ using Durian.Data;
 using Durian.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System;
 
 namespace Durian.DefaultParam
 {
@@ -17,19 +16,12 @@ namespace Durian.DefaultParam
 		public IMethodSymbol? MethodConfigurationConstructor { get; private set; }
 
 		[MemberNotNullWhen(false, nameof(Attribute), nameof(AttributeConstructor), nameof(ConfigurationAttribute), nameof(MethodConfigurationAttribute), nameof(MethodConfigurationConstructor))]
-		public override bool HasErrors =>
-			base.HasErrors ||
-			Attribute is null ||
-			AttributeConstructor is null ||
-			ConfigurationAttribute is null ||
-			MethodConfigurationAttribute is null ||
-			MethodConfigurationConstructor is null;
+		public override bool HasErrors { get; protected set; }
 
 		public DefaultParamConfiguration Configuration { get; }
 
 		public DefaultParamCompilationData(CSharpCompilation compilation) : base(compilation)
 		{
-			Reset();
 			Configuration = GetConfiguration(compilation, ConfigurationAttribute);
 		}
 
@@ -43,6 +35,8 @@ namespace Durian.DefaultParam
 			ConfigurationAttribute = Compilation.Assembly.GetTypeByMetadataName(DefaultParamConfigurationAttribute.FullyQualifiedName);
 			MethodConfigurationAttribute = Compilation.Assembly.GetTypeByMetadataName(DefaultParamMethodConfigurationAttribute.FullyQualifiedName);
 			MethodConfigurationConstructor = MethodConfigurationAttribute?.InstanceConstructors.FirstOrDefault(ctor => ctor.Parameters.Length == 0);
+
+			HasErrors = base.HasErrors || Attribute is null || AttributeConstructor is null || ConfigurationAttribute is null || MethodConfigurationAttribute is null || MethodConfigurationConstructor is null;
 		}
 
 		public static DefaultParamConfiguration GetConfiguration(CSharpCompilation? compilation)

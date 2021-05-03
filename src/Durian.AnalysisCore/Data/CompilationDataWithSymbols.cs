@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.Data
 {
@@ -27,7 +27,7 @@ namespace Durian.Data
 
 		/// <inheritdoc/>
 		[MemberNotNullWhen(false, nameof(GeneratedFromAttribute), nameof(GeneratedCodeAttribute), nameof(DurianGeneratedAttribute))]
-		public override bool HasErrors => GeneratedFromAttribute is null || DurianGeneratedAttribute is null || GeneratedCodeAttribute is null;
+		public override bool HasErrors { get; protected set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CompilationDataWithSymbols"/> class.
@@ -47,6 +47,8 @@ namespace Durian.Data
 			DurianGeneratedAttribute = Compilation.GetTypeByMetadataName("Durian.Generator.DurianGeneratedAttribute");
 			GeneratedFromAttribute = Compilation.GetTypeByMetadataName("Durian.Generator.GeneratedFromAttribute");
 			GeneratedCodeAttribute = Compilation.GetTypeByMetadataName("System.CodeDom.Compiler.GeneratedCodeAttribute");
+
+			HasErrors = DurianGeneratedAttribute is null || GeneratedFromAttribute is null || GeneratedCodeAttribute is null;
 		}
 
 		/// <inheritdoc/>

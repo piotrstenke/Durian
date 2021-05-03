@@ -17,6 +17,68 @@ namespace Durian.Extensions
 	public static class SymbolExtensions
 	{
 		/// <summary>
+		/// Determines whether the <paramref name="symbol"/> was generated from the <paramref name="target"/> <see cref="ISymbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="target"><see cref="ISymbol"/> to check if the <paramref name="symbol"/> is generated from.</param>
+		/// <param name="compilation"><see cref="CompilationDataWithSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="symbol"/> is <see langword="null"/>. -or-
+		/// <paramref name="target"/> is <see langword="null"/>. -or-
+		/// <paramref name="compilation"/> is <see langword="null"/>.
+		/// </exception>
+		/// <exception cref="InvalidOperationException">Target <paramref name="compilation"/> has errors.</exception>
+		public static bool IsGeneratedFrom(this ISymbol symbol, ISymbol target, CompilationDataWithSymbols compilation)
+		{
+			return IsGeneratedFrom(symbol, target?.ToString()!, compilation);
+		}
+
+
+		/// <summary>
+		/// Determines whether the <paramref name="symbol"/> was generated from the <paramref name="target"/> member.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="target"><see cref="string"/> representing a <see cref="ISymbol"/> to check if the <paramref name="symbol"/> was generated from.</param>
+		/// <param name="compilation"><see cref="CompilationDataWithSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="symbol"/> is <see langword="null"/>. -or-
+		/// <paramref name="target"/> is <see langword="null"/>. -or-
+		/// <paramref name="compilation"/> is <see langword="null"/>.
+		/// </exception>
+		/// <exception cref="InvalidOperationException">Target <paramref name="compilation"/> has errors.</exception>
+		public static bool IsGeneratedFrom(this ISymbol symbol, string target, CompilationDataWithSymbols compilation)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (target is null)
+			{
+				throw new ArgumentNullException(nameof(target));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			if (compilation.HasErrors)
+			{
+				throw new InvalidOperationException($"Target {nameof(compilation)} has errors!");
+			}
+
+			AttributeData? attribute = symbol.GetAttributeData(compilation.GeneratedFromAttribute);
+
+			if (attribute is null)
+			{
+				return false;
+			}
+
+			return attribute.ConstructorArguments.FirstOrDefault().Value is string value && value == target;
+		}
+
+		/// <summary>
 		/// Returns all <see cref="IMethodSymbol"/> this <paramref name="method"/> overrides.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the base methods of.</param>

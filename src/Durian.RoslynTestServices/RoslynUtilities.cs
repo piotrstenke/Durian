@@ -7,9 +7,9 @@ using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Durian.Generator;
 
 namespace Durian.Tests
 {
@@ -253,52 +253,22 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Returns an array of some essential assemblies, that is:
-		/// <list type="bullet">
-		/// <item>System.Runtime</item>
-		/// <item>System.Collections</item>
-		/// <item>System.IO.FileSystem</item>
-		/// <item>System.Linq</item>
-		/// <item>System.Runtime.Numerics</item>
-		/// <item>Durian.Core</item>
-		/// </list>
-		/// </summary>
-		public static Assembly[] GetBaseAssemblies()
-		{
-			return new Assembly[]
-			{
-				typeof(object).Assembly,
-				typeof(HashSet<>).Assembly,
-				typeof(File).Assembly,
-				typeof(Enumerable).Assembly,
-				typeof(BigInteger).Assembly,
-				typeof(GeneratedFromAttribute).Assembly
-			};
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="MetadataReference"/> to some essential assemblies, that is:
-		/// <list type="bullet">
-		/// <item>System.Runtime</item>
-		/// <item>System.Collections</item>
-		/// <item>System.IO.FileSystem</item>
-		/// <item>System.Linq</item>
-		/// <item>System.Runtime.Numerics</item>
-		/// <item>Durian.Core</item>
-		/// </list>
+		/// Returns an array of <see cref="MetadataReference"/> to some essential assemblies.
 		/// </summary>
 		public static MetadataReference[] GetBaseReferences()
 		{
-			Assembly[] assemblies = GetBaseAssemblies();
-			int length = assemblies.Length;
-			MetadataReference[] references = new MetadataReference[length];
+			string directory = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
 
-			for (int i = 0; i < length; i++)
+			return new[]
 			{
-				references[i] = MetadataReference.CreateFromFile(assemblies[i].Location);
-			}
-
-			return references;
+				MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(File).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(GeneratedFromAttribute).Assembly.Location),
+				MetadataReference.CreateFromFile(Path.Combine(directory, "System.Runtime.dll"))
+			};
 		}
 
 		/// <summary>

@@ -5,7 +5,7 @@ namespace Durian.Generator
 	/// <summary>
 	/// Specifies that the target member was generated from the <see cref="Source"/>.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
+	[AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = false)]
 	public sealed class GeneratedFromAttribute : Attribute
 	{
 		/// <summary>

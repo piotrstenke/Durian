@@ -834,15 +834,53 @@ namespace Durian.DefaultParam
 
 		private static CollidingMethod[] GetCollidingMethods(IMethodSymbol symbol, DefaultParamCompilationData compilation, int numParameters, int numTypeParameters, int numNonDefaultParam)
 		{
-			INamedTypeSymbol durianGenerated = compilation.DurianGeneratedAttribute!;
+			string fullName = symbol.ToString();
+			INamedTypeSymbol generatedFrom = compilation.GeneratedFromAttribute!;
 
-			return symbol.ContainingType.GetAllMembers(symbol.Name)
+			IEnumerable<CollidingMethod> collection = symbol.ContainingType.GetAllMembers(symbol.Name)
 				.OfType<IMethodSymbol>()
 				.Select(m => ((IMethodSymbol symbol, ITypeParameterSymbol[] typeParameters))(m, m.TypeParameters.ToArray()))
 				.Where(m => m.typeParameters.Length >= numNonDefaultParam && m.typeParameters.Length < numTypeParameters)
 				.Select(m => new CollidingMethod(m.symbol, m.symbol.Parameters.ToArray(), m.typeParameters))
-				.Where(m => m.Parameters.Length == numParameters && !symbol.HasAttribute(durianGenerated))
-				.ToArray();
+				.Where(m => m.Parameters.Length == numParameters);
+
+			if (symbol.IsOverride && symbol.OverriddenMethod is IMethodSymbol baseMethod)
+			{
+				string baseFullName = baseMethod.ToString();
+				collection = collection.Where(m =>
+				{
+					AttributeData? data = GetAttribute(m.Symbol);
+
+					if (data?.ConstructorArguments.FirstOrDefault().Value is string value)
+					{
+						return value != fullName && value != baseFullName;
+					}
+
+					return true;
+				});
+			}
+			else
+			{
+				collection = collection.Where(m =>
+				{
+					AttributeData? data = GetAttribute(m.Symbol);
+
+					if (data?.ConstructorArguments.FirstOrDefault().Value is string value)
+					{
+						return value != fullName;
+					}
+
+					return true;
+				});
+			}
+
+			return collection.ToArray();
+
+			AttributeData? GetAttribute(IMethodSymbol s)
+			{
+				AttributeData[] attributes = s.GetAttributes().ToArray();
+				return Array.Find(attributes, attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, generatedFrom));
+			}
 		}
 
 		private static ParameterGeneration[][] GetParameterGenerations(in TypeParameterContainer typeParameters, IParameterSymbol[] symbolParameters)

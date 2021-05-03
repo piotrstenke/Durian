@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using Durian.Data;
 using Durian.Logging;
 using Microsoft.CodeAnalysis;
-using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian
@@ -85,16 +85,13 @@ namespace Durian
 		}
 
 		/// <inheritdoc cref="IDurianSourceGenerator.ParseOptions"/>
-		[MaybeNull]
-		public CSharpParseOptions ParseOptions { get; private set; }
+		public CSharpParseOptions? ParseOptions { get; private set; }
 
 		/// <inheritdoc cref="IDurianSourceGenerator.TargetCompilation"/>
-		[MaybeNull]
-		public TCompilationData TargetCompilation { get; private set; }
+		public TCompilationData? TargetCompilation { get; private set; }
 
 		/// <inheritdoc cref="IDurianSourceGenerator.SyntaxReceiver"/>
-		[MaybeNull]
-		public TSyntaxReceiver SyntaxReceiver { get; private set; }
+		public TSyntaxReceiver? SyntaxReceiver { get; private set; }
 
 		/// <inheritdoc/>
 		public CancellationToken CancellationToken { get; private set; }
@@ -223,7 +220,7 @@ namespace Durian
 		/// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
 		public sealed override void Execute(in GeneratorExecutionContext context)
 		{
-			if(!CheckReferencesDurianCore(in context))
+			if (!CheckReferencesDurianCore(in context))
 			{
 				context.ReportDiagnostic(Diagnostic.Create(Descriptors.ProjectMustReferenceDurianCore, Location.None));
 				return;
@@ -233,7 +230,7 @@ namespace Durian
 			{
 				InitializeExecutionData(in context);
 
-				if(!HasValidData)
+				if (!HasValidData)
 				{
 					return;
 				}
@@ -543,7 +540,7 @@ namespace Durian
 				GenerateFromFilterResult(data, in context);
 			}
 
-			if(_generatedDuringCurrentPass.Count > 0)
+			if (_generatedDuringCurrentPass.Count > 0)
 			{
 				// Generated sources should be added AFTER all filters that don't include generated symbols were executed to avoid conflicts with SemanticModels.
 				foreach (CSharpSyntaxTree generatedTree in _generatedDuringCurrentPass)
@@ -567,7 +564,7 @@ namespace Durian
 
 		private void GenerateFromFilterResult(IMemberData[] filtrated, in GeneratorExecutionContext context)
 		{
-			if(filtrated.Length == 0)
+			if (filtrated.Length == 0)
 			{
 				return;
 			}
@@ -640,7 +637,7 @@ namespace Durian
 		{
 			context.AddSource(hintName, tree.GetText(context.CancellationToken));
 
-			if(_isFilterWithGeneratedSymbols)
+			if (_isFilterWithGeneratedSymbols)
 			{
 				TargetCompilation!.UpdateCompilation(tree);
 			}
@@ -659,7 +656,7 @@ namespace Durian
 		{
 			context.AddSource(hintName, tree.GetText(context.CancellationToken));
 
-			if(_isFilterWithGeneratedSymbols)
+			if (_isFilterWithGeneratedSymbols)
 			{
 				TargetCompilation!.UpdateCompilation(tree);
 			}
