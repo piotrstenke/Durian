@@ -225,8 +225,7 @@ namespace Durian.DefaultParam
 			return new[]
 			{
 				(compilation.GeneratedCodeAttribute!, "GeneratedCode"),
-				(compilation.DurianGeneratedAttribute!, "DurianGenerated"),
-				(compilation.GeneratedFromAttribute!, "GeneratedFrom")
+				(compilation.DurianGeneratedAttribute!, "DurianGenerated")
 			};
 		}
 	}

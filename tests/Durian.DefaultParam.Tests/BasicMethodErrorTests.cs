@@ -164,23 +164,6 @@ partial class Test
 		}
 
 		[Fact]
-		public void Error_When_HasGeneraterFromAttribute()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{DurianStrings.GeneratorAttributesNamespace}.GeneratedFrom(""Test.Method<T, U>()"")]
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
-	{{
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0017"));
-		}
-
-		[Fact]
 		public void Error_When_ContainingTypeIsNotPartial()
 		{
 			string input =

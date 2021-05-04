@@ -11,11 +11,6 @@ namespace Durian.Data
 	public class CompilationDataWithSymbols : CompilationData
 	{
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> that represents the <c>GeneratedFromAttribute</c> class.
-		/// </summary>
-		public INamedTypeSymbol? GeneratedFromAttribute { get; private set; }
-
-		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> that represents the <c>DurianGeneratedAttribute</c> class.
 		/// </summary>
 		public INamedTypeSymbol? DurianGeneratedAttribute { get; private set; }
@@ -26,7 +21,7 @@ namespace Durian.Data
 		public INamedTypeSymbol? GeneratedCodeAttribute { get; private set; }
 
 		/// <inheritdoc/>
-		[MemberNotNullWhen(false, nameof(GeneratedFromAttribute), nameof(GeneratedCodeAttribute), nameof(DurianGeneratedAttribute))]
+		[MemberNotNullWhen(false, nameof(GeneratedCodeAttribute), nameof(DurianGeneratedAttribute))]
 		public override bool HasErrors { get; protected set; }
 
 		/// <summary>
@@ -45,10 +40,9 @@ namespace Durian.Data
 		public virtual void Reset()
 		{
 			DurianGeneratedAttribute = Compilation.GetTypeByMetadataName($"{DurianStrings.GeneratorAttributesNamespace}.DurianGeneratedAttribute");
-			GeneratedFromAttribute = Compilation.GetTypeByMetadataName($"{DurianStrings.GeneratorAttributesNamespace}.GeneratedFromAttribute");
 			GeneratedCodeAttribute = Compilation.GetTypeByMetadataName("System.CodeDom.Compiler.GeneratedCodeAttribute");
 
-			HasErrors = DurianGeneratedAttribute is null || GeneratedFromAttribute is null || GeneratedCodeAttribute is null;
+			HasErrors = DurianGeneratedAttribute is null || GeneratedCodeAttribute is null;
 		}
 
 		/// <inheritdoc/>

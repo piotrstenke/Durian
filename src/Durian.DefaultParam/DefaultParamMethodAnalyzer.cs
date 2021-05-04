@@ -447,7 +447,7 @@ namespace Durian.DefaultParam
 		private static CollidingMethod[] GetCollidingMethods(IMethodSymbol symbol, DefaultParamCompilationData compilation, int numParameters, int numTypeParameters, int numNonDefaultParam)
 		{
 			string fullName = symbol.ToString();
-			INamedTypeSymbol generatedFrom = compilation.GeneratedFromAttribute!;
+			INamedTypeSymbol generatedFrom = compilation.DurianGeneratedAttribute!;
 
 			IEnumerable<CollidingMethod> collection = symbol.ContainingType.GetAllMembers(symbol.Name)
 				.OfType<IMethodSymbol>()

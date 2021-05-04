@@ -18,7 +18,6 @@ namespace Durian.SyntaxVisitors
 		/// </summary>
 		protected SyntaxReplacer()
 		{
-
 		}
 
 		/// <summary>

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace Durian.Generator
 {
@@ -9,10 +11,24 @@ namespace Durian.Generator
 	public sealed class DurianGeneratedAttribute : Attribute
 	{
 		/// <summary>
+		/// Member this code was generated from.
+		/// </summary>
+		public string? Source { get; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGeneratedAttribute"/> class.
 		/// </summary>
 		public DurianGeneratedAttribute()
 		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DurianGeneratedAttribute"/> class.
+		/// </summary>
+		/// <param name="source">Member this code was generated from.</param>
+		public DurianGeneratedAttribute(string? source)
+		{
+			Source = source;
 		}
 	}
 }

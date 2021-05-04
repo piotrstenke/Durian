@@ -94,12 +94,12 @@ $@"//---------------------------------------------------------------------------
 		}
 
 		/// <summary>
-		/// Returns a <see cref="string"/> that represents the <c>GeneratedFromAttribute</c> with the specified <paramref name="source"/> as its argument.
+		/// Returns a <see cref="string"/> that represents the <c>DurianGeneratedAttribute</c> with the specified <paramref name="source"/> as its argument.
 		/// </summary>
 		/// <param name="source">Member this code was generated from.</param>
-		public static string GetGeneratedFromAttribute(string? source)
+		public static string GetDurianGeneratedAttribute(string? source)
 		{
-			return $"[global::{DurianStrings.GeneratorAttributesNamespace}.GeneratedFrom(\"{source}\")]";
+			return $"[global::{DurianStrings.GeneratorAttributesNamespace}.DurianGenerated(\"{source}\")]";
 		}
 
 		/// <summary>
@@ -111,7 +111,7 @@ $@"//---------------------------------------------------------------------------
 		}
 
 		/// <summary>
-		/// Returns a <see cref="string"/> that combines the results of the <see cref="GetGeneratedCodeAttribute(string?, string?)"/> and <see cref="GetDurianGeneratedAttribute"/> methods with the specified <paramref name="indent"/> applied.
+		/// Returns a <see cref="string"/> that combines the results of the <see cref="GetGeneratedCodeAttribute(string?, string?)"/> and <see cref="GetDurianGeneratedAttribute()"/> methods with the specified <paramref name="indent"/> applied.
 		/// </summary>
 		/// <param name="generatorName">Name of generator that created the following code.</param>
 		/// <param name="version">Version of the generator that created the following code.</param>
@@ -127,7 +127,7 @@ $@"//---------------------------------------------------------------------------
 		}
 
 		/// <summary>
-		/// Returns a <see cref="string"/> that combines the results of the <see cref="GetGeneratedCodeAttribute(string?, string?)"/>, <see cref="GetDurianGeneratedAttribute"/> and <see cref="GetGeneratedFromAttribute(string?)"/> methods with the specified <paramref name="indent"/> applied.
+		/// Returns a <see cref="string"/> that combines the results of the <see cref="GetGeneratedCodeAttribute(string?, string?)"/> and <see cref="GetDurianGeneratedAttribute(string?)"/> methods with the specified <paramref name="indent"/> applied.
 		/// </summary>
 		/// <param name="generatorName">Name of generator that created the following code.</param>
 		/// <param name="version">Version of the generator that created the following code.</param>
@@ -138,9 +138,7 @@ $@"//---------------------------------------------------------------------------
 			StringBuilder sb = new();
 			sb.AppendLine(GetGeneratedCodeAttribute(generatorName, version));
 			Indent(sb, indent);
-			sb.AppendLine(GetDurianGeneratedAttribute());
-			Indent(sb, indent);
-			sb.AppendLine(GetGeneratedFromAttribute(source));
+			sb.AppendLine(GetDurianGeneratedAttribute(source));
 
 			return sb.ToString();
 		}

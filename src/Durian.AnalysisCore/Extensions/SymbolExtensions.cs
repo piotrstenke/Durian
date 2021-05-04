@@ -33,7 +33,6 @@ namespace Durian.Extensions
 			return IsGeneratedFrom(symbol, target?.ToString()!, compilation);
 		}
 
-
 		/// <summary>
 		/// Determines whether the <paramref name="symbol"/> was generated from the <paramref name="target"/> member.
 		/// </summary>
@@ -68,7 +67,7 @@ namespace Durian.Extensions
 				throw new InvalidOperationException($"Target {nameof(compilation)} has errors!");
 			}
 
-			AttributeData? attribute = symbol.GetAttributeData(compilation.GeneratedFromAttribute);
+			AttributeData? attribute = symbol.GetAttributeData(compilation.DurianGeneratedAttribute);
 
 			if (attribute is null)
 			{
