@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Durian.Data;
 using Durian.Logging;
 using Microsoft.CodeAnalysis;
@@ -91,6 +92,11 @@ namespace Durian.Tests
 		public event Func<IDurianSyntaxReceiver?, bool>? OnValidateSyntaxReceiver;
 
 		/// <summary>
+		/// Event invoked when the <see cref="GetStaticSyntaxTrees(CancellationToken)"/> method is called.
+		/// </summary>
+		public event Func<CancellationToken, (CSharpSyntaxTree tree, string hintName)[]?>? OnGetStaticTrees;
+
+		/// <summary>
 		/// Event invoked when the <see cref="GetFilters(in GeneratorExecutionContext)"/> method is called.
 		/// </summary>
 		public event Func<GeneratorExecutionContext, FilterContainer<IGeneratorSyntaxFilterWithDiagnostics>>? OnGetFilters;
@@ -136,6 +142,12 @@ namespace Durian.Tests
 		public override IDurianSyntaxReceiver CreateSyntaxReceiver()
 		{
 			return OnCreateSyntaxReceiver?.Invoke() ?? new SyntaxReceiverProxy();
+		}
+
+		/// <inheritdoc/>
+		protected override (CSharpSyntaxTree tree, string hintName)[]? GetStaticSyntaxTrees(CancellationToken cancellationToken)
+		{
+			return OnGetStaticTrees?.Invoke(cancellationToken);
 		}
 
 		/// <inheritdoc/>

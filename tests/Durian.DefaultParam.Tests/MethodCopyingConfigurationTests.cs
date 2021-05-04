@@ -1,7 +1,7 @@
 ﻿using Durian.DefaultParam;
 using Xunit;
 
-namespace Durian.Tests.DefaultParam.Generator
+namespace Durian.Tests.DefaultParam
 {
 	public sealed class MethodCopyingConfigurationTests : DefaultParamGeneratorTest
 	{

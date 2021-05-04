@@ -6,8 +6,7 @@ using System.Threading;
 using Durian.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Durian.DefaultParam.DefaultParamAnalyzer;
-using static Durian.DefaultParam.DefaultParamMethodAnalyzer;
+using Analyzer = Durian.DefaultParam.DefaultParamMethodAnalyzer;
 
 namespace Durian.DefaultParam
 {
@@ -80,25 +79,25 @@ namespace Durian.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
-				bool isValid = AnalyzeAgaintsPartialOrExternWithDiagnostics(diagnosticReceiver, symbol, declaration);
-				isValid &= AnalyzeAgainstGeneratedCodeAttributeWithDiagnostics(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
-				isValid &= AnalyzeContainingTypesWithDiagnostics(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
+				bool isValid = Analyzer.WithDiagnostics.AnalyzeAgaintsPartialOrExtern(diagnosticReceiver, symbol, declaration);
+				isValid &= Analyzer.WithDiagnostics.AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
+				isValid &= Analyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
 
 				bool hasValidTypeParameters;
 
-				if (IsOverride(symbol, out IMethodSymbol? baseMethod))
+				if (Analyzer.IsOverride(symbol, out IMethodSymbol? baseMethod))
 				{
-					isValid &= AnalyzeOverrideMethodWithDiagnostics(diagnosticReceiver, symbol, baseMethod, ref typeParameters, compilation, cancellationToken, out hasValidTypeParameters);
+					isValid &= Analyzer.WithDiagnostics.AnalyzeOverrideMethod(diagnosticReceiver, symbol, baseMethod, ref typeParameters, compilation, cancellationToken, out hasValidTypeParameters);
 				}
 				else
 				{
-					hasValidTypeParameters = AnalyzeTypeParametersWithDiagnostics(diagnosticReceiver, in typeParameters);
+					hasValidTypeParameters = Analyzer.WithDiagnostics.AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
 					isValid &= hasValidTypeParameters;
 				}
 
 				if (hasValidTypeParameters)
 				{
-					isValid &= AnalyzeMethodSignatureWithDiagnostics(diagnosticReceiver, symbol, typeParameters, compilation, out HashSet<int>? newModifiers, cancellationToken);
+					isValid &= Analyzer.WithDiagnostics.AnalyzeMethodSignature(diagnosticReceiver, symbol, typeParameters, compilation, out HashSet<int>? newModifiers, cancellationToken);
 
 					if (isValid)
 					{
@@ -112,7 +111,7 @@ namespace Durian.DefaultParam
 							attributes,
 							in typeParameters,
 							newModifiers,
-							CheckShouldCallInsteadOfCopying(attributes!, compilation)
+							Analyzer.CheckShouldCallInsteadOfCopying(attributes!, compilation)
 						);
 
 						return true;

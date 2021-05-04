@@ -6,7 +6,7 @@ using System.Threading;
 using Durian.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Durian.DefaultParam.DefaultParamAnalyzer;
+using static Durian.DefaultParam.DefaultParamAnalyzer.WithDiagnostics;
 
 namespace Durian.DefaultParam
 {
@@ -78,9 +78,9 @@ namespace Durian.DefaultParam
 				[NotNullWhen(true)] out DefaultParamTypeData? data
 			)
 			{
-				bool isValid = AnalyzeAgainstGeneratedCodeAttributeWithDiagnostics(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
-				isValid &= AnalyzeContainingTypesWithDiagnostics(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
-				isValid &= AnalyzeTypeParametersWithDiagnostics(diagnosticReceiver, in typeParameters);
+				bool isValid = AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
+				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
+				isValid &= AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
 
 				if (isValid)
 				{

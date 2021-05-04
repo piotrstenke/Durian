@@ -1,7 +1,7 @@
 ﻿using Durian.DefaultParam;
 using Xunit;
 
-namespace Durian.Tests.DefaultParam.Generator
+namespace Durian.Tests.DefaultParam
 {
 	public sealed class MethodInheritanceTests : DefaultParamGeneratorTest
 	{
@@ -14,7 +14,7 @@ using {DurianStrings.MainNamespace};
 
 partial abstract class Parent
 {{	
-	[global::System.CodeDom.Compiler.GeneratedCode(""{DefaultParamGenerator.GeneratorName}"", ""{DefaultParamGenerator.Version}"")]
+	{GetCodeGenerationAttributes("Parent.Method<T, U>(T)")}
 	public abstract void Method<T>(T value);
 }}
 

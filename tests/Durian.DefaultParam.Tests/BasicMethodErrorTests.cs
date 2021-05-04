@@ -1,12 +1,12 @@
 ﻿using Durian.DefaultParam;
 using Xunit;
 
-namespace Durian.Tests.DefaultParam.Generator
+namespace Durian.Tests.DefaultParam
 {
 	public sealed class BasicMethodErrorTests : DefaultParamGeneratorTest
 	{
 		[Fact]
-		public void MethodIsInvalid_When_IsExtern()
+		public void Error_When_IsExtern()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -20,7 +20,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_IsPartial_And_HasNoImplementation()
+		public void Error_When_IsPartial_And_HasNoImplementation()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -34,7 +34,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_IsPartial_And_HasImplementation_And_AttributeIsDeclaradOnDefinitionPart()
+		public void Error_When_IsPartial_And_HasImplementation_And_AttributeIsDeclaradOnDefinitionPart()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -56,7 +56,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_IsPartial_And_HasImplementation_And_AttributeIsDeclaradOnImplementationPart()
+		public void Error_When_IsPartial_And_HasImplementation_And_AttributeIsDeclaradOnImplementationPart()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -78,7 +78,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_IsLocalFunction()
+		public void Error_When_IsLocalFunction()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -97,7 +97,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_DefaultParamAttributeIsNotLast()
+		public void Error_When_DefaultParamAttributeIsNotLast()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -113,7 +113,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_OneOfMultipleDefaultParamAttributeIsNotLast()
+		public void Error_When_OneOfMultipleDefaultParamAttributeIsNotLast()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -130,7 +130,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_HasGeneratedCodeAttribute()
+		public void Error_When_HasGeneratedCodeAttribute()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -147,7 +147,41 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_ContainingTypeIsNotPartial()
+		public void Error_When_HasDurianGeneratedAttribute()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{DurianStrings.GeneratorAttributesNamespace}.DurianGenerated]
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0017"));
+		}
+
+		[Fact]
+		public void Error_When_HasGeneraterFromAttribute()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{DurianStrings.GeneratorAttributesNamespace}.GeneratedFrom(""Test.Method<T, U>()"")]
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0017"));
+		}
+
+		[Fact]
+		public void Error_When_ContainingTypeIsNotPartial()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -163,7 +197,7 @@ class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_OneOfContainingTypesIsNotPartial()
+		public void Error_When_OneOfContainingTypesIsNotPartial()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -182,7 +216,7 @@ class Parent
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_DefaultParamArgumentIsInvalidForConstraint()
+		public void Error_When_DefaultParamArgumentIsInvalidForConstraint()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -198,7 +232,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void MethodIsInvalid_When_OneOfDefaultParamArgumentsIsInvalidForConstraint()
+		public void Error_When_OneOfDefaultParamArgumentsIsInvalidForConstraint()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};

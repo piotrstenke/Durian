@@ -9,29 +9,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.DefaultParam
 {
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
-	public class DefaultParamMethodAnalyzer : DefaultParamAnalyzer
+	public partial class DefaultParamMethodAnalyzer : DefaultParamAnalyzer
 	{
-		//[DebuggerDisplay("{Symbol}")]
-		//private sealed class DefaultParamCollidingMethod
-		//{
-		//	private readonly TypeParameterContainer _typeParameters;
-
-		//	public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
-		//	public IParameterSymbol[] Parameters { get; }
-		//	public IMethodSymbol Symbol { get; }
-
-		//	public DefaultParamCollidingMethod(IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
-		//	{
-		//		_typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
-		//		Parameters = symbol.Parameters.ToArray();
-		//		Symbol = symbol;
-		//	}
-		//}
-
 		[DebuggerDisplay("{Symbol}")]
 		private readonly struct CollidingMethod
 		{
@@ -90,10 +74,9 @@ namespace Durian.DefaultParam
 				return;
 			}
 
-			AnalyzeWithDiagnostics(diagnosticReceiver, m, compilation, cancellationToken);
+			WithDiagnostics.Analyze(diagnosticReceiver, m, compilation, cancellationToken);
 		}
 
-		#region -Without Diagnostics-
 		public static bool Analyze(IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			TypeParameterContainer typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
@@ -113,24 +96,7 @@ namespace Durian.DefaultParam
 			return AnalyzeCore(symbol, compilation, ref typeParameters, cancellationToken);
 		}
 
-		private static bool AnalyzeCore(IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
-		{
-			if (AnalyzeAgaintsPartialOrExtern(symbol, cancellationToken) &&
-				AnalyzeAgainstGeneratedCodeAttribute(symbol, compilation) &&
-				AnalyzeContainingTypes(symbol, cancellationToken))
-			{
-				if ((IsOverride(symbol, out IMethodSymbol? baseMethod) &&
-					AnalyzeOverrideMethod(baseMethod, ref typeParameters, compilation, cancellationToken)) ||
-					AnalyzeTypeParameters(in typeParameters))
-				{
-					return AnalyzeMethodSignature(symbol, typeParameters, compilation, cancellationToken);
-				}
-			}
-
-			return false;
-		}
-
-		public static bool AnalyzeOverrideMethod(IMethodSymbol? baseMethod, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
+		public static bool AnalyzeOverrideMethod([NotNullWhen(true)]IMethodSymbol? baseMethod, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
 		{
 			if (baseMethod is null)
 			{
@@ -224,6 +190,57 @@ namespace Durian.DefaultParam
 			);
 		}
 
+		public static bool CheckShouldCallInsteadOfCopying(IMethodSymbol method, DefaultParamCompilationData compilation)
+		{
+			return CheckShouldCallInsteadOfCopying(method.GetAttributes(), compilation);
+		}
+
+		public static bool CheckShouldCallInsteadOfCopying(IEnumerable<AttributeData> attributes, DefaultParamCompilationData compilation)
+		{
+			if (attributes is null)
+			{
+				return compilation.Configuration.CallInsteadOfCopying;
+			}
+
+			AttributeData? attr = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MethodConfigurationAttribute));
+
+			if (attr is not null && attr.TryGetNamedArgumentValue(DefaultParamMethodConfigurationAttribute.CallInsteadOfCopyingProperty, out bool value))
+			{
+				return value;
+			}
+
+			return compilation.Configuration.CallInsteadOfCopying;
+		}
+
+		public static bool IsOverride(IMethodSymbol symbol, out IMethodSymbol? baseMethod)
+		{
+			if (!symbol.IsOverride)
+			{
+				baseMethod = null;
+				return false;
+			}
+
+			baseMethod = symbol.OverriddenMethod;
+			return true;
+		}
+
+		private static bool AnalyzeCore(IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
+		{
+			if (AnalyzeAgaintsPartialOrExtern(symbol, cancellationToken) &&
+				AnalyzeAgaintsProhibitedAttributes(symbol, compilation) &&
+				AnalyzeContainingTypes(symbol, cancellationToken))
+			{
+				if ((IsOverride(symbol, out IMethodSymbol? baseMethod) &&
+					AnalyzeOverrideMethod(baseMethod, ref typeParameters, compilation, cancellationToken)) ||
+					AnalyzeTypeParameters(in typeParameters))
+				{
+					return AnalyzeMethodSignature(symbol, typeParameters, compilation, cancellationToken);
+				}
+			}
+
+			return false;
+		}
+
 		private static bool AnalyzeBaseMethodParameters(DefaultParamConfiguration configuration, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
 		{
 			int length = baseTypeParameters.Length;
@@ -291,288 +308,10 @@ namespace Durian.DefaultParam
 			applyNew = GetApplyNewOrNull(applyNewLocal);
 			return true;
 		}
-		#endregion
 
-		#region -With Diagnostics-
-		public static bool AnalyzeWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		private static TypeParameterContainer GetBaseMethodTypeParameters(IMethodSymbol baseMethod, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
 		{
-			TypeParameterContainer typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
-
-			if (typeParameters.HasDefaultParams)
-			{
-				if (!AnalyzeAgaintsLocalFunctionWithDiagnostics(diagnosticReceiver, symbol))
-				{
-					return false;
-				}
-			}
-			else if (!symbol.IsOverride)
-			{
-				return false;
-			}
-
-			return AnalyzeWithDiagnosticsCore(diagnosticReceiver, symbol, compilation, ref typeParameters, cancellationToken);
-		}
-
-		private static bool AnalyzeWithDiagnosticsCore(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
-		{
-			bool isValid = AnalyzeAgaintsPartialOrExternWithDiagnostics(diagnosticReceiver, symbol, cancellationToken);
-			isValid &= AnalyzeAgainstGeneratedCodeAttributeWithDiagnostics(diagnosticReceiver, symbol, compilation);
-			isValid &= AnalyzeContainingTypesWithDiagnostics(diagnosticReceiver, symbol, cancellationToken);
-
-			bool hasValidTypeParameters;
-
-			if (IsOverride(symbol, out IMethodSymbol? baseMethod))
-			{
-				isValid &= AnalyzeOverrideMethodWithDiagnostics(diagnosticReceiver, symbol, baseMethod, ref typeParameters, compilation, cancellationToken, out hasValidTypeParameters);
-			}
-			else
-			{
-				hasValidTypeParameters = AnalyzeTypeParametersWithDiagnostics(diagnosticReceiver, in typeParameters);
-				isValid &= hasValidTypeParameters;
-			}
-
-			if (hasValidTypeParameters)
-			{
-				isValid &= AnalyzeMethodSignatureWithDiagnostics(diagnosticReceiver, symbol, typeParameters, compilation, cancellationToken);
-			}
-
-			return isValid;
-		}
-
-		public static bool AnalyzeOverrideMethodWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, IMethodSymbol? baseMethod, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken, out bool hasValidTypeParameters)
-		{
-			if (baseMethod is null)
-			{
-				hasValidTypeParameters = false;
-				return false;
-			}
-
-			if (IsDefaultParamGenerated(baseMethod, compilation))
-			{
-				DefaultParamDiagnostics.DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute(diagnosticReceiver, symbol);
-				hasValidTypeParameters = AnalyzeTypeParametersWithDiagnostics(diagnosticReceiver, in typeParameters);
-				return false;
-			}
-
-			TypeParameterContainer baseTypeParameters = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
-			bool isValid;
-
-			if (typeParameters.FirstDefaultParamIndex == -1)
-			{
-				isValid = AnalyzeTypeParametersWithDiagnostics(diagnosticReceiver, in baseTypeParameters);
-				hasValidTypeParameters = isValid;
-
-				if (isValid)
-				{
-					isValid &= AnalyzeBaseMethodParametersWithDiagnostics(diagnosticReceiver, compilation.Configuration, in typeParameters, in baseTypeParameters);
-				}
-
-				typeParameters = TypeParameterContainer.Combine(in typeParameters, in baseTypeParameters);
-			}
-			else if (HasAddedDefaultParamAttributes(in typeParameters, in baseTypeParameters))
-			{
-				bool addingTypeParametersIsValid = TryUpdateTypeParameters(ref typeParameters, in baseTypeParameters, compilation.Configuration);
-				isValid = AnalyzeTypeParametersWithDiagnostics(diagnosticReceiver, in typeParameters);
-				hasValidTypeParameters = isValid;
-
-				if (isValid)
-				{
-					isValid &= AnalyzeBaseMethodParametersWithDiagnostics(diagnosticReceiver, compilation.Configuration, in typeParameters, in baseTypeParameters);
-
-					if (!addingTypeParametersIsValid)
-					{
-						ReportAddedTypeParameters(diagnosticReceiver, typeParameters, baseTypeParameters);
-						isValid = false;
-					}
-				}
-			}
-			else
-			{
-				typeParameters = TypeParameterContainer.Combine(in typeParameters, in baseTypeParameters);
-				isValid = AnalyzeTypeParametersWithDiagnostics(diagnosticReceiver, in typeParameters);
-				hasValidTypeParameters = isValid;
-
-				if (isValid)
-				{
-					isValid &= AnalyzeBaseMethodParametersWithDiagnostics(diagnosticReceiver, compilation.Configuration, in typeParameters, in baseTypeParameters);
-				}
-			}
-
-			return isValid;
-		}
-
-		public static bool AnalyzeAgaintsLocalFunctionWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol)
-		{
-			if (symbol.MethodKind == MethodKind.LocalFunction)
-			{
-				ReportDiagnosticForLocalFunction(diagnosticReceiver, symbol);
-				return false;
-			}
-
-			return true;
-		}
-
-		public static bool AnalyzeAgaintsPartialOrExternWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, CancellationToken cancellationToken = default)
-		{
-			if (symbol?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) is not MethodDeclarationSyntax declaration)
-			{
-				return false;
-			}
-
-			return AnalyzeAgaintsPartialOrExternWithDiagnostics(diagnosticReceiver, symbol, declaration);
-		}
-
-		public static bool AnalyzeAgaintsPartialOrExternWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, MethodDeclarationSyntax declaration)
-		{
-			if (symbol.IsExtern)
-			{
-				DefaultParamDiagnostics.DefaultParamMethodCannotBePartialOrExtern(diagnosticReceiver, symbol);
-				return false;
-			}
-			else if (symbol.IsPartial(declaration))
-			{
-				DefaultParamDiagnostics.DefaultParamMethodCannotBePartialOrExtern(diagnosticReceiver, symbol);
-				return false;
-			}
-
-			return true;
-		}
-
-		public static bool AnalyzeMethodSignatureWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-		{
-			return AnalyzeMethodSignatureWithDiagnostics(diagnosticReceiver, symbol, in typeParameters, compilation, out _, cancellationToken);
-		}
-
-		public static bool AnalyzeMethodSignatureWithDiagnostics(
-			IDiagnosticReceiver diagnosticReceiver,
-			IMethodSymbol symbol,
-			in TypeParameterContainer typeParameters,
-			DefaultParamCompilationData compilation,
-			out HashSet<int>? applyNew,
-			CancellationToken cancellationToken = default
-		)
-		{
-			IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
-			CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, compilation, symbolParameters.Length, typeParameters.Length, typeParameters.NumNonDefaultParam);
-
-			if (collidingMethods.Length == 0)
-			{
-				applyNew = null;
-				return true;
-			}
-
-			return AnalyzeCollidingMethodsWithDiagnostics(
-				diagnosticReceiver,
-				symbol,
-				in typeParameters,
-				collidingMethods,
-				symbolParameters,
-				compilation.Configuration,
-				cancellationToken,
-				out applyNew
-			);
-		}
-
-		public static void ReportDiagnosticForLocalFunction(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol)
-		{
-			DefaultParamDiagnostics.DefaultParamAttributeIsNotValidOnLocalFunctions(diagnosticReceiver, symbol);
-		}
-
-		private static bool AnalyzeCollidingMethodsWithDiagnostics(
-			IDiagnosticReceiver diagnosticReceiver,
-			IMethodSymbol symbol,
-			in TypeParameterContainer typeParameters,
-			CollidingMethod[] collidingMethods,
-			IParameterSymbol[] symbolParameters,
-			DefaultParamConfiguration configuration,
-			CancellationToken cancellationToken,
-			out HashSet<int>? applyNew
-		)
-		{
-			HashSet<int> diagnosed = new();
-			HashSet<int> applyNewLocal = new();
-			int numMethods = collidingMethods.Length;
-			bool isValid = true;
-
-			ParameterGeneration[][] generations = GetParameterGenerations(in typeParameters, symbolParameters);
-
-			for (int i = 0; i < numMethods; i++)
-			{
-				ref readonly CollidingMethod currentMethod = ref collidingMethods[i];
-				int targetIndex = currentMethod.TypeParameters.Length - typeParameters.NumNonDefaultParam;
-
-				if (diagnosed.Contains(targetIndex))
-				{
-					continue;
-				}
-
-				ParameterGeneration[] targetParameters = generations[targetIndex];
-
-				if (!AnalyzeCollidingMethodParametersWithDiagnostics(
-					diagnosticReceiver,
-					symbol,
-					in currentMethod,
-					in typeParameters,
-					targetParameters,
-					targetIndex,
-					diagnosed,
-					applyNewLocal,
-					configuration,
-					ref isValid,
-					cancellationToken)
-				)
-				{
-					break;
-				}
-			}
-
-			applyNew = GetApplyNewOrNull(applyNewLocal);
-			return isValid;
-		}
-
-		private static bool AnalyzeCollidingMethodParametersWithDiagnostics(
-			IDiagnosticReceiver diagnosticReceiver,
-			IMethodSymbol symbol,
-			in CollidingMethod collidingMethod,
-			in TypeParameterContainer typeParameters,
-			ParameterGeneration[] targetGeneration,
-			int targetIndex,
-			HashSet<int> diagnosed,
-			HashSet<int> applyNew,
-			DefaultParamConfiguration configuration,
-			ref bool isValid,
-			CancellationToken cancellationToken
-		)
-		{
-			if (!HasCollidingParameters(targetGeneration, in collidingMethod))
-			{
-				return true;
-			}
-
-			if (!configuration.ApplyNewToGeneratedMembersWithEquivalentSignature || SymbolEqualityComparer.Default.Equals(collidingMethod.Symbol.ContainingType, symbol.ContainingType))
-			{
-				if (HasNewModifier(symbol, collidingMethod.Symbol, cancellationToken))
-				{
-					applyNew.Add(targetIndex);
-					return true;
-				}
-
-				string signature = GetMethodSignatureString(symbol.Name, in typeParameters, targetIndex, targetGeneration);
-				DurianDiagnostics.MethodWithSignatureAlreadyExists(diagnosticReceiver, symbol, signature, symbol.Locations.FirstOrDefault());
-				diagnosed.Add(targetIndex);
-				isValid = false;
-
-				if (diagnosed.Count == typeParameters.NumDefaultParam)
-				{
-					return false;
-				}
-			}
-			else if (isValid)
-			{
-				applyNew.Add(targetIndex);
-			}
-
-			return true;
+			return TypeParameterContainer.CreateFrom(baseMethod, compilation, cancellationToken);
 		}
 
 		private static bool HasNewModifier(IMethodSymbol symbol, IMethodSymbol collidingMethod, CancellationToken cancellationToken)
@@ -592,136 +331,9 @@ namespace Durian.DefaultParam
 			return false;
 		}
 
-		private static bool AnalyzeBaseMethodParametersWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, DefaultParamConfiguration configuration, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
-		{
-			int length = baseTypeParameters.Length;
-			bool isValid = true;
-
-			int firstIndex = GetFirstDefaultParamIndex(in typeParameters, in baseTypeParameters);
-
-			for (int i = firstIndex; i < length; i++)
-			{
-				ref readonly TypeParameterData baseData = ref baseTypeParameters[i];
-				ref readonly TypeParameterData thisData = ref typeParameters[i];
-
-				if (!AnalyzeParameterInBaseMethodWithDiagnostics(diagnosticReceiver, in thisData, in baseData, configuration))
-				{
-					isValid = false;
-				}
-			}
-
-			return isValid;
-		}
-
-		private static int GetFirstDefaultParamIndex(in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
-		{
-			if (typeParameters.FirstDefaultParamIndex == -1)
-			{
-				return baseTypeParameters.FirstDefaultParamIndex;
-			}
-
-			if (baseTypeParameters.FirstDefaultParamIndex == -1)
-			{
-				return typeParameters.FirstDefaultParamIndex;
-			}
-
-			if (typeParameters.FirstDefaultParamIndex < baseTypeParameters.FirstDefaultParamIndex)
-			{
-				return typeParameters.FirstDefaultParamIndex;
-			}
-
-			return baseTypeParameters.FirstDefaultParamIndex;
-		}
-
-		private static bool AnalyzeParameterInBaseMethodWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, in TypeParameterData thisData, in TypeParameterData baseData, DefaultParamConfiguration configuration)
-		{
-			if (baseData.IsDefaultParam)
-			{
-				if (!thisData.IsDefaultParam)
-				{
-					DefaultParamDiagnostics.OverriddenDefaultParamAttributeShouldBeAddedForClarity(diagnosticReceiver, thisData.Symbol);
-					return true;
-				}
-				else if (thisData.TargetType is null)
-				{
-					return true;
-				}
-				else if (!SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
-				{
-					if (configuration.AllowOverridingOfDefaultParamValues)
-					{
-						if (!thisData.TargetType.IsValidForTypeParameter(thisData.Symbol))
-						{
-							DurianDiagnostics.TypeIsNotValidTypeParameter(diagnosticReceiver, thisData.TargetType, thisData.Symbol);
-							return false;
-						}
-					}
-					else
-					{
-						DefaultParamDiagnostics.ValueOfDefaultParamAttributeMustBeTheSameAsValueForOverridenMethod(diagnosticReceiver, thisData.Symbol, thisData.Location);
-						return false;
-					}
-				}
-			}
-
-			return true;
-		}
-
-		private static void ReportAddedTypeParameters(IDiagnosticReceiver diagnosticReceiver, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
-		{
-			int length = GetNumAddedParameters(in typeParameters, in baseTypeParameters);
-			for (int i = typeParameters.FirstDefaultParamIndex; i < length; i++)
-			{
-				ref readonly TypeParameterData thisData = ref typeParameters[i];
-
-				DefaultParamDiagnostics.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter(diagnosticReceiver, thisData.Symbol, thisData.Location);
-			}
-		}
-
-		#endregion
-
-		public static bool CheckShouldCallInsteadOfCopying(IMethodSymbol method, DefaultParamCompilationData compilation)
-		{
-			return CheckShouldCallInsteadOfCopying(method.GetAttributes(), compilation);
-		}
-
-		public static bool CheckShouldCallInsteadOfCopying(IEnumerable<AttributeData> attributes, DefaultParamCompilationData compilation)
-		{
-			if (attributes is null)
-			{
-				return compilation.Configuration.CallInsteadOfCopying;
-			}
-
-			AttributeData? attr = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MethodConfigurationAttribute));
-
-			if (attr is not null && attr.TryGetNamedArgumentValue(DefaultParamMethodConfigurationAttribute.CallInsteadOfCopyingProperty, out bool value))
-			{
-				return value;
-			}
-
-			return compilation.Configuration.CallInsteadOfCopying;
-		}
-
-		public static bool IsOverride(IMethodSymbol symbol, out IMethodSymbol? baseMethod)
-		{
-			if (!symbol.IsOverride)
-			{
-				baseMethod = null;
-				return false;
-			}
-
-			baseMethod = symbol.OverriddenMethod;
-			return true;
-		}
-
-		private static TypeParameterContainer GetBaseMethodTypeParameters(IMethodSymbol baseMethod, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
-		{
-			return TypeParameterContainer.CreateFrom(baseMethod, compilation, cancellationToken);
-		}
-
 		private static bool TryUpdateTypeParameters(ref TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters, DefaultParamConfiguration configuration)
 		{
-			if (configuration.ApplyNewToGeneratedMembersWithEquivalentSignature)
+			if (configuration.AllowAddingDefaultParamToNewParameters)
 			{
 				typeParameters = TypeParameterContainer.Combine(typeParameters, baseTypeParameters);
 				return true;

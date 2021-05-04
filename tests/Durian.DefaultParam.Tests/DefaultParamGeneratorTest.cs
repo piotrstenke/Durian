@@ -5,7 +5,7 @@ using Durian.DefaultParam;
 using Durian.Logging;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Tests.DefaultParam.Generator
+namespace Durian.Tests.DefaultParam
 {
 	public abstract class DefaultParamGeneratorTest : LoggableGeneratorTest<DefaultParamGenerator>
 	{

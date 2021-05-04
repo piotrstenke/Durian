@@ -16,6 +16,11 @@
 		public static string ConfigurationNamespace { get; } = $"{MainNamespace}.Configuration";
 
 		/// <summary>
+		/// Namespace where the Durian code generation attributes are to be found.
+		/// </summary>
+		public static string GeneratorAttributesNamespace { get; } = $"{MainNamespace}.Generator";
+
+		/// <summary>
 		/// Returns the <paramref name="attributeName"/> with a 'Attribute' at the end.
 		/// </summary>
 		/// <param name="attributeName">Name of the attribute to get the full type name of.</param>

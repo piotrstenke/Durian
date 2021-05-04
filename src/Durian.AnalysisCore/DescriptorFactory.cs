@@ -177,6 +177,20 @@ namespace Durian
 		}
 
 		/// <summary>
+		/// Creates a new instance of <see cref="DiagnosticDescriptor"/> of the DUR0017 rule with the specified <paramref name="attributeName"/> and the 'attributeName2' left unspecified.
+		/// <para>See: <see cref="Descriptors.AttributeCannotBeAppliedToMembersWithAttribute"/></para>
+		/// </summary>
+		/// <param name="attributeName">Name of the attribute.</param>
+		public static DiagnosticDescriptor AttributeCannotBeAppliedToMembersWithAttribute(string attributeName)
+		{
+			return CopyDescriptor(
+				Descriptors.AttributeCannotBeAppliedToMembersWithAttribute,
+				("attributeName1", attributeName),
+				("{2}", "{1}")
+			);
+		}
+
+		/// <summary>
 		/// Creates a new instance of <see cref="DiagnosticDescriptor"/> of the DUR0017 rule with the specified <paramref name="attributeName1"/> and <paramref name="attributeName2"/>.
 		/// <para>See: <see cref="Descriptors.AttributeCannotBeAppliedToMembersWithAttribute"/></para>
 		/// </summary>

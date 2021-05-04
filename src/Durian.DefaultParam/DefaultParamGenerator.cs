@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using Durian.Data;
 using Durian.Logging;
 using Microsoft.CodeAnalysis;
@@ -71,17 +72,14 @@ namespace Durian.DefaultParam
 			return GeneratorName;
 		}
 
-		public override void Initialize(GeneratorInitializationContext context)
+		protected override (CSharpSyntaxTree tree, string hintName)[]? GetStaticSyntaxTrees(CancellationToken cancellationToken)
 		{
-			base.Initialize(context);
-			context.RegisterForPostInitialization(AddAttributeSources);
-		}
-
-		private void AddAttributeSources(GeneratorPostInitializationContext context)
-		{
-			InitializeSource(DefaultParamAttribute.CreateSyntaxTree(), DefaultParamAttribute.FullTypeName, in context);
-			InitializeSource(DefaultParamConfigurationAttribute.CreateSyntaxTree(), DefaultParamConfigurationAttribute.FullTypeName, in context);
-			InitializeSource(DefaultParamMethodConfigurationAttribute.CreateSyntaxTree(), DefaultParamMethodConfigurationAttribute.FullTypeName, in context);
+			return new[]
+			{
+				(DefaultParamAttribute.CreateSyntaxTree(), DefaultParamAttribute.FullyQualifiedName),
+				(DefaultParamConfigurationAttribute.CreateSyntaxTree(), DefaultParamConfigurationAttribute.FullyQualifiedName),
+				(DefaultParamMethodConfigurationAttribute.CreateSyntaxTree(), DefaultParamMethodConfigurationAttribute.FullyQualifiedName)
+			};
 		}
 
 		protected override void BeforeExecution(in GeneratorExecutionContext context)

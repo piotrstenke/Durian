@@ -109,7 +109,7 @@ namespace Durian.DefaultParam
 		)
 		{
 			if (AnalyzeAgaintsPartialOrExtern(symbol, declaration) &&
-				AnalyzeAgainstGeneratedCodeAttribute(symbol, compilation, out AttributeData[]? attributes) &&
+				AnalyzeAgaintsProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
 				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes))
 			{
 				if ((IsOverride(symbol, out IMethodSymbol? baseMethod) &&

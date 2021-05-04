@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
 		MissingSymbols.cs = MissingSymbols.cs
+		samples\Durian.Samples.DefaultParam\Program.cs = samples\Durian.Samples.DefaultParam\Program.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.DefaultParam.Tests", "tests\Durian.DefaultParam.Tests\Durian.DefaultParam.Tests.csproj", "{308BB750-C144-4197-8BF2-26D2D75E2661}"
@@ -28,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.DefaultParam", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.DefaultParam", "samples\Durian.Samples.DefaultParam\Durian.Samples.DefaultParam.csproj", "{A4233A46-44C8-42FB-BF75-7858828D4FCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Durian.Core", "src\Durian.Core\Durian.Core.csproj", "{46E3066C-2E87-4E69-A59C-DDB94D47BFF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Core", "src\Durian.Core\Durian.Core.csproj", "{46E3066C-2E87-4E69-A59C-DDB94D47BFF4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

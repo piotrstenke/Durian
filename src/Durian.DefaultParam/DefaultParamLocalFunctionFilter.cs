@@ -112,7 +112,7 @@ namespace Durian.DefaultParam
 					return;
 				}
 
-				DefaultParamMethodAnalyzer.ReportDiagnosticForLocalFunction(diagnosticReceiver, s);
+				DefaultParamMethodAnalyzer.WithDiagnostics.ReportDiagnosticForLocalFunction(diagnosticReceiver, s);
 			}
 		}
 

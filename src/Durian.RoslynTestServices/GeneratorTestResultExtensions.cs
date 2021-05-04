@@ -15,11 +15,11 @@ namespace Durian.Tests
 		private static readonly Regex _diagnosticMessageRegex = new(@"\(\d+,\d+\):.+?: ", RegexOptions.Singleline);
 
 		/// <summary>
-		/// Checks if the <see cref="IGeneratorTestResult.IsGenerated"/> property of the <paramref name="result"/> is <see langword="false"/> and if it contains any diagnostics with the specified <paramref name="ids"/>.
+		/// Checks if the <paramref name="result"/> failed to generate any code and if it contains <see cref="Diagnostic"/>s with the specified <paramref name="ids"/>.
 		/// </summary>
 		/// <typeparam name="T">Type of <see cref="IGeneratorTestResult"/> to work on.</typeparam>
-		/// <param name="result">The <see cref="IGeneratorTestResult"/> to check if has generated any sources and if contains diagnostics with the specified <paramref name="ids"/>.</param>
-		/// <param name="ids">Diagnostic IDs to be checked for.</param>
+		/// <param name="result"><see cref="IGeneratorTestResult"/> to check.</param>
+		/// <param name="ids">IDs of <see cref="Diagnostic"/>s to be checked for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
 		public static bool HasFailedAndContainsDiagnosticIDs<T>(this T result, params string[]? ids) where T : IGeneratorTestResult
 		{
@@ -27,15 +27,39 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Checks if the <see cref="IGeneratorTestResult.IsGenerated"/> property of the <paramref name="result"/> is <see langword="true"/> and if it contains any diagnostics with the specified <paramref name="ids"/>.
+		/// Checks if the <paramref name="result"/> failed to generate any code and if it doesn't contain <see cref="Diagnostic"/>s with the specified <paramref name="ids"/>.
+		/// </summary>i
+		/// <typeparam name="T">Type of <see cref="IGeneratorTestResult"/> to work on.</typeparam>
+		/// <param name="result"><see cref="IGeneratorTestResult"/> to check.</param>
+		/// <param name="ids">IDs of <see cref="Diagnostic"/>s that shouldn't be present in the <paramref name="result"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
+		public static bool HasFailedAndDoesNotContainDiagnosticIDs<T>(this T result, params string[]? ids) where T : IGeneratorTestResult
+		{
+			return !ContainsDiagnosticIDs(result, ids) && !result.IsGenerated;
+		}
+
+		/// <summary>
+		/// Checks if the <paramref name="result"/> has generated code and if it contains <see cref="Diagnostic"/>s with the specified <paramref name="ids"/>.
 		/// </summary>
 		/// <typeparam name="T">Type of <see cref="IGeneratorTestResult"/> to work on.</typeparam>
-		/// <param name="result">The <see cref="IGeneratorTestResult"/> to check if has generated any sources and if contains diagnostics with the specified <paramref name="ids"/>.</param>
-		/// <param name="ids">Diagnostic IDs to be checked for.</param>
+		/// <param name="result"><see cref="IGeneratorTestResult"/> to check.</param>
+		/// <param name="ids">IDs of <see cref="Diagnostic"/>s to be checked for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
 		public static bool HasSucceededAndContainsDiagnosticIDs<T>(this T result, params string[]? ids) where T : IGeneratorTestResult
 		{
 			return ContainsDiagnosticIDs(result, ids) && result.IsGenerated;
+		}
+
+		/// <summary>
+		/// Checks if the <paramref name="result"/> has generated code and if it doesn't contain <see cref="Diagnostic"/>s with the specified <paramref name="ids"/>.
+		/// </summary>i
+		/// <typeparam name="T">Type of <see cref="IGeneratorTestResult"/> to work on.</typeparam>
+		/// <param name="result"><see cref="IGeneratorTestResult"/> to check.</param>
+		/// <param name="ids">IDs of <see cref="Diagnostic"/>s that shouldn't be present in the <paramref name="result"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
+		public static bool HasSucceededAndDoesNotContainDiagnosticIDs<T>(this T result, params string[]? ids) where T : IGeneratorTestResult
+		{
+			return !ContainsDiagnosticIDs(result, ids) && result.IsGenerated;
 		}
 
 		/// <summary>
@@ -106,19 +130,18 @@ namespace Durian.Tests
 				return true;
 			}
 
+			string[] diagnostics;
+
 			if (ignoreLocationAndName)
 			{
-				return result.Diagnostics.All(d =>
-				{
-					string message = _diagnosticMessageRegex.Replace(d.GetMessage(CultureInfo.InvariantCulture), "");
-
-					return diagnosticMessages.Contains(message);
-				});
+				diagnostics = result.Diagnostics.Select(d => _diagnosticMessageRegex.Replace(d.GetMessage(CultureInfo.InvariantCulture), "")).ToArray();
 			}
 			else
 			{
-				return result.Diagnostics.All(d => diagnosticMessages.Contains(d.GetMessage(CultureInfo.InvariantCulture)));
+				diagnostics = result.Diagnostics.Select(d => d.GetMessage(CultureInfo.InvariantCulture)).ToArray();
 			}
+
+			return diagnosticMessages.All(d => diagnostics.Contains(d));
 		}
 	}
 }

@@ -206,7 +206,7 @@ namespace Durian
 		public static readonly DiagnosticDescriptor AttributeCannotBeAppliedToMembersWithAttribute = new(
 			id: "DUR0017",
 			title: "Attribute 'attributeName1' cannot be applied to members with the 'attributeName2' attribute",
-			messageFormat: "'{0}': Attribute '{1}' cannot be applied to members with the '{2}' attribute'",
+			messageFormat: "'{0}': Attribute '{1}' cannot be applied to members with the '{2}' attribute",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true

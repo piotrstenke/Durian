@@ -1,9 +1,9 @@
 ﻿using Durian.DefaultParam;
 using Xunit;
 
-namespace Durian.Tests.DefaultParam.Generator
+namespace Durian.Tests.DefaultParam
 {
-	public sealed class MethodSignatureErrorTests : DefaultParamGeneratorTest
+	public sealed class MethodSignatureTests : DefaultParamGeneratorTest
 	{
 		[Fact]
 		public void Error_When_IsParameterless_And_OtherParameterlessExists()
@@ -147,6 +147,68 @@ partial class Test : Parent
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
+		}
+
+		[Fact]
+		public void IgnoresBaseMethod()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+class Parent
+{{
+	public virtual void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	{{
+	}}
+}}
+
+partial class Test : Parent
+{{
+	public override void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	{{
+	}}
+}}
+";
+			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs("DUR0024"));
+		}
+
+		[Fact]
+		public void IgnoresMethodWhenHasNewModifier()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+class Parent
+{{
+	public void Method<T>(string value)
+	{{
+	}}
+}}
+
+partial class Test : Parent
+{{
+	public new void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	{{
+	}}
+}}
+";
+			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs("DUR0024"));
+		}
+
+		[Fact]
+		public void IgnoresMethodsGeneratedFromThisMethod()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	{{
+	}}
+}}
+";
+			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs("DUR0024"));
 		}
 	}
 }

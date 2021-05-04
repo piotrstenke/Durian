@@ -94,20 +94,20 @@ $@"//---------------------------------------------------------------------------
 		}
 
 		/// <summary>
-		/// Returns a <see cref="string"/> that represents the <c>Durian.Generator.GeneratedFromAttribute</c> with the specified <paramref name="source"/> as its argument.
+		/// Returns a <see cref="string"/> that represents the <c>GeneratedFromAttribute</c> with the specified <paramref name="source"/> as its argument.
 		/// </summary>
 		/// <param name="source">Member this code was generated from.</param>
 		public static string GetGeneratedFromAttribute(string? source)
 		{
-			return $"[global::Durian.Generator.GeneratedFrom(\"{source}\")]";
+			return $"[global::{DurianStrings.GeneratorAttributesNamespace}.GeneratedFrom(\"{source}\")]";
 		}
 
 		/// <summary>
-		/// Returns a <see cref="string"/> that represents the <c>Durian.Generator.DurianGeneratedAttribute</c>.
+		/// Returns a <see cref="string"/> that represents the <c>DurianGeneratedAttribute</c>.
 		/// </summary>
 		public static string GetDurianGeneratedAttribute()
 		{
-			return "[global::Durian.Generator.DurianGenerated]";
+			return $"[global::{DurianStrings.GeneratorAttributesNamespace}.DurianGenerated]";
 		}
 
 		/// <summary>

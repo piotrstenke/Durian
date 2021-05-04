@@ -7,8 +7,8 @@ namespace Durian.DefaultParam
 	{
 		public static class Descriptors
 		{
-			public static readonly DiagnosticDescriptor DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeAttribute =
-				DescriptorFactory.AttributeCannotBeAppliedToMembersWithAttribute(DefaultParamAttribute.AttributeName, "GeneratedCode");
+			public static readonly DiagnosticDescriptor DefaultParamAttributeCannotBeAppliedToMembersWithAttribute =
+				DescriptorFactory.AttributeCannotBeAppliedToMembersWithAttribute(DefaultParamAttribute.AttributeName);
 
 			public static readonly DiagnosticDescriptor ParentTypeOfMemberWithDefaultParamAttributeMustBePartial =
 				DescriptorFactory.ParentTypeOfMemberWithAttributeMustBePartial(DefaultParamAttribute.AttributeName);
@@ -35,10 +35,10 @@ namespace Durian.DefaultParam
 				DescriptorFactory.DoNotAddAttributeOnVirtualTypeParameter(DefaultParamAttribute.AttributeName);
 		}
 
-		public static void DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeAttribute(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol)
+		public static void DefaultParamAttributeCannotBeAppliedToMembersWithAttribute(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol, string? attributeName)
 		{
-			DiagnosticDescriptor d = Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeAttribute;
-			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol);
+			DiagnosticDescriptor d = Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithAttribute;
+			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol, attributeName);
 		}
 
 		public static void ParentTypeOfMemberWithDefaultParamAttributeMustBePartial(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol)

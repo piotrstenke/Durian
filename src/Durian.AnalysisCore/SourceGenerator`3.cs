@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using Durian.Data;
 using Durian.Logging;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -24,9 +25,9 @@ namespace Durian
 		where TFilter : notnull, IGeneratorSyntaxFilterWithDiagnostics
 	{
 		private ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? _diagnosticReceiver;
+		private readonly List<CSharpSyntaxTree> _generatedDuringCurrentPass;
 		private IFileNameProvider _fileNameProvider;
 		private bool _isFilterWithGeneratedSymbols;
-		private readonly List<CSharpSyntaxTree> _generatedDuringCurrentPass;
 
 		/// <summary>
 		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
@@ -220,6 +221,12 @@ namespace Durian
 		/// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
 		public sealed override void Execute(in GeneratorExecutionContext context)
 		{
+			if (context.Compilation is not CSharpCompilation compilation)
+			{
+				ResetData();
+				return;
+			}
+
 			if (!CheckReferencesDurianCore(in context))
 			{
 				context.ReportDiagnostic(Diagnostic.Create(Descriptors.ProjectMustReferenceDurianCore, Location.None));
@@ -228,7 +235,9 @@ namespace Durian
 
 			try
 			{
-				InitializeExecutionData(in context);
+				ResetData();
+				compilation = InitializeStaticTrees(compilation, in context);
+				InitializeExecutionData(compilation, in context);
 
 				if (!HasValidData)
 				{
@@ -254,6 +263,16 @@ namespace Durian
 		IDurianSyntaxReceiver IDurianSourceGenerator.CreateSyntaxReceiver()
 		{
 			return CreateSyntaxReceiver();
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="CSharpSyntaxTree"/>s that are generated statically, outside of the <typeparamref name="TFilter"/>s, along with their proper hint names.
+		/// </summary>
+		/// <param name="cancellationToken">Target <see cref="System.Threading.CancellationToken"/>.</param>
+		/// <remarks>Do not use the <see cref="TargetCompilation"/>, <see cref="SyntaxReceiver"/>, <see cref="ParseOptions"/> and <see cref="CancellationToken"/> properties, as they are set to their types' respective <see langword="default"/> values before this method is called.</remarks>
+		protected virtual (CSharpSyntaxTree tree, string hintName)[]? GetStaticSyntaxTrees(CancellationToken cancellationToken)
+		{
+			return null;
 		}
 
 		/// <summary>
@@ -484,6 +503,29 @@ namespace Durian
 			AddSource_Internal(original, tree, hintName, in context);
 		}
 
+		private CSharpCompilation InitializeStaticTrees(CSharpCompilation compilation, in GeneratorExecutionContext context)
+		{
+			(CSharpSyntaxTree tree, string hintName)[]? trees = GetStaticSyntaxTrees(context.CancellationToken);
+
+			if (trees is null)
+			{
+				return compilation;
+			}
+
+			foreach ((CSharpSyntaxTree tree, string hintName) in trees)
+			{
+				context.AddSource(hintName, tree.GetText(context.CancellationToken));
+				compilation = compilation.AddSyntaxTrees(tree);
+
+				if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
+				{
+					LogNode_Internal(tree.GetRoot(context.CancellationToken), hintName);
+				}
+			}
+
+			return compilation;
+		}
+
 		private void Filtrate(in GeneratorExecutionContext context)
 		{
 			FilterContainer<TFilter>? filters = GetFilters(in context);
@@ -575,16 +617,9 @@ namespace Durian
 			}
 		}
 
-		private void InitializeExecutionData(in GeneratorExecutionContext context)
+		private void InitializeExecutionData(CSharpCompilation currentCompilation, in GeneratorExecutionContext context)
 		{
-			ResetData();
-
 			if (context.SyntaxReceiver is not TSyntaxReceiver receiver || !ValidateSyntaxReceiver(receiver))
-			{
-				return;
-			}
-
-			if (context.Compilation is not CSharpCompilation currentCompilation)
 			{
 				return;
 			}

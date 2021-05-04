@@ -7,9 +7,11 @@ using Durian.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Diagnostics;
 
 namespace Durian.DefaultParam
 {
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public readonly struct TypeParameterData : IEquatable<TypeParameterData>
 	{
 		public readonly AttributeSyntax? Attribute { get; }
@@ -152,6 +154,11 @@ namespace Durian.DefaultParam
 			hashCode = (hashCode * -1521134295) + EqualityComparer<INamedTypeSymbol?>.Default.GetHashCode(TargetType);
 			hashCode = (hashCode * -1521134295) + EqualityComparer<ITypeParameterSymbol>.Default.GetHashCode(Symbol);
 			return hashCode;
+		}
+
+		private string GetDebuggerDisplay()
+		{
+			return $"Symbol = \"{Symbol}\", TargetType = \"{TargetType?.ToString() ?? string.Empty}\"";
 		}
 
 		bool IEquatable<TypeParameterData>.Equals(TypeParameterData other)

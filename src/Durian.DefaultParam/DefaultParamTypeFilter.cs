@@ -105,7 +105,7 @@ namespace Durian.DefaultParam
 			[NotNullWhen(true)] out DefaultParamTypeData? data
 		)
 		{
-			if (AnalyzeAgainstGeneratedCodeAttribute(symbol, compilation, out AttributeData[]? attributes) &&
+			if (AnalyzeAgaintsProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
 				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes) &&
 				AnalyzeTypeParameters(in typeParameters))
 			{
