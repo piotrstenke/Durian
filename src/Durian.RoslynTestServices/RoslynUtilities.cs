@@ -267,7 +267,8 @@ namespace Durian.Tests
 				MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(DurianGeneratedAttribute).Assembly.Location),
-				MetadataReference.CreateFromFile(Path.Combine(directory, "System.Runtime.dll"))
+				MetadataReference.CreateFromFile(Path.Combine(directory, "System.Runtime.dll")),
+				MetadataReference.CreateFromFile(Path.Combine(directory, "netstandard.dll"))
 			};
 		}
 

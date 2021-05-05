@@ -4,8 +4,6 @@
 
 // https://github.com/dotnet/runtime/blob/527f9ae88a0ee216b44d556f9bdc84037fe0ebda/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/NullableAttributes.cs
 
-using System;
-
 namespace System.Diagnostics.CodeAnalysis
 {
 	/// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>

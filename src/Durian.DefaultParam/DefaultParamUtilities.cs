@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading;
 using Durian.Data;
 using Durian.Extensions;
-using Microsoft.CodeAnalysis;
 using Durian.Generator;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam

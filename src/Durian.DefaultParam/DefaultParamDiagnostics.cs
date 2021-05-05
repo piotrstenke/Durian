@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using Microsoft.CodeAnalysis;
-using Durian.Generator;
 
 namespace Durian.DefaultParam
 {
