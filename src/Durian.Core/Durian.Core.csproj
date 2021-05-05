@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <PackageId>Durian.Core</PackageId>
@@ -12,5 +12,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>$(BaseIntermediateOutputPath)$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+  </ItemGroup>
 
 </Project>

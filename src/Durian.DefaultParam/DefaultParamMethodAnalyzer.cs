@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -9,7 +10,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.DefaultParam
 {
@@ -96,7 +96,7 @@ namespace Durian.DefaultParam
 			return AnalyzeCore(symbol, compilation, ref typeParameters, cancellationToken);
 		}
 
-		public static bool AnalyzeOverrideMethod([NotNullWhen(true)]IMethodSymbol? baseMethod, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
+		public static bool AnalyzeOverrideMethod([NotNullWhen(true)] IMethodSymbol? baseMethod, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
 		{
 			if (baseMethod is null)
 			{

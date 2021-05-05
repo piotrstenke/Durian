@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Text;
-using Microsoft.VisualBasic.CompilerServices;
 
 namespace Durian.Generator
 {

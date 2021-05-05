@@ -5,7 +5,6 @@ using Durian.Extensions;
 using Durian.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Threading;
 
 namespace Durian
 {

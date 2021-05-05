@@ -44,8 +44,8 @@ namespace Durian
 
 		/// <summary>
 		/// Creates a new instance of <see cref="DiagnosticDescriptor"/> of the DUR0011 rule with the specified <paramref name="attributeName"/> and <paramref name="modifier"/>.
-		/// </summary>
 		/// <para>See: <see cref="Descriptors.MemberWithAttributeCannotHaveModifier"/></para>
+		/// </summary>
 		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
 		/// <param name="modifier">Modifier the rule applies to.</param>
 		public static DiagnosticDescriptor MemberWithAttributeCannotHaveModifier(string attributeName, string modifier)

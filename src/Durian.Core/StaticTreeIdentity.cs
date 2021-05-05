@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace Durian.Generator
@@ -63,7 +64,7 @@ namespace Durian.Generator
 		/// <inheritdoc/>
 		public override bool Equals(object? obj)
 		{
-			if(obj is not StaticTreeIdentity other)
+			if (obj is not StaticTreeIdentity other)
 			{
 				return false;
 			}
@@ -80,7 +81,13 @@ namespace Durian.Generator
 		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Name, Namespace, Type, Package, SubTrees);
+			int hashCode = -1246297765;
+			hashCode = (hashCode * -1521134295) + EqualityComparer<PackageIdentity>.Default.GetHashCode(_package);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Name);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Namespace);
+			hashCode = (hashCode * -1521134295) + Type.GetHashCode();
+			hashCode = (hashCode * -1521134295) + SubTrees.GetHashCode();
+			return hashCode;
 		}
 
 		/// <inheritdoc/>

@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Reflection;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Durian.Generator
 {
@@ -69,7 +70,7 @@ namespace Durian.Generator
 		/// <inheritdoc/>
 		public override bool Equals(object? obj)
 		{
-			if(obj is not PackageIdentity other)
+			if (obj is not PackageIdentity other)
 			{
 				return false;
 			}
@@ -86,7 +87,13 @@ namespace Durian.Generator
 		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Name, Version, Module, Type, StaticTrees);
+			int hashCode = -726504116;
+			hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Name);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Version);
+			hashCode = (hashCode * -1521134295) + Module.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Type.GetHashCode();
+			hashCode = (hashCode * -1521134295) + StaticTrees.GetHashCode();
+			return hashCode;
 		}
 
 		/// <summary>
@@ -94,14 +101,14 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="module"><see cref="DurianModule"/> to check for.</param>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected.</exception>
-		public static bool References(DurianModule module)
+		public static bool HasReference(DurianModule module)
 		{
-			if(module == DurianModule.Core)
+			if (module == DurianModule.Core)
 			{
 				return true;
 			}
 
-			return References(module, Assembly.GetCallingAssembly());
+			return HasReference(module, Assembly.GetCallingAssembly());
 		}
 
 		/// <summary>
@@ -111,9 +118,9 @@ namespace Durian.Generator
 		/// <param name="assembly"><see cref="Assembly"/> to check if contains the reference.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected.</exception>
-		public static bool References(DurianModule module, Assembly assembly)
+		public static bool HasReference(DurianModule module, Assembly assembly)
 		{
-			if(assembly is null)
+			if (assembly is null)
 			{
 				throw new ArgumentNullException(nameof(assembly));
 			}
@@ -151,29 +158,8 @@ namespace Durian.Generator
 				throw new ArgumentNullException(nameof(assembly));
 			}
 
-			if(packageName is null)
-			{
-				throw new ArgumentNullException(nameof(packageName));
-			}
-
-			if(string.IsNullOrWhiteSpace(packageName))
-			{
-				throw new ArgumentException($"{nameof(packageName)} cannot be empty or white space only.");
-			}
-
-			string name = packageName.Replace("Durian.", "");
-			DurianModule module;
-
-			try
-			{
-				module = Enum.Parse<DurianModule>(name);
-			}
-			catch
-			{
-				throw new ArgumentException($"Unknown Durian package name: {packageName}", nameof(packageName));
-			}
-
-			return References(module, assembly);
+			DurianModule module = ParseModule(packageName);
+			return HasReference(module, assembly);
 		}
 
 		/// <summary>
@@ -200,25 +186,8 @@ namespace Durian.Generator
 		/// <exception cref="ArgumentException"><paramref name="packageName"/> cannot be empty or white space only. -or- Unknown Durian package name: <paramref name="packageName"/>.</exception>
 		public static PackageIdentity Find(string packageName)
 		{
-			if(packageName == null)
-			{
-				throw new ArgumentNullException(nameof(packageName));
-			}
-
-			if(string.IsNullOrWhiteSpace(packageName))
-			{
-				throw new ArgumentException($"{nameof(packageName)} cannot be empty or white space only.");
-			}
-
-			string name = packageName.Replace("Durian." ,"");
-
-			return name switch
-			{
-				"Core" => PackageFactory.Core,
-				"AnalysisCore" => PackageFactory.AnalysisCore,
-				"DefaultParam" => PackageFactory.DefaultParam,
-				_ => throw new ArgumentException($"Unknown Durian package name: {packageName}", nameof(packageName))
-			};
+			DurianModule module = ParseModule(packageName);
+			return Find(module);
 		}
 
 		/// <inheritdoc/>
@@ -231,6 +200,30 @@ namespace Durian.Generator
 		public static bool operator !=(PackageIdentity first, PackageIdentity second)
 		{
 			return !(first == second);
+		}
+
+		private static DurianModule ParseModule(string packageName)
+		{
+			if (packageName is null)
+			{
+				throw new ArgumentNullException(nameof(packageName));
+			}
+
+			if (string.IsNullOrWhiteSpace(packageName))
+			{
+				throw new ArgumentException($"{nameof(packageName)} cannot be empty or white space only.");
+			}
+
+			string name = packageName.Replace("Durian.", "");
+
+			try
+			{
+				return (DurianModule)Enum.Parse(typeof(DurianModule), name);
+			}
+			catch
+			{
+				throw new ArgumentException($"Unknown Durian package name: {packageName}", nameof(packageName));
+			}
 		}
 	}
 }

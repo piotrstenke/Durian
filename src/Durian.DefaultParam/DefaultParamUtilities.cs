@@ -4,12 +4,15 @@ using System.Threading;
 using Durian.Data;
 using Durian.Extensions;
 using Microsoft.CodeAnalysis;
+using Durian.Generator;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
 {
 	internal static class DefaultParamUtilities
 	{
+		public static PackageIdentity Package = PackageFactory.DefaultParam;
+
 		public static IEnumerator<IMemberData> GetFilterEnumerator(IDefaultParamFilter filter)
 		{
 			return filter.Mode switch

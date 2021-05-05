@@ -11,8 +11,9 @@ namespace Durian.DefaultParam
 	[GeneratorLoggingConfiguration(SupportsDiagnostics = true, SupportedLogs = GeneratorLogs.All, LogDirectory = "DefaultParam", RelativeToGlobal = true)]
 	public class DefaultParamGenerator : SourceGenerator<DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>.WithBuilder
 	{
-		public static string Version => "1.0.0";
-		public static string GeneratorName => nameof(DefaultParamGenerator);
+		public static string Version => DefaultParamUtilities.Package.Version;
+		public static string GeneratorName => DefaultParamUtilities.Package.Name;
+
 		public const int NumDefaultParamAttributes = 3;
 
 		private readonly DefaultParamRewriter _rewriter = new();

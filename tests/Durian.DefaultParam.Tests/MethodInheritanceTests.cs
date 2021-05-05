@@ -6,21 +6,45 @@ namespace Durian.Tests.DefaultParam
 	public sealed class MethodInheritanceTests : DefaultParamGeneratorTest
 	{
 		[Fact]
-		public void Error_When_InheritsGeneratedMethod()
+		public void Error_When_InheritsGeneratedGenericMethod()
 		{
 			string input =
-@$"using System.CodeDom.Compiler;
-using {DurianStrings.MainNamespace};
-
-partial abstract class Parent
+@$"partial class Parent
 {{	
 	{GetCodeGenerationAttributes("Parent.Method<T, U>(T)")}
-	public abstract void Method<T>(T value);
+	public virtual void Method<T>(T value)
+	{{
+	}}
 }}
 
 partial class Child : Parent
 {{
-	public override void Method<T>(T value);
+	public override void Method<T>(T value)
+	{{
+	}}
+}}
+";
+
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0021"));
+		}
+
+		[Fact]
+		public void Error_When_InheritsGeneratedNonGenericMethod()
+		{
+			string input =
+@$"partial class Parent
+{{	
+	{GetCodeGenerationAttributes("Parent.Method<T, U>(T)")}
+	public virtual void Method(string value)
+	{{
+	}}
+}}
+
+partial class Child : Parent
+{{
+	public override void Method(string value)
+	{{
+	}}
 }}
 ";
 

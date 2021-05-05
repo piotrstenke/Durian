@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Data;
@@ -7,7 +8,6 @@ using Durian.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.DefaultParam
 {
@@ -84,7 +84,7 @@ namespace Durian.DefaultParam
 			return AnalyzeAgaintsProhibitedAttributes(symbol, compilation, out _);
 		}
 
-		public static bool AnalyzeAgaintsProhibitedAttributes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)]out AttributeData[]? attributes)
+		public static bool AnalyzeAgaintsProhibitedAttributes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out AttributeData[]? attributes)
 		{
 			AttributeData[] attrs = symbol.GetAttributes().ToArray();
 			(INamedTypeSymbol type, string name)[] prohibitedAttributes = GetProhibitedAttributes(compilation);
@@ -123,7 +123,7 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
-		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)]out ITypeData[]? containingTypes)
+		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out ITypeData[]? containingTypes)
 		{
 			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
 
