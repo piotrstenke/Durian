@@ -33,6 +33,11 @@ namespace Durian.Logging
 		public bool SupportsDiagnostics { get; init; }
 
 		/// <summary>
+		/// Determines whether to enable the <see cref="ISourceGenerator"/> can throw <see cref="Exception"/>s. Defaults to <see langword="false"/>
+		/// </summary>
+		public bool EnableExceptions { get; init; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> class.
 		/// </summary>
 		public DefaultGeneratorLoggingConfigurationAttribute()

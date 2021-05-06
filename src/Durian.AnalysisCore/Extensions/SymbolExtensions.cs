@@ -571,7 +571,7 @@ namespace Durian.Extensions
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			return type.DeclaringSyntaxReferences.Select(e => e.GetSyntax(cancellationToken)).Cast<T>();
+			return type.DeclaringSyntaxReferences.Select(e => e.GetSyntax(cancellationToken)).OfType<T>();
 		}
 
 		/// <summary>

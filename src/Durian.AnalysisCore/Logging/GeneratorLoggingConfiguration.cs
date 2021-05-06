@@ -111,6 +111,11 @@ namespace Durian.Logging
 		public bool SupportsDiagnostics { get; init; }
 
 		/// <summary>
+		/// Determines whether to enable the <see cref="ISourceGenerator"/> can throw <see cref="Exception"/>s.
+		/// </summary>
+		public bool EnableExceptions { get; set; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLoggingConfiguration"/> class.
 		/// </summary>
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

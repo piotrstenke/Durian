@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -28,34 +27,38 @@ namespace Durian.DefaultParam.CodeFixes
 
 		public override async Task RegisterCodeFixesAsync(CodeFixContext context)
 		{
-			SyntaxNode? root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+			Diagnostic? diagnostic = context.Diagnostics.FirstOrDefault();
 
-			if (root is null)
+			if(diagnostic is null)
 			{
 				return;
 			}
 
-			Diagnostic diagnostic = context.Diagnostics[0];
-			TypeDeclarationSyntax declaration = root.FindToken(diagnostic.Location.SourceSpan.Start).Parent!.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
+			SyntaxNode? root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+			TypeDeclarationSyntax? declaration = root?.FindNode(diagnostic.Location.SourceSpan)?.FirstAncestorOrSelf<TypeDeclarationSyntax>();
 
-			context.RegisterCodeFix(CodeAction.Create(
-				title: Title,
-				createChangedDocument: token => MakePartialAsync(context.Document, root, declaration, token),
-				equivalenceKey: Title),
+			if(declaration is null)
+			{
+				return;
+			}
+
+			Document document = context.Document;
+
+			context.RegisterCodeFix(
+				CodeAction.Create(
+					title: Title,
+					createChangedDocument: _ => MakePartialAsync(document, root!, declaration),
+					equivalenceKey: Title),
 				diagnostic
 			);
 		}
 
-		private static Task<Document> MakePartialAsync(Document document, SyntaxNode root, TypeDeclarationSyntax declaration, CancellationToken cancellationToken)
+		private static Task<Document> MakePartialAsync(Document document, SyntaxNode root, TypeDeclarationSyntax declaration)
 		{
-			return Task.Run(() =>
-			{
-				TypeDeclarationSyntax newDeclaration = declaration.WithModifiers(SyntaxFactory.TokenList(declaration.Modifiers.Add(SyntaxFactory.Token(SyntaxKind.PartialKeyword))));
-				SyntaxNode newRoot = root.ReplaceNode(declaration, newDeclaration);
+			TypeDeclarationSyntax newDeclaration = declaration.WithModifiers(SyntaxFactory.TokenList(declaration.Modifiers.Add(SyntaxFactory.Token(SyntaxKind.PartialKeyword))));
+			SyntaxNode newRoot = root.ReplaceNode(declaration, newDeclaration);
 
-				return document.WithSyntaxRoot(newRoot);
-			},
-			cancellationToken);
+			return Task.FromResult(document.WithSyntaxRoot(newRoot));
 		}
 	}
 }

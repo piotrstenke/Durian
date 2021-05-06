@@ -160,43 +160,4 @@ namespace System.Diagnostics.CodeAnalysis
 }
 #endregion
 
-#region Module Initializer
-
-// https://github.com/dotnet/runtime/blob/01b7e73cd378145264a7cb7a09365b41ed42b240/src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/ModuleInitializerAttribute.cs
-
-namespace System.Runtime.CompilerServices
-{
-	/// <summary>
-	/// Used to indicate to the compiler that a method should be called
-	/// in its containing module's initializer.
-	/// </summary>
-	/// <remarks>
-	/// <para>
-	/// When one or more valid methods
-	/// with this attribute are found in a compilation, the compiler will
-	/// emit a module initializer which calls each of the attributed methods.
-	/// </para>
-	/// <para>
-	/// Certain requirements are imposed on any method targeted with this attribute:
-	/// <list type="bullet">
-	/// <item>The method must be `static`.</item>
-	/// <item>The method must be an ordinary member method, as opposed to a property accessor, constructor, local function, etc.</item>
-	/// <item>The method must be parameterless.</item>
-	/// <item>The method must return `void`.</item>
-	/// <item>The method must not be generic or be contained in a generic type.</item>
-	/// <item>The method's effective accessibility must be `internal` or `public`.</item>
-	/// </list>
-	/// </para>
-	/// <para>
-	/// The specification for module initializers in the .NET runtime can be found here:
-	/// https://github.com/dotnet/runtime/blob/main/docs/design/specs/Ecma-335-Augments.md#module-initializer
-	/// </para>
-	/// </remarks>
-	[AttributeUsage(AttributeTargets.Method, Inherited = false)]
-	public sealed class ModuleInitializerAttribute : Attribute
-	{
-	}
-}
-#endregion
-
 #endif

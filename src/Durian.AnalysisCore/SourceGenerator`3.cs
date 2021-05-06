@@ -121,14 +121,18 @@ namespace Durian
 			set => LoggingConfiguration.EnableDiagnostics = value;
 		}
 
-		/// <summary>
-		/// Determines whether to enable logging.
-		/// </summary>
-		/// <exception cref="InvalidOperationException"><see cref="EnableLogging"/> cannot be set to <see langword="true"/> if generator logging is globally disabled.</exception>
+		/// <inheritdoc cref="GeneratorLoggingConfiguration.EnableLogging"/>
 		public bool EnableLogging
 		{
 			get => LoggingConfiguration.EnableLogging;
 			set => LoggingConfiguration.EnableLogging = value;
+		}
+
+		/// <inheritdoc cref="GeneratorLoggingConfiguration.EnableExceptions"/>
+		public bool EnableExceptions
+		{
+			get => LoggingConfiguration.EnableExceptions;
+			set => LoggingConfiguration.EnableExceptions = value;
 		}
 
 		CSharpParseOptions IDurianSourceGenerator.ParseOptions => ParseOptions!;
@@ -144,7 +148,8 @@ namespace Durian
 		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
 		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> instance if logging is supported.</param>
 		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="EnableDiagnostics"/> to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.</param>
-		protected SourceGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported = true, bool enableDiagnosticsIfSupported = true) : this(checkForConfigurationAttribute, enableLoggingIfSupported, enableDiagnosticsIfSupported, new SymbolNameToFile())
+		/// <param name="enableExceptionsIfDebug">Determines whether to set <see cref="EnableExceptions"/> to <see langword="true"/> if the DEBUG symbol is present and the initial value of <see cref="EnableExceptions"/> is <see langword="false"/>.</param>
+		protected SourceGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported = true, bool enableDiagnosticsIfSupported = true, bool enableExceptionsIfDebug = true) : this(checkForConfigurationAttribute, enableLoggingIfSupported, enableDiagnosticsIfSupported, enableExceptionsIfDebug, new SymbolNameToFile())
 		{
 		}
 
@@ -155,9 +160,10 @@ namespace Durian
 		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
 		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> instance if logging is supported.</param>
 		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="EnableDiagnostics"/> to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.</param>
+		/// <param name="enableExceptionsIfDebug">Determines whether to set <see cref="EnableExceptions"/> to <see langword="true"/> if the DEBUG symbol is present and the initial value of <see cref="EnableExceptions"/> is <see langword="false"/>.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="fileNameProvider"/> is <see langword="null"/>.</exception>
-		protected SourceGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported, bool enableDiagnosticsIfSupported, IFileNameProvider fileNameProvider) : base(checkForConfigurationAttribute, enableLoggingIfSupported, enableDiagnosticsIfSupported)
+		protected SourceGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported, bool enableDiagnosticsIfSupported, bool enableExceptionsIfDebug, IFileNameProvider fileNameProvider) : base(checkForConfigurationAttribute, enableLoggingIfSupported, enableDiagnosticsIfSupported, enableExceptionsIfDebug)
 		{
 			if (fileNameProvider is null)
 			{
@@ -250,7 +256,11 @@ namespace Durian
 			{
 				LogException(e);
 				IsSuccess = false;
-				throw;
+
+				if(EnableExceptions)
+				{
+					throw;
+				}
 			}
 		}
 
@@ -658,10 +668,9 @@ namespace Durian
 			FileNameProvider.Reset();
 		}
 
-		[MemberNotNull(nameof(TargetCompilation), nameof(SyntaxReceiver), nameof(ParseOptions))]
 		private void ThrowIfHasNoValidData()
 		{
-			if (!HasValidData)
+			if (!HasValidData && EnableExceptions)
 			{
 				throw new InvalidOperationException($"{nameof(HasValidData)} must be true in order to add a new source!");
 			}

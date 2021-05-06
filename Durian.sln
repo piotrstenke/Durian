@@ -9,13 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.AnalysisCore", "src\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F7DC25BE-C8AA-4B1A-A752-70DB1234815E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{2403DE8D-90E0-47C9-8AB9-633B257AFD3B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.RoslynTestServices", "src\Durian.RoslynTestServices\Durian.RoslynTestServices.csproj", "{E179EA56-DDBF-4680-993C-A819FCA5D855}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.AnalysisCore.Tests", "tests\Durian.AnalysisCore.Tests\Durian.AnalysisCore.Tests.csproj", "{E1149A6A-B6FE-4ECA-BA7A-6101E35C91E7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{669AA144-A769-4EA2-9A61-4CF58A84FB12}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution_items", "solution_items", "{669AA144-A769-4EA2-9A61-4CF58A84FB12}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
@@ -26,9 +24,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.DefaultParam.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.DefaultParam", "src\Durian.DefaultParam\Durian.DefaultParam.csproj", "{0C040E7C-8BF7-4EBD-8023-E6B259643DAD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.DefaultParam", "samples\Durian.Samples.DefaultParam\Durian.Samples.DefaultParam.csproj", "{A4233A46-44C8-42FB-BF75-7858828D4FCC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Core", "src\Durian.Core\Durian.Core.csproj", "{46E3066C-2E87-4E69-A59C-DDB94D47BFF4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vsix", "vsix", "{1A8A1D48-D369-44D3-9934-8F81CA75F78F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.DefaultParam.Vsix", "vsix\Durian.DefaultParam.Vsix\Durian.DefaultParam.Vsix.csproj", "{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -100,18 +100,6 @@ Global
 		{0C040E7C-8BF7-4EBD-8023-E6B259643DAD}.Release|x64.Build.0 = Release|Any CPU
 		{0C040E7C-8BF7-4EBD-8023-E6B259643DAD}.Release|x86.ActiveCfg = Release|Any CPU
 		{0C040E7C-8BF7-4EBD-8023-E6B259643DAD}.Release|x86.Build.0 = Release|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Debug|x64.Build.0 = Debug|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Debug|x86.Build.0 = Debug|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Release|x64.ActiveCfg = Release|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Release|x64.Build.0 = Release|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Release|x86.ActiveCfg = Release|Any CPU
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC}.Release|x86.Build.0 = Release|Any CPU
 		{46E3066C-2E87-4E69-A59C-DDB94D47BFF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{46E3066C-2E87-4E69-A59C-DDB94D47BFF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46E3066C-2E87-4E69-A59C-DDB94D47BFF4}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -124,6 +112,18 @@ Global
 		{46E3066C-2E87-4E69-A59C-DDB94D47BFF4}.Release|x64.Build.0 = Release|Any CPU
 		{46E3066C-2E87-4E69-A59C-DDB94D47BFF4}.Release|x86.ActiveCfg = Release|Any CPU
 		{46E3066C-2E87-4E69-A59C-DDB94D47BFF4}.Release|x86.Build.0 = Release|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Debug|x64.Build.0 = Debug|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Debug|x86.Build.0 = Debug|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Release|x64.ActiveCfg = Release|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Release|x64.Build.0 = Release|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Release|x86.ActiveCfg = Release|Any CPU
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -134,8 +134,8 @@ Global
 		{E1149A6A-B6FE-4ECA-BA7A-6101E35C91E7} = {F7DC25BE-C8AA-4B1A-A752-70DB1234815E}
 		{308BB750-C144-4197-8BF2-26D2D75E2661} = {F7DC25BE-C8AA-4B1A-A752-70DB1234815E}
 		{0C040E7C-8BF7-4EBD-8023-E6B259643DAD} = {74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}
-		{A4233A46-44C8-42FB-BF75-7858828D4FCC} = {2403DE8D-90E0-47C9-8AB9-633B257AFD3B}
 		{46E3066C-2E87-4E69-A59C-DDB94D47BFF4} = {74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}
+		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D} = {1A8A1D48-D369-44D3-9934-8F81CA75F78F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {09524C45-0D6D-4456-B89D-9673853B9FA0}

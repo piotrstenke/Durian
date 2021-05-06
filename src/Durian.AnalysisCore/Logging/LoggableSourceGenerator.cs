@@ -21,7 +21,8 @@ namespace Durian.Logging
 		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
 		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="LoggableSourceGenerator"/> instance if logging is supported.</param>
 		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="GeneratorLoggingConfiguration.EnableDiagnostics"/> to <see langword="true"/> if <see cref="GeneratorLoggingConfiguration.SupportsDiagnostics"/> is <see langword="true"/>.</param>
-		protected LoggableSourceGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported = true, bool enableDiagnosticsIfSupported = true)
+		/// <param name="enableExceptionsIfDebug">Determines whether to set <see cref="GeneratorLoggingConfiguration.EnableExceptions"/> to <see langword="true"/> if the DEBUG symbol is present and the initial value of <see cref="GeneratorLoggingConfiguration.EnableExceptions"/> is <see langword="false"/>.</param>
+		protected LoggableSourceGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported = true, bool enableDiagnosticsIfSupported = true, bool enableExceptionsIfDebug = true)
 		{
 			LoggingConfiguration = checkForConfigurationAttribute ? GeneratorLoggingConfiguration.CreateConfigurationForGenerator(this) : GeneratorLoggingConfiguration.Default;
 
@@ -42,6 +43,13 @@ namespace Durian.Logging
 			{
 				LoggingConfiguration.EnableDiagnostics = true;
 			}
+
+#if DEBUG
+			if (enableExceptionsIfDebug)
+			{
+				LoggingConfiguration.EnableExceptions = true;
+			}
+#endif
 		}
 
 		/// <summary>

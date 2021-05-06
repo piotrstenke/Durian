@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
@@ -101,6 +102,12 @@ namespace Durian.DefaultParam
 		{
 			if (_skip || Count == 0)
 			{
+				return base.VisitIdentifierName(node);
+			}
+
+			if(_identifierCounter >= InputSymbols.Count)
+			{
+				// _identifierCounter and InputSymbols.Count on rare occasions get out of sync when the user is editing the method/type/delegate.
 				return base.VisitIdentifierName(node);
 			}
 

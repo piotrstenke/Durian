@@ -8,7 +8,7 @@ namespace Durian.Samples.DefaultParam
 		{
 		}
 
-		public virtual void Method<[DefaultParam(typeof(string))]T>(T value) where T : class
+		public static void Method<[DefaultParam(typeof(string))]T>(T value) where T : class
 		{
 			if (value is null)
 			{

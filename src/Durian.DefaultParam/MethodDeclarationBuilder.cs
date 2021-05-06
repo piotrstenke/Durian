@@ -4,6 +4,7 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 
 namespace Durian.DefaultParam
 {
@@ -270,7 +271,6 @@ namespace Durian.DefaultParam
 				return !SymbolEqualityComparer.Default.Equals(info.Symbol, compilation.AttributeConstructor);
 			}
 			))))));
-
 
 			int length = list.Count;
 

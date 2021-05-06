@@ -10,7 +10,7 @@ namespace Durian.Generator
 	/// Contains basic information about a Durian package.
 	/// </summary>
 	[DebuggerDisplay("Name = {Name}, Version = {Version}")]
-	public sealed class PackageIdentity : IEquatable<PackageIdentity>
+	public sealed record PackageIdentity
 	{
 		/// <summary>
 		/// Name of the package.
@@ -65,23 +65,6 @@ namespace Durian.Generator
 		public override string ToString()
 		{
 			return $"{Name}, {Version}";
-		}
-
-		/// <inheritdoc/>
-		public override bool Equals(object? obj)
-		{
-			if (obj is not PackageIdentity other)
-			{
-				return false;
-			}
-
-			return other == this;
-		}
-
-		/// <inheritdoc/>
-		public bool Equals(PackageIdentity? other)
-		{
-			return other is not null && other == this;
 		}
 
 		/// <inheritdoc/>
@@ -188,18 +171,6 @@ namespace Durian.Generator
 		{
 			DurianModule module = ParseModule(packageName);
 			return Find(module);
-		}
-
-		/// <inheritdoc/>
-		public static bool operator ==(PackageIdentity first, PackageIdentity second)
-		{
-			return first.Name == second.Name && first.Version == second.Version && first.Module == second.Module && first.Type == second.Type && first.StaticTrees == second.StaticTrees;
-		}
-
-		/// <inheritdoc/>
-		public static bool operator !=(PackageIdentity first, PackageIdentity second)
-		{
-			return !(first == second);
 		}
 
 		private static DurianModule ParseModule(string packageName)
