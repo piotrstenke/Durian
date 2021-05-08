@@ -5,30 +5,56 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Collects all references to a <see cref="ITypeParameterSymbol"/> in order they appear in the visited <see cref="CSharpSyntaxNode"/>.
+	/// </summary>
 	public class TypeParameterIdentifierCollector : CSharpSyntaxWalker
 	{
+		/// <summary>
+		/// A <see cref="List{T}"/> of collected <see cref="ITypeParameterSymbol"/>s or <see cref="IAliasSymbol"/>s of <see cref="ITypeParameterSymbol"/>s in order they appear.
+		/// </summary>
 		public List<ISymbol?> OutputSymbols { get; }
+
+		/// <summary>
+		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the input <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
 		public SemanticModel? SemanticModel { get; set; }
+
+		/// <summary>
+		/// Parent <see cref="DefaultParamCompilationData"/> of the input <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
 		public DefaultParamCompilationData? ParentCompilation { get; set; }
+
+		/// <summary>
+		/// Determines whether to visit the declaration body of a <see cref="MethodDeclarationSyntax"/>. Defaults to <see langword="true"/>.
+		/// </summary>
 		public bool VisitDeclarationBody { get; set; } = true;
 
+		/// <inheritdoc cref="TypeParameterIdentifierCollector(DefaultParamCompilationData, SemanticModel)"/>
 		public TypeParameterIdentifierCollector()
 		{
 			OutputSymbols = new List<ISymbol?>();
 		}
 
+		/// <inheritdoc cref="TypeParameterIdentifierCollector(DefaultParamCompilationData, SemanticModel)"/>
 		public TypeParameterIdentifierCollector(DefaultParamCompilationData? compilation)
 		{
 			OutputSymbols = new List<ISymbol?>();
 			ParentCompilation = compilation;
 		}
 
+		/// <inheritdoc cref="TypeParameterIdentifierCollector(DefaultParamCompilationData, SemanticModel)"/>
 		public TypeParameterIdentifierCollector(SemanticModel? semanticModel)
 		{
 			OutputSymbols = new List<ISymbol?>();
 			SemanticModel = semanticModel;
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TypeParameterIdentifierCollector"/> class.
+		/// </summary>
+		/// <param name="compilation">Parent <see cref="DefaultParamCompilationData"/> of the input <see cref="CSharpSyntaxNode"/>.</param>
+		/// <param name="semanticModel"><see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the input <see cref="CSharpSyntaxNode"/>.</param>
 		public TypeParameterIdentifierCollector(DefaultParamCompilationData? compilation, SemanticModel? semanticModel)
 		{
 			SemanticModel = semanticModel;
@@ -36,6 +62,7 @@ namespace Durian.DefaultParam
 			OutputSymbols = new List<ISymbol?>();
 		}
 
+		/// <inheritdoc/>
 		public override void VisitBlock(BlockSyntax node)
 		{
 			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
@@ -44,6 +71,7 @@ namespace Durian.DefaultParam
 			}
 		}
 
+		/// <inheritdoc/>
 		public override void VisitArrowExpressionClause(ArrowExpressionClauseSyntax node)
 		{
 			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
@@ -52,6 +80,7 @@ namespace Durian.DefaultParam
 			}
 		}
 
+		/// <inheritdoc/>
 		public override void VisitTypeParameterConstraintClause(TypeParameterConstraintClauseSyntax node)
 		{
 			foreach (TypeParameterConstraintSyntax constraint in node.Constraints)
@@ -60,12 +89,13 @@ namespace Durian.DefaultParam
 			}
 		}
 
+		/// <inheritdoc/>
 		public override void VisitAttribute(AttributeSyntax node)
 		{
-			ISymbol? symbol = SemanticModel.GetSymbolInfo(node).Symbol;
+			ISymbol? symbol = SemanticModel.GetSymbolInfo(node).Symbol?.ContainingType;
 
 			// The DefaultParam attributes will be removed later, so they don't need to be stored.
-			if (SymbolEqualityComparer.Default.Equals(symbol, ParentCompilation?.AttributeConstructor) || SymbolEqualityComparer.Default.Equals(symbol, ParentCompilation?.MethodConfigurationConstructor))
+			if (SymbolEqualityComparer.Default.Equals(symbol, ParentCompilation?.Attribute) || SymbolEqualityComparer.Default.Equals(symbol, ParentCompilation?.MethodConfigurationAttribute))
 			{
 				return;
 			}
@@ -73,12 +103,16 @@ namespace Durian.DefaultParam
 			base.VisitAttribute(node);
 		}
 
+		/// <inheritdoc/>
 		public override void VisitIdentifierName(IdentifierNameSyntax node)
 		{
 			ISymbol? symbol = SemanticModel.GetSymbolInfo(node).Symbol;
 			OutputSymbols.Add(symbol is ITypeParameterSymbol or IAliasSymbol ? symbol : null);
 		}
 
+		/// <summary>
+		/// Resets the collector.
+		/// </summary>
 		public void Reset()
 		{
 			OutputSymbols.Clear();

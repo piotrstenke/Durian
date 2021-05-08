@@ -13,6 +13,9 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Analyzes methods with type parameters marked using the <see cref="DefaultParamAttribute"/>.
+	/// </summary>
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	public partial class DefaultParamMethodAnalyzer : DefaultParamAnalyzer
 	{
@@ -51,8 +54,10 @@ namespace Durian.DefaultParam
 			}
 		}
 
+		/// <inheritdoc/>
 		public override SymbolKind SupportedSymbolKind => SymbolKind.Method;
 
+		/// <inheritdoc/>
 		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
 		{
 			return new[]
@@ -63,10 +68,11 @@ namespace Durian.DefaultParam
 				DefaultParamDiagnostics.Descriptors.DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute,
 				DefaultParamDiagnostics.Descriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter,
 				DefaultParamDiagnostics.Descriptors.ValueOfDefaultParamAttributeMustBeTheSameAsValueForOverridenMethod,
-				Descriptors.MethodWithSignatureAlreadyExists
+				DurianDescriptors.MethodWithSignatureAlreadyExists
 			};
 		}
 
+		/// <inheritdoc/>
 		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			if (symbol is not IMethodSymbol m || m.TypeParameters.Length == 0)
@@ -77,6 +83,13 @@ namespace Durian.DefaultParam
 			WithDiagnostics.Analyze(diagnosticReceiver, m, compilation, cancellationToken);
 		}
 
+		/// <summary>
+		/// Fully analyzes the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool Analyze(IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			TypeParameterContainer typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
@@ -96,6 +109,14 @@ namespace Durian.DefaultParam
 			return AnalyzeCore(symbol, compilation, ref typeParameters, cancellationToken);
 		}
 
+		/// <summary>
+		/// Analyzes, if the <paramref name="typeParameters"/> are valid when applied to a method overriding the <paramref name="baseMethod"/>.
+		/// </summary>
+		/// <param name="baseMethod"><see cref="IMethodSymbol"/> that is being overridden.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters to be analyzed.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="typeParameters"/> are valid when applied to a method overriding the <paramref name="baseMethod"/>, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeOverrideMethod([NotNullWhen(true)] IMethodSymbol? baseMethod, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
 		{
 			if (baseMethod is null)
@@ -137,11 +158,22 @@ namespace Durian.DefaultParam
 			}
 		}
 
+		/// <summary>
+		/// Analyzes, if the <paramref name="symbol"/> is a local function.
+		/// </summary>
+		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (is not local function), otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeAgaintsLocalFunction(IMethodSymbol symbol)
 		{
 			return symbol.MethodKind != MethodKind.LocalFunction;
 		}
 
+		/// <summary>
+		/// Analyzes, if the <paramref name="symbol"/> or either <see langword="partial"/> or <see langword="extern"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (is not <see langword="partial"/> or <see langword="extern"/>), otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeAgaintsPartialOrExtern(IMethodSymbol symbol, CancellationToken cancellationToken = default)
 		{
 			if (symbol?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) is not MethodDeclarationSyntax declaration)
@@ -152,16 +184,39 @@ namespace Durian.DefaultParam
 			return AnalyzeAgaintsPartialOrExtern(symbol, declaration);
 		}
 
+		/// <summary>
+		/// Analyzes, if the <paramref name="symbol"/> or either <see langword="partial"/> or <see langword="extern"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
+		/// <param name="declaration">Main <see cref="MethodDeclarationSyntax"/> of the <paramref name="symbol"/>.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (is not <see langword="partial"/> or <see langword="extern"/>), otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeAgaintsPartialOrExtern(IMethodSymbol symbol, MethodDeclarationSyntax declaration)
 		{
 			return !symbol.IsExtern && !symbol.IsPartial(declaration);
 		}
 
+		/// <summary>
+		/// Analyzes, if the signature of the <paramref name="symbol"/> is valid.
+		/// </summary>
+		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze the signature of.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the signature of <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeMethodSignature(IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			return AnalyzeMethodSignature(symbol, in typeParameters, compilation, out _, cancellationToken);
 		}
 
+		/// <summary>
+		/// Analyzes, if the signature of the <paramref name="symbol"/> is valid. If so, returns a <see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied.
+		/// </summary>
+		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze the signature of.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the signature of <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeMethodSignature(
 			IMethodSymbol symbol,
 			in TypeParameterContainer typeParameters,
@@ -190,11 +245,21 @@ namespace Durian.DefaultParam
 			);
 		}
 
+		/// <summary>
+		/// Determines, whether the <see cref="DefaultParamGenerator"/> should call the target <paramref name="method"/> instead of copying its contents.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		public static bool CheckShouldCallInsteadOfCopying(IMethodSymbol method, DefaultParamCompilationData compilation)
 		{
 			return CheckShouldCallInsteadOfCopying(method.GetAttributes(), compilation);
 		}
 
+		/// <summary>
+		/// Determines, whether the <see cref="DefaultParamGenerator"/> should call a <see cref="IMethodSymbol"/> instead of copying its contents.
+		/// </summary>
+		/// <param name="attributes">A collection of <see cref="IMethodSymbol"/>' attributes.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		public static bool CheckShouldCallInsteadOfCopying(IEnumerable<AttributeData> attributes, DefaultParamCompilationData compilation)
 		{
 			if (attributes is null)
@@ -212,6 +277,11 @@ namespace Durian.DefaultParam
 			return compilation.Configuration.CallInsteadOfCopying;
 		}
 
+		/// <summary>
+		/// Checks, if the <paramref name="symbol"/> has the <see langword="override"/> keyword. If so, returns the overridden method.
+		/// </summary>
+		/// <param name="symbol"><see cref="IMethodSymbol"/> to check if has the <see langword="override"/> keyword.</param>
+		/// <param name="baseMethod">The overridden <see cref="IMethodSymbol"/>. -or- <see langword="null"/> if the <paramref name="symbol"/> does not override any valid method.</param>
 		public static bool IsOverride(IMethodSymbol symbol, out IMethodSymbol? baseMethod)
 		{
 			if (!symbol.IsOverride)

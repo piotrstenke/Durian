@@ -9,6 +9,13 @@ namespace Durian
 	/// </summary>
 	public abstract class DurianAnalyzer : DiagnosticAnalyzer
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DurianAnalyzer"/> class.
+		/// </summary>
+		protected DurianAnalyzer()
+		{
+		}
+
 		/// <inheritdoc/>
 		public override void Initialize(AnalysisContext context)
 		{
@@ -23,6 +30,13 @@ namespace Durian
 	/// <typeparam name="T">Type of <see cref="ICompilationData"/> this <see cref="DurianAnalyzer"/> uses.</typeparam>
 	public abstract class DurianAnalyzer<T> : DurianAnalyzer where T : class, ICompilationData
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DurianAnalyzer{T}"/> class.
+		/// </summary>
+		protected DurianAnalyzer()
+		{
+		}
+
 		/// <inheritdoc/>
 		public override void Initialize(AnalysisContext context)
 		{

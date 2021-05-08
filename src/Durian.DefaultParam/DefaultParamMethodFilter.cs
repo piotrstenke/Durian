@@ -13,30 +13,54 @@ using static Durian.DefaultParam.DefaultParamMethodAnalyzer;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Filtrates and validates <see cref="MethodDeclarationBuilder"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
+	/// </summary>
 	public partial class DefaultParamMethodFilter : IDefaultParamFilter
 	{
+		/// <inheritdoc/>
 		public DefaultParamGenerator Generator { get; }
+
+		/// <inheritdoc/>
 		public IFileNameProvider FileNameProvider { get; }
+
+		/// <summary>
+		/// <see cref="FilterMode"/> of this <see cref="DefaultParamMethodFilter"/>.
+		/// </summary>
 		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
+
+		/// <inheritdoc/>
 		public bool IncludeGeneratedSymbols { get; } = true;
 
 		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
+		/// <inheritdoc cref="DefaultParamMethodFilter(DefaultParamGenerator, IFileNameProvider)"/>
 		public DefaultParamMethodFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamMethodFilter"/> class.
+		/// </summary>
+		/// <param name="generator"><see cref="DefaultParamGenerator"/> that created this filter.</param>
+		/// <param name="fileNameProvider"><see cref="IFileNameProvider"/> that is used to create a hint name for the generated source.</param>
 		public DefaultParamMethodFilter(DefaultParamGenerator generator, IFileNameProvider fileNameProvider)
 		{
 			Generator = generator;
 			FileNameProvider = fileNameProvider;
 		}
 
+		/// <summary>
+		/// Returns an array of <see cref="MethodDeclarationSyntax"/>s collected by the <see cref="Generator"/>'s <see cref="DefaultParamSyntaxReceiver"/> that can be filtrated by this filter.
+		/// </summary>
 		public MethodDeclarationSyntax[] GetCandidateMethods()
 		{
 			return Generator.SyntaxReceiver?.CandidateMethods?.ToArray() ?? Array.Empty<MethodDeclarationSyntax>();
 		}
 
+		/// <summary>
+		/// Enumerates through all <see cref="MethodDeclarationSyntax"/>es returned by the <see cref="GetCandidateMethods"/> and returns an array of <see cref="DefaultParamMethodData"/>s created from the valid ones.
+		/// </summary>
 		public DefaultParamMethodData[] GetValidMethods()
 		{
 			if (Generator.SyntaxReceiver is null || Generator.TargetCompilation is null || Generator.SyntaxReceiver.CandidateMethods.Count == 0)
@@ -47,6 +71,12 @@ namespace Durian.DefaultParam
 			return DefaultParamUtilities.IterateFilter<DefaultParamMethodData>(this);
 		}
 
+		/// <summary>
+		/// Enumerates through all the <see cref="MethodDeclarationSyntax"/>es collected by the <paramref name="syntaxReceiver"/> and returns an array of <see cref="DefaultParamMethodData"/>s created from the valid ones.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="syntaxReceiver"><see cref="DefaultParamSyntaxReceiver"/> that collected the <see cref="MethodDeclarationSyntax"/>es.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static DefaultParamMethodData[] GetValidMethods(
 			DefaultParamCompilationData compilation,
 			DefaultParamSyntaxReceiver syntaxReceiver,
@@ -61,6 +91,12 @@ namespace Durian.DefaultParam
 			return GetValidMethods_Internal(compilation, syntaxReceiver.CandidateMethods.ToArray(), cancellationToken);
 		}
 
+		/// <summary>
+		/// Enumerates through all the <paramref name="collectedMethods"/> and returns an array of <see cref="DefaultParamMethodData"/>s created from the valid ones.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="collectedMethods">A collection of <see cref="MethodDeclarationSyntax"/>es to validate.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static DefaultParamMethodData[] GetValidMethods(
 			DefaultParamCompilationData compilation,
 			IEnumerable<MethodDeclarationSyntax> collectedMethods,
@@ -82,6 +118,13 @@ namespace Durian.DefaultParam
 			return GetValidMethods_Internal(compilation, array, cancellationToken);
 		}
 
+		/// <summary>
+		/// Validates the specified <paramref name="declaration"/> and returns a new instance of <see cref="DefaultParamMethodData"/> if the validation was a success.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="declaration"><see cref="DefaultParamMethodData"/> to validate.</param>
+		/// <param name="data">Newly-created instance of <see cref="DefaultParamMethodData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			MethodDeclarationSyntax declaration,
@@ -89,7 +132,7 @@ namespace Durian.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			if (!GetValidationData(compilation, declaration, out SemanticModel? semanticModel, out TypeParameterContainer typeParameters, out IMethodSymbol? symbol, cancellationToken))
+			if (!GetValidationData(compilation, declaration, out SemanticModel? semanticModel, out IMethodSymbol? symbol, out TypeParameterContainer typeParameters, cancellationToken))
 			{
 				data = null;
 				return false;
@@ -98,6 +141,16 @@ namespace Durian.DefaultParam
 			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, ref typeParameters, out data, cancellationToken);
 		}
 
+		/// <summary>
+		/// Validates the specified <paramref name="declaration"/> and returns a new instance of <see cref="DefaultParamMethodData"/> if the validation was a success.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="declaration"><see cref="DefaultParamMethodData"/> to validate.</param>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="symbol"><see cref="IMethodSymbol"/> created from the <paramref name="declaration"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="declaration"/>'s type parameters.</param>
+		/// <param name="data">Newly-created instance of <see cref="DefaultParamMethodData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			MethodDeclarationSyntax declaration,
@@ -140,12 +193,22 @@ namespace Durian.DefaultParam
 			return false;
 		}
 
+		/// <summary>
+		/// Specifies, if the <see cref="SemanticModel"/>, <see cref="IMethodSymbol"/> and <see cref="TypeParameterContainer"/> can be created from the given <paramref name="declaration"/>.
+		/// If so, returns them.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="declaration"><see cref="MethodDeclarationSyntax"/> to validate.</param>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="symbol"><see cref="IMethodSymbol"/> created from the <paramref name="declaration"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="declaration"/>'s type parameters.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static bool GetValidationData(
 			DefaultParamCompilationData compilation,
 			MethodDeclarationSyntax declaration,
 			[NotNullWhen(true)] out SemanticModel? semanticModel,
-			out TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out IMethodSymbol? symbol,
+			out TypeParameterContainer typeParameters,
 			CancellationToken cancellationToken = default
 		)
 		{
@@ -301,12 +364,12 @@ namespace Durian.DefaultParam
 			DefaultParamCompilationData compilation,
 			CSharpSyntaxNode node,
 			[NotNullWhen(true)] out SemanticModel? semanticModel,
-			out TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out ISymbol? symbol,
+			out TypeParameterContainer typeParameters,
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = GetValidationData(compilation, (MethodDeclarationSyntax)node, out semanticModel, out typeParameters, out IMethodSymbol? s, cancellationToken);
+			bool isValid = GetValidationData(compilation, (MethodDeclarationSyntax)node, out semanticModel, out IMethodSymbol? s, out typeParameters, cancellationToken);
 			symbol = s;
 			return isValid;
 		}

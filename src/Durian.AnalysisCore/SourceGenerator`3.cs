@@ -234,7 +234,7 @@ namespace Durian
 
 			if (!CheckReferencesDurianCore(in context))
 			{
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.ProjectMustReferenceDurianCore, Location.None));
+				context.ReportDiagnostic(Diagnostic.Create(DurianDescriptors.ProjectMustReferenceDurianCore, Location.None));
 				return;
 			}
 
@@ -257,7 +257,7 @@ namespace Durian
 				LogException(e);
 				IsSuccess = false;
 
-				if(EnableExceptions)
+				if (EnableExceptions)
 				{
 					throw;
 				}
@@ -265,7 +265,7 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="IDurianSyntaxReceiver"/> to be used during the current generation pass.
+		/// Creates a new <typeparamref name="TSyntaxReceiver"/> to be used during the current generation pass.
 		/// </summary>
 		public abstract TSyntaxReceiver CreateSyntaxReceiver();
 

@@ -12,8 +12,18 @@ namespace Durian.DefaultParam
 {
 	public partial class DefaultParamDelegateFilter
 	{
+		/// <summary>
+		/// Contains <see langword="static"/> methods that validate <see cref="DelegateDeclarationSyntax"/>es and report <see cref="Diagnostic"/>s for the invalid ones.
+		/// </summary>
 		public static class WithDiagnostics
 		{
+			/// <summary>
+			/// Enumerates through all the <see cref="DelegateDeclarationSyntax"/>es collected by the <paramref name="syntaxReceiver"/> and returns an array of <see cref="DefaultParamDelegateData"/>s created from the valid ones.
+			/// </summary>
+			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+			/// <param name="syntaxReceiver"><see cref="DefaultParamSyntaxReceiver"/> that collected the <see cref="DelegateDeclarationSyntax"/>es.</param>
+			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 			public static DefaultParamDelegateData[] GetValidDelegates(
 				IDiagnosticReceiver diagnosticReceiver,
 				DefaultParamCompilationData compilation,
@@ -29,6 +39,13 @@ namespace Durian.DefaultParam
 				return GetValidDelegates_Internal(diagnosticReceiver, compilation, syntaxReceiver.CandidateDelegates.ToArray(), cancellationToken);
 			}
 
+			/// <summary>
+			/// Enumerates through all the <paramref name="collectedDelegates"/> and returns an array of <see cref="DefaultParamDelegateData"/>s created from the valid ones.
+			/// </summary>
+			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+			/// <param name="collectedDelegates">A collection of <see cref="DelegateDeclarationSyntax"/>es to validate.</param>
+			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 			public static DefaultParamDelegateData[] GetValidDelegates(
 				IDiagnosticReceiver diagnosticReceiver,
 				DefaultParamCompilationData compilation,
@@ -51,6 +68,14 @@ namespace Durian.DefaultParam
 				return GetValidDelegates_Internal(diagnosticReceiver, compilation, collected, cancellationToken);
 			}
 
+			/// <summary>
+			/// Validates the specified <paramref name="declaration"/> and returns a new instance of <see cref="DefaultParamDelegateData"/> if the validation was a success.
+			/// </summary>
+			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+			/// <param name="declaration"><see cref="DefaultParamDelegateData"/> to validate.</param>
+			/// <param name="data">Newly-created instance of <see cref="DefaultParamDelegateData"/>.</param>
+			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 			public static bool ValidateAndCreate(
 				IDiagnosticReceiver diagnosticReceiver,
 				DefaultParamCompilationData compilation,
@@ -59,7 +84,7 @@ namespace Durian.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
-				if (!GetValidationData(compilation, declaration, out SemanticModel? semanticModel, out TypeParameterContainer typeParameters, out INamedTypeSymbol? symbol, cancellationToken))
+				if (!GetValidationData(compilation, declaration, out SemanticModel? semanticModel, out INamedTypeSymbol? symbol, out TypeParameterContainer typeParameters, cancellationToken))
 				{
 					data = null;
 					return false;
@@ -68,6 +93,16 @@ namespace Durian.DefaultParam
 				return ValidateAndCreate(diagnosticReceiver, compilation, declaration, semanticModel, symbol, ref typeParameters, out data);
 			}
 
+			/// <summary>
+			/// Validates the specified <paramref name="declaration"/> and returns a new instance of <see cref="DefaultParamDelegateData"/> if the validation was a success.
+			/// </summary>
+			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+			/// <param name="declaration"><see cref="DefaultParamDelegateData"/> to validate.</param>
+			/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+			/// <param name="symbol"><see cref="INamedTypeSymbol"/> created from the <paramref name="declaration"/>.</param>
+			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="declaration"/>'s type parameters.</param>
+			/// <param name="data">Newly-created instance of <see cref="DefaultParamDelegateData"/>.</param>
 			public static bool ValidateAndCreate(
 				IDiagnosticReceiver diagnosticReceiver,
 				DefaultParamCompilationData compilation,

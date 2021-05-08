@@ -40,8 +40,8 @@ namespace Durian.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EventData"/> class.
 		/// </summary>
-		/// <param name="declaration">Target <see cref="EventDeclarationSyntax"/>.</param>
-		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
+		/// <param name="declaration"><see cref="EventDeclarationSyntax"/> this <see cref="DelegateData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="DelegateData"/>.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
@@ -52,8 +52,8 @@ namespace Durian.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EventData"/> class.
 		/// </summary>
-		/// <param name="declaration">Target <see cref="EventFieldDeclarationSyntax"/>.</param>
-		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
+		/// <param name="declaration"><see cref="EventFieldDeclarationSyntax"/> this <see cref="DelegateData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="DelegateData"/>.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
@@ -65,8 +65,8 @@ namespace Durian.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EventData"/> class.
 		/// </summary>
-		/// <param name="declaration">Target <see cref="EventFieldDeclarationSyntax"/>.</param>
-		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
+		/// <param name="declaration"><see cref="EventFieldDeclarationSyntax"/> this <see cref="DelegateData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="DelegateData"/>.</param>
 		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
@@ -83,15 +83,15 @@ namespace Durian.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EventData"/> class.
 		/// </summary>
-		/// <param name="declaration"></param>
-		/// <param name="compilation"></param>
-		/// <param name="symbol"></param>
-		/// <param name="semanticModel"></param>
-		/// <param name="containingTypes"></param>
-		/// <param name="containingNamespaces"></param>
-		/// <param name="attributes"></param>
-		/// <param name="variable"></param>
-		/// <param name="index"></param>
+		/// <param name="declaration"><see cref="EventFieldDeclarationSyntax"/> this <see cref="EventData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
+		/// <param name="symbol"><see cref="IEventSymbol"/> this <see cref="EventData"/> represents.</param>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
+		/// <param name="containingNamespaces">A collection of <see cref="IEventSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
+		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
+		/// <param name="variable"><see cref="VariableDeclaratorSyntax"/> that represents the target variable.</param>
+		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
 		protected internal EventData(
 			EventFieldDeclarationSyntax declaration,
 			ICompilationData compilation,
@@ -121,6 +121,11 @@ namespace Durian.Data
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="EventData"/> class.
+		/// </summary>
+		/// <param name="symbol"><see cref="IEventSymbol"/> this <see cref="EventData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
 		internal EventData(IEventSymbol symbol, ICompilationData compilation)
 			: base(GetFieldOrProperty(symbol, compilation, out SemanticModel semanticModel, out VariableDeclaratorSyntax? variable, out int index), compilation, symbol, semanticModel, null, null, null)
 		{

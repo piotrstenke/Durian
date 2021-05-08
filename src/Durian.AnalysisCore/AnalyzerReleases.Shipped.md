@@ -25,7 +25,7 @@ DUR0019 |  Durian  |  Error   |  [Core]: Specified type is not a valid type para
 DUR0020 |  Durian  |  Warning |  [Core]: Attribute 'attributeName' of overridden member should be added for clarity
 DUR0021 |  Durian  |  Error   |  [Core]: Do not override members generated using the 'attributeName' attribute
 DUR0022 |  Durian  |  Error   |  [Core]: Value of attribute 'attributeName' must be the same as the value defined on the overridden member
-DUR0023 |  Durian  |  Error   |  [Core]: Essential type 'typeName' is missing. Try reimporting the 'packageName' package.
+DUR0023 |  Durian  |  Error   |  [Core]: Essential type 'typeName' is missing. Try reimporting the 'packageName' package
 DUR0024 |  Durian  |  Error   |  [Core]: Method with the specified signature already exists
 DUR0025 |  Durian  |  Error   |  [Core]: Do not add the 'attributeName' attribute on type parameters of overridden virtual methods
 DUR0026 |  Durian  |  Error   |  [Core]: Projects with any Durian analyzer must reference the Durian.Core package

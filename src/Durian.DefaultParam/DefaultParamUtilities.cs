@@ -5,14 +5,25 @@ using Durian.Data;
 using Durian.Extensions;
 using Durian.Generator;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Contains various utility methods related to the 'DefaultParam' module.
+	/// </summary>
 	internal static class DefaultParamUtilities
 	{
+		/// <summary>
+		/// <see cref="PackageIdentity"/> of the 'DefaultParam' module.
+		/// </summary>
 		public static PackageIdentity Package = PackageFactory.DefaultParam;
 
+		/// <summary>
+		/// Returns a new <see cref="IEnumerator{T}"/> for the specified <paramref name="filter"/>.
+		/// </summary>
+		/// <param name="filter"><see cref="IDefaultParamFilter"/> to get the <see cref="IEnumerator{T}"/> for.</param>
 		public static IEnumerator<IMemberData> GetFilterEnumerator(IDefaultParamFilter filter)
 		{
 			return filter.Mode switch
@@ -25,6 +36,12 @@ namespace Durian.DefaultParam
 			};
 		}
 
+		/// <summary>
+		/// Iterates through whole <paramref name="filter"/>.
+		/// </summary>
+		/// <typeparam name="T">Type of <see cref="IDefaultParamTarget"/> the <paramref name="filter"/> returns.</typeparam>
+		/// <param name="filter"><see cref="IDefaultParamFilter"/> to iterate through.</param>
+		/// <returns>An array of <see cref="IDefaultParamTarget"/>s that were returned by the <paramref name="filter"/>.</returns>
 		public static T[] IterateFilter<T>(IDefaultParamFilter filter) where T : IDefaultParamTarget
 		{
 			IEnumerable<IDefaultParamTarget> collection = filter.Mode switch
@@ -47,7 +64,11 @@ namespace Durian.DefaultParam
 			}
 		}
 
-		public static int GetIndent(SyntaxNode? node)
+		/// <summary>
+		/// Get the indent level of the <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="CSharpSyntaxNode"/> to get the indent level of.</param>
+		public static int GetIndent(CSharpSyntaxNode? node)
 		{
 			SyntaxNode? parent = node;
 			int indent = 0;
@@ -70,6 +91,12 @@ namespace Durian.DefaultParam
 			return indent;
 		}
 
+		/// <summary>
+		/// Returns a collection of all namespaces used by the <paramref name="target"/> <see cref="IDefaultParamTarget"/>.
+		/// </summary>
+		/// <param name="target"><see cref="IDefaultParamTarget"/> to get the namespaces used by.</param>
+		/// <param name="parameters"><see cref="TypeParameterContainer"/> that contains the type parameters of the <paramref name="target"/> member.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static IEnumerable<string> GetUsedNamespaces(IDefaultParamTarget target, in TypeParameterContainer parameters, CancellationToken cancellationToken = default)
 		{
 			int defaultParamCount = parameters.NumDefaultParam;

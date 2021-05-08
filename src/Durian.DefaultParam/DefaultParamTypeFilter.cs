@@ -12,29 +12,53 @@ using static Durian.DefaultParam.DefaultParamAnalyzer;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Filtrates and validates <see cref="TypeDeclarationSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
+	/// </summary>
 	public partial class DefaultParamTypeFilter : IDefaultParamFilter
 	{
+		/// <inheritdoc/>
 		public DefaultParamGenerator Generator { get; }
+
+		/// <inheritdoc/>
 		public IFileNameProvider FileNameProvider { get; }
+
+		/// <summary>
+		/// <see cref="FilterMode"/> of this <see cref="DefaultParamTypeFilter"/>.
+		/// </summary>
 		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
+
+		/// <inheritdoc/>
 		public bool IncludeGeneratedSymbols { get; }
 		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
+		/// <inheritdoc cref="DefaultParamTypeFilter(DefaultParamGenerator, IFileNameProvider)"/>
 		public DefaultParamTypeFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamTypeFilter"/> class.
+		/// </summary>
+		/// <param name="generator"><see cref="DefaultParamGenerator"/> that created this filter.</param>
+		/// <param name="fileNameProvider"><see cref="IFileNameProvider"/> that is used to create a hint name for the generated source.</param>
 		public DefaultParamTypeFilter(DefaultParamGenerator generator, IFileNameProvider fileNameProvider)
 		{
 			Generator = generator;
 			FileNameProvider = fileNameProvider;
 		}
 
+		/// <summary>
+		/// Returns an array of <see cref="TypeDeclarationSyntax"/>s collected by the <see cref="Generator"/>'s <see cref="DefaultParamSyntaxReceiver"/> that can be filtrated by this filter.
+		/// </summary>
 		public TypeDeclarationSyntax[] GetCandidateTypes()
 		{
 			return Generator.SyntaxReceiver?.CandidateTypes?.ToArray() ?? Array.Empty<TypeDeclarationSyntax>();
 		}
 
+		/// <summary>
+		/// Enumerates through all <see cref="TypeDeclarationSyntax"/>es returned by the <see cref="GetCandidateTypes"/> and returns an array of <see cref="DefaultParamTypeData"/>s created from the valid ones.
+		/// </summary>
 		public DefaultParamTypeData[] GetValidTypes()
 		{
 			if (Generator.SyntaxReceiver is null || Generator.TargetCompilation is null || Generator.SyntaxReceiver.CandidateTypes.Count == 0)
@@ -45,6 +69,12 @@ namespace Durian.DefaultParam
 			return DefaultParamUtilities.IterateFilter<DefaultParamTypeData>(this);
 		}
 
+		/// <summary>
+		/// Enumerates through all the <paramref name="collectedTypes"/> and returns an array of <see cref="DefaultParamTypeData"/>s created from the valid ones.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="collectedTypes">A collection of <see cref="TypeDeclarationSyntax"/>es to validate.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static DefaultParamTypeData[] GetValidTypes(
 			DefaultParamCompilationData compilation,
 			IEnumerable<TypeDeclarationSyntax> collectedTypes,
@@ -66,6 +96,12 @@ namespace Durian.DefaultParam
 			return GetValidTypes_Internal(compilation, collected, cancellationToken);
 		}
 
+		/// <summary>
+		/// Enumerates through all the <see cref="TypeDeclarationSyntax"/>es collected by the <paramref name="syntaxReceiver"/> and returns an array of <see cref="DefaultParamTypeData"/>s created from the valid ones.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="syntaxReceiver"><see cref="DefaultParamSyntaxReceiver"/> that collected the <see cref="TypeDeclarationSyntax"/>es.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static DefaultParamTypeData[] GetValidTypes(
 			DefaultParamCompilationData compilation,
 			DefaultParamSyntaxReceiver syntaxReceiver,
@@ -80,6 +116,13 @@ namespace Durian.DefaultParam
 			return GetValidTypes_Internal(compilation, syntaxReceiver.CandidateTypes.ToArray(), cancellationToken);
 		}
 
+		/// <summary>
+		/// Validates the specified <paramref name="declaration"/> and returns a new instance of <see cref="DefaultParamTypeData"/> if the validation was a success.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="declaration"><see cref="DefaultParamTypeData"/> to validate.</param>
+		/// <param name="data">Newly-created instance of <see cref="DefaultParamTypeData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			TypeDeclarationSyntax declaration,
@@ -87,7 +130,7 @@ namespace Durian.DefaultParam
 			CancellationToken cancellationToken
 		)
 		{
-			if (!GetValidationData(compilation, declaration, out SemanticModel? semanticModel, out TypeParameterContainer typeParameters, out INamedTypeSymbol? symbol, cancellationToken))
+			if (!GetValidationData(compilation, declaration, out SemanticModel? semanticModel, out INamedTypeSymbol? symbol, out TypeParameterContainer typeParameters, cancellationToken))
 			{
 				data = null;
 				return false;
@@ -96,6 +139,15 @@ namespace Durian.DefaultParam
 			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, ref typeParameters, out data);
 		}
 
+		/// <summary>
+		/// Validates the specified <paramref name="declaration"/> and returns a new instance of <see cref="DefaultParamTypeData"/> if the validation was a success.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="declaration"><see cref="DefaultParamTypeData"/> to validate.</param>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> created from the <paramref name="declaration"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="declaration"/>'s type parameters.</param>
+		/// <param name="data">Newly-created instance of <see cref="DefaultParamTypeData"/>.</param>
 		public static bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			TypeDeclarationSyntax declaration,
@@ -129,12 +181,22 @@ namespace Durian.DefaultParam
 			return false;
 		}
 
+		/// <summary>
+		/// Specifies, if the <see cref="SemanticModel"/>, <see cref="INamedTypeSymbol"/> and <see cref="TypeParameterContainer"/> can be created from the given <paramref name="declaration"/>.
+		/// If so, returns them.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="declaration"><see cref="TypeDeclarationSyntax"/> to validate.</param>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> created from the <paramref name="declaration"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="declaration"/>'s type parameters.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static bool GetValidationData(
 			DefaultParamCompilationData compilation,
 			TypeDeclarationSyntax declaration,
 			[NotNullWhen(true)] out SemanticModel? semanticModel,
-			out TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out INamedTypeSymbol? symbol,
+			out TypeParameterContainer typeParameters,
 			CancellationToken cancellationToken = default
 		)
 		{
@@ -290,12 +352,12 @@ namespace Durian.DefaultParam
 			DefaultParamCompilationData compilation,
 			CSharpSyntaxNode node,
 			[NotNullWhen(true)] out SemanticModel? semanticModel,
-			out TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out ISymbol? symbol,
+			out TypeParameterContainer typeParameters,
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = GetValidationData(compilation, (TypeDeclarationSyntax)node, out semanticModel, out typeParameters, out INamedTypeSymbol? s, cancellationToken);
+			bool isValid = GetValidationData(compilation, (TypeDeclarationSyntax)node, out semanticModel, out INamedTypeSymbol? s, out typeParameters, cancellationToken);
 			symbol = s;
 			return isValid;
 		}

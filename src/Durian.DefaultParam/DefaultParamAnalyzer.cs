@@ -1,61 +1,86 @@
-﻿using System.Collections.Generic;
+﻿using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Data;
 using Durian.Extensions;
+using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Base class for all DefaultParam analyzers. Contains <see langword="static"/> methods that perform the most basic DefaultParam-related analysis.
+	/// </summary>
 	public abstract partial class DefaultParamAnalyzer : DurianAnalyzer<DefaultParamCompilationData>
 	{
+		/// <inheritdoc/>
 		public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.CreateRange(GetBaseDiagnostics().Concat(GetAnalyzerSpecificDiagnostics()));
 
+		/// <summary>
+		/// <see cref="SymbolKind"/> this analyzer can handle.
+		/// </summary>
 		public abstract SymbolKind SupportedSymbolKind { get; }
 
-		protected abstract IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics();
-
-		private static IEnumerable<DiagnosticDescriptor> GetBaseDiagnostics()
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamAnalyzer"/> class.
+		/// </summary>
+		protected DefaultParamAnalyzer()
 		{
-			return new[]
-			{
-				DefaultParamDiagnostics.Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithAttribute,
-				DefaultParamDiagnostics.Descriptors.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial,
-				DefaultParamDiagnostics.Descriptors.TypeParameterWithDefaultParamAttributeMustBeLast,
-				Descriptors.TypeIsNotValidTypeParameter,
-			};
 		}
 
+		/// <summary>
+		/// Returns a collection of <see cref="DiagnosticDescriptor"/>s that are used by this analyzer specifically.
+		/// </summary>
+		protected abstract IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics();
+
+		/// <inheritdoc/>
 		protected sealed override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
 		{
 			return new DefaultParamCompilationData(compilation);
 		}
 
+		/// <inheritdoc/>
 		public sealed override void Initialize(AnalysisContext context)
 		{
 			base.Initialize(context);
 		}
 
+		/// <inheritdoc/>
 		protected sealed override void Register(CompilationStartAnalysisContext context, DefaultParamCompilationData compilation)
 		{
-			context.RegisterSymbolAction(c => AnalyzeSymbol(c, compilation), SupportedSymbolKind);
+			context.RegisterSymbolAction(c => Analyzesymbol(c, compilation), SupportedSymbolKind);
 		}
 
-		private void AnalyzeSymbol(SymbolAnalysisContext context, DefaultParamCompilationData compilation)
+		private void Analyzesymbol(SymbolAnalysisContext context, DefaultParamCompilationData compilation)
 		{
 			ContextualDiagnosticReceiver<SymbolAnalysisContext> diagnosticReceiver = DiagnosticReceiverFactory.Symbol(context);
 			Analyze(diagnosticReceiver, context.Symbol, compilation, context.CancellationToken);
 		}
 
+		/// <summary>
+		/// Analyzes the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public virtual void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			WithDiagnostics.DefaultAnalyze(diagnosticReceiver, symbol, compilation, cancellationToken);
 		}
 
+		/// <summary>
+		/// Performs basic analysis of the <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool DefaultAnalyze(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			if (!TryGetTypeParameters(symbol, compilation, cancellationToken, out TypeParameterContainer typeParameters))
@@ -66,6 +91,14 @@ namespace Durian.DefaultParam
 			return DefaultAnalyze(symbol, compilation, in typeParameters, cancellationToken);
 		}
 
+		/// <summary>
+		/// Performs basic analysis of the <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="symbol"/>'s type parameters.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool DefaultAnalyze(ISymbol symbol, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters, CancellationToken cancellationToken = default)
 		{
 			if (!typeParameters.HasDefaultParams)
@@ -79,11 +112,24 @@ namespace Durian.DefaultParam
 				AnalyzeTypeParameters(in typeParameters);
 		}
 
+		/// <summary>
+		/// Analyzes, if the <paramref name="symbol"/> has <see cref="DurianGeneratedAttribute"/> or <see cref="GeneratedCodeAttribute"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (does not have the prohibited attributes), otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeAgaintsProhibitedAttributes(ISymbol symbol, DefaultParamCompilationData compilation)
 		{
 			return AnalyzeAgaintsProhibitedAttributes(symbol, compilation, out _);
 		}
 
+		/// <summary>
+		/// Analyzes, if the <paramref name="symbol"/> has <see cref="DurianGeneratedAttribute"/> or <see cref="GeneratedCodeAttribute"/>. If the <paramref name="symbol"/> is valid, returns an array of <paramref name="attributes"/> of that <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="attributes">An array of <see cref="AttributeData"/>s of the <paramref name="symbol"/>. Returned if the method itself returns <see langword="true"/>.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (does not have the prohibited attributes), otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeAgaintsProhibitedAttributes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out AttributeData[]? attributes)
 		{
 			AttributeData[] attrs = symbol.GetAttributes().ToArray();
@@ -105,6 +151,12 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
+		/// <summary>
+		/// Analyzes, if the <paramref name="symbol"/> and its containing types are see <see langword="partial"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeContainingTypes(ISymbol symbol, CancellationToken cancellationToken = default)
 		{
 			INamedTypeSymbol[] types = symbol.GetContainingTypeSymbols().ToArray();
@@ -123,6 +175,13 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
+		/// <summary>
+		/// Analyzes, if the <paramref name="symbol"/> and its containing types are see <see langword="partial"/>. If the <paramref name="symbol"/> is valid, returns an array of <see cref="ITypeData"/>s of its containing types.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="containingTypes">An array of this <paramref name="symbol"/>'s containing types' <see cref="ITypeData"/>s. Returned if the method itself returns <see langword="true"/>.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out ITypeData[]? containingTypes)
 		{
 			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
@@ -143,6 +202,11 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
+		/// <summary>
+		/// Checks, if the specified <paramref name="typeParameters"/> are valid.
+		/// </summary>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> to analyze.</param>
+		/// <returns><see langword="true"/> if the type parameters contained within the <see cref="TypeParameterContainer"/> are valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeTypeParameters(in TypeParameterContainer typeParameters)
 		{
 			if (!typeParameters.HasDefaultParams)
@@ -176,6 +240,11 @@ namespace Durian.DefaultParam
 			return true;
 		}
 
+		/// <summary>
+		/// Determines, whether the specified <paramref name="symbol"/> has a <see cref="GeneratedCodeAttribute"/> with the <see cref="DefaultParamGenerator.GeneratorName"/> specified as the <see cref="GeneratedCodeAttribute.Tool"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		public static bool IsDefaultParamGenerated(ISymbol symbol, DefaultParamCompilationData compilation)
 		{
 			AttributeData? attr = symbol.GetAttributeData(compilation.GeneratedCodeAttribute!);
@@ -191,6 +260,17 @@ namespace Durian.DefaultParam
 			}
 
 			return tool == DefaultParamGenerator.GeneratorName;
+		}
+
+		private static IEnumerable<DiagnosticDescriptor> GetBaseDiagnostics()
+		{
+			return new[]
+			{
+				DefaultParamDiagnostics.Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithAttribute,
+				DefaultParamDiagnostics.Descriptors.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial,
+				DefaultParamDiagnostics.Descriptors.TypeParameterWithDefaultParamAttributeMustBeLast,
+				DurianDescriptors.TypeIsNotValidTypeParameter,
+			};
 		}
 
 		private static bool HasPartialKeyword(ITypeData data)

@@ -1,20 +1,57 @@
 <Project>
 
   <PropertyGroup>
+    
+    <OutputType>Library</OutputType>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <Deterministic>true</Deterministic>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <BaseOutputPath>..\..\bin\</BaseOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>..\..\bin\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
     <BaseIntermediateOutputPath>..\..\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <MSBuildProjectExtensionsPath>..\..\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
     <Nullable>enable</Nullable>
     <LangVersion>9.0</LangVersion>
     <PreferredUILang>en-US</PreferredUILang>
+  
   </PropertyGroup>
 
-  <ItemGroup Condition="$(TargetFramework)=='netstandard2.0'">
-    <Compile Include="$(MSBuildThisFileDirectory)/MissingSymbols.cs"/>
+  <PropertyGroup Condition="$(MSBuildProjectDirectoryNoRoot.Contains('src'))">
+
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Piotr Stenke</Authors>
+    <Company>Piotr Stenke</Company>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <Product>$(MSBuildProjectName)</Product>
+    <Copyright>Copyright (c) Piotr Stenke - 2021</Copyright>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RepositoryType>git</RepositoryType>
+    <Icon>$(MSBuildProjectName).png</Icon>
+    <PackageIconUrl></PackageIconUrl>
+    <RepositoryUrl>https://github.com/piotrstenke/Durian</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>$(BaseIntermediateOutputPath)$(AssemblyName).xml</DocumentationFile>
+    <DebugType>portable</DebugType>
+    <Deterministic>true</Deterministic>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    
+  </PropertyGroup>
+  
+  <ItemGroup Condition="$(MsBuildProjectDirectoryNoRoot.Contains('src'))">
+    
+    <None Include="../../icons/$(MSBuildProjectName).png" Pack="true" Visible="false" PackagePath="" />
+  
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+  
+  </PropertyGroup>
 
 </Project>

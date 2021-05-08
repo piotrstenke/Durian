@@ -8,6 +8,9 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Enumerates through <see cref="IDefaultParamTarget"/>s returned by a <see cref="IDefaultParamFilter"/>.
+	/// </summary>
 	[DebuggerDisplay("Current = {Current}")]
 	public struct FilterEnumerator : IEnumerator<IDefaultParamTarget>
 	{
@@ -17,11 +20,18 @@ namespace Durian.DefaultParam
 		private readonly IDefaultParamFilter _filter;
 		private int _index;
 
+		/// <summary>
+		/// Current <see cref="IDefaultParamTarget"/>.
+		/// </summary>
 		public IDefaultParamTarget? Current { get; private set; }
 
 		IDefaultParamTarget IEnumerator<IDefaultParamTarget>.Current => Current!;
 		object IEnumerator.Current => Current!;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FilterEnumerator"/> struct.
+		/// </summary>
+		/// <param name="filter"><see cref="IDefaultParamFilter"/> that creates the <see cref="IDefaultParamTarget"/>s to enumerate.</param>
 		public FilterEnumerator(IDefaultParamFilter filter)
 		{
 			_filter = filter;
@@ -32,6 +42,10 @@ namespace Durian.DefaultParam
 			Current = null;
 		}
 
+		/// <summary>
+		/// Creates and validates the next <see cref="IDefaultParamTarget"/>.
+		/// </summary>
+		/// <returns><see langword="true"/> is the <see cref="IDefaultParamTarget"/> is valid to be used by a <see cref="DefaultParamGenerator"/>, otherwise <see langword="false"/>.</returns>
 		[MemberNotNullWhen(true, nameof(Current))]
 		public bool MoveNext()
 		{
@@ -58,6 +72,9 @@ namespace Durian.DefaultParam
 			return false;
 		}
 
+		/// <summary>
+		/// Resets the enumerator.
+		/// </summary>
 		public void Reset()
 		{
 			_index = 0;

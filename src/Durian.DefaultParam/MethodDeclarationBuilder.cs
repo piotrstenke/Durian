@@ -1,16 +1,19 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Builds a new <see cref="MethodDeclarationSyntax"/> based on the value specified in the <see cref="DefaultParamAttribute"/>.
+	/// </summary>
 	public sealed class MethodDeclarationBuilder : IDefaultParamDeclarationBuilder
 	{
-		private HashSet<int>? _newModifierIndices;
+		private HashSet<int>? _newModifierIndexes;
 		private GenericNameSyntax? _callMethodSyntax;
 		private ArgumentListSyntax? _callArguments;
 		private IdentifierNameSyntax? _newType;
@@ -20,14 +23,28 @@ namespace Durian.DefaultParam
 		private int _indentLevel;
 		private bool _applyReturnSyntax;
 
+		/// <summary>
+		/// Original <see cref="MethodDeclarationSyntax"/>.
+		/// </summary>
 		public MethodDeclarationSyntax OriginalDeclaration { get; private set; }
+
+		/// <summary>
+		/// <see cref="OriginalDeclaration"/> after modification.
+		/// </summary>
 		public MethodDeclarationSyntax CurrentDeclaration { get; private set; }
+
+		/// <summary>
+		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="OriginalDeclaration"/>.
+		/// </summary>
 		public SemanticModel SemanticModel { get; private set; }
 
 		CSharpSyntaxNode IDefaultParamDeclarationBuilder.CurrentNode => CurrentDeclaration;
 		CSharpSyntaxNode IDefaultParamDeclarationBuilder.OriginalNode => OriginalDeclaration;
 		bool IDefaultParamDeclarationBuilder.VisitDeclarationBody => _callMethodSyntax is null;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MethodDeclarationBuilder"/> class.
+		/// </summary>
 		public MethodDeclarationBuilder()
 		{
 			CurrentDeclaration = null!;
@@ -35,40 +52,62 @@ namespace Durian.DefaultParam
 			SemanticModel = null!;
 		}
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MethodDeclarationBuilder"/> class.
+		/// </summary>
+		/// <param name="data"><see cref="DefaultParamMethodData"/> to set as the <see cref="OriginalDeclaration"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public MethodDeclarationBuilder(DefaultParamMethodData data, CancellationToken cancellationToken = default)
 		{
 			SetData(data, cancellationToken);
 		}
-#pragma warning restore CS8618
 
+		/// <summary>
+		/// Returns a <see cref="SyntaxList{TNode}"/> of the <see cref="OriginalDeclaration"/>'s <see cref="TypeParameterConstraintClauseSyntax"/>es.
+		/// </summary>
 		public SyntaxList<TypeParameterConstraintClauseSyntax> GetOriginalConstraintClauses()
 		{
 			return OriginalDeclaration.ConstraintClauses;
 		}
 
+		/// <summary>
+		/// Returns the <see cref="TypeParameterConstraintClauseSyntax"/> at the specified <paramref name="index"/> in the <see cref="CurrentDeclaration"/>.
+		/// </summary>
+		/// <param name="index">Index of the <see cref="TypeParameterConstraintClauseSyntax"/> to get.</param>
 		public TypeParameterConstraintClauseSyntax GetCurrentConstraintClause(int index)
 		{
 			return CurrentDeclaration.ConstraintClauses[index];
 		}
 
+		/// <summary>
+		/// Returns number of type parameters in the <see cref="OriginalDeclaration"/>.
+		/// </summary>
 		public int GetOriginalTypeParameterCount()
 		{
 			return _numOriginalParameters;
 		}
 
+		/// <summary>
+		/// Sets the value of <see cref="CurrentDeclaration"/> to the value of <see cref="OriginalDeclaration"/>.
+		/// </summary>
 		public void Reset()
 		{
 			CurrentDeclaration = OriginalDeclaration;
 		}
 
+		/// <summary>
+		/// Sets the specified <paramref name="data"/> as the new <see cref="OriginalDeclaration"/>.
+		/// </summary>
+		/// <param name="data"><see cref="DefaultParamMethodData"/> to set as the new <see cref="OriginalDeclaration"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		[MemberNotNull(nameof(OriginalDeclaration), nameof(CurrentDeclaration), nameof(SemanticModel))]
 		public void SetData(DefaultParamMethodData data, CancellationToken cancellationToken = default)
 		{
 			SemanticModel = data.SemanticModel;
 			OriginalDeclaration = data.Declaration;
 
 			_indentLevel = DefaultParamUtilities.GetIndent(data.Declaration);
-			_newModifierIndices = data.NewModifierIndices;
+			_newModifierIndexes = data.NewModifierIndexes;
 			_numNonDefaultParam = data.TypeParameters.NumNonDefaultParam;
 
 			SetDeclarationWithoutDefaultParamAttribute(data.Declaration, data.ParentCompilation, cancellationToken);
@@ -86,6 +125,10 @@ namespace Durian.DefaultParam
 			}
 		}
 
+		/// <summary>
+		/// Replaces <see cref="TypeParameterConstraintClauseSyntax"/>es of the <see cref="CurrentDeclaration"/> with the specified collection of <see cref="TypeParameterConstraintClauseSyntax"/>es.
+		/// </summary>
+		/// <param name="constraintClauses">Collection of <see cref="TypeParameterConstraintClauseSyntax"/> to apply to the <see cref="CurrentDeclaration"/>.</param>
 		public void WithConstraintClauses(IEnumerable<TypeParameterConstraintClauseSyntax> constraintClauses)
 		{
 			SyntaxList<TypeParameterConstraintClauseSyntax> clauses = SyntaxFactory.List(constraintClauses);
@@ -110,6 +153,10 @@ namespace Durian.DefaultParam
 			CurrentDeclaration = CurrentDeclaration.WithConstraintClauses(clauses);
 		}
 
+		/// <summary>
+		/// Determines how many type parameters of the <see cref="OriginalDeclaration"/> should the <see cref="CurrentDeclaration"/> have.
+		/// </summary>
+		/// <param name="count">Number of type parameters to take.</param>
 		public void WithTypeParameters(int count)
 		{
 			if (CurrentDeclaration.TypeParameterList is null || count > CurrentDeclaration.TypeParameterList.Parameters.Count)
@@ -130,12 +177,17 @@ namespace Durian.DefaultParam
 			CheckNewModifier(count);
 		}
 
+		/// <inheritdoc/>
 		public void AcceptTypeParameterReplacer(TypeParameterReplacer replacer)
 		{
 			_newType = replacer.Replacement;
 			CurrentDeclaration = (MethodDeclarationSyntax)replacer.Visit(CurrentDeclaration);
 		}
 
+		/// <summary>
+		/// Sets the specified <paramref name="declaration"/> as the <see cref="CurrentDeclaration"/> without changing the <see cref="OriginalDeclaration"/>.
+		/// </summary>
+		/// <param name="declaration"><see cref="MethodDeclarationSyntax"/> to set as <see cref="CurrentDeclaration"/>.</param>
 		public void Emplace(MethodDeclarationSyntax declaration)
 		{
 			CurrentDeclaration = declaration;
@@ -241,7 +293,7 @@ namespace Durian.DefaultParam
 
 		private void CheckNewModifier(int count)
 		{
-			if (_newModifierIndices is not null && _newModifierIndices.Contains(count - _numNonDefaultParam))
+			if (_newModifierIndexes is not null && _newModifierIndexes.Contains(count - _numNonDefaultParam))
 			{
 				SyntaxTokenList modifiers = CurrentDeclaration.Modifiers;
 
@@ -253,6 +305,7 @@ namespace Durian.DefaultParam
 			}
 		}
 
+		[MemberNotNull(nameof(CurrentDeclaration))]
 		private void SetDeclarationWithoutDefaultParamAttribute(MethodDeclarationSyntax method, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
 		{
 			TypeParameterListSyntax? parameters = method.TypeParameterList;
@@ -268,7 +321,7 @@ namespace Durian.DefaultParam
 			list = SyntaxFactory.SeparatedList(list.Select(p => p.WithAttributeLists(SyntaxFactory.List(p.AttributeLists.Where(attrList => attrList.Attributes.Any(attr =>
 			{
 				SymbolInfo info = SemanticModel.GetSymbolInfo(attr, cancellationToken);
-				return !SymbolEqualityComparer.Default.Equals(info.Symbol, compilation.AttributeConstructor);
+				return !SymbolEqualityComparer.Default.Equals(info.Symbol?.ContainingType, compilation.Attribute);
 			}
 			))))));
 
@@ -294,7 +347,7 @@ namespace Durian.DefaultParam
 				.WithAttributeLists(SyntaxFactory.List(GetValidAttributes(method, compilation, cancellationToken)))
 				.WithTypeParameterList(SyntaxFactory.TypeParameterList(list)).WithoutTrivia();
 
-			//if (_newModifierIndices is null || _newModifierIndices.Count == 0)
+			//if (_newModifierIndexes is null || _newModifierIndexes.Count == 0)
 			//{
 			//	CurrentDeclaration = CurrentDeclaration.WithModifiers(SyntaxFactory.TokenList(CurrentDeclaration.Modifiers.Where(m => !m.IsKind(SyntaxKind.NewKeyword))));
 			//}
@@ -307,7 +360,7 @@ namespace Durian.DefaultParam
 				SeparatedSyntaxList<AttributeSyntax> l = SyntaxFactory.SeparatedList(list.Attributes.Where(attr =>
 				{
 					ISymbol? symbol = SemanticModel.GetSymbolInfo(attr, cancellationToken).Symbol;
-					return !SymbolEqualityComparer.Default.Equals(symbol, compilation.MethodConfigurationConstructor);
+					return !SymbolEqualityComparer.Default.Equals(symbol?.ContainingType, compilation.MethodConfigurationAttribute);
 				}));
 
 				if (l.Any())

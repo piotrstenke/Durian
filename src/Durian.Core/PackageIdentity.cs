@@ -122,9 +122,9 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="packageName">Name of the Durian package to check for.</param>
 		/// <returns></returns>
-		public static bool References(string packageName)
+		public static bool HasReference(string packageName)
 		{
-			return References(packageName, Assembly.GetCallingAssembly());
+			return HasReference(packageName, Assembly.GetCallingAssembly());
 		}
 
 		/// <summary>
@@ -134,7 +134,7 @@ namespace Durian.Generator
 		/// <param name="assembly"><see cref="Assembly"/> to check if contains the reference.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="packageName"/> cannot be empty or white space only. -or- Unknown Durian package name: <paramref name="packageName"/>.</exception>
-		public static bool References(string packageName, Assembly assembly)
+		public static bool HasReference(string packageName, Assembly assembly)
 		{
 			if (assembly is null)
 			{

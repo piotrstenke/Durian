@@ -4,10 +4,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Enumerates through <see cref="IDefaultParamTarget"/>s returned by a <see cref="IDefaultParamFilter"/> and reports <see cref="Diagnostic"/>s for the invalid ones.
+	/// </summary>
 	[DebuggerDisplay("Current = {Current}")]
 	public struct DiagnosticEnumerator : IEnumerator<IDefaultParamTarget>
 	{
@@ -18,11 +22,18 @@ namespace Durian.DefaultParam
 		private readonly CancellationToken _cancellationToken;
 		private int _index;
 
+		/// <summary>
+		/// Current <see cref="IDefaultParamTarget"/>.
+		/// </summary>
 		public IDefaultParamTarget? Current { get; private set; }
 
 		IDefaultParamTarget IEnumerator<IDefaultParamTarget>.Current => Current!;
 		object IEnumerator.Current => Current!;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DiagnosticEnumerator"/> struct.
+		/// </summary>
+		/// <param name="filter"><see cref="IDefaultParamFilter"/> that creates the <see cref="IDefaultParamTarget"/>s to enumerate.</param>
 		public DiagnosticEnumerator(IDefaultParamFilter filter)
 		{
 			_filter = filter;
@@ -34,6 +45,7 @@ namespace Durian.DefaultParam
 			Current = null;
 		}
 
+		/// <inheritdoc cref="FilterEnumerator.MoveNext"/>
 		[MemberNotNullWhen(true, nameof(Current))]
 		public bool MoveNext()
 		{
@@ -60,6 +72,7 @@ namespace Durian.DefaultParam
 			return false;
 		}
 
+		/// <inheritdoc cref="FilterEnumerator.Reset"/>
 		public void Reset()
 		{
 			_index = 0;

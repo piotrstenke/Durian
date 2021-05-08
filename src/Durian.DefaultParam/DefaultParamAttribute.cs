@@ -1,16 +1,38 @@
 using System.Text;
+using System.Threading;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Static class that contains all the metadata of the actual <c>DefaultParamAttribute</c>.
+	/// </summary>
 	public static class DefaultParamAttribute
 	{
+		/// <summary>
+		/// Name of the <c>DefaultParamAttribute</c> without the 'Attribute' suffix, i.e. 'DefaultParam'.
+		/// </summary>
 		public static string AttributeName => "DefaultParam";
+
+		/// <summary>
+		/// Full name of the <c>DefaultParamAttribute</c>, i.e. 'DefaultParamAttribute'.
+		/// </summary>
 		public static string FullTypeName => DurianStrings.GetFullAttributeType(AttributeName);
+
+		/// <summary>
+		/// Fully qualified name of the <c>DefaultParamAttribute</c>, i.e. 'Durian.DefaultParamAttribute'.
+		/// </summary>
 		public static string FullyQualifiedName => DurianStrings.GetFullyQualifiedAttribute(AttributeName);
+
+		/// <summary>
+		/// Name of the <c>DefaultParamAttribute.Type</c> property, i.e. 'Type'.
+		/// </summary>
 		public static string TypeProperty => "Type";
 
+		/// <summary>
+		/// Returns full source code of the <c>DefaultParamAttribute</c>.
+		/// </summary>
 		public static string GetText()
 		{
 			return
@@ -47,14 +69,22 @@ namespace {DurianStrings.MainNamespace}
 ";
 		}
 
+		/// <summary>
+		/// Returns full source code of the <c>DefaultParamAttribute</c> as an instance of <see cref="SourceText"/> with the <see cref="Encoding.UTF8"/> applied.
+		/// </summary>
 		public static SourceText CreateSourceText()
 		{
 			return SourceText.From(GetText(), Encoding.UTF8);
 		}
 
-		public static CSharpSyntaxTree CreateSyntaxTree()
+		/// <summary>
+		/// Returns full <see cref="CSharpSyntaxTree"/> of the <c>DefaultParamAttribute</c>.
+		/// </summary>
+		/// <param name="parseOptions"><see cref="CSharpParseOptions"/> that should be used when parsing the source code returned by the <see cref="GetText"/> method.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static CSharpSyntaxTree CreateSyntaxTree(CSharpParseOptions? parseOptions = null, CancellationToken cancellationToken = default)
 		{
-			return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(GetText(), encoding: Encoding.UTF8);
+			return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(GetText(), options: parseOptions, encoding: Encoding.UTF8, cancellationToken: cancellationToken);
 		}
 	}
 }

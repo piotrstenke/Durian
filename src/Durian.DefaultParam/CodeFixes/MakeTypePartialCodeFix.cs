@@ -10,26 +10,35 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam.CodeFixes
 {
+	/// <summary>
+	/// A code fix that applies the 'partial' modifier to a type.
+	/// </summary>
 	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakeTypePartialCodeFix))]
 	[Shared]
 	public sealed class MakeTypePartialCodeFix : CodeFixProvider
 	{
+		/// <summary>
+		/// Title of this code fix that is displayed to the user.
+		/// </summary>
 		public static string Title => "Make type partial";
 
+		/// <inheritdoc/>
 		public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
 			DefaultParamDiagnostics.Descriptors.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial.Id
 		);
 
+		/// <inheritdoc/>
 		public override FixAllProvider? GetFixAllProvider()
 		{
 			return WellKnownFixAllProviders.BatchFixer;
 		}
 
+		/// <inheritdoc/>
 		public override async Task RegisterCodeFixesAsync(CodeFixContext context)
 		{
 			Diagnostic? diagnostic = context.Diagnostics.FirstOrDefault();
 
-			if(diagnostic is null)
+			if (diagnostic is null)
 			{
 				return;
 			}
@@ -37,7 +46,7 @@ namespace Durian.DefaultParam.CodeFixes
 			SyntaxNode? root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 			TypeDeclarationSyntax? declaration = root?.FindNode(diagnostic.Location.SourceSpan)?.FirstAncestorOrSelf<TypeDeclarationSyntax>();
 
-			if(declaration is null)
+			if (declaration is null)
 			{
 				return;
 			}

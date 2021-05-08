@@ -12,29 +12,54 @@ using static Durian.DefaultParam.DefaultParamAnalyzer;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Filtrates and validates <see cref="DelegateDeclarationSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
+	/// </summary>
 	public partial class DefaultParamDelegateFilter : IDefaultParamFilter
 	{
+		/// <inheritdoc/>
 		public DefaultParamGenerator Generator { get; }
+
+		/// <inheritdoc/>
 		public IFileNameProvider FileNameProvider { get; }
+
+		/// <summary>
+		/// <see cref="FilterMode"/> of this <see cref="DefaultParamDelegateFilter"/>.
+		/// </summary>
 		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
+
+		/// <inheritdoc/>
 		public bool IncludeGeneratedSymbols { get; }
+
 		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
+		/// <inheritdoc cref="DefaultParamDelegateFilter(DefaultParamGenerator, IFileNameProvider)"/>
 		public DefaultParamDelegateFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamSyntaxReceiver"/> class.
+		/// </summary>
+		/// <param name="generator"><see cref="DefaultParamGenerator"/> that created this filter.</param>
+		/// <param name="fileNameProvider"><see cref="IFileNameProvider"/> that is used to create a hint name for the generated source.</param>
 		public DefaultParamDelegateFilter(DefaultParamGenerator generator, IFileNameProvider fileNameProvider)
 		{
 			Generator = generator;
 			FileNameProvider = fileNameProvider;
 		}
 
+		/// <summary>
+		/// Returns an array of <see cref="DelegateDeclarationSyntax"/>s collected by the <see cref="Generator"/>'s <see cref="DefaultParamSyntaxReceiver"/> that can be filtrated by this filter.
+		/// </summary>
 		public DelegateDeclarationSyntax[] GetCandidateDelegates()
 		{
 			return Generator.SyntaxReceiver?.CandidateDelegates?.ToArray() ?? Array.Empty<DelegateDeclarationSyntax>();
 		}
 
+		/// <summary>
+		/// Enumerates through all <see cref="DelegateDeclarationSyntax"/>es returned by the <see cref="GetCandidateDelegates"/> and returns an array of <see cref="DefaultParamDelegateData"/>s created from the valid ones.
+		/// </summary>
 		public DefaultParamDelegateData[] GetValidDelegates()
 		{
 			if (Generator.SyntaxReceiver is null || Generator.TargetCompilation is null || Generator.SyntaxReceiver.CandidateDelegates.Count == 0)
@@ -45,12 +70,22 @@ namespace Durian.DefaultParam
 			return DefaultParamUtilities.IterateFilter<DefaultParamDelegateData>(this);
 		}
 
+		/// <summary>
+		/// Specifies, if the <see cref="SemanticModel"/>, <see cref="INamedTypeSymbol"/> and <see cref="TypeParameterContainer"/> can be created from the given <paramref name="declaration"/>.
+		/// If so, returns them.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="declaration"><see cref="DelegateDeclarationSyntax"/> to validate.</param>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> created from the <paramref name="declaration"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="declaration"/>'s type parameters.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static bool GetValidationData(
 			DefaultParamCompilationData compilation,
 			DelegateDeclarationSyntax declaration,
 			[NotNullWhen(true)] out SemanticModel? semanticModel,
-			out TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out INamedTypeSymbol? symbol,
+			out TypeParameterContainer typeParameters,
 			CancellationToken cancellationToken
 		)
 		{
@@ -68,6 +103,12 @@ namespace Durian.DefaultParam
 			return symbol is not null;
 		}
 
+		/// <summary>
+		/// Enumerates through all the <paramref name="collectedDelegates"/> and returns an array of <see cref="DefaultParamDelegateData"/>s created from the valid ones.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="collectedDelegates">A collection of <see cref="DelegateDeclarationSyntax"/>es to validate.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static DefaultParamDelegateData[] GetValidDelegates(
 			DefaultParamCompilationData compilation,
 			IEnumerable<DelegateDeclarationSyntax> collectedDelegates,
@@ -89,6 +130,12 @@ namespace Durian.DefaultParam
 			return GetValidDelegates_Internal(compilation, collected, cancellationToken);
 		}
 
+		/// <summary>
+		/// Enumerates through all the <see cref="DelegateDeclarationSyntax"/>es collected by the <paramref name="syntaxReceiver"/> and returns an array of <see cref="DefaultParamDelegateData"/>s created from the valid ones.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="syntaxReceiver"><see cref="DefaultParamSyntaxReceiver"/> that collected the <see cref="DelegateDeclarationSyntax"/>es.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static DefaultParamDelegateData[] GetValidDelegates(
 			DefaultParamCompilationData compilation,
 			DefaultParamSyntaxReceiver syntaxReceiver,
@@ -103,6 +150,13 @@ namespace Durian.DefaultParam
 			return GetValidDelegates_Internal(compilation, syntaxReceiver.CandidateDelegates.ToArray(), cancellationToken);
 		}
 
+		/// <summary>
+		/// Validates the specified <paramref name="declaration"/> and returns a new instance of <see cref="DefaultParamDelegateData"/> if the validation was a success.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="declaration"><see cref="DefaultParamDelegateData"/> to validate.</param>
+		/// <param name="data">Newly-created instance of <see cref="DefaultParamDelegateData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			DelegateDeclarationSyntax declaration,
@@ -110,7 +164,7 @@ namespace Durian.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			if (!GetValidationData(compilation, declaration, out SemanticModel? semanticModel, out TypeParameterContainer typeParameters, out INamedTypeSymbol? symbol, cancellationToken))
+			if (!GetValidationData(compilation, declaration, out SemanticModel? semanticModel, out INamedTypeSymbol? symbol, out TypeParameterContainer typeParameters, cancellationToken))
 			{
 				data = null;
 				return false;
@@ -119,7 +173,16 @@ namespace Durian.DefaultParam
 			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, ref typeParameters, out data);
 		}
 
-		private static bool ValidateAndCreate(
+		/// <summary>
+		/// Validates the specified <paramref name="declaration"/> and returns a new instance of <see cref="DefaultParamDelegateData"/> if the validation was a success.
+		/// </summary>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="declaration"><see cref="DefaultParamDelegateData"/> to validate.</param>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> created from the <paramref name="declaration"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="declaration"/>'s type parameters.</param>
+		/// <param name="data">Newly-created instance of <see cref="DefaultParamDelegateData"/>.</param>
+		public static bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			DelegateDeclarationSyntax declaration,
 			SemanticModel semanticModel,
@@ -288,12 +351,12 @@ namespace Durian.DefaultParam
 			DefaultParamCompilationData compilation,
 			CSharpSyntaxNode node,
 			[NotNullWhen(true)] out SemanticModel? semanticModel,
-			out TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out ISymbol? symbol,
+			out TypeParameterContainer typeParameters,
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = GetValidationData(compilation, (DelegateDeclarationSyntax)node, out semanticModel, out typeParameters, out INamedTypeSymbol? s, cancellationToken);
+			bool isValid = GetValidationData(compilation, (DelegateDeclarationSyntax)node, out semanticModel, out INamedTypeSymbol? s, out typeParameters, cancellationToken);
 			symbol = s;
 			return isValid;
 		}

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Extensions;
@@ -11,23 +12,71 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Contains data of a single type parameter required by the <see cref="DefaultParamGenerator"/>.
+	/// </summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public readonly struct TypeParameterData : IEquatable<TypeParameterData>
 	{
+		/// <summary>
+		/// <see cref="AttributeSyntax"/> where the <see cref="DefaultParamAttribute"/> value was defined. -or- <see langword="null"/> if the <see cref="DefaultParamAttribute"/> is not defined on the target <see cref="Symbol"/>.
+		/// </summary>
 		public readonly AttributeSyntax? Attribute { get; }
-		public readonly TypeParameterSyntax Syntax { get; }
-		public readonly Location Location => Syntax.GetLocation();
-		public readonly SemanticModel SemanticModel { get; }
-		public readonly MemberDeclarationSyntax Parent { get; }
-		public readonly INamedTypeSymbol? TargetType { get; }
-		public readonly ITypeParameterSymbol Symbol { get; }
-		public readonly string Name => Symbol.Name;
-		public readonly bool IsDefaultParam => Attribute is not null && Symbol is not null;
 
+		/// <summary>
+		/// <see cref="TypeParameterSyntax"/> of the target <see cref="Symbol"/>.
+		/// </summary>
+		public readonly TypeParameterSyntax Syntax { get; }
+
+		/// <summary>
+		/// <see cref="Location"/> of the <see cref="Syntax"/>.
+		/// </summary>
+		public readonly Location Location => Syntax.GetLocation();
+
+		/// <summary>
+		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="Syntax"/>.
+		/// </summary>
+		public readonly SemanticModel SemanticModel { get; }
+
+		/// <summary>
+		/// Parent <see cref="MemberDeclarationSyntax"/> of the <see cref="Syntax"/>.
+		/// </summary>
+		public readonly MemberDeclarationSyntax Parent { get; }
+
+		/// <summary>
+		/// The <see cref="INamedTypeSymbol"/> that was specified using the <see cref="Attribute"/>. -or- <see langword="null"/> if <see cref="Attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.
+		/// </summary>
+		[MemberNotNull(nameof(Attribute))]
+		public readonly INamedTypeSymbol? TargetType { get; }
+
+		/// <summary>
+		/// Target <see cref="ITypeParameterSymbol"/>.
+		/// </summary>
+		public readonly ITypeParameterSymbol Symbol { get; }
+
+		/// <summary>
+		/// Name of the <see cref="Symbol"/>.
+		/// </summary>
+		public readonly string Name => Symbol.Name;
+
+		/// <summary>
+		/// Determines whether the type target <see cref="Symbol"/> has a valid <see cref="DefaultParamAttribute"/>.
+		/// </summary>
+		public readonly bool IsDefaultParam => Attribute is not null && TargetType is not null;
+
+		/// <inheritdoc cref="TypeParameterData(TypeParameterSyntax, ITypeParameterSymbol, SemanticModel, AttributeSyntax, INamedTypeSymbol)"/>
 		public TypeParameterData(TypeParameterSyntax syntax, ITypeParameterSymbol symbol, SemanticModel semanticModel) : this(syntax, symbol, semanticModel, null, null)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TypeParameterData"/> struct.
+		/// </summary>
+		/// <param name="syntax">Target <see cref="TypeParameterSyntax"/>.</param>
+		/// <param name="symbol"><see cref="ITypeParameterSymbol"/> represented by the target <paramref name="syntax"/>.</param>
+		/// <param name="semanticModel"><see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the target <paramref name="syntax"/>.</param>
+		/// <param name="attribute">Valid <see cref="DefaultParamAttribute"/> defined on the target <paramref name="symbol"/>.</param>
+		/// <param name="targetType">The <see cref="INamedTypeSymbol"/> that was specified using the <paramref name="attribute"/>. -or- <see langword="null"/> if <paramref name="attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.</param>
 		public TypeParameterData(TypeParameterSyntax syntax, ITypeParameterSymbol symbol, SemanticModel semanticModel, AttributeSyntax? attribute, INamedTypeSymbol? targetType)
 		{
 			Syntax = syntax;
@@ -38,16 +87,70 @@ namespace Durian.DefaultParam
 			SemanticModel = semanticModel;
 		}
 
+		/// <inheritdoc/>
+		public override bool Equals(object obj)
+		{
+			if (obj is TypeParameterData data)
+			{
+				return Equals(data);
+			}
+
+			return false;
+		}
+
+		/// <inheritdoc/>
+		public bool Equals(TypeParameterData other)
+		{
+			return other == this;
+		}
+
+		/// <inheritdoc/>
+		public override int GetHashCode()
+		{
+			int hashCode = -2050731313;
+			hashCode = (hashCode * -1521134295) + EqualityComparer<AttributeSyntax?>.Default.GetHashCode(Attribute);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<TypeParameterSyntax>.Default.GetHashCode(Syntax);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<MemberDeclarationSyntax>.Default.GetHashCode(Parent);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<INamedTypeSymbol?>.Default.GetHashCode(TargetType);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<ITypeParameterSymbol>.Default.GetHashCode(Symbol);
+			return hashCode;
+		}
+
+		private string GetDebuggerDisplay()
+		{
+			return $"Symbol = \"{Symbol}\", TargetType = \"{TargetType?.ToString() ?? string.Empty}\"";
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="TypeParameterData"/> based on the specified <paramref name="typeParameter"/>.
+		/// </summary>
+		/// <param name="typeParameter"><see cref="TypeParameterSyntax"/> to create the <see cref="TypeParameterData"/> from.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static TypeParameterData CreateFrom(TypeParameterSyntax typeParameter, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			return CreateFrom(typeParameter, compilation.Compilation.GetSemanticModel(typeParameter.SyntaxTree), compilation, cancellationToken);
 		}
 
+		/// <summary>
+		/// Creates a new <see cref="TypeParameterData"/> based on the specified <paramref name="typeParameter"/>.
+		/// </summary>
+		/// <param name="typeParameter"><see cref="TypeParameterSyntax"/> to create the <see cref="TypeParameterData"/> from.</param>
+		/// <param name="semanticModel"><see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the target <paramref name="typeParameter"/>.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static TypeParameterData CreateFrom(TypeParameterSyntax typeParameter, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			return CreateFrom(typeParameter, semanticModel, compilation.Attribute!, cancellationToken);
 		}
 
+		/// <summary>
+		/// Creates a new <see cref="TypeParameterData"/> based on the specified <paramref name="typeParameter"/>.
+		/// </summary>
+		/// <param name="typeParameter"><see cref="TypeParameterSyntax"/> to create the <see cref="TypeParameterData"/> from.</param>
+		/// <param name="semanticModel"><see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the target <paramref name="typeParameter"/>.</param>
+		/// <param name="defaultParamAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="DefaultParamAttribute"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static TypeParameterData CreateFrom(TypeParameterSyntax typeParameter, SemanticModel semanticModel, INamedTypeSymbol defaultParamAttribute, CancellationToken cancellationToken = default)
 		{
 			ITypeParameterSymbol symbol = GetParameterSymbol(typeParameter, semanticModel, cancellationToken);
@@ -62,6 +165,12 @@ namespace Durian.DefaultParam
 			return new TypeParameterData(typeParameter, symbol, semanticModel);
 		}
 
+		/// <summary>
+		/// Creates a new <see cref="TypeParameterData"/> based on the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ITypeParameterSymbol"/> to create the <see cref="TypeParameterData"/> from.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static TypeParameterData CreateFrom(ITypeParameterSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) is not TypeParameterSyntax syntax)
@@ -130,42 +239,7 @@ namespace Durian.DefaultParam
 			return data.ConstructorArguments.FirstOrDefault().Value as INamedTypeSymbol;
 		}
 
-		public override bool Equals(object obj)
-		{
-			if (obj is TypeParameterData data)
-			{
-				return Equals(data);
-			}
-
-			return false;
-		}
-
-		public bool IsEquivalentTo(in TypeParameterData other)
-		{
-			return this == other;
-		}
-
-		public override int GetHashCode()
-		{
-			int hashCode = -2050731313;
-			hashCode = (hashCode * -1521134295) + EqualityComparer<AttributeSyntax?>.Default.GetHashCode(Attribute);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<TypeParameterSyntax>.Default.GetHashCode(Syntax);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<MemberDeclarationSyntax>.Default.GetHashCode(Parent);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<INamedTypeSymbol?>.Default.GetHashCode(TargetType);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<ITypeParameterSymbol>.Default.GetHashCode(Symbol);
-			return hashCode;
-		}
-
-		private string GetDebuggerDisplay()
-		{
-			return $"Symbol = \"{Symbol}\", TargetType = \"{TargetType?.ToString() ?? string.Empty}\"";
-		}
-
-		bool IEquatable<TypeParameterData>.Equals(TypeParameterData other)
-		{
-			return IsEquivalentTo(in other);
-		}
-
+		/// <inheritdoc/>
 		public static bool operator ==(in TypeParameterData first, in TypeParameterData second)
 		{
 			bool areEqual = first.Attribute is null
@@ -185,6 +259,7 @@ namespace Durian.DefaultParam
 				first.Parent.IsEquivalentTo(second.Parent);
 		}
 
+		/// <inheritdoc/>
 		public static bool operator !=(in TypeParameterData first, in TypeParameterData second)
 		{
 			return !(first == second);

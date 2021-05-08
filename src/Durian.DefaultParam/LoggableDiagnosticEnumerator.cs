@@ -10,6 +10,9 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Enumerates through <see cref="IDefaultParamTarget"/>s returned by a <see cref="IDefaultParamFilter"/>, creates log files for each of them and reports <see cref="Diagnostic"/>s for the invalid ones.
+	/// </summary>
 	[DebuggerDisplay("Current = {Current}")]
 	public struct LoggableDiagnosticEnumerator : IEnumerator<IDefaultParamTarget>
 	{
@@ -23,11 +26,18 @@ namespace Durian.DefaultParam
 		private readonly CancellationToken _cancellationToken;
 		private int _index;
 
+		/// <summary>
+		/// Current <see cref="IDefaultParamTarget"/>.
+		/// </summary>
 		public IDefaultParamTarget? Current { get; private set; }
 
 		IDefaultParamTarget IEnumerator<IDefaultParamTarget>.Current => Current!;
 		object IEnumerator.Current => Current!;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="LoggableDiagnosticEnumerator"/> struct.
+		/// </summary>
+		/// <param name="filter"><see cref="IDefaultParamFilter"/> that creates the <see cref="IDefaultParamTarget"/>s to enumerate.</param>
 		public LoggableDiagnosticEnumerator(IDefaultParamFilter filter)
 		{
 			_filter = filter;
@@ -45,6 +55,7 @@ namespace Durian.DefaultParam
 			_combinedDiagnosticReceiver = DiagnosticReceiverFactory.Direct(ReportForBothReceivers);
 		}
 
+		/// <inheritdoc cref="FilterEnumerator.MoveNext"/>
 		[MemberNotNullWhen(true, nameof(Current))]
 		public bool MoveNext()
 		{
@@ -60,7 +71,7 @@ namespace Durian.DefaultParam
 					continue;
 				}
 
-				if (!_filter.GetValidationData(_compilation, node, out SemanticModel? semanticModel, out TypeParameterContainer typeParameters, out ISymbol? symbol, _cancellationToken))
+				if (!_filter.GetValidationData(_compilation, node, out SemanticModel? semanticModel, out ISymbol? symbol, out TypeParameterContainer typeParameters, _cancellationToken))
 				{
 					continue;
 				}
@@ -86,6 +97,7 @@ namespace Durian.DefaultParam
 			return false;
 		}
 
+		/// <inheritdoc cref="FilterEnumerator.Reset"/>
 		public void Reset()
 		{
 			_index = 0;

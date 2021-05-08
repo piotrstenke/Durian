@@ -1,16 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <PackageId>Durian.RoslynTestServices</PackageId>
-    <Authors>Piotr Stenke</Authors>
-    <Company>Piotr Stenke</Company>
-    <Product>Durian.Core</Product>
+    
     <Description>Contains various services that help unit testing Roslyn-related projects.</Description>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>$(BaseIntermediateOutputPath)$(AssemblyName).xml</DocumentationFile>
+    <PackageTags>dotnet;roslyn;Durian;source-generator;analyzer;analysis;extension;core;code-generation;test;unit;unit-test;testing</PackageTags>
+    <Version>1.0.0</Version>
+    <PackageVersion>1.0.0</PackageVersion>
+    
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,8 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    
     <ProjectReference Include="..\Durian.AnalysisCore\Durian.AnalysisCore.csproj" />
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
+    <Compile Include="../../symbols/NullableAttributes.cs" />
+    
   </ItemGroup>
 
 </Project>

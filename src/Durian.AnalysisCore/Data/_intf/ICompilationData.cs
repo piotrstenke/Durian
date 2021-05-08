@@ -15,7 +15,7 @@ namespace Durian.Data
 		CSharpCompilation Compilation { get; }
 
 		/// <summary>
-		/// Determines whether there were any errors detected when validation the <see cref="Compilation"/>.
+		/// Determines whether there were any errors detected when validating the <see cref="Compilation"/>.
 		/// </summary>
 		bool HasErrors { get; }
 

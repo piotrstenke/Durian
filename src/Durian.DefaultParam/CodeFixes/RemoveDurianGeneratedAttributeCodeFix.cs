@@ -1,4 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Threading;
@@ -7,27 +10,34 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Generic;
-using System;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam.CodeFixes
 {
+	/// <summary>
+	/// Removes the <see cref="GeneratedCodeAttribute"/> from the declaration.
+	/// </summary>
 	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveDurianGeneratedAttributeCodeFix))]
 	[Shared]
 	public sealed class RemoveDurianGeneratedAttributeCodeFix : CodeFixProvider
 	{
+		/// <summary>
+		/// Title of this code fix that is displayed to the user.
+		/// </summary>
 		public static string Title => "Remove 'DurianGenerated' attribute";
 
+		/// <inheritdoc/>
 		public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
 			DefaultParamDiagnostics.Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithAttribute.Id
 		);
 
+		/// <inheritdoc/>
 		public override FixAllProvider? GetFixAllProvider()
 		{
 			return WellKnownFixAllProviders.BatchFixer;
 		}
 
+		/// <inheritdoc/>
 		public override async Task RegisterCodeFixesAsync(CodeFixContext context)
 		{
 			Diagnostic? diagnostic = context.Diagnostics.FirstOrDefault();
@@ -39,7 +49,7 @@ namespace Durian.DefaultParam.CodeFixes
 
 			SyntaxNode? root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-			if(root is null)
+			if (root is null)
 			{
 				return;
 			}
@@ -52,7 +62,7 @@ namespace Durian.DefaultParam.CodeFixes
 			{
 				AttributeListSyntax? attr = root.FindNode(diagnostic.Location.SourceSpan)?.FirstAncestorOrSelf<AttributeListSyntax>();
 
-				if(attr is null)
+				if (attr is null)
 				{
 					return;
 				}
@@ -78,7 +88,7 @@ namespace Durian.DefaultParam.CodeFixes
 			SemanticModel? semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 			INamedTypeSymbol? durianGenerated = GetAttribute(semanticModel);
 
-			if(semanticModel is null || durianGenerated is null)
+			if (semanticModel is null || durianGenerated is null)
 			{
 				return document;
 			}
@@ -111,7 +121,7 @@ namespace Durian.DefaultParam.CodeFixes
 
 			SeparatedSyntaxList<AttributeSyntax> list = SyntaxFactory.SeparatedList(attributes);
 
-			if(list.Any())
+			if (list.Any())
 			{
 				AttributeListSyntax newAttrList = attrList.WithAttributes(list);
 				SyntaxNode newRoot = root.ReplaceNode(attrList, newAttrList);
@@ -121,7 +131,7 @@ namespace Durian.DefaultParam.CodeFixes
 			{
 				SyntaxNode? newRoot = root.RemoveNode(attrList, SyntaxRemoveOptions.KeepEndOfLine | SyntaxRemoveOptions.KeepDirectives);
 
-				if(newRoot is null)
+				if (newRoot is null)
 				{
 					return document;
 				}

@@ -1,19 +1,53 @@
 ﻿using System.Text;
+using System.Threading;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Static class that contains all the metadata of the actual <c>DefaultParamConfigurationAttribute</c>.
+	/// </summary>
 	public static class DefaultParamConfigurationAttribute
 	{
+		/// <summary>
+		/// Name of the <c>DefaultParamConfigurationAttribute</c> without the 'Attribute' suffix, i.e. 'DefaultParamConfiguration'.
+		/// </summary>
 		public static string AttributeName => "DefaultParamConfiguration";
+
+		/// <summary>
+		/// Full name of the <c>DefaultParamConfigurationAttribute</c>, i.e. 'DefaultParamConfigurationAttribute'.
+		/// </summary>
 		public static string FullTypeName => DurianStrings.GetFullAttributeType(AttributeName);
+
+		/// <summary>
+		/// Fully qualified name of the <c>DefaultParamConfigurationAttribute</c>, i.e. 'Durian.Configuration.DefaultParamConfigurationAttribute'.
+		/// </summary>
 		public static string FullyQualifiedName => DurianStrings.GetFullyQualifiedConfigurationAttribute(AttributeName);
+
+		/// <summary>
+		/// Name of the <c>DefaultParamConfigurationAttribute.AllowOverridingOfDefaultParamValues</c> property, i.e. 'AllowOverridingOfDefaultParamValues'.
+		/// </summary>
 		public static string AllowOverridingOfDefaultParamValuesProperty => "AllowOverridingOfDefaultParamValues";
+
+		/// <summary>
+		/// Name of the <c>DefaultParamConfigurationAttribute.AllowAddingDefaultParamToNewParameters</c> property, i.e. 'AllowAddingDefaultParamToNewParameters'.
+		/// </summary>
 		public static string AllowAddingDefaultParamToNewParametersProperty => "AllowAddingDefaultParamToNewParameters";
+
+		/// <summary>
+		/// Name of the <c>DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignature</c> property, i.e. 'ApplyNewToGeneratedMembersWithEquivalentSignature'.
+		/// </summary>
 		public static string ApplyNewToGeneratedMembersWithEquivalentSignatureProperty => "ApplyNewToGeneratedMembersWithEquivalentSignature";
+
+		/// <summary>
+		/// Name of the <c>DefaultParamConfigurationAttribute.CallInsteadOfCopying</c> property, i.e. 'CallInsteadOfCopying'.
+		/// </summary>
 		public static string CallInsteadOfCopyingProperty => "CallInsteadOfCopying";
 
+		/// <summary>
+		/// Returns full source code of the <c>DefaultParamConfigurationAttribute</c>.
+		/// </summary>
 		public static string GetText()
 		{
 			return
@@ -33,7 +67,7 @@ namespace {DurianStrings.ConfigurationNamespace}
 	public sealed class {FullTypeName} : Attribute
 	{{
 		/// <summary>
-		/// Determines whether the generated method should call this method instead of copying its contents.
+		/// Determines whether the generated method should call this method instead of copying its contents. Defaults to <see langword=""false""/>.
 		/// </summary>
 		public bool {CallInsteadOfCopyingProperty} {{ get; set; }}
 
@@ -124,7 +158,7 @@ namespace {DurianStrings.ConfigurationNamespace}
 		public bool {AllowAddingDefaultParamToNewParametersProperty} {{ get; set; }}
 
 		/// <summary>
-		/// Determines whether to apply the 'new' modifier to the generated member when possible instead of reporting an error. Defaults to <see langword=""false""/>.
+		/// Determines whether to apply the <see langwrod=""new""/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword=""false""/>.
 		/// </summary>
 		/// <example>
 		/// The following sample...
@@ -181,14 +215,22 @@ namespace {DurianStrings.ConfigurationNamespace}
 ";
 		}
 
+		/// <summary>
+		/// Returns full source code of the <c>DefaultParamConfigurationAttribute</c> as an instance of <see cref="SourceText"/> with the <see cref="Encoding.UTF8"/> applied.
+		/// </summary>
 		public static SourceText CreateSourceText()
 		{
 			return SourceText.From(GetText(), Encoding.UTF8);
 		}
 
-		public static CSharpSyntaxTree CreateSyntaxTree()
+		/// <summary>
+		/// Returns full <see cref="CSharpSyntaxTree"/> of the <c>DefaultParamConfigurationAttribute</c>.
+		/// </summary>
+		/// <param name="parseOptions"><see cref="CSharpParseOptions"/> that should be used when parsing the source code returned by the <see cref="GetText"/> method.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static CSharpSyntaxTree CreateSyntaxTree(CSharpParseOptions? parseOptions = null, CancellationToken cancellationToken = default)
 		{
-			return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(GetText(), encoding: Encoding.UTF8);
+			return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(GetText(), encoding: Encoding.UTF8, options: parseOptions, cancellationToken: cancellationToken);
 		}
 	}
 }

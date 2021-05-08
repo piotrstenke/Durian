@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Durian.Data;
@@ -7,42 +8,90 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Main class of the <c>DefaultParam</c> module. Generates the source code of the members marked with the <see cref="DefaultParamAttribute"/>.
+	/// </summary>
 	[Generator]
-	[GeneratorLoggingConfiguration(SupportsDiagnostics = true, SupportedLogs = GeneratorLogs.All, LogDirectory = "DefaultParam", RelativeToGlobal = true)]
+	[GeneratorLoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "DefaultParam", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
 	public class DefaultParamGenerator : SourceGenerator<DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>.WithBuilder
 	{
+		/// <summary>
+		/// Version of this source generator.
+		/// </summary>
 		public static string Version => DefaultParamUtilities.Package.Version;
+
+		/// <summary>
+		/// Name of this source generator, i.e. 'DefaultParam'.
+		/// </summary>
 		public static string GeneratorName => DefaultParamUtilities.Package.Name;
 
+		/// <summary>
+		/// Number of statically-generated DefaultParam attributes (<see cref="DefaultParamAttribute"/>, <see cref="DefaultParamConfigurationAttribute"/> and <see cref="DefaultParamMethodConfigurationAttribute"/>).
+		/// </summary>
 		public const int NumDefaultParamAttributes = 3;
 
 		private readonly DefaultParamRewriter _rewriter = new();
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamGenerator"/> class.
+		/// </summary>
 		public DefaultParamGenerator() : base(true, false, false, true)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamGenerator"/> class.
+		/// </summary>
+		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
+		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
+		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="DefaultParamGenerator"/> instance if logging is supported.</param>
+		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.EnableDiagnostics"/> to <see langword="true"/> if <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SupportsDiagnostics"/> is <see langword="true"/>.</param>
+		/// <param name="enableExceptionsIfDebug">Determines whether to set <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.EnableExceptions"/> to <see langword="true"/> if the DEBUG symbol is present and the initial value of <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.EnableExceptions"/> is <see langword="false"/>.</param>
 		public DefaultParamGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported = true, bool enableDiagnosticsIfSupported = true, bool enableExceptionsIfDebug = true) : base(checkForConfigurationAttribute, enableLoggingIfSupported, enableDiagnosticsIfSupported, enableExceptionsIfDebug)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamGenerator"/> class.
+		/// </summary>
+		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
+		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
+		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="DefaultParamGenerator"/> instance if logging is supported.</param>
+		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.EnableDiagnostics"/> to <see langword="true"/> if <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SupportsDiagnostics"/> is <see langword="true"/>.</param>
+		/// <param name="enableExceptionsIfDebug">Determines whether to set <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.EnableExceptions"/> to <see langword="true"/> if the DEBUG symbol is present and the initial value of <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.EnableExceptions"/> is <see langword="false"/>.</param>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="fileNameProvider"/> is <see langword="null"/>.</exception>
 		public DefaultParamGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported, bool enableDiagnosticsIfSupported, bool enableExceptionsIfDebug, IFileNameProvider fileNameProvider) : base(checkForConfigurationAttribute, enableLoggingIfSupported, enableDiagnosticsIfSupported, enableExceptionsIfDebug, fileNameProvider)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamGenerator"/> class.
+		/// </summary>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		public DefaultParamGenerator(GeneratorLoggingConfiguration loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamGenerator"/> class.
+		/// </summary>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="fileNameProvider"/> is <see langword="null"/>.</exception>
 		public DefaultParamGenerator(GeneratorLoggingConfiguration loggingConfiguration, IFileNameProvider fileNameProvider) : base(loggingConfiguration, fileNameProvider)
 		{
 		}
 
+		/// <summary>
+		/// Creates a new <see cref="DefaultParamSyntaxReceiver"/> to be used during the current generation pass.
+		/// </summary>
 		public override DefaultParamSyntaxReceiver CreateSyntaxReceiver()
 		{
 			return new DefaultParamSyntaxReceiver(SupportsDiagnostics && EnableDiagnostics);
 		}
 
+		/// <inheritdoc/>
 		protected override FilterContainer<IDefaultParamFilter> GetFilters(in GeneratorExecutionContext context)
 		{
 			FilterContainer<IDefaultParamFilter> list = new();
@@ -58,36 +107,58 @@ namespace Durian.DefaultParam
 			return list;
 		}
 
+		/// <inheritdoc/>
 		protected override DefaultParamCompilationData CreateCompilationData(CSharpCompilation compilation)
 		{
 			return new DefaultParamCompilationData(compilation);
 		}
 
+		/// <inheritdoc/>
 		protected sealed override string GetVersion()
 		{
 			return Version;
 		}
 
+		/// <inheritdoc/>
 		protected sealed override string GetGeneratorName()
 		{
 			return GeneratorName;
 		}
 
+		/// <inheritdoc/>
 		protected override (CSharpSyntaxTree tree, string hintName)[]? GetStaticSyntaxTrees(CancellationToken cancellationToken)
 		{
 			return new[]
 			{
-				(DefaultParamAttribute.CreateSyntaxTree(), DefaultParamAttribute.FullyQualifiedName),
-				(DefaultParamConfigurationAttribute.CreateSyntaxTree(), DefaultParamConfigurationAttribute.FullyQualifiedName),
-				(DefaultParamMethodConfigurationAttribute.CreateSyntaxTree(), DefaultParamMethodConfigurationAttribute.FullyQualifiedName)
+				(DefaultParamAttribute.CreateSyntaxTree(ParseOptions, cancellationToken), DefaultParamAttribute.FullyQualifiedName),
+				(DefaultParamConfigurationAttribute.CreateSyntaxTree(ParseOptions, cancellationToken), DefaultParamConfigurationAttribute.FullyQualifiedName),
+				(DefaultParamMethodConfigurationAttribute.CreateSyntaxTree(ParseOptions, cancellationToken), DefaultParamMethodConfigurationAttribute.FullyQualifiedName)
 			};
 		}
 
+		/// <inheritdoc/>
 		protected override void BeforeExecution(in GeneratorExecutionContext context)
 		{
 			_rewriter.ParentCompilation = TargetCompilation;
 		}
 
+		/// <inheritdoc/>
+		protected sealed override bool Generate(IMemberData data, string hintName, in GeneratorExecutionContext context)
+		{
+			if (data is not IDefaultParamTarget target)
+			{
+				return false;
+			}
+
+			WriteTargetLeadDeclaration(target);
+			GenerateAllVersionsOfTarget(target, in context);
+			CodeBuilder.EndAllBlocks();
+			AddSourceWithOriginal(target.Declaration, hintName, in context);
+
+			return true;
+		}
+
+		/// <inheritdoc/>
 		protected override void IterateThroughFilter(IDefaultParamFilter filter, in GeneratorExecutionContext context)
 		{
 			switch (filter.Mode)
@@ -119,21 +190,6 @@ namespace Durian.DefaultParam
 			{
 				GenerateFromData(iter.Current, in context);
 			}
-		}
-
-		protected sealed override bool Generate(IMemberData data, string hintName, in GeneratorExecutionContext context)
-		{
-			if (data is not IDefaultParamTarget target)
-			{
-				return false;
-			}
-
-			WriteTargetLeadDeclaration(target);
-			GenerateAllVersionsOfTarget(target, in context);
-			CodeBuilder.EndAllBlocks();
-			AddSourceWithOriginal(target.Declaration, hintName, in context);
-
-			return true;
 		}
 
 		private void WriteTargetLeadDeclaration(IDefaultParamTarget target)
@@ -186,7 +242,7 @@ namespace Durian.DefaultParam
 				ref readonly TypeParameterData data = ref parameters[dataIndex];
 
 				_rewriter.Emplace(members[memberIndex]);
-				_rewriter.RemoveLastParameter();
+				_rewriter.RemoveLastTypeParameter();
 				_rewriter.RemoveConstraintsOf(data.Symbol);
 
 				members[memberIndex] = _rewriter.CurrentNode;

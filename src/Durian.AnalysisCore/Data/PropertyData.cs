@@ -23,8 +23,8 @@ namespace Durian.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PropertyData"/> class.
 		/// </summary>
-		/// <param name="declaration">Target <see cref="PropertyDeclarationSyntax"/>.</param>
-		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
+		/// <param name="declaration"><see cref="PropertyDeclarationSyntax"/> this <see cref="PropertyData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="PropertyData"/>.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
@@ -35,13 +35,13 @@ namespace Durian.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PropertyData"/> class.
 		/// </summary>
-		/// <param name="declaration"></param>
-		/// <param name="compilation"></param>
-		/// <param name="symbol"></param>
-		/// <param name="semanticModel"></param>
-		/// <param name="containingTypes"></param>
-		/// <param name="containingNamespaces"></param>
-		/// <param name="attributes"></param>
+		/// <param name="declaration"><see cref="PropertyDeclarationSyntax"/> this <see cref="PropertyData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="PropertyData"/>.</param>
+		/// <param name="symbol"><see cref="IPropertySymbol"/> this <see cref="PropertyData"/> represents.</param>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
+		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
+		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
 		protected internal PropertyData(
 			PropertyDeclarationSyntax declaration,
 			ICompilationData compilation,

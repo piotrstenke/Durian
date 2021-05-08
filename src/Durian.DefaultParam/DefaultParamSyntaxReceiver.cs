@@ -6,28 +6,72 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Collects <see cref="CSharpSyntaxNode"/>s that are potential targets for the <see cref="DefaultParamGenerator"/>.
+	/// </summary>
 	public class DefaultParamSyntaxReceiver : IDurianSyntaxReceiver
 	{
-		public List<TypeDeclarationSyntax> CandidateTypes { get; }
-		public List<DelegateDeclarationSyntax> CandidateDelegates { get; }
-		public List<MethodDeclarationSyntax> CandidateMethods { get; }
-		public List<LocalFunctionStatementSyntax>? CandidateLocalFunctions { get; }
+		private bool _allowsCollectingLocalFunctions;
 
+		/// <summary>
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
+		/// </summary>
+		public List<TypeDeclarationSyntax> CandidateTypes { get; }
+
+		/// <summary>
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
+		/// </summary>
+		public List<DelegateDeclarationSyntax> CandidateDelegates { get; }
+
+		/// <summary>
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
+		/// </summary>
+		public List<MethodDeclarationSyntax> CandidateMethods { get; }
+
+		/// <summary>
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied. -or- empty <see cref="List{T}"/> if <see cref="AllowsCollectingLocalFunctions"/> is <see langword="false"/>.
+		/// </summary>
+		public List<LocalFunctionStatementSyntax> CandidateLocalFunctions { get; }
+
+		/// <summary>
+		/// Determines whether to allow collecting <see cref="LocalFunctionStatementSyntax"/>es.
+		/// </summary>
+		/// <remarks>If this property is set to <see langword="false"/> and <see cref="CandidateLocalFunctions"/> is not empty, it is cleared using the <see cref="List{T}.Clear"/> method.</remarks>
+		public bool AllowsCollectingLocalFunctions
+		{
+			get => _allowsCollectingLocalFunctions;
+			set
+			{
+				if (!value)
+				{
+					CandidateLocalFunctions.Clear();
+				}
+
+				_allowsCollectingLocalFunctions = value;
+			}
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamSyntaxReceiver"/> class.
+		/// </summary>
 		public DefaultParamSyntaxReceiver()
 		{
 			CandidateTypes = new List<TypeDeclarationSyntax>();
 			CandidateDelegates = new List<DelegateDeclarationSyntax>();
 			CandidateMethods = new List<MethodDeclarationSyntax>();
+			CandidateLocalFunctions = new();
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamSyntaxReceiver"/> class.
+		/// </summary>
+		/// <param name="collectLocalFunctions">Determines whether to allow collecting <see cref="LocalFunctionStatementSyntax"/>es.</param>
 		public DefaultParamSyntaxReceiver(bool collectLocalFunctions) : this()
 		{
-			if (collectLocalFunctions)
-			{
-				CandidateLocalFunctions = new List<LocalFunctionStatementSyntax>();
-			}
+			AllowsCollectingLocalFunctions = collectLocalFunctions;
 		}
 
+		/// <inheritdoc/>
 		public bool IsEmpty()
 		{
 			return
@@ -37,6 +81,7 @@ namespace Durian.DefaultParam
 				(CandidateLocalFunctions is null || CandidateLocalFunctions.Count == 0);
 		}
 
+		/// <inheritdoc/>
 		public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
 		{
 			if (syntaxNode is TypeDeclarationSyntax t)
@@ -51,7 +96,7 @@ namespace Durian.DefaultParam
 			{
 				CollectDelegate(d);
 			}
-			else if (syntaxNode is LocalFunctionStatementSyntax f && CandidateLocalFunctions is not null)
+			else if (AllowsCollectingLocalFunctions && syntaxNode is LocalFunctionStatementSyntax f)
 			{
 				CollectLocalFunction(f);
 			}

@@ -2,37 +2,76 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Replaces <see cref="CSharpSyntaxNode"/>s representing a specified <see cref="ITypeParameterSymbol"/>.
+	/// </summary>
 	public class TypeParameterReplacer : CSharpSyntaxRewriter
 	{
-		public ITypeParameterSymbol? ParameterToReplace { get; set; }
-		public IdentifierNameSyntax? Replacement { get; set; }
-		public List<ISymbol?> InputSymbols { get; set; }
-		public int Count => InputSymbols.Count;
-		public bool HasChangedConstraints => ChangedConstraintIndices.Count > 0;
-		public bool VisitDeclarationBody { get; set; } = true;
-		public List<int> ChangedConstraintIndices { get; }
-
 		private int _identifierCounter;
 		private int _constraintCounter;
 		private bool _skip;
 
+		/// <summary>
+		/// <see cref="ITypeParameterSymbol"/> that should be replaced.
+		/// </summary>
+		public ITypeParameterSymbol? ParameterToReplace { get; set; }
+
+		/// <summary>
+		/// <see cref="IdentifierNameSyntax"/> to replace the <see cref="ParameterToReplace"/> with.
+		/// </summary>
+		public IdentifierNameSyntax? Replacement { get; set; }
+
+		/// <summary>
+		/// A <see cref="List{T}"/> that contains <see cref="ISymbol"/>s in order they appear in the visited <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
+		/// <remarks>Best practice is to use the <see cref="TypeParameterIdentifierCollector"/> and pass its <see cref="TypeParameterIdentifierCollector.OutputSymbols"/> here.</remarks>
+		public List<ISymbol?> InputSymbols { get; set; }
+
+		/// <summary>
+		/// A <see cref="List{T}"/> that contains the indexes of <see cref="TypeParameterConstraintClauseSyntax"/> that were modified during last visit.
+		/// </summary>
+		public List<int> ChangedConstraintIndices { get; }
+
+		/// <summary>
+		/// Number of <see cref="ISymbol"/> in the <see cref="List{T}"/> of <see cref="InputSymbols"/>.
+		/// </summary>
+		public int Count => InputSymbols.Count;
+
+		/// <summary>
+		/// Determines whether any <see cref="TypeParameterConstraintClauseSyntax"/> was modified during last visit.
+		/// </summary>
+		public bool HasModifiedConstraints => ChangedConstraintIndices.Count > 0;
+
+		/// <summary>
+		/// Determines whether to visit the declaration body of a <see cref="MethodDeclarationSyntax"/>. Defaults to <see langword="true"/>.
+		/// </summary>
+		public bool VisitDeclarationBody { get; set; } = true;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TypeParameterReplacer"/> class.
+		/// </summary>
+		/// <param name="inputSymbols">A <see cref="List{T}"/> that contains <see cref="ISymbol"/>s in order they appear in the visited <see cref="CSharpSyntaxNode"/>.</param>
 		public TypeParameterReplacer(List<ISymbol?> inputSymbols)
 		{
 			InputSymbols = inputSymbols;
 			ChangedConstraintIndices = new();
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TypeParameterReplacer"/> class.
+		/// </summary>
+		/// <param name="inputSymbols">A collection of <see cref="ISymbol"/>s in order they appear in the visited <see cref="CSharpSyntaxNode"/>.</param>
 		public TypeParameterReplacer(IEnumerable<ISymbol> inputSymbols)
 		{
 			InputSymbols = inputSymbols?.ToList() ?? new();
 			ChangedConstraintIndices = new();
 		}
 
+		/// <inheritdoc/>
 		public override SyntaxNode? VisitBlock(BlockSyntax node)
 		{
 			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
@@ -48,6 +87,7 @@ namespace Durian.DefaultParam
 			}
 		}
 
+		/// <inheritdoc/>
 		public override SyntaxNode? VisitArrowExpressionClause(ArrowExpressionClauseSyntax node)
 		{
 			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
@@ -63,6 +103,7 @@ namespace Durian.DefaultParam
 			}
 		}
 
+		/// <inheritdoc/>
 		public override SyntaxNode? VisitTypeParameterConstraintClause(TypeParameterConstraintClauseSyntax node)
 		{
 			bool changed = false;
@@ -98,6 +139,7 @@ namespace Durian.DefaultParam
 			return clause;
 		}
 
+		/// <inheritdoc/>
 		public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node)
 		{
 			if (_skip || Count == 0)
@@ -105,7 +147,7 @@ namespace Durian.DefaultParam
 				return base.VisitIdentifierName(node);
 			}
 
-			if(_identifierCounter >= InputSymbols.Count)
+			if (_identifierCounter >= InputSymbols.Count)
 			{
 				// _identifierCounter and InputSymbols.Count on rare occasions get out of sync when the user is editing the method/type/delegate.
 				return base.VisitIdentifierName(node);
@@ -151,15 +193,21 @@ namespace Durian.DefaultParam
 			return toReturn;
 		}
 
+		/// <summary>
+		/// Resets the replacer.
+		/// </summary>
 		public void Reset()
 		{
 			ParameterToReplace = null!;
 			Replacement = null!;
 			InputSymbols.Clear();
-			_identifierCounter = 0;
 			VisitDeclarationBody = true;
+			ResetCounter();
 		}
 
+		/// <summary>
+		/// Resets the counter of encountered <see cref="IdentifierNameSyntax"/>es.
+		/// </summary>
 		public void ResetCounter()
 		{
 			_identifierCounter = 0;

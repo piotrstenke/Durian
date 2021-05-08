@@ -5,6 +5,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.DefaultParam
 {
+	/// <summary>
+	/// Creates new <see cref="CSharpSyntaxNode"/>s based on the specified DefualtParam <see cref="CSharpSyntaxNode"/>s.
+	/// </summary>
 	public class DefaultParamRewriter
 	{
 		private readonly List<TypeParameterConstraintClauseSyntax> _includedConstraints;
@@ -14,33 +17,62 @@ namespace Durian.DefaultParam
 		private int _numParameters;
 		private int _numConstraints;
 
+		/// <summary>
+		/// <see cref="OriginalNode"/> after modification.
+		/// </summary>
 		public CSharpSyntaxNode CurrentNode => DeclarationBuilder.CurrentNode;
+
+		/// <summary>
+		/// Original <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
 		public CSharpSyntaxNode OriginalNode => DeclarationBuilder.OriginalNode;
+
+		/// <summary>
+		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="OriginalNode"/>.
+		/// </summary>
 		public SemanticModel SemanticModel => DeclarationBuilder.SemanticModel;
+
+		/// <summary>
+		/// <see cref="IDefaultParamDeclarationBuilder"/> that is used to generate new <see cref="CSharpSyntaxNode"/>s.
+		/// </summary>
 		public IDefaultParamDeclarationBuilder DeclarationBuilder { get; private set; }
+
+		/// <summary>
+		/// <see cref="DefaultParamCompilationData"/> the <see cref="OriginalNode"/> is to be found in.
+		/// </summary>
 		public DefaultParamCompilationData? ParentCompilation
 		{
 			get => _collector.ParentCompilation;
 			set => _collector.ParentCompilation = value;
 		}
 
+		/// <inheritdoc cref="DefaultParamRewriter(DefaultParamCompilationData?, IDefaultParamDeclarationBuilder?)"/>
 		public DefaultParamRewriter() : this(null, null)
 		{
 		}
 
+		/// <inheritdoc cref="DefaultParamRewriter(DefaultParamCompilationData?, IDefaultParamDeclarationBuilder?)"/>
 		public DefaultParamRewriter(DefaultParamCompilationData? compilation) : this(compilation, null)
 		{
 		}
 
-		public DefaultParamRewriter(DefaultParamCompilationData? compilation, IDefaultParamDeclarationBuilder? wrapper)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamRewriter"/> class.
+		/// </summary>
+		/// <param name="compilation">Default <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="builder"><see cref="IDefaultParamDeclarationBuilder"/> that is used to generate new <see cref="CSharpSyntaxNode"/>s.</param>
+		public DefaultParamRewriter(DefaultParamCompilationData? compilation, IDefaultParamDeclarationBuilder? builder)
 		{
 			_includedConstraints = new List<TypeParameterConstraintClauseSyntax>();
 			_includedConstraintSymbols = new List<ITypeParameterSymbol>();
-			DeclarationBuilder = wrapper!;
+			DeclarationBuilder = builder!;
 			_collector = new(compilation);
 			_replacer = new(_collector.OutputSymbols);
 		}
 
+		/// <summary>
+		/// Resets the <see cref="DefaultParamRewriter"/>.
+		/// </summary>
 		public void Reset()
 		{
 			DeclarationBuilder = null!;
@@ -53,11 +85,19 @@ namespace Durian.DefaultParam
 			//_collector.Reset();
 		}
 
+		/// <summary>
+		/// Sets the specified <paramref name="node"/> as the <see cref="CurrentNode"/> without changing the <see cref="OriginalNode"/>.
+		/// </summary>
+		/// <param name="node"><see cref="CSharpSyntaxNode"/> to set as <see cref="CurrentNode"/>.</param>
 		public void Emplace(CSharpSyntaxNode node)
 		{
 			DeclarationBuilder.Emplace(node);
 		}
 
+		/// <summary>
+		/// Performs actions that are necessary to properly set the <see cref="DeclarationBuilder"/> to a new value.
+		/// </summary>
+		/// <param name="declBuilder"><see cref="IDefaultParamDeclarationBuilder"/> to be used as the target <see cref="DeclarationBuilder"/> from now on.</param>
 		public void Acquire(IDefaultParamDeclarationBuilder declBuilder)
 		{
 			_includedConstraints.Clear();
@@ -85,6 +125,11 @@ namespace Durian.DefaultParam
 			_collector.Visit(declBuilder.OriginalNode);
 		}
 
+		/// <summary>
+		/// Replaces the old <see cref="ITypeParameterSymbol"/> <see cref="CSharpSyntaxNode"/>s with the <paramref name="newType"/>.
+		/// </summary>
+		/// <param name="oldType"><see cref="ITypeParameterSymbol"/> to be replaced.</param>
+		/// <param name="newType"><see cref="string"/> to replace the encountered references to the target <see cref="ITypeParameterSymbol"/> with.</param>
 		public void ReplaceType(ITypeParameterSymbol oldType, string newType)
 		{
 			_replacer.ParameterToReplace = oldType;
@@ -93,7 +138,7 @@ namespace Durian.DefaultParam
 
 			DeclarationBuilder.AcceptTypeParameterReplacer(_replacer);
 
-			if (_replacer.HasChangedConstraints)
+			if (_replacer.HasModifiedConstraints)
 			{
 				int length = _replacer.ChangedConstraintIndices.Count;
 
@@ -104,6 +149,10 @@ namespace Durian.DefaultParam
 			}
 		}
 
+		/// <summary>
+		/// Removes all constrains that are applied for the target <paramref name="symbol"/> in the <see cref="CurrentNode"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ITypeParameterSymbol"/> to remove the constraints of.</param>
 		public void RemoveConstraintsOf(ITypeParameterSymbol symbol)
 		{
 			if (_numConstraints < 1)
@@ -126,7 +175,10 @@ namespace Durian.DefaultParam
 			DeclarationBuilder.WithConstraintClauses(_includedConstraints);
 		}
 
-		public void RemoveLastParameter()
+		/// <summary>
+		/// Removes last (right-most) type parameters of the <see cref="CurrentNode"/>.
+		/// </summary>
+		public void RemoveLastTypeParameter()
 		{
 			if (_numParameters < 0)
 			{

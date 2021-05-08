@@ -17,7 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution_items", "solution_
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
-		MissingSymbols.cs = MissingSymbols.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.DefaultParam.Tests", "tests\Durian.DefaultParam.Tests\Durian.DefaultParam.Tests.csproj", "{308BB750-C144-4197-8BF2-26D2D75E2661}"
@@ -29,6 +28,19 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vsix", "vsix", "{1A8A1D48-D369-44D3-9934-8F81CA75F78F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.DefaultParam.Vsix", "vsix\Durian.DefaultParam.Vsix\Durian.DefaultParam.Vsix.csproj", "{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "symbols", "symbols", "{BB249978-3546-4BA0-8F43-620F9C437F38}"
+	ProjectSection(SolutionItems) = preProject
+		symbols\NullableAttributes.cs = symbols\NullableAttributes.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "icons", "icons", "{A028703A-4207-4BC3-AEE2-A0AFA4CF5B44}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\icons\Durian.AnalysisCore.png = ..\..\icons\Durian.AnalysisCore.png
+		icons\Durian.Core.png = icons\Durian.Core.png
+		..\..\icons\Durian.DefaultParam.png = ..\..\icons\Durian.DefaultParam.png
+		..\..\icons\Durian.RoslynTestUtilities.png = ..\..\icons\Durian.RoslynTestUtilities.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -136,6 +148,8 @@ Global
 		{0C040E7C-8BF7-4EBD-8023-E6B259643DAD} = {74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}
 		{46E3066C-2E87-4E69-A59C-DDB94D47BFF4} = {74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}
 		{0DC8CC92-8AA9-4408-9990-64F6ABB9AA0D} = {1A8A1D48-D369-44D3-9934-8F81CA75F78F}
+		{BB249978-3546-4BA0-8F43-620F9C437F38} = {669AA144-A769-4EA2-9A61-4CF58A84FB12}
+		{A028703A-4207-4BC3-AEE2-A0AFA4CF5B44} = {669AA144-A769-4EA2-9A61-4CF58A84FB12}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {09524C45-0D6D-4456-B89D-9673853B9FA0}

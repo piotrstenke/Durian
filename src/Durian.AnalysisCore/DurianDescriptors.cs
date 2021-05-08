@@ -3,9 +3,9 @@ using Microsoft.CodeAnalysis;
 namespace Durian
 {
 	/// <summary>
-	/// Contains <see cref="DiagnosticDescriptor"/>s of the most common errors.
+	/// Contains <see cref="DiagnosticDescriptor"/>s of the most common Durian errors.
 	/// </summary>
-	public static class Descriptors
+	public static class DurianDescriptors
 	{
 		/// <summary>
 		/// Provides diagnostic message indicating that the name of the target member is reserved for internal purposes.
@@ -61,7 +61,7 @@ namespace Durian
 		public static readonly DiagnosticDescriptor MemberNameCouldNotBeResolved = new(
 			id: "DUR0005",
 			title: "Member name couldn't be resolved",
-			messageFormat: "'{0}': Member name '{}' couldn't be resolved.",
+			messageFormat: "'{0}': Member name '{}' couldn't be resolved",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true
@@ -165,7 +165,7 @@ namespace Durian
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the parent type of a member with a specified attribute must be partial.
+		/// Provides diagnostic message indicating that the parent type of a member with a specified attribute must be <see langword="partial"/>.
 		/// </summary>
 		public static readonly DiagnosticDescriptor ParentTypeOfMemberWithAttributeMustBePartial = new(
 			id: "DUR0014",
@@ -189,7 +189,7 @@ namespace Durian
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the attribute cannot be applies to members of specific declaration type.
+		/// Provides diagnostic message indicating that the attribute cannot be applied to members of specific declaration type.
 		/// </summary>
 		public static readonly DiagnosticDescriptor AttributeCannotBeAppliedToMembersOfType = new(
 			id: "DUR0016",
@@ -237,7 +237,7 @@ namespace Durian
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the member with the 'override' keyword should define a specified attribute to preserve clarity.
+		/// Provides diagnostic message indicating that a member that overrides another member should define a specified attribute to preserve clarity.
 		/// </summary>
 		public static readonly DiagnosticDescriptor AttributeOfOverridenMemberShouldBeAddedForClarity = new(
 			id: "DUR0020",
@@ -277,8 +277,8 @@ namespace Durian
 		/// </summary>
 		public static readonly DiagnosticDescriptor EssentialTypeIsMissing = new(
 			id: "DUR0023",
-			title: "Essential type 'typeName' is missing. Try reimporting the 'packageName' package.",
-			messageFormat: "Essential type '{0}' is missing. Try reimporting the '{1}' package",
+			title: "Essential type 'typeName' is missing; try reimporting the 'packageName' package",
+			messageFormat: "Essential type '{0}' is missing; try reimporting the '{1}' package",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true
