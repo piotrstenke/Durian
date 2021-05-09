@@ -6,6 +6,11 @@
 	public enum StaticTreeType
 	{
 		/// <summary>
+		/// Unknown type.
+		/// </summary>
+		Unknown,
+
+		/// <summary>
 		/// Represents an <see cref="System.Attribute"/> type.
 		/// </summary>
 		Attribute,

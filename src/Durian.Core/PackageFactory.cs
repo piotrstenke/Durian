@@ -18,7 +18,7 @@
 		/// <summary>
 		/// Returns a <see cref="PackageIdentity"/> for the <c>Durian.DefaultParam</c> module.
 		/// </summary>
-		public static PackageIdentity DefaultParam => new("Durian.DefaultParam", "1.0.0", DurianModule.DefaultParam, ModuleType.SyntaxBasedGenerator, new[]
+		public static PackageIdentity DefaultParam => new("Durian.DefaultParam", "1.0.0", DurianModule.DefaultParam, ModuleType.SyntaxBasedGenerator | ModuleType.StaticGenerator | ModuleType.Analyzer, new[]
 		{
 			new StaticTreeIdentity("DefaultParamAttribute", "Durian", StaticTreeType.Attribute),
 			new StaticTreeIdentity("DefaultParamConfigurationAttribute", "Durian.Configuration", StaticTreeType.Attribute),

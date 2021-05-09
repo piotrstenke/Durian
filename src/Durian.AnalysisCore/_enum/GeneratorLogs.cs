@@ -19,15 +19,15 @@ namespace Durian
 		/// <summary>
 		/// Log containing input and output syntax node.
 		/// </summary>
-		InputOutput = 1 << 1,
+		InputOutput = 2,
 		/// <summary>
 		/// Log containing static syntax node.
 		/// </summary>
-		Node = 1 << 2,
+		Node = 4,
 		/// <summary>
 		/// Log containing diagnostics that were produced.
 		/// </summary>
-		Diagnostics = 1 << 3,
+		Diagnostics = 8,
 		/// <summary>
 		/// Includes all types of logs.
 		/// </summary>

@@ -2,14 +2,14 @@
 
 namespace Durian.DefaultParam.Samples
 {
-	internal class Program
+	internal partial class Program
 	{
-		private static void Main(string[] args)
+		private static void Main()
 		{
 			Console.WriteLine("Hello World!");
 		}
-
-		private static void Method<T>()
+		
+		public void Method()
 		{
 		}
 	}

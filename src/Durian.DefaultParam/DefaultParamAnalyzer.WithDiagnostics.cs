@@ -80,19 +80,30 @@ namespace Durian.DefaultParam
 			public static bool AnalyzeAgaintsProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, out AttributeData[]? attributes)
 			{
 				AttributeData[] attrs = symbol.GetAttributes().ToArray();
-				(INamedTypeSymbol type, string name)[] prohibitedAttributes = GetProhibitedAttributes(compilation);
 				bool isValid = true;
+				bool hasDurianGenerated = false;
+				bool hasGeneratedCode = false;
 
 				foreach (AttributeData attr in attrs)
 				{
-					foreach ((INamedTypeSymbol type, string name) in prohibitedAttributes)
+					if (!hasGeneratedCode && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.GeneratedCodeAttribute))
 					{
-						if (SymbolEqualityComparer.Default.Equals(type, attr.AttributeClass))
-						{
-							DefaultParamDiagnostics.DefaultParamAttributeCannotBeAppliedToMembersWithAttribute(diagnosticReceiver, symbol, name);
-							isValid = false;
-							break;
-						}
+						hasGeneratedCode = true;
+						attributes = null;
+						isValid = false;
+						DefaultParamDiagnostics.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute(diagnosticReceiver, symbol);
+					}
+					else if (!hasDurianGenerated && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DurianGeneratedAttribute))
+					{
+						hasDurianGenerated = true;
+						attributes = null;
+						isValid = false;
+						DefaultParamDiagnostics.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute(diagnosticReceiver, symbol);
+					}
+
+					if (hasGeneratedCode && hasDurianGenerated)
+					{
+						break;
 					}
 				}
 

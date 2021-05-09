@@ -14,10 +14,10 @@ namespace Durian.DefaultParam
 		public static class Descriptors
 		{
 			/// <summary>
-			/// Provides diagnostic message indicating that the <see cref="DefaultParamAttribute"/> cannot be applied to members with a specified attribute (DUR0017).
+			/// Provides diagnostic message indicating that the <see cref="DefaultParamAttribute"/> cannot be applied to members with the <see cref="Generator.DurianGeneratedAttribute"/> or <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/> (DUR0017).
 			/// </summary>
-			public static readonly DiagnosticDescriptor DefaultParamAttributeCannotBeAppliedToMembersWithAttribute =
-				DescriptorFactory.AttributeCannotBeAppliedToMembersWithAttribute(DefaultParamAttribute.AttributeName);
+			public static readonly DiagnosticDescriptor DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute =
+				DescriptorFactory.AttributeCannotBeAppliedToMembersWithAttribute(DefaultParamAttribute.AttributeName, "DurianGenerated' or 'GeneratedCode");
 
 			/// <summary>
 			/// Provides diagnostic message indicating that the parent type of a member with a <see cref="DefaultParamAttribute"/> must be <see langword="partial"/> (DUR0014).
@@ -69,16 +69,15 @@ namespace Durian.DefaultParam
 		}
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that the target attributeName cannot be applied to members with a specified attribute (rule DUR0017).
-		/// <para>See: <see cref="Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithAttribute"/></para>
+		/// Reports <see cref="Diagnostic"/>s indicating that the target attributeName cannot be applied to members with the <see cref="Generator.DurianGeneratedAttribute"/> or <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/> (DUR0017).
+		/// <para>See: <see cref="Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute"/></para>
 		/// </summary>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
 		/// <param name="symbol"><see cref="ISymbol"/> the attribute cannot be applied to.</param>
-		/// <param name="attributeName">Name of the attribute is already applied to the <paramref name="symbol"/> and doesn't allow the <see cref="DefaultParamAttribute"/> to be applied.</param>
-		public static void DefaultParamAttributeCannotBeAppliedToMembersWithAttribute(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol, string? attributeName)
+		public static void DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol)
 		{
-			DiagnosticDescriptor d = Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithAttribute;
-			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol, attributeName);
+			DiagnosticDescriptor d = Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute;
+			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol);
 		}
 
 		/// <summary>

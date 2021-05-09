@@ -6,7 +6,7 @@
 	public enum DurianModule
 	{
 		/// <summary>
-		/// Represents the <c>Durian.Core</c> package (i.e. the package where this type of defined).
+		/// Represents the <c>Durian.Core</c> package (i.e. the package where this enum is defined).
 		/// </summary>
 		Core,
 
@@ -16,8 +16,13 @@
 		AnalysisCore,
 
 		/// <summary>
+		/// Represents the <c>Durian.CodeFixes</c> package.
+		/// </summary>
+		CodeFixes,
+
+		/// <summary>
 		/// Represents the <c>Durian.DefaultParam</c> package.
 		/// </summary>
-		DefaultParam
+		DefaultParam,
 	}
 }

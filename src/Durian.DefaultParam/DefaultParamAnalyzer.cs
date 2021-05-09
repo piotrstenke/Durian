@@ -133,17 +133,27 @@ namespace Durian.DefaultParam
 		public static bool AnalyzeAgaintsProhibitedAttributes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out AttributeData[]? attributes)
 		{
 			AttributeData[] attrs = symbol.GetAttributes().ToArray();
-			(INamedTypeSymbol type, string name)[] prohibitedAttributes = GetProhibitedAttributes(compilation);
+			bool hasDurianGenerated = false;
+			bool hasGeneratedCode = false;
 
 			foreach (AttributeData attr in attrs)
 			{
-				foreach ((INamedTypeSymbol type, string name) in prohibitedAttributes)
+				if(!hasGeneratedCode && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.GeneratedCodeAttribute))
 				{
-					if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, type))
-					{
-						attributes = null;
-						return false;
-					}
+					hasGeneratedCode = true;
+					attributes = null;
+					return false;
+				}
+				else if(!hasDurianGenerated && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DurianGeneratedAttribute))
+				{
+					hasDurianGenerated = true;
+					attributes = null;
+					return false;
+				}
+
+				if(hasGeneratedCode && hasDurianGenerated)
+				{
+					break;
 				}
 			}
 
@@ -266,7 +276,7 @@ namespace Durian.DefaultParam
 		{
 			return new[]
 			{
-				DefaultParamDiagnostics.Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithAttribute,
+				DefaultParamDiagnostics.Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute,
 				DefaultParamDiagnostics.Descriptors.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial,
 				DefaultParamDiagnostics.Descriptors.TypeParameterWithDefaultParamAttributeMustBeLast,
 				DurianDescriptors.TypeIsNotValidTypeParameter,
@@ -298,15 +308,6 @@ namespace Durian.DefaultParam
 
 			typeParameters = default;
 			return false;
-		}
-
-		private static (INamedTypeSymbol symbol, string name)[] GetProhibitedAttributes(DefaultParamCompilationData compilation)
-		{
-			return new[]
-			{
-				(compilation.GeneratedCodeAttribute!, "GeneratedCode"),
-				(compilation.DurianGeneratedAttribute!, "DurianGenerated")
-			};
 		}
 	}
 }

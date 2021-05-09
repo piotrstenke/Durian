@@ -28,29 +28,30 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryType>git</RepositoryType>
-    <Icon>$(MSBuildProjectName).png</Icon>
-    <PackageIconUrl></PackageIconUrl>
+    <PackageIcon>$(MSBuildProjectName).png</PackageIcon>
+    <PackageIconUrl>..\..\icons\$(MSBuildProjectName).png</PackageIconUrl>
     <RepositoryUrl>https://github.com/piotrstenke/Durian</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>$(BaseIntermediateOutputPath)$(AssemblyName).xml</DocumentationFile>
+    <DocumentationFile>$(BaseIntermediateOutputPath)$(MSBuildProjectName).xml</DocumentationFile>
     <DebugType>portable</DebugType>
     <Deterministic>true</Deterministic>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     
   </PropertyGroup>
   
   <ItemGroup Condition="$(MsBuildProjectDirectoryNoRoot.Contains('src'))">
     
-    <None Include="../../icons/$(MSBuildProjectName).png" Pack="true" Visible="false" PackagePath="" />
+    <None Include="..\..\icons\$(MSBuildProjectName).png" Pack="true" Visible="false" PackagePath="" />
   
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>DEBUG</DefineConstants>
   
   </PropertyGroup>
 
