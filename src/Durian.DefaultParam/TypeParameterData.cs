@@ -15,7 +15,6 @@ namespace Durian.DefaultParam
 	/// <summary>
 	/// Contains data of a single type parameter required by the <see cref="DefaultParamGenerator"/>.
 	/// </summary>
-	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public readonly struct TypeParameterData : IEquatable<TypeParameterData>
 	{
 		/// <summary>
@@ -46,7 +45,6 @@ namespace Durian.DefaultParam
 		/// <summary>
 		/// The <see cref="INamedTypeSymbol"/> that was specified using the <see cref="Attribute"/>. -or- <see langword="null"/> if <see cref="Attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.
 		/// </summary>
-		[MemberNotNull(nameof(Attribute))]
 		public readonly INamedTypeSymbol? TargetType { get; }
 
 		/// <summary>
@@ -62,6 +60,7 @@ namespace Durian.DefaultParam
 		/// <summary>
 		/// Determines whether the type target <see cref="Symbol"/> has a valid <see cref="DefaultParamAttribute"/>.
 		/// </summary>
+		[MemberNotNullWhen(true, nameof(Attribute), nameof(TargetType))]
 		public readonly bool IsDefaultParam => Attribute is not null && TargetType is not null;
 
 		/// <inheritdoc cref="TypeParameterData(TypeParameterSyntax, ITypeParameterSymbol, SemanticModel, AttributeSyntax, INamedTypeSymbol)"/>
@@ -116,7 +115,8 @@ namespace Durian.DefaultParam
 			return hashCode;
 		}
 
-		private string GetDebuggerDisplay()
+		/// <inheritdoc/>
+		public override string ToString()
 		{
 			return $"Symbol = \"{Symbol}\", TargetType = \"{TargetType?.ToString() ?? string.Empty}\"";
 		}
@@ -141,7 +141,7 @@ namespace Durian.DefaultParam
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static TypeParameterData CreateFrom(TypeParameterSyntax typeParameter, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			return CreateFrom(typeParameter, semanticModel, compilation.Attribute!, cancellationToken);
+			return CreateFrom(typeParameter, semanticModel, compilation.MainAttribute!, cancellationToken);
 		}
 
 		/// <summary>
@@ -179,7 +179,7 @@ namespace Durian.DefaultParam
 			}
 
 			ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
-			AttributeData? data = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.Attribute));
+			AttributeData? data = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute));
 			AttributeSyntax? attrSyntax = data?.ApplicationSyntaxReference?.GetSyntax(cancellationToken) as AttributeSyntax;
 			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(syntax.SyntaxTree);
 

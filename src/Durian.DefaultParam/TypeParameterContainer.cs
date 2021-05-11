@@ -246,7 +246,7 @@ namespace Durian.DefaultParam
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static TypeParameterContainer CreateFrom(MemberDeclarationSyntax member, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			return CreateFrom(member, semanticModel, compilation.Attribute!, cancellationToken);
+			return CreateFrom(member, semanticModel, compilation.MainAttribute!, cancellationToken);
 		}
 
 		/// <summary>

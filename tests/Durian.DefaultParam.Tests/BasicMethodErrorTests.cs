@@ -154,7 +154,7 @@ partial class Test
 
 partial class Test
 {{
-	[{DurianStrings.GeneratorAttributesNamespace}.DurianGenerated]
+	[{DurianStrings.GeneratorNamespace}.DurianGenerated]
 	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
 	{{
 	}}

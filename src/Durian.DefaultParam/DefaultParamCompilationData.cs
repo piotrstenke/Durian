@@ -15,7 +15,7 @@ namespace Durian.DefaultParam
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the generated <see cref="DefaultParamAttribute"/>.
 		/// </summary>
-		public INamedTypeSymbol? Attribute { get; private set; }
+		public INamedTypeSymbol? MainAttribute { get; private set; }
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the generated <see cref="DefaultParamConfigurationAttribute"/>.
@@ -23,12 +23,17 @@ namespace Durian.DefaultParam
 		public INamedTypeSymbol? ConfigurationAttribute { get; private set; }
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the generated <see cref="DefaultParamMethodConfigurationAttribute"/>.
+		/// <see cref="INamedTypeSymbol"/> of the generated <see cref="DefaultParam.DPMethodGenConvention"/>.
 		/// </summary>
-		public INamedTypeSymbol? MethodConfigurationAttribute { get; private set; }
+		public INamedTypeSymbol? DPMethodGenConvention { get; private set; }
+
+		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> of the generated <see cref="DefaultParam.DPTypeGenConvention"/>.
+		/// </summary>
+		public INamedTypeSymbol? DPTypeGenConvention { get; private set; }
 
 		/// <inheritdoc/>
-		[MemberNotNullWhen(false, nameof(Attribute), nameof(ConfigurationAttribute), nameof(MethodConfigurationAttribute))]
+		[MemberNotNullWhen(false, nameof(MainAttribute), nameof(ConfigurationAttribute), nameof(DPMethodGenConvention), nameof(DPTypeGenConvention))]
 		public override bool HasErrors { get; protected set; }
 
 		/// <summary>
@@ -51,11 +56,12 @@ namespace Durian.DefaultParam
 		{
 			base.Reset();
 
-			Attribute = Compilation.Assembly.GetTypeByMetadataName(DefaultParamAttribute.FullyQualifiedName);
+			MainAttribute = Compilation.Assembly.GetTypeByMetadataName(DefaultParamAttribute.FullyQualifiedName);
 			ConfigurationAttribute = Compilation.Assembly.GetTypeByMetadataName(DefaultParamConfigurationAttribute.FullyQualifiedName);
-			MethodConfigurationAttribute = Compilation.Assembly.GetTypeByMetadataName(DefaultParamMethodConfigurationAttribute.FullyQualifiedName);
+			DPTypeGenConvention = Compilation.Assembly.GetTypeByMetadataName(DefaultParam.DPTypeGenConvention.FullName);
+			DPMethodGenConvention = Compilation.Assembly.GetTypeByMetadataName(DefaultParam.DPMethodGenConvention.FullName);
 
-			HasErrors = base.HasErrors || Attribute is null || ConfigurationAttribute is null || MethodConfigurationAttribute is null;
+			HasErrors = base.HasErrors || MainAttribute is null || ConfigurationAttribute is null || DPTypeGenConvention is null || DPMethodGenConvention is null;
 		}
 
 		/// <summary>
@@ -87,10 +93,9 @@ namespace Durian.DefaultParam
 				{
 					return new()
 					{
-						AllowOverridingOfDefaultParamValues = attribute.GetNamedArgumentValue<bool>(DefaultParamConfigurationAttribute.AllowOverridingOfDefaultParamValuesProperty),
-						AllowAddingDefaultParamToNewParameters = attribute.GetNamedArgumentValue<bool>(DefaultParamConfigurationAttribute.AllowAddingDefaultParamToNewParametersProperty),
-						ApplyNewToGeneratedMembersWithEquivalentSignature = attribute.GetNamedArgumentValue<bool>(DefaultParamConfigurationAttribute.ApplyNewToGeneratedMembersWithEquivalentSignatureProperty),
-						CallInsteadOfCopying = attribute.GetNamedArgumentValue<bool>(DefaultParamConfigurationAttribute.CallInsteadOfCopyingProperty)
+						ApplyNewModifierWhenPossible = attribute.GetNamedArgumentValue<bool>(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty),
+						MethodConvention = attribute.GetNamedArgumentValue<int>(DefaultParamConfigurationAttribute.MethodConvetionProperty),
+						TypeConvention = attribute.GetNamedArgumentValue<int>(DefaultParamConfigurationAttribute.TypeConventionProperty)
 					};
 				}
 			}

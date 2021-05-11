@@ -11,7 +11,7 @@ namespace Durian
 	/// A collection of <see cref="ISyntaxFilter"/>s.
 	/// </summary>
 	/// <typeparam name="TFilter">Type of <see cref="ISyntaxFilter"/> this <see cref="FilterGroup{TFilter}"/> can store.</typeparam>
-	[DebuggerDisplay("Name = {_name}, {_filters}")]
+	[DebuggerDisplay("Name = {_name ?? string.Empty}, {_filters}")]
 	public class FilterGroup<TFilter> : ICollection<TFilter> where TFilter : notnull, ISyntaxFilter
 	{
 		internal List<FilterContainer<TFilter>> _containers;

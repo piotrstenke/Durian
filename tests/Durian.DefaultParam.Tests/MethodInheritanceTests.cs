@@ -152,6 +152,30 @@ partial class Child : Parent
 		}
 
 		[Fact]
+		public void Warning_When_HasNoAttributeOfBaseMethod_And_HasMultipleDefaultParams_And_LastIsMissing()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Parent
+{{	
+	public virtual void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U>(T value)
+	{{
+	}}
+}}
+
+partial class Child : Parent
+{{
+	public override void Method<[[{DefaultParamAttribute.AttributeName}(typeof(int))]T, U>(T value)
+	{{
+	}}
+}}
+";
+
+			Assert.True(RunGenerator(input, 1).HasSucceededAndContainsDiagnosticIDs("DUR0020"));
+		}
+
+		[Fact]
 		public void Error_When_HasAttributeWithDifferentValueThanBase()
 		{
 			string input =

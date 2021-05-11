@@ -90,7 +90,7 @@ namespace Durian.DefaultParam
 					return false;
 				}
 
-				return ValidateAndCreate(diagnosticReceiver, compilation, declaration, semanticModel, symbol, ref typeParameters, out data);
+				return ValidateAndCreate(diagnosticReceiver, compilation, declaration, semanticModel, symbol, in typeParameters, out data);
 			}
 
 			/// <summary>
@@ -109,7 +109,7 @@ namespace Durian.DefaultParam
 				TypeDeclarationSyntax declaration,
 				SemanticModel semanticModel,
 				INamedTypeSymbol symbol,
-				ref TypeParameterContainer typeParameters,
+				in TypeParameterContainer typeParameters,
 				[NotNullWhen(true)] out DefaultParamTypeData? data
 			)
 			{

@@ -99,7 +99,7 @@ $@"//---------------------------------------------------------------------------
 		/// <param name="source">Member this code was generated from.</param>
 		public static string GetDurianGeneratedAttribute(string? source)
 		{
-			return $"[global::{DurianStrings.GeneratorAttributesNamespace}.DurianGenerated(\"{source}\")]";
+			return $"[global::{DurianStrings.GeneratorNamespace}.DurianGenerated(\"{source}\")]";
 		}
 
 		/// <summary>
@@ -107,7 +107,7 @@ $@"//---------------------------------------------------------------------------
 		/// </summary>
 		public static string GetDurianGeneratedAttribute()
 		{
-			return $"[global::{DurianStrings.GeneratorAttributesNamespace}.DurianGenerated]";
+			return $"[global::{DurianStrings.GeneratorNamespace}.DurianGenerated]";
 		}
 
 		/// <summary>

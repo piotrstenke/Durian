@@ -10,6 +10,7 @@ using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System.Xml.Linq;
 
 namespace Durian.DefaultParam
 {
@@ -51,12 +52,12 @@ namespace Durian.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		protected sealed override void Register(CompilationStartAnalysisContext context, DefaultParamCompilationData compilation)
+		protected override void Register(CompilationStartAnalysisContext context, DefaultParamCompilationData compilation)
 		{
-			context.RegisterSymbolAction(c => Analyzesymbol(c, compilation), SupportedSymbolKind);
+			context.RegisterSymbolAction(c => AnalyzeSymbol(c, compilation), SupportedSymbolKind);
 		}
 
-		private void Analyzesymbol(SymbolAnalysisContext context, DefaultParamCompilationData compilation)
+		private void AnalyzeSymbol(SymbolAnalysisContext context, DefaultParamCompilationData compilation)
 		{
 			ContextualDiagnosticReceiver<SymbolAnalysisContext> diagnosticReceiver = DiagnosticReceiverFactory.Symbol(context);
 			Analyze(diagnosticReceiver, context.Symbol, compilation, context.CancellationToken);
@@ -138,20 +139,20 @@ namespace Durian.DefaultParam
 
 			foreach (AttributeData attr in attrs)
 			{
-				if(!hasGeneratedCode && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.GeneratedCodeAttribute))
+				if (!hasGeneratedCode && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.GeneratedCodeAttribute))
 				{
 					hasGeneratedCode = true;
 					attributes = null;
 					return false;
 				}
-				else if(!hasDurianGenerated && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DurianGeneratedAttribute))
+				else if (!hasDurianGenerated && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DurianGeneratedAttribute))
 				{
 					hasDurianGenerated = true;
 					attributes = null;
 					return false;
 				}
 
-				if(hasGeneratedCode && hasDurianGenerated)
+				if (hasGeneratedCode && hasDurianGenerated)
 				{
 					break;
 				}

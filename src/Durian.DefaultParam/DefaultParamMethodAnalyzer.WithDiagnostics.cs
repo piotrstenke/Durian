@@ -44,84 +44,49 @@ namespace Durian.DefaultParam
 			}
 
 			/// <summary>
-			/// Analyzes, if the <paramref name="symbol"/> is valid when it overrides the specified <paramref name="baseMethod"/>.
+			/// Analyzes, if the <paramref name="symbol"/> has valid <paramref name="typeParameters"/> when compared to the <paramref name="symbol"/>'s base method.
 			/// </summary>
 			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 			/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
-			/// <param name="baseMethod"><see cref="IMethodSymbol"/> that is being overridden.</param>
 			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters to be analyzed.</param>
 			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-			/// <param name="hasValidTypeParameters">Determines whether the combined type parameters  of the <paramref name="symbol"/> and <paramref name="baseMethod"/> are valid.</param>
-			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is invalid when it overrides the specified <paramref name="baseMethod"/>, otherwise <see langword="false"/>.</returns>
+			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 			public static bool AnalyzeOverrideMethod(
 				IDiagnosticReceiver diagnosticReceiver,
 				IMethodSymbol symbol,
-				[NotNullWhen(true)] IMethodSymbol? baseMethod,
 				ref TypeParameterContainer typeParameters,
 				DefaultParamCompilationData compilation,
-				CancellationToken cancellationToken,
-				out bool hasValidTypeParameters
+				CancellationToken cancellationToken = default
 			)
 			{
+				if(!symbol.IsOverride)
+				{
+					return AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
+				}
+
+				IMethodSymbol? baseMethod = symbol.OverriddenMethod;
+
 				if (baseMethod is null)
 				{
-					hasValidTypeParameters = false;
 					return false;
 				}
 
 				if (IsDefaultParamGenerated(baseMethod, compilation))
 				{
 					DefaultParamDiagnostics.DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute(diagnosticReceiver, symbol);
-					hasValidTypeParameters = AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
 					return false;
 				}
 
 				TypeParameterContainer baseTypeParameters = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
-				bool isValid;
 
-				if (typeParameters.FirstDefaultParamIndex == -1)
-				{
-					isValid = AnalyzeTypeParameters(diagnosticReceiver, in baseTypeParameters);
-					hasValidTypeParameters = isValid;
-
-					if (isValid)
-					{
-						isValid &= AnalyzeBaseMethodParameters(diagnosticReceiver, compilation.Configuration, in typeParameters, in baseTypeParameters);
-					}
-
-					typeParameters = TypeParameterContainer.Combine(in typeParameters, in baseTypeParameters);
-				}
-				else if (HasAddedDefaultParamAttributes(in typeParameters, in baseTypeParameters))
-				{
-					bool addingTypeParametersIsValid = TryUpdateTypeParameters(ref typeParameters, in baseTypeParameters, compilation.Configuration);
-					isValid = AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
-					hasValidTypeParameters = isValid;
-
-					if (isValid)
-					{
-						isValid &= AnalyzeBaseMethodParameters(diagnosticReceiver, compilation.Configuration, in typeParameters, in baseTypeParameters);
-
-						if (!addingTypeParametersIsValid)
-						{
-							ReportAddedTypeParameters(diagnosticReceiver, typeParameters, baseTypeParameters);
-							isValid = false;
-						}
-					}
-				}
-				else
+				if(DefaultParamAnalyzer.AnalyzeTypeParameters(in baseTypeParameters) && AnalyzeBaseMethodParameters(diagnosticReceiver, in typeParameters, in baseTypeParameters))
 				{
 					typeParameters = TypeParameterContainer.Combine(in typeParameters, in baseTypeParameters);
-					isValid = AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
-					hasValidTypeParameters = isValid;
-
-					if (isValid)
-					{
-						isValid &= AnalyzeBaseMethodParameters(diagnosticReceiver, compilation.Configuration, in typeParameters, in baseTypeParameters);
-					}
+					return true;
 				}
 
-				return isValid;
+				return false;
 			}
 
 			/// <summary>
@@ -292,25 +257,14 @@ namespace Durian.DefaultParam
 				bool isValid = AnalyzeAgaintsPartialOrExtern(diagnosticReceiver, symbol, cancellationToken);
 				isValid &= AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation);
 				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, cancellationToken);
+				isValid &= AnalyzeOverrideMethod(diagnosticReceiver, symbol, ref typeParameters, compilation, cancellationToken);
 
-				bool hasValidTypeParameters;
-
-				if (IsOverride(symbol, out IMethodSymbol? baseMethod))
+				if(!isValid)
 				{
-					isValid &= AnalyzeOverrideMethod(diagnosticReceiver, symbol, baseMethod, ref typeParameters, compilation, cancellationToken, out hasValidTypeParameters);
-				}
-				else
-				{
-					hasValidTypeParameters = AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
-					isValid &= hasValidTypeParameters;
+					return false;
 				}
 
-				if (hasValidTypeParameters)
-				{
-					isValid &= AnalyzeMethodSignature(diagnosticReceiver, symbol, typeParameters, compilation, cancellationToken);
-				}
-
-				return isValid;
+				return AnalyzeMethodSignature(diagnosticReceiver, symbol, in typeParameters, compilation, cancellationToken);
 			}
 
 			private static bool AnalyzeCollidingMethods(
@@ -384,7 +338,7 @@ namespace Durian.DefaultParam
 					return true;
 				}
 
-				if (!configuration.ApplyNewToGeneratedMembersWithEquivalentSignature || SymbolEqualityComparer.Default.Equals(collidingMethod.Symbol.ContainingType, symbol.ContainingType))
+				if (!configuration.ApplyNewModifierWhenPossible || SymbolEqualityComparer.Default.Equals(collidingMethod.Symbol.ContainingType, symbol.ContainingType))
 				{
 					if (HasNewModifier(symbol, collidingMethod.Symbol, cancellationToken))
 					{
@@ -410,7 +364,7 @@ namespace Durian.DefaultParam
 				return true;
 			}
 
-			private static bool AnalyzeBaseMethodParameters(IDiagnosticReceiver diagnosticReceiver, DefaultParamConfiguration configuration, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
+			private static bool AnalyzeBaseMethodParameters(IDiagnosticReceiver diagnosticReceiver, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
 			{
 				int length = baseTypeParameters.Length;
 				bool isValid = true;
@@ -422,7 +376,7 @@ namespace Durian.DefaultParam
 					ref readonly TypeParameterData baseData = ref baseTypeParameters[i];
 					ref readonly TypeParameterData thisData = ref typeParameters[i];
 
-					if (!AnalyzeParameterInBaseMethod(diagnosticReceiver, in thisData, in baseData, configuration))
+					if (!AnalyzeParameterInBaseMethod(diagnosticReceiver, in thisData, in baseData))
 					{
 						isValid = false;
 					}
@@ -451,49 +405,31 @@ namespace Durian.DefaultParam
 				return baseTypeParameters.FirstDefaultParamIndex;
 			}
 
-			private static bool AnalyzeParameterInBaseMethod(IDiagnosticReceiver diagnosticReceiver, in TypeParameterData thisData, in TypeParameterData baseData, DefaultParamConfiguration configuration)
+			private static bool AnalyzeParameterInBaseMethod(IDiagnosticReceiver diagnosticReceiver, in TypeParameterData thisData, in TypeParameterData baseData)
 			{
-				if (baseData.IsDefaultParam)
+				if(baseData.IsDefaultParam)
 				{
-					if (!thisData.IsDefaultParam)
+					if(!thisData.IsDefaultParam)
 					{
 						DefaultParamDiagnostics.OverriddenDefaultParamAttributeShouldBeAddedForClarity(diagnosticReceiver, thisData.Symbol);
+
+						// This diagnostic is only a warning, so the symbol is still valid.
 						return true;
 					}
-					else if (thisData.TargetType is null)
+
+					if (!SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
 					{
-						return true;
+						DefaultParamDiagnostics.ValueOfDefaultParamAttributeMustBeTheSameAsValueForOverridenMethod(diagnosticReceiver, thisData.Symbol, thisData.Location);
+						return false;
 					}
-					else if (!SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
-					{
-						if (configuration.AllowOverridingOfDefaultParamValues)
-						{
-							if (!thisData.TargetType.IsValidForTypeParameter(thisData.Symbol))
-							{
-								DurianDiagnostics.TypeIsNotValidTypeParameter(diagnosticReceiver, thisData.TargetType, thisData.Symbol);
-								return false;
-							}
-						}
-						else
-						{
-							DefaultParamDiagnostics.ValueOfDefaultParamAttributeMustBeTheSameAsValueForOverridenMethod(diagnosticReceiver, thisData.Symbol, thisData.Location);
-							return false;
-						}
-					}
+				}
+				else if(thisData.IsDefaultParam)
+				{
+					DefaultParamDiagnostics.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter(diagnosticReceiver, thisData.Symbol, thisData.Location);
+					return false;
 				}
 
 				return true;
-			}
-
-			private static void ReportAddedTypeParameters(IDiagnosticReceiver diagnosticReceiver, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
-			{
-				int length = GetNumAddedParameters(in typeParameters, in baseTypeParameters);
-				for (int i = typeParameters.FirstDefaultParamIndex; i < length; i++)
-				{
-					ref readonly TypeParameterData thisData = ref typeParameters[i];
-
-					DefaultParamDiagnostics.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter(diagnosticReceiver, thisData.Symbol, thisData.Location);
-				}
 			}
 		}
 	}

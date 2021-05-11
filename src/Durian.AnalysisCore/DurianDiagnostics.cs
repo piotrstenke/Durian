@@ -288,7 +288,7 @@ namespace Durian
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
 		/// <param name="symbol"><see cref="ISymbol"/> the attribute cannot be applied to.</param>
 		/// <param name="attributeName1">Name of the attribute that can't be applied to the <paramref name="symbol"/>.</param>
-		/// <param name="attributeName2">Name of the attribute is already applied to the <paramref name="symbol"/> and doesn't allow the <paramref name="attributeName1"/> to be applied.</param>
+		/// <param name="attributeName2">Name of the attribute that is already applied to the <paramref name="symbol"/> and doesn't allow the <paramref name="attributeName1"/> to be applied.</param>
 		/// <param name="location">Location of the error.</param>
 		public static void AttributeCannotBeAppliedToMembersWithAttribute(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol, string? attributeName1, string? attributeName2, Location? location)
 		{
@@ -435,12 +435,12 @@ namespace Durian
 		/// <inheritdoc cref="DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter(IDiagnosticReceiver, ITypeParameterSymbol?, string?, Location?)"/>
 		public static void DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter(IDiagnosticReceiver diagnosticReceiver, ITypeParameterSymbol? symbol, string? attributeName)
 		{
-			diagnosticReceiver.ReportDiagnostic(DurianDescriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter, symbol?.Locations.FirstOrDefault(), symbol, attributeName);
+			diagnosticReceiver.ReportDiagnostic(DurianDescriptors.DoNotAddAttributeOnVirtualTypeParameter, symbol?.Locations.FirstOrDefault(), symbol, attributeName);
 		}
 
 		/// <summary>
 		/// Reports <see cref="Diagnostic"/>s indicating that the user shouldn't add new attributes on a type parameter of an overridden virtual method (rule DUR0025).
-		/// <para>See: <see cref="DurianDescriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter"/></para>
+		/// <para>See: <see cref="DurianDescriptors.DoNotAddAttributeOnVirtualTypeParameter"/></para>
 		/// </summary>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
 		/// <param name="symbol"><see cref="ITypeParameterSymbol"/> the attribute is added to.</param>
@@ -448,17 +448,58 @@ namespace Durian
 		/// <param name="location">Location of the error.</param>
 		public static void DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter(IDiagnosticReceiver diagnosticReceiver, ITypeParameterSymbol? symbol, string? attributeName, Location? location)
 		{
-			diagnosticReceiver.ReportDiagnostic(DurianDescriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter, location, symbol, attributeName);
+			diagnosticReceiver.ReportDiagnostic(DurianDescriptors.DoNotAddAttributeOnVirtualTypeParameter, location, symbol, attributeName);
 		}
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that the target project must reference the <c>Durian.Core</c> package. (rule DUR0026).
+		/// Reports <see cref="Diagnostic"/>s indicating that the target project must reference the <c>Durian.Core</c> package (rule DUR0026).
 		/// <para>See: <see cref="DurianDescriptors.ProjectMustReferenceDurianCore"/></para>
 		/// </summary>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
 		public static void ProjectMustReferenceDurianCore(IDiagnosticReceiver diagnosticReceiver)
 		{
 			diagnosticReceiver.ReportDiagnostic(DurianDescriptors.ProjectMustReferenceDurianCore, Location.None);
+		}
+
+		/// <inheritdoc cref="AttributeCannotBeAppliedToMembersWithoutAttribute(IDiagnosticReceiver, ISymbol?, string?, string?, Location?)"/>
+		public static void AttributeCannotBeAppliedToMembersWithoutAttribute(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol, string? attributeName1, string? attributeName2)
+		{
+			diagnosticReceiver.ReportDiagnostic(DurianDescriptors.AttributeCannotBeAppliedToMembersWithAttribute, symbol?.Locations.FirstOrDefault(), symbol, attributeName1, attributeName2);
+		}
+
+		/// <summary>
+		/// Reports <see cref="Diagnostic"/>s indicating that the target attribute cannot be applied to members without a specified attribute (rule DUR0027).
+		/// <para>See: <see cref="DurianDescriptors.AttributeCannotBeAppliedToMembersWithoutAttribute"/></para>
+		/// </summary>
+		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> the attribute cannot be applied to.</param>
+		/// <param name="attributeName1">Name of the attribute that can't be applied to the <paramref name="symbol"/>.</param>
+		/// <param name="attributeName2">Name of the attribute that the <paramref name="attributeName1"/> requires to be applied to the <paramref name="symbol"/>.</param>
+		/// <param name="location">Location of the error.</param>
+		public static void AttributeCannotBeAppliedToMembersWithoutAttribute(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol, string? attributeName1, string? attributeName2, Location? location)
+		{
+			diagnosticReceiver.ReportDiagnostic(DurianDescriptors.AttributeCannotBeAppliedToMembersWithAttribute, location, symbol, attributeName1, attributeName2);
+		}
+
+		/// <inheritdoc cref="AttributePropertyShouldNotBeUsedOnMembersOfType(IDiagnosticReceiver, ISymbol?, string?, string?, string?, Location?)"/>
+		public static void AttributePropertyShouldNotBeUsedOnMembersOfType(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol, string? attributeName, string? propertyName, string? memberType)
+		{
+			diagnosticReceiver.ReportDiagnostic(DurianDescriptors.ProjectMustReferenceDurianCore, symbol?.Locations.FirstOrDefault(), symbol, propertyName, attributeName, memberType);
+		}
+
+		/// <summary>
+		/// Reports <see cref="Diagnostic"/>s indicating that the specified attribute property shouldn't be used on members of the specified type (rule DUR0028).
+		/// <para>See: <see cref="DurianDescriptors.AttributePropertyShouldNotBeUsedOnMembersOfType"/></para>
+		/// </summary>
+		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> that caused the error.</param>
+		/// <param name="attributeName">Name of the attribute.</param>
+		/// <param name="propertyName">Name of the property.</param>
+		/// <param name="memberType">Type of member the property should be used with.</param>
+		/// <param name="location">Location of the error.</param>
+		public static void AttributePropertyShouldNotBeUsedOnMembersOfType(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol, string? attributeName, string? propertyName, string? memberType, Location? location)
+		{
+			diagnosticReceiver.ReportDiagnostic(DurianDescriptors.ProjectMustReferenceDurianCore, location, symbol, propertyName, attributeName, memberType);
 		}
 	}
 }

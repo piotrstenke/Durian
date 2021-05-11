@@ -127,7 +127,7 @@ namespace Durian.DefaultParam
 			DefaultParamCompilationData compilation,
 			TypeDeclarationSyntax declaration,
 			[NotNullWhen(true)] out DefaultParamTypeData? data,
-			CancellationToken cancellationToken
+			CancellationToken cancellationToken = default
 		)
 		{
 			if (!GetValidationData(compilation, declaration, out SemanticModel? semanticModel, out INamedTypeSymbol? symbol, out TypeParameterContainer typeParameters, cancellationToken))
@@ -136,7 +136,7 @@ namespace Durian.DefaultParam
 				return false;
 			}
 
-			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, ref typeParameters, out data);
+			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, in typeParameters, out data);
 		}
 
 		/// <summary>
@@ -153,7 +153,7 @@ namespace Durian.DefaultParam
 			TypeDeclarationSyntax declaration,
 			SemanticModel semanticModel,
 			INamedTypeSymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out DefaultParamTypeData? data
 		)
 		{
@@ -309,12 +309,12 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode node,
 			SemanticModel semanticModel,
 			ISymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = ValidateAndCreate(compilation, (TypeDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, ref typeParameters, out DefaultParamTypeData? d);
+			bool isValid = ValidateAndCreate(compilation, (TypeDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, in typeParameters, out DefaultParamTypeData? d);
 			data = d;
 			return isValid;
 		}
@@ -338,12 +338,12 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode node,
 			SemanticModel semanticModel,
 			ISymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, (TypeDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, ref typeParameters, out DefaultParamTypeData? d);
+			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, (TypeDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, in typeParameters, out DefaultParamTypeData? d);
 			data = d;
 			return isValid;
 		}

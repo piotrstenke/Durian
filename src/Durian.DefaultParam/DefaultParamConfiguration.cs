@@ -6,28 +6,22 @@ namespace Durian.DefaultParam
 	/// <summary>
 	/// Configures optional features of the <see cref="DefaultParamGenerator"/>.
 	/// </summary>
-	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public sealed record DefaultParamConfiguration
 	{
 		/// <summary>
-		/// Determines whether to allow to override values of <see cref="DefaultParamAttribute"/>s for virtual methods. Defaults to <see langword="false"/>.
+		/// Determines whether to apply the <see langword="new"/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword="false"/>.
 		/// </summary>
-		public bool AllowOverridingOfDefaultParamValues { get; set; }
+		public bool ApplyNewModifierWhenPossible { get; set; }
 
 		/// <summary>
-		/// Determines whether to allow adding new <see cref="DefaultParamAttribute"/>s to type parameters that don't have the <see cref="DefaultParamAttribute"/> defined on the base method. Defaults to <see langword="false"/>.
+		/// Determines, how the <c>DefaultParam</c> generator generates a type.
 		/// </summary>
-		public bool AllowAddingDefaultParamToNewParameters { get; set; }
+		public int TypeConvention { get; set; }
 
 		/// <summary>
-		/// Determines whether to apply the <see langwrod="new"/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword="false"/>.
+		/// Determines, how the <c>DefaultParam</c> generator generates a method.
 		/// </summary>
-		public bool ApplyNewToGeneratedMembersWithEquivalentSignature { get; set; }
-
-		/// <summary>
-		/// Determines whether the generated method should call this method instead of copying its contents. Defaults to <see langword="false"/>.
-		/// </summary>
-		public bool CallInsteadOfCopying { get; set; }
+		public int MethodConvention { get; set; }
 
 		/// <summary>
 		/// Returns a new instance of <see cref="DefaultParamConfiguration"/> with all values set to <see langword="default"/>.
@@ -45,16 +39,18 @@ namespace Durian.DefaultParam
 		public override int GetHashCode()
 		{
 			int hashCode = -726504116;
-			hashCode = (hashCode * -1521134295) + EqualityComparer<bool>.Default.GetHashCode(AllowOverridingOfDefaultParamValues);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<bool>.Default.GetHashCode(AllowAddingDefaultParamToNewParameters);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<bool>.Default.GetHashCode(ApplyNewToGeneratedMembersWithEquivalentSignature);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<bool>.Default.GetHashCode(CallInsteadOfCopying);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<bool>.Default.GetHashCode(ApplyNewModifierWhenPossible);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<int>.Default.GetHashCode(MethodConvention);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<int>.Default.GetHashCode(TypeConvention);
 			return hashCode;
 		}
 
-		private string GetDebuggerDisplay()
+#pragma warning disable RCS1132 // Remove redundant overriding member.
+		/// <inheritdoc/>
+		public override string ToString()
 		{
-			return $"{{{base.ToString()}}}";
+			return base.ToString();
 		}
+#pragma warning restore RCS1132 // Remove redundant overriding member.
 	}
 }

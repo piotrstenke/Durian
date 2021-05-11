@@ -299,7 +299,7 @@ namespace Durian
 		/// <summary>
 		/// Provides diagnostic message indicating that the user shouldn't add new attributes on a type parameter of an overridden virtual method.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter = new(
+		public static readonly DiagnosticDescriptor DoNotAddAttributeOnVirtualTypeParameter = new(
 			id: "DUR0025",
 			title: "Do not add the 'attributeName' attribute on type parameters of overridden virtual methods",
 			messageFormat: "'{0}': Do not add the '{1}' attribute on type parameters of overridden virtual methods",
@@ -317,6 +317,30 @@ namespace Durian
 			messageFormat: "Projects with any Durian analyzer must reference the Durian.Core package",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the target attribute cannot be applied to members without a specified attribute.
+		/// </summary>
+		public static readonly DiagnosticDescriptor AttributeCannotBeAppliedToMembersWithoutAttribute = new(
+			id: "DUR0027",
+			title: "Attribute 'attributeName1' cannot be applied to members without the 'attributeName2' attribute",
+			messageFormat: "'{0}': Attribute '{1}' cannot be applied to members without the '{2}' attribute",
+			category: "Durian",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the specified attribute property shouldn't be used on members of the specified type.
+		/// </summary>
+		public static readonly DiagnosticDescriptor AttributePropertyShouldNotBeUsedOnMembersOfType = new(
+			id: "DUR0028",
+			title: "Property 'propertyName' of attribute 'attributeName' shouldn't be used on members of type 'memberType'",
+			messageFormat: "'{0}': Property '{1}' of attribute '{2}' shouldn't be used on {3}",
+			category: "Durian",
+			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true
 		);
 	}

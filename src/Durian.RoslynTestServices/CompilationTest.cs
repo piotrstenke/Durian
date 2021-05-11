@@ -18,10 +18,27 @@ namespace Durian.Tests
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CompilationTest"/> class.
 		/// </summary>
+		protected CompilationTest()
+		{
+			Compilation = TestableCompilationData.Create();
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CompilationTest"/> class.
+		/// </summary>
 		/// <param name="sources">An array of <see cref="string"/>s to be used as initial sources of <see cref="CSharpSyntaxTree"/>s for the <see cref="Compilation"/>.</param>
 		protected CompilationTest(params string[]? sources)
 		{
 			Compilation = TestableCompilationData.Create(sources);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CompilationTest"/> class.
+		/// </summary>
+		/// <param name="compilation">An instance of <see cref="TestableCompilationData"/> to share between all tests in this class.</param>
+		protected CompilationTest(TestableCompilationData compilation)
+		{
+			Compilation = compilation;
 		}
 
 		/// <inheritdoc cref="TestableCompilationData.GetNode{TNode}(string?, int)"/>

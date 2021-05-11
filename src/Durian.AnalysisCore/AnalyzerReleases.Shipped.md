@@ -29,3 +29,5 @@ DUR0023 |  Durian  |  Error   |  [Core]: Essential type 'typeName' is missing. T
 DUR0024 |  Durian  |  Error   |  [Core]: Method with the specified signature already exists
 DUR0025 |  Durian  |  Error   |  [Core]: Do not add the 'attributeName' attribute on type parameters of overridden virtual methods
 DUR0026 |  Durian  |  Error   |  [Core]: Projects with any Durian analyzer must reference the Durian.Core package
+DUR0027 |  Durian  |  Error   |  [Core]: Attribute 'attributeName1' cannot be applied to members without the 'attributeName2' attribute
+DUR0028 |  Durian  |  Warning   |  [Core]: Property 'propertyName' of attribute 'attributeName' shouldn't be used on members of type 'memberType'

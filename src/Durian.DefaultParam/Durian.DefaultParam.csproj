@@ -9,6 +9,7 @@
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <RootNamespace>Durian.DefaultParam</RootNamespace>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
     
   </PropertyGroup>
 
@@ -19,6 +20,7 @@
     <Compile Include="..\..\symbols\NullableAttributes.cs" />
     
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Update="..\..\tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
     
   </ItemGroup>
 

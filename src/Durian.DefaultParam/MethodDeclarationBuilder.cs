@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -16,7 +17,7 @@ namespace Durian.DefaultParam
 		private HashSet<int>? _newModifierIndexes;
 		private GenericNameSyntax? _callMethodSyntax;
 		private ArgumentListSyntax? _callArguments;
-		private IdentifierNameSyntax? _newType;
+		private readonly Queue<IdentifierNameSyntax> _callTypeArguments;
 		private int _numOriginalConstraints;
 		private int _numOriginalParameters;
 		private int _numNonDefaultParam;
@@ -50,6 +51,7 @@ namespace Durian.DefaultParam
 			CurrentDeclaration = null!;
 			OriginalDeclaration = null!;
 			SemanticModel = null!;
+			_callTypeArguments = new();
 		}
 
 		/// <summary>
@@ -59,6 +61,7 @@ namespace Durian.DefaultParam
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public MethodDeclarationBuilder(DefaultParamMethodData data, CancellationToken cancellationToken = default)
 		{
+			_callTypeArguments = new();
 			SetData(data, cancellationToken);
 		}
 
@@ -109,6 +112,7 @@ namespace Durian.DefaultParam
 			_indentLevel = DefaultParamUtilities.GetIndent(data.Declaration);
 			_newModifierIndexes = data.NewModifierIndexes;
 			_numNonDefaultParam = data.TypeParameters.NumNonDefaultParam;
+			_callTypeArguments.Clear();
 
 			SetDeclarationWithoutDefaultParamAttribute(data.Declaration, data.ParentCompilation, cancellationToken);
 
@@ -121,7 +125,7 @@ namespace Durian.DefaultParam
 				_applyReturnSyntax = false;
 				_callMethodSyntax = null;
 				_callArguments = null;
-				_newType = null;
+				_callTypeArguments.Clear();
 			}
 		}
 
@@ -180,7 +184,7 @@ namespace Durian.DefaultParam
 		/// <inheritdoc/>
 		public void AcceptTypeParameterReplacer(TypeParameterReplacer replacer)
 		{
-			_newType = replacer.Replacement;
+			_callTypeArguments.Enqueue(replacer.Replacement!);
 			CurrentDeclaration = (MethodDeclarationSyntax)replacer.Visit(CurrentDeclaration);
 		}
 
@@ -266,10 +270,10 @@ namespace Durian.DefaultParam
 		{
 			if (_callMethodSyntax is not null)
 			{
-				if (_newType is not null)
+				if (_callTypeArguments is not null)
 				{
 					TypeSyntax[] typeArguments = _callMethodSyntax.TypeArgumentList.Arguments.ToArray();
-					typeArguments[count] = _newType;
+					typeArguments[count] = _callTypeArguments.Dequeue();
 					_callMethodSyntax = _callMethodSyntax.WithTypeArgumentList(SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(typeArguments)));
 				}
 
@@ -321,7 +325,7 @@ namespace Durian.DefaultParam
 			list = SyntaxFactory.SeparatedList(list.Select(p => p.WithAttributeLists(SyntaxFactory.List(p.AttributeLists.Where(attrList => attrList.Attributes.Any(attr =>
 			{
 				SymbolInfo info = SemanticModel.GetSymbolInfo(attr, cancellationToken);
-				return !SymbolEqualityComparer.Default.Equals(info.Symbol?.ContainingType, compilation.Attribute);
+				return !SymbolEqualityComparer.Default.Equals(info.Symbol?.ContainingType, compilation.MainAttribute);
 			}
 			))))));
 
@@ -360,7 +364,7 @@ namespace Durian.DefaultParam
 				SeparatedSyntaxList<AttributeSyntax> l = SyntaxFactory.SeparatedList(list.Attributes.Where(attr =>
 				{
 					ISymbol? symbol = SemanticModel.GetSymbolInfo(attr, cancellationToken).Symbol;
-					return !SymbolEqualityComparer.Default.Equals(symbol?.ContainingType, compilation.MethodConfigurationAttribute);
+					return !SymbolEqualityComparer.Default.Equals(symbol?.ContainingType, compilation.ConfigurationAttribute);
 				}));
 
 				if (l.Any())

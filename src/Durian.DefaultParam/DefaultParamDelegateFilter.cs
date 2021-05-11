@@ -170,7 +170,7 @@ namespace Durian.DefaultParam
 				return false;
 			}
 
-			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, ref typeParameters, out data);
+			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, in typeParameters, out data);
 		}
 
 		/// <summary>
@@ -187,7 +187,7 @@ namespace Durian.DefaultParam
 			DelegateDeclarationSyntax declaration,
 			SemanticModel semanticModel,
 			INamedTypeSymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out DefaultParamDelegateData? data
 		)
 		{
@@ -308,12 +308,12 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode node,
 			SemanticModel semanticModel,
 			ISymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = ValidateAndCreate(compilation, (DelegateDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, ref typeParameters, out DefaultParamDelegateData? d);
+			bool isValid = ValidateAndCreate(compilation, (DelegateDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, in typeParameters, out DefaultParamDelegateData? d);
 			data = d;
 			return isValid;
 		}
@@ -337,12 +337,12 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode node,
 			SemanticModel semanticModel,
 			ISymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, (DelegateDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, ref typeParameters, out DefaultParamDelegateData? d);
+			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, (DelegateDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, in typeParameters, out DefaultParamDelegateData? d);
 			data = d;
 			return isValid;
 		}

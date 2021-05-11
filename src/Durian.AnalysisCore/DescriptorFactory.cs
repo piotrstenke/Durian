@@ -31,7 +31,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
 		/// <param name="modifier">Modifier the rule applies to.</param>
-		/// <param name="memberType">Type of the member the rule applies to.</param>
+		/// <param name="memberType">Type of member the rule applies to.</param>
 		public static DiagnosticDescriptor MemberWithAttributeMustHaveModifier(string attributeName, string modifier, string memberType)
 		{
 			return CopyDescriptor(
@@ -64,7 +64,7 @@ namespace Durian
 		/// </summary>
 		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
 		/// <param name="modifier">Modifier the rule applies to.</param>
-		/// <param name="memberType">Type of the member the rule applies to.</param>
+		/// <param name="memberType">Type of member the rule applies to.</param>
 		public static DiagnosticDescriptor MemberWithAttributeCannotHaveModifier(string attributeName, string modifier, string memberType)
 		{
 			return CopyDescriptor(
@@ -94,7 +94,7 @@ namespace Durian
 		/// <para>See: <see cref="DurianDescriptors.MemberWithAttributeMustHaveImplementation"/></para>
 		/// </summary>
 		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
-		/// <param name="memberType">Type of the member the rule applies to.</param>
+		/// <param name="memberType">Type of member the rule applies to.</param>
 		public static DiagnosticDescriptor MemberWithAttributeMustHaveImplementation(string attributeName, string memberType)
 		{
 			return CopyDescriptor(
@@ -123,7 +123,7 @@ namespace Durian
 		/// <para>See: <see cref="DurianDescriptors.MemberWithAttributeCannotHaveImplementation"/></para>
 		/// </summary>
 		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
-		/// <param name="memberType">Type of the member the rule applies to.</param>
+		/// <param name="memberType">Type of member the rule applies to.</param>
 		public static DiagnosticDescriptor MemberWithAttributeCannotHaveImplementation(string attributeName, string memberType)
 		{
 			return CopyDescriptor(
@@ -151,7 +151,7 @@ namespace Durian
 		/// <para>See: <see cref="DurianDescriptors.TargetOfAttributeMustBeOfSpecifiedMemberType"/></para>
 		/// </summary>
 		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
-		/// <param name="memberType">Type of the member the rule applies to.</param>
+		/// <param name="memberType">Type of member the rule applies to.</param>
 		public static DiagnosticDescriptor TargetOfAttributeMustBeOfSpecifiedMemberType(string attributeName, string memberType)
 		{
 			return CopyDescriptor(
@@ -166,7 +166,7 @@ namespace Durian
 		/// <para>See: <see cref="DurianDescriptors.AttributeCannotBeAppliedToMembersOfType"/></para>
 		/// </summary>
 		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
-		/// <param name="memberType">Type of the member the rule applies to.</param>
+		/// <param name="memberType">Type of member the rule applies to.</param>
 		public static DiagnosticDescriptor AttributeCannotBeAppliedToMembersOfType(string attributeName, string memberType)
 		{
 			return CopyDescriptor(
@@ -259,18 +259,95 @@ namespace Durian
 
 		/// <summary>
 		/// Creates a new instance of <see cref="DiagnosticDescriptor"/> of the DUR0025 rule with the specified <paramref name="attributeName"/>.
-		/// <para>See: <see cref="DurianDescriptors.ValueOfAttributeMustBeTheSameAsValueOfTheOverridenMember"/></para>
+		/// <para>See: <see cref="DurianDescriptors.DoNotAddAttributeOnVirtualTypeParameter"/></para>
 		/// </summary>
 		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
 		public static DiagnosticDescriptor DoNotAddAttributeOnVirtualTypeParameter(string attributeName)
 		{
 			return CopyDescriptor(
-				DurianDescriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter,
+				DurianDescriptors.DoNotAddAttributeOnVirtualTypeParameter,
 				(nameof(attributeName), attributeName)
 			);
 		}
 
-		private static DiagnosticDescriptor CopyDescriptor(DiagnosticDescriptor descriptor, params (string original, string target)[] replacements)
+		/// <summary>
+		/// Creates a new instance of <see cref="DiagnosticDescriptor"/> of the DUR0027 rule with the specified <paramref name="attributeName"/>.
+		/// <para>See: <see cref="DurianDescriptors.AttributeCannotBeAppliedToMembersWithoutAttribute"/></para>
+		/// </summary>
+		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
+		public static DiagnosticDescriptor AttributeCannotBeAppliedToMembersWithoutAttribute(string attributeName)
+		{
+			return CopyDescriptor(
+				DurianDescriptors.AttributeCannotBeAppliedToMembersWithoutAttribute,
+				("attributeName1", attributeName),
+				("{2}", "{1}")
+			);
+		}
+
+		/// <summary>
+		/// Creates a new instance of <see cref="DiagnosticDescriptor"/> of the DUR0027 rule with the specified <paramref name="attributeName1"/> and <paramref name="attributeName2"/>.
+		/// <para>See: <see cref="DurianDescriptors.AttributeCannotBeAppliedToMembersWithoutAttribute"/></para>
+		/// </summary>
+		/// <param name="attributeName1">Name of the first attribute.</param>
+		/// <param name="attributeName2">Name of the second attribute.</param>
+		public static DiagnosticDescriptor AttributeCannotBeAppliedToMembersWithoutAttribute(string attributeName1, string attributeName2)
+		{
+			return CopyDescriptor(
+				DurianDescriptors.AttributeCannotBeAppliedToMembersWithoutAttribute,
+				(nameof(attributeName1), attributeName1),
+				(nameof(attributeName2), attributeName2)
+			);
+		}
+
+		/// <summary>
+		/// Creates a new instance of <see cref="DiagnosticDescriptor"/> of the DUR0028 rule with the specified <paramref name="attributeName"/>.
+		/// <para>See: <see cref="DurianDescriptors.AttributePropertyShouldNotBeUsedOnMembersOfType"/></para>
+		/// </summary>
+		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
+		public static DiagnosticDescriptor AttributePropertyShouldNotBeUsedOnMembersOfType(string attributeName)
+		{
+			return CopyDescriptor(
+				DurianDescriptors.AttributePropertyShouldNotBeUsedOnMembersOfType,
+				null,
+				(nameof(attributeName), attributeName),
+				null
+			);
+		}
+
+		/// <summary>
+		/// Creates a new instance of <see cref="DiagnosticDescriptor"/> of the DUR0028 rule with the specified <paramref name="attributeName"/> and <paramref name="memberType"/>.
+		/// <para>See: <see cref="DurianDescriptors.AttributePropertyShouldNotBeUsedOnMembersOfType"/></para>
+		/// </summary>
+		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
+		/// <param name="memberType">Type of member the attribute applies to.</param>
+		public static DiagnosticDescriptor AttributePropertyShouldNotBeUsedOnMembersOfType(string attributeName, string memberType)
+		{
+			return CopyDescriptor(
+				DurianDescriptors.AttributePropertyShouldNotBeUsedOnMembersOfType,
+				null,
+				(nameof(attributeName), attributeName),
+				("'memberType'", memberType)
+			);
+		}
+
+		/// <summary>
+		/// Creates a new instance of <see cref="DiagnosticDescriptor"/> of the DUR0028 rule with the specified <paramref name="attributeName"/>, <paramref name="memberType"/> and <paramref name="propertyName"/>.
+		/// <para>See: <see cref="DurianDescriptors.AttributePropertyShouldNotBeUsedOnMembersOfType"/></para>
+		/// </summary>
+		/// <param name="attributeName">Name of the attribute the rule applies to.</param>
+		/// <param name="memberType">Type of member the attribute applies to.</param>
+		/// <param name="propertyName">Name of the property the rule applies to.</param>
+		public static DiagnosticDescriptor AttributePropertyShouldNotBeUsedOnMembersOfType(string attributeName, string memberType, string propertyName)
+		{
+			return CopyDescriptor(
+				DurianDescriptors.AttributePropertyShouldNotBeUsedOnMembersOfType,
+				("'propertyName'", propertyName),
+				(nameof(attributeName), attributeName),
+				("'memberType'", memberType)
+			);
+		}
+
+		private static DiagnosticDescriptor CopyDescriptor(DiagnosticDescriptor descriptor, params (string original, string target)?[] replacements)
 		{
 			string title = descriptor.Title.ToString(CultureInfo.InvariantCulture);
 			string messageFormat = descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture);
@@ -278,13 +355,22 @@ namespace Durian
 			if (replacements is not null)
 			{
 				string[] args = new string[replacements.Length + 1];
+				int counter = 1;
 				args[0] = "{0}";
 
 				for (int i = 0, argIndex = 1; i < replacements.Length; i++, argIndex++)
 				{
-					(string original, string target) = replacements[i];
-					title = title.Replace(original, target);
-					args[argIndex] = target;
+					(string original, string target)? text = replacements[i];
+
+					if(!text.HasValue)
+					{
+						args[argIndex] = "{" + counter + "}";
+						counter++;
+						continue;
+					}
+
+					title = title.Replace(text.Value.original, text.Value.target);
+					args[argIndex] = text.Value.target;
 				}
 
 				messageFormat = string.Format(messageFormat, args);

@@ -71,7 +71,7 @@ namespace Durian.DefaultParam
 
 				string fileName = _fileNameProvider.GetFileName(symbol);
 				_logReceiver.SetTargetNode(node, fileName);
-				bool isValid = _filter.ValidateAndCreateWithDiagnostics(_logReceiver, _compilation, node, semanticModel, symbol, ref typeParameters, out IDefaultParamTarget? data, _cancellationToken);
+				bool isValid = _filter.ValidateAndCreateWithDiagnostics(_logReceiver, _compilation, node, semanticModel, symbol, in typeParameters, out IDefaultParamTarget? data, _cancellationToken);
 
 				if (_logReceiver.Count > 0)
 				{

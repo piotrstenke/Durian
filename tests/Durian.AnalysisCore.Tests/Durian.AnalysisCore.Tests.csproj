@@ -1,13 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+  
   </PropertyGroup>
 
   <ItemGroup>
+    
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.9.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="Moq" Version="4.16.1" />
@@ -20,11 +23,14 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    
   </ItemGroup>
 
   <ItemGroup>
+    
     <ProjectReference Include="..\..\src\Durian.AnalysisCore\Durian.AnalysisCore.csproj" />
     <ProjectReference Include="..\..\src\Durian.RoslynTestServices\Durian.RoslynTestServices.csproj" />
+
   </ItemGroup>
 
 </Project>

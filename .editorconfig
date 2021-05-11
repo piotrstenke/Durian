@@ -71,13 +71,13 @@ csharp_style_var_for_built_in_types                                         = fa
 csharp_style_var_when_type_is_apparent                                      = false : suggestion
 
 # Expression-bodied members
-csharp_style_expression_bodied_accessors                                    = true : suggestion
-csharp_style_expression_bodied_constructors                                 = false : suggestion
-csharp_style_expression_bodied_indexers                                     = true : suggestion
-csharp_style_expression_bodied_lambdas                                      = true : suggestion
-csharp_style_expression_bodied_local_functions                              = false : suggestion
-csharp_style_expression_bodied_methods                                      = false : suggestion
-csharp_style_expression_bodied_operators                                    = false : suggestion
+csharp_style_expression_bodied_accessors                                    = true : none
+csharp_style_expression_bodied_constructors                                 = false : none
+csharp_style_expression_bodied_indexers                                     = true : none
+csharp_style_expression_bodied_lambdas                                      = true : none
+csharp_style_expression_bodied_local_functions                              = false : none
+csharp_style_expression_bodied_methods                                      = false : none
+csharp_style_expression_bodied_operators                                    = false : none
 csharp_style_expression_bodied_properties                                   = true : none
 
 # Pattern matching preferences

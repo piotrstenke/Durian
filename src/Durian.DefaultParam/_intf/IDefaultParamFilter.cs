@@ -26,7 +26,7 @@ namespace Durian.DefaultParam
 		/// </summary>
 		CSharpSyntaxNode[] GetCandidateNodes();
 
-		/// <inheritdoc cref="ValidateAndCreate(DefaultParamCompilationData, CSharpSyntaxNode, SemanticModel, ISymbol, ref TypeParameterContainer, out IDefaultParamTarget?, CancellationToken)"/>
+		/// <inheritdoc cref="ValidateAndCreate(DefaultParamCompilationData, CSharpSyntaxNode, SemanticModel, ISymbol, in TypeParameterContainer, out IDefaultParamTarget?, CancellationToken)"/>
 		bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			CSharpSyntaxNode node,
@@ -49,12 +49,12 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode node,
 			SemanticModel semanticModel,
 			ISymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken = default
 		);
 
-		/// <inheritdoc cref="ValidateAndCreateWithDiagnostics(IDiagnosticReceiver, DefaultParamCompilationData, CSharpSyntaxNode, SemanticModel, ISymbol, ref TypeParameterContainer, out IDefaultParamTarget?, CancellationToken)"/>
+		/// <inheritdoc cref="ValidateAndCreateWithDiagnostics(IDiagnosticReceiver, DefaultParamCompilationData, CSharpSyntaxNode, SemanticModel, ISymbol, in TypeParameterContainer, out IDefaultParamTarget?, CancellationToken)"/>
 		bool ValidateAndCreateWithDiagnostics(
 			IDiagnosticReceiver diagnosticReceiver,
 			DefaultParamCompilationData compilation,
@@ -80,7 +80,7 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode node,
 			SemanticModel semanticModel,
 			ISymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken = default
 		);

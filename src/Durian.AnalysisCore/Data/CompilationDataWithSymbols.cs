@@ -39,7 +39,7 @@ namespace Durian.Data
 		/// </summary>
 		public virtual void Reset()
 		{
-			DurianGeneratedAttribute = Compilation.GetTypeByMetadataName($"{DurianStrings.GeneratorAttributesNamespace}.DurianGeneratedAttribute");
+			DurianGeneratedAttribute = Compilation.GetTypeByMetadataName($"{DurianStrings.GeneratorNamespace}.DurianGeneratedAttribute");
 			GeneratedCodeAttribute = Compilation.GetTypeByMetadataName("System.CodeDom.Compiler.GeneratedCodeAttribute");
 
 			HasErrors = DurianGeneratedAttribute is null || GeneratedCodeAttribute is null;

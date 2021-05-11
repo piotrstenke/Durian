@@ -26,9 +26,9 @@ namespace Durian.DefaultParam
 		public static string GeneratorName => DefaultParamUtilities.Package.Name;
 
 		/// <summary>
-		/// Number of statically-generated DefaultParam attributes (<see cref="DefaultParamAttribute"/>, <see cref="DefaultParamConfigurationAttribute"/> and <see cref="DefaultParamMethodConfigurationAttribute"/>).
+		/// Number of statically-generated DefaultParam attributes (<see cref="DefaultParamAttribute"/>, <see cref="DefaultParamConfigurationAttribute"/>, <see cref="DPTypeGenConvention"/>) and <see cref="DPMethodGenConvention"/>.
 		/// </summary>
-		public const int NumDefaultParamAttributes = 3;
+		public const int NumStaticTrees = 4;
 
 		private readonly DefaultParamRewriter _rewriter = new();
 
@@ -88,20 +88,30 @@ namespace Durian.DefaultParam
 		/// </summary>
 		public override DefaultParamSyntaxReceiver CreateSyntaxReceiver()
 		{
-			return new DefaultParamSyntaxReceiver(SupportsDiagnostics && EnableDiagnostics);
+			return new DefaultParamSyntaxReceiver(SupportsDiagnostics);
 		}
 
 		/// <inheritdoc/>
 		protected override FilterContainer<IDefaultParamFilter> GetFilters(in GeneratorExecutionContext context)
 		{
+			return GetFilters(new SymbolNameToFile());
+		}
+
+		/// <summary>
+		/// Returns a <see cref="FilterContainer{TFilter}"/> to be used during the current generation pass.
+		/// </summary>
+		/// <param name="fileNameProvider">Creates name for the generated files.</param>
+		protected FilterContainer<IDefaultParamFilter> GetFilters(IFileNameProvider fileNameProvider)
+		{
 			FilterContainer<IDefaultParamFilter> list = new();
 
-			list.RegisterFilterGroup(new IDefaultParamFilter[] { new DefaultParamDelegateFilter(this), new DefaultParamMethodFilter(this) });
-			list.RegisterFilterGroup(new IDefaultParamFilter[] { new DefaultParamTypeFilter(this) });
+			list.RegisterFilterGroup("Methods", new DefaultParamMethodFilter(this, fileNameProvider));
+			list.RegisterFilterGroup("Delegates", new DefaultParamDelegateFilter(this, fileNameProvider));
+			list.RegisterFilterGroup("Types", new DefaultParamTypeFilter(this, fileNameProvider));
 
 			if (EnableDiagnostics)
 			{
-				list.RegisterFilterGroup(new IDefaultParamFilter[] { new DefaultParamLocalFunctionFilter(this) });
+				list.RegisterFilterGroup("Local Functions", new DefaultParamLocalFunctionFilter(this, fileNameProvider));
 			}
 
 			return list;
@@ -128,11 +138,12 @@ namespace Durian.DefaultParam
 		/// <inheritdoc/>
 		protected override (CSharpSyntaxTree tree, string hintName)[]? GetStaticSyntaxTrees(CancellationToken cancellationToken)
 		{
-			return new[]
+			return new (CSharpSyntaxTree, string)[NumStaticTrees]
 			{
 				(DefaultParamAttribute.CreateSyntaxTree(ParseOptions, cancellationToken), DefaultParamAttribute.FullyQualifiedName),
-				(DefaultParamConfigurationAttribute.CreateSyntaxTree(ParseOptions, cancellationToken), DefaultParamConfigurationAttribute.FullyQualifiedName),
-				(DefaultParamMethodConfigurationAttribute.CreateSyntaxTree(ParseOptions, cancellationToken), DefaultParamMethodConfigurationAttribute.FullyQualifiedName)
+				(DPTypeGenConvention.CreateSyntaxTree(ParseOptions, cancellationToken), DPTypeGenConvention.FullName),
+				(DPMethodGenConvention.CreateSyntaxTree(ParseOptions, cancellationToken), DPMethodGenConvention.FullName),
+				(DefaultParamConfigurationAttribute.CreateSyntaxTree(ParseOptions, cancellationToken), DefaultParamConfigurationAttribute.FullyQualifiedName)
 			};
 		}
 

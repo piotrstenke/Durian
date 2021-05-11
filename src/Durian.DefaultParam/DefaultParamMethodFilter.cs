@@ -138,7 +138,7 @@ namespace Durian.DefaultParam
 				return false;
 			}
 
-			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, ref typeParameters, out data, cancellationToken);
+			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, in typeParameters, out data, cancellationToken);
 		}
 
 		/// <summary>
@@ -156,7 +156,7 @@ namespace Durian.DefaultParam
 			MethodDeclarationSyntax declaration,
 			SemanticModel semanticModel,
 			IMethodSymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out DefaultParamMethodData? data,
 			CancellationToken cancellationToken = default
 		)
@@ -165,27 +165,25 @@ namespace Durian.DefaultParam
 				AnalyzeAgaintsProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
 				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes))
 			{
-				if ((IsOverride(symbol, out IMethodSymbol? baseMethod) &&
-					AnalyzeOverrideMethod(baseMethod, ref typeParameters, compilation, cancellationToken)) ||
-					AnalyzeTypeParameters(in typeParameters))
-				{
-					if (AnalyzeMethodSignature(symbol, typeParameters, compilation, out HashSet<int>? newModifiers, cancellationToken))
-					{
-						data = new(
-							declaration,
-							compilation,
-							symbol,
-							semanticModel,
-							containingTypes,
-							null,
-							attributes,
-							in typeParameters,
-							newModifiers,
-							CheckShouldCallInsteadOfCopying(attributes!, compilation)
-						);
+				TypeParameterContainer combinedParameters = typeParameters;
 
-						return true;
-					}
+				if (AnalyzeOverrideMethod(symbol, ref combinedParameters, compilation, cancellationToken) &&
+					AnalyzeMethodSignature(symbol, in combinedParameters, compilation, out HashSet<int>? newModifiers, cancellationToken))
+				{
+					data = new(
+						declaration,
+						compilation,
+						symbol,
+						semanticModel,
+						containingTypes,
+						null,
+						attributes,
+						in combinedParameters,
+						newModifiers,
+						CheckShouldCallInsteadOfCopying(attributes!, compilation)
+					);
+
+					return true;
 				}
 			}
 
@@ -321,12 +319,12 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode node,
 			SemanticModel semanticModel,
 			ISymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = ValidateAndCreate(compilation, (MethodDeclarationSyntax)node, semanticModel, (IMethodSymbol)symbol, ref typeParameters, out DefaultParamMethodData? d, cancellationToken);
+			bool isValid = ValidateAndCreate(compilation, (MethodDeclarationSyntax)node, semanticModel, (IMethodSymbol)symbol, in typeParameters, out DefaultParamMethodData? d, cancellationToken);
 			data = d;
 			return isValid;
 		}
@@ -350,12 +348,12 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode node,
 			SemanticModel semanticModel,
 			ISymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, (MethodDeclarationSyntax)node, semanticModel, (IMethodSymbol)symbol, ref typeParameters, out DefaultParamMethodData? d, cancellationToken);
+			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, (MethodDeclarationSyntax)node, semanticModel, (IMethodSymbol)symbol, in typeParameters, out DefaultParamMethodData? d, cancellationToken);
 			data = d;
 			return isValid;
 		}

@@ -363,7 +363,7 @@ namespace Durian
 			}
 
 			int index = _filterGroups.Count;
-			FilterGroup<TFilter> group = new();
+			FilterGroup<TFilter> group = new(name);
 
 			if (filter is not null)
 			{

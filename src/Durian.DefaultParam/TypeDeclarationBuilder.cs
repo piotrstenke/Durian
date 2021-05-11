@@ -115,7 +115,7 @@ namespace Durian.DefaultParam
 						.Select(p =>
 							p.WithAttributeLists(SyntaxFactory.List(p.AttributeLists
 								.Where(l => l.Attributes
-									.Any(a => !SymbolEqualityComparer.Default.Equals(SemanticModel.GetTypeInfo(a, cancellationToken).Type, data.ParentCompilation.Attribute))
+									.Any(a => !SymbolEqualityComparer.Default.Equals(SemanticModel.GetTypeInfo(a, cancellationToken).Type, data.ParentCompilation.MainAttribute))
 								)
 							))
 						)

@@ -148,7 +148,7 @@ namespace Durian.DefaultParam
 
 			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(localFunction.SyntaxTree);
 
-			if (HasDefaultParamAttribute(localFunction, semanticModel, compilation.Attribute!))
+			if (HasDefaultParamAttribute(localFunction, semanticModel, compilation.MainAttribute!))
 			{
 				ISymbol? symbol = semanticModel.GetDeclaredSymbol(localFunction, cancellationToken);
 
@@ -234,7 +234,7 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode node,
 			SemanticModel semanticModel,
 			ISymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken
 		)
@@ -263,7 +263,7 @@ namespace Durian.DefaultParam
 			CSharpSyntaxNode node,
 			SemanticModel semanticModel,
 			ISymbol symbol,
-			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken
 		)

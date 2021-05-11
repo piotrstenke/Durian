@@ -18,7 +18,7 @@
 		/// <summary>
 		/// Namespace where the Durian code generation attributes are to be found.
 		/// </summary>
-		public static string GeneratorAttributesNamespace { get; } = $"{MainNamespace}.Generator";
+		public static string GeneratorNamespace { get; } = $"{MainNamespace}.Generator";
 
 		/// <summary>
 		/// Returns the <paramref name="attributeName"/> with a 'Attribute' at the end.

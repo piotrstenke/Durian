@@ -285,7 +285,7 @@ namespace Durian
 		}
 
 		/// <summary>
-		/// Returns a list of <see cref="ISyntaxFilter"/>s to be used during the current generation pass.
+		/// Returns a <see cref="FilterContainer{TFilter}"/> to be used during the current generation pass.
 		/// </summary>
 		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
 		protected abstract FilterContainer<TFilter>? GetFilters(in GeneratorExecutionContext context);

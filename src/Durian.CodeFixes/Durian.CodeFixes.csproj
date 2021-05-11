@@ -8,11 +8,14 @@
     <PackageVersion>1.0.0</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <RootNamespace>Durian.CodeFixes</RootNamespace>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
     
   </PropertyGroup>
 
   <ItemGroup>
 
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
     <ProjectReference Include="..\Durian.AnalysisCore\Durian.AnalysisCore.csproj" />
     
