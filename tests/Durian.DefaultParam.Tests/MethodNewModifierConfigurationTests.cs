@@ -226,7 +226,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
 		}
 	}
 }

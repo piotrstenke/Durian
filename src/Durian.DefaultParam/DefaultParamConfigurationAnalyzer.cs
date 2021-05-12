@@ -1,12 +1,12 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System.Xml.Linq;
-using System.Diagnostics.CodeAnalysis;
+using static Durian.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.DefaultParam
 {
@@ -20,8 +20,10 @@ namespace Durian.DefaultParam
 
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
-			DefaultParamDiagnostics.Descriptors.DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute,
-			DefaultParamDiagnostics.Descriptors.DefaultParamPropertyShouldNotBeUsedOnMembersOfType
+			DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute,
+			DUR0112_TypeConvetionShouldNotBeUsedOnMethodsOrDelegates,
+			DUR0113_MethodConvetionShouldNotBeUsedOnMembersOtherThanMethods,
+			DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers
 		);
 
 		/// <summary>
@@ -55,18 +57,18 @@ namespace Durian.DefaultParam
 
 			AttributeData? configurationAttribute = symbol.GetAttributeData(compilation.ConfigurationAttribute!);
 
-			if(configurationAttribute is null)
+			if (configurationAttribute is null)
 			{
 				return;
 			}
 
 			_diagnosticReceiver.SetContext(in context);
 
-			if(symbol is INamedTypeSymbol t)
+			if (symbol is INamedTypeSymbol t)
 			{
 				AnalyzeType(t, compilation, syntax);
 			}
-			else if(symbol is IMethodSymbol m)
+			else if (symbol is IMethodSymbol m)
 			{
 				AnalyzeMethod(m, compilation, syntax);
 			}
@@ -78,24 +80,24 @@ namespace Durian.DefaultParam
 
 				if (CheckArguments(arguments, DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty, out AttributeArgumentSyntax? arg))
 				{
-					DefaultParamDiagnostics.DefaultParamNewModifierPropertyShouldNotBeUsedOnAnyMembers(_diagnosticReceiver, symbol, arg.GetLocation());
+					_diagnosticReceiver.ReportDiagnostic(DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers, arg.GetLocation(), symbol);
 				}
 
 				if (CheckArguments(arguments, DefaultParamConfigurationAttribute.MethodConvetionProperty, out arg))
 				{
-					DefaultParamDiagnostics.DefaultParamMethodConventionPropertyShouldNotBeUsedOnMembersOtherThanMethods(_diagnosticReceiver, symbol, arg.GetLocation());
+					_diagnosticReceiver.ReportDiagnostic(DUR0113_MethodConvetionShouldNotBeUsedOnMembersOtherThanMethods, arg.GetLocation(), symbol);
 				}
 
 				if (CheckArguments(arguments, DefaultParamConfigurationAttribute.TypeConventionProperty, out arg))
 				{
-					DefaultParamDiagnostics.DefaultParamMethodConventionPropertyShouldNotBeUsedOnMembersOtherThanMethods(_diagnosticReceiver, symbol, arg.GetLocation());
+					_diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMethodsOrDelegates, arg.GetLocation(), symbol);
 				}
 			}
 		}
 
 		private void AnalyzeType(INamedTypeSymbol type, DefaultParamCompilationData compilation, AttributeSyntax node)
 		{
-			if(!type.TypeParameters.Any(t => t.HasAttribute(compilation.MainAttribute!)))
+			if (!type.TypeParameters.Any(t => t.HasAttribute(compilation.MainAttribute!)))
 			{
 				ReportConfig(type, node);
 			}
@@ -109,17 +111,17 @@ namespace Durian.DefaultParam
 
 			if (CheckArguments(arguments, DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty, out AttributeArgumentSyntax? arg))
 			{
-				DefaultParamDiagnostics.DefaultParamNewModifierPropertyShouldNotBeUsedOnAnyMembers(_diagnosticReceiver, type, arg.GetLocation());
+				_diagnosticReceiver.ReportDiagnostic(DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers, arg.GetLocation(), type);
 			}
 
 			if (CheckArguments(arguments, DefaultParamConfigurationAttribute.MethodConvetionProperty, out arg))
 			{
-				DefaultParamDiagnostics.DefaultParamMethodConventionPropertyShouldNotBeUsedOnMembersOtherThanMethods(_diagnosticReceiver, type, arg.GetLocation());
+				_diagnosticReceiver.ReportDiagnostic(DUR0113_MethodConvetionShouldNotBeUsedOnMembersOtherThanMethods, arg.GetLocation(), type);
 			}
 
-			if(type.TypeKind == TypeKind.Delegate && CheckArguments(arguments, DefaultParamConfigurationAttribute.TypeConventionProperty, out arg))
+			if (type.TypeKind == TypeKind.Delegate && CheckArguments(arguments, DefaultParamConfigurationAttribute.TypeConventionProperty, out arg))
 			{
-				DefaultParamDiagnostics.DefaultParamTypeConventionPropertyShouldNotBeUsedOnMembersOtherThanTypes(_diagnosticReceiver, type, arg.GetLocation());
+				_diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMethodsOrDelegates, arg.GetLocation(), type);
 			}
 		}
 
@@ -127,7 +129,7 @@ namespace Durian.DefaultParam
 		{
 			ImmutableArray<ITypeParameterSymbol> typeParameters = method.TypeParameters;
 
-			if(typeParameters.Length == 0)
+			if (typeParameters.Length == 0)
 			{
 				IMethodSymbol? baseMethod = method.OverriddenMethod;
 
@@ -152,14 +154,14 @@ namespace Durian.DefaultParam
 
 			(AttributeArgumentSyntax syntax, string name)[] arguments = GetArguments(node);
 
-			if(CheckArguments(arguments, DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty, out AttributeArgumentSyntax? arg))
+			if (CheckArguments(arguments, DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty, out AttributeArgumentSyntax? arg))
 			{
-				DefaultParamDiagnostics.DefaultParamNewModifierPropertyShouldNotBeUsedOnAnyMembers(_diagnosticReceiver, method, arg.GetLocation());
+				_diagnosticReceiver.ReportDiagnostic(DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers, arg.GetLocation(), method);
 			}
 
-			if(CheckArguments(arguments, DefaultParamConfigurationAttribute.TypeConventionProperty, out arg))
+			if (CheckArguments(arguments, DefaultParamConfigurationAttribute.TypeConventionProperty, out arg))
 			{
-				DefaultParamDiagnostics.DefaultParamTypeConventionPropertyShouldNotBeUsedOnMembersOtherThanTypes(_diagnosticReceiver, method, arg.GetLocation());
+				_diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMethodsOrDelegates, arg.GetLocation(), method);
 			}
 		}
 
@@ -171,11 +173,11 @@ namespace Durian.DefaultParam
 				.ToArray();
 		}
 
-		private static bool CheckArguments((AttributeArgumentSyntax, string)[] arguments, string property, [NotNullWhen(true)]out AttributeArgumentSyntax? arg)
+		private static bool CheckArguments((AttributeArgumentSyntax, string)[] arguments, string property, [NotNullWhen(true)] out AttributeArgumentSyntax? arg)
 		{
 			foreach ((AttributeArgumentSyntax syntax, string name) in arguments)
 			{
-				if(name == property)
+				if (name == property)
 				{
 					arg = syntax;
 					return true;
@@ -188,7 +190,7 @@ namespace Durian.DefaultParam
 
 		private void ReportIfMethodIsNotDefaultParam(IMethodSymbol method, DefaultParamCompilationData compilation, AttributeSyntax node)
 		{
-			if(!method.TypeParameters.Any(m => m.HasAttribute(compilation.MainAttribute!)))
+			if (!method.TypeParameters.Any(m => m.HasAttribute(compilation.MainAttribute!)))
 			{
 				ReportConfig(method, node);
 			}
@@ -196,7 +198,7 @@ namespace Durian.DefaultParam
 
 		private void ReportConfig(ISymbol symbol, AttributeSyntax node)
 		{
-			DefaultParamDiagnostics.DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute(_diagnosticReceiver, symbol, node.GetLocation());
+			_diagnosticReceiver.ReportDiagnostic(DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute, node.GetLocation(), symbol);
 		}
 	}
 }

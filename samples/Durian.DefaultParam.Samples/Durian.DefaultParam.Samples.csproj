@@ -6,10 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Durian.Core\Durian.Core.csproj" OutputItemType="Analyzer"/>
-    <ProjectReference Include="..\..\src\Durian.CodeFixes\Durian.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
-    <ProjectReference Include="..\..\src\Durian.AnalysisCore\Durian.AnalysisCore.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
-    <ProjectReference Include="..\..\src\Durian.DefaultParam\Durian.DefaultParam.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+    <ProjectReference Include="..\..\src\Durian.Core\Durian.Core.csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\..\src\Durian.AnalysisCore\Durian.AnalysisCore.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\Durian.DefaultParam\Durian.DefaultParam.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

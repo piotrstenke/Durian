@@ -5,14 +5,14 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.CodeFixes.Specialized
+namespace Durian.CodeFixes
 {
 	/// <summary>
 	/// A code fix that applies the <see langword="partial"/> keyword to a type.
 	/// </summary>
 	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakeTypePartialCodeFix))]
 	[Shared]
-	public class MakeTypePartialCodeFix : ApplyModifierCodeFix<TypeDeclarationSyntax>
+	public abstract class MakeTypePartialCodeFix : ApplyModifierCodeFix<TypeDeclarationSyntax>
 	{
 		/// <inheritdoc/>
 		public override string Title => "Make type partial";
@@ -23,7 +23,7 @@ namespace Durian.CodeFixes.Specialized
 		/// <summary>
 		/// Creates a new instance of the <see cref="MakeTypePartialCodeFix"/> class.
 		/// </summary>
-		public MakeTypePartialCodeFix()
+		protected MakeTypePartialCodeFix()
 		{
 		}
 
@@ -32,16 +32,6 @@ namespace Durian.CodeFixes.Specialized
 		{
 			string message = diagnostic.GetMessage(CultureInfo.InvariantCulture);
 			return message.Contains("partial");
-		}
-
-		/// <inheritdoc/>
-		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
-		{
-			return new DiagnosticDescriptor[]
-			{
-				DurianDescriptors.MemberWithAttributeMustHaveModifier,
-				DurianDescriptors.ParentTypeOfMemberWithAttributeMustBePartial,
-			};
 		}
 	}
 }

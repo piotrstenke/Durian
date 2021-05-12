@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace Durian.Generator
@@ -9,7 +8,7 @@ namespace Durian.Generator
 	/// </summary>
 	public sealed record StaticTreeIdentity : IEquatable<StaticTreeIdentity>
 	{
-		internal PackageIdentity _package;
+		private ModuleIdentity? _module;
 
 		/// <summary>
 		/// Name of the generated type -or- empty <see cref="string"/> if <see cref="Type"/> is equal to <see cref="StaticTreeType.Configuration"/> or <see cref="StaticTreeType.Other"/>.
@@ -32,27 +31,21 @@ namespace Durian.Generator
 		public StaticTreeType Type { get; }
 
 		/// <summary>
-		/// The package this <see cref="StaticTreeIdentity"/> is part of.
+		/// Module this <see cref="StaticTreeIdentity"/> is part of.
 		/// </summary>
-		public PackageIdentity Package => _package;
+		public ModuleIdentity Module => _module!;
 
 		/// <summary>
 		/// Sub-trees of this <see cref="StaticTreeIdentity"/>.
 		/// </summary>
 		public ImmutableArray<StaticTreeIdentity> SubTrees { get; }
 
-		internal StaticTreeIdentity(string name, string @namespace, StaticTreeType type) : this(name, @namespace, type, ImmutableArray.Create<StaticTreeIdentity>())
-		{
-		}
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-		internal StaticTreeIdentity(string name, string @namespace, StaticTreeType type, ImmutableArray<StaticTreeIdentity> subTrees)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+		internal StaticTreeIdentity(string name, string @namespace, StaticTreeType type, StaticTreeIdentity[]? subTrees = null)
 		{
 			Name = name;
 			Namespace = @namespace;
 			Type = type;
-			SubTrees = subTrees;
+			SubTrees = ImmutableArray.Create(subTrees);
 		}
 
 		/// <inheritdoc/>
@@ -65,13 +58,17 @@ namespace Durian.Generator
 		public override int GetHashCode()
 		{
 			int hashCode = -1246297765;
-			hashCode = (hashCode * -1521134295) + EqualityComparer<PackageIdentity>.Default.GetHashCode(_package);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Name);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(Namespace);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(FullyQualifiedName);
+			hashCode = (hashCode * -1521134295) + _module!.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Name.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Namespace.GetHashCode();
 			hashCode = (hashCode * -1521134295) + Type.GetHashCode();
 			hashCode = (hashCode * -1521134295) + SubTrees.GetHashCode();
 			return hashCode;
+		}
+
+		internal void SetModule(ModuleIdentity module)
+		{
+			_module = module;
 		}
 	}
 }

@@ -65,16 +65,6 @@ namespace Durian.CodeFixes
 #pragma warning restore IDE0019 // Use pattern matching
 
 		/// <inheritdoc/>
-		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
-		{
-			return new DiagnosticDescriptor[]
-			{
-				DurianDescriptors.AttributeCannotBeAppliedToMembersWithAttribute,
-				DurianDescriptors.AttributeCannotBeAppliedToMembersOfType
-			};
-		}
-
-		/// <inheritdoc/>
 		protected override CodeAction? GetCodeAction(Document document, Diagnostic diagnostic, CSharpSyntaxNode root, T node, CancellationToken cancellationToken)
 		{
 			Func<CancellationToken, Task<Document>> function;

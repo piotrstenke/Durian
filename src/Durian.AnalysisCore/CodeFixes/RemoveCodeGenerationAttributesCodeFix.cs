@@ -10,14 +10,14 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.CodeFixes.Specialized
+namespace Durian.CodeFixes
 {
 	/// <summary>
 	/// A code fix that removes either <see cref="GeneratedCodeAttribute"/> or <see cref="DurianGeneratedAttribute"/>.
 	/// </summary>
 	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveCodeGenerationAttributesCodeFix))]
 	[Shared]
-	public class RemoveCodeGenerationAttributesCodeFix : RemoveAttributeCodeFix<MemberDeclarationSyntax>
+	public abstract class RemoveCodeGenerationAttributesCodeFix : RemoveAttributeCodeFix<MemberDeclarationSyntax>
 	{
 		private string _title;
 
@@ -27,7 +27,7 @@ namespace Durian.CodeFixes.Specialized
 		/// <summary>
 		/// Creates a new instance of the <see cref="RemoveCodeGenerationAttributesCodeFix"/> class.
 		/// </summary>
-		public RemoveCodeGenerationAttributesCodeFix()
+		protected RemoveCodeGenerationAttributesCodeFix()
 		{
 			_title = "Remove DurianGeneratedAttribute";
 		}
@@ -65,12 +65,6 @@ namespace Durian.CodeFixes.Specialized
 			}
 
 			return true;
-		}
-
-		/// <inheritdoc/>
-		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
-		{
-			return new DiagnosticDescriptor[] { DurianDescriptors.AttributeCannotBeAppliedToMembersWithAttribute };
 		}
 	}
 }

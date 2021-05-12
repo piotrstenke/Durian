@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Durian.DefaultParam;
 using Microsoft.CodeAnalysis;
 using Xunit;
-using Desc = Durian.DefaultParam.DefaultParamDiagnostics.Descriptors;
+using Desc = Durian.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Tests.DefaultParam
 {
@@ -27,7 +27,7 @@ partial class Test
 ";
 
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DefaultParamMethodCannotBePartialOrExtern)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0102_MethodCannotBePartialOrExtern.Id));
 		}
 
 		[Fact]
@@ -42,7 +42,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DefaultParamMethodCannotBePartialOrExtern)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0102_MethodCannotBePartialOrExtern.Id));
 		}
 
 
@@ -66,7 +66,7 @@ partial class Test
 ";
 
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DefaultParamMethodCannotBePartialOrExtern)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0102_MethodCannotBePartialOrExtern.Id));
 		}
 
 		[Fact]
@@ -89,7 +89,7 @@ partial class Test
 ";
 
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DefaultParamMethodCannotBePartialOrExtern)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0102_MethodCannotBePartialOrExtern.Id));
 		}
 
 		[Fact]
@@ -110,7 +110,7 @@ partial class Test
 ";
 
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DefaultParamAttributeIsNotValidOnLocalFunctions)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0103_DefaultParamIsNotValidOnLocalFunctionsOrLambdas.Id));
 		}
 
 		[Fact]
@@ -127,7 +127,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.TypeParameterWithDefaultParamAttributeMustBeLast)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0105_DefaultParamMustBeLast.Id));
 		}
 
 		[Fact]
@@ -145,7 +145,7 @@ partial class Test
 ";
 
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.TypeParameterWithDefaultParamAttributeMustBeLast)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0105_DefaultParamMustBeLast.Id));
 		}
 
 		// If a method has the System.CodeDom.Compiler.GeneratedCodeAttribute, it is not analyzed by design.
@@ -156,16 +156,16 @@ partial class Test
 		//			string input =
 		//@$"using {DurianStrings.MainNamespace};
 
-		//partial class Test
-		//{{
-		//	[System.CodeDom.Compiler.GeneratedCode("", "")]
-		//	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
-		//	{{
-		//	}}
-		//}}
-		//";
+		//		partial class Test
+		//		{{
+		//			[System.CodeDom.Compiler.GeneratedCode("", "")]
+		//			void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+		//			{{
+		//			}}
+		//		}}
+		//		";
 		//			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-		//			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute)));
+		//			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
 		//		}
 
 		[Fact]
@@ -183,7 +183,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
 		}
 
 		[Fact]
@@ -200,7 +200,7 @@ class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0101_ContainingTypeMustBePartial.Id));
 		}
 
 		[Fact]
@@ -220,7 +220,7 @@ class Parent
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0101_ContainingTypeMustBePartial.Id));
 		}
 
 		[Fact]
@@ -237,7 +237,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDescriptors.TypeIsNotValidTypeParameter)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
 		}
 
 		[Fact]
@@ -254,7 +254,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDescriptors.TypeIsNotValidTypeParameter)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
 		}
 
 		[Fact]
@@ -278,7 +278,7 @@ partial class Child : Parent
 ";
 
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0107_DoNotOverrideGeneratedMethods.Id));
 		}
 
 		[Fact]
@@ -302,7 +302,7 @@ partial class Child : Parent
 ";
 
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0107_DoNotOverrideGeneratedMethods.Id));
 		}
 
 		[Fact]
@@ -327,7 +327,7 @@ partial class Child : Parent
 ";
 
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.OverriddenDefaultParamAttributeShouldBeAddedForClarity)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
 		}
 
 		[Fact]
@@ -352,7 +352,7 @@ partial class Child : Parent
 ";
 
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.OverriddenDefaultParamAttributeShouldBeAddedForClarity)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
 		}
 
 		[Fact]
@@ -377,7 +377,7 @@ partial class Child : Parent
 ";
 
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.ValueOfDefaultParamAttributeMustBeTheSameAsValueForOverridenMethod)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase.Id));
 		}
 
 		[Fact]
@@ -402,7 +402,7 @@ partial class Child : Parent
 ";
 
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter)));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters.Id));
 		}
 
 		[Fact]
@@ -426,7 +426,7 @@ partial class Test : Parent
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDescriptors.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -447,7 +447,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDescriptors.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -469,7 +469,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDescriptors.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -490,7 +490,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDescriptors.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -511,7 +511,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDescriptors.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -532,7 +532,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDescriptors.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -553,7 +553,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDescriptors.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -577,7 +577,7 @@ partial class Test : Parent
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDescriptors.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
 		}
 	}
 }

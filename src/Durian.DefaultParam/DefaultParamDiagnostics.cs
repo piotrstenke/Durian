@@ -1,246 +1,198 @@
-﻿using System.Linq;
+﻿using Durian.Generator;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.DefaultParam
 {
 	/// <summary>
-	/// Contains methods that report specific DefaultParam-related <see cref="Diagnostic"/>s.
+	/// Contains <see cref="DiagnosticDescriptor"/>s of all the <see cref="Diagnostic"/>s that can be reported by the <see cref="DefaultParamGenerator"/> or one of the analyzers.
 	/// </summary>
 	public static class DefaultParamDiagnostics
 	{
 		/// <summary>
-		/// Contains <see cref="DiagnosticDescriptor"/>s of all the DefaultParam-specific <see cref="Diagnostic"/>s.
+		/// Documentation directory of the <c>DefaultParam</c> module.
 		/// </summary>
-		public static class Descriptors
-		{
-			/// <summary>
-			/// Provides diagnostic message indicating that the parent type of a member with a <see cref="DefaultParamAttribute"/> must be <see langword="partial"/> (DUR0014).
-			/// </summary>
-			public static readonly DiagnosticDescriptor ParentTypeOfMemberWithDefaultParamAttributeMustBePartial =
-				DescriptorFactory.ParentTypeOfMemberWithAttributeMustBePartial(DefaultParamAttribute.AttributeName);
-
-			/// <summary>
-			/// Provides diagnostic message indicating that a method marked with a <see cref="DefaultParamAttribute"/> cannot be declared using either <see langword="extern"/> or <see langword="partial"/> keyword (DUR0011).
-			/// </summary>
-			public static readonly DiagnosticDescriptor DefaultParamMethodCannotBePartialOrExtern =
-				DescriptorFactory.MemberWithAttributeCannotHaveModifier(DefaultParamAttribute.AttributeName, "partial or extern");
-
-			/// <summary>
-			/// Provides diagnostic message indicating that the <see cref="DefaultParamAttribute"/> cannot be applied to local functions (DUR0016).
-			/// </summary>
-			public static readonly DiagnosticDescriptor DefaultParamAttributeIsNotValidOnLocalFunctions =
-				DescriptorFactory.AttributeCannotBeAppliedToMembersOfType(DefaultParamAttribute.AttributeName, "local function");
-
-			/// <summary>
-			/// Provides diagnostic message indicating that the <see cref="DefaultParamAttribute"/> cannot be applied to members with the <see cref="Generator.DurianGeneratedAttribute"/> or <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/> (DUR0017).
-			/// </summary>
-			public static readonly DiagnosticDescriptor DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute =
-				DescriptorFactory.AttributeCannotBeAppliedToMembersWithAttribute(DefaultParamAttribute.AttributeName, "DurianGenerated' or 'GeneratedCode");
-
-			/// <summary>
-			/// Provides diagnostic message indicating that a type parameter marked with a <see cref="DefaultParamAttribute"/> must be placed last in the declaration (DUR0018).
-			/// </summary>
-			public static readonly DiagnosticDescriptor TypeParameterWithDefaultParamAttributeMustBeLast =
-				DescriptorFactory.TypeParameterWithAttributeMustBeLast(DefaultParamAttribute.AttributeName);
-
-			/// <summary>
-			/// Provides diagnostic message indicating that a method with the <see langword="override"/> keyword should add the <see cref="DefaultParamAttribute"/> of the overridden method to preserve clarity (DUR0020).
-			/// </summary>
-			public static readonly DiagnosticDescriptor OverriddenDefaultParamAttributeShouldBeAddedForClarity =
-				DescriptorFactory.AttributeOfOverridenMemberShouldBeAddedForClarity(DefaultParamAttribute.AttributeName);
-
-			/// <summary>
-			/// Provides diagnostic message indicating that the user shouldn't override DefaultParam-generated methods (DUR0021).
-			/// </summary>
-			public static readonly DiagnosticDescriptor DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute =
-				DescriptorFactory.DoNotOverrideMembersGeneratedUsingSpecifiedAttribute(DefaultParamAttribute.AttributeName);
-
-			/// <summary>
-			/// Provides diagnostic message indicating that value of a <see cref="DefaultParamAttribute"/> must be the same as the value defined on the overridden method (DUR0022).
-			/// </summary>
-			public static readonly DiagnosticDescriptor ValueOfDefaultParamAttributeMustBeTheSameAsValueForOverridenMethod =
-				DescriptorFactory.ValueOfAttributeMustBeTheSameAsValueOfTheOverridenMember(DefaultParamAttribute.AttributeName);
-
-			/// <summary>
-			/// Provides diagnostic message indicating that the user shouldn't add new <see cref="DefaultParamAttribute"/>s on a type parameter of an overridden virtual method (DUR0025).
-			/// </summary>
-			public static readonly DiagnosticDescriptor DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter =
-				DescriptorFactory.DoNotAddAttributeOnVirtualTypeParameter(DefaultParamAttribute.AttributeName);
-
-			/// <summary>
-			/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute"/> cannot be applies to members without the <see cref="DefaultParamAttribute"/> (DUR0027).
-			/// </summary>
-			public static readonly DiagnosticDescriptor DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute =
-				DescriptorFactory.AttributeCannotBeAppliedToMembersWithoutAttribute(DefaultParamConfigurationAttribute.AttributeName, DefaultParamAttribute.AttributeName);
-
-			/// <summary>
-			/// Provides diagnostic message indicating the specified property of the <see cref="DefaultParamConfigurationAttribute"/> shouldn't be used on members of the specified type. (DUR0028).
-			/// </summary>
-			public static readonly DiagnosticDescriptor DefaultParamPropertyShouldNotBeUsedOnMembersOfType =
-				DescriptorFactory.AttributePropertyShouldNotBeUsedOnMembersOfType(DefaultParamAttribute.AttributeName);
-		}
+		public static string DocsPath => DurianInfo.Repository + @"\docs\DefaultParam";
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that the target attributeName cannot be applied to members with the <see cref="Generator.DurianGeneratedAttribute"/> or <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/> (DUR0017).
-		/// <para>See: <see cref="Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute"/></para>
+		/// Provides diagnostic message indicating that a containing type of a member with the <see cref="DefaultParamAttribute"/> must be <see langword="partial"/>.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="ISymbol"/> the attribute cannot be applied to.</param>
-		public static void DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol)
-		{
-			DiagnosticDescriptor d = Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute;
-			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol);
-		}
+		public static readonly DiagnosticDescriptor DUR0101_ContainingTypeMustBePartial = new(
+			id: "DUR0101",
+			title: "Containing type of a member with the DefaultParam attribute must be partial",
+			messageFormat: "'{0}': Containing type of a member with the DefaultParam attribute must be partial",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0101.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that the parent type of a member with a <see cref="DefaultParamAttribute"/> must be <see langword="partial"/> (DUR0014).
-		/// <para>See: <see cref="Descriptors.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial"/></para>
+		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> cannot be <see langword="partial"/> or <see langword="extern"/>.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="ISymbol"/> the attribute is defined on.</param>
-		public static void ParentTypeOfMemberWithDefaultParamAttributeMustBePartial(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol)
-		{
-			DiagnosticDescriptor d = Descriptors.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial;
-			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol);
-		}
+		public static readonly DiagnosticDescriptor DUR0102_MethodCannotBePartialOrExtern = new(
+			id: "DUR0102",
+			title: "Method with the DefaultParam attribute cannot be partial or extern",
+			messageFormat: "'{0}': Method with the DefaultParam attribute cannot be partial or extern",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0102.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that a type parameter marked with a <see cref="DefaultParamAttribute"/> must be placed last in the declaration (DUR0018).
-		/// <para>See: <see cref="Descriptors.TypeParameterWithDefaultParamAttributeMustBeLast"/></para>
+		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> is not valid on local functions or anonymous methods.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="ITypeParameterSymbol"/> that caused the error.</param>
-		/// <param name="location">Location of the error.</param>
-		public static void TypeParameterWithDefaultParamAttributeMustBeLast(IDiagnosticReceiver diagnosticReceiver, ITypeParameterSymbol? symbol, Location? location)
-		{
-			DiagnosticDescriptor d = Descriptors.TypeParameterWithDefaultParamAttributeMustBeLast;
-			diagnosticReceiver.ReportDiagnostic(d, location, symbol);
-		}
+		public static readonly DiagnosticDescriptor DUR0103_DefaultParamIsNotValidOnLocalFunctionsOrLambdas = new(
+			id: "DUR0103",
+			title: "DefaultParamAttribute is not valid on local functions or lambdas",
+			messageFormat: "'{0}': DefaultParamAttribute is not valid on local functions or lambdas",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0103.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that a method marked with a <see cref="DefaultParamAttribute"/> cannot be declared using either <see langword="extern"/> or <see langword="partial"/> keyword (DUR0011).
-		/// <para>See: <see cref="Descriptors.DefaultParamMethodCannotBePartialOrExtern"/></para>
+		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> cannot be applied to members with the <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/> or <see cref="DurianGeneratedAttribute"/>.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="IMethodSymbol"/> that caused the error.</param>
-		public static void DefaultParamMethodCannotBePartialOrExtern(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol? symbol)
-		{
-			DiagnosticDescriptor d = Descriptors.DefaultParamMethodCannotBePartialOrExtern;
-			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol);
-		}
+		public static readonly DiagnosticDescriptor DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent = new(
+			id: "DUR0104",
+			title: "DefaultParamAttribute cannot be applied to members with the GeneratedCodeAttribute or DurianGeneratedAttribute",
+			messageFormat: "'{0}': DefaultParamAttribute cannot be applied to members with the GeneratedCodeAttribute or DurianGeneratedAttribute",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0104.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that the <see cref="DefaultParamAttribute"/> cannot be applied to local functions (DUR0016).
-		/// <para>See: <see cref="Descriptors.DefaultParamAttributeIsNotValidOnLocalFunctions"/></para>
+		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> must be placed on the right-most type parameter.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the diagnostics to.</param>
-		/// <param name="symbol"><see cref="IMethodSymbol"/> the value is defined on.</param>
-		public static void DefaultParamAttributeIsNotValidOnLocalFunctions(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol? symbol)
-		{
-			DiagnosticDescriptor d = Descriptors.DefaultParamAttributeIsNotValidOnLocalFunctions;
-			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol);
-		}
+		public static readonly DiagnosticDescriptor DUR0105_DefaultParamMustBeLast = new(
+			id: "DUR0105",
+			title: "DefaultParamAttribute must be placed on the right-most type parameter",
+			messageFormat: "'{0}': DefaultParamAttribute must be placed on the right-most type parameter",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0105.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that a method with the <see langword="override"/> keyword should add the <see cref="DefaultParamAttribute"/> of the overridden method to preserve clarity (DUR0020).
-		/// <para>See: <see cref="Descriptors.OverriddenDefaultParamAttributeShouldBeAddedForClarity"/></para>
+		/// Provides diagnostic message indicating that the value of DefaultParamAttribute does not satisfy the type constraint.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="ITypeParameterSymbol"/> that caused the error.</param>
-		public static void OverriddenDefaultParamAttributeShouldBeAddedForClarity(IDiagnosticReceiver diagnosticReceiver, ITypeParameterSymbol? symbol)
-		{
-			DiagnosticDescriptor d = Descriptors.OverriddenDefaultParamAttributeShouldBeAddedForClarity;
-			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol);
-		}
+		public static readonly DiagnosticDescriptor DUR0106_TargetTypeDoesNotSatisfyConstraint = new(
+			id: "DUR0106",
+			title: "Value of DefaultParamAttribute does not satisfy the type constraint",
+			messageFormat: "'{0}': Type '{1}' does not satisfy the type constraint",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0106.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that the user shouldn't override DefaultParam-generated methods (DUR0021).
-		/// <para>See: <see cref="Descriptors.DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute"/></para>
+		/// Provides diagnostic message indicating that the user should not override methods generated using the <see cref="DefaultParamAttribute"/>.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="IMethodSymbol"/> that caused the error.</param>
-		public static void DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol? symbol)
-		{
-			DiagnosticDescriptor d = Descriptors.DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute;
-			diagnosticReceiver.ReportDiagnostic(d, symbol?.Locations.FirstOrDefault(), symbol);
-		}
+		public static readonly DiagnosticDescriptor DUR0107_DoNotOverrideGeneratedMethods = new(
+			id: "DUR0107",
+			title: "Do not override methods generated using DefaultParamAttribute",
+			messageFormat: "'{0}': Do not override methods generated using DefaultParamAttribute",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0107.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that value of a <see cref="DefaultParamAttribute"/> must be the same as the value defined on the overridden method (DUR0022).
-		/// <para>See: <see cref="Descriptors.ValueOfDefaultParamAttributeMustBeTheSameAsValueForOverridenMethod"/></para>
+		/// Provides diagnostic message indicating that value of <see cref="DefaultParamAttribute"/> of overriding method must match the base method.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="ITypeParameterSymbol"/> that caused the error.</param>
-		/// <param name="location">Location of the error.</param>
-		public static void ValueOfDefaultParamAttributeMustBeTheSameAsValueForOverridenMethod(IDiagnosticReceiver diagnosticReceiver, ITypeParameterSymbol? symbol, Location? location)
-		{
-			DiagnosticDescriptor d = Descriptors.ValueOfDefaultParamAttributeMustBeTheSameAsValueForOverridenMethod;
-			diagnosticReceiver.ReportDiagnostic(d, location, symbol);
-		}
+		public static readonly DiagnosticDescriptor DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase = new(
+			id: "DUR0108",
+			title: "Value of DefaultParamAttribute of overriding method must match the base method",
+			messageFormat: "'{0}': Value of DefaultParamAttribute of overriding method must match the base method",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0108.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that the user shouldn't add new <see cref="DefaultParamAttribute"/>s on a type parameter of an overridden virtual method (DUR0025).
-		/// <para>See: <see cref="Descriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter"/></para>
+		/// Provides diagnostic message indicating that the user should not add the <see cref="DefaultParamAttribute"/> on overridden type parameters.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="ITypeParameterSymbol"/> the attribute is added to.</param>
-		/// <param name="location">Location of the error.</param>
-		public static void DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter(IDiagnosticReceiver diagnosticReceiver, ITypeParameterSymbol? symbol, Location? location)
-		{
-			DiagnosticDescriptor d = Descriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter;
-			diagnosticReceiver.ReportDiagnostic(d, location, symbol);
-		}
+		public static readonly DiagnosticDescriptor DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters = new(
+			id: "DUR0109",
+			title: "Do not add the DefaultParamAttribute on overridden type parameters",
+			messageFormat: "'{0}': Do not add the DefaultParamATtribute on overridden type parameters",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0109.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating that the <see cref="DefaultParamConfigurationAttribute"/> cannot be applies to members without the <see cref="DefaultParamAttribute"/> (DUR0027).
-		/// <para>See: <see cref="Descriptors.DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute"/></para>
+		/// Provides diagnostic message indicating that the <see cref="DefaultParamAttribute"/> of overridden type parameter should be added for clarity.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="ISymbol"/> that caused to error.</param>
-		/// <param name="location">Location of the error.</param>
-		public static void DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol, Location? location)
-		{
-			DiagnosticDescriptor d = Descriptors.DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute;
-			diagnosticReceiver.ReportDiagnostic(d, location, symbol);
-		}
+		public static readonly DiagnosticDescriptor DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity = new(
+			id: "DUR0110",
+			title: "DefaultParamAttribute of overridden type parameter should be added for clarity",
+			messageFormat: "'{0}': DefaultParamAttribute of overridden type parameter should be added for clarity",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + @"\DUR0110.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating the type convention property of the <see cref="DefaultParamConfigurationAttribute"/> shouldn't be used on members other than types. (DUR0028).
-		/// <para>See: <see cref="Descriptors.DefaultParamPropertyShouldNotBeUsedOnMembersOfType"/></para>
+		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute"/>  is not valid on members without the <see cref="DefaultParamAttribute"/>.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="ISymbol"/> that caused the error.</param>
-		/// <param name="location">Location of the error.</param>
-		public static void DefaultParamTypeConventionPropertyShouldNotBeUsedOnMembersOtherThanTypes(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol, Location? location)
-		{
-			DiagnosticDescriptor d = Descriptors.DefaultParamPropertyShouldNotBeUsedOnMembersOfType;
-			diagnosticReceiver.ReportDiagnostic(d, location, symbol, DefaultParamConfigurationAttribute.TypeConventionProperty, "members other than types");
-		}
+		public static readonly DiagnosticDescriptor DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute = new(
+			id: "DUR0111",
+			title: "DefaultParamConfigurationAttribute is not valid on members without the DefaultParamAttribute",
+			messageFormat: "'{0}': DefaultParamConfigurationAttribute is not valid on members without the DefaultParamAttribute",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0111.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating the method convention property of the <see cref="DefaultParamConfigurationAttribute"/> shouldn't be used on members other than methods. (DUR0028).
-		/// <para>See: <see cref="Descriptors.DefaultParamPropertyShouldNotBeUsedOnMembersOfType"/></para>
+		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.TypeConventionProperty"/> should not be used on members other than types.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="ISymbol"/> that caused the error.</param>
-		/// <param name="location">Location of the error.</param>
-		public static void DefaultParamMethodConventionPropertyShouldNotBeUsedOnMembersOtherThanMethods(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol, Location? location)
-		{
-			DiagnosticDescriptor d = Descriptors.DefaultParamPropertyShouldNotBeUsedOnMembersOfType;
-			diagnosticReceiver.ReportDiagnostic(d, location, symbol, DefaultParamConfigurationAttribute.MethodConvetionProperty, "members other than methods");
-		}
+		public static readonly DiagnosticDescriptor DUR0112_TypeConvetionShouldNotBeUsedOnMethodsOrDelegates = new(
+			id: "DUR0112",
+			title: "TypeConvention property should not be used on members other than types",
+			messageFormat: "'{0}': TypeConvention property should not be used on members other than types",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + @"\DUR0112.md",
+			isEnabledByDefault: true
+		);
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s indicating the new modifier property of the <see cref="DefaultParamConfigurationAttribute"/> shouldn't be used on any members. (DUR0028).
-		/// <para>See: <see cref="Descriptors.DefaultParamPropertyShouldNotBeUsedOnMembersOfType"/></para>
+		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.MethodConvetionProperty"/> should not be used on members other than methods.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to register the <see cref="Diagnostic"/>s to.</param>
-		/// <param name="symbol"><see cref="ISymbol"/> that caused the error.</param>
-		/// <param name="location">Location of the error.</param>
-		public static void DefaultParamNewModifierPropertyShouldNotBeUsedOnAnyMembers(IDiagnosticReceiver diagnosticReceiver, ISymbol? symbol, Location? location)
-		{
-			DiagnosticDescriptor d = Descriptors.DefaultParamPropertyShouldNotBeUsedOnMembersOfType;
-			diagnosticReceiver.ReportDiagnostic(d, location, symbol, DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty, "members");
-		}
+		public static readonly DiagnosticDescriptor DUR0113_MethodConvetionShouldNotBeUsedOnMembersOtherThanMethods = new(
+			id: "DUR0113",
+			title: "MethodConvention property should not be used on members other than methods",
+			messageFormat: "'{0}': MethodConvention property should not be used on members other than methods",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + @"\DUR0113.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty"/> property should not be used on members directly.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers = new(
+			id: "DUR0114",
+			title: "ApplyNewModifierWhenPossible property should not be used on members directly",
+			messageFormat: "'{0}': ApplyNewModifierWhenPossible property should not be used on members directly",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + @"\DUR0114.md",
+			isEnabledByDefault: true
+		);
 	}
 }

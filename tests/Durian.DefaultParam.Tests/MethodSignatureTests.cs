@@ -22,7 +22,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -43,7 +43,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -63,7 +63,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -83,7 +83,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -103,7 +103,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -123,7 +123,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -146,7 +146,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs("DUR0024"));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -169,7 +169,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs("DUR0024"));
+			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -192,7 +192,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs("DUR0024"));
+			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -208,7 +208,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs("DUR0024"));
+			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
 		}
 	}
 }

@@ -81,28 +81,14 @@ namespace Durian.DefaultParam
 			{
 				AttributeData[] attrs = symbol.GetAttributes().ToArray();
 				bool isValid = true;
-				bool hasDurianGenerated = false;
-				bool hasGeneratedCode = false;
 
 				foreach (AttributeData attr in attrs)
 				{
-					if (!hasGeneratedCode && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.GeneratedCodeAttribute))
+					if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.GeneratedCodeAttribute) ||
+						SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DurianGeneratedAttribute))
 					{
-						hasGeneratedCode = true;
-						attributes = null;
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent, symbol);
 						isValid = false;
-						DefaultParamDiagnostics.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute(diagnosticReceiver, symbol);
-					}
-					else if (!hasDurianGenerated && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DurianGeneratedAttribute))
-					{
-						hasDurianGenerated = true;
-						attributes = null;
-						isValid = false;
-						DefaultParamDiagnostics.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute(diagnosticReceiver, symbol);
-					}
-
-					if (hasGeneratedCode && hasDurianGenerated)
-					{
 						break;
 					}
 				}
@@ -129,7 +115,7 @@ namespace Durian.DefaultParam
 					{
 						if (!HasPartialKeyword(parent, cancellationToken))
 						{
-							DefaultParamDiagnostics.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial(diagnosticReceiver, parent);
+							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial, parent);
 							isValid = false;
 						}
 					}
@@ -157,7 +143,7 @@ namespace Durian.DefaultParam
 					{
 						if (!parent.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
 						{
-							DefaultParamDiagnostics.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial(diagnosticReceiver, parent.Symbol);
+							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial, parent.Symbol);
 							isValid = false;
 						}
 					}
@@ -197,7 +183,7 @@ namespace Durian.DefaultParam
 						}
 						else if (!data.TargetType.IsValidForTypeParameter(data.Symbol))
 						{
-							DurianDiagnostics.TypeIsNotValidTypeParameter(diagnosticReceiver, data.TargetType, data.Symbol, data.Location);
+							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint, data.Location, data.Symbol, data.TargetType);
 							isValid = false;
 						}
 
@@ -206,7 +192,7 @@ namespace Durian.DefaultParam
 					else if (lastDefaultParam != -1)
 					{
 						ref readonly TypeParameterData errorData = ref typeParameters[lastDefaultParam];
-						DefaultParamDiagnostics.TypeParameterWithDefaultParamAttributeMustBeLast(diagnosticReceiver, errorData.Symbol, errorData.Location);
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast, data.Location, errorData.Symbol);
 						isValid = false;
 						lastDefaultParam = -1;
 					}

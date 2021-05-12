@@ -16,9 +16,9 @@ namespace Durian.DefaultParam
 	internal static class DefaultParamUtilities
 	{
 		/// <summary>
-		/// <see cref="PackageIdentity"/> of the 'DefaultParam' module.
+		/// <see cref="ModuleIdentity"/> of the 'DefaultParam' module.
 		/// </summary>
-		public static PackageIdentity Package = PackageFactory.DefaultParam;
+		public static ModuleIdentity Package = ModuleRepository.DefaultParam;
 
 		/// <summary>
 		/// Returns a new <see cref="IEnumerator{T}"/> for the specified <paramref name="filter"/>.

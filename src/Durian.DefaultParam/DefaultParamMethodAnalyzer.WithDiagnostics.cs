@@ -60,7 +60,7 @@ namespace Durian.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
-				if(!symbol.IsOverride)
+				if (!symbol.IsOverride)
 				{
 					return AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
 				}
@@ -74,13 +74,13 @@ namespace Durian.DefaultParam
 
 				if (IsDefaultParamGenerated(baseMethod, compilation))
 				{
-					DefaultParamDiagnostics.DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute(diagnosticReceiver, symbol);
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods, symbol);
 					return false;
 				}
 
 				TypeParameterContainer baseTypeParameters = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
 
-				if(DefaultParamAnalyzer.AnalyzeTypeParameters(in baseTypeParameters) && AnalyzeBaseMethodParameters(diagnosticReceiver, in typeParameters, in baseTypeParameters))
+				if (DefaultParamAnalyzer.AnalyzeTypeParameters(in baseTypeParameters) && AnalyzeBaseMethodParameters(diagnosticReceiver, in typeParameters, in baseTypeParameters))
 				{
 					typeParameters = TypeParameterContainer.Combine(in typeParameters, in baseTypeParameters);
 					return true;
@@ -132,14 +132,9 @@ namespace Durian.DefaultParam
 			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (is not <see langword="partial"/> or <see langword="extern"/>), otherwise <see langword="false"/>.</returns>
 			public static bool AnalyzeAgaintsPartialOrExtern(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, MethodDeclarationSyntax declaration)
 			{
-				if (symbol.IsExtern)
+				if (symbol.IsExtern || symbol.IsPartial(declaration))
 				{
-					DefaultParamDiagnostics.DefaultParamMethodCannotBePartialOrExtern(diagnosticReceiver, symbol);
-					return false;
-				}
-				else if (symbol.IsPartial(declaration))
-				{
-					DefaultParamDiagnostics.DefaultParamMethodCannotBePartialOrExtern(diagnosticReceiver, symbol);
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern, symbol);
 					return false;
 				}
 
@@ -207,7 +202,7 @@ namespace Durian.DefaultParam
 			/// <param name="localFunctionSymbol"><see cref="IMethodSymbol"/> of a local function to report the <see cref="Diagnostic"/>s for.</param>
 			public static void ReportDiagnosticForLocalFunction(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol localFunctionSymbol)
 			{
-				DefaultParamDiagnostics.DefaultParamAttributeIsNotValidOnLocalFunctions(diagnosticReceiver, localFunctionSymbol);
+				diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnLocalFunctionsOrLambdas, localFunctionSymbol);
 			}
 
 			// These two method shouldn't be accessible from method analyzer
@@ -259,7 +254,7 @@ namespace Durian.DefaultParam
 				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, cancellationToken);
 				isValid &= AnalyzeOverrideMethod(diagnosticReceiver, symbol, ref typeParameters, compilation, cancellationToken);
 
-				if(!isValid)
+				if (!isValid)
 				{
 					return false;
 				}
@@ -347,7 +342,7 @@ namespace Durian.DefaultParam
 					}
 
 					string signature = GetMethodSignatureString(symbol.Name, in typeParameters, targetIndex, targetGeneration);
-					DurianDiagnostics.MethodWithSignatureAlreadyExists(diagnosticReceiver, symbol, signature, symbol.Locations.FirstOrDefault());
+					diagnosticReceiver.ReportDiagnostic(DurianDiagnostics.MethodWithSignatureAlreadyExists, symbol, signature);
 					diagnosed.Add(targetIndex);
 					isValid = false;
 
@@ -407,11 +402,11 @@ namespace Durian.DefaultParam
 
 			private static bool AnalyzeParameterInBaseMethod(IDiagnosticReceiver diagnosticReceiver, in TypeParameterData thisData, in TypeParameterData baseData)
 			{
-				if(baseData.IsDefaultParam)
+				if (baseData.IsDefaultParam)
 				{
-					if(!thisData.IsDefaultParam)
+					if (!thisData.IsDefaultParam)
 					{
-						DefaultParamDiagnostics.OverriddenDefaultParamAttributeShouldBeAddedForClarity(diagnosticReceiver, thisData.Symbol);
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity, thisData.Symbol);
 
 						// This diagnostic is only a warning, so the symbol is still valid.
 						return true;
@@ -419,13 +414,13 @@ namespace Durian.DefaultParam
 
 					if (!SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
 					{
-						DefaultParamDiagnostics.ValueOfDefaultParamAttributeMustBeTheSameAsValueForOverridenMethod(diagnosticReceiver, thisData.Symbol, thisData.Location);
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase, thisData.Location, thisData.Symbol);
 						return false;
 					}
 				}
-				else if(thisData.IsDefaultParam)
+				else if (thisData.IsDefaultParam)
 				{
-					DefaultParamDiagnostics.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter(diagnosticReceiver, thisData.Symbol, thisData.Location);
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters, thisData.Location, thisData.Symbol);
 					return false;
 				}
 

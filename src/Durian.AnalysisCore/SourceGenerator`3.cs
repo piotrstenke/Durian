@@ -234,7 +234,7 @@ namespace Durian
 
 			if (!CheckReferencesDurianCore(in context))
 			{
-				context.ReportDiagnostic(Diagnostic.Create(DurianDescriptors.ProjectMustReferenceDurianCore, Location.None));
+				context.ReportDiagnostic(Diagnostic.Create(DurianDiagnostics.ProjectMustReferenceDurianCore, Location.None));
 				return;
 			}
 

@@ -21,6 +21,9 @@
     
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Update="..\..\tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
+
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
     
   </ItemGroup>
 

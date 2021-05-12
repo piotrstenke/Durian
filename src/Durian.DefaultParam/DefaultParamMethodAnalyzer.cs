@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -62,13 +61,13 @@ namespace Durian.DefaultParam
 		{
 			return new[]
 			{
-				DefaultParamDiagnostics.Descriptors.DefaultParamMethodCannotBePartialOrExtern,
-				DefaultParamDiagnostics.Descriptors.DefaultParamAttributeIsNotValidOnLocalFunctions,
-				DefaultParamDiagnostics.Descriptors.OverriddenDefaultParamAttributeShouldBeAddedForClarity,
-				DefaultParamDiagnostics.Descriptors.DoNotOverrideMethodsGeneratedUsingDefaultParamAttribute,
-				DefaultParamDiagnostics.Descriptors.DoNotAddDefaultParamAttributeOnOverriddenVirtualTypeParameter,
-				DefaultParamDiagnostics.Descriptors.ValueOfDefaultParamAttributeMustBeTheSameAsValueForOverridenMethod,
-				DurianDescriptors.MethodWithSignatureAlreadyExists
+				DurianDiagnostics.MethodWithSignatureAlreadyExists,
+				DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern,
+				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnLocalFunctionsOrLambdas,
+				DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods,
+				DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase,
+				DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters,
+				DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity
 			};
 		}
 
@@ -126,14 +125,14 @@ namespace Durian.DefaultParam
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeOverrideMethod(IMethodSymbol symbol, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			if(!symbol.IsOverride)
+			if (!symbol.IsOverride)
 			{
 				return true;
 			}
 
 			IMethodSymbol? baseMethod = symbol.OverriddenMethod;
 
-			if(baseMethod is null)
+			if (baseMethod is null)
 			{
 				return false;
 			}
@@ -301,7 +300,7 @@ namespace Durian.DefaultParam
 
 			if (typeParameters.Any(t => t.HasAttribute(compilation.MainAttribute!)))
 			{
-				DiagnosticDescriptor d = DefaultParamDiagnostics.Descriptors.DefaultParamAttributeIsNotValidOnLocalFunctions;
+				DiagnosticDescriptor d = DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnLocalFunctionsOrLambdas;
 				context.ReportDiagnostic(Diagnostic.Create(d, l.GetLocation(), m));
 			}
 		}
@@ -336,14 +335,14 @@ namespace Durian.DefaultParam
 
 		private static bool AnalyzeParameterInBaseMethod(in TypeParameterData thisData, in TypeParameterData baseData)
 		{
-			if(baseData.IsDefaultParam)
+			if (baseData.IsDefaultParam)
 			{
-				if(thisData.IsDefaultParam && !SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
+				if (thisData.IsDefaultParam && !SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
 				{
 					return false;
 				}
 			}
-			else if(thisData.IsDefaultParam)
+			else if (thisData.IsDefaultParam)
 			{
 				return false;
 			}
@@ -416,7 +415,7 @@ namespace Durian.DefaultParam
 
 		private static bool HasAddedDefaultParamAttributes(in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
 		{
-			if(typeParameters.FirstDefaultParamIndex == -1)
+			if (typeParameters.FirstDefaultParamIndex == -1)
 			{
 				return false;
 			}

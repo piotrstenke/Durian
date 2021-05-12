@@ -26,12 +26,6 @@ namespace Durian.CodeFixes
 		}
 
 		/// <inheritdoc/>
-		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
-		{
-			return new DiagnosticDescriptor[] { DurianDescriptors.MemberWithAttributeMustHaveModifier };
-		}
-
-		/// <inheritdoc/>
 		protected override Task<Document> Execute(Document document, CSharpSyntaxNode root, T node, CancellationToken cancellationToken)
 		{
 			MemberDeclarationSyntax newNode = node.AddModifiers(ModifiersToApply.Select(m => SyntaxFactory.Token(m)).ToArray());

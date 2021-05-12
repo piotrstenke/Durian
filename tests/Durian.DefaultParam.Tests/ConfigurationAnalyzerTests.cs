@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Durian.DefaultParam;
 using Microsoft.CodeAnalysis;
 using Xunit;
-using Desc = Durian.DefaultParam.DefaultParamDiagnostics.Descriptors;
+using Desc = Durian.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Tests.DefaultParam
 {
@@ -28,7 +28,7 @@ namespace Durian.Tests.DefaultParam
 		[Fact]
 		public async Task NoDiagnostics_When_IsDefaultParamMethod()
 		{
-			string input = 
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -90,7 +90,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
 		}
 
 		[Fact]
@@ -106,7 +106,7 @@ partial class Test<T>
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
 		}
 
 		[Fact]
@@ -123,7 +123,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
 		}
 
 		[Fact]
@@ -139,7 +139,7 @@ partial class Test<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DefaultParamPropertyShouldNotBeUsedOnMembersOfType.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers.Id));
 		}
 
 		[Fact]
@@ -158,7 +158,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DefaultParamPropertyShouldNotBeUsedOnMembersOfType.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers.Id));
 		}
 
 		[Fact]
@@ -175,7 +175,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DefaultParamPropertyShouldNotBeUsedOnMembersOfType.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers.Id));
 		}
 
 		[Fact]
@@ -204,7 +204,7 @@ partial class Test<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DefaultParamPropertyShouldNotBeUsedOnMembersOfType.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0113_MethodConvetionShouldNotBeUsedOnMembersOtherThanMethods.Id));
 		}
 
 		[Fact]
@@ -221,7 +221,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DefaultParamPropertyShouldNotBeUsedOnMembersOfType.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0113_MethodConvetionShouldNotBeUsedOnMembersOtherThanMethods.Id));
 		}
 
 		[Fact]
@@ -271,7 +271,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DefaultParamPropertyShouldNotBeUsedOnMembersOfType.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0112_TypeConvetionShouldNotBeUsedOnMethodsOrDelegates.Id));
 		}
 
 		[Fact]
@@ -288,7 +288,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DefaultParamPropertyShouldNotBeUsedOnMembersOfType.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0112_TypeConvetionShouldNotBeUsedOnMethodsOrDelegates.Id));
 		}
 
 

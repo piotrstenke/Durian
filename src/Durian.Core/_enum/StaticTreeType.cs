@@ -46,6 +46,11 @@
 		Interface,
 
 		/// <summary>
+		/// Represents an <see langword="enum"/>.
+		/// </summary>
+		Enum,
+
+		/// <summary>
 		/// Represents a set of configurations, such as assembly-scoped attributes.
 		/// </summary>
 		Configuration,

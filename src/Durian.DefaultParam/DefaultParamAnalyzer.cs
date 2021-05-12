@@ -10,7 +10,6 @@ using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System.Xml.Linq;
 
 namespace Durian.DefaultParam
 {
@@ -277,10 +276,10 @@ namespace Durian.DefaultParam
 		{
 			return new[]
 			{
-				DefaultParamDiagnostics.Descriptors.DefaultParamAttributeCannotBeAppliedToMembersWithGeneratedCodeOrDurianGeneratedAtribute,
-				DefaultParamDiagnostics.Descriptors.ParentTypeOfMemberWithDefaultParamAttributeMustBePartial,
-				DefaultParamDiagnostics.Descriptors.TypeParameterWithDefaultParamAttributeMustBeLast,
-				DurianDescriptors.TypeIsNotValidTypeParameter,
+				DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial,
+				DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent,
+				DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast,
+				DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint
 			};
 		}
 
