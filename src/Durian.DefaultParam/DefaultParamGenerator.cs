@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Durian.Generator.Data;
 using Durian.Generator.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Durian.Configuration;
 
 namespace Durian.Generator.DefaultParam
 {

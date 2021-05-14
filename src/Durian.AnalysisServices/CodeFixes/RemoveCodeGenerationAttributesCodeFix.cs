@@ -4,7 +4,6 @@ using System.Composition;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;

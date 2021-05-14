@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Xunit;
 using Durian.Generator;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Tests.DefaultParam
 {

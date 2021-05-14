@@ -1,9 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
-using System.Collections.Generic;
 
 internal class Program
 {
@@ -43,7 +42,7 @@ internal class Program
 		{
 			string configFile = dir + @"\" + "_Configuration.cs";
 
-			if(!File.Exists(configFile))
+			if (!File.Exists(configFile))
 			{
 				continue;
 			}
@@ -51,7 +50,7 @@ internal class Program
 			string content = File.ReadAllText(configFile);
 			Configuration? configuration = GetConfiguration(content);
 
-			if(!configuration.HasValue)
+			if (!configuration.HasValue)
 			{
 				continue;
 			}
@@ -81,7 +80,7 @@ internal class Program
 	{
 		Match match = _definitionAttributeRegex.Match(content);
 
-		if(!match.Success || match.Groups.Count < 4)
+		if (!match.Success || match.Groups.Count < 4)
 		{
 			return null;
 		}
@@ -99,7 +98,7 @@ internal class Program
 
 	private static void HandleDiagnosticFiles(in Configuration configuration, string currentDirectory, List<DiagnosticData> diagnostics, StringBuilder builder)
 	{
-		if(configuration.DiagnosticFiles.Length == 0 && configuration.ExternalDiagnostics.Length == 0)
+		if (configuration.DiagnosticFiles.Length == 0 && configuration.ExternalDiagnostics.Length == 0)
 		{
 			return;
 		}
@@ -153,14 +152,14 @@ internal class Program
 
 	private static string? GetId(Match match)
 	{
-		if(match.Groups.Count < 5)
+		if (match.Groups.Count < 5)
 		{
 			return null;
 		}
 
 		string value = GetDefinitionValue(match, 4);
 
-		if(string.IsNullOrWhiteSpace(value))
+		if (string.IsNullOrWhiteSpace(value))
 		{
 			return null;
 		}
@@ -172,14 +171,14 @@ internal class Program
 	{
 		MatchCollection? matches = GetMatches(content, _diagnosticFilesAttributeRegex);
 
-		if(matches is null)
+		if (matches is null)
 		{
 			return Array.Empty<string>();
 		}
 
 		List<string> files = new(matches.Count);
 
-		foreach(Match match in matches)
+		foreach (Match match in matches)
 		{
 			string value = match.Groups[1].ToString();
 
@@ -243,11 +242,11 @@ internal class Program
 		{
 			string value = match.Groups[1].ToString().Trim();
 
-			if(string.IsNullOrWhiteSpace(value))
+			if (string.IsNullOrWhiteSpace(value))
 			{
 				value = match.Groups[2].ToString().Trim();
 
-				if(string.IsNullOrWhiteSpace(value))
+				if (string.IsNullOrWhiteSpace(value))
 				{
 					continue;
 				}
@@ -302,7 +301,7 @@ $@"		/// <summary>
 			type: {configuration.ModuleType},
 			id: {configuration.Id}");
 
-		if(configuration.IncludedTypes.Length > 0 || configuration.ExternalDiagnostics.Length > 0 || configuration.DiagnosticFiles.Length > 0)
+		if (configuration.IncludedTypes.Length > 0 || configuration.ExternalDiagnostics.Length > 0 || configuration.DiagnosticFiles.Length > 0)
 		{
 			builder.Append(',');
 		}
@@ -327,7 +326,7 @@ $@"		/// <summary>
 
 	private static void FindAndWriteExternalDiagnostics(List<DiagnosticData> diagnostics, in Configuration configuration, StringBuilder builder)
 	{
-		if(configuration.ExternalDiagnostics.Length > 0)
+		if (configuration.ExternalDiagnostics.Length > 0)
 		{
 			builder.AppendLine();
 			builder.AppendLine("\t\t\t\t// External diagnostics");
@@ -350,7 +349,7 @@ $@"		/// <summary>
 
 		builder.Append("\t\t\t}");
 
-		if(configuration.IncludedTypes.Length > 0)
+		if (configuration.IncludedTypes.Length > 0)
 		{
 			builder.Append(',');
 		}
@@ -367,7 +366,7 @@ $@"		/// <summary>
 
 	private static void FindAndWriteIncludedTypes(string[] files, string[] types, StringBuilder builder)
 	{
-		if(types.Length == 0)
+		if (types.Length == 0)
 		{
 			return;
 		}
@@ -388,14 +387,14 @@ $@"			types: new TypeIdentity[]
 		{
 			for (int i = 0; i < files.Length; i++)
 			{
-				if(type != fileNames[i])
+				if (type != fileNames[i])
 				{
 					continue;
 				}
 
 				IncludedType? data = GetTypeData(files[i], type);
 
-				if(!data.HasValue)
+				if (!data.HasValue)
 				{
 					continue;
 				}

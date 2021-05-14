@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Durian.Generator;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Durian.Info
 {

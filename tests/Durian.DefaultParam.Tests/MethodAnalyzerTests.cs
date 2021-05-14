@@ -1,11 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using Durian.Configuration;
+using Durian.Generator;
 using Durian.Generator.DefaultParam;
 using Microsoft.CodeAnalysis;
 using Xunit;
-using Durian.Configuration;
-using Durian.Generator;
 using Desc = Durian.Generator.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Tests.DefaultParam

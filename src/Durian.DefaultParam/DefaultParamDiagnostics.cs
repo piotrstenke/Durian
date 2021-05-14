@@ -1,7 +1,6 @@
-﻿using Durian.Generator;
+﻿using Durian.Configuration;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
-using Durian.Configuration;
 
 namespace Durian.Generator.DefaultParam
 {

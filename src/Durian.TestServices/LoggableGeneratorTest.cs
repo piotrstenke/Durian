@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using Durian.Generator.Logging;
 using Durian.Generator;
+using Durian.Generator.Logging;
 
 namespace Durian.Tests
 {

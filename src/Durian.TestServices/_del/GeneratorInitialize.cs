@@ -1,5 +1,5 @@
-using Microsoft.CodeAnalysis;
 using Durian.Generator;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Tests
 {

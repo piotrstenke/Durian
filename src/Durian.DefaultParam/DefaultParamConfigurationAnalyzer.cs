@@ -1,11 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Durian.Configuration;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Durian.Configuration;
 using Microsoft.CodeAnalysis.Diagnostics;
 using static Durian.Generator.DefaultParam.DefaultParamDiagnostics;
 
@@ -57,14 +57,14 @@ namespace Durian.Generator.DefaultParam
 
 			INamedTypeSymbol? configurationAttribute = context.SemanticModel.GetSymbolInfo(syntax).Symbol?.ContainingType;
 
-			if(configurationAttribute is null || !SymbolEqualityComparer.Default.Equals(configurationAttribute, compilation.ConfigurationAttribute))
+			if (configurationAttribute is null || !SymbolEqualityComparer.Default.Equals(configurationAttribute, compilation.ConfigurationAttribute))
 			{
 				return;
 			}
 
 			ISymbol? symbol = context.SemanticModel.GetDeclaredSymbol(node);
 
-			if(symbol is null)
+			if (symbol is null)
 			{
 				return;
 			}
@@ -134,7 +134,7 @@ namespace Durian.Generator.DefaultParam
 
 		private void AnalyzeMethod(IMethodSymbol method, DefaultParamCompilationData compilation, AttributeSyntax node)
 		{
-			if(method.MethodKind != MethodKind.Ordinary || method.ContainingType.TypeKind == TypeKind.Interface)
+			if (method.MethodKind != MethodKind.Ordinary || method.ContainingType.TypeKind == TypeKind.Interface)
 			{
 				_diagnosticReceiver.ReportDiagnostic(DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod, node.GetLocation(), method);
 				return;

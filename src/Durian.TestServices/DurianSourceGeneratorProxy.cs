@@ -1,10 +1,10 @@
 using System;
 using System.Threading;
+using Durian.Generator;
 using Durian.Generator.Data;
 using Durian.Generator.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Durian.Generator;
 
 namespace Durian.Tests
 {

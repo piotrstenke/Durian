@@ -26,8 +26,4 @@
     
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="&quot;$(SolutionDir)bin\$(ConfigurationName)\GenerateModuleRepository\GenerateModuleRepository.exe&quot; &quot;$(SolutionDir)src&quot; &quot;$(ProjectDir).generated/ModuleRepository.cs&quot;" />
-  </Target>
-
 </Project>

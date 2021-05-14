@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using Durian.Generator.Data;
 using Durian.Generator.Extensions;
-using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;

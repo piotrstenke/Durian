@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Durian.Configuration
+﻿namespace Durian.Configuration
 {
 	/// <summary>
 	/// Determines how a <c>DefaultParam</c> method is generated.

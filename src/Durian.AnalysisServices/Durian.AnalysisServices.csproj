@@ -42,8 +42,4 @@
     
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="&quot;$(SolutionDir)\bin\$(ConfigurationName)\GenerateAnalyzerReleases\GenerateAnalyzerReleases.exe&quot; &quot;$(SolutionDir)src\$(ProjectName)\_Configuration.cs&quot;" />
-  </Target>
-
 </Project>

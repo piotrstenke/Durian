@@ -1,6 +1,6 @@
+using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Durian.Generator;
 
 namespace Durian.Tests
 {

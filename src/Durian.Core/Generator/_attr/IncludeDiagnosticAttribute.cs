@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using Durian.Info;
 
 namespace Durian.Generator
 {

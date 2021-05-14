@@ -1,6 +1,5 @@
 using Durian.Info;
 using Microsoft.CodeAnalysis;
-using Durian.Generator;
 
 namespace Durian.Generator
 {

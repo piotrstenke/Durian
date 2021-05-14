@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Durian.Configuration;
+﻿using Durian.Configuration;
 
 namespace Durian.Generator.DefaultParam
 {

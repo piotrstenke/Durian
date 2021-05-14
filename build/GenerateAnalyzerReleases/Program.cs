@@ -1,8 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System;
-using System.Collections.Generic;
 
 internal class Program
 {
@@ -17,20 +17,18 @@ internal class Program
 
 	private static void Main(string[] args)
 	{
-		if (args.Length < 1)
+		for (int i = 0; i < args.Length; i++)
 		{
-			return;
+			string configFile = args[i];
+			HandleConfigFile(configFile);
 		}
-
-		string configFile = args[0];
-		HandleConfigFile(configFile);
 	}
 
 	private static void HandleConfigFile(string configFile)
 	{
 		string? dir = Path.GetDirectoryName(configFile);
 
-		if(dir is null)
+		if (dir is null)
 		{
 			return;
 		}
@@ -38,14 +36,14 @@ internal class Program
 		string content = File.ReadAllText(configFile);
 		string? moduleName = GetModuleName(content);
 
-		if(moduleName is null)
+		if (moduleName is null)
 		{
 			return;
 		}
 
 		string[] files = GetDiagnosticFiles(content);
 
-		if(files.Length == 0)
+		if (files.Length == 0)
 		{
 			return;
 		}
@@ -66,7 +64,7 @@ internal class Program
 		{
 			MatchCollection matches = _diagnosticRegex.Matches(File.ReadAllText(currentDirectory + @"\" + file));
 
-			if(matches.Count == 0)
+			if (matches.Count == 0)
 			{
 				continue;
 			}
@@ -82,7 +80,7 @@ internal class Program
 		Match match = _moduleRegex.Match(content);
 		string moduleName = match.Groups[1].ToString();
 
-		if(!string.IsNullOrWhiteSpace(moduleName))
+		if (!string.IsNullOrWhiteSpace(moduleName))
 		{
 			return moduleName;
 		}
@@ -94,14 +92,14 @@ internal class Program
 	{
 		string attribute = _diagnosticAttributeRegex.Match(content).Groups[1].ToString();
 
-		if(string.IsNullOrWhiteSpace(attribute))
+		if (string.IsNullOrWhiteSpace(attribute))
 		{
 			return Array.Empty<string>();
 		}
 
 		MatchCollection matches = _diagnosticAttributeValueRegex.Matches(attribute);
 
-		if(matches.Count == 0)
+		if (matches.Count == 0)
 		{
 			return Array.Empty<string>();
 		}
@@ -113,11 +111,11 @@ internal class Program
 			Match match = matches[i];
 			string value = match.Groups[1].ToString();
 
-			if(!string.IsNullOrWhiteSpace(value))
+			if (!string.IsNullOrWhiteSpace(value))
 			{
 				value = value.Trim();
 
-				if(!value.EndsWith(".cs"))
+				if (!value.EndsWith(".cs"))
 				{
 					value += ".cs";
 				}
@@ -135,7 +133,7 @@ internal class Program
 		{
 			DiagnosticData? data = RetrieveDiagnosticData(match.ToString());
 
-			if(!data.HasValue)
+			if (!data.HasValue)
 			{
 				continue;
 			}

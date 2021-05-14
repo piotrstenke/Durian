@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Immutable;
 
 namespace Durian.Info
 {
@@ -29,7 +28,7 @@ namespace Durian.Info
 			{
 				string n = Namespace;
 
-				if(string.IsNullOrWhiteSpace(n))
+				if (string.IsNullOrWhiteSpace(n))
 				{
 					return Name;
 				}
