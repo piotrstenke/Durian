@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Builds a new member declaration based on the value specified in the <see cref="DefaultParamAttribute"/>.

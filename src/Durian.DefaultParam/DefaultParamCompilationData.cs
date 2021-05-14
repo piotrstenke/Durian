@@ -1,39 +1,45 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Durian.Data;
-using Durian.Extensions;
+using Durian.Generator.Data;
+using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Durian.Configuration;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// <see cref="CompilationData"/> that contains all <see cref="ISymbol"/>s needed to generate source code using the <see cref="DefaultParamGenerator"/>.
 	/// </summary>
 	public sealed class DefaultParamCompilationData : CompilationDataWithSymbols
 	{
+		private readonly string _dpMethodConvention = typeof(DPMethodConvention).ToString();
+		private readonly string _dpTypeConvention = typeof(DPTypeConvention).ToString();
+		private readonly string _defaultParamAttribute = typeof(DefaultParamAttribute).ToString();
+		private readonly string _defaultParamConfigurationAttribute = typeof(DefaultParamConfigurationAttribute).ToString();
+
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the generated <see cref="DefaultParamAttribute"/>.
+		/// <see cref="INamedTypeSymbol"/> of the <see cref="DefaultParamAttribute"/>.
 		/// </summary>
 		public INamedTypeSymbol? MainAttribute { get; private set; }
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the generated <see cref="DefaultParamConfigurationAttribute"/>.
+		/// <see cref="INamedTypeSymbol"/> of the <see cref="DefaultParamConfigurationAttribute"/>.
 		/// </summary>
 		public INamedTypeSymbol? ConfigurationAttribute { get; private set; }
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the generated <see cref="DefaultParam.DPMethodGenConvention"/>.
+		/// <see cref="INamedTypeSymbol"/> of the <see cref="Configuration.DPMethodConvention"/>.
 		/// </summary>
-		public INamedTypeSymbol? DPMethodGenConvention { get; private set; }
+		public INamedTypeSymbol? DPMethodConvention { get; private set; }
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the generated <see cref="DefaultParam.DPTypeGenConvention"/>.
+		/// <see cref="INamedTypeSymbol"/> of the <see cref="Configuration.DPTypeConvention"/>.
 		/// </summary>
-		public INamedTypeSymbol? DPTypeGenConvention { get; private set; }
+		public INamedTypeSymbol? DPTypeConvention { get; private set; }
 
 		/// <inheritdoc/>
-		[MemberNotNullWhen(false, nameof(MainAttribute), nameof(ConfigurationAttribute), nameof(DPMethodGenConvention), nameof(DPTypeGenConvention))]
+		[MemberNotNullWhen(false, nameof(MainAttribute), nameof(ConfigurationAttribute), nameof(DPMethodConvention), nameof(DPTypeConvention))]
 		public override bool HasErrors { get; protected set; }
 
 		/// <summary>
@@ -56,12 +62,12 @@ namespace Durian.DefaultParam
 		{
 			base.Reset();
 
-			MainAttribute = Compilation.Assembly.GetTypeByMetadataName(DefaultParamAttribute.FullyQualifiedName);
-			ConfigurationAttribute = Compilation.Assembly.GetTypeByMetadataName(DefaultParamConfigurationAttribute.FullyQualifiedName);
-			DPTypeGenConvention = Compilation.Assembly.GetTypeByMetadataName(DefaultParam.DPTypeGenConvention.FullName);
-			DPMethodGenConvention = Compilation.Assembly.GetTypeByMetadataName(DefaultParam.DPMethodGenConvention.FullName);
+			MainAttribute = Compilation.GetTypeByMetadataName(_defaultParamAttribute);
+			ConfigurationAttribute = Compilation.GetTypeByMetadataName(_defaultParamConfigurationAttribute);
+			DPTypeConvention = Compilation.GetTypeByMetadataName(_dpTypeConvention);
+			DPMethodConvention = Compilation.GetTypeByMetadataName(_dpMethodConvention);
 
-			HasErrors = base.HasErrors || MainAttribute is null || ConfigurationAttribute is null || DPTypeGenConvention is null || DPMethodGenConvention is null;
+			HasErrors = base.HasErrors || MainAttribute is null || ConfigurationAttribute is null || DPTypeConvention is null || DPMethodConvention is null;
 		}
 
 		/// <summary>
@@ -76,7 +82,7 @@ namespace Durian.DefaultParam
 				return DefaultParamConfiguration.Default;
 			}
 
-			INamedTypeSymbol configurationAttribute = compilation.GetTypeByMetadataName(DefaultParamConfigurationAttribute.FullyQualifiedName)!;
+			INamedTypeSymbol configurationAttribute = compilation.GetTypeByMetadataName(typeof(DefaultParamConfigurationAttribute).ToString())!;
 			return GetConfiguration(compilation, configurationAttribute);
 		}
 
@@ -87,15 +93,19 @@ namespace Durian.DefaultParam
 				return DefaultParamConfiguration.Default;
 			}
 
+			const string applyNew = nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible);
+			const string methodConvention = nameof(DefaultParamConfigurationAttribute.MethodConvention);
+			const string typeConvention = nameof(DefaultParamConfigurationAttribute.TypeConvention);
+
 			foreach (AttributeData attribute in compilation.Assembly.GetAttributes())
 			{
 				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, configurationAttribute))
 				{
 					return new()
 					{
-						ApplyNewModifierWhenPossible = attribute.GetNamedArgumentValue<bool>(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty),
-						MethodConvention = attribute.GetNamedArgumentValue<int>(DefaultParamConfigurationAttribute.MethodConvetionProperty),
-						TypeConvention = attribute.GetNamedArgumentValue<int>(DefaultParamConfigurationAttribute.TypeConventionProperty)
+						ApplyNewModifierWhenPossible = attribute.GetNamedArgumentValue<bool>(applyNew),
+						MethodConvention = (DPMethodConvention)attribute.GetNamedArgumentValue<int>(methodConvention),
+						TypeConvention = (DPTypeConvention)attribute.GetNamedArgumentValue<int>(typeConvention)
 					};
 				}
 			}

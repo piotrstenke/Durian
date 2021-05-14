@@ -7,9 +7,13 @@
     <PackageVersion>1.0.0</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <Version>1.0.0</Version>
-    <RootNamespace>Durian.Generator</RootNamespace>
+    <RootNamespace>Durian</RootNamespace>
     
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include=".generated\ModuleRepository.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     
@@ -21,5 +25,9 @@
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
     
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="&quot;$(SolutionDir)bin\$(ConfigurationName)\GenerateModuleRepository\GenerateModuleRepository.exe&quot; &quot;$(SolutionDir)src&quot; &quot;$(ProjectDir).generated/ModuleRepository.cs&quot;" />
+  </Target>
 
 </Project>

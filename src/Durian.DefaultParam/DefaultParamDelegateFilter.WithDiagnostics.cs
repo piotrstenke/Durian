@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Durian.Data;
+using Durian.Generator.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Durian.DefaultParam.DefaultParamAnalyzer.WithDiagnostics;
+using static Durian.Generator.DefaultParam.DefaultParamAnalyzer.WithDiagnostics;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	public partial class DefaultParamDelegateFilter
 	{

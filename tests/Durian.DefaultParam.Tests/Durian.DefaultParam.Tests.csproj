@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     
@@ -28,9 +28,9 @@
 
   <ItemGroup>
     
-    <ProjectReference Include="..\..\src\Durian.AnalysisCore\Durian.AnalysisCore.csproj" />
+    <ProjectReference Include="..\..\src\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
     <ProjectReference Include="..\..\src\Durian.DefaultParam\Durian.DefaultParam.csproj" />
-    <ProjectReference Include="..\..\src\Durian.RoslynTestServices\Durian.RoslynTestServices.csproj" />
+    <ProjectReference Include="..\..\src\Durian.TestServices\Durian.TestServices.csproj" />
     
   </ItemGroup>
 

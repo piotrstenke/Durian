@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Collects all references to a <see cref="ITypeParameterSymbol"/> in order they appear in the visited <see cref="CSharpSyntaxNode"/>.

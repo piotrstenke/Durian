@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Creates new <see cref="CSharpSyntaxNode"/>s based on the specified DefualtParam <see cref="CSharpSyntaxNode"/>s.

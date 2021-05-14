@@ -2,12 +2,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Durian.Data;
-using Durian.Extensions;
+using Durian.Generator.Data;
+using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	public partial class DefaultParamMethodAnalyzer
 	{
@@ -52,7 +52,7 @@ namespace Durian.DefaultParam
 			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-			public static bool AnalyzeOverrideMethod(
+			public static bool AnalyzeBaseMethodAndTypeParameters(
 				IDiagnosticReceiver diagnosticReceiver,
 				IMethodSymbol symbol,
 				ref TypeParameterContainer typeParameters,
@@ -252,7 +252,7 @@ namespace Durian.DefaultParam
 				bool isValid = AnalyzeAgaintsPartialOrExtern(diagnosticReceiver, symbol, cancellationToken);
 				isValid &= AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation);
 				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, cancellationToken);
-				isValid &= AnalyzeOverrideMethod(diagnosticReceiver, symbol, ref typeParameters, compilation, cancellationToken);
+				isValid &= AnalyzeBaseMethodAndTypeParameters(diagnosticReceiver, symbol, ref typeParameters, compilation, cancellationToken);
 
 				if (!isValid)
 				{
@@ -342,7 +342,7 @@ namespace Durian.DefaultParam
 					}
 
 					string signature = GetMethodSignatureString(symbol.Name, in typeParameters, targetIndex, targetGeneration);
-					diagnosticReceiver.ReportDiagnostic(DurianDiagnostics.MethodWithSignatureAlreadyExists, symbol, signature);
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists, symbol, signature);
 					diagnosed.Add(targetIndex);
 					isValid = false;
 

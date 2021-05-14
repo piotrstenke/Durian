@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Durian.Data;
-using Durian.Logging;
+using Durian.Generator.Data;
+using Durian.Generator.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Durian.Configuration;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Main class of the <c>DefaultParam</c> module. Generates the source code of the members marked with the <see cref="DefaultParamAttribute"/>.
@@ -18,17 +19,17 @@ namespace Durian.DefaultParam
 		/// <summary>
 		/// Version of this source generator.
 		/// </summary>
-		public static string Version => DefaultParamUtilities.Package.Version;
+		public static string Version => "1.0.0";
 
 		/// <summary>
 		/// Name of this source generator, i.e. 'DefaultParam'.
 		/// </summary>
-		public static string GeneratorName => DefaultParamUtilities.Package.Name;
+		public static string GeneratorName => "DefaultParam";
 
 		/// <summary>
-		/// Number of statically-generated DefaultParam attributes (<see cref="DefaultParamAttribute"/>, <see cref="DefaultParamConfigurationAttribute"/>, <see cref="DPTypeGenConvention"/>) and <see cref="DPMethodGenConvention"/>.
+		/// Number of trees generated statically by this generator.
 		/// </summary>
-		public const int NumStaticTrees = 4;
+		public const int NumStaticTrees = 0;
 
 		private readonly DefaultParamRewriter _rewriter = new();
 
@@ -133,18 +134,6 @@ namespace Durian.DefaultParam
 		protected sealed override string GetGeneratorName()
 		{
 			return GeneratorName;
-		}
-
-		/// <inheritdoc/>
-		protected override (CSharpSyntaxTree tree, string hintName)[]? GetStaticSyntaxTrees(CancellationToken cancellationToken)
-		{
-			return new (CSharpSyntaxTree, string)[NumStaticTrees]
-			{
-				(DefaultParamAttribute.CreateSyntaxTree(ParseOptions, cancellationToken), DefaultParamAttribute.FullyQualifiedName),
-				(DPTypeGenConvention.CreateSyntaxTree(ParseOptions, cancellationToken), DPTypeGenConvention.FullName),
-				(DPMethodGenConvention.CreateSyntaxTree(ParseOptions, cancellationToken), DPMethodGenConvention.FullName),
-				(DefaultParamConfigurationAttribute.CreateSyntaxTree(ParseOptions, cancellationToken), DefaultParamConfigurationAttribute.FullyQualifiedName)
-			};
 		}
 
 		/// <inheritdoc/>

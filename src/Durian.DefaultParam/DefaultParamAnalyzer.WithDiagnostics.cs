@@ -1,13 +1,13 @@
 ﻿using System.CodeDom.Compiler;
 using System.Linq;
 using System.Threading;
-using Durian.Data;
-using Durian.Extensions;
+using Durian.Generator.Data;
+using Durian.Generator.Extensions;
 using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	public abstract partial class DefaultParamAnalyzer
 	{
@@ -192,7 +192,7 @@ namespace Durian.DefaultParam
 					else if (lastDefaultParam != -1)
 					{
 						ref readonly TypeParameterData errorData = ref typeParameters[lastDefaultParam];
-						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast, data.Location, errorData.Symbol);
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast, errorData.Location, errorData.Symbol);
 						isValid = false;
 						lastDefaultParam = -1;
 					}

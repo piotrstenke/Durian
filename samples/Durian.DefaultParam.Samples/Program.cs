@@ -1,12 +1,9 @@
 ﻿using System;
+using System.IO;
 
 namespace Durian.DefaultParam.Samples
 {
-	internal partial class Parent
-	{
-	}
-
-	internal partial class Program : Parent
+	internal partial class Program
 	{
 		private static void Main()
 		{

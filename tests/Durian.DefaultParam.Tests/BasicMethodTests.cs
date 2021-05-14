@@ -1,5 +1,6 @@
-using Durian.DefaultParam;
+using Durian.Generator.DefaultParam;
 using Xunit;
+using Durian.Generator;
 
 namespace Durian.Tests.DefaultParam
 {
@@ -29,7 +30,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -56,7 +57,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U>(T value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value)
 	{{
 		U name = default;
 	}}
@@ -90,7 +91,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U>(T value)
+	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value)
 	{{
 		U name = default;
 	}}
@@ -121,7 +122,7 @@ using System.Collections.Generic;
 
 partial class Test
 {{
-	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(System.Collections.IEnumerable))]U>(U value) where T : IEnumerable<U>
+	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(System.Collections.IEnumerable))]U>(U value) where T : IEnumerable<U>
 	{{
 		U v = default(U);
 		object obj = (U)2;
@@ -159,7 +160,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>() where T : unmanaged
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>() where T : unmanaged
 	{{
 	}}
 }}
@@ -187,7 +188,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U, [{DefaultParamAttribute.AttributeName}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U, [{nameof(DefaultParamAttribute)}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
 	{{
 	}}
 }}
@@ -223,7 +224,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U, [{DefaultParamAttribute.AttributeName}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
+	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(string))]U, [{nameof(DefaultParamAttribute)}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
 	{{
 	}}
 }}
@@ -253,7 +254,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{DefaultParamAttribute.AttributeName}(typeof(string)]T>(T value)
+	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value)
 	{{
 	}}
 }}
@@ -281,7 +282,7 @@ using System.Numerics;
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(System.Int32))]T>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(System.Int32))]T>()
 	{{
 		System.Collections.Generic.List<BigInteger> list = new();
 	}}
@@ -357,7 +358,7 @@ using System.Collections;
 
 partial abstract class Test
 {{
-	abstract void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>();
+	abstract void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
 }}
 ";
 			string expected =

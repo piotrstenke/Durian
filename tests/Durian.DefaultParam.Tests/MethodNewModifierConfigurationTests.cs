@@ -1,5 +1,7 @@
-﻿using Durian.DefaultParam;
+﻿using Durian.Generator.DefaultParam;
 using Xunit;
+using Durian.Generator;
+using Durian.Configuration;
 
 namespace Durian.Tests.DefaultParam
 {
@@ -12,7 +14,7 @@ namespace Durian.Tests.DefaultParam
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty} = true)]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 class Parent
 {{
@@ -23,7 +25,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -49,7 +51,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty} = true)]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 class Parent
 {{
@@ -60,7 +62,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U>(U value)
+	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(U value)
 	{{
 	}}
 }}
@@ -85,7 +87,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty} = true)]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 class Parent
 {{
@@ -100,7 +102,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, U, [{DefaultParamAttribute.AttributeName}(typeof(int))]V>(V value)
+	void Method<T, U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>(V value)
 	{{
 	}}
 }}
@@ -125,7 +127,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty} = true)]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 class Parent
 {{
@@ -136,7 +138,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U, [{DefaultParamAttribute.AttributeName}(typeof(string))]V>(U value)
+	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U, [{nameof(DefaultParamAttribute)}(typeof(string))]V>(U value)
 	{{
 	}}
 }}
@@ -167,7 +169,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty} = true)]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 class Parent
 {{
@@ -182,7 +184,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U, [{DefaultParamAttribute.AttributeName}(typeof(int))]V>(V value)
+	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(string))]U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>(V value)
 	{{
 	}}
 }}
@@ -213,11 +215,11 @@ partial class Test : Parent
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty} = true)]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 partial class Test : Parent
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 
@@ -226,7 +228,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
 		}
 	}
 }

@@ -1,7 +1,9 @@
 ﻿using Durian.Generator;
+using Durian.Info;
 using Microsoft.CodeAnalysis;
+using Durian.Configuration;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Contains <see cref="DiagnosticDescriptor"/>s of all the <see cref="Diagnostic"/>s that can be reported by the <see cref="DefaultParamGenerator"/> or one of the analyzers.
@@ -11,7 +13,7 @@ namespace Durian.DefaultParam
 		/// <summary>
 		/// Documentation directory of the <c>DefaultParam</c> module.
 		/// </summary>
-		public static string DocsPath => DurianInfo.Repository + @"\docs\DefaultParam";
+		public static string DocsPath => ModuleIdentity.GetModule(DurianModule.DefaultParam).Documentation;
 
 		/// <summary>
 		/// Provides diagnostic message indicating that a containing type of a member with the <see cref="DefaultParamAttribute"/> must be <see langword="partial"/>.
@@ -40,7 +42,7 @@ namespace Durian.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> is not valid on local functions or anonymous methods.
+		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> is not valid on local functions or lambdas.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0103_DefaultParamIsNotValidOnLocalFunctionsOrLambdas = new(
 			id: "DUR0103",
@@ -157,7 +159,7 @@ namespace Durian.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.TypeConventionProperty"/> should not be used on members other than types.
+		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.TypeConvention"/> should not be used on members other than types.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0112_TypeConvetionShouldNotBeUsedOnMethodsOrDelegates = new(
 			id: "DUR0112",
@@ -170,9 +172,9 @@ namespace Durian.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.MethodConvetionProperty"/> should not be used on members other than methods.
+		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.MethodConvention"/> should not be used on members other than methods.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0113_MethodConvetionShouldNotBeUsedOnMembersOtherThanMethods = new(
+		public static readonly DiagnosticDescriptor DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods = new(
 			id: "DUR0113",
 			title: "MethodConvention property should not be used on members other than methods",
 			messageFormat: "'{0}': MethodConvention property should not be used on members other than methods",
@@ -183,7 +185,7 @@ namespace Durian.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty"/> property should not be used on members directly.
+		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible"/> property should not be used on members directly.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers = new(
 			id: "DUR0114",
@@ -192,6 +194,58 @@ namespace Durian.DefaultParam
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + @"\DUR0114.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamConfigurationAttribute"/> is not valid on this type method.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod = new(
+			id: "DUR0115",
+			title: "DefaultParamConfigurationAttribute is not valid on this type of method",
+			messageFormat: "'{0}': DefaultParamConfigurationAttribute is not valid on this type of method",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0115.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the user should not change value of the <see cref="DefaultParamAttribute"/> when implementing an interface method.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0116_DoNotChangeDefaultParamValueOfImplementedMethod = new(
+			id: "DUR0116",
+			title: "Do not change value of the DefaultParamAttribute when implementing an interface method",
+			messageFormat: "'{0}': Do not change value of the DefaultParamAttribute when implementing an interface method",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0116.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the user should not implement interface methods generated using the <see cref="DefaultParamAttribute"/>.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0117_DoNotImplementGeneratedInterafaceMethods = new(
+			id: "DUR0117",
+			title: "Do not implement interface methods generated using the DefaultParamAttribute",
+			messageFormat: "'{0}': Do not implement interface methods generated using the DefaultParamAttribute",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0117.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that a method generated using the <see cref="DefaultParamAttribute"/> already exists.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0118_MethodWithSignatureAlreadyExists = new(
+			id: "DUR0118",
+			title: "Method with generated signature already exist",
+			messageFormat: "'{0}': Method with generated signature '{1}' already exists",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0118.md",
 			isEnabledByDefault: true
 		);
 	}

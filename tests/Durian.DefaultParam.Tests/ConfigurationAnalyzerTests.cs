@@ -1,26 +1,24 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using Durian.DefaultParam;
+using Durian.Generator.DefaultParam;
 using Microsoft.CodeAnalysis;
+using Durian.Generator;
 using Xunit;
-using Desc = Durian.DefaultParam.DefaultParamDiagnostics;
+using Durian.Configuration;
+using Desc = Durian.Generator.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Tests.DefaultParam
 {
 	public sealed class ConfigurationAnalyzerTests : DefaultParamAnalyzerTest<DefaultParamConfigurationAnalyzer>
 	{
-		public ConfigurationAnalyzerTests(DefaultParamCompilationFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact]
 		public async Task NoDiagnostics_When_IsGlobalConfiguration()
 		{
 			string input =
 @$"using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}()]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}()]
 ";
 			Assert.Empty(await RunAnalyzerAsync(input));
 		}
@@ -34,8 +32,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test 
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}()]
-	public static void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>()
+	[{nameof(DefaultParamConfigurationAttribute)}()]
+	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
 	{{
 	}}
 }}
@@ -52,8 +50,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test 
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}()]
-	public delegate void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+	[{nameof(DefaultParamConfigurationAttribute)}()]
+	public delegate void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
 }}
 ";
 			Assert.Empty(await RunAnalyzerAsync(input));
@@ -66,8 +64,8 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{DefaultParamConfigurationAttribute.AttributeName}()]
-partial class Test<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>
+[{nameof(DefaultParamConfigurationAttribute)}()]
+partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
 }}
 ";
@@ -83,7 +81,7 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test 
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}()]
+	[{nameof(DefaultParamConfigurationAttribute)}()]
 	public static void Method<T>()
 	{{
 	}}
@@ -94,13 +92,35 @@ partial class Test
 		}
 
 		[Fact]
+		public async Task Warning_When_ConfigurationIsOnLocalFunction()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+partial class Test 
+{{
+	public static void Method()
+	{{
+		[{nameof(DefaultParamConfigurationAttribute)}()]
+		static void Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+		{{
+		}}
+	}}
+}}
+";
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
+		}
+
+		[Fact]
 		public async Task Warning_When_ConfigurationIsOnNonDefaultParamType()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{DefaultParamConfigurationAttribute.AttributeName}()]
+[{nameof(DefaultParamConfigurationAttribute)}()]
 partial class Test<T>
 {{
 }}
@@ -118,7 +138,7 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test 
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}()]
+	[{nameof(DefaultParamConfigurationAttribute)}()]
 	public delegate void Method<T>();
 }}
 ";
@@ -133,8 +153,8 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty} = true)]
-partial class Test<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>
+[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
 }}
 ";
@@ -151,8 +171,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test 
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty} = true)]
-	public static void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>()
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
 	{{
 	}}
 }}
@@ -170,8 +190,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test 
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty} = true)]
-	public delegate void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+	public delegate void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
@@ -185,7 +205,7 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty} = true)]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 ";
 
 			Assert.Empty(await RunAnalyzerAsync(input));
@@ -198,13 +218,13 @@ using {DurianStrings.ConfigurationNamespace};
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
-partial class Test<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>
+[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
+partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0113_MethodConvetionShouldNotBeUsedOnMembersOtherThanMethods.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods.Id));
 		}
 
 		[Fact]
@@ -216,12 +236,12 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test 
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
-	public delegate void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
+	public delegate void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0113_MethodConvetionShouldNotBeUsedOnMembersOtherThanMethods.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods.Id));
 		}
 
 		[Fact]
@@ -233,8 +253,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test 
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
-	public static void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>()
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
+	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
 	{{
 	}}
 }}
@@ -249,7 +269,7 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
 ";
 
 			Assert.Empty(await RunAnalyzerAsync(input));
@@ -264,8 +284,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test 
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.TypeConventionProperty} = {DPTypeGenConvention.Name}.{nameof(DPTypeGenConvention.Inherit)})]
-	public static void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>()
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
 	{{
 	}}
 }}
@@ -283,8 +303,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test 
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.TypeConventionProperty} = {DPTypeGenConvention.Name}.{nameof(DPTypeGenConvention.Inherit)})]
-	public delegate void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+	public delegate void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
@@ -299,8 +319,8 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.TypeConventionProperty} = {DPTypeGenConvention.Name}.{nameof(DPTypeGenConvention.Inherit)})]
-partial class Test<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>
+[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
 }}
 ";
@@ -314,7 +334,7 @@ partial class Test<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
 ";
 
 			Assert.Empty(await RunAnalyzerAsync(input));

@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Durian.Data;
-using Durian.DefaultParam;
-using Durian.Logging;
+using Durian.Generator.Data;
+using Durian.Generator.DefaultParam;
+using Durian.Generator.Logging;
 using Microsoft.CodeAnalysis;
+using Durian.Generator;
 
 namespace Durian.Tests.DefaultParam
 {

@@ -1,5 +1,6 @@
-﻿using Durian.DefaultParam;
+﻿using Durian.Generator.DefaultParam;
 using Xunit;
+using Durian.Generator;
 
 namespace Durian.Tests.DefaultParam
 {
@@ -13,7 +14,7 @@ namespace Durian.Tests.DefaultParam
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 	}}
 
@@ -22,7 +23,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -33,7 +34,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 	}}
 
@@ -43,7 +44,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -54,7 +55,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
 	{{
 	}}
 
@@ -63,7 +64,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -74,7 +75,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 
@@ -83,7 +84,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -94,7 +95,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U>(U value)
+	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(U value)
 	{{
 	}}
 
@@ -103,7 +104,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -114,7 +115,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U>(T value)
+	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(T value)
 	{{
 	}}
 
@@ -123,7 +124,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -141,12 +142,12 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
 	{{
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -157,19 +158,19 @@ partial class Test : Parent
 
 class Parent
 {{
-	public virtual void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
 	{{
 	}}
 }}
 
 partial class Test : Parent
 {{
-	public override void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	public override void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
 	{{
 	}}
 }}
 ";
-			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
+			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -187,12 +188,12 @@ class Parent
 
 partial class Test : Parent
 {{
-	public new void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	public new void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
 	{{
 	}}
 }}
 ";
-			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
+			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -203,12 +204,12 @@ partial class Test : Parent
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
 	{{
 	}}
 }}
 ";
-			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs(DurianDiagnostics.MethodWithSignatureAlreadyExists.Id));
+			Assert.True(!RunGenerator(input).ContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
 		}
 	}
 }

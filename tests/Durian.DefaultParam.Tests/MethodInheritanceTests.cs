@@ -1,5 +1,6 @@
-﻿using Durian.DefaultParam;
+﻿using Durian.Generator.DefaultParam;
 using Xunit;
+using Durian.Generator;
 
 namespace Durian.Tests.DefaultParam
 {
@@ -59,7 +60,7 @@ partial class Child : Parent
 
 partial class Parent
 {{	
-	public virtual void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U>(T value)
+	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value)
 	{{
 	}}
 }}
@@ -97,14 +98,14 @@ partial class Child : Parent
 
 partial class Parent
 {{	
-	public virtual void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U>(T value)
+	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value)
 	{{
 	}}
 }}
 
 partial class Child : Parent
 {{
-	public override void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U>(T value)
+	public override void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value)
 	{{
 	}}
 }}
@@ -135,7 +136,7 @@ partial class Child : Parent
 
 partial class Parent
 {{	
-	public virtual void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -159,14 +160,14 @@ partial class Child : Parent
 
 partial class Parent
 {{	
-	public virtual void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U>(T value)
+	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value)
 	{{
 	}}
 }}
 
 partial class Child : Parent
 {{
-	public override void Method<[[{DefaultParamAttribute.AttributeName}(typeof(int))]T, U>(T value)
+	public override void Method<[[{nameof(DefaultParamAttribute)}(typeof(int))]T, U>(T value)
 	{{
 	}}
 }}
@@ -183,14 +184,14 @@ partial class Child : Parent
 
 partial class Parent
 {{	
-	public virtual void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
 
 partial class Child : Parent
 {{
-	public override void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>(T value)
+	public override void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>(T value)
 	{{
 	}}
 }}
@@ -207,14 +208,14 @@ partial class Child : Parent
 
 partial class Parent
 {{	
-	public virtual void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U>(U value)
+	public virtual void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(U value)
 	{{
 	}}
 }}
 
 partial class Child : Parent
 {{
-	public override void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U>(U value)
+	public override void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(U value)
 	{{
 	}}
 }}
@@ -231,14 +232,14 @@ partial class Child : Parent
 
 partial class Parent
 {{	
-	public void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	public void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
 
 partial class Child : Parent
 {{
-	public new void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	public new void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 }}

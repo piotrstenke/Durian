@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Durian.Data;
-using Durian.Logging;
+using Durian.Generator.Data;
+using Durian.Generator.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Reports <see cref="Diagnostic"/>s for <see cref="LocalFunctionStatementSyntax"/> with the <see cref="DefaultParamAttribute"/> applied.

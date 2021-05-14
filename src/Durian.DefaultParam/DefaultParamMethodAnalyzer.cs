@@ -4,16 +4,18 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Durian.Extensions;
+using System.Collections.Immutable;
+using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
+using Durian.Configuration;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
-	/// Analyzes methods with type parameters marked using the <see cref="DefaultParamAttribute"/>.
+	/// Analyzes methods with type parameters marked by the <see cref="DefaultParamAttribute"/>.
 	/// </summary>
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	public partial class DefaultParamMethodAnalyzer : DefaultParamAnalyzer
@@ -61,13 +63,14 @@ namespace Durian.DefaultParam
 		{
 			return new[]
 			{
-				DurianDiagnostics.MethodWithSignatureAlreadyExists,
 				DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern,
 				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnLocalFunctionsOrLambdas,
 				DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods,
 				DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase,
 				DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters,
-				DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity
+				DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity,
+				DefaultParamDiagnostics.DUR0116_DoNotChangeDefaultParamValueOfImplementedMethod,
+				DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists
 			};
 		}
 
@@ -115,6 +118,26 @@ namespace Durian.DefaultParam
 			return AnalyzeCore(symbol, compilation, ref typeParameters, cancellationToken);
 		}
 
+		//private static bool AnalyzeInterfaceImplementation(IMethodSymbol symbol, ref TypeParameterContainer typeParameters)
+		//{
+		//	if(symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+		//	{
+
+		//	}
+
+		//	ImmutableArray<IMethodSymbol> implementedMethods = symbol.ExplicitInterfaceImplementations;
+
+		//	if(implementedMethods.Length == 0)
+		//	{
+		//		return true;
+		//	}
+
+		//	foreach (IMethodSymbol item in collection)
+		//	{
+
+		//	}
+		//}
+
 		/// <summary>
 		/// Analyzes, if the <paramref name="symbol"/> has valid <paramref name="typeParameters"/> when compared to the <paramref name="symbol"/>'s base method.
 		/// </summary>
@@ -123,11 +146,11 @@ namespace Durian.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeOverrideMethod(IMethodSymbol symbol, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		public static bool AnalyzeBaseMethodAndTypeParameters(IMethodSymbol symbol, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			if (!symbol.IsOverride)
 			{
-				return true;
+				return AnalyzeTypeParameters(in typeParameters);
 			}
 
 			IMethodSymbol? baseMethod = symbol.OverriddenMethod;
@@ -259,7 +282,7 @@ namespace Durian.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		public static bool CheckShouldCallInsteadOfCopying(IEnumerable<AttributeData> attributes, DefaultParamCompilationData compilation)
 		{
-			int valueToCompare;
+			DPMethodConvention valueToCompare;
 
 			if (attributes is null)
 			{
@@ -269,9 +292,9 @@ namespace Durian.DefaultParam
 			{
 				AttributeData? attr = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.ConfigurationAttribute));
 
-				if (attr is not null && attr.TryGetNamedArgumentValue(DefaultParamConfigurationAttribute.MethodConvetionProperty, out int value))
+				if (attr is not null && attr.TryGetNamedArgumentValue(nameof(DefaultParamConfigurationAttribute.MethodConvention), out int value))
 				{
-					valueToCompare = value;
+					valueToCompare = (DPMethodConvention)value;
 				}
 				else
 				{
@@ -279,7 +302,7 @@ namespace Durian.DefaultParam
 				}
 			}
 
-			return DPMethodGenConvention.CallInsteadOfCopying(valueToCompare);
+			return valueToCompare == DPMethodConvention.Call;
 		}
 
 		private static void FindAndAnalyzeLocalFunction(SyntaxNodeAnalysisContext context, DefaultParamCompilationData compilation)
@@ -311,7 +334,7 @@ namespace Durian.DefaultParam
 				AnalyzeAgaintsPartialOrExtern(symbol, cancellationToken) &&
 				AnalyzeAgaintsProhibitedAttributes(symbol, compilation) &&
 				AnalyzeContainingTypes(symbol, cancellationToken) &&
-				AnalyzeOverrideMethod(symbol, ref typeParameters, compilation, cancellationToken) &&
+				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, compilation, cancellationToken) &&
 				AnalyzeMethodSignature(symbol, typeParameters, compilation, cancellationToken);
 		}
 

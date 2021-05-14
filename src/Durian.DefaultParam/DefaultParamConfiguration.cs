@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Durian.Configuration;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Configures optional features of the <see cref="DefaultParamGenerator"/>.
@@ -15,12 +16,12 @@ namespace Durian.DefaultParam
 		/// <summary>
 		/// Determines, how the <c>DefaultParam</c> generator generates a type.
 		/// </summary>
-		public int TypeConvention { get; set; }
+		public DPTypeConvention TypeConvention { get; set; }
 
 		/// <summary>
 		/// Determines, how the <c>DefaultParam</c> generator generates a method.
 		/// </summary>
-		public int MethodConvention { get; set; }
+		public DPMethodConvention MethodConvention { get; set; }
 
 		/// <summary>
 		/// Returns a new instance of <see cref="DefaultParamConfiguration"/> with all values set to <see langword="default"/>.
@@ -38,9 +39,9 @@ namespace Durian.DefaultParam
 		public override int GetHashCode()
 		{
 			int hashCode = -726504116;
-			hashCode = (hashCode * -1521134295) + EqualityComparer<bool>.Default.GetHashCode(ApplyNewModifierWhenPossible);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<int>.Default.GetHashCode(MethodConvention);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<int>.Default.GetHashCode(TypeConvention);
+			hashCode = (hashCode * -1521134295) + ApplyNewModifierWhenPossible.GetHashCode();
+			hashCode = (hashCode * -1521134295) + MethodConvention.GetHashCode();
+			hashCode = (hashCode * -1521134295) + TypeConvention.GetHashCode();
 			return hashCode;
 		}
 

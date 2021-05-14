@@ -1,19 +1,17 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using Durian.DefaultParam;
+using Durian.Generator.DefaultParam;
 using Microsoft.CodeAnalysis;
 using Xunit;
-using Desc = Durian.DefaultParam.DefaultParamDiagnostics;
+using Durian.Configuration;
+using Durian.Generator;
+using Desc = Durian.Generator.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Tests.DefaultParam
 {
 	public sealed class MethodAnalyzerTests : DefaultParamAnalyzerTest<DefaultParamMethodAnalyzer>
 	{
-		public MethodAnalyzerTests(DefaultParamCompilationFixture fixture) : base(fixture)
-		{
-		}
-
 		[Fact]
 		public async Task Error_When_IsExtern()
 		{
@@ -22,7 +20,7 @@ namespace Durian.Tests.DefaultParam
 
 partial class Test 
 {{
-	public static extern void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+	public static extern void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
 }}
 ";
 
@@ -38,7 +36,7 @@ partial class Test
 
 partial class Test 
 {{
-	partial void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+	partial void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
@@ -54,7 +52,7 @@ partial class Test
 
 partial class Test
 {{
-	partial void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+	partial void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
 }}
 
 partial class Test
@@ -82,7 +80,7 @@ partial class Test
 
 partial class Test
 {{
-	partial void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>()
+	partial void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
 	{{
 	}}
 }}
@@ -102,7 +100,7 @@ partial class Test
 {{
 	void Method()
 	{{
-		void Local<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>(T value)
+		void Local<[{nameof(DefaultParamAttribute)}(typeof(string))]T>(T value)
 		{{
 		}}
 	}}
@@ -121,7 +119,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(string)]T, U>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string)]T, U>()
 	{{
 	}}
 }}
@@ -138,7 +136,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T, U, [{DefaultParamAttribute.AttributeName}(typeof(int))]V>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T, U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>()
 	{{
 	}}
 }}
@@ -159,7 +157,7 @@ partial class Test
 		//		partial class Test
 		//		{{
 		//			[System.CodeDom.Compiler.GeneratedCode("", "")]
-		//			void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+		//			void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 		//			{{
 		//			}}
 		//		}}
@@ -177,7 +175,7 @@ partial class Test
 partial class Test
 {{
 	[{DurianStrings.GeneratorNamespace}.DurianGenerated]
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -194,7 +192,7 @@ partial class Test
 
 class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -213,7 +211,7 @@ class Parent
 {{
 	partial class Test
 	{{
-		void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+		void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 		{{
 		}}
 	}}
@@ -231,7 +229,7 @@ class Parent
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>() where T : class
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>() where T : class
 	{{
 	}}
 }}
@@ -248,7 +246,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]>() where T : class where U : class
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]>() where T : class where U : class
 	{{
 	}}
 }}
@@ -313,7 +311,7 @@ partial class Child : Parent
 
 partial class Parent
 {{	
-	public virtual void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -338,14 +336,14 @@ partial class Child : Parent
 
 partial class Parent
 {{	
-	public virtual void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U>(T value)
+	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value)
 	{{
 	}}
 }}
 
 partial class Child : Parent
 {{
-	public override void Method<[[{DefaultParamAttribute.AttributeName}(typeof(int))]T, U>(T value)
+	public override void Method<[[{nameof(DefaultParamAttribute)}(typeof(int))]T, U>(T value)
 	{{
 	}}
 }}
@@ -363,14 +361,14 @@ partial class Child : Parent
 
 partial class Parent
 {{	
-	public virtual void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
 
 partial class Child : Parent
 {{
-	public override void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>(T value)
+	public override void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>(T value)
 	{{
 	}}
 }}
@@ -388,14 +386,14 @@ partial class Child : Parent
 
 partial class Parent
 {{	
-	public virtual void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U>(U value)
+	public virtual void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(U value)
 	{{
 	}}
 }}
 
 partial class Child : Parent
 {{
-	public override void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U>(U value)
+	public override void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(U value)
 	{{
 	}}
 }}
@@ -412,11 +410,11 @@ partial class Child : Parent
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossibleProperty} = true)]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 partial class Test : Parent
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 
@@ -426,7 +424,7 @@ partial class Test : Parent
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DUR0118_MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -437,7 +435,7 @@ partial class Test : Parent
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 	}}
 
@@ -447,7 +445,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DUR0118_MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -458,7 +456,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 	}}
 
@@ -469,7 +467,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DUR0118_MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -480,7 +478,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
 	{{
 	}}
 
@@ -490,7 +488,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DUR0118_MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -501,7 +499,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(T value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
 	{{
 	}}
 
@@ -511,7 +509,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DUR0118_MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -522,7 +520,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U>(U value)
+	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(U value)
 	{{
 	}}
 
@@ -532,7 +530,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DUR0118_MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -543,7 +541,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<T, [{DefaultParamAttribute.AttributeName}(typeof(int))]U>(T value)
+	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(T value)
 	{{
 	}}
 
@@ -553,7 +551,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DUR0118_MethodWithSignatureAlreadyExists)));
 		}
 
 		[Fact]
@@ -571,13 +569,13 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(string value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
 	{{
 	}}
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(DurianDiagnostics.MethodWithSignatureAlreadyExists)));
+			Assert.True(diagnostics.Any(d => d.Descriptor.Equals(Desc.DUR0118_MethodWithSignatureAlreadyExists)));
 		}
 	}
 }

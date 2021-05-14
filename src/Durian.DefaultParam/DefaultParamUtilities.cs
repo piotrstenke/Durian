@@ -1,25 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Durian.Data;
-using Durian.Extensions;
-using Durian.Generator;
+using Durian.Generator.Data;
+using Durian.Generator.Extensions;
+using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Contains various utility methods related to the 'DefaultParam' module.
 	/// </summary>
 	internal static class DefaultParamUtilities
 	{
-		/// <summary>
-		/// <see cref="ModuleIdentity"/> of the 'DefaultParam' module.
-		/// </summary>
-		public static ModuleIdentity Package = ModuleRepository.DefaultParam;
-
 		/// <summary>
 		/// Returns a new <see cref="IEnumerator{T}"/> for the specified <paramref name="filter"/>.
 		/// </summary>

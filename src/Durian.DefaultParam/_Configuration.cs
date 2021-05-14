@@ -1,4 +1,16 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Durian.Info;
+using Durian.Generator;
+using Durian.Generator.DefaultParam;
+
+#region Durian Configuration
+
+[assembly: ModuleDefinition(DurianModule.DefaultParam, ModuleType.SyntaxBasedGenerator | ModuleType.Analyzer, "1.0.0", 01)]
+[assembly: IncludeDiagnostics("DUR0001")]
+[assembly: IncludeTypes("DefaultParamAttribute", "DefaultParamConfigurationAttribute", "DPMethodConvention", "DPTypeConvention")]
+[assembly: DiagnosticFiles(nameof(DefaultParamDiagnostics))]
+
+#endregion
 
 #region SuppressMessage
 [assembly: SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1025:Configure generated code analysis", Justification = "Abstract class Durian.Analyzers.DurianAnayzer configured generated code analysis in its Initialize(context) method.")]

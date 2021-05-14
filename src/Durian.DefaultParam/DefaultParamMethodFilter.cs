@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Durian.Data;
-using Durian.Logging;
+using Durian.Generator.Data;
+using Durian.Generator.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Durian.DefaultParam.DefaultParamAnalyzer;
-using static Durian.DefaultParam.DefaultParamMethodAnalyzer;
+using static Durian.Generator.DefaultParam.DefaultParamAnalyzer;
+using static Durian.Generator.DefaultParam.DefaultParamMethodAnalyzer;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Filtrates and validates <see cref="MethodDeclarationBuilder"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
@@ -167,7 +167,7 @@ namespace Durian.DefaultParam
 			{
 				TypeParameterContainer combinedParameters = typeParameters;
 
-				if (AnalyzeOverrideMethod(symbol, ref combinedParameters, compilation, cancellationToken) &&
+				if (AnalyzeBaseMethodAndTypeParameters(symbol, ref combinedParameters, compilation, cancellationToken) &&
 					AnalyzeMethodSignature(symbol, in combinedParameters, compilation, out HashSet<int>? newModifiers, cancellationToken))
 				{
 					data = new(

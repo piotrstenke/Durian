@@ -3,11 +3,11 @@
   <PropertyGroup>
     
     <Description>Provides an attribute that allows to define a default type for a type parameter.</Description>
-    <PackageTags>dotnet;roslyn;Durian;source-generator;analyzer;analysis;extension;core;code-generation;attribute;default;parameter;type-parameter;default-type;</PackageTags>
+    <PackageTags>dotnet;Roslyn;Durian;Source Generator;Analyzer;Analysis;Generator;Generation;Extension;Code Generation; Language Feature;Default Parameter;DefaultParam;Default;Parameter;Type Parameter</PackageTags>
     <Version>1.0.0</Version>
     <PackageVersion>1.0.0</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
-    <RootNamespace>Durian.DefaultParam</RootNamespace>
+    <RootNamespace>Durian.Generator.DefaultParam</RootNamespace>
     <DevelopmentDependency>true</DevelopmentDependency>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     
@@ -16,7 +16,7 @@
   <ItemGroup>
     
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
-    <ProjectReference Include="..\Durian.AnalysisCore\Durian.AnalysisCore.csproj" />
+    <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
     <Compile Include="..\..\symbols\NullableAttributes.cs" />
     
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
@@ -40,5 +40,9 @@
     </PackageReference>
     
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="&quot;$(SolutionDir)\bin\$(ConfigurationName)\GenerateAnalyzerReleases\GenerateAnalyzerReleases.exe&quot; &quot;$(SolutionDir)src\$(ProjectName)\_Configuration.cs&quot;" />
+  </Target>
 
 </Project>

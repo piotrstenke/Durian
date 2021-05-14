@@ -1,5 +1,6 @@
-﻿using Durian.DefaultParam;
+﻿using Durian.Generator.DefaultParam;
 using Xunit;
+using Durian.Generator;
 
 namespace Durian.Tests.DefaultParam
 {
@@ -13,7 +14,7 @@ namespace Durian.Tests.DefaultParam
 
 partial class Test 
 {{
-	public static extern void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+	public static extern void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
@@ -27,7 +28,7 @@ partial class Test
 
 partial class Test 
 {{
-	partial void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+	partial void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
@@ -41,7 +42,7 @@ partial class Test
 
 partial class Test
 {{
-	partial void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>();
+	partial void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
 }}
 
 partial class Test
@@ -68,7 +69,7 @@ partial class Test
 
 partial class Test
 {{
-	partial void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>()
+	partial void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
 	{{
 	}}
 }}
@@ -87,7 +88,7 @@ partial class Test
 {{
 	void Method()
 	{{
-		void Local<[{DefaultParamAttribute.AttributeName}(typeof(string))]T>(T value)
+		void Local<[{nameof(DefaultParamAttribute)}(typeof(string))]T>(T value)
 		{{
 		}}
 	}}
@@ -104,7 +105,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(string)]T, U>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string)]T, U>()
 	{{
 	}}
 }}
@@ -120,7 +121,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(string))]T, U, [{DefaultParamAttribute.AttributeName}(typeof(int))]V>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T, U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>()
 	{{
 	}}
 }}
@@ -138,7 +139,7 @@ partial class Test
 partial class Test
 {{
 	[System.CodeDom.Compiler.GeneratedCode("", "")]
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -155,7 +156,7 @@ partial class Test
 partial class Test
 {{
 	[{DurianStrings.GeneratorNamespace}.DurianGenerated]
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -171,7 +172,7 @@ partial class Test
 
 class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -189,7 +190,7 @@ class Parent
 {{
 	partial class Test
 	{{
-		void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+		void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 		{{
 		}}
 	}}
@@ -206,7 +207,7 @@ class Parent
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>() where T : class
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>() where T : class
 	{{
 	}}
 }}
@@ -222,7 +223,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]>() where T : class where U : class
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]>() where T : class where U : class
 	{{
 	}}
 }}

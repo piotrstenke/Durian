@@ -1,5 +1,7 @@
-﻿using Durian.DefaultParam;
+﻿using Durian.Generator.DefaultParam;
 using Xunit;
+using Durian.Generator;
+using Durian.Configuration;
 
 namespace Durian.Tests.DefaultParam
 {
@@ -12,11 +14,11 @@ namespace Durian.Tests.DefaultParam
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)}]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)}]
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(int a, float b, T value)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(int a, float b, T value)
 	{{
 		T t = default;
 	}}
@@ -43,11 +45,11 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
 
 partial class Test
 {{
-	int Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>(int a, float b, T value)
+	int Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(int a, float b, T value)
 	{{
 		T t = default;
 		return 2;
@@ -75,11 +77,11 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T, [{DefaultParamAttribute.AttributeName}(typeof(string))]U>(T obj1, U obj2)
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T obj1, U obj2)
 	{{
 	}}
 }}
@@ -111,11 +113,11 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
 
 partial class Test
 {{
-	int Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	int Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 		T t = default;
 		return 2;
@@ -142,11 +144,11 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
 
 partial class Test
 {{
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 		T value = default;
 	}}
@@ -174,15 +176,17 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 		T value = default;
 	}}
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"using {DurianStrings.ConfigurationNamespace};
+
+partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -201,19 +205,21 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Copy)})]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)})]
 
 partial class Test
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 		T value = default;
 	}}
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"using {DurianStrings.ConfigurationNamespace};
+
+partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -232,19 +238,21 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Call)})]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
 
 partial class Test
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Copy)})]
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)})]
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 		T value = default;
 	}}
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"using {DurianStrings.ConfigurationNamespace};
+
+partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -263,19 +271,21 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Copy)})]
+[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)})]
 
 partial class Test
 {{
-	[{DefaultParamConfigurationAttribute.AttributeName}({DefaultParamConfigurationAttribute.MethodConvetionProperty} = {DPMethodGenConvention.Name}.{nameof(DPMethodGenConvention.Copy)})]
-	void Method<[{DefaultParamAttribute.AttributeName}(typeof(int))]T>()
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)})]
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 		T value = default;
 	}}
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"using {DurianStrings.ConfigurationNamespace};
+
+partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()

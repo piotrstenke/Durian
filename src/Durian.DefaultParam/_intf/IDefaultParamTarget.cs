@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading;
-using Durian.Data;
+using Durian.Generator.Data;
 
-namespace Durian.DefaultParam
+namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// <see cref="IMemberData"/> that is used to generate new sources by the <see cref="DefaultParamGenerator"/>.

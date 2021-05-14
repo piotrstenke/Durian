@@ -2,15 +2,12 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Xunit;
+using Durian.Generator;
 
 namespace Durian.Tests.DefaultParam
 {
-	public abstract class DefaultParamAnalyzerTest<T> : AnalyzerTest<T>, IClassFixture<DefaultParamCompilationFixture> where T : DurianAnalyzer, new()
+	public abstract class DefaultParamAnalyzerTest<T> : AnalyzerTest<T> where T : DurianAnalyzer, new()
 	{
-		public DefaultParamAnalyzerTest(DefaultParamCompilationFixture fixture) : base(fixture.Compilation)
-		{
-		}
-
 		public new async Task<ImmutableArray<Diagnostic>> RunAnalyzerAsync(string? input, bool addToCompilation = false)
 		{
 			return await base.RunAnalyzerAsync(input, addToCompilation);
