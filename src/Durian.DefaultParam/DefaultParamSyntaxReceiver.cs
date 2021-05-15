@@ -119,6 +119,12 @@ namespace Durian.Generator.DefaultParam
 
 		private void CollectMethod(MethodDeclarationSyntax decl)
 		{
+			if (decl.ExplicitInterfaceSpecifier is not null)
+			{
+				CandidateMethods.Add(decl);
+				return;
+			}
+
 			if (decl.TypeParameterList is not null)
 			{
 				SeparatedSyntaxList<TypeParameterSyntax> parameters = decl.TypeParameterList.Parameters;

@@ -167,23 +167,27 @@ namespace Durian.Generator.DefaultParam
 			{
 				TypeParameterContainer combinedParameters = typeParameters;
 
-				if (AnalyzeBaseMethodAndTypeParameters(symbol, ref combinedParameters, compilation, cancellationToken) &&
-					AnalyzeMethodSignature(symbol, in combinedParameters, compilation, out HashSet<int>? newModifiers, cancellationToken))
+				if (AnalyzeBaseMethodAndTypeParameters(symbol, ref combinedParameters, compilation, cancellationToken))
 				{
-					data = new(
-						declaration,
-						compilation,
-						symbol,
-						semanticModel,
-						containingTypes,
-						null,
-						attributes,
-						in combinedParameters,
-						newModifiers,
-						CheckShouldCallInsteadOfCopying(attributes!, compilation)
-					);
+					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
 
-					return true;
+					if (AnalyzeMethodSignature(symbol, in combinedParameters, compilation, attributes, symbols, out HashSet<int>? newModifiers, cancellationToken))
+					{
+						data = new(
+							declaration,
+							compilation,
+							symbol,
+							semanticModel,
+							containingTypes,
+							null,
+							attributes,
+							in combinedParameters,
+							newModifiers,
+							CheckShouldCallInsteadOfCopying(symbol, attributes!, symbols, compilation)
+						);
+
+						return true;
+					}
 				}
 			}
 
@@ -213,7 +217,7 @@ namespace Durian.Generator.DefaultParam
 			semanticModel = compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
 			typeParameters = GetParameters(declaration, semanticModel, compilation, cancellationToken);
 
-			if (typeParameters.HasDefaultParams || declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
+			if (typeParameters.HasDefaultParams || declaration.ExplicitInterfaceSpecifier is not null || declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
 			{
 				symbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken)!;
 

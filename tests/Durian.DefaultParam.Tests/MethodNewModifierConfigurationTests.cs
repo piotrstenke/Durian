@@ -8,13 +8,204 @@ namespace Durian.Tests.DefaultParam
 	public sealed class MethodNewModifierConfigurationTests : DefaultParamGeneratorTest
 	{
 		[Fact]
+		public void AppliesNewModifier_When_GloballyFalse_And_InTypeTrue()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+
+class Parent
+{{
+	void Method(int value)
+	{{
+	}}
+}}
+
+[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+partial class Test : Parent
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	{{
+	}}
+}}
+";
+			string expected =
+@$"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
+	new void Method(int value)
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void DoesNotApplyNewModifer_When_GloballyTrue_And_InTypeFalse()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+
+class Parent
+{{
+	void Method(int value)
+	{{
+	}}
+}}
+
+[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+partial class Test : Parent
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	{{
+	}}
+}}
+";
+			Assert.False(RunGenerator(input).IsGenerated);
+		}
+
+		[Fact]
+		public void AppliesNewModifier_When_GloballyFalse_And_LocallyFalse()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+
+class Parent
+{{
+	void Method(int value)
+	{{
+	}}
+}}
+
+partial class Test : Parent
+{{
+	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	{{
+	}}
+}}
+";
+			string expected =
+@$"using {DurianStrings.ConfigurationNamespace};
+
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
+	new void Method(int value)
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void DoesNotApplyNewModifer_When_GloballyTrue_And_LocallyFalse()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+
+class Parent
+{{
+	void Method(int value)
+	{{
+	}}
+}}
+
+partial class Test : Parent
+{{
+	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	{{
+	}}
+}}
+";
+			Assert.False(RunGenerator(input).IsGenerated);
+		}
+
+		[Fact]
+		public void AppliesNewModifier_When_InTypeFalse_LocallyTrue()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+class Parent
+{{
+	void Method(int value)
+	{{
+	}}
+}}
+
+[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+partial class Test : Parent
+{{
+	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	{{
+	}}
+}}
+";
+			string expected =
+@$"using {DurianStrings.ConfigurationNamespace};
+
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
+	new void Method(int value)
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void DoesNotApplyNewModifer_When_InTypeTrue_LocallyFalse()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+class Parent
+{{
+	void Method(int value)
+	{{
+	}}
+}}
+
+[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+partial class Test : Parent
+{{
+	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	{{
+	}}
+}}
+";
+			Assert.False(RunGenerator(input).IsGenerated);
+		}
+
+		[Fact]
 		public void AppliesNewModifier_When_SignatureExistsInBaseClass()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 class Parent
 {{
@@ -51,7 +242,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 class Parent
 {{
@@ -87,7 +278,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 class Parent
 {{
@@ -127,7 +318,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 class Parent
 {{
@@ -169,7 +360,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 class Parent
 {{
@@ -215,7 +406,7 @@ partial class Test : Parent
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
 
 partial class Test : Parent
 {{
@@ -228,7 +419,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
 		}
 	}
 }

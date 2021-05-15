@@ -160,7 +160,7 @@ namespace Durian.Generator.DefaultParam
 		/// <summary>
 		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.TypeConvention"/> should not be used on members other than types.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0112_TypeConvetionShouldNotBeUsedOnMethodsOrDelegates = new(
+		public static readonly DiagnosticDescriptor DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes = new(
 			id: "DUR0112",
 			title: "TypeConvention property should not be used on members other than types",
 			messageFormat: "'{0}': TypeConvention property should not be used on members other than types",
@@ -184,14 +184,14 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible"/> property should not be used on members directly.
+		/// Provides diagnostic message indicating that a method generated using the <see cref="DefaultParamAttribute"/> already exists.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers = new(
+		public static readonly DiagnosticDescriptor DUR0114_MethodWithSignatureAlreadyExists = new(
 			id: "DUR0114",
-			title: "ApplyNewModifierWhenPossible property should not be used on members directly",
-			messageFormat: "'{0}': ApplyNewModifierWhenPossible property should not be used on members directly",
+			title: "Method with generated signature already exist",
+			messageFormat: "'{0}': Method with generated signature '{1}' already exists",
 			category: "Durian.DefaultParam",
-			defaultSeverity: DiagnosticSeverity.Warning,
+			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0114.md",
 			isEnabledByDefault: true
 		);
@@ -225,7 +225,7 @@ namespace Durian.Generator.DefaultParam
 		/// <summary>
 		/// Provides diagnostic message indicating that the user should not implement interface methods generated using the <see cref="DefaultParamAttribute"/>.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0117_DoNotImplementGeneratedInterafaceMethods = new(
+		public static readonly DiagnosticDescriptor DUR0117_DoNotImplementGeneratedInterfaceMethods = new(
 			id: "DUR0117",
 			title: "Do not implement interface methods generated using the DefaultParamAttribute",
 			messageFormat: "'{0}': Do not implement interface methods generated using the DefaultParamAttribute",
@@ -236,15 +236,28 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that a method generated using the <see cref="DefaultParamAttribute"/> already exists.
+		/// Provides diagnostic message indicating that there is conflict of <see cref="DefaultParamAttribute"/> values between an existing method and implicitly implemented interface method.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0118_MethodWithSignatureAlreadyExists = new(
+		public static readonly DiagnosticDescriptor DUR0118_ConflictBetweenExistingMethodAndInterfaceMethod = new(
 			id: "DUR0118",
-			title: "Method with generated signature already exist",
-			messageFormat: "'{0}': Method with generated signature '{1}' already exists",
+			title: "Value of DefaultParam attribute is different than that of implicitly implemented method",
+			messageFormat: "'{0}': Value of DefaultParam attribute is different than that of the implicitly implemented '{1}' method. Try implementing the method explicitly",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0118.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that there is conflict of <see cref="DefaultParamAttribute"/> values between inherited method and implicitly implemented interface method.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0119_ConflictBetweenInheritedMethodAndInterfaceMethod = new(
+			id: "DUR0119",
+			title: "Value of DefaultParam attribute is different for inherited method and implicitly implemented interface method",
+			messageFormat: "'{0}': Value of DefaultParam attribute is different for the inherited '{1}' method and implicitly implemented '{2}' method. Try implementing the method explicitly",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0119.md",
 			isEnabledByDefault: true
 		);
 	}

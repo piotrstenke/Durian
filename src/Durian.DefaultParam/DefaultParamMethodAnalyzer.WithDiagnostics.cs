@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -60,21 +61,33 @@ namespace Durian.Generator.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
+				if (symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+				{
+					return AnalyzeExplicitImplementation(diagnosticReceiver, symbol, ref typeParameters, compilation, cancellationToken);
+				}
+
 				if (!symbol.IsOverride)
 				{
-					return AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
+					if (AnalyzeTypeParameters(diagnosticReceiver, in typeParameters))
+					{
+						return AnalyzeInterfaceImplementation(diagnosticReceiver, symbol, in typeParameters, compilation, cancellationToken);
+					}
+
+					return false;
 				}
 
 				IMethodSymbol? baseMethod = symbol.OverriddenMethod;
 
 				if (baseMethod is null)
 				{
+					AnalyzeInterfaceImplementation(diagnosticReceiver, symbol, in typeParameters, compilation, cancellationToken);
 					return false;
 				}
 
 				if (IsDefaultParamGenerated(baseMethod, compilation))
 				{
 					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods, symbol);
+					AnalyzeInterfaceImplementation(diagnosticReceiver, symbol, in typeParameters, compilation, cancellationToken);
 					return false;
 				}
 
@@ -82,8 +95,9 @@ namespace Durian.Generator.DefaultParam
 
 				if (DefaultParamAnalyzer.AnalyzeTypeParameters(in baseTypeParameters) && AnalyzeBaseMethodParameters(diagnosticReceiver, in typeParameters, in baseTypeParameters))
 				{
+					bool isValid = AnalyzeInterfaceImplementation(diagnosticReceiver, symbol, in typeParameters, compilation, cancellationToken);
 					typeParameters = TypeParameterContainer.Combine(in typeParameters, in baseTypeParameters);
-					return true;
+					return isValid;
 				}
 
 				return false;
@@ -152,7 +166,7 @@ namespace Durian.Generator.DefaultParam
 			/// <returns><see langword="true"/> if the signature of <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 			public static bool AnalyzeMethodSignature(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 			{
-				return AnalyzeMethodSignature(diagnosticReceiver, symbol, in typeParameters, compilation, out _, cancellationToken);
+				return AnalyzeMethodSignature(diagnosticReceiver, symbol, in typeParameters, compilation, symbol.GetAttributes(), symbol.GetContainingTypeSymbols().ToArray(), out _, cancellationToken);
 			}
 
 			/// <summary>
@@ -162,6 +176,8 @@ namespace Durian.Generator.DefaultParam
 			/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze the signature of.</param>
 			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
 			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+			/// <param name="attributes">A collection of <see cref="AttributeData"/>a of the target <paramref name="symbol"/>.</param>
+			/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the <paramref name="symbol"/>'s containing types.</param>
 			/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
 			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 			/// <returns><see langword="true"/> if the signature of <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
@@ -170,10 +186,50 @@ namespace Durian.Generator.DefaultParam
 				IMethodSymbol symbol,
 				in TypeParameterContainer typeParameters,
 				DefaultParamCompilationData compilation,
+				IEnumerable<AttributeData> attributes,
+				INamedTypeSymbol[] containingTypes,
 				out HashSet<int>? applyNew,
 				CancellationToken cancellationToken = default
 			)
 			{
+				return AnalyzeMethodSignature(
+					diagnosticReceiver,
+					symbol,
+					in typeParameters,
+					compilation,
+					AllowsNewModifier(symbol, attributes, containingTypes, compilation),
+					out applyNew,
+					cancellationToken
+				);
+			}
+
+			/// <summary>
+			/// Analyzes, if the signature of the <paramref name="symbol"/> is valid. If so, returns a <see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied.
+			/// </summary>
+			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+			/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze the signature of.</param>
+			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
+			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+			/// <param name="applyNewModifierWhenPossible">Determines whether to apply the 'new' modifier if possible.</param>
+			/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
+			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+			/// <returns><see langword="true"/> if the signature of <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
+			public static bool AnalyzeMethodSignature(
+				IDiagnosticReceiver diagnosticReceiver,
+				IMethodSymbol symbol,
+				in TypeParameterContainer typeParameters,
+				DefaultParamCompilationData compilation,
+				bool applyNewModifierWhenPossible,
+				out HashSet<int>? applyNew,
+				CancellationToken cancellationToken = default
+			)
+			{
+				if (symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+				{
+					applyNew = null;
+					return true;
+				}
+
 				IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
 				CollidingMethod[] collidingMethods = GetCollidingMethods(symbol, compilation, symbolParameters.Length, typeParameters.Length, typeParameters.NumNonDefaultParam);
 
@@ -189,7 +245,7 @@ namespace Durian.Generator.DefaultParam
 					in typeParameters,
 					collidingMethods,
 					symbolParameters,
-					compilation.Configuration,
+					applyNewModifierWhenPossible,
 					cancellationToken,
 					out applyNew
 				);
@@ -262,13 +318,167 @@ namespace Durian.Generator.DefaultParam
 				return AnalyzeMethodSignature(diagnosticReceiver, symbol, in typeParameters, compilation, cancellationToken);
 			}
 
+			private static bool AnalyzeInterfaceImplementation(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
+			{
+				INamedTypeSymbol parent = symbol.ContainingType;
+				string name = symbol.Name;
+				bool isValid = true;
+
+				foreach (INamedTypeSymbol intf in parent.AllInterfaces)
+				{
+					foreach (IMethodSymbol interfaceMethod in intf.GetMembers(name).OfType<IMethodSymbol>())
+					{
+						if (parent.FindImplementationForInterfaceMember(interfaceMethod) is not IMethodSymbol impl || impl.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+						{
+							continue;
+						}
+
+						if (!SymbolEqualityComparer.Default.Equals(impl, symbol) || IsDefaultParamGenerated(interfaceMethod, compilation))
+						{
+							continue;
+						}
+
+						TypeParameterContainer baseTypeParameters = TypeParameterContainer.CreateFrom(interfaceMethod, compilation, cancellationToken);
+						isValid &= AnalyzeInterfaceMethod(diagnosticReceiver, symbol, interfaceMethod, in typeParameters, in baseTypeParameters);
+					}
+				}
+
+				return isValid;
+			}
+
+			private static bool AnalyzeInterfaceMethod(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, IMethodSymbol interfaceMethod, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
+			{
+				if (!baseTypeParameters.HasDefaultParams)
+				{
+					return true;
+				}
+
+				if (!DefaultParamAnalyzer.AnalyzeTypeParameters(in baseTypeParameters))
+				{
+					return false;
+				}
+
+				int length = baseTypeParameters.Length;
+				int firstIndex = GetFirstDefaultParamIndex(in typeParameters, in baseTypeParameters);
+				bool isValid = true;
+
+				for (int i = firstIndex; i < length; i++)
+				{
+					ref readonly TypeParameterData baseData = ref baseTypeParameters[i];
+					ref readonly TypeParameterData thisData = ref typeParameters[i];
+
+					if (baseData.IsDefaultParam)
+					{
+						if (!thisData.IsDefaultParam || !SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
+						{
+							Report();
+						}
+					}
+					else if (thisData.IsDefaultParam)
+					{
+						Report();
+					}
+				}
+
+				return isValid;
+
+				void Report()
+				{
+					isValid = false;
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0118_ConflictBetweenExistingMethodAndInterfaceMethod, symbol, interfaceMethod);
+				}
+			}
+
+			private static bool AnalyzeExplicitImplementation(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
+			{
+				ImmutableArray<IMethodSymbol> implementedMethods = symbol.ExplicitInterfaceImplementations;
+
+				if (implementedMethods.Length == 0)
+				{
+					return false;
+				}
+
+				TypeParameterContainer copyOfParameters = typeParameters;
+				bool isValid = true;
+
+				foreach (IMethodSymbol method in implementedMethods)
+				{
+					if (IsDefaultParamGenerated(method, compilation))
+					{
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0117_DoNotImplementGeneratedInterfaceMethods, symbol);
+						isValid = false;
+						continue;
+					}
+
+					TypeParameterContainer baseParameters = TypeParameterContainer.CreateFrom(method, compilation, cancellationToken);
+
+					if (!baseParameters.HasDefaultParams || !DefaultParamAnalyzer.AnalyzeTypeParameters(in baseParameters))
+					{
+						continue;
+					}
+
+					int length = baseParameters.Length;
+					int firstIndex = GetFirstDefaultParamIndex(in typeParameters, in baseParameters);
+
+					for (int i = firstIndex; i < length; i++)
+					{
+						ref readonly TypeParameterData baseData = ref baseParameters[i];
+						ref readonly TypeParameterData thisData = ref typeParameters[i];
+
+						if (!AnalyzeExplicitMethodBase(diagnosticReceiver, in thisData, in baseData))
+						{
+							isValid = false;
+						}
+					}
+
+					if (isValid)
+					{
+						copyOfParameters = TypeParameterContainer.Combine(in copyOfParameters, in baseParameters);
+					}
+				}
+
+				if (isValid)
+				{
+					typeParameters = copyOfParameters;
+				}
+
+				return isValid;
+			}
+
+			private static bool AnalyzeExplicitMethodBase(IDiagnosticReceiver diagnosticReceiver, in TypeParameterData thisData, in TypeParameterData baseData)
+			{
+				if (baseData.IsDefaultParam)
+				{
+					if (!thisData.IsDefaultParam)
+					{
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity, thisData.Symbol);
+
+						// This diagnostic is only a warning, so the symbol is still valid.
+						return true;
+					}
+
+					if (!SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
+					{
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0116_DoNotChangeDefaultParamValueOfImplementedMethod, thisData.Location, thisData.Symbol);
+						return false;
+					}
+				}
+				else if (thisData.IsDefaultParam)
+				{
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters, thisData.Location, thisData.Symbol);
+					return false;
+				}
+
+				return true;
+			}
+
 			private static bool AnalyzeCollidingMethods(
 				IDiagnosticReceiver diagnosticReceiver,
 				IMethodSymbol symbol,
 				in TypeParameterContainer typeParameters,
 				CollidingMethod[] collidingMethods,
 				IParameterSymbol[] symbolParameters,
-				DefaultParamConfiguration configuration,
+				bool applyNewModifierIsPossible,
 				CancellationToken cancellationToken,
 				out HashSet<int>? applyNew
 			)
@@ -301,7 +511,7 @@ namespace Durian.Generator.DefaultParam
 						targetIndex,
 						diagnosed,
 						applyNewLocal,
-						configuration,
+						applyNewModifierIsPossible,
 						ref isValid,
 						cancellationToken)
 					)
@@ -323,7 +533,7 @@ namespace Durian.Generator.DefaultParam
 				int targetIndex,
 				HashSet<int> diagnosed,
 				HashSet<int> applyNew,
-				DefaultParamConfiguration configuration,
+				bool applyNewModifierWhenPossible,
 				ref bool isValid,
 				CancellationToken cancellationToken
 			)
@@ -333,7 +543,7 @@ namespace Durian.Generator.DefaultParam
 					return true;
 				}
 
-				if (!configuration.ApplyNewModifierWhenPossible || SymbolEqualityComparer.Default.Equals(collidingMethod.Symbol.ContainingType, symbol.ContainingType))
+				if (!applyNewModifierWhenPossible || SymbolEqualityComparer.Default.Equals(collidingMethod.Symbol.ContainingType, symbol.ContainingType))
 				{
 					if (HasNewModifier(symbol, collidingMethod.Symbol, cancellationToken))
 					{
@@ -342,7 +552,7 @@ namespace Durian.Generator.DefaultParam
 					}
 
 					string signature = GetMethodSignatureString(symbol.Name, in typeParameters, targetIndex, targetGeneration);
-					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0118_MethodWithSignatureAlreadyExists, symbol, signature);
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists, symbol, signature);
 					diagnosed.Add(targetIndex);
 					isValid = false;
 
@@ -378,26 +588,6 @@ namespace Durian.Generator.DefaultParam
 				}
 
 				return isValid;
-			}
-
-			private static int GetFirstDefaultParamIndex(in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
-			{
-				if (typeParameters.FirstDefaultParamIndex == -1)
-				{
-					return baseTypeParameters.FirstDefaultParamIndex;
-				}
-
-				if (baseTypeParameters.FirstDefaultParamIndex == -1)
-				{
-					return typeParameters.FirstDefaultParamIndex;
-				}
-
-				if (typeParameters.FirstDefaultParamIndex < baseTypeParameters.FirstDefaultParamIndex)
-				{
-					return typeParameters.FirstDefaultParamIndex;
-				}
-
-				return baseTypeParameters.FirstDefaultParamIndex;
 			}
 
 			private static bool AnalyzeParameterInBaseMethod(IDiagnosticReceiver diagnosticReceiver, in TypeParameterData thisData, in TypeParameterData baseData)

@@ -148,9 +148,7 @@ namespace Durian.Generator.DefaultParam
 				return false;
 			}
 
-			WriteTargetLeadDeclaration(target);
 			GenerateAllVersionsOfTarget(target, in context);
-			CodeBuilder.EndAllBlocks();
 			AddSourceWithOriginal(target.Declaration, hintName, in context);
 
 			return true;
@@ -200,7 +198,13 @@ namespace Durian.Generator.DefaultParam
 			IDefaultParamDeclarationBuilder declBuilder = target.GetDeclarationBuilder(context.CancellationToken);
 			_rewriter.Acquire(declBuilder);
 			CSharpSyntaxNode[] members = CreateDefaultParamDeclarations(in target.TypeParameters);
-			WriteGeneratedMembers(members, target);
+
+			if (members.Length > 0)
+			{
+				WriteTargetLeadDeclaration(target);
+				WriteGeneratedMembers(members, target);
+				CodeBuilder.EndAllBlocks();
+			}
 		}
 
 		private CSharpSyntaxNode[] CreateDefaultParamDeclarations(in TypeParameterContainer parameters)

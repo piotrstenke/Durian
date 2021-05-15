@@ -22,6 +22,35 @@ partial class Test
 		}
 
 		[Fact]
+		public void SkipsContainingTypeAttributes()
+		{
+			string input =
+@$"using System;
+using {DurianStrings.MainNamespace};
+
+[Serializable]
+partial class Test
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	{{
+	}}
+}}
+";
+
+			string expected =
+@$"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
+	void Method(int value)
+	{{
+
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
 		public void HandlesMethodWithOneTypeParameter()
 		{
 			string input =

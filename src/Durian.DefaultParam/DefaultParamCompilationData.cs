@@ -17,6 +17,7 @@ namespace Durian.Generator.DefaultParam
 		private readonly string _dpTypeConvention = typeof(DPTypeConvention).ToString();
 		private readonly string _defaultParamAttribute = typeof(DefaultParamAttribute).ToString();
 		private readonly string _defaultParamConfigurationAttribute = typeof(DefaultParamConfigurationAttribute).ToString();
+		private readonly string _defaultParamScopedConfigurationAttribute = typeof(DefaultParamScopedConfigurationAttribute).ToString();
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <see cref="DefaultParamAttribute"/>.
@@ -29,6 +30,11 @@ namespace Durian.Generator.DefaultParam
 		public INamedTypeSymbol? ConfigurationAttribute { get; private set; }
 
 		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> of the <see cref="DefaultParamScopedConfigurationAttribute"/>.
+		/// </summary>
+		public INamedTypeSymbol? ScopedConfigurationAttribute { get; private set; }
+
+		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <see cref="Configuration.DPMethodConvention"/>.
 		/// </summary>
 		public INamedTypeSymbol? DPMethodConvention { get; private set; }
@@ -39,11 +45,11 @@ namespace Durian.Generator.DefaultParam
 		public INamedTypeSymbol? DPTypeConvention { get; private set; }
 
 		/// <inheritdoc/>
-		[MemberNotNullWhen(false, nameof(MainAttribute), nameof(ConfigurationAttribute), nameof(DPMethodConvention), nameof(DPTypeConvention))]
+		[MemberNotNullWhen(false, nameof(MainAttribute), nameof(ConfigurationAttribute), nameof(ScopedConfigurationAttribute), nameof(DPMethodConvention), nameof(DPTypeConvention))]
 		public override bool HasErrors { get; protected set; }
 
 		/// <summary>
-		/// <see cref="DefaultParamConfiguration"/> created from the <see cref="DefaultParamConfigurationAttribute"/> defined on the <see cref="CompilationData.Compilation"/>'s main assembly.
+		/// <see cref="DefaultParamConfiguration"/> created from the <see cref="DefaultParamScopedConfigurationAttribute"/> defined on the <see cref="CompilationData.Compilation"/>'s main assembly. -or- <see cref="DefaultParamConfiguration.Default"/> if no <see cref="DefaultParamScopedConfigurationAttribute"/> was found.
 		/// </summary>
 		public DefaultParamConfiguration Configuration { get; }
 
@@ -54,7 +60,7 @@ namespace Durian.Generator.DefaultParam
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public DefaultParamCompilationData(CSharpCompilation compilation) : base(compilation)
 		{
-			Configuration = GetConfiguration(compilation, ConfigurationAttribute);
+			Configuration = GetConfiguration(compilation, ScopedConfigurationAttribute);
 		}
 
 		/// <inheritdoc/>
@@ -64,17 +70,23 @@ namespace Durian.Generator.DefaultParam
 
 			MainAttribute = Compilation.GetTypeByMetadataName(_defaultParamAttribute);
 			ConfigurationAttribute = Compilation.GetTypeByMetadataName(_defaultParamConfigurationAttribute);
+			ScopedConfigurationAttribute = Compilation.GetTypeByMetadataName(_defaultParamScopedConfigurationAttribute);
 			DPTypeConvention = Compilation.GetTypeByMetadataName(_dpTypeConvention);
 			DPMethodConvention = Compilation.GetTypeByMetadataName(_dpMethodConvention);
 
-			HasErrors = base.HasErrors || MainAttribute is null || ConfigurationAttribute is null || DPTypeConvention is null || DPMethodConvention is null;
+			HasErrors =
+				base.HasErrors ||
+				MainAttribute is null ||
+				ConfigurationAttribute is null ||
+				ScopedConfigurationAttribute is null ||
+				DPTypeConvention is null ||
+				DPMethodConvention is null;
 		}
 
 		/// <summary>
-		/// Creates a new instance of <see cref="DefaultParamConfiguration"/> based on the <see cref="DefaultParamConfigurationAttribute"/> defined on the specified <paramref name="compilation"/>'s main assembly.
+		/// Creates a new instance of <see cref="DefaultParamConfiguration"/> based on the <see cref="DefaultParamScopedConfigurationAttribute"/> defined on the <paramref name="compilation"/>'s main assembly or <see cref="DefaultParamConfiguration.Default"/> if no <see cref="DefaultParamScopedConfigurationAttribute"/> was found.
 		/// </summary>
-		/// <param name="compilation"></param>
-		/// <returns>A new instance of <see cref="DefaultParamConfiguration"/> based on the <see cref="DefaultParamConfigurationAttribute"/> defined on the specified <paramref name="compilation"/>'s main assembly. -or- <see cref="DefaultParamConfiguration.Default"/> if <paramref name="compilation"/> is <see langword="null"/> or the <see cref="DefaultParamConfigurationAttribute"/> was not found in the <paramref name="compilation"/>.</returns>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="DefaultParamConfiguration"/> of.</param>
 		public static DefaultParamConfiguration GetConfiguration(CSharpCompilation? compilation)
 		{
 			if (compilation is null)
@@ -82,7 +94,7 @@ namespace Durian.Generator.DefaultParam
 				return DefaultParamConfiguration.Default;
 			}
 
-			INamedTypeSymbol configurationAttribute = compilation.GetTypeByMetadataName(typeof(DefaultParamConfigurationAttribute).ToString())!;
+			INamedTypeSymbol? configurationAttribute = compilation.GetTypeByMetadataName(typeof(DefaultParamScopedConfigurationAttribute).ToString());
 			return GetConfiguration(compilation, configurationAttribute);
 		}
 
@@ -93,9 +105,9 @@ namespace Durian.Generator.DefaultParam
 				return DefaultParamConfiguration.Default;
 			}
 
-			const string applyNew = nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible);
-			const string methodConvention = nameof(DefaultParamConfigurationAttribute.MethodConvention);
-			const string typeConvention = nameof(DefaultParamConfigurationAttribute.TypeConvention);
+			const string applyNew = nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible);
+			const string methodConvention = nameof(DefaultParamScopedConfigurationAttribute.MethodConvention);
+			const string typeConvention = nameof(DefaultParamScopedConfigurationAttribute.TypeConvention);
 
 			foreach (AttributeData attribute in compilation.Assembly.GetAttributes())
 			{

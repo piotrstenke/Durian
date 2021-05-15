@@ -87,11 +87,12 @@ namespace Durian.Info
 				new DiagnosticData("DefaultParamConfigurationAttribute is not valid on members without the DefaultParamAttribute", 11, "DUR0111.md", true, true),
 				new DiagnosticData("TypeConvention property should not be used on members other than types", 12, "DUR0112.md", false, true),
 				new DiagnosticData("MethodConvention property should not be used on members other than methods", 13, "DUR0113.md", false, true),
-				new DiagnosticData("ApplyNewModifierWhenPossible property should not be used on members directly", 14, "DUR0114.md", false, true),
+				new DiagnosticData("Method with generated signature already exist", 14, "DUR0114.md", true, true),
 				new DiagnosticData("DefaultParamConfigurationAttribute is not valid on this type of method", 15, "DUR0115.md", true, true),
 				new DiagnosticData("Do not change value of the DefaultParamAttribute when implementing an interface method", 16, "DUR0116.md", true, true),
 				new DiagnosticData("Do not implement interface methods generated using the DefaultParamAttribute", 17, "DUR0117.md", true, true),
-				new DiagnosticData("Method with generated signature already exist", 18, "DUR0118.md", true, true),
+				new DiagnosticData("Value of DefaultParam attribute is different than that of implicitly implemented method", 18, "DUR0118.md", true, true),
+				new DiagnosticData("Value of DefaultParam attribute is different for inherited method and implicitly implemented interface method", 19, "DUR0119.md", true, true),
 
 				// External diagnostics
 

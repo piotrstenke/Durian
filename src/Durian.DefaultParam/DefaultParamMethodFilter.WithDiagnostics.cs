@@ -124,23 +124,27 @@ namespace Durian.Generator.DefaultParam
 				{
 					TypeParameterContainer combinedParameters = typeParameters;
 
-					if (AnalyzeBaseMethodAndTypeParameters(diagnosticReceiver, symbol, ref combinedParameters, compilation, cancellationToken) &&
-						AnalyzeMethodSignature(diagnosticReceiver, symbol, in combinedParameters, compilation, out HashSet<int>? newModifiers, cancellationToken))
+					if (AnalyzeBaseMethodAndTypeParameters(diagnosticReceiver, symbol, ref combinedParameters, compilation, cancellationToken))
 					{
-						data = new(
-							declaration,
-							compilation,
-							symbol,
-							semanticModel,
-							containingTypes,
-							null,
-							attributes,
-							in combinedParameters,
-							newModifiers,
-							CheckShouldCallInsteadOfCopying(attributes!, compilation)
-						);
+						INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes!);
 
-						return true;
+						if (AnalyzeMethodSignature(diagnosticReceiver, symbol, in combinedParameters, compilation, attributes!, symbols, out HashSet<int>? newModifiers, cancellationToken))
+						{
+							data = new(
+								declaration,
+								compilation,
+								symbol,
+								semanticModel,
+								containingTypes,
+								null,
+								attributes,
+								in combinedParameters,
+								newModifiers,
+								CheckShouldCallInsteadOfCopying(symbol, attributes!, symbols, compilation)
+							);
+
+							return true;
+						}
 					}
 				}
 

@@ -13,17 +13,6 @@ namespace Durian.Tests.DefaultParam
 	public sealed class ConfigurationAnalyzerTests : DefaultParamAnalyzerTest<DefaultParamConfigurationAnalyzer>
 	{
 		[Fact]
-		public async Task NoDiagnostics_When_IsGlobalConfiguration()
-		{
-			string input =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-[assembly: {nameof(DefaultParamConfigurationAttribute)}()]
-";
-			Assert.Empty(await RunAnalyzerAsync(input));
-		}
-
-		[Fact]
 		public async Task NoDiagnostics_When_IsDefaultParamMethod()
 		{
 			string input =
@@ -92,7 +81,7 @@ partial class Test
 		}
 
 		[Fact]
-		public async Task Warning_When_ConfigurationIsOnLocalFunction()
+		public async Task Error_When_ConfigurationIsOnLocalFunction()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -106,6 +95,47 @@ partial class Test
 		static void Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
 		{{
 		}}
+	}}
+}}
+";
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
+		}
+
+		[Fact]
+		public async Task Error_When_MethodIsInInterface()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+partial interface ITest 
+{{
+	[{nameof(DefaultParamConfigurationAttribute)}()]
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+}}
+";
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
+		}
+
+		[Fact]
+		public async Task Error_When_MethodIsExplicitImplementation()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+interface ITest 
+{{
+	void Method<[DefaultParam(typeof(string))]T>();
+}}
+
+class Test : ITest
+{{
+	[{nameof(DefaultParamConfigurationAttribute)}]
+	void ITest.Method<[DefaultParam(typeof(string))]T>()
+	{{
 	}}
 }}
 ";
@@ -144,71 +174,6 @@ partial class Test
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
 			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
-		}
-
-		[Fact]
-		public async Task Warning_When_HasNewModifierPropertyOnType()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
-{{
-}}
-";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers.Id));
-		}
-
-		[Fact]
-		public async Task Warning_When_HasNewModifierPropertyOnMethod()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-partial class Test 
-{{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
-	{{
-	}}
-}}
-";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers.Id));
-		}
-
-		[Fact]
-		public async Task Warning_When_HasNewModifierPropertyOnDelegate()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-partial class Test 
-{{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
-	public delegate void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
-}}
-";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0114_NewModifierPropertyShouldNotBeUsedOnMembers.Id));
-		}
-
-		[Fact]
-		public async Task NoDiagnostics_When_HasNewModifierPropertyInGlobalConfig()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
-";
-
-			Assert.Empty(await RunAnalyzerAsync(input));
 		}
 
 		[Fact]
@@ -263,19 +228,6 @@ partial class Test
 		}
 
 		[Fact]
-		public async Task NoDiagnostics_When_MethodConvetionPropertyInGlobalConfig()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
-";
-
-			Assert.Empty(await RunAnalyzerAsync(input));
-		}
-
-		[Fact]
 		public async Task Warning_When_TypeConventionOnMethod()
 		{
 			string input =
@@ -291,7 +243,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0112_TypeConvetionShouldNotBeUsedOnMethodsOrDelegates.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes.Id));
 		}
 
 		[Fact]
@@ -308,7 +260,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0112_TypeConvetionShouldNotBeUsedOnMethodsOrDelegates.Id));
+			Assert.True(diagnostics.Any(d => d.Id == Desc.DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes.Id));
 		}
 
 
@@ -324,19 +276,6 @@ partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
-		}
-
-		[Fact]
-		public async Task NoDiagnostics_When_TypeConvetionPropertyInGlobalConfig()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[assembly: {nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
-";
-
 			Assert.Empty(await RunAnalyzerAsync(input));
 		}
 	}

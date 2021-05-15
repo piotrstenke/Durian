@@ -7,6 +7,36 @@ namespace Durian.Tests.DefaultParam
 	public sealed class MethodInheritanceTests : DefaultParamGeneratorTest
 	{
 		[Fact]
+		public void Generates_When_IsAbstractOverride()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+partial class Parent
+{{
+	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	{{
+	}}
+}}
+
+partial abstract class Test : Parent
+{{
+	public abstract override void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+}}
+";
+
+			string expected =
+$@"partial abstract class Test
+{{
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
+	public abstract override void Method();
+}}";
+
+			Assert.True(RunGenerator(input, 1).Compare(expected));
+		}
+
+		[Fact]
 		public void Error_When_InheritsGeneratedGenericMethod()
 		{
 			string input =

@@ -106,7 +106,7 @@ internal class Program
 
 		List<string> files = new(matches.Count);
 
-		for (int i = 0; i < files.Count; i++)
+		for (int i = 0; i < matches.Count; i++)
 		{
 			Match match = matches[i];
 			string value = match.Groups[1].ToString();
@@ -120,7 +120,7 @@ internal class Program
 					value += ".cs";
 				}
 
-				files[i] = value;
+				files.Add(value);
 			}
 		}
 

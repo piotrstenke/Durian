@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace Durian.Configuration
 {
 	/// <summary>
-	/// Configures how the <see cref="DefaultParamAttribute"/> behaves in the current assembly.
+	/// Configures how members with the <see cref="DefaultParamAttribute"/> are handled by the generator. Applies only to this member.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-	[Conditional("DEBUG")]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false, Inherited = false)]
 	public sealed class DefaultParamConfigurationAttribute : Attribute
 	{
 		/// <inheritdoc cref="DPMethodConvention"/>

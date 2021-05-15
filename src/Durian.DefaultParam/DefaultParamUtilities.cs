@@ -15,6 +15,43 @@ namespace Durian.Generator.DefaultParam
 	internal static class DefaultParamUtilities
 	{
 		/// <summary>
+		/// Converts an array of <see cref="ITypeData"/>s to an array of <see cref="INamedTypeSymbol"/>s.
+		/// </summary>
+		/// <param name="types">Array of <see cref="ITypeData"/>s to convert.</param>
+		public static INamedTypeSymbol[] TypeDatasToTypeSymbols(ITypeData[] types)
+		{
+			int length = types.Length;
+			INamedTypeSymbol[] symbols = new INamedTypeSymbol[length];
+
+			for (int i = 0; i < length; i++)
+			{
+				symbols[i] = types[i].Symbol;
+			}
+
+			return symbols;
+		}
+
+		/// <summary>
+		/// Returns an enum value of specified property of the <paramref name="configurationAttribute"/>.
+		/// </summary>
+		/// <param name="attributes">A collection of <see cref="AttributeData"/>s to get the value from.</param>
+		/// <param name="configurationAttribute"><see cref="INamedTypeSymbol"/> of the configuration attribute.</param>
+		/// <param name="propertyName">Name of property to get the value of.</param>
+		/// <param name="value">Returned enum value as an <see cref="int"/>.</param>
+		public static bool TryGetConfigurationPropertyName<T>(IEnumerable<AttributeData> attributes, INamedTypeSymbol configurationAttribute, string propertyName, out T value)
+		{
+			AttributeData? attr = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, configurationAttribute));
+
+			if (attr is null)
+			{
+				value = default!;
+				return false;
+			}
+
+			return attr.TryGetNamedArgumentValue(propertyName, out value);
+		}
+
+		/// <summary>
 		/// Returns a new <see cref="IEnumerator{T}"/> for the specified <paramref name="filter"/>.
 		/// </summary>
 		/// <param name="filter"><see cref="IDefaultParamFilter"/> to get the <see cref="IEnumerator{T}"/> for.</param>
@@ -132,7 +169,7 @@ namespace Durian.Generator.DefaultParam
 
 					if (count > defaultParamCount)
 					{
-						return namespaces.ToList();
+						return namespaces.Distinct().ToList();
 					}
 				}
 			}
