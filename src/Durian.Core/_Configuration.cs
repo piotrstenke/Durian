@@ -1,4 +1,8 @@
 ﻿using Durian.Generator;
 using Durian.Info;
 
-[assembly: ModuleDefinition(DurianModule.Core, ModuleType.Library, "1.0.0")]
+#region Durian Configuration
+
+[assembly: PackageDefinition(DurianModule.Core, DurianPackage.Core, PackageType.Library, "1.0.0")]
+
+#endregion

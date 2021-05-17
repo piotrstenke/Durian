@@ -38,7 +38,7 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="configurationAttribute"><see cref="INamedTypeSymbol"/> of the configuration attribute.</param>
 		/// <param name="propertyName">Name of property to get the value of.</param>
 		/// <param name="value">Returned enum value as an <see cref="int"/>.</param>
-		public static bool TryGetConfigurationPropertyName<T>(IEnumerable<AttributeData> attributes, INamedTypeSymbol configurationAttribute, string propertyName, out T value)
+		public static bool TryGetConfigurationPropertyName<T>(IEnumerable<AttributeData> attributes, INamedTypeSymbol configurationAttribute, string propertyName, out T? value)
 		{
 			AttributeData? attr = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, configurationAttribute));
 

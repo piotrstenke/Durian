@@ -29,7 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution_items", "solution_
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		Directory.Build.props = Directory.Build.props
-		LICENSE = LICENSE
+		LICENSE.md = LICENSE.md
 		README.md = README.md
 	EndProjectSection
 EndProject

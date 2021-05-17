@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using Durian.Generator.Data;
 using Durian.Generator.Logging;
@@ -229,12 +228,6 @@ namespace Durian.Generator
 			if (context.Compilation is not CSharpCompilation compilation)
 			{
 				ResetData();
-				return;
-			}
-
-			if (!CheckReferencesDurianCore(in context))
-			{
-				context.ReportDiagnostic(Diagnostic.Create(DurianDiagnostics.DUR0001_ProjectMustReferenceDurianCore, Location.None));
 				return;
 			}
 
@@ -650,11 +643,6 @@ namespace Durian.Generator
 			{
 				DiagnosticReceiver.SetContext(in context);
 			}
-		}
-
-		private static bool CheckReferencesDurianCore(in GeneratorExecutionContext context)
-		{
-			return context.Compilation.ReferencedAssemblyNames.Any(a => a.Name == "Durian.Core");
 		}
 
 		private void ResetData()

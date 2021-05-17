@@ -18,7 +18,7 @@ namespace Durian.Generator.DefaultParam
 		/// <inheritdoc/>
 		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			if (symbol is not INamedTypeSymbol t || t.TypeKind != TypeKind.Delegate || t.TypeParameters.Length == 0)
+			if (symbol is not INamedTypeSymbol t || t.TypeKind != TypeKind.Delegate)
 			{
 				return;
 			}

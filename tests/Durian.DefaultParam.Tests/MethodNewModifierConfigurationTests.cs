@@ -8,6 +8,35 @@ namespace Durian.Tests.DefaultParam
 	public sealed class MethodNewModifierConfigurationTests : DefaultParamGeneratorTest
 	{
 		[Fact]
+		public void AppliesNewModifier_When_IsInterfaceMethod_And_GeneratedMethodExists()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+
+interface IParent
+{{
+	void Method();
+}}
+
+partial interface IChild : IParent
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+}}
+";
+			string expected =
+$@"partial interface IChild
+{{
+	{GetCodeGenerationAttributes("IChild.Method<T>()")}
+	new void Method();
+}}";
+
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
 		public void AppliesNewModifier_When_GloballyFalse_And_InTypeTrue()
 		{
 			string input =

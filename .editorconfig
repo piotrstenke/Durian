@@ -229,4 +229,7 @@ dotnet_diagnostic.RCS1096.severity                                          = no
 dotnet_diagnostic.RCS1180.severity											= none
 
 # IDE0078: Use pattern matching
-dotnet_diagnostic.IDE0078.severity = none
+dotnet_diagnostic.IDE0078.severity											= none
+
+# RCS1124: Inline local variable.
+dotnet_diagnostic.RCS1124.severity											= none

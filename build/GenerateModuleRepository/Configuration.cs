@@ -1,21 +1,21 @@
-﻿internal readonly struct Configuration
+﻿internal class Configuration
 {
-	public string ModuleType { get; }
-	public string Version { get; }
-	public string Id { get; }
-	public string ModuleName { get; }
-	public string[] ExternalDiagnostics { get; }
-	public string[] IncludedTypes { get; }
-	public string[] DiagnosticFiles { get; }
+	private readonly PackageDefinition _def;
 
-	public Configuration(string moduleName, string moduleType, string version, string? id, string[] externalDiagnostics, string[] includedTypes, string[] diagnosticFiles)
+	public string ModuleName => _def.ModuleName;
+	public string PackageName => _def.PackageName;
+	public string PackageType => _def.PackageType;
+	public string Version => _def.Version;
+	public DiagnosticData[] Diagnostics { get; }
+	public IncludedType[] IncludedTypes { get; }
+	public DiagnosticData[]? ExternalDiagnostics { get; set; }
+
+	public ref readonly PackageDefinition Definition => ref _def;
+
+	public Configuration(in PackageDefinition definition, DiagnosticData[] diagnostics, IncludedType[] includedTypes)
 	{
-		ModuleName = moduleName;
-		ModuleType = moduleType;
-		Version = version;
-		Id = id ?? "default";
-		ExternalDiagnostics = externalDiagnostics;
+		_def = definition;
+		Diagnostics = diagnostics;
 		IncludedTypes = includedTypes;
-		DiagnosticFiles = diagnosticFiles;
 	}
 }

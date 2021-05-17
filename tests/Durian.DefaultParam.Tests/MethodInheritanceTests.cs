@@ -286,5 +286,26 @@ partial class Child : Parent
 
 			Assert.True(RunGenerator(input, 1).Compare(expected));
 		}
+
+		[Fact]
+		public void Error_When_GeneratedMethodExistsInBaseInterface()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+interface IParent
+{{
+	void Method();
+}}
+
+partial interface IChild : IParent
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+}}
+";
+
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
 	}
 }

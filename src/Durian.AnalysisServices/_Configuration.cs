@@ -5,8 +5,7 @@ using Durian.Info;
 
 #region Durian Configuration
 
-[assembly: ModuleDefinition(DurianModule.AnalysisServices, ModuleType.Library, "1.0.0")]
-[assembly: DiagnosticFiles(nameof(DurianDiagnostics))]
+[assembly: PackageDefinition(DurianModule.None, DurianPackage.AnalysisServices, PackageType.Library, "1.0.0")]
 
 #endregion
 

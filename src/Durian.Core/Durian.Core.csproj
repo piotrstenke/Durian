@@ -12,7 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include=".generated\ModuleRepository.cs" />
+    
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>Durian.AnalysisServices</_Parameter1>
+    </AssemblyAttribute>
+    
+    <Compile Include="Info\.generated\ModuleRepository.cs" />
+    <Compile Include="Info\.generated\PackageRepository.cs" />
+  
   </ItemGroup>
 
   <ItemGroup>

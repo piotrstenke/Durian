@@ -11,7 +11,7 @@ internal class Program
 	private static readonly Regex _titleRegex = new(@"title\s*:\s*""\s*(.*?)\s*""", RegexOptions.Singleline);
 	private static readonly Regex _severityRegex = new(@"defaultSeverity\s*:\s*DiagnosticSeverity\s*.\s*(\w+)", RegexOptions.Singleline);
 	private static readonly Regex _locationRegex = new(@"\[\s*WithoutLocation\s*\]");
-	private static readonly Regex _definitionAttributeRegex = new(@"\[\s*assembly\s*:\s*ModuleDefinition\s*\(\s*DurianModule\s*\.\s*(\w+)\s*,\s*(.*?)\s?,\s*""(.*?)""\s*(?:,\s*(\d+)\s*)?\)\s*\]", RegexOptions.Singleline);
+	private static readonly Regex _definitionAttributeRegex = new(@"\[\s*assembly\s*:\s*PackageDefinition\s*\(\s*DurianModule\s*\.\s*(\w+)\s*,\s*DurianPackage\.(\w+)\s*,\s*(.*?)\s?,\s*""(.*?)""\s*\)\s*\]", RegexOptions.Singleline);
 	private static readonly Regex _diagnosticFilesAttributeRegex = new(@"\[assembly\s*:\s*DiagnosticFiles\s*\(\s*(.*?)\]", RegexOptions.Singleline);
 	private static readonly Regex _includedTypesAttributeRegex = new(@"\[assembly\s*:\s*IncludeTypes\s*\(\s*(.*?)\]", RegexOptions.Singleline);
 	private static readonly Regex _includedDiagnosticsAttributeRegex = new(@"\[assembly\s*:\s*IncludeDiagnostics\s*\(\s*(.*?)\]", RegexOptions.Singleline);
@@ -28,143 +28,193 @@ internal class Program
 		string dir = args[0];
 		string output = args[1];
 
-		HandleConfigFiles(dir, output);
+		Configuration[] configurations = HandleConfigFiles(dir);
+		WriteOutput(configurations, output);
 	}
 
-	private static void HandleConfigFiles(string directory, string outputPath)
+	private static Configuration[] HandleConfigFiles(string directory)
 	{
-		StringBuilder builder = InitializeStringBuilder();
-		string[] coreFiles = GetFilesInCoreProject(directory);
+		string[] coreFilePaths = GetFilesInDurianCore(directory);
+		string[] coreFileNames = GetNamesOfFilesInDurianCore(coreFilePaths);
 
-		List<DiagnosticData> diagnostics = new(64);
+		string[] directories = Directory.GetDirectories(directory);
 
-		foreach (string dir in Directory.GetDirectories(directory))
+		HashSet<DiagnosticData> allDiagnostics = new();
+		List<Configuration> configurations = new(directories.Length);
+
+		foreach (string dir in directories)
 		{
 			string configFile = dir + @"\" + "_Configuration.cs";
 
 			if (!File.Exists(configFile))
 			{
+				Console.WriteLine($"Directory '{dir}' does not contain a _Configuration.cs file!");
 				continue;
 			}
 
 			string content = File.ReadAllText(configFile);
-			Configuration? configuration = GetConfiguration(content);
+			PackageDefinition? definition = GetPackageDefinition(content);
 
-			if (!configuration.HasValue)
+			if (!definition.HasValue)
 			{
+				Console.Write($"File '{configFile}' contains invalid package definition!");
 				continue;
 			}
 
-			Configuration config = configuration.Value;
+			PackageDefinition def = definition.Value;
+			DiagnosticData[] diagnostics = GetDiagnostics(in def, allDiagnostics, dir);
+			IncludedType[] types = GetIncludedTypes(coreFileNames, coreFilePaths, def.IncludedTypes);
 
-			builder.AppendLine();
-			BeginIdentity(in config, builder);
-			HandleDiagnosticFiles(in config, dir, diagnostics, builder);
-			FindAndWriteIncludedTypes(coreFiles, config.IncludedTypes, builder);
-
-			EndIdentity(builder);
+			configurations.Add(new Configuration(in def, diagnostics, types));
 		}
 
-		EndClass(builder);
-
-		File.WriteAllText(outputPath, builder.ToString(), Encoding.UTF8);
+		SetExternalDiagnostics(configurations, allDiagnostics);
+		return configurations.ToArray();
 	}
 
-	private static string[] GetFilesInCoreProject(string directory)
+	private static DiagnosticData[] GetDiagnostics(in PackageDefinition definition, HashSet<DiagnosticData> allDiagnostics, string currentDirectory)
 	{
-		string dir = directory + @"\" + "Durian.Core";
-		return Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories);
-	}
-
-	private static Configuration? GetConfiguration(string content)
-	{
-		Match match = _definitionAttributeRegex.Match(content);
-
-		if (!match.Success || match.Groups.Count < 4)
+		if (definition.DiagnosticFiles.Length == 0)
 		{
-			return null;
+			return Array.Empty<DiagnosticData>();
 		}
 
-		string moduleName = GetDefinitionValue(match, 1);
-		string moduleType = GetDefinitionValue(match, 2);
-		string version = GetDefinitionValue(match, 3);
-		string? id = GetId(match);
-		string[] files = GetDiagnosticFiles(content);
-		string[] includedTypes = GetIncludedTypes(content);
-		string[] includedDiagnostics = GetIncludedDiagnostics(content);
+		List<DiagnosticData> diagnostics = new(32);
 
-		return new Configuration(moduleName, moduleType, version, id, includedDiagnostics, includedTypes, files);
-	}
-
-	private static void HandleDiagnosticFiles(in Configuration configuration, string currentDirectory, List<DiagnosticData> diagnostics, StringBuilder builder)
-	{
-		if (configuration.DiagnosticFiles.Length == 0 && configuration.ExternalDiagnostics.Length == 0)
-		{
-			return;
-		}
-
-		WriteDocPath(configuration.ModuleName, builder);
-
-		builder.Append(
-@"			diagnostics: new DiagnosticData[]
-			{
-");
-
-		foreach (string file in configuration.DiagnosticFiles)
+		foreach (string file in definition.DiagnosticFiles)
 		{
 			MatchCollection matches = _diagnosticRegex.Matches(File.ReadAllText(currentDirectory + @"\" + file));
 
 			if (matches.Count == 0)
 			{
+				Console.WriteLine($"File '{file}' does not contain any diagnostic definitions!");
 				continue;
 			}
 
-			DiagnosticData[] datas = new DiagnosticData[matches.Count];
-
-			for (int i = 0; i < datas.Length; i++)
+			foreach (Match match in matches)
 			{
-				datas[i] = GetDiagnosticData(matches[i].ToString(), configuration.ModuleName);
+				DiagnosticData data = GetDiagnosticData(match, definition.ModuleName, file);
+
+				if (allDiagnostics.Add(data))
+				{
+					diagnostics.Add(data);
+				}
+				else
+				{
+					Console.WriteLine($"Diagnostic '{data.Id}' is defined more than once! Last detection: '{data.File}'");
+				}
 			}
-
-			WriteDiagnostics(datas, builder);
-
-			diagnostics.AddRange(datas);
 		}
 
-		FindAndWriteExternalDiagnostics(diagnostics, in configuration, builder);
+		return diagnostics.ToArray();
 	}
 
-	private static DiagnosticData GetDiagnosticData(string match, string moduleName)
+	private static string[] GetFilesInDurianCore(string directory)
 	{
-		Match id = _idRegex.Match(match);
-		Match title = _titleRegex.Match(match);
-		Match severity = _severityRegex.Match(match);
-		bool hasLocation = !_locationRegex.IsMatch(match);
+		string dir = directory + @"\" + "Durian.Core";
+		return Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories);
+	}
+
+	private static string[] GetNamesOfFilesInDurianCore(string[] files)
+	{
+		string[] fileNames = new string[files.Length];
+
+		for (int i = 0; i < files.Length; i++)
+		{
+			fileNames[i] = Path.GetFileNameWithoutExtension(files[i]);
+		}
+
+		return fileNames;
+	}
+
+	private static PackageDefinition? GetPackageDefinition(string content)
+	{
+		Match match = _definitionAttributeRegex.Match(content);
+
+		if (!match.Success || match.Groups.Count < 5)
+		{
+			return null;
+		}
+
+		string moduleName = GetDefinitionValue(match, 1);
+		string packageName = GetDefinitionValue(match, 2);
+		string packageType = GetDefinitionValue(match, 3);
+		string version = GetDefinitionValue(match, 4);
+		string[] files = GetDiagnosticFiles(content);
+		string[] includedTypes = GetAttributeArguments(content, _includedTypesAttributeRegex);
+		string[] includedDiagnostics = GetAttributeArguments(content, _includedDiagnosticsAttributeRegex);
+
+		return new PackageDefinition(moduleName, packageName, packageType, version, includedDiagnostics, includedTypes, files);
+	}
+
+	private static IncludedType[] GetIncludedTypes(string[] fileNames, string[] filePaths, string[] types)
+	{
+		if (types.Length == 0)
+		{
+			return Array.Empty<IncludedType>();
+		}
+
+		List<IncludedType> list = new(types.Length);
+		int numFiles = fileNames.Length;
+
+		foreach (string type in types)
+		{
+			for (int i = 0; i < numFiles; i++)
+			{
+				if (fileNames[i] == type)
+				{
+					IncludedType? data = GetIncludedTypeData(filePaths[i], type);
+
+					if (!data.HasValue)
+					{
+						Console.WriteLine($"Type '{type}' could not be found! Change name of the type to match the name of the file.");
+						break;
+					}
+
+					list.Add(data.Value);
+				}
+			}
+		}
+
+		return list.ToArray();
+	}
+
+	private static IncludedType? GetIncludedTypeData(string file, string typeName)
+	{
+		if (!File.Exists(file))
+		{
+			return null;
+		}
+
+		string content = File.ReadAllText(file);
+		Match match = _namespaceRegex.Match(content);
+
+		if (match.Success)
+		{
+			return new IncludedType(typeName, match.Groups[1].ToString());
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private static DiagnosticData GetDiagnosticData(Match match, string moduleName, string file)
+	{
+		string value = match.ToString();
+
+		Match id = _idRegex.Match(value);
+		Match title = _titleRegex.Match(value);
+		Match severity = _severityRegex.Match(value);
+		bool hasLocation = !_locationRegex.IsMatch(value);
 		bool fatal = severity.Groups[1].ToString().Trim() == "Error";
 
-		return new DiagnosticData(title.Groups[1].ToString(), id.Groups[1].ToString(), moduleName, hasLocation, fatal);
+		return new DiagnosticData(title.Groups[1].ToString(), id.Groups[1].ToString(), moduleName, hasLocation, fatal, file);
 	}
 
 	private static string GetDefinitionValue(Match match, int group)
 	{
 		return match.Groups[group].ToString().Trim();
-	}
-
-	private static string? GetId(Match match)
-	{
-		if (match.Groups.Count < 5)
-		{
-			return null;
-		}
-
-		string value = GetDefinitionValue(match, 4);
-
-		if (string.IsNullOrWhiteSpace(value))
-		{
-			return null;
-		}
-
-		return value;
 	}
 
 	private static string[] GetDiagnosticFiles(string content)
@@ -198,14 +248,64 @@ internal class Program
 		return files.ToArray();
 	}
 
-	private static string[] GetIncludedDiagnostics(string content)
+	private static void SetExternalDiagnostics(List<Configuration> configurations, HashSet<DiagnosticData> diagnostics)
 	{
-		return GetAttributeArguments(content, _includedDiagnosticsAttributeRegex);
+		int length = diagnostics.Count;
+
+		if (length == 0)
+		{
+			return;
+		}
+
+		DiagnosticData[] allDiagnostics = new DiagnosticData[length];
+		diagnostics.CopyTo(allDiagnostics);
+		List<DiagnosticData> list = new();
+
+		foreach (Configuration config in configurations)
+		{
+			string[] externalDiagnostics = config.Definition.ExternalDiagnostics;
+
+			if (externalDiagnostics.Length == 0)
+			{
+				continue;
+			}
+
+			list.Capacity = externalDiagnostics.Length;
+
+			foreach (string diagnostic in externalDiagnostics)
+			{
+				if (ExternalDiagnosticIsValid(diagnostic, allDiagnostics, out DiagnosticData data))
+				{
+					list.Add(data);
+				}
+				else
+				{
+					Console.WriteLine($"Diagnostic '{diagnostic}' not found!");
+				}
+			}
+
+			config.ExternalDiagnostics = list.ToArray();
+			list.Clear();
+		}
 	}
 
-	private static string[] GetIncludedTypes(string content)
+	private static bool ExternalDiagnosticIsValid(string externalDiagnostic, DiagnosticData[] allDiagnostics, out DiagnosticData diagnostic)
 	{
-		return GetAttributeArguments(content, _includedTypesAttributeRegex);
+		int length = allDiagnostics.Length;
+
+		for (int i = 0; i < length; i++)
+		{
+			ref readonly DiagnosticData diag = ref allDiagnostics[i];
+
+			if (diag.Id == externalDiagnostic)
+			{
+				diagnostic = diag;
+				return true;
+			}
+		}
+
+		diagnostic = default;
+		return false;
 	}
 
 	private static MatchCollection? GetMatches(string content, Regex attributeRegex)
@@ -258,11 +358,235 @@ internal class Program
 		return list.ToArray();
 	}
 
-	private static StringBuilder InitializeStringBuilder()
+	private static ModuleData[] GetModules(Configuration[] configurations)
 	{
-		StringBuilder builder = new();
+		List<ModuleData> modules = new(configurations.Length);
+
+		foreach (Configuration config in configurations)
+		{
+			if (config.ModuleName == "None")
+			{
+				continue;
+			}
+
+			AddModuleOrPackage(config, modules);
+		}
+
+		return modules.ToArray();
+	}
+
+	private static void AddModuleOrPackage(Configuration configuration, List<ModuleData> modules)
+	{
+		foreach (ModuleData module in modules)
+		{
+			if (module.Name == configuration.ModuleName)
+			{
+				module.Packages.Add(configuration.PackageName);
+				return;
+			}
+		}
+
+		modules.Add(new ModuleData(configuration.ModuleName, configuration.Diagnostics, configuration.ExternalDiagnostics ?? Array.Empty<DiagnosticData>(), configuration.IncludedTypes));
+	}
+
+	private static void WriteOutput(Configuration[] configurations, string directory)
+	{
+		StringBuilder builder = new(4096);
+
+		WritePackageRepository(builder, configurations);
+		File.WriteAllText(Path.Combine(directory, ".generated", "PackageRepository.cs"), builder.ToString());
+		builder.Clear();
+
+		ModuleData[] modules = GetModules(configurations);
+		WriteModuleRepository(builder, modules);
+		File.WriteAllText(Path.Combine(directory, ".generated", "ModuleRepository.cs"), builder.ToString());
+	}
+
+	private static void WritePackageRepository(StringBuilder builder, Configuration[] configurations)
+	{
+		builder.Append(GetAutoGeneratedNotice());
 		builder.Append(
-$@"//------------------------------------------------------------------------------
+$@"namespace Durian.Info
+{{
+	/// <summary>
+	/// Factory class of <see cref=""PackageIdentity""/> for all available Durian packages.
+	/// </summary>
+	public static class PackageRepository
+	{{");
+
+		if (configurations.Length <= 0)
+		{
+			builder.AppendLine();
+		}
+		else
+		{
+			foreach (Configuration config in configurations)
+			{
+				builder.AppendLine();
+				builder.AppendLine(
+	$@"		/// <summary>
+		/// Returns a <see cref=""PackageIdentity""/> for the <see cref=""DurianPackage.{config.PackageName}""/> package.
+		/// </summary>
+		public static PackageIdentity {config.PackageName} => new(
+			enumValue: DurianPackage.{config.PackageName},
+			version: ""{config.Version}"",
+			type: {config.PackageType}
+		);");
+			}
+		}
+
+		builder.AppendLine(
+$@"	}}
+}}");
+	}
+
+	private static void WriteModuleRepository(StringBuilder builder, ModuleData[] modules)
+	{
+		builder.Append(GetAutoGeneratedNotice());
+		builder.Append(
+$@"namespace Durian.Info
+{{
+	/// <summary>
+	/// Factory class of <see cref=""ModuleIdentity""/> for all available Durian modules.
+	/// </summary>
+	public static class ModuleRepository
+	{{");
+
+		if (modules.Length == 0)
+		{
+			builder.AppendLine();
+		}
+		else
+		{
+			foreach (ModuleData module in modules)
+			{
+				builder.AppendLine();
+				WriteModuleIdentity(module, builder);
+			}
+		}
+
+		builder.AppendLine(
+$@"	}}
+}}");
+	}
+
+	private static void WriteModuleIdentity(ModuleData module, StringBuilder builder)
+	{
+		builder.Append(
+$@"		/// <summary>
+		/// Returns a <see cref=""ModuleIdentity""/> for the <see cref=""DurianModule.{module.Name}""/> module.
+		/// </summary>
+		public static ModuleIdentity {module.Name} => new(
+			module: DurianModule.{module.Name},
+			id: {module.Id},
+			packages: ");
+
+		if (module.Packages.Count == 0)
+		{
+			builder.AppendLine("null,");
+		}
+		else
+		{
+			builder.AppendLine(
+$@"new PackageIdentity[]
+			{{");
+
+			foreach (string packge in module.Packages)
+			{
+				builder.AppendLine($"\t\t\t\tPackageRepository.{packge},");
+			}
+
+			builder.AppendLine("\t\t\t},");
+		}
+
+		builder.Append("\t\t\tdocPath: ");
+
+		if (module.Diagnostics.Length == 0 && module.ExternalDiagnostics.Length == 0)
+		{
+			builder.AppendLine("null,");
+			builder.AppendLine("\t\t\tdiagnostics: null,");
+		}
+		else
+		{
+			builder.AppendLine($"@\"{module.Documentation}\",");
+			builder.AppendLine("\t\t\tdiagnostics: new DiagnosticData[]");
+			builder.Append("\t\t\t{");
+
+			int length = module.Diagnostics.Length;
+			for (int i = 0; i < length; i++)
+			{
+				ref readonly DiagnosticData data = ref module.Diagnostics[i];
+
+				WriteDiagnosticData(in data, module, builder);
+				builder.AppendLine();
+				builder.AppendLine("\t\t\t\t),");
+			}
+
+			if (length > 0 && module.ExternalDiagnostics.Length > 0)
+			{
+				builder.AppendLine();
+				builder.AppendLine(
+$@"				//
+				// External diagnostics
+				//");
+				builder.AppendLine();
+			}
+
+			length = module.ExternalDiagnostics.Length;
+			for (int i = 0; i < length; i++)
+			{
+				ref readonly DiagnosticData data = ref module.ExternalDiagnostics[i];
+
+				WriteDiagnosticData(in data, module, builder);
+				builder.AppendLine(",");
+				builder.AppendLine($"\t\t\t\t\toriginalModule: {data.Module}");
+				builder.AppendLine("\t\t\t\t),");
+			}
+
+			builder.AppendLine("\t\t\t},");
+		}
+
+		builder.Append("\t\t\ttypes: ");
+
+		if (module.IncludedTypes.Length == 0)
+		{
+			builder.AppendLine("null");
+		}
+		else
+		{
+			builder.AppendLine("new TypeIdentity[]");
+			builder.AppendLine("\t\t\t{");
+
+			int length = module.IncludedTypes.Length;
+			for (int i = 0; i < length; i++)
+			{
+				ref readonly IncludedType type = ref module.IncludedTypes[i];
+
+				builder.AppendLine($"\t\t\t\tnew TypeIdentity(\"{type.Name}\", \"{type.Namespace}\"),");
+			}
+
+			builder.AppendLine("\t\t\t}");
+		}
+
+		builder.AppendLine("\t\t);");
+	}
+
+	private static void WriteDiagnosticData(in DiagnosticData diag, ModuleData module, StringBuilder builder)
+	{
+		builder.AppendLine();
+		builder.Append(
+$@"				new DiagnosticData(
+					title: ""{diag.Title}"",
+					id: {diag.Id.Substring(5, 2)},
+					docsPath: @""{module.Documentation}\{diag.Id}.md"",
+					fatal: {diag.Fatal.ToString().ToLower()},
+					hasLocation: {diag.HasLocation.ToString().ToLower()}");
+	}
+
+	private static string GetAutoGeneratedNotice()
+	{
+		return
+@"//------------------------------------------------------------------------------
 // <auto-generated>
 //     This code was generated by the GenerateModuleRepository project.
 //
@@ -271,175 +595,6 @@ $@"//---------------------------------------------------------------------------
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Durian.Info
-{{
-	/// <summary>
-	/// Factory class of <see cref=""ModuleIdentity""/> for all available Durian modules.
-	/// </summary>
-	public static class ModuleRepository
-	{{");
-
-		return builder;
-	}
-
-	private static void EndClass(StringBuilder builder)
-	{
-		builder.AppendLine("\t}");
-		builder.AppendLine("}");
-	}
-
-	private static void BeginIdentity(in Configuration configuration, StringBuilder builder)
-	{
-		builder.Append(
-$@"		/// <summary>
-		/// Returns a <see cref=""ModuleIdentity""/> for the <c>Durian.{configuration.ModuleName}</c> module.
-		/// </summary>
-		public static ModuleIdentity {configuration.ModuleName} => new(
-			name: ""Durian.{configuration.ModuleName}"",
-			version: ""{configuration.Version}"",
-			module: DurianModule.{configuration.ModuleName},
-			type: {configuration.ModuleType},
-			id: {configuration.Id}");
-
-		if (configuration.IncludedTypes.Length > 0 || configuration.ExternalDiagnostics.Length > 0 || configuration.DiagnosticFiles.Length > 0)
-		{
-			builder.Append(',');
-		}
-
-		builder.AppendLine();
-	}
-
-	private static void WriteDocPath(string moduleName, StringBuilder builder)
-	{
-		builder.AppendLine($"\t\t\tdocPath: @\"docs\\{moduleName}\",");
-	}
-
-	private static void WriteDiagnostics(DiagnosticData[] diagnostics, StringBuilder builder)
-	{
-		for (int i = 0; i < diagnostics.Length; i++)
-		{
-			ref readonly DiagnosticData data = ref diagnostics[i];
-			BeginDiagnostic(in data, builder);
-			builder.AppendLine("),");
-		}
-	}
-
-	private static void FindAndWriteExternalDiagnostics(List<DiagnosticData> diagnostics, in Configuration configuration, StringBuilder builder)
-	{
-		if (configuration.ExternalDiagnostics.Length > 0)
-		{
-			builder.AppendLine();
-			builder.AppendLine("\t\t\t\t// External diagnostics");
-			builder.AppendLine();
-
-			for (int i = 0; i < diagnostics.Count; i++)
-			{
-				DiagnosticData data = diagnostics[i];
-
-				for (int j = 0; j < configuration.ExternalDiagnostics.Length; j++)
-				{
-					if (data.Id == configuration.ExternalDiagnostics[j])
-					{
-						BeginDiagnostic(in data, builder);
-						builder.AppendLine($", {data.Module}),");
-					}
-				}
-			}
-		}
-
-		builder.Append("\t\t\t}");
-
-		if (configuration.IncludedTypes.Length > 0)
-		{
-			builder.Append(',');
-		}
-
-		builder.AppendLine();
-	}
-
-	private static void BeginDiagnostic(in DiagnosticData data, StringBuilder builder)
-	{
-		string id = data.Id[^2..];
-
-		builder.Append($"\t\t\t\tnew DiagnosticData(\"{data.Title}\", {id}, \"{data.Id}.md\", {data.Fatal.ToString().ToLower()}, {data.HasLocation.ToString().ToLower()}");
-	}
-
-	private static void FindAndWriteIncludedTypes(string[] files, string[] types, StringBuilder builder)
-	{
-		if (types.Length == 0)
-		{
-			return;
-		}
-
-		builder.Append(
-$@"			types: new TypeIdentity[]
-			{{
-");
-
-		string[] fileNames = new string[files.Length];
-
-		for (int i = 0; i < files.Length; i++)
-		{
-			fileNames[i] = Path.GetFileNameWithoutExtension(files[i]);
-		}
-
-		foreach (string type in types)
-		{
-			for (int i = 0; i < files.Length; i++)
-			{
-				if (type != fileNames[i])
-				{
-					continue;
-				}
-
-				IncludedType? data = GetTypeData(files[i], type);
-
-				if (!data.HasValue)
-				{
-					continue;
-				}
-
-				IncludedType t = data.Value;
-
-				builder.AppendLine($"\t\t\t\tnew TypeIdentity(\"{t.Name}\", \"{t.Namespace}\"),");
-			}
-		}
-
-		builder.AppendLine("\t\t\t}");
-	}
-
-	private static void EndIdentity(StringBuilder builder)
-	{
-		builder.AppendLine("\t\t);");
-	}
-
-	private static IncludedType? GetTypeData(string file, string typeName)
-	{
-		string content = File.ReadAllText(file);
-		Match match = Regex.Match(content, $@"(\w+)\s*{typeName}", RegexOptions.Singleline);
-		string kind;
-
-		if (match.Success)
-		{
-			kind = match.Groups[1].ToString();
-		}
-		else
-		{
-			return null;
-		}
-
-		string @namespace;
-		match = _namespaceRegex.Match(content);
-
-		if (match.Success)
-		{
-			@namespace = match.Groups[1].ToString();
-		}
-		else
-		{
-			@namespace = string.Empty;
-		}
-
-		return new IncludedType(typeName, @namespace, kind);
+";
 	}
 }

@@ -324,7 +324,7 @@ namespace Durian.Generator.DefaultParam
 			const string configPropertyName = nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible);
 			const string scopedPropertyName = nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible);
 
-			if (symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation || symbol.ContainingType.TypeKind == TypeKind.Interface || symbol.IsAbstract)
+			if (symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
 			{
 				return false;
 			}
@@ -773,10 +773,25 @@ namespace Durian.Generator.DefaultParam
 		private static CollidingMethod[] GetCollidingMethods(IMethodSymbol symbol, DefaultParamCompilationData compilation, int numParameters, int numTypeParameters, int numNonDefaultParam)
 		{
 			string fullName = symbol.ToString();
+			string name = symbol.Name;
 			INamedTypeSymbol generatedFrom = compilation.DurianGeneratedAttribute!;
+			IEnumerable<IMethodSymbol> methodSymbols;
 
-			IEnumerable<CollidingMethod> collection = symbol.ContainingType.GetAllMembers(symbol.Name)
-				.OfType<IMethodSymbol>()
+			if (symbol.ContainingType.TypeKind == TypeKind.Interface)
+			{
+				methodSymbols = symbol.ContainingType
+					.GetMembers(name)
+					.OfType<IMethodSymbol>()
+					.Concat(symbol.ContainingType.AllInterfaces
+						.SelectMany(intf => intf.GetMembers(name))
+						.OfType<IMethodSymbol>());
+			}
+			else
+			{
+				methodSymbols = symbol.ContainingType.GetAllMembers(name).OfType<IMethodSymbol>();
+			}
+
+			IEnumerable<CollidingMethod> collidingMethods = methodSymbols
 				.Select(m => ((IMethodSymbol symbol, ITypeParameterSymbol[] typeParameters))(m, m.TypeParameters.ToArray()))
 				.Where(m => m.typeParameters.Length >= numNonDefaultParam && m.typeParameters.Length < numTypeParameters)
 				.Select(m => new CollidingMethod(m.symbol, m.symbol.Parameters.ToArray(), m.typeParameters))
@@ -785,7 +800,7 @@ namespace Durian.Generator.DefaultParam
 			if (symbol.IsOverride && symbol.OverriddenMethod is IMethodSymbol baseMethod)
 			{
 				string baseFullName = baseMethod.ToString();
-				collection = collection.Where(m =>
+				collidingMethods = collidingMethods.Where(m =>
 				{
 					AttributeData? data = GetAttribute(m.Symbol);
 
@@ -799,7 +814,7 @@ namespace Durian.Generator.DefaultParam
 			}
 			else
 			{
-				collection = collection.Where(m =>
+				collidingMethods = collidingMethods.Where(m =>
 				{
 					AttributeData? data = GetAttribute(m.Symbol);
 
@@ -812,7 +827,7 @@ namespace Durian.Generator.DefaultParam
 				});
 			}
 
-			return collection.ToArray();
+			return collidingMethods.ToArray();
 
 			AttributeData? GetAttribute(IMethodSymbol s)
 			{

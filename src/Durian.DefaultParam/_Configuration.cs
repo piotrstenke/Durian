@@ -5,8 +5,7 @@ using Durian.Info;
 
 #region Durian Configuration
 
-[assembly: ModuleDefinition(DurianModule.DefaultParam, ModuleType.SyntaxBasedGenerator | ModuleType.Analyzer, "1.0.0", 01)]
-[assembly: IncludeDiagnostics("DUR0001")]
+[assembly: PackageDefinition(DurianModule.DefaultParam, DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer, "1.0.0")]
 [assembly: IncludeTypes("DefaultParamAttribute", "DefaultParamConfigurationAttribute", "DPMethodConvention", "DPTypeConvention")]
 [assembly: DiagnosticFiles(nameof(DefaultParamDiagnostics))]
 
