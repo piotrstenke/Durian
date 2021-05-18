@@ -8,6 +8,7 @@ using Durian.Generator.Data;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.Generator.DefaultParam
@@ -271,6 +272,195 @@ namespace Durian.Generator.DefaultParam
 			return tool == DefaultParamGenerator.GeneratorName;
 		}
 
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> has the <see langword="new"/> modifier.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static bool HasNewModifier(ISymbol symbol, CancellationToken cancellationToken = default)
+		{
+			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) is MemberDeclarationSyntax m)
+			{
+				return m.Modifiers.Any(m => m.IsKind(SyntaxKind.NewKeyword));
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="CollidingMember"/>s representing <see cref="ISymbol"/>s that can potentially collide with members generated from the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the colliding members of.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="numTypeParameters">Number of type parameters of this <paramref name="symbol"/>.</param>
+		/// <param name="numNonDefaultParam">Number of type parameters of this <paramref name="symbol"/> that don't have the <see cref="DefaultParamAttribute"/>.</param>
+		/// <param name="numParameters">Number of parameters of this <paramref name="symbol"/>. Always use <c>0</c> for members other than methods.</param>
+		public static CollidingMember[] GetPotentiallyCollidingMembers(ISymbol symbol, DefaultParamCompilationData compilation, int numTypeParameters, int numNonDefaultParam, int numParameters = 0)
+		{
+			return GetPotentiallyCollidingMembers_Internal(symbol, compilation, numTypeParameters, numNonDefaultParam, numParameters)
+				.Select(s =>
+				{
+					if (s is IMethodSymbol m)
+					{
+						return new CollidingMember(m, m.TypeParameters.ToArray(), m.Parameters.ToArray());
+					}
+					else if (s is INamedTypeSymbol t)
+					{
+						return new CollidingMember(t, t.TypeParameters.ToArray(), null);
+					}
+
+					return new CollidingMember(s, null, null);
+				})
+				.ToArray();
+		}
+
+		private static IEnumerable<ISymbol> GetPotentiallyCollidingMembers_Internal(ISymbol symbol, DefaultParamCompilationData compilation, int numTypeParameters, int numNonDefaultParam, int numParameters)
+		{
+			INamedTypeSymbol? containingType = symbol.ContainingType;
+
+			if (containingType is null)
+			{
+				return GetCollidingNotNestedTypes(symbol, compilation, numTypeParameters, numNonDefaultParam);
+			}
+
+			string name = symbol.Name;
+			string fullName = symbol.ToString();
+			INamedTypeSymbol generatedFrom = compilation.DurianGeneratedAttribute!;
+			int numDefaultParam = numTypeParameters - numNonDefaultParam;
+
+			IEnumerable<ISymbol> symbols = containingType.GetAllMembers(name);
+
+			if (numNonDefaultParam < numTypeParameters)
+			{
+				symbols = symbols.Where(s =>
+				{
+					if (s is IMethodSymbol m)
+					{
+						ImmutableArray<ITypeParameterSymbol> typeParameters = m.TypeParameters;
+						return typeParameters.Length >= numNonDefaultParam && typeParameters.Length < numTypeParameters;
+					}
+					else if (s is INamedTypeSymbol t)
+					{
+						ImmutableArray<ITypeParameterSymbol> typeParameters = t.TypeParameters;
+						return typeParameters.Length >= numNonDefaultParam && typeParameters.Length < numTypeParameters;
+					}
+
+					return false;
+				});
+			}
+
+			if (symbol is IMethodSymbol m)
+			{
+				return GetCollidingMembersForMethodSymbol(m, fullName, symbols, generatedFrom, numParameters);
+			}
+
+			if (symbol is INamedTypeSymbol type)
+			{
+				return symbols.Where(s =>
+				{
+					if (s is INamedTypeSymbol t && t.TypeKind == type.TypeKind)
+					{
+						return !IsGeneratedFrom(s, fullName, generatedFrom);
+					}
+
+					return true;
+				});
+			}
+
+			return symbols.Where(s => !IsGeneratedFrom(s, fullName, generatedFrom));
+		}
+
+		private static IEnumerable<ISymbol> GetCollidingMembersForMethodSymbol(IMethodSymbol method, string fullName, IEnumerable<ISymbol> symbols, INamedTypeSymbol generatedFromAttribute, int numParameters)
+		{
+			IEnumerable<ISymbol> members = symbols.Where(s =>
+			{
+				if (s is IMethodSymbol m)
+				{
+					return m.Parameters.Length == numParameters;
+				}
+
+				return true;
+			});
+
+			if (method.IsOverride && method.OverriddenMethod is IMethodSymbol baseMethod)
+			{
+				string baseFullName = baseMethod.ToString();
+
+				return members.Where(s =>
+				{
+					if (s is IMethodSymbol m)
+					{
+						foreach (AttributeData attr in m.GetAttributes())
+						{
+							if (SymbolEqualityComparer.Default.Equals(generatedFromAttribute, attr.AttributeClass) && attr.TryGetConstructorArgumentValue(0, out string? value))
+							{
+								return value != fullName && value != baseFullName;
+							}
+						}
+					}
+
+					return true;
+				});
+			}
+
+			return members.Where(s =>
+			{
+				if (s is IMethodSymbol)
+				{
+					return !IsGeneratedFrom(s, fullName, generatedFromAttribute);
+				}
+
+				return true;
+			});
+		}
+
+		private static INamedTypeSymbol[] GetCollidingNotNestedTypes(ISymbol symbol, DefaultParamCompilationData compilation, int numTypeParameters, int numNonDefaultParam)
+		{
+			INamedTypeSymbol generatedFromAttribute = compilation.DurianGeneratedAttribute!;
+			int numDefaultParam = numTypeParameters - numNonDefaultParam;
+			string name = symbol.Name;
+			string namespaces = symbol.JoinNamespaces();
+			string metadata = string.IsNullOrWhiteSpace(namespaces) ? name : $"{namespaces}.{name}";
+			string fullName = symbol.ToString();
+
+			List<INamedTypeSymbol> symbols = new(numDefaultParam);
+
+			if (numTypeParameters == numDefaultParam)
+			{
+				TryAdd(metadata);
+			}
+
+			for (int i = numNonDefaultParam; i < numTypeParameters; i++)
+			{
+				TryAdd($"{metadata}`{i}");
+			}
+
+			return symbols.ToArray();
+
+			void TryAdd(string metadataName)
+			{
+				INamedTypeSymbol? type = compilation.Compilation.GetTypeByMetadataName(metadataName);
+
+				if (type is not null && !IsGeneratedFrom(type, fullName, generatedFromAttribute))
+				{
+					symbols.Add(type);
+				}
+			}
+		}
+
+		private static bool IsGeneratedFrom(ISymbol symbol, string fullName, INamedTypeSymbol generatedFromAttribute)
+		{
+			return symbol.GetAttributes().Any(attr =>
+			{
+				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, generatedFromAttribute) && attr.TryGetConstructorArgumentValue(0, out string? value))
+				{
+					return value == fullName;
+				}
+
+				return false;
+			});
+		}
+
 		private static IEnumerable<DiagnosticDescriptor> GetBaseDiagnostics()
 		{
 			return new[]
@@ -278,7 +468,8 @@ namespace Durian.Generator.DefaultParam
 				DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial,
 				DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent,
 				DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast,
-				DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint
+				DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint,
+				DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists
 			};
 		}
 

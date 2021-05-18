@@ -8,9 +8,9 @@ namespace Durian.Generator.DefaultParam
 	public sealed record DefaultParamConfiguration
 	{
 		/// <summary>
-		/// Determines whether to apply the <see langword="new"/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword="false"/>.
+		/// Determines whether to apply the <see langword="new"/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword="true"/>.
 		/// </summary>
-		public bool ApplyNewModifierWhenPossible { get; set; }
+		public bool ApplyNewModifierWhenPossible { get; set; } = true;
 
 		/// <summary>
 		/// Determines, how the <c>DefaultParam</c> generator generates a type.

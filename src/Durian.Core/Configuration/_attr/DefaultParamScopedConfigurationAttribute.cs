@@ -15,7 +15,7 @@ namespace Durian.Configuration
 		public DPTypeConvention TypeConvention { get; set; }
 
 		/// <inheritdoc cref="DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible"/>
-		public bool ApplyNewModifierWhenPossible { get; set; }
+		public bool ApplyNewModifierWhenPossible { get; set; } = true;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamScopedConfigurationAttribute"/> class.

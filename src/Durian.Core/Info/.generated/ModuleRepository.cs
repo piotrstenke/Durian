@@ -190,11 +190,20 @@ namespace Durian.Info
 					fatal: true,
 					hasLocation: true
 				),
+
+				new DiagnosticData(
+					title: "Member with generated name already exists",
+					id: 20,
+					docsPath: @"docs\DefaultParam\DUR0120.md",
+					fatal: true,
+					hasLocation: true
+				),
 			},
 			types: new TypeIdentity[]
 			{
 				new TypeIdentity("DefaultParamAttribute", "Durian"),
 				new TypeIdentity("DefaultParamConfigurationAttribute", "Durian.Configuration"),
+				new TypeIdentity("DefaultParamScopedConfigurationAttribute", "Durian.Configuration"),
 				new TypeIdentity("DPMethodConvention", "Durian.Configuration"),
 				new TypeIdentity("DPTypeConvention", "Durian.Configuration"),
 			}

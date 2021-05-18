@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Durian;
+using Durian.Configuration;
 using Durian.Generator;
 using Durian.Generator.DefaultParam;
 using Durian.Info;
@@ -6,8 +8,13 @@ using Durian.Info;
 #region Durian Configuration
 
 [assembly: PackageDefinition(DurianModule.DefaultParam, DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer, "1.0.0")]
-[assembly: IncludeTypes("DefaultParamAttribute", "DefaultParamConfigurationAttribute", "DPMethodConvention", "DPTypeConvention")]
 [assembly: DiagnosticFiles(nameof(DefaultParamDiagnostics))]
+[assembly: IncludeTypes(
+	nameof(DefaultParamAttribute),
+	nameof(DefaultParamConfigurationAttribute),
+	nameof(DefaultParamScopedConfigurationAttribute),
+	nameof(DPMethodConvention),
+	nameof(DPTypeConvention))]
 
 #endregion
 

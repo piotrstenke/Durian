@@ -450,5 +450,54 @@ partial class Test : Parent
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
 		}
+
+		[Fact]
+		public void Error_When_GeneratedMethodExistsInBaseInterface_And_ApplyNewModifierIsFalse()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+
+interface IParent
+{{
+	void Method();
+}}
+
+partial interface IChild : IParent
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+}}
+";
+
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
+
+		[Fact]
+		public void Error_When_SignatureExistsInBaseClass_And_ApplyNewModifierIsFalse()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+
+class Parent
+{{
+	void Method(string value)
+	{{
+	}}
+}}
+
+partial class Test : Parent
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
 	}
 }

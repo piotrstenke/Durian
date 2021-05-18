@@ -15,9 +15,9 @@ namespace Durian.Configuration
 		public DPTypeConvention TypeConvention { get; set; }
 
 		/// <summary>
-		/// Determines whether to apply the <see langword="new"/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword="false"/>.
+		/// Determines whether to apply the <see langword="new"/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword="true"/>.
 		/// </summary>
-		public bool ApplyNewModifierWhenPossible { get; set; }
+		public bool ApplyNewModifierWhenPossible { get; set; } = true;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamConfigurationAttribute"/> class.

@@ -22,7 +22,7 @@ namespace Durian.Generator.Extensions
 		{
 			ImmutableArray<TypedConstant> arguments = attribute.ConstructorArguments;
 
-			if (arguments.Length == 0 || arguments.Length >= position)
+			if (arguments.Length == 0 || arguments.Length <= position)
 			{
 				value = default;
 				return false;

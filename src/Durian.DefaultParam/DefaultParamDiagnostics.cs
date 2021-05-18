@@ -260,5 +260,18 @@ namespace Durian.Generator.DefaultParam
 			helpLinkUri: DocsPath + @"\DUR0119.md",
 			isEnabledByDefault: true
 		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that a member with name the same as the one generated using the <see cref="DefaultParamAttribute"/> already exists.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0120_MemberWithNameAlreadyExists = new(
+			id: "DUR0120",
+			title: "Member with generated name already exists",
+			messageFormat: "'{0}': Member with generated name '{1}' already exists",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0120.md",
+			isEnabledByDefault: true
+		);
 	}
 }

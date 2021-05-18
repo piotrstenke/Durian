@@ -128,29 +128,6 @@ partial class Test
 		}
 
 		[Fact]
-		public void Error_When_SignatureExistsInBaseClass()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-class Parent
-{{
-	void Method(string value)
-	{{
-	}}
-}}
-
-partial class Test : Parent
-{{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
-	{{
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
-
-		[Fact]
 		public void IgnoresBaseMethod()
 		{
 			string input =

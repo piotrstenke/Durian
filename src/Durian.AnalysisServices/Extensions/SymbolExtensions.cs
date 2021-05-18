@@ -162,7 +162,16 @@ namespace Durian.Generator.Extensions
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			return type.GetMembers(name).Concat(GetBaseTypes(type).SelectMany(t => t.GetMembers(name)));
+			if (type.TypeKind == TypeKind.Interface)
+			{
+				return type.GetMembers(name)
+					.Concat(type.AllInterfaces
+						.SelectMany(intf => intf.GetMembers(name)));
+			}
+
+			return type.GetMembers(name)
+				.Concat(GetBaseTypes(type)
+				.SelectMany(t => t.GetMembers(name)));
 		}
 
 		/// <summary>

@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Durian.Configuration;
 using Durian.Generator.Data;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
@@ -14,6 +16,42 @@ namespace Durian.Generator.DefaultParam
 	/// </summary>
 	internal static class DefaultParamUtilities
 	{
+		/// <summary>
+		/// Checks, if the collection of <see cref="AttributeData"/> and <paramref name="containingTypes"/> of a <see cref="ISymbol"/> allow to apply the 'new' modifier.
+		/// </summary>
+		/// <param name="attributes">A collection of <see cref="AttributeData"/> representing attributes of a <see cref="ISymbol"/>.</param>
+		/// <param name="containingTypes">Containing types of the target <see cref="ISymbol"/>.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		public static bool AllowsNewModifier(IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
+		{
+			const string configPropertyName = nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible);
+			const string scopedPropertyName = nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible);
+
+			if (TryGetConfigurationPropertyName(attributes, compilation.ConfigurationAttribute!, configPropertyName, out bool value))
+			{
+				return value;
+			}
+			else
+			{
+				int length = containingTypes.Length;
+
+				if (length > 0)
+				{
+					INamedTypeSymbol scopedAttribute = compilation.ScopedConfigurationAttribute!;
+
+					for (int i = 0; i < length; i++)
+					{
+						if (TryGetConfigurationPropertyName(containingTypes[i].GetAttributes(), scopedAttribute, scopedPropertyName, out value))
+						{
+							return value;
+						}
+					}
+				}
+
+				return compilation.Configuration.ApplyNewModifierWhenPossible;
+			}
+		}
+
 		/// <summary>
 		/// Converts an array of <see cref="ITypeData"/>s to an array of <see cref="INamedTypeSymbol"/>s.
 		/// </summary>
@@ -87,14 +125,6 @@ namespace Durian.Generator.DefaultParam
 			return collection.Cast<T>().ToArray();
 		}
 
-		private static IEnumerable<IDefaultParamTarget> IterateFilter<T>(T iter) where T : IEnumerator<IDefaultParamTarget>
-		{
-			while (iter.MoveNext())
-			{
-				yield return iter.Current;
-			}
-		}
-
 		/// <summary>
 		/// Get the indent level of the <paramref name="node"/>.
 		/// </summary>
@@ -151,6 +181,114 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return namespaces;
+		}
+
+		/// <summary>
+		/// Returns <see cref="ParameterGeneration"/>s for the specified <paramref name="typeParameters"/>.
+		/// </summary>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> to get the <see cref="ParameterGeneration"/>s for.</param>
+		/// <param name="symbolParameters">Parameters of the target method/type/delegate.</param>
+		public static ParameterGeneration[][] GetParameterGenerations(in TypeParameterContainer typeParameters, IParameterSymbol[] symbolParameters)
+		{
+			int numParameters = symbolParameters.Length;
+			ParameterGeneration[] defaultParameters = new ParameterGeneration[numParameters];
+			bool hasTypeArgumentAsParameter = false;
+
+			for (int i = 0; i < numParameters; i++)
+			{
+				IParameterSymbol parameter = symbolParameters[i];
+				ITypeSymbol type = parameter.Type;
+
+				if (type is ITypeParameterSymbol)
+				{
+					hasTypeArgumentAsParameter = true;
+					defaultParameters[i] = CreateDefaultGenerationForTypeArgumentParameter(parameter, in typeParameters);
+				}
+				else
+				{
+					defaultParameters[i] = new ParameterGeneration(type, parameter.RefKind, -1);
+				}
+			}
+
+			if (!hasTypeArgumentAsParameter)
+			{
+				int numTypeParameters = typeParameters.Length;
+				ParameterGeneration[][] generations = new ParameterGeneration[numTypeParameters][];
+
+				for (int i = 0; i < numTypeParameters; i++)
+				{
+					generations[i] = defaultParameters;
+				}
+
+				return generations;
+			}
+			else
+			{
+				return CreateParameterGenerationsForTypeParameters(in typeParameters, defaultParameters, numParameters);
+			}
+		}
+
+		private static ParameterGeneration CreateDefaultGenerationForTypeArgumentParameter(IParameterSymbol parameter, in TypeParameterContainer typeParameters)
+		{
+			ITypeSymbol type = parameter.Type;
+
+			for (int i = 0; i < typeParameters.Length; i++)
+			{
+				ref readonly TypeParameterData data = ref typeParameters[i];
+
+				if (SymbolEqualityComparer.Default.Equals(data.Symbol, type))
+				{
+					return new ParameterGeneration(type, parameter.RefKind, i);
+				}
+			}
+
+			throw new InvalidOperationException($"Unknown type parameter used as argument for parameter '{parameter.Name}'");
+		}
+
+		private static ParameterGeneration[][] CreateParameterGenerationsForTypeParameters(in TypeParameterContainer typeParameters, ParameterGeneration[] defaultParameters, int numParameters)
+		{
+			ParameterGeneration[][] generations = new ParameterGeneration[typeParameters.NumDefaultParam][];
+			ParameterGeneration[] previousParameters = defaultParameters;
+
+			for (int i = typeParameters.Length - 1, genIndex = 0; i >= typeParameters.FirstDefaultParamIndex; i--, genIndex++)
+			{
+				ParameterGeneration[] currentParameters = new ParameterGeneration[numParameters];
+
+				for (int j = 0; j < numParameters; j++)
+				{
+					ref readonly ParameterGeneration parameter = ref previousParameters[j];
+
+					if (parameter.GenericParameterIndex == -1)
+					{
+						currentParameters[j] = parameter;
+						continue;
+					}
+
+					ref readonly TypeParameterData data = ref typeParameters[parameter.GenericParameterIndex];
+
+					if (data.IsDefaultParam)
+					{
+						currentParameters[j] = new ParameterGeneration(data.TargetType!, parameter.RefKind, parameter.GenericParameterIndex);
+					}
+					else
+					{
+						currentParameters[j] = parameter;
+					}
+				}
+
+				previousParameters = currentParameters;
+				generations[genIndex] = currentParameters;
+			}
+
+			return generations;
+		}
+
+		private static IEnumerable<IDefaultParamTarget> IterateFilter<T>(T iter) where T : IEnumerator<IDefaultParamTarget>
+		{
+			while (iter.MoveNext())
+			{
+				yield return iter.Current;
+			}
 		}
 
 		private static List<string> GetUsedNamespacesList(IDefaultParamTarget target, int defaultParamCount, CancellationToken cancellationToken)
