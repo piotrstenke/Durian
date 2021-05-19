@@ -17,6 +17,145 @@ namespace Durian.Generator.DefaultParam
 	internal static class DefaultParamUtilities
 	{
 		/// <summary>
+		/// Tries to add the <see langword="new"/> modifier to the <paramref name="modifiers"/>.
+		/// </summary>
+		/// <param name="newModifierIndexes">Indexes at which the <see langword="new"/> modifier should be applied.</param>
+		/// <param name="numTypeParameters">Number of type parameters.</param>
+		/// <param name="numNonDefaultParam">Number of non-DefaultParam type parameters.</param>
+		/// <param name="modifiers">Reference to a<see cref="SyntaxTokenList"/> to update.</param>
+		public static bool TryAddNewModifier(HashSet<int>? newModifierIndexes, int numTypeParameters, int numNonDefaultParam, ref SyntaxTokenList modifiers)
+		{
+			if (newModifierIndexes is not null && newModifierIndexes.Contains(numTypeParameters - numNonDefaultParam) && !modifiers.Any(m => m.IsKind(SyntaxKind.NewKeyword)))
+			{
+				modifiers = modifiers.Add(SyntaxFactory.Token(SyntaxKind.NewKeyword).WithTrailingTrivia(SyntaxFactory.Space));
+				return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Initializes the <paramref name="member"/> by removing unnecessary attributes, applying needed trivia etc.
+		/// </summary>
+		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to initialize.</param>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="member"/>.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="typeParameters">Type parameters of the <paramref name="member"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <param name="updatedTypeParameters">Updated type parameters of the <paramref name="member"/>.</param>
+		public static MemberDeclarationSyntax InitializeDeclaration(
+			MemberDeclarationSyntax member,
+			SemanticModel semanticModel,
+			DefaultParamCompilationData compilation,
+			TypeParameterListSyntax typeParameters,
+			CancellationToken cancellationToken,
+			out TypeParameterListSyntax updatedTypeParameters
+		)
+		{
+			INamedTypeSymbol mainAttribute = compilation.MainAttribute!;
+
+			SeparatedSyntaxList<TypeParameterSyntax> list = typeParameters.Parameters;
+
+			list = SyntaxFactory.SeparatedList(list.Select(p => p.WithAttributeLists(SyntaxFactory.List(p.AttributeLists.Where(attrList => attrList.Attributes.Any(attr =>
+			{
+				SymbolInfo info = semanticModel.GetSymbolInfo(attr, cancellationToken);
+				return !SymbolEqualityComparer.Default.Equals(info.Symbol?.ContainingType, mainAttribute);
+			}
+			))))));
+
+			int length = list.Count;
+
+			if (length > 1)
+			{
+				TypeParameterSyntax[] p = new TypeParameterSyntax[length];
+				p[0] = list[0];
+
+				for (int i = 1; i < length; i++)
+				{
+					p[i] = list[i].WithLeadingTrivia(SyntaxFactory.Space);
+				}
+
+				list = SyntaxFactory.SeparatedList(p);
+			}
+
+			MemberDeclarationSyntax decl = member.WithAttributeLists(SyntaxFactory.List(GetValidAttributes(member, semanticModel, compilation, cancellationToken)));
+			updatedTypeParameters = SyntaxFactory.TypeParameterList(list);
+
+			SyntaxTokenList modifiers = decl.Modifiers;
+
+			if (modifiers.Any())
+			{
+				decl = decl.WithModifiers(SyntaxFactory.TokenList(modifiers.Where(m => !m.IsKind(SyntaxKind.NewKeyword))));
+			}
+
+			return decl;
+		}
+
+		/// <summary>
+		/// Returns a <see cref="SyntaxList{TNode}"/> of <see cref="TypeParameterConstraintClauseSyntax"/> build from the given <paramref name="constraints"/> and updates trivia of the specified <paramref name="parameters"/> if necessary.
+		/// </summary>
+		/// <param name="constraints">A collection of <see cref="TypeParameterConstraintClauseSyntax"/> to build the <see cref="SyntaxList{TNode}"/> from.</param>
+		/// <param name="numOriginalConstraints">Number of type constraints in the original declaration.</param>
+		/// <param name="parameters">Current <see cref="ParameterListSyntax"/>.</param>
+		public static SyntaxList<TypeParameterConstraintClauseSyntax> ApplyConstraints(IEnumerable<TypeParameterConstraintClauseSyntax> constraints, int numOriginalConstraints, ref ParameterListSyntax parameters)
+		{
+			SyntaxList<TypeParameterConstraintClauseSyntax> clauses = SyntaxFactory.List(constraints);
+
+			if (numOriginalConstraints > 0)
+			{
+				int count = clauses.Count;
+
+				if (count == 0)
+				{
+					parameters = parameters.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+				}
+				else if (count < numOriginalConstraints)
+				{
+					TypeParameterConstraintClauseSyntax last = clauses.Last();
+					TypeParameterConstraintClauseSyntax newLast = last.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+
+					clauses = clauses.Replace(last, newLast);
+				}
+			}
+
+			return clauses;
+		}
+
+		/// <summary>
+		/// Tries to update the <paramref name="current"/> <see cref="TypeParameterListSyntax"/> so it contains only <paramref name="count"/> type parameters.
+		/// </summary>
+		/// <param name="current">Current <see cref="TypeParameterListSyntax"/>.</param>
+		/// <param name="count">Number of type parameters the <paramref name="updated"/> <see cref="TypeParameterListSyntax"/> should have.</param>
+		/// <param name="updated">The <paramref name="current"/> <see cref="TypeParameterListSyntax"/> with applied changes.</param>
+		public static bool TryUpdateTypeParameters(TypeParameterListSyntax? current, int count, out TypeParameterListSyntax? updated)
+		{
+			if (current is null)
+			{
+				updated = null;
+				return false;
+			}
+
+			SeparatedSyntaxList<TypeParameterSyntax> typeParameters = current.Parameters;
+
+			if (typeParameters.Count < count)
+			{
+				updated = null;
+				return false;
+			}
+
+			if (count == 0)
+			{
+				updated = null;
+			}
+			else
+			{
+				updated = SyntaxFactory.TypeParameterList(SyntaxFactory.SeparatedList(current.Parameters.Take(count)));
+			}
+
+			return true;
+		}
+
+		/// <summary>
 		/// Checks, if the collection of <see cref="AttributeData"/> and <paramref name="containingTypes"/> of a <see cref="ISymbol"/> allow to apply the 'new' modifier.
 		/// </summary>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/> representing attributes of a <see cref="ISymbol"/>.</param>
@@ -313,6 +452,23 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return namespaces.Distinct().Where(n => n != "Durian").ToList();
+		}
+
+		private static IEnumerable<AttributeListSyntax> GetValidAttributes(MemberDeclarationSyntax member, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
+		{
+			foreach (AttributeListSyntax list in member.AttributeLists)
+			{
+				SeparatedSyntaxList<AttributeSyntax> l = SyntaxFactory.SeparatedList(list.Attributes.Where(attr =>
+				{
+					ISymbol? symbol = semanticModel.GetSymbolInfo(attr, cancellationToken).Symbol;
+					return !SymbolEqualityComparer.Default.Equals(symbol?.ContainingType, compilation.ConfigurationAttribute);
+				}));
+
+				if (l.Any())
+				{
+					yield return SyntaxFactory.AttributeList(l);
+				}
+			}
 		}
 	}
 }

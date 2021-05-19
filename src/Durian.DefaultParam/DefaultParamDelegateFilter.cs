@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Durian.Generator.DefaultParam.DefaultParamAnalyzer;
+using static Durian.Generator.DefaultParam.DefaultParamDelegateAnalyzer;
 
 namespace Durian.Generator.DefaultParam
 {
@@ -170,7 +171,7 @@ namespace Durian.Generator.DefaultParam
 				return false;
 			}
 
-			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, in typeParameters, out data);
+			return ValidateAndCreate(compilation, declaration, semanticModel, symbol, in typeParameters, out data, cancellationToken);
 		}
 
 		/// <summary>
@@ -182,20 +183,26 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> created from the <paramref name="declaration"/>.</param>
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="declaration"/>'s type parameters.</param>
 		/// <param name="data">Newly-created instance of <see cref="DefaultParamDelegateData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static bool ValidateAndCreate(
 			DefaultParamCompilationData compilation,
 			DelegateDeclarationSyntax declaration,
 			SemanticModel semanticModel,
 			INamedTypeSymbol symbol,
 			in TypeParameterContainer typeParameters,
-			[NotNullWhen(true)] out DefaultParamDelegateData? data
+			[NotNullWhen(true)] out DefaultParamDelegateData? data,
+			CancellationToken cancellationToken = default
 		)
 		{
 			if (AnalyzeAgaintsProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
 				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes) &&
 				AnalyzeTypeParameters(in typeParameters))
 			{
-				data = new DefaultParamDelegateData(
+				INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
+
+				if (AnalyzeCollidingMembers(symbol, in typeParameters, compilation, attributes, symbols, out HashSet<int>? newModifiers, cancellationToken))
+				{
+					data = new DefaultParamDelegateData(
 						declaration,
 						compilation,
 						symbol,
@@ -203,10 +210,12 @@ namespace Durian.Generator.DefaultParam
 						containingTypes,
 						null,
 						attributes,
-						typeParameters
+						typeParameters,
+						newModifiers
 					);
 
-				return true;
+					return true;
+				}
 			}
 
 			data = null;
@@ -313,7 +322,7 @@ namespace Durian.Generator.DefaultParam
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = ValidateAndCreate(compilation, (DelegateDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, in typeParameters, out DefaultParamDelegateData? d);
+			bool isValid = ValidateAndCreate(compilation, (DelegateDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, in typeParameters, out DefaultParamDelegateData? d, cancellationToken);
 			data = d;
 			return isValid;
 		}
@@ -342,7 +351,7 @@ namespace Durian.Generator.DefaultParam
 			CancellationToken cancellationToken
 		)
 		{
-			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, (DelegateDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, in typeParameters, out DefaultParamDelegateData? d);
+			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, (DelegateDeclarationSyntax)node, semanticModel, (INamedTypeSymbol)symbol, in typeParameters, out DefaultParamDelegateData? d, cancellationToken);
 			data = d;
 			return isValid;
 		}

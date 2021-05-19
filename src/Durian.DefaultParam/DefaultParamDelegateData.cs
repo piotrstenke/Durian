@@ -23,6 +23,11 @@ namespace Durian.Generator.DefaultParam
 		public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
 
 		/// <summary>
+		/// A <see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied.
+		/// </summary>
+		public HashSet<int>? NewModifierIndexes { get; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamDelegateData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="DelegateDeclarationSyntax"/> this <see cref="DefaultParamDelegateData"/> represents.</param>
@@ -47,6 +52,7 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
+		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
 		public DefaultParamDelegateData(
 			DelegateDeclarationSyntax declaration,
 			DefaultParamCompilationData compilation,
@@ -55,10 +61,12 @@ namespace Durian.Generator.DefaultParam
 			IEnumerable<ITypeData>? containingTypes,
 			IEnumerable<INamespaceSymbol>? containingNamespaces,
 			IEnumerable<AttributeData>? attributes,
-			in TypeParameterContainer typeParameters
+			in TypeParameterContainer typeParameters,
+			HashSet<int>? newModifierIndexes
 		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
 		{
 			_typeParameters = typeParameters;
+			NewModifierIndexes = newModifierIndexes;
 		}
 
 		/// <inheritdoc/>

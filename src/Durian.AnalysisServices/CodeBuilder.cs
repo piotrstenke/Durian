@@ -671,7 +671,7 @@ namespace Durian.Generator
 			TextBuilder.Append(type.Declaration.Keyword);
 			TextBuilder.Append(' ');
 
-			TextBuilder.AppendLine(type.Symbol.Name);
+			TextBuilder.AppendLine(type.GetGenericName(false, true));
 			Indent();
 			CurrentIndent++;
 			TextBuilder.AppendLine("{");

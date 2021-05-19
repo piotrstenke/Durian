@@ -171,7 +171,7 @@ namespace Durian.Generator.Extensions
 
 			return type.GetMembers(name)
 				.Concat(GetBaseTypes(type)
-				.SelectMany(t => t.GetMembers(name)));
+					.SelectMany(t => t.GetMembers(name)));
 		}
 
 		/// <summary>
@@ -337,8 +337,9 @@ namespace Durian.Generator.Extensions
 		/// <see langword="true"/> for parameters, <see langword="false"/> for arguments.
 		/// </param>
 		/// <param name="includeParameters">If the <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="symbol"/>'s type parameters.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this ISymbol symbol, bool paramsOrArgs, bool includeParameters = false)
+		public static string GetGenericName(this ISymbol symbol, bool paramsOrArgs, bool includeParameters = false, bool includeVariance = false)
 		{
 			if (symbol is null)
 			{
@@ -349,7 +350,7 @@ namespace Durian.Generator.Extensions
 			{
 				if (paramsOrArgs)
 				{
-					return GetGenericName(t.TypeParameters, t.Name);
+					return GetGenericName(t.TypeParameters, t.Name, includeVariance);
 				}
 				else
 				{
@@ -399,8 +400,9 @@ namespace Durian.Generator.Extensions
 		/// Determines whether to write the type parameters (e.g. "T") or the type arguments the parameters were substituted by;
 		/// <see langword="true"/> for parameters, <see langword="false"/> for arguments.
 		/// </param>
+		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="type"/>'s type parameters.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this INamedTypeSymbol type, bool paramsOrArgs)
+		public static string GetGenericName(this INamedTypeSymbol type, bool paramsOrArgs, bool includeVariance = false)
 		{
 			if (type is null)
 			{
@@ -409,7 +411,7 @@ namespace Durian.Generator.Extensions
 
 			if (paramsOrArgs)
 			{
-				return GetGenericName(type.TypeParameters, type.Name);
+				return GetGenericName(type.TypeParameters, type.Name, includeVariance);
 			}
 			else
 			{
@@ -421,16 +423,12 @@ namespace Durian.Generator.Extensions
 		/// Returns a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeParameters"/>.
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>
+		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="typeParameters"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Pointers can't be used as generic arguments.</exception>
-		public static string GetGenericName(this IEnumerable<ITypeParameterSymbol> typeParameters)
+		public static string GetGenericName(this IEnumerable<ITypeParameterSymbol> typeParameters, bool includeVariance = false)
 		{
-			if (typeParameters is null)
-			{
-				throw new ArgumentNullException(nameof(typeParameters));
-			}
-
-			return AnalysisUtilities.GetGenericName(typeParameters.Select(p => p.GetGenericName(false)));
+			return GetGenericName(typeParameters, null, includeVariance);
 		}
 
 		/// <summary>
@@ -489,12 +487,27 @@ namespace Durian.Generator.Extensions
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>
 		/// <param name="name">Actual member identifier.</param>
+		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="typeParameters"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this IEnumerable<ITypeParameterSymbol> typeParameters, string? name)
+		public static string GetGenericName(this IEnumerable<ITypeParameterSymbol> typeParameters, string? name, bool includeVariance = false)
 		{
 			if (typeParameters is null)
 			{
 				throw new ArgumentNullException(nameof(typeParameters));
+			}
+
+			if(includeVariance)
+			{
+				return AnalysisUtilities.GetGenericName(typeParameters.Select(p =>
+				{
+					if (p.Variance == VarianceKind.Out || p.Variance == VarianceKind.In)
+					{
+						return $"{p.Variance.ToString().ToLower()} {p.Name}";
+					}
+
+					return p.Name;
+				}),
+				name);
 			}
 
 			return AnalysisUtilities.GetGenericName(typeParameters.Select(p => p.Name), name);

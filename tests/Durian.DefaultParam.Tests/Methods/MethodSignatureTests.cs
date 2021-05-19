@@ -2,7 +2,7 @@
 using Durian.Generator.DefaultParam;
 using Xunit;
 
-namespace Durian.Tests.DefaultParam
+namespace Durian.Tests.DefaultParam.Methods
 {
 	public sealed class MethodSignatureTests : DefaultParamGeneratorTest
 	{

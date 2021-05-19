@@ -198,6 +198,22 @@ namespace Durian.Info
 					fatal: true,
 					hasLocation: true
 				),
+
+				new DiagnosticData(
+					title: "TypeConvention cannot be used on a struct or a sealed type",
+					id: 21,
+					docsPath: @"docs\DefaultParam\DUR0121.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity",
+					id: 22,
+					docsPath: @"docs\DefaultParam\DUR0122.md",
+					fatal: false,
+					hasLocation: true
+				),
 			},
 			types: new TypeIdentity[]
 			{

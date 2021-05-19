@@ -37,16 +37,17 @@ namespace Durian.Generator.Extensions
 		/// Returns the generic identifier of the specified <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="ITypeData"/> to get the generic name of.</param>
+		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="type"/>'s type parameters.</param>
 		/// <returns>If the <paramref name="type"/> has no type parameters, returns the name of the <paramref name="type"/> instead.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this ITypeData type)
+		public static string GetGenericName(this ITypeData type, bool includeVariance = false)
 		{
 			if (type is null)
 			{
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			return type.Symbol.GetGenericName(true);
+			return type.Symbol.GetGenericName(true, includeVariance);
 		}
 
 		/// <summary>
@@ -55,8 +56,9 @@ namespace Durian.Generator.Extensions
 		/// <param name="member"><see cref="IMemberData"/> to get the generic name of.</param>
 		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
 		/// <returns>If the <see cref="IMemberData.Symbol"/> is not of type <see cref="INamedTypeSymbol"/> or <see cref="IMethodSymbol"/> or the symbol has no type parameters, returns the name of the symbol instead.</returns>
+		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="member"/>'s type parameters.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this IMemberData member, bool includeParameters = false)
+		public static string GetGenericName(this IMemberData member, bool includeParameters = false, bool includeVariance = false)
 		{
 			if (member is null)
 			{
@@ -65,7 +67,7 @@ namespace Durian.Generator.Extensions
 
 			if (member.Symbol is INamedTypeSymbol type)
 			{
-				return type.GetGenericName(true, includeParameters);
+				return type.GetGenericName(true, includeParameters, includeVariance);
 			}
 			else if (member.Symbol is IMethodSymbol method)
 			{

@@ -13,7 +13,7 @@ namespace Durian.Generator.DefaultParam
 	public partial class DefaultParamMethodAnalyzer
 	{
 		/// <summary>
-		/// Contains static methods that analyze methods with type parameters marked using the <see cref="DefaultParamAttribute"/> and report <see cref="Diagnostic"/>s for the invalid onces.
+		/// Contains static methods that analyze methods with type parameters marked using the <see cref="DefaultParamAttribute"/> and report <see cref="Diagnostic"/>s for the invalid ones.
 		/// </summary>
 		public static new class WithDiagnostics
 		{
@@ -28,6 +28,11 @@ namespace Durian.Generator.DefaultParam
 			public static bool Analyze(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 			{
 				TypeParameterContainer typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
+
+				if ((typeParameters.Length == 0 && !symbol.IsOverride) || symbol.ExplicitInterfaceImplementations.Length == 0)
+				{
+					return false;
+				}
 
 				if (typeParameters.HasDefaultParams)
 				{
@@ -192,38 +197,6 @@ namespace Durian.Generator.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
-				return AnalyzeMethodSignature(
-					diagnosticReceiver,
-					symbol,
-					in typeParameters,
-					compilation,
-					AllowsNewModifier(symbol, attributes, containingTypes, compilation),
-					out applyNew,
-					cancellationToken
-				);
-			}
-
-			/// <summary>
-			/// Analyzes, if the signature of the <paramref name="symbol"/> is valid. If so, returns a <see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied.
-			/// </summary>
-			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-			/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze the signature of.</param>
-			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
-			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-			/// <param name="applyNewModifierWhenPossible">Determines whether to apply the 'new' modifier if possible.</param>
-			/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
-			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-			/// <returns><see langword="true"/> if the signature of <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-			public static bool AnalyzeMethodSignature(
-				IDiagnosticReceiver diagnosticReceiver,
-				IMethodSymbol symbol,
-				in TypeParameterContainer typeParameters,
-				DefaultParamCompilationData compilation,
-				bool applyNewModifierWhenPossible,
-				out HashSet<int>? applyNew,
-				CancellationToken cancellationToken = default
-			)
-			{
 				if (symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
 				{
 					applyNew = null;
@@ -245,13 +218,13 @@ namespace Durian.Generator.DefaultParam
 					return true;
 				}
 
-				return AnalyzeCollidingMethods(
+				return AnalyzeCollidingMembers(
 					diagnosticReceiver,
 					symbol,
 					in typeParameters,
 					collidingMethods,
 					symbolParameters,
-					applyNewModifierWhenPossible,
+					AllowsNewModifier(symbol, attributes, containingTypes, compilation),
 					cancellationToken,
 					out applyNew
 				);
@@ -478,13 +451,13 @@ namespace Durian.Generator.DefaultParam
 				return true;
 			}
 
-			private static bool AnalyzeCollidingMethods(
+			private static bool AnalyzeCollidingMembers(
 				IDiagnosticReceiver diagnosticReceiver,
 				IMethodSymbol symbol,
 				in TypeParameterContainer typeParameters,
 				CollidingMember[] collidingMembers,
 				IParameterSymbol[] symbolParameters,
-				bool applyNewModifierIsPossible,
+				bool applyNewModifierIfPossible,
 				CancellationToken cancellationToken,
 				out HashSet<int>? applyNew
 			)
@@ -493,7 +466,7 @@ namespace Durian.Generator.DefaultParam
 				HashSet<int> applyNewLocal = new();
 				int numCollisions = collidingMembers.Length;
 				bool isValid = true;
-				bool hasNewModifier = HasNewModifier(symbol, cancellationToken);
+				bool allowsNewModifier = applyNewModifierIfPossible || HasNewModifier(symbol, cancellationToken);
 
 				ParameterGeneration[][] generations = DefaultParamUtilities.GetParameterGenerations(in typeParameters, symbolParameters);
 
@@ -504,12 +477,21 @@ namespace Durian.Generator.DefaultParam
 					// Type parameters are null when the member is neither IMethodSymbol or INamedTypeSymbol.
 					if (member.TypeParameters is null)
 					{
-						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists, symbol, symbol.Name);
-						isValid = false;
+						int index = generations.Length - 1;
 
-						if (diagnosed.Add(generations.Length - 1) && diagnosed.Count == typeParameters.NumDefaultParam)
+						if (allowsNewModifier && !SymbolEqualityComparer.Default.Equals(member.Symbol.ContainingType, symbol.ContainingType))
 						{
-							break;
+							applyNewLocal.Add(index);
+						}
+						else
+						{
+							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists, symbol, symbol.Name);
+							isValid = false;
+
+							if (diagnosed.Add(index) && diagnosed.Count == typeParameters.NumDefaultParam)
+							{
+								break;
+							}
 						}
 
 						continue;
@@ -525,12 +507,19 @@ namespace Durian.Generator.DefaultParam
 					// Parameters are null when the member is not an IMethodSymbol.
 					if (member.Parameters is null)
 					{
-						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists, symbol, member.TypeParameters.GetGenericName());
-						isValid = false;
-
-						if (diagnosed.Add(targetIndex) && diagnosed.Count == typeParameters.NumDefaultParam)
+						if (allowsNewModifier && !SymbolEqualityComparer.Default.Equals(member.Symbol.ContainingType, symbol.ContainingType))
 						{
-							break;
+							applyNewLocal.Add(targetIndex);
+						}
+						else
+						{
+							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists, symbol, member.TypeParameters.GetGenericName());
+							isValid = false;
+
+							if (diagnosed.Add(targetIndex) && diagnosed.Count == typeParameters.NumDefaultParam)
+							{
+								break;
+							}
 						}
 
 						continue;
@@ -547,8 +536,7 @@ namespace Durian.Generator.DefaultParam
 						targetIndex,
 						diagnosed,
 						applyNewLocal,
-						applyNewModifierIsPossible,
-						hasNewModifier,
+						allowsNewModifier,
 						ref isValid)
 					)
 					{
@@ -563,30 +551,23 @@ namespace Durian.Generator.DefaultParam
 			private static bool AnalyzeCollidingMethodParameters(
 				IDiagnosticReceiver diagnosticReceiver,
 				IMethodSymbol symbol,
-				in CollidingMember callingMember,
+				in CollidingMember collidingMember,
 				in TypeParameterContainer typeParameters,
 				ParameterGeneration[] targetGeneration,
 				int targetIndex,
 				HashSet<int> diagnosed,
 				HashSet<int> applyNew,
-				bool applyNewModifierWhenPossible,
-				bool hasNewModifier,
+				bool allowsNewModifier,
 				ref bool isValid
 			)
 			{
-				if (!HasCollidingParameters(targetGeneration, in callingMember))
+				if (!HasCollidingParameters(targetGeneration, in collidingMember))
 				{
 					return true;
 				}
 
-				if (!applyNewModifierWhenPossible || SymbolEqualityComparer.Default.Equals(callingMember.Symbol.ContainingType, symbol.ContainingType))
+				if (!allowsNewModifier || SymbolEqualityComparer.Default.Equals(collidingMember.Symbol.ContainingType, symbol.ContainingType))
 				{
-					if (hasNewModifier)
-					{
-						applyNew.Add(targetIndex);
-						return true;
-					}
-
 					string signature = GetMethodSignatureString(symbol.Name, in typeParameters, targetIndex, targetGeneration);
 					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists, symbol, signature);
 					diagnosed.Add(targetIndex);

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -21,6 +20,13 @@ namespace Durian.Generator.DefaultParam
 	{
 		/// <inheritdoc/>
 		public override SymbolKind SupportedSymbolKind => SymbolKind.Method;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamMethodAnalyzer"/> class.
+		/// </summary>
+		public DefaultParamMethodAnalyzer()
+		{
+		}
 
 		/// <inheritdoc/>
 		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
@@ -55,11 +61,6 @@ namespace Durian.Generator.DefaultParam
 				return;
 			}
 
-			if ((m.TypeParameters.Length == 0 && !m.IsOverride) || m.ExplicitInterfaceImplementations.Length == 0)
-			{
-				return;
-			}
-
 			WithDiagnostics.Analyze(diagnosticReceiver, m, compilation, cancellationToken);
 		}
 
@@ -73,6 +74,11 @@ namespace Durian.Generator.DefaultParam
 		public static bool Analyze(IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			TypeParameterContainer typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
+
+			if ((typeParameters.Length == 0 && !symbol.IsOverride) || symbol.ExplicitInterfaceImplementations.Length == 0)
+			{
+				return false;
+			}
 
 			if (typeParameters.HasDefaultParams)
 			{
@@ -211,35 +217,6 @@ namespace Durian.Generator.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			return AnalyzeMethodSignature(
-				symbol,
-				in typeParameters,
-				compilation,
-				AllowsNewModifier(symbol, attributes, containingTypes, compilation),
-				out applyNew,
-				cancellationToken
-			);
-		}
-
-		/// <summary>
-		/// Analyzes, if the signature of the <paramref name="symbol"/> is valid. If so, returns a <see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied.
-		/// </summary>
-		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze the signature of.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="applyNewModifierWhenPossible">Determines whether to apply the 'new' modifier if possible.</param>
-		/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the signature of <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeMethodSignature(
-			IMethodSymbol symbol,
-			in TypeParameterContainer typeParameters,
-			DefaultParamCompilationData compilation,
-			bool applyNewModifierWhenPossible,
-			out HashSet<int>? applyNew,
-			CancellationToken cancellationToken = default
-		)
-		{
 			if (symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
 			{
 				applyNew = null;
@@ -261,12 +238,12 @@ namespace Durian.Generator.DefaultParam
 				return true;
 			}
 
-			return AnalyzeCollidingMethods(
+			return AnalyzeCollidingMembers(
 				symbol,
 				in typeParameters,
 				collidingMethods,
 				symbolParameters,
-				applyNewModifierWhenPossible,
+				AllowsNewModifier(symbol, attributes, containingTypes, compilation),
 				cancellationToken,
 				out applyNew
 			);
@@ -283,15 +260,15 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <summary>
-		/// Determines whether the 'new' modifier is allowed to the target <paramref name="symbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
+		/// Determines whether the 'new' modifier is allowed to the target <paramref name="method"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
 		/// </summary>
-		/// <param name="symbol"><see cref="IMethodSymbol"/> to check.</param>
-		/// <param name="attributes">A collection of the target <paramref name="symbol"/>'s attributes.</param>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
+		/// <param name="attributes">A collection of the target <paramref name="method"/>'s attributes.</param>
 		/// <param name="containingTypes"><see cref="INamedTypeSymbol"/>s that contain this <see cref="IMethodSymbol"/>.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool AllowsNewModifier(IMethodSymbol symbol, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
+		public static bool AllowsNewModifier(IMethodSymbol method, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
 		{
-			if (symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+			if (method.MethodKind == MethodKind.ExplicitInterfaceImplementation)
 			{
 				return false;
 			}
@@ -531,7 +508,7 @@ namespace Durian.Generator.DefaultParam
 			return true;
 		}
 
-		private static bool AnalyzeCollidingMethods(
+		private static bool AnalyzeCollidingMembers(
 			IMethodSymbol symbol,
 			in TypeParameterContainer typeParameters,
 			CollidingMember[] collidingMethods,
@@ -545,25 +522,47 @@ namespace Durian.Generator.DefaultParam
 
 			HashSet<int> applyNewLocal = new();
 			int numMethods = collidingMethods.Length;
-			bool hasNewModifier = HasNewModifier(symbol, cancellationToken);
+			bool allowsNewModifier = applyNewModifierIfPossible || HasNewModifier(symbol, cancellationToken);
 
 			for (int i = 0; i < numMethods; i++)
 			{
 				ref readonly CollidingMember currentMember = ref collidingMethods[i];
 
-				if (!currentMember.IsMethod)
+				if (currentMember.TypeParameters is null)
 				{
-					applyNew = null;
-					return false;
+					if (allowsNewModifier && !SymbolEqualityComparer.Default.Equals(currentMember.Symbol.ContainingType, symbol.ContainingType))
+					{
+						applyNewLocal.Add(typeParameters.Length - 1);
+						continue;
+					}
+					else
+					{
+						applyNew = null;
+						return false;
+					}
 				}
 
 				int targetIndex = currentMember.TypeParameters.Length - typeParameters.NumNonDefaultParam;
+
+				if (currentMember.Parameters is null)
+				{
+					if (allowsNewModifier && !SymbolEqualityComparer.Default.Equals(currentMember.Symbol.ContainingType, symbol.ContainingType))
+					{
+						applyNewLocal.Add(targetIndex);
+						continue;
+					}
+					else
+					{
+						applyNew = null;
+						return false;
+					}
+				}
 
 				ParameterGeneration[] targetParameters = generations[targetIndex];
 
 				if (HasCollidingParameters(targetParameters, in currentMember))
 				{
-					if ((!applyNewModifierIfPossible && !hasNewModifier) || SymbolEqualityComparer.Default.Equals(currentMember.Symbol.ContainingType, symbol))
+					if (!allowsNewModifier || SymbolEqualityComparer.Default.Equals(currentMember.Symbol.ContainingType, symbol))
 					{
 						applyNew = null;
 						return false;
@@ -661,71 +660,6 @@ namespace Durian.Generator.DefaultParam
 
 				sb.Append(param.Type);
 			}
-		}
-
-		private static bool HasCollidingParameters(ParameterGeneration[] targetParameters, in CollidingMember collidingMethod)
-		{
-			int numParameters = targetParameters.Length;
-
-			for (int i = 0; i < numParameters; i++)
-			{
-				ref readonly ParameterGeneration generation = ref targetParameters[i];
-				IParameterSymbol parameter = collidingMethod.Parameters![i];
-
-				if (IsValidParameterInCollidingMethod(collidingMethod.TypeParameters!, parameter, in generation))
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		private static bool IsValidParameterInCollidingMethod(ITypeParameterSymbol[] typeParameters, IParameterSymbol parameter, in ParameterGeneration targetGeneration)
-		{
-			if (parameter.Type is ITypeParameterSymbol)
-			{
-				if (targetGeneration.GenericParameterIndex > -1)
-				{
-					int typeParameterIndex = GetIndexOfTypeParameterInCollidingMethod(typeParameters, parameter);
-
-					if (targetGeneration.GenericParameterIndex == typeParameterIndex && !AnalysisUtilities.IsValidRefKindForOverload(parameter.RefKind, targetGeneration.RefKind))
-					{
-						return false;
-					}
-				}
-			}
-			else if (SymbolEqualityComparer.Default.Equals(parameter.Type, targetGeneration.Type) && !AnalysisUtilities.IsValidRefKindForOverload(parameter.RefKind, targetGeneration.RefKind))
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		private static int GetIndexOfTypeParameterInCollidingMethod(ITypeParameterSymbol[] typeParameters, IParameterSymbol parameter)
-		{
-			int currentTypeParameterCount = typeParameters.Length;
-
-			for (int i = 0; i < currentTypeParameterCount; i++)
-			{
-				if (SymbolEqualityComparer.Default.Equals(parameter.Type, typeParameters[i]))
-				{
-					return i;
-				}
-			}
-
-			throw new InvalidOperationException($"Unknown parameter: {parameter}");
-		}
-
-		private static HashSet<int>? GetApplyNewOrNull(HashSet<int> applyNew)
-		{
-			if (applyNew.Count == 0)
-			{
-				return null;
-			}
-
-			return applyNew;
 		}
 	}
 }

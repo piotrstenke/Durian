@@ -5,17 +5,16 @@ namespace Durian.DefaultParam.Samples
 {
 	internal class Parent
 	{
-		public class Del
-		{
-
-		}
+		[Durian.Generator.DurianGenerated]
+		public delegate void Del<T>();
 	}
 
-	internal abstract partial class Program : Parent
+	internal partial class Program : Parent
 	{
 		[DefaultParamConfiguration(ApplyNewModifierWhenPossible = true)]
 		public delegate void Del<U, [DefaultParam(typeof(string))]T>();
 
+		public delegate void Del();
 		private static void Main()
 		{
 			Console.WriteLine("Hello World!");

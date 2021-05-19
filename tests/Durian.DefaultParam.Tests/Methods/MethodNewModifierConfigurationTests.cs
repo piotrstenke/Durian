@@ -3,7 +3,7 @@ using Durian.Generator;
 using Durian.Generator.DefaultParam;
 using Xunit;
 
-namespace Durian.Tests.DefaultParam
+namespace Durian.Tests.DefaultParam.Methods
 {
 	public sealed class MethodNewModifierConfigurationTests : DefaultParamGeneratorTest
 	{
@@ -47,7 +47,7 @@ using {DurianStrings.ConfigurationNamespace}
 
 class Parent
 {{
-	void Method(int value)
+	public void Method(int value)
 	{{
 	}}
 }}
@@ -83,7 +83,7 @@ using {DurianStrings.ConfigurationNamespace}
 
 class Parent
 {{
-	void Method(int value)
+	public void Method(int value)
 	{{
 	}}
 }}
@@ -110,7 +110,7 @@ using {DurianStrings.ConfigurationNamespace}
 
 class Parent
 {{
-	void Method(int value)
+	public void Method(int value)
 	{{
 	}}
 }}
@@ -148,7 +148,7 @@ using {DurianStrings.ConfigurationNamespace}
 
 class Parent
 {{
-	void Method(int value)
+	public void Method(int value)
 	{{
 	}}
 }}
@@ -173,7 +173,7 @@ using {DurianStrings.ConfigurationNamespace}
 
 class Parent
 {{
-	void Method(int value)
+	public void Method(int value)
 	{{
 	}}
 }}
@@ -210,7 +210,7 @@ using {DurianStrings.ConfigurationNamespace}
 
 class Parent
 {{
-	void Method(int value)
+	public void Method(int value)
 	{{
 	}}
 }}
@@ -238,7 +238,7 @@ using {DurianStrings.ConfigurationNamespace}
 
 class Parent
 {{
-	void Method(int value)
+	public void Method(int value)
 	{{
 	}}
 }}
@@ -275,7 +275,7 @@ using {DurianStrings.ConfigurationNamespace}
 
 class Parent
 {{
-	void Method<T>(int value)
+	public void Method<T>(int value)
 	{{
 	}}
 }}
@@ -311,11 +311,11 @@ using {DurianStrings.ConfigurationNamespace}
 
 class Parent
 {{
-	void Method<T>(int value)
+	public void Method<T>(int value)
 	{{
 	}}
 
-	void Method<T, U>(int value)
+	public void Method<T, U>(int value)
 	{{
 	}}
 }}
@@ -351,7 +351,7 @@ using {DurianStrings.ConfigurationNamespace}
 
 class Parent
 {{
-	void Method<T>(int value)
+	public void Method<T>(int value)
 	{{
 	}}
 }}
@@ -393,11 +393,11 @@ using {DurianStrings.ConfigurationNamespace}
 
 class Parent
 {{
-	void Method<T>(int value)
+	public void Method<T>(int value)
 	{{
 	}}
 
-	void Method<T, U>(int value)
+	public void Method<T, U>(int value)
 	{{
 	}}
 }}
@@ -485,7 +485,7 @@ using {DurianStrings.ConfigurationNamespace};
 
 class Parent
 {{
-	void Method(string value)
+	public void Method(string value)
 	{{
 	}}
 }}
@@ -498,6 +498,159 @@ partial class Test : Parent
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
+
+		[Fact]
+		public void AppliesNewModifier_When_NonGenericCompatibleMemberIsPresentInBaseClass()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+
+class Parent
+{{
+	public string Method {{ get; }}
+}}
+
+partial class Test : Parent
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	{{
+	}}
+}}
+";
+
+			string expected =
+@$"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
+	new void Method()
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void AppliesNewModifier_When_GenericMemberOtherThanMethodIsPresentInBaseClass()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+
+class Parent
+{{
+	public delegate void Method();
+}}
+
+partial class Test : Parent
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	{{
+	}}
+}}
+";
+
+			string expected =
+@$"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
+	new void Method()
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Error_When_NonGenericCompatibleMemberIsPresentInBaseClass_And_ConfigurationIsFalse()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+
+class Parent
+{{
+	public string Method {{ get; }}
+}}
+
+partial class Test : Parent
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists.Id));
+		}
+
+		[Fact]
+		public void Error_When_GenericMemberOtherThanMethodIsPresentInBaseClass_And_ConfigurationIsFalse()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+
+class Parent
+{{
+	public delegate void Method();
+}}
+
+partial class Test : Parent
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	{{
+	}}
+}}
+";
+
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists.Id));
+		}
+
+		[Fact]
+		public void IgnoresPrivateMembersInBaseType()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+
+class Parent
+{{
+	private void Method()
+	{{
+	}}
+}}
+
+partial class Test : Parent
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	{{
+	}}
+}}
+";
+
+			string expected =
+@$"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
+	void Method()
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
 		}
 	}
 }

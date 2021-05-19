@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Generator.DefaultParam
@@ -7,7 +6,6 @@ namespace Durian.Generator.DefaultParam
 	/// <summary>
 	/// Represents a parameter of type that is a generic argument.
 	/// </summary>
-	[DebuggerDisplay("{Type}")]
 	public readonly struct ParameterGeneration : IEquatable<ParameterGeneration>
 	{
 		/// <summary>

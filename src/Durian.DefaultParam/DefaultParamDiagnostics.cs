@@ -273,5 +273,32 @@ namespace Durian.Generator.DefaultParam
 			helpLinkUri: DocsPath + @"\DUR0120.md",
 			isEnabledByDefault: true
 		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that <see cref="DPTypeConvention.Inherit"/> cannot be used on a struct or a <see langword="sealed"/> type.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0121_InheritTypeConventionCannotBeUsedOnStructOrSealedType = new(
+			id: "DUR0121",
+			title: "TypeConvention cannot be used on a struct or a sealed type",
+			messageFormat: "'{0}': TypeConvention cannot be used on a struct or sealed type",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0121.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that <see cref="DPTypeConvention.Copy"/> or <see cref="DPTypeConvention.Default"/> should be applied for the struct/sealed type.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0122_ApplyCopyTypeConventionOnStructOrSealedType = new(
+			id: "DUR0122",
+			title: "DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity",
+			messageFormat: "'{0}': Apply DPTypeConvention.Copy or DPTypeConvention.Default for clarity",
+			description: "DPTypeConvention.Inherit is applied to the enclosing scope, but it is not valid on structs and sealed types. Explicitly apply DPTypeConvention.Copy or DPTypeConvention.Default to avoid confusion.",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + @"\DUR0122.md",
+			isEnabledByDefault: true
+		);
 	}
 }

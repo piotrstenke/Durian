@@ -33,11 +33,6 @@ namespace Durian.Generator.DefaultParam
 		public bool CallInsteadOfCopying { get; }
 
 		/// <summary>
-		/// Determines whether to remove the <see langword="override"/> keyword.
-		/// </summary>
-		public bool RemoveOverrideKeyword { get; }
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamMethodData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="MethodDeclarationSyntax"/> this <see cref="DefaultParamMethodData"/> represents.</param>

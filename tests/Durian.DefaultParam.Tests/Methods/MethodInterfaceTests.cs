@@ -3,7 +3,7 @@ using Durian.Generator;
 using Xunit;
 using static Durian.Generator.DefaultParam.DefaultParamDiagnostics;
 
-namespace Durian.Tests.DefaultParam
+namespace Durian.Tests.DefaultParam.Methods
 {
 	public sealed class MethodInterfaceTests : DefaultParamGeneratorTest
 	{
@@ -23,6 +23,27 @@ partial interface ITest
 $@"partial interface ITest
 {{
 	{GetCodeGenerationAttributes("ITest.Method<T>()")}
+	void Method();
+}}";
+
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void PreservesVarianceOfParentInterface()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial interface ITest<in TType, out TName>
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+}}
+";
+			string expected =
+$@"partial interface ITest<in TType, out TName>
+{{
+	{GetCodeGenerationAttributes("ITest<TType, TName>.Method<T>()")}
 	void Method();
 }}";
 

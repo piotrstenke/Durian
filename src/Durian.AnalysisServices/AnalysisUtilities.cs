@@ -151,7 +151,7 @@ namespace Durian.Generator
 		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <see langword="null"/>.</exception>
 		public static string GetGenericName(IEnumerable<string> typeParameters, string? name)
 		{
-			return $"{name ?? string.Empty}{GetGenericName(typeParameters)}";
+			return (name ?? string.Empty) + GetGenericName(typeParameters);
 		}
 
 		/// <summary>

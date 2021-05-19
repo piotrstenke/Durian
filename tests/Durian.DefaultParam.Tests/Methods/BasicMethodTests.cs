@@ -1,7 +1,7 @@
 using Durian.Generator;
 using Xunit;
 
-namespace Durian.Tests.DefaultParam
+namespace Durian.Tests.DefaultParam.Methods
 {
 	public sealed class BasicMethodTests : DefaultParamGeneratorTest
 	{
@@ -275,7 +275,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void PreservesAccessibilityAndStaticModifiers()
+		public void PreservesModifiers()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -394,6 +394,58 @@ partial abstract class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	abstract void Method();
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void WritesMethod_When_IsInGenericType()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test<TNumber>
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value)
+	{{
+	}}
+}}
+";
+
+			string expected =
+@$"partial class Test<TNumber>
+{{
+	{GetCodeGenerationAttributes("Test<TNumber>.Method<T>(T)")}
+	void Method(string value)
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void WritesMethod_When_IsInGenericTypeWithConstraints()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test<TNumber> where TNumber : class
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value)
+	{{
+	}}
+}}
+";
+
+			string expected =
+@$"partial class Test<TNumber>
+{{
+	{GetCodeGenerationAttributes("Test<TNumber>.Method<T>(T)")}
+	void Method(string value)
+	{{
+	}}
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));

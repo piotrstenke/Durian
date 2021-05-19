@@ -6,7 +6,7 @@ using System.Threading;
 using Durian.Generator.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Durian.Generator.DefaultParam.DefaultParamAnalyzer.WithDiagnostics;
+using static Durian.Generator.DefaultParam.DefaultParamDelegateAnalyzer.WithDiagnostics;
 
 namespace Durian.Generator.DefaultParam
 {
@@ -90,7 +90,7 @@ namespace Durian.Generator.DefaultParam
 					return false;
 				}
 
-				return ValidateAndCreate(diagnosticReceiver, compilation, declaration, semanticModel, symbol, in typeParameters, out data);
+				return ValidateAndCreate(diagnosticReceiver, compilation, declaration, semanticModel, symbol, in typeParameters, out data, cancellationToken);
 			}
 
 			/// <summary>
@@ -103,6 +103,7 @@ namespace Durian.Generator.DefaultParam
 			/// <param name="symbol"><see cref="INamedTypeSymbol"/> created from the <paramref name="declaration"/>.</param>
 			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="declaration"/>'s type parameters.</param>
 			/// <param name="data">Newly-created instance of <see cref="DefaultParamDelegateData"/>.</param>
+			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 			public static bool ValidateAndCreate(
 				IDiagnosticReceiver diagnosticReceiver,
 				DefaultParamCompilationData compilation,
@@ -110,7 +111,8 @@ namespace Durian.Generator.DefaultParam
 				SemanticModel semanticModel,
 				INamedTypeSymbol symbol,
 				in TypeParameterContainer typeParameters,
-				[NotNullWhen(true)] out DefaultParamDelegateData? data
+				[NotNullWhen(true)] out DefaultParamDelegateData? data,
+				CancellationToken cancellationToken = default
 			)
 			{
 				bool isValid = AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
@@ -119,18 +121,24 @@ namespace Durian.Generator.DefaultParam
 
 				if (isValid)
 				{
-					data = new DefaultParamDelegateData(
-						declaration,
-						compilation,
-						symbol,
-						semanticModel,
-						containingTypes,
-						null,
-						attributes,
-						typeParameters
-					);
+					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes!);
 
-					return true;
+					if (AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, attributes!, symbols, out HashSet<int>? applyNewModifiers, cancellationToken))
+					{
+						data = new DefaultParamDelegateData(
+							declaration,
+							compilation,
+							symbol,
+							semanticModel,
+							containingTypes,
+							null,
+							attributes,
+							typeParameters,
+							applyNewModifiers
+						);
+
+						return true;
+					}
 				}
 
 				data = null;

@@ -24,7 +24,8 @@ namespace Durian.Generator.DefaultParam
 			DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute,
 			DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes,
 			DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods,
-			DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod
+			DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod,
+			DUR0121_InheritTypeConventionCannotBeUsedOnStructOrSealedType
 		);
 
 		/// <summary>
@@ -115,9 +116,35 @@ namespace Durian.Generator.DefaultParam
 				_diagnosticReceiver.ReportDiagnostic(DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods, arg.GetLocation(), type);
 			}
 
-			if (type.TypeKind == TypeKind.Delegate && CheckArguments(arguments, nameof(DefaultParamConfigurationAttribute.TypeConvention), out arg))
+			const string propertyName = nameof(DefaultParamConfigurationAttribute.TypeConvention);
+
+			if (type.TypeKind == TypeKind.Delegate)
 			{
-				_diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), type);
+				if(CheckArguments(arguments, propertyName, out arg))
+				{
+					_diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), type);
+				}
+			}
+			else if((type.TypeKind == TypeKind.Struct || type.IsSealed) && CheckArguments(arguments, propertyName, out arg))
+			{
+				AttributeData? attr = type.GetAttributeData(node);
+
+				if (attr is not null && attr.TryGetNamedArgumentValue(propertyName, out int value))
+				{
+					DPTypeConvention convention = (DPTypeConvention)value;
+
+					if(convention == DPTypeConvention.Inherit)
+					{
+						_diagnosticReceiver.ReportDiagnostic(DUR0121_InheritTypeConventionCannotBeUsedOnStructOrSealedType, arg.GetLocation(), type);
+					}
+				}
+			}
+			else if(type.IsSealed)
+			{
+				if (CheckArguments(arguments, propertyName, out arg))
+				{
+					_diagnosticReceiver.ReportDiagnostic(DUR0121_InheritTypeConventionCannotBeUsedOnStructOrSealedType, arg.GetLocation(), type);
+				}
 			}
 		}
 

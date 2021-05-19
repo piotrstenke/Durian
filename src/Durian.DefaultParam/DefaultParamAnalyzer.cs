@@ -1,4 +1,5 @@
-﻿using System.CodeDom.Compiler;
+﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -39,7 +40,7 @@ namespace Durian.Generator.DefaultParam
 		protected abstract IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics();
 
 		/// <inheritdoc/>
-		protected sealed override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
+		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
 		{
 			return new DefaultParamCompilationData(compilation);
 		}
@@ -288,6 +289,29 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="collidingMember"/> actually collides with the <paramref name="targetParameters"/>.
+		/// </summary>
+		/// <param name="targetParameters">Array of <see cref="ParameterGeneration"/> representing parameters of a generated method.</param>
+		/// <param name="collidingMember"><see cref="CollidingMember"/> to check of actually collides with the <paramref name="targetParameters"/>.</param>
+		public static bool HasCollidingParameters(ParameterGeneration[] targetParameters, in CollidingMember collidingMember)
+		{
+			int numParameters = targetParameters.Length;
+
+			for (int i = 0; i < numParameters; i++)
+			{
+				ref readonly ParameterGeneration generation = ref targetParameters[i];
+				IParameterSymbol parameter = collidingMember.Parameters![i];
+
+				if (IsValidParameterInCollidingMember(collidingMember.TypeParameters!, parameter, in generation))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		/// <summary>
 		/// Returns a collection of <see cref="CollidingMember"/>s representing <see cref="ISymbol"/>s that can potentially collide with members generated from the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the colliding members of.</param>
@@ -328,26 +352,39 @@ namespace Durian.Generator.DefaultParam
 			INamedTypeSymbol generatedFrom = compilation.DurianGeneratedAttribute!;
 			int numDefaultParam = numTypeParameters - numNonDefaultParam;
 
-			IEnumerable<ISymbol> symbols = containingType.GetAllMembers(name);
+			IEnumerable<ISymbol> symbols = containingType.GetMembers(name);
 
-			if (numNonDefaultParam < numTypeParameters)
+			if (containingType.TypeKind == TypeKind.Interface)
 			{
-				symbols = symbols.Where(s =>
-				{
-					if (s is IMethodSymbol m)
-					{
-						ImmutableArray<ITypeParameterSymbol> typeParameters = m.TypeParameters;
-						return typeParameters.Length >= numNonDefaultParam && typeParameters.Length < numTypeParameters;
-					}
-					else if (s is INamedTypeSymbol t)
-					{
-						ImmutableArray<ITypeParameterSymbol> typeParameters = t.TypeParameters;
-						return typeParameters.Length >= numNonDefaultParam && typeParameters.Length < numTypeParameters;
-					}
-
-					return false;
-				});
+				symbols = symbols
+					.Concat(containingType.AllInterfaces
+						.SelectMany(t => t.GetMembers(name)));
 			}
+			else
+			{
+				symbols = symbols
+					.Concat(containingType.GetBaseTypes()
+						.SelectMany(t => t.GetMembers(name))
+						.Where(s => s.DeclaredAccessibility > Accessibility.Private));
+			}
+
+			bool includeNonGenericCompatibleMembers = numDefaultParam == numTypeParameters;
+
+			symbols = symbols.Where(s =>
+			{
+				if (s is IMethodSymbol m)
+				{
+					ImmutableArray<ITypeParameterSymbol> typeParameters = m.TypeParameters;
+					return typeParameters.Length >= numNonDefaultParam && typeParameters.Length < numTypeParameters;
+				}
+				else if (s is INamedTypeSymbol t)
+				{
+					ImmutableArray<ITypeParameterSymbol> typeParameters = t.TypeParameters;
+					return typeParameters.Length >= numNonDefaultParam && typeParameters.Length < numTypeParameters;
+				}
+
+				return includeNonGenericCompatibleMembers;
+			});
 
 			if (symbol is IMethodSymbol m)
 			{
@@ -446,6 +483,53 @@ namespace Durian.Generator.DefaultParam
 					symbols.Add(type);
 				}
 			}
+		}
+
+		private static bool IsValidParameterInCollidingMember(ITypeParameterSymbol[] typeParameters, IParameterSymbol parameter, in ParameterGeneration targetGeneration)
+		{
+			if (parameter.Type is ITypeParameterSymbol)
+			{
+				if (targetGeneration.GenericParameterIndex > -1)
+				{
+					int typeParameterIndex = GetIndexOfTypeParameterInCollidingMethod(typeParameters, parameter);
+
+					if (targetGeneration.GenericParameterIndex == typeParameterIndex && !AnalysisUtilities.IsValidRefKindForOverload(parameter.RefKind, targetGeneration.RefKind))
+					{
+						return false;
+					}
+				}
+			}
+			else if (SymbolEqualityComparer.Default.Equals(parameter.Type, targetGeneration.Type) && !AnalysisUtilities.IsValidRefKindForOverload(parameter.RefKind, targetGeneration.RefKind))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		private static int GetIndexOfTypeParameterInCollidingMethod(ITypeParameterSymbol[] typeParameters, IParameterSymbol parameter)
+		{
+			int currentTypeParameterCount = typeParameters.Length;
+
+			for (int i = 0; i < currentTypeParameterCount; i++)
+			{
+				if (SymbolEqualityComparer.Default.Equals(parameter.Type, typeParameters[i]))
+				{
+					return i;
+				}
+			}
+
+			throw new InvalidOperationException($"Unknown parameter: {parameter}");
+		}
+
+		private protected static HashSet<int>? GetApplyNewOrNull(HashSet<int> applyNew)
+		{
+			if (applyNew.Count == 0)
+			{
+				return null;
+			}
+
+			return applyNew;
 		}
 
 		private static bool IsGeneratedFrom(ISymbol symbol, string fullName, INamedTypeSymbol generatedFromAttribute)

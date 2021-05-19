@@ -30,6 +30,11 @@ namespace Durian.Generator.DefaultParam
 		public bool IsMethod => Parameters is not null && TypeParameters is not null;
 
 		/// <summary>
+		/// Determines whether this member is contained within a type.
+		/// </summary>
+		public bool IsChild => Symbol.ContainingType is not null;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="CollidingMember"/> struct.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> of the member.</param>

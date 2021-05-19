@@ -2,7 +2,7 @@
 using Durian.Generator.DefaultParam;
 using Xunit;
 
-namespace Durian.Tests.DefaultParam
+namespace Durian.Tests.DefaultParam.Methods
 {
 	public sealed class BasicMethodErrorTests : DefaultParamGeneratorTest
 	{
@@ -155,7 +155,7 @@ partial class Test
 
 partial class Test
 {{
-	[{DurianStrings.GeneratorNamespace}.DurianGenerated]
+	[{DurianStrings.GeneratorNamespace}.{nameof(DurianGeneratedAttribute)}]
 	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{
 	}}

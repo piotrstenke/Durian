@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -13,6 +14,11 @@ namespace Durian.Generator.DefaultParam
 	/// </summary>
 	public sealed class DelegateDeclarationBuilder : IDefaultParamDeclarationBuilder
 	{
+		private HashSet<int>? _newModifierIndexes;
+		private int _numOriginalTypeParameters;
+		private int _numOriginalConstraints;
+		private int _numNonDefaultParam;
+
 		/// <summary>
 		/// Original <see cref="DelegateDeclarationSyntax"/>.
 		/// </summary>
@@ -74,12 +80,7 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public int GetOriginalTypeParameterCount()
 		{
-			if (OriginalDeclaration.TypeParameterList is null)
-			{
-				return 0;
-			}
-
-			return OriginalDeclaration.TypeParameterList.Parameters.Count;
+			return _numOriginalTypeParameters;
 		}
 
 		/// <summary>
@@ -100,34 +101,31 @@ namespace Durian.Generator.DefaultParam
 		{
 			SemanticModel = data.SemanticModel;
 			OriginalDeclaration = data.Declaration;
+			_newModifierIndexes = data.NewModifierIndexes;
+			_numNonDefaultParam = data.TypeParameters.NumNonDefaultParam;
 
-			if (data.Declaration.TypeParameterList is null)
+			DelegateDeclarationSyntax del = data.Declaration;
+
+			if (del.TypeParameterList is null || !del.TypeParameterList.Parameters.Any())
 			{
+				_numOriginalTypeParameters = 0;
 				CurrentDeclaration = data.Declaration;
+				return;
 			}
-			else
-			{
-				SeparatedSyntaxList<TypeParameterSyntax> typeParameters = data.Declaration.TypeParameterList.Parameters;
 
-				if (typeParameters.Any())
-				{
-					typeParameters = SyntaxFactory.SeparatedList(typeParameters
-						.Select(p =>
-							p.WithAttributeLists(SyntaxFactory.List(p.AttributeLists
-								.Where(l => l.Attributes
-									.Any(a => !SymbolEqualityComparer.Default.Equals(SemanticModel.GetTypeInfo(a, cancellationToken).Type, data.ParentCompilation.MainAttribute))
-								)
-							))
-						)
-					);
+			del = (DelegateDeclarationSyntax)DefaultParamUtilities.InitializeDeclaration(
+				del,
+				data.SemanticModel,
+				data.ParentCompilation,
+				del.TypeParameterList,
+				cancellationToken,
+				out TypeParameterListSyntax updatedParameters
+			);
 
-					CurrentDeclaration = data.Declaration.WithTypeParameterList(data.Declaration.TypeParameterList.WithParameters(typeParameters));
-				}
-				else
-				{
-					CurrentDeclaration = data.Declaration;
-				}
-			}
+			_numOriginalConstraints = del.ConstraintClauses.Count;
+			_numOriginalTypeParameters = updatedParameters.Parameters.Count;
+
+			CurrentDeclaration = del.WithTypeParameterList(updatedParameters);
 		}
 
 		/// <summary>
@@ -136,7 +134,10 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="constraintClauses">Collection of <see cref="TypeParameterConstraintClauseSyntax"/> to apply to the <see cref="CurrentDeclaration"/>.</param>
 		public void WithConstraintClauses(IEnumerable<TypeParameterConstraintClauseSyntax> constraintClauses)
 		{
-			CurrentDeclaration = CurrentDeclaration.WithConstraintClauses(SyntaxFactory.List(constraintClauses));
+			ParameterListSyntax parameters = CurrentDeclaration.ParameterList;
+			SyntaxList<TypeParameterConstraintClauseSyntax> clauses = DefaultParamUtilities.ApplyConstraints(constraintClauses, _numOriginalConstraints, ref parameters);
+
+			CurrentDeclaration = CurrentDeclaration.WithParameterList(parameters).WithConstraintClauses(clauses);
 		}
 
 		/// <summary>
@@ -145,25 +146,27 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="count">Number of type parameters to take.</param>
 		public void WithTypeParameters(int count)
 		{
-			if (CurrentDeclaration.TypeParameterList is null)
+			if (DefaultParamUtilities.TryUpdateTypeParameters(CurrentDeclaration.TypeParameterList, count, out TypeParameterListSyntax? updated))
 			{
-				return;
+				CurrentDeclaration = CurrentDeclaration.WithTypeParameterList(updated);
 			}
 
-			SeparatedSyntaxList<TypeParameterSyntax> typeParameters = CurrentDeclaration.TypeParameterList.Parameters;
+			SyntaxTokenList modifiers = CurrentDeclaration.Modifiers;
 
-			if (!typeParameters.Any())
+			if(!modifiers.Any())
 			{
-				return;
+				SyntaxTriviaList trivia = CurrentDeclaration.DelegateKeyword.LeadingTrivia;
+
+				if(trivia.Any())
+				{
+					trivia = trivia.RemoveAt(trivia.Count - 1);
+					CurrentDeclaration = CurrentDeclaration.WithDelegateKeyword(CurrentDeclaration.DelegateKeyword.WithLeadingTrivia(trivia));
+				}
 			}
 
-			if (count == 0)
+			if (DefaultParamUtilities.TryAddNewModifier(_newModifierIndexes, count, _numNonDefaultParam, ref modifiers))
 			{
-				CurrentDeclaration = CurrentDeclaration.WithTypeParameterList(null);
-			}
-			else
-			{
-				CurrentDeclaration = CurrentDeclaration.WithTypeParameterList(SyntaxFactory.TypeParameterList(SyntaxFactory.SeparatedList(typeParameters.Take(count))));
+				CurrentDeclaration = CurrentDeclaration.WithModifiers(modifiers);
 			}
 		}
 

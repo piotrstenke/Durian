@@ -2,7 +2,7 @@
 using Durian.Generator.DefaultParam;
 using Xunit;
 
-namespace Durian.Tests.DefaultParam
+namespace Durian.Tests.DefaultParam.Methods
 {
 	public sealed class MethodInheritanceTests : DefaultParamGeneratorTest
 	{
@@ -285,6 +285,39 @@ partial class Child : Parent
 ";
 
 			Assert.True(RunGenerator(input, 1).Compare(expected));
+		}
+
+
+		[Fact]
+		public void RemovesNewModifier_WhenIsNotNecessary()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+class Parent
+{{
+	public void Method<T>()
+	{{
+	}}
+}}
+
+partial class Test : Parent
+{{
+	public new void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+	{{
+	}}
+}}";
+
+			string expected =
+$@"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Method<T>()")}
+	public void Method()
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
 		}
 	}
 }

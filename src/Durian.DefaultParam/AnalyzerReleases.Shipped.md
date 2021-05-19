@@ -23,3 +23,5 @@ DUR0117 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/d
 DUR0118 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0118.md] Value of DefaultParam attribute is different than that of implicitly implemented method
 DUR0119 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0119.md] Value of DefaultParam attribute is different for inherited method and implicitly implemented interface method
 DUR0120 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0120.md] Member with generated name already exists
+DUR0121 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0121.md] TypeConvention cannot be used on a struct or a sealed type
+DUR0122 | Durian.DefaultParam | Warning | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0122.md] DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity
