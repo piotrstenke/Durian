@@ -140,7 +140,7 @@ namespace Durian.Generator.DefaultParam
 								attributes,
 								in combinedParameters,
 								newModifiers,
-								CheckShouldCallInsteadOfCopying(symbol, attributes!, symbols, compilation)
+								ShouldCallInsteadOfCopying(symbol, compilation, attributes!, symbols)
 							);
 
 							return true;

@@ -22,6 +22,14 @@ namespace Durian.Generator.DefaultParam
 		/// <inheritdoc/>
 		public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
 
+		/// <inheritdoc cref="DefaultParamDelegateData.NewModifierIndexes"/>
+		public HashSet<int>? NewModifierIndexes { get; }
+
+		/// <summary>
+		/// Determines whether the generated members should inherit the original type.
+		/// </summary>
+		public bool Inherit { get; }
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamTypeData"/> class.
 		/// </summary>
@@ -49,6 +57,8 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
+		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
+		/// <param name="inherit">Determines whether the generated members should inherit the original type.</param>
 		public DefaultParamTypeData(
 			TypeDeclarationSyntax declaration,
 			DefaultParamCompilationData compilation,
@@ -59,10 +69,14 @@ namespace Durian.Generator.DefaultParam
 			IEnumerable<ITypeData>? containingTypes,
 			IEnumerable<INamespaceSymbol>? containingNamespaces,
 			IEnumerable<AttributeData>? attributes,
-			in TypeParameterContainer typeParameters
+			in TypeParameterContainer typeParameters,
+			HashSet<int>? newModifierIndexes,
+			bool inherit
 		) : base(declaration, compilation, symbol, semanticModel, partialDeclarations, modifiers, containingTypes, containingNamespaces, attributes)
 		{
 			_typeParameters = typeParameters;
+			NewModifierIndexes = newModifierIndexes;
+			Inherit = inherit;
 		}
 
 		/// <inheritdoc/>

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -147,7 +146,7 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="count">Number of type parameters to take.</param>
 		public void WithTypeParameters(int count)
 		{
-			if(DefaultParamUtilities.TryUpdateTypeParameters(CurrentDeclaration.TypeParameterList, count, out TypeParameterListSyntax? updated))
+			if (DefaultParamUtilities.TryUpdateTypeParameters(CurrentDeclaration.TypeParameterList, count, out TypeParameterListSyntax? updated))
 			{
 				CurrentDeclaration = CurrentDeclaration.WithTypeParameterList(updated);
 			}

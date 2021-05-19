@@ -281,58 +281,26 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool CheckShouldCallInsteadOfCopying(IMethodSymbol method, DefaultParamCompilationData compilation)
+		public static bool ShouldCallInsteadOfCopying(IMethodSymbol method, DefaultParamCompilationData compilation)
 		{
-			return CheckShouldCallInsteadOfCopying(method, method.GetAttributes(), method.GetContainingTypeSymbols().ToArray(), compilation);
+			return ShouldCallInsteadOfCopying(method, compilation, method.GetAttributes(), method.GetContainingTypeSymbols().ToArray());
 		}
 
 		/// <summary>
 		/// Determines, whether the <see cref="DefaultParamGenerator"/> should call a <see cref="IMethodSymbol"/> instead of copying its contents.
 		/// </summary>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to check.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="attributes">A collection of <see cref="IMethodSymbol"/>' attributes.</param>
 		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the target <see cref="IMethodSymbol"/>.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool CheckShouldCallInsteadOfCopying(IMethodSymbol symbol, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
+		public static bool ShouldCallInsteadOfCopying(IMethodSymbol symbol, DefaultParamCompilationData compilation, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes)
 		{
-			const string configPropertyName = nameof(DefaultParamConfigurationAttribute.MethodConvention);
-			const string scopedPropertyName = nameof(DefaultParamScopedConfigurationAttribute.MethodConvention);
-
 			if (symbol.IsAbstract || symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation || symbol.ContainingType.TypeKind == TypeKind.Interface)
 			{
 				return false;
 			}
 
-			DPMethodConvention value = GetConvention();
-
-			return value == DPMethodConvention.Call;
-
-			DPMethodConvention GetConvention()
-			{
-				if (DefaultParamUtilities.TryGetConfigurationPropertyName(attributes, compilation.ConfigurationAttribute!, configPropertyName, out int value))
-				{
-					return (DPMethodConvention)value;
-				}
-				else
-				{
-					int length = containingTypes.Length;
-
-					if (length > 0)
-					{
-						INamedTypeSymbol scopedAttribute = compilation.ScopedConfigurationAttribute!;
-
-						for (int i = 0; i < length; i++)
-						{
-							if (DefaultParamUtilities.TryGetConfigurationPropertyName(containingTypes[i].GetAttributes(), scopedAttribute, scopedPropertyName, out value))
-							{
-								return (DPMethodConvention)value;
-							}
-						}
-					}
-
-					return compilation.Configuration.MethodConvention;
-				}
-			}
+			return DefaultParamUtilities.GetConfigurationEnumValue(nameof(DefaultParamConfigurationAttribute.MethodConvention), attributes, containingTypes, compilation, (int)compilation.Configuration.MethodConvention) == (int)DPMethodConvention.Call;
 		}
 
 		private static bool AnalyzeCore(IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)

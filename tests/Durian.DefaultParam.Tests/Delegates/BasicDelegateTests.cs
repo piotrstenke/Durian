@@ -1,5 +1,4 @@
 ﻿using Durian.Generator;
-using Durian.Generator.DefaultParam;
 using Xunit;
 
 namespace Durian.Tests.DefaultParam.Delegates

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Configuration;
@@ -97,7 +98,7 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="constraints">A collection of <see cref="TypeParameterConstraintClauseSyntax"/> to build the <see cref="SyntaxList{TNode}"/> from.</param>
 		/// <param name="numOriginalConstraints">Number of type constraints in the original declaration.</param>
 		/// <param name="parameters">Current <see cref="ParameterListSyntax"/>.</param>
-		public static SyntaxList<TypeParameterConstraintClauseSyntax> ApplyConstraints(IEnumerable<TypeParameterConstraintClauseSyntax> constraints, int numOriginalConstraints, ref ParameterListSyntax parameters)
+		public static SyntaxList<TypeParameterConstraintClauseSyntax> ApplyConstraints(IEnumerable<TypeParameterConstraintClauseSyntax> constraints, int numOriginalConstraints, [AllowNull] ref ParameterListSyntax parameters)
 		{
 			SyntaxList<TypeParameterConstraintClauseSyntax> clauses = SyntaxFactory.List(constraints);
 
@@ -107,7 +108,10 @@ namespace Durian.Generator.DefaultParam
 
 				if (count == 0)
 				{
-					parameters = parameters.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+					if (parameters is not null)
+					{
+						parameters = parameters.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+					}
 				}
 				else if (count < numOriginalConstraints)
 				{
@@ -189,6 +193,39 @@ namespace Durian.Generator.DefaultParam
 
 				return compilation.Configuration.ApplyNewModifierWhenPossible;
 			}
+		}
+
+		/// <summary>
+		/// Gets an <see cref="int"/> value of an enum property of either <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/> applied for the target <see cref="ISymbol"/>.
+		/// </summary>
+		/// <param name="propertyName">Name of the property to get the value of.</param>
+		/// <param name="attributes">Attributes of the target <see cref="ISymbol"/>.</param>
+		/// <param name="containingTypes">Types that contain the target <see cref="ISymbol"/>.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="defaultValue">Value to be returned when no other valid configuration value is found.</param>
+		public static int GetConfigurationEnumValue(string propertyName, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation, int defaultValue)
+		{
+			if (!TryGetConfigurationPropertyName(attributes, compilation.ConfigurationAttribute!, propertyName, out int value))
+			{
+				int length = containingTypes.Length;
+
+				if (length > 0)
+				{
+					INamedTypeSymbol scopedAttribute = compilation.ScopedConfigurationAttribute!;
+
+					for (int i = 0; i < length; i++)
+					{
+						if (TryGetConfigurationPropertyName(containingTypes[i].GetAttributes(), scopedAttribute, propertyName, out value))
+						{
+							return value;
+						}
+					}
+				}
+
+				return defaultValue;
+			}
+
+			return value;
 		}
 
 		/// <summary>

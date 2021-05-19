@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
-using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -153,11 +151,11 @@ namespace Durian.Generator.DefaultParam
 
 			SyntaxTokenList modifiers = CurrentDeclaration.Modifiers;
 
-			if(!modifiers.Any())
+			if (!modifiers.Any())
 			{
 				SyntaxTriviaList trivia = CurrentDeclaration.DelegateKeyword.LeadingTrivia;
 
-				if(trivia.Any())
+				if (trivia.Any())
 				{
 					trivia = trivia.RemoveAt(trivia.Count - 1);
 					CurrentDeclaration = CurrentDeclaration.WithDelegateKeyword(CurrentDeclaration.DelegateKeyword.WithLeadingTrivia(trivia));

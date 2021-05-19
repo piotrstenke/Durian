@@ -496,7 +496,7 @@ namespace Durian.Generator.Extensions
 				throw new ArgumentNullException(nameof(typeParameters));
 			}
 
-			if(includeVariance)
+			if (includeVariance)
 			{
 				return AnalysisUtilities.GetGenericName(typeParameters.Select(p =>
 				{

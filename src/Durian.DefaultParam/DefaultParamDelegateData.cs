@@ -22,9 +22,7 @@ namespace Durian.Generator.DefaultParam
 		/// <inheritdoc/>
 		public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
 
-		/// <summary>
-		/// A <see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied.
-		/// </summary>
+		/// <inheritdoc cref="DefaultParamMethodData.NewModifierIndexes"/>
 		public HashSet<int>? NewModifierIndexes { get; }
 
 		/// <summary>

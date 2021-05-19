@@ -120,12 +120,12 @@ namespace Durian.Generator.DefaultParam
 
 			if (type.TypeKind == TypeKind.Delegate)
 			{
-				if(CheckArguments(arguments, propertyName, out arg))
+				if (CheckArguments(arguments, propertyName, out arg))
 				{
 					_diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), type);
 				}
 			}
-			else if((type.TypeKind == TypeKind.Struct || type.IsSealed) && CheckArguments(arguments, propertyName, out arg))
+			else if ((type.TypeKind == TypeKind.Struct || type.IsSealed) && CheckArguments(arguments, propertyName, out arg))
 			{
 				AttributeData? attr = type.GetAttributeData(node);
 
@@ -133,13 +133,13 @@ namespace Durian.Generator.DefaultParam
 				{
 					DPTypeConvention convention = (DPTypeConvention)value;
 
-					if(convention == DPTypeConvention.Inherit)
+					if (convention == DPTypeConvention.Inherit)
 					{
 						_diagnosticReceiver.ReportDiagnostic(DUR0121_InheritTypeConventionCannotBeUsedOnStructOrSealedType, arg.GetLocation(), type);
 					}
 				}
 			}
-			else if(type.IsSealed)
+			else if (type.IsSealed)
 			{
 				if (CheckArguments(arguments, propertyName, out arg))
 				{

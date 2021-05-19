@@ -44,16 +44,7 @@ namespace Durian.Generator.DefaultParam
 				return false;
 			}
 
-			/// <summary>
-			/// Analyzes all the colliding members of the given <paramref name="symbol"/>.
-			/// </summary>
-			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-			/// <param name="symbol"><see cref="INamedTypeSymbol"/> to analyze the colliding members of.</param>
-			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
-			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-			/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
-			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-			/// <returns><see langword="true"/> if there aren't any collisions with the <paramref name="symbol"/>, otherwise <see langword="false"/>.</returns>
+			/// <inheritdoc cref="AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
 			public static bool AnalyzeCollidingMembers(
 				IDiagnosticReceiver diagnosticReceiver,
 				INamedTypeSymbol symbol,
@@ -63,7 +54,16 @@ namespace Durian.Generator.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
-				return AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, symbol.GetAttributes(), symbol.GetContainingTypeSymbols().ToArray(), out applyNew, cancellationToken);
+				return AnalyzeCollidingMembers(
+					diagnosticReceiver,
+					symbol,
+					in typeParameters,
+					compilation,
+					symbol.GetAttributes(),
+					symbol.GetContainingTypeSymbols().ToArray(),
+					out applyNew,
+					cancellationToken
+				);
 			}
 
 			/// <summary>
@@ -89,6 +89,40 @@ namespace Durian.Generator.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
+				bool allowsNewModifier = AllowsNewModifier(attributes, containingTypes, compilation);
+
+				return AnalyzeCollidingMembers(
+					diagnosticReceiver,
+					symbol,
+					in typeParameters,
+					compilation,
+					allowsNewModifier,
+					out applyNew,
+					cancellationToken
+				);
+			}
+
+			/// <summary>
+			/// Analyzes all the colliding members of the given <paramref name="symbol"/>.
+			/// </summary>
+			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+			/// <param name="symbol"><see cref="INamedTypeSymbol"/> to analyze the colliding members of.</param>
+			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
+			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+			/// <param name="allowsNewModifier">Determines whether to allows applying the <see langword="new"/> modifier.</param>
+			/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
+			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+			/// <returns><see langword="true"/> if there aren't any collisions with the <paramref name="symbol"/>, otherwise <see langword="false"/>.</returns>
+			public static bool AnalyzeCollidingMembers(
+				IDiagnosticReceiver diagnosticReceiver,
+				INamedTypeSymbol symbol,
+				in TypeParameterContainer typeParameters,
+				DefaultParamCompilationData compilation,
+				bool allowsNewModifier,
+				out HashSet<int>? applyNew,
+				CancellationToken cancellationToken = default
+			)
+			{
 				CollidingMember[] collidingMethods = GetPotentiallyCollidingMembers(
 					symbol,
 					compilation,
@@ -107,7 +141,7 @@ namespace Durian.Generator.DefaultParam
 					symbol,
 					in typeParameters,
 					collidingMethods,
-					AllowsNewModifier(attributes, containingTypes, compilation),
+					allowsNewModifier,
 					cancellationToken,
 					out applyNew
 				);
