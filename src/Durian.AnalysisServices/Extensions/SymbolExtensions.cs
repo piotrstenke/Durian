@@ -17,6 +17,152 @@ namespace Durian.Generator.Extensions
 	public static class SymbolExtensions
 	{
 		/// <summary>
+		/// Returns the effective <see cref="Accessibility"/> of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the effective <see cref="Accessibility"/> of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static Accessibility GetEffectiveAccessibility(this ISymbol symbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			ISymbol? s = symbol;
+			Accessibility lowest = Accessibility.Public;
+
+			while(s is not null)
+			{
+				Accessibility current = s.DeclaredAccessibility;
+
+				if (current == Accessibility.Private)
+				{
+					return current;
+				}
+
+				if(current != Accessibility.NotApplicable && current < lowest)
+				{
+					lowest = current;
+				}
+
+				s = s.ContainingSymbol;
+			}
+
+			return lowest;
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="type"/> is the <paramref name="typeParameter"/> or if it uses it as its element type (for <see cref="IArrayTypeSymbol"/>) or pointed at type (for <see cref="IPointerTypeSymbol"/>).
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to check.</param>
+		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to check if is used by the target <paramref name="type"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="typeParameter"/> is <see langword="null"/>.</exception>
+		public static bool IsOrUsesTypeParameter(this ITypeSymbol type, ITypeParameterSymbol typeParameter)
+		{
+			if(type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			if(typeParameter is null)
+			{
+				throw new ArgumentNullException(nameof(typeParameter));
+			}
+
+			if(SymbolEqualityComparer.Default.Equals(type, typeParameter))
+			{
+				return true;
+			}
+
+			ITypeSymbol symbol;
+
+			if (type is IArrayTypeSymbol array)
+			{
+				symbol = array.GetUnderlayingElementType();
+			}
+			else if (type is IPointerTypeSymbol pointer)
+			{
+				symbol = pointer.GetUnderlayingPointedAtType();
+			}
+			else
+			{
+				return false;
+			}
+
+			if(SymbolEqualityComparer.Default.Equals(symbol, typeParameter))
+			{
+				return true;
+			}
+
+			if (symbol is INamedTypeSymbol t && t.Arity > 0)
+			{
+				foreach (ITypeSymbol s in t.TypeArguments)
+				{
+					if (IsOrUsesTypeParameter(s, typeParameter))
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Returns the effective underlaying element type of the <paramref name="array"/> or any of its element array types.
+		/// </summary>
+		/// <param name="array"><see cref="IArrayTypeSymbol"/> to get the effective underlaying type of.</param>
+		/// <returns>The effective underlaying type the <paramref name="array"/> or any of its element array types. -or- <paramref name="array"/> if no such type was found.</returns>
+		public static ITypeSymbol GetUnderlayingElementType(this IArrayTypeSymbol array)
+		{
+			if (array is null)
+			{
+				throw new ArgumentNullException(nameof(array));
+			}
+
+			ITypeSymbol? a = array;
+
+			while (a is IArrayTypeSymbol t)
+			{
+				a = t.ElementType;
+			}
+
+			if (a is null)
+			{
+				return array;
+			}
+
+			return a;
+		}
+
+		/// <summary>
+		/// Returns the effective underlaying type the <paramref name="pointer"/> or any of its child pointers point to.
+		/// </summary>
+		/// <param name="pointer"><see cref="IPointerTypeSymbol"/> to get the effective underlaying type of.</param>
+		/// <returns>The effective underlaying type the <paramref name="pointer"/> or any of its child pointers point to. -or- <paramref name="pointer"/> if no such type was found.</returns>
+		public static ITypeSymbol GetUnderlayingPointedAtType(this IPointerTypeSymbol pointer)
+		{
+			if(pointer is null)
+			{
+				throw new ArgumentNullException(nameof(pointer));
+			}
+
+			ITypeSymbol? p = pointer;
+
+			while(p is IPointerTypeSymbol t)
+			{
+				p = t.PointedAtType;
+			}
+
+			if(p is null)
+			{
+				return pointer;
+			}
+
+			return p;
+		}
+
+		/// <summary>
 		/// Determines whether the <paramref name="symbol"/> was generated from the <paramref name="target"/> <see cref="ISymbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
@@ -724,8 +870,9 @@ namespace Durian.Generator.Extensions
 		/// </summary>
 		/// <param name="type">Type to check if inherits the <paramref name="baseType"/>.</param>
 		/// <param name="baseType">Base type to check if is inherited by the target <paramref name="type"/>.</param>
+		/// <param name="toReturnIfSame">Determines what to return when the <paramref name="type"/> and <paramref name="baseType"/> are the same.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or - <paramref name="baseType"/> is <see langword="null"/>.</exception>
-		public static bool InheritsFrom(this ITypeSymbol type, INamedTypeSymbol baseType)
+		public static bool InheritsOrImplementsFrom(this ITypeSymbol type, ITypeSymbol baseType, bool toReturnIfSame = true)
 		{
 			if (type is null)
 			{
@@ -739,7 +886,7 @@ namespace Durian.Generator.Extensions
 
 			if (SymbolEqualityComparer.Default.Equals(type, baseType))
 			{
-				return false;
+				return toReturnIfSame;
 			}
 
 			if (baseType.TypeKind == TypeKind.Interface)
@@ -1221,6 +1368,16 @@ namespace Durian.Generator.Extensions
 
 		private static bool IsValidForTypeParameter_Internal(ITypeSymbol type, ITypeParameterSymbol parameter)
 		{
+			if(type.IsStatic || type.IsRefLikeType || type is IErrorTypeSymbol)
+			{
+				return false;
+			}
+
+			if(type is INamedTypeSymbol s && s.IsUnboundGenericType)
+			{
+				return false;
+			}
+
 			if (parameter.HasReferenceTypeConstraint)
 			{
 				if (!type.IsReferenceType)
@@ -1258,9 +1415,16 @@ namespace Durian.Generator.Extensions
 				}
 			}
 
-			foreach (INamedTypeSymbol t in parameter.ConstraintTypes)
+			foreach (ITypeSymbol t in parameter.ConstraintTypes)
 			{
-				if (!InheritsFrom(type, t))
+				if(t is ITypeParameterSymbol p)
+				{
+					if(!IsValidForTypeParameter_Internal(type, p))
+					{
+						return false;
+					}
+				}
+				else if (!InheritsOrImplementsFrom(type, t))
 				{
 					return false;
 				}

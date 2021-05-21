@@ -89,7 +89,7 @@ namespace Durian.Generator
 					}
 				}
 
-				return true;
+				return false;
 			}
 		}
 

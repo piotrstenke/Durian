@@ -19,7 +19,7 @@ namespace Durian.Generator
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 			DUR0002_ModuleOfTypeIsNotImported,
-			DUR0003_DoNotUseTypeInDurianGeneratorNamespace
+			DUR0003_DoNotUseTypeFromDurianGeneratorNamespace
 		);
 
 		/// <summary>
@@ -50,9 +50,19 @@ namespace Durian.Generator
 
 			SymbolInfo info = context.SemanticModel.GetSymbolInfo(node, context.CancellationToken);
 
-			if (info.Symbol is not INamedTypeSymbol type)
+			if(info.Symbol is null)
 			{
 				return;
+			}
+
+			if (info.Symbol is not INamedTypeSymbol type)
+			{
+				if(!node.Ancestors().Any(a => a is AttributeSyntax))
+				{
+					return;
+				}
+
+				type = info.Symbol!.ContainingType;
 			}
 
 			(bool isDurianType, bool isDisabled) = compilation.IsDisabledDurianType(type, out ModuleIdentity? module);
@@ -61,14 +71,14 @@ namespace Durian.Generator
 			{
 				INamespaceSymbol[] namespaces = type.GetContainingNamespaces().ToArray();
 
-				if (namespaces.Length == 2 && namespaces[0].Name == "Durian" && namespaces[1].Name == "Core")
+				if (namespaces.Length == 2 && namespaces[0].Name == "Durian" && namespaces[1].Name == "Generator")
 				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0003_DoNotUseTypeInDurianGeneratorNamespace, Location.None));
+					context.ReportDiagnostic(Diagnostic.Create(DUR0003_DoNotUseTypeFromDurianGeneratorNamespace, node.GetLocation()));
 				}
 
 				if (isDisabled)
 				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, Location.None, type.Name, module));
+					context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, node.GetLocation(), type.Name, module));
 				}
 			}
 		}

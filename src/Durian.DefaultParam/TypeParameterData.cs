@@ -42,9 +42,9 @@ namespace Durian.Generator.DefaultParam
 		public readonly MemberDeclarationSyntax Parent { get; }
 
 		/// <summary>
-		/// The <see cref="INamedTypeSymbol"/> that was specified using the <see cref="Attribute"/>. -or- <see langword="null"/> if <see cref="Attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.
+		/// The <see cref="ITypeSymbol"/> that was specified using the <see cref="Attribute"/>. -or- <see langword="null"/> if <see cref="Attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.
 		/// </summary>
-		public readonly INamedTypeSymbol? TargetType { get; }
+		public readonly ITypeSymbol? TargetType { get; }
 
 		/// <summary>
 		/// Target <see cref="ITypeParameterSymbol"/>.
@@ -62,7 +62,7 @@ namespace Durian.Generator.DefaultParam
 		[MemberNotNullWhen(true, nameof(Attribute), nameof(TargetType))]
 		public readonly bool IsDefaultParam => Attribute is not null && TargetType is not null;
 
-		/// <inheritdoc cref="TypeParameterData(TypeParameterSyntax, ITypeParameterSymbol, SemanticModel, AttributeSyntax, INamedTypeSymbol)"/>
+		/// <inheritdoc cref="TypeParameterData(TypeParameterSyntax, ITypeParameterSymbol, SemanticModel, AttributeSyntax, ITypeSymbol)"/>
 		public TypeParameterData(TypeParameterSyntax syntax, ITypeParameterSymbol symbol, SemanticModel semanticModel) : this(syntax, symbol, semanticModel, null, null)
 		{
 		}
@@ -74,8 +74,8 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="symbol"><see cref="ITypeParameterSymbol"/> represented by the target <paramref name="syntax"/>.</param>
 		/// <param name="semanticModel"><see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the target <paramref name="syntax"/>.</param>
 		/// <param name="attribute">Valid <see cref="DefaultParamAttribute"/> defined on the target <paramref name="symbol"/>.</param>
-		/// <param name="targetType">The <see cref="INamedTypeSymbol"/> that was specified using the <paramref name="attribute"/>. -or- <see langword="null"/> if <paramref name="attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.</param>
-		public TypeParameterData(TypeParameterSyntax syntax, ITypeParameterSymbol symbol, SemanticModel semanticModel, AttributeSyntax? attribute, INamedTypeSymbol? targetType)
+		/// <param name="targetType">The <see cref="ITypeSymbol"/> that was specified using the <paramref name="attribute"/>. -or- <see langword="null"/> if <paramref name="attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.</param>
+		public TypeParameterData(TypeParameterSyntax syntax, ITypeParameterSymbol symbol, SemanticModel semanticModel, AttributeSyntax? attribute, ITypeSymbol? targetType)
 		{
 			Syntax = syntax;
 			Symbol = symbol;
@@ -109,7 +109,7 @@ namespace Durian.Generator.DefaultParam
 			hashCode = (hashCode * -1521134295) + EqualityComparer<AttributeSyntax?>.Default.GetHashCode(Attribute);
 			hashCode = (hashCode * -1521134295) + EqualityComparer<TypeParameterSyntax>.Default.GetHashCode(Syntax);
 			hashCode = (hashCode * -1521134295) + EqualityComparer<MemberDeclarationSyntax>.Default.GetHashCode(Parent);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<INamedTypeSymbol?>.Default.GetHashCode(TargetType);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<ITypeSymbol?>.Default.GetHashCode(TargetType);
 			hashCode = (hashCode * -1521134295) + EqualityComparer<ITypeParameterSymbol>.Default.GetHashCode(Symbol);
 			return hashCode;
 		}
@@ -233,9 +233,9 @@ namespace Durian.Generator.DefaultParam
 			}
 		}
 
-		private static INamedTypeSymbol? GetTargetType(AttributeData data)
+		private static ITypeSymbol? GetTargetType(AttributeData data)
 		{
-			return data.ConstructorArguments.FirstOrDefault().Value as INamedTypeSymbol;
+			return data.ConstructorArguments.FirstOrDefault().Value as ITypeSymbol;
 		}
 
 		/// <inheritdoc/>

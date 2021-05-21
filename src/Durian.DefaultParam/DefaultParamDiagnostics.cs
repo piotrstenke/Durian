@@ -300,5 +300,44 @@ namespace Durian.Generator.DefaultParam
 			helpLinkUri: DocsPath + @"\DUR0122.md",
 			isEnabledByDefault: true
 		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that value of <see cref="DefaultParamAttribute"/> cannot be less accessible than the target member.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0123_DefaultParamValueCannotBeLessAccessibleThanTargetMember = new(
+			id: "DUR0123",
+			title: "DefaultParam value cannot be less accessible than the target member",
+			messageFormat: "'{0}': DefaultParam value '{1}' cannot be less accessible than the target member",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0123.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the target type is not valid <see cref="DefaultParamAttribute"/> value when there is a type parameter constrained to the target type parameter.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0124_TypeCannotBeUsedWithConstraint = new(
+			id: "DUR0124",
+			title: "Type is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
+			messageFormat: "'{0}': Type '{1}' is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0124.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the target type is not valid <see cref="DefaultParamAttribute"/> value.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0125_TypeIsNotValidDefaultParamValue = new(
+			id: "DUR0125",
+			title: "Type is not valid DefaultParam value",
+			messageFormat: "'{0}': Type '{1}' is not valid DefaultParam value",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0125.md",
+			isEnabledByDefault: true
+		);
 	}
 }

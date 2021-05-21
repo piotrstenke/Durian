@@ -8,26 +8,26 @@
 		/// <summary>
 		/// Represents the <c>Durian.Core</c> package.
 		/// </summary>
-		Core,
+		Core = 1,
 
 		/// <summary>
 		/// Represents the <c>Durian.Core.Analyzer</c> package.
 		/// </summary>
-		CoreAnalyzer,
+		CoreAnalyzer = 2,
 
 		/// <summary>
 		/// Represents the <c>Durian.AnalysisServices</c> package.
 		/// </summary>
-		AnalysisServices,
+		AnalysisServices = 3,
 
 		/// <summary>
 		/// Represents the <c>Durian.TestServices</c> package.
 		/// </summary>
-		TestServices,
+		TestServices = 4,
 
 		/// <summary>
 		/// Represents the <c>Durian.DefaultParam</c> package.
 		/// </summary>
-		DefaultParam,
+		DefaultParam = 5,
 	}
 }

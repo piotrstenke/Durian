@@ -6,7 +6,7 @@ using Durian.Info;
 
 [assembly: PackageDefinition(DurianModule.Core, DurianPackage.CoreAnalyzer, PackageType.Analyzer, "1.0.0")]
 [assembly: DiagnosticFiles(nameof(DurianDiagnostics))]
-[assembly: IncludeTypes(nameof(IncludeTypesAttribute), nameof(IncludeDiagnosticsAttribute), nameof(EnableModuleAttribute), nameof(DiagnosticFilesAttribute), nameof(PackageDefinitionAttribute))]
+[assembly: IncludeTypes(nameof(DurianGeneratedAttribute), nameof(IncludeTypesAttribute), nameof(IncludeDiagnosticsAttribute), nameof(EnableModuleAttribute), nameof(DiagnosticFilesAttribute), nameof(PackageDefinitionAttribute))]
 
 #endregion
 

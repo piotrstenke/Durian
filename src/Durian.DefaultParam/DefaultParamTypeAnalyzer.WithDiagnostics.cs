@@ -28,7 +28,7 @@ namespace Durian.Generator.DefaultParam
 
 				bool isValid = AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation);
 				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, cancellationToken);
-				isValid &= AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
+				isValid &= AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
 
 				ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
 				INamedTypeSymbol[] containingTypes = symbol.GetContainingTypeSymbols().ToArray();
@@ -135,10 +135,10 @@ namespace Durian.Generator.DefaultParam
 				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out containingTypes);
 			}
 
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(IDiagnosticReceiver, in TypeParameterContainer)"/>
-			public static bool AnalyzeTypeParameters(IDiagnosticReceiver diagnosticReceiver, in TypeParameterContainer typeParameters)
+			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(IDiagnosticReceiver, ISymbol, in TypeParameterContainer)"/>
+			public static bool AnalyzeTypeParameters(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, in TypeParameterContainer typeParameters)
 			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
+				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
 			}
 		}
 	}

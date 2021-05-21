@@ -8,16 +8,16 @@
 		/// <summary>
 		/// Uses default convention, which is <see cref="Copy"/>.
 		/// </summary>
-		Default,
+		Default = Copy,
 
 		/// <summary>
 		/// Copies contents of the type.
 		/// </summary>
-		Copy,
+		Copy = 1,
 
 		/// <summary>
 		/// Inherits the type.
 		/// </summary>
-		Inherit
+		Inherit = 2
 	}
 }

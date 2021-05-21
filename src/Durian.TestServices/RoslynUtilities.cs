@@ -19,6 +19,11 @@ namespace Durian.Tests
 	public static class RoslynUtilities
 	{
 		/// <summary>
+		/// Name applied to a created <see cref="Compilation"/> when no other name is specified.
+		/// </summary>
+		public static string DefaultCompilationName => "TestCompilation";
+
+		/// <summary>
 		/// Returns a collection of <see cref="CSharpSyntaxTree"/>s created from the specified <paramref name="sources"/>.
 		/// </summary>
 		/// <param name="sources">A collection of <see cref="string"/>s that represent the sources to parse and create the <see cref="SyntaxTree"/>s from.</param>
@@ -183,7 +188,7 @@ namespace Durian.Tests
 		public static CSharpCompilation CreateCompilationWithReferences(IEnumerable<CSharpSyntaxTree>? trees, params MetadataReference[]? references)
 		{
 			return CSharpCompilation.Create(
-				assemblyName: "compilation",
+				assemblyName: DefaultCompilationName,
 				syntaxTrees: trees,
 				references: references,
 				options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)

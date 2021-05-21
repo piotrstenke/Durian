@@ -112,7 +112,7 @@ namespace Durian.Generator.DefaultParam
 
 			if (!symbol.IsOverride)
 			{
-				if (AnalyzeTypeParameters(in typeParameters))
+				if (AnalyzeTypeParameters(symbol, in typeParameters))
 				{
 					return AnalyzeInterfaceImplementation(symbol, in typeParameters, compilation, cancellationToken);
 				}
@@ -135,7 +135,7 @@ namespace Durian.Generator.DefaultParam
 			TypeParameterContainer baseTypeParameters = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
 
 			if (HasAddedDefaultParamAttributes(in typeParameters, in baseTypeParameters) ||
-				!AnalyzeTypeParameters(in baseTypeParameters) ||
+				!AnalyzeTypeParameters(symbol, in baseTypeParameters) ||
 				!AnalyzeBaseMethodParameters(in typeParameters, in baseTypeParameters) ||
 				!AnalyzeInterfaceImplementation(symbol, in typeParameters, compilation, cancellationToken))
 			{
@@ -333,7 +333,7 @@ namespace Durian.Generator.DefaultParam
 
 				TypeParameterContainer baseParameters = TypeParameterContainer.CreateFrom(method, compilation, cancellationToken);
 
-				if (!baseParameters.HasDefaultParams || !AnalyzeTypeParameters(in baseParameters))
+				if (!baseParameters.HasDefaultParams || !AnalyzeTypeParameters(symbol, in baseParameters))
 				{
 					continue;
 				}
@@ -371,7 +371,7 @@ namespace Durian.Generator.DefaultParam
 
 					TypeParameterContainer baseTypeParameters = TypeParameterContainer.CreateFrom(interfaceMethod, compilation, cancellationToken);
 
-					if (!AnalyzeInterfaceMethod(in typeParameters, in baseTypeParameters))
+					if (!AnalyzeInterfaceMethod(interfaceMethod, in typeParameters, in baseTypeParameters))
 					{
 						return false;
 					}
@@ -381,14 +381,14 @@ namespace Durian.Generator.DefaultParam
 			return true;
 		}
 
-		private static bool AnalyzeInterfaceMethod(in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
+		private static bool AnalyzeInterfaceMethod(IMethodSymbol interfaceMethod, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
 		{
 			if (!baseTypeParameters.HasDefaultParams)
 			{
 				return true;
 			}
 
-			if (!AnalyzeTypeParameters(in baseTypeParameters))
+			if (!AnalyzeTypeParameters(interfaceMethod, in baseTypeParameters))
 			{
 				return false;
 			}

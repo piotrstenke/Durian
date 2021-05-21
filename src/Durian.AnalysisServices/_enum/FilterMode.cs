@@ -11,21 +11,21 @@ namespace Durian.Generator
 		/// <summary>
 		/// Filter emits no additional information.
 		/// </summary>
-		None,
+		None = 0,
 
 		/// <summary>
 		/// Filter reports <see cref="Diagnostic"/>s for the invalid <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
-		Diagnostics,
+		Diagnostics = 1,
 
 		/// <summary>
 		/// Filter creates log files for the invalid <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
-		Logs,
+		Logs = 2,
 
 		/// <summary>
 		/// Filter both creates log files and reports <see cref="Diagnostic"/>s for the invalid <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
-		Both
+		Both = 3
 	}
 }

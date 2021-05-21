@@ -79,7 +79,8 @@ namespace Durian.Generator.DefaultParam
 				list = SyntaxFactory.SeparatedList(p);
 			}
 
-			MemberDeclarationSyntax decl = member.WithAttributeLists(SyntaxFactory.List(GetValidAttributes(member, semanticModel, compilation, cancellationToken)));
+			AttributeListSyntax[] attributes = GetValidAttributes(member, semanticModel, compilation, cancellationToken);
+			MemberDeclarationSyntax decl = member.WithAttributeLists(SyntaxFactory.List(attributes));
 			updatedTypeParameters = SyntaxFactory.TypeParameterList(list);
 
 			SyntaxTokenList modifiers = decl.Modifiers;
@@ -350,7 +351,7 @@ namespace Durian.Generator.DefaultParam
 
 				string n = data.TargetType.JoinNamespaces();
 
-				if (!namespaces.Contains(n))
+				if (!string.IsNullOrWhiteSpace(n) && !namespaces.Contains(n))
 				{
 					namespaces.Add(n);
 				}
@@ -491,21 +492,33 @@ namespace Durian.Generator.DefaultParam
 			return namespaces.Distinct().Where(n => n != "Durian").ToList();
 		}
 
-		private static IEnumerable<AttributeListSyntax> GetValidAttributes(MemberDeclarationSyntax member, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
+		private static AttributeListSyntax[] GetValidAttributes(MemberDeclarationSyntax member, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
 		{
-			foreach (AttributeListSyntax list in member.AttributeLists)
+			SyntaxList<AttributeListSyntax> attrLists = member.AttributeLists;
+			List<AttributeListSyntax> list = new(attrLists.Count);
+
+			foreach (AttributeListSyntax attrList in attrLists)
 			{
-				SeparatedSyntaxList<AttributeSyntax> l = SyntaxFactory.SeparatedList(list.Attributes.Where(attr =>
+				SeparatedSyntaxList<AttributeSyntax> attributes = attrList.Attributes;
+
+				if(!attributes.Any())
+				{
+					continue;
+				}
+
+				attributes = SyntaxFactory.SeparatedList(attributes.Where(attr =>
 				{
 					ISymbol? symbol = semanticModel.GetSymbolInfo(attr, cancellationToken).Symbol;
 					return !SymbolEqualityComparer.Default.Equals(symbol?.ContainingType, compilation.ConfigurationAttribute);
 				}));
 
-				if (l.Any())
+				if (attributes.Any())
 				{
-					yield return SyntaxFactory.AttributeList(l);
+					list.Add(SyntaxFactory.AttributeList(attributes).WithTriviaFrom(attrList));
 				}
 			}
+
+			return list.ToArray();
 		}
 	}
 }

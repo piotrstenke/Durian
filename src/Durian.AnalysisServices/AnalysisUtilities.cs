@@ -114,7 +114,7 @@ namespace Durian.Generator
 		/// <returns>Keyword that represents the given <paramref name="type"/>. -or- <paramref name="type"/> if the type name is not associated with a C# keyword. -or- <see cref="string.Empty"/> of the <paramref name="type"/> is <see langword="null"/>.</returns>
 		public static string TypeToKeyword(string? type)
 		{
-			if (type is null)
+			if (string.IsNullOrWhiteSpace(type))
 			{
 				return string.Empty;
 			}
@@ -139,7 +139,7 @@ namespace Durian.Generator
 				"UIntPtr" => "nuint",
 				"Object" => "object",
 				"Void" => "void",
-				_ => type,
+				_ => type!,
 			};
 		}
 

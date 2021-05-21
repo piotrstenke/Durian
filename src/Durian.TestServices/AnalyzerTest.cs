@@ -11,7 +11,7 @@ namespace Durian.Tests
 	/// An abstract class that provides methods to test <see cref="DiagnosticAnalyzer"/>s.
 	/// </summary>
 	/// <typeparam name="T">Type of <see cref="DiagnosticAnalyzer"/> this <see cref="AnalyzerTest{T}"/> supports.</typeparam>
-	public abstract class AnalyzerTest<T> : CompilationTest where T : DiagnosticAnalyzer
+	public abstract class AnalyzerTest<T> : CompilationTest where T : DiagnosticAnalyzer, new()
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AnalyzerTest{T}"/> class.
@@ -37,23 +37,18 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <typeparamref name="T"/> class.
-		/// </summary>
-		protected abstract T CreateAnalyzer();
-
-		/// <summary>
-		/// Asynchronously executes the analyzer created using the <see cref="CreateAnalyzer"/> method.
+		/// Asynchronously executes a new instance of <typeparamref name="T"/>.
 		/// </summary>
 		/// <param name="input">Input for the analyzer.</param>
 		/// <param name="addToCompilation">Determines whether to add the <see cref="CSharpSyntaxTree"/> created from the <paramref name="input"/> to the <see cref="CompilationTest.Compilation"/>.</param>
-		public async Task<ImmutableArray<Diagnostic>> RunAnalyzerAsync(string? input, bool addToCompilation = true)
+		public async Task<ImmutableArray<Diagnostic>> RunAnalyzerAsync(string? input, bool addToCompilation = false)
 		{
 			if (input is null)
 			{
 				return ImmutableArray.Create<Diagnostic>();
 			}
 
-			T analyzer = CreateAnalyzer();
+			T analyzer = new();
 			return await RunAnalyzerAsync(analyzer, input, addToCompilation).ConfigureAwait(false);
 		}
 
@@ -63,7 +58,7 @@ namespace Durian.Tests
 		/// <param name="analyzer"><see cref="DiagnosticAnalyzer"/> to execute.</param>
 		/// <param name="input">Input for the analyzer.</param>
 		/// <param name="addToCompilation">Determines whether to add the <see cref="CSharpSyntaxTree"/> created from the <paramref name="input"/> to the <see cref="CompilationTest.Compilation"/>.</param>
-		public async Task<ImmutableArray<Diagnostic>> RunAnalyzerAsync(T analyzer, string? input, bool addToCompilation = true)
+		public async Task<ImmutableArray<Diagnostic>> RunAnalyzerAsync(T analyzer, string? input, bool addToCompilation = false)
 		{
 			if (analyzer is null || input is null)
 			{

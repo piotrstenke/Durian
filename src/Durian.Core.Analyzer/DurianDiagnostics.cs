@@ -30,7 +30,6 @@ namespace Durian.Generator
 		/// <summary>
 		/// Provides diagnostic message indicating that the target type cannot be accessed, because its module is not imported.
 		/// </summary>
-		[WithoutLocation]
 		public static readonly DiagnosticDescriptor DUR0002_ModuleOfTypeIsNotImported = new(
 			id: "DUR0002",
 			title: "Type cannot be accessed, because its module is not imported",
@@ -42,10 +41,9 @@ namespace Durian.Generator
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the user should not use types in the Durian.Generator namespace.
+		/// Provides diagnostic message indicating that the user should not use types from the Durian.Generator namespace.
 		/// </summary>
-		[WithoutLocation]
-		public static readonly DiagnosticDescriptor DUR0003_DoNotUseTypeInDurianGeneratorNamespace = new(
+		public static readonly DiagnosticDescriptor DUR0003_DoNotUseTypeFromDurianGeneratorNamespace = new(
 			id: "DUR0003",
 			title: "Do not use types from the Durian.Generator namespace",
 			messageFormat: "Do not use types from the Durian.Generator namespace",
@@ -66,6 +64,19 @@ namespace Durian.Generator
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0004.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that Durian modules can be used only in CSharp.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0005_DoNotAddTypesToGeneratorNamespace = new(
+			id: "DUR0005",
+			title: "Do not add custom types to the Durian.Generator namespace",
+			messageFormat: "Do not add custom types to the Durian.Generator namespace",
+			category: "Durian",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0005.md",
 			isEnabledByDefault: true
 		);
 	}

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Durian.Generator.Data;
 using Durian.Generator.Logging;
+using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -227,7 +228,8 @@ namespace Durian.Generator.DefaultParam
 			{
 				ref readonly TypeParameterData data = ref parameters[dataIndex];
 
-				_rewriter.ReplaceType(data.Symbol, AnalysisUtilities.TypeToKeyword(data.TargetType!.Name));
+				string name = GetTargetName(data.TargetType!);
+				_rewriter.ReplaceType(data.Symbol, name);
 
 				members[memberIndex] = _rewriter.CurrentNode;
 
@@ -254,6 +256,22 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return members;
+		}
+
+		private static string GetTargetName(ITypeSymbol targetType)
+		{
+			if (targetType is INamedTypeSymbol t)
+			{
+				return t.Arity > 0 ? t.GetGenericName(false) : AnalysisUtilities.TypeToKeyword(targetType.Name);
+			}
+			else if (targetType is IArrayTypeSymbol a)
+			{
+				return a.ToString();
+			}
+			else
+			{
+				return AnalysisUtilities.TypeToKeyword(targetType.Name);
+			}
 		}
 	}
 }

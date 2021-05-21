@@ -5,12 +5,12 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.Generator
 {
 	/// <summary>
-	/// <see cref="ISyntaxReceiver"/> that provides an additional method for checking if any <see cref="SyntaxNode"/>s were collected.
+	/// <see cref="ISyntaxReceiver"/> that provides an additional method for checking if any <see cref="CSharpSyntaxNode"/>s were collected.
 	/// </summary>
 	public interface IDurianSyntaxReceiver : ISyntaxReceiver
 	{
 		/// <summary>
-		/// Determines whether the <see cref="ISyntaxReceiver"/> is empty, i.e. it didn't collect any <see cref="SyntaxNode"/>s.
+		/// Determines whether the <see cref="ISyntaxReceiver"/> is empty, i.e. it didn't collect any <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
 		bool IsEmpty();
 

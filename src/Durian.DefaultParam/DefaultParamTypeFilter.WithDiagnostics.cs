@@ -117,7 +117,7 @@ namespace Durian.Generator.DefaultParam
 			{
 				bool isValid = AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
 				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
-				isValid &= AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
+				isValid &= AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
 
 				if (isValid)
 				{

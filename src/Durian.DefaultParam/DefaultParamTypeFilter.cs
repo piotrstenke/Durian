@@ -162,7 +162,7 @@ namespace Durian.Generator.DefaultParam
 		{
 			if (AnalyzeAgaintsProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
 				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes) &&
-				AnalyzeTypeParameters(in typeParameters))
+				AnalyzeTypeParameters(symbol, in typeParameters))
 			{
 				INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
 

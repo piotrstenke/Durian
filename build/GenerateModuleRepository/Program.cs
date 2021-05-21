@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 internal class Program
@@ -29,7 +30,8 @@ internal class Program
 		string output = args[1];
 
 		Configuration[] configurations = HandleConfigFiles(dir);
-		WriteOutput(configurations, output);
+		ModuleData[] modules = GetModules(configurations);
+		WriteOutput(configurations, modules, output);
 	}
 
 	private static Configuration[] HandleConfigFiles(string directory)
@@ -259,6 +261,7 @@ internal class Program
 
 		DiagnosticData[] allDiagnostics = new DiagnosticData[length];
 		diagnostics.CopyTo(allDiagnostics);
+		Dictionary<string, DiagnosticData> dict = new(allDiagnostics.Select(d => new KeyValuePair<string, DiagnosticData>(d.Id, d)));
 		List<DiagnosticData> list = new();
 
 		foreach (Configuration config in configurations)
@@ -274,7 +277,7 @@ internal class Program
 
 			foreach (string diagnostic in externalDiagnostics)
 			{
-				if (ExternalDiagnosticIsValid(diagnostic, allDiagnostics, out DiagnosticData data))
+				if (dict.TryGetValue(diagnostic, out DiagnosticData data))
 				{
 					list.Add(data);
 				}
@@ -287,25 +290,6 @@ internal class Program
 			config.ExternalDiagnostics = list.ToArray();
 			list.Clear();
 		}
-	}
-
-	private static bool ExternalDiagnosticIsValid(string externalDiagnostic, DiagnosticData[] allDiagnostics, out DiagnosticData diagnostic)
-	{
-		int length = allDiagnostics.Length;
-
-		for (int i = 0; i < length; i++)
-		{
-			ref readonly DiagnosticData diag = ref allDiagnostics[i];
-
-			if (diag.Id == externalDiagnostic)
-			{
-				diagnostic = diag;
-				return true;
-			}
-		}
-
-		diagnostic = default;
-		return false;
 	}
 
 	private static MatchCollection? GetMatches(string content, Regex attributeRegex)
@@ -360,36 +344,78 @@ internal class Program
 
 	private static ModuleData[] GetModules(Configuration[] configurations)
 	{
-		List<ModuleData> modules = new(configurations.Length);
+		HashSet<string> includedTypes = new();
+		HashSet<string> packages = new();
 
-		foreach (Configuration config in configurations)
+		(string moduleName, Configuration[] configurations)[] sorted = SortConfigurations(configurations);
+		ModuleData[] modules = new ModuleData[sorted.Length];
+
+		for (int i = 0; i < sorted.Length; i++)
 		{
-			if (config.ModuleName == "None")
+			ModuleData data = new(sorted[i].moduleName);
+
+			foreach (Configuration config in sorted[i].configurations)
+			{
+				for (int j = 0; j < config.IncludedTypes.Length; j++)
+				{
+					ref readonly IncludedType type = ref config.IncludedTypes[j];
+
+					if(includedTypes.Contains(type.Name))
+					{
+						Console.WriteLine($"Type '{type.Name}' is included by the '{config.ModuleName}' module in multiple places!");
+					}
+					else
+					{
+						data.IncludedTypes.Add(type);
+					}
+				}
+
+				if(packages.Contains(config.PackageName))
+				{
+					Console.WriteLine($"Package '{config.PackageName}' is part of multiple modules! Last encounter: '{config.ModuleName}'");
+				}
+				else
+				{
+					data.Packages.Add(config.PackageName);
+				}
+			}
+
+			modules[i] = data;
+
+			includedTypes.Clear();
+		}
+
+		return modules;
+	}
+
+	private static (string moduleName, Configuration[] configurations)[] SortConfigurations(Configuration[] configurations)
+	{
+		List<List<Configuration>> list = new(configurations.Length);
+		Dictionary<string, int> dict = new();
+
+		foreach (Configuration configuration in configurations)
+		{
+			if(configuration.ModuleName == "None")
 			{
 				continue;
 			}
 
-			AddModuleOrPackage(config, modules);
-		}
-
-		return modules.ToArray();
-	}
-
-	private static void AddModuleOrPackage(Configuration configuration, List<ModuleData> modules)
-	{
-		foreach (ModuleData module in modules)
-		{
-			if (module.Name == configuration.ModuleName)
+			if(dict.TryGetValue(configuration.ModuleName, out int index))
 			{
-				module.Packages.Add(configuration.PackageName);
-				return;
+				list[index].Add(configuration);
+			}
+			else
+			{
+				List<Configuration> current = new(4) { configuration };
+				dict.Add(configuration.ModuleName, list.Count);
+				list.Add(current);
 			}
 		}
 
-		modules.Add(new ModuleData(configuration.ModuleName, configuration.Diagnostics, configuration.ExternalDiagnostics ?? Array.Empty<DiagnosticData>(), configuration.IncludedTypes));
+		return list.Select(l => (l[0].ModuleName, l.ToArray())).ToArray();
 	}
 
-	private static void WriteOutput(Configuration[] configurations, string directory)
+	private static void WriteOutput(Configuration[] configurations, ModuleData[] modules, string directory)
 	{
 		StringBuilder builder = new(4096);
 
@@ -397,7 +423,6 @@ internal class Program
 		File.WriteAllText(Path.Combine(directory, ".generated", "PackageRepository.cs"), builder.ToString());
 		builder.Clear();
 
-		ModuleData[] modules = GetModules(configurations);
 		WriteModuleRepository(builder, modules);
 		File.WriteAllText(Path.Combine(directory, ".generated", "ModuleRepository.cs"), builder.ToString());
 	}
@@ -478,7 +503,7 @@ $@"		/// <summary>
 		/// </summary>
 		public static ModuleIdentity {module.Name} => new(
 			module: DurianModule.{module.Name},
-			id: {module.Id},
+			id: {module.GetId()},
 			packages: ");
 
 		if (module.Packages.Count == 0)
@@ -501,7 +526,7 @@ $@"new PackageIdentity[]
 
 		builder.Append("\t\t\tdocPath: ");
 
-		if (module.Diagnostics.Length == 0 && module.ExternalDiagnostics.Length == 0)
+		if (module.Diagnostics.Count == 0 && module.ExternalDiagnostics.Count == 0)
 		{
 			builder.AppendLine("null,");
 			builder.AppendLine("\t\t\tdiagnostics: null,");
@@ -512,17 +537,17 @@ $@"new PackageIdentity[]
 			builder.AppendLine("\t\t\tdiagnostics: new DiagnosticData[]");
 			builder.Append("\t\t\t{");
 
-			int length = module.Diagnostics.Length;
+			int length = module.Diagnostics.Count;
 			for (int i = 0; i < length; i++)
 			{
-				ref readonly DiagnosticData data = ref module.Diagnostics[i];
+				ref readonly DiagnosticData data = ref module.Diagnostics.ToArray()[i];
 
 				WriteDiagnosticData(in data, module, builder);
 				builder.AppendLine();
 				builder.AppendLine("\t\t\t\t),");
 			}
 
-			if (length > 0 && module.ExternalDiagnostics.Length > 0)
+			if (length > 0 && module.ExternalDiagnostics.Count > 0)
 			{
 				builder.AppendLine();
 				builder.AppendLine(
@@ -532,10 +557,10 @@ $@"				//
 				builder.AppendLine();
 			}
 
-			length = module.ExternalDiagnostics.Length;
+			length = module.ExternalDiagnostics.Count;
 			for (int i = 0; i < length; i++)
 			{
-				ref readonly DiagnosticData data = ref module.ExternalDiagnostics[i];
+				ref readonly DiagnosticData data = ref module.ExternalDiagnostics.ToArray()[i];
 
 				WriteDiagnosticData(in data, module, builder);
 				builder.AppendLine(",");
@@ -548,7 +573,7 @@ $@"				//
 
 		builder.Append("\t\t\ttypes: ");
 
-		if (module.IncludedTypes.Length == 0)
+		if (module.IncludedTypes.Count == 0)
 		{
 			builder.AppendLine("null");
 		}
@@ -557,10 +582,10 @@ $@"				//
 			builder.AppendLine("new TypeIdentity[]");
 			builder.AppendLine("\t\t\t{");
 
-			int length = module.IncludedTypes.Length;
+			int length = module.IncludedTypes.Count;
 			for (int i = 0; i < length; i++)
 			{
-				ref readonly IncludedType type = ref module.IncludedTypes[i];
+				ref readonly IncludedType type = ref module.IncludedTypes.ToArray()[i];
 
 				builder.AppendLine($"\t\t\t\tnew TypeIdentity(\"{type.Name}\", \"{type.Namespace}\"),");
 			}

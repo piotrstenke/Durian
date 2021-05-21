@@ -21,6 +21,11 @@
 		public static string GeneratorNamespace { get; } = $"{MainNamespace}.Generator";
 
 		/// <summary>
+		/// Namespace where module and package types are to be found.
+		/// </summary>
+		public static string InfoNamespace { get; } = $"{MainNamespace}.Info";
+
+		/// <summary>
 		/// Returns the <paramref name="attributeName"/> with a 'Attribute' at the end.
 		/// </summary>
 		/// <param name="attributeName">Name of the attribute to get the full type name of.</param>

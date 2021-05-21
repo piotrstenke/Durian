@@ -25,3 +25,6 @@ DUR0119 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/d
 DUR0120 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0120.md] Member with generated name already exists
 DUR0121 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0121.md] TypeConvention cannot be used on a struct or a sealed type
 DUR0122 | Durian.DefaultParam | Warning | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0122.md] DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity
+DUR0123 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0123.md] DefaultParam value cannot be less accessible than the target member
+DUR0124 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0124.md] Type is not valid DefaultParam value when there is a type parameter constrained to this type parameter
+DUR0125 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0125.md] Type is not valid DefaultParam value

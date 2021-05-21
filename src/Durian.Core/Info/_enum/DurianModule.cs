@@ -8,16 +8,16 @@
 		/// <summary>
 		/// This package does not belong to any Durian module.
 		/// </summary>
-		None,
+		None = 0,
 
 		/// <summary>
 		/// Represents the <c>Durian.Core</c> module.
 		/// </summary>
-		Core,
+		Core = 1,
 
 		/// <summary>
 		/// Represents the <c>Durian.DefaultParam</c> module.
 		/// </summary>
-		DefaultParam,
+		DefaultParam = 2,
 	}
 }

@@ -15,13 +15,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.TestServices", "src\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F7DC25BE-C8AA-4B1A-A752-70DB1234815E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.AnalysisServices.Tests", "tests\Durian.AnalysisServices.Tests\Durian.AnalysisServices.Tests.csproj", "{E1149A6A-B6FE-4ECA-BA7A-6101E35C91E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Tests.AnalysisServices", "tests\Durian.Tests.AnalysisServices\Durian.Tests.AnalysisServices.csproj", "{E1149A6A-B6FE-4ECA-BA7A-6101E35C91E7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.DefaultParam.Tests", "tests\Durian.DefaultParam.Tests\Durian.DefaultParam.Tests.csproj", "{308BB750-C144-4197-8BF2-26D2D75E2661}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Tests.DefaultParam", "tests\Durian.Tests.DefaultParam\Durian.Tests.DefaultParam.csproj", "{308BB750-C144-4197-8BF2-26D2D75E2661}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F874D8E3-AE3E-4D16-8D1D-10D89412CAFC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.DefaultParam.Samples", "samples\Durian.DefaultParam.Samples\Durian.DefaultParam.Samples.csproj", "{6C7C070F-E6A7-40C2-882F-8DDED4D3AF64}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.DefaultParam", "samples\Durian.Samples.DefaultParam\Durian.Samples.DefaultParam.csproj", "{6C7C070F-E6A7-40C2-882F-8DDED4D3AF64}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution_items", "solution_items", "{669AA144-A769-4EA2-9A61-4CF58A84FB12}"
 	ProjectSection(SolutionItems) = preProject
@@ -51,6 +51,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Core.Analyzer", "src\Durian.Core.Analyzer\Durian.Core.Analyzer.csproj", "{8DCB04EE-4007-4AE3-A27B-DE63CDCAF0E5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateModuleRepository", "build\GenerateModuleRepository\GenerateModuleRepository.csproj", "{BBE02246-FD88-4DF3-8141-940C7E73AF05}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Durian.Tests.Core", "tests\Durian.Tests.Core\Durian.Tests.Core.csproj", "{8E1557FD-6BE5-4162-9731-287E507A3E5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -182,6 +184,18 @@ Global
 		{BBE02246-FD88-4DF3-8141-940C7E73AF05}.Release|x64.Build.0 = Release|Any CPU
 		{BBE02246-FD88-4DF3-8141-940C7E73AF05}.Release|x86.ActiveCfg = Release|Any CPU
 		{BBE02246-FD88-4DF3-8141-940C7E73AF05}.Release|x86.Build.0 = Release|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Debug|x64.Build.0 = Debug|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Debug|x86.Build.0 = Debug|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Release|x64.ActiveCfg = Release|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Release|x64.Build.0 = Release|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Release|x86.ActiveCfg = Release|Any CPU
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -199,6 +213,7 @@ Global
 		{312B14BF-6208-4E10-81A8-53263C66DEB0} = {80273A51-C8E4-433F-BD7C-4336BEB04A1D}
 		{8DCB04EE-4007-4AE3-A27B-DE63CDCAF0E5} = {74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}
 		{BBE02246-FD88-4DF3-8141-940C7E73AF05} = {80273A51-C8E4-433F-BD7C-4336BEB04A1D}
+		{8E1557FD-6BE5-4162-9731-287E507A3E5E} = {F7DC25BE-C8AA-4B1A-A752-70DB1234815E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {09524C45-0D6D-4456-B89D-9673853B9FA0}

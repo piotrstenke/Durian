@@ -110,7 +110,7 @@ namespace Durian.Generator.DefaultParam
 			return
 				AnalyzeAgaintsProhibitedAttributes(symbol, compilation) &&
 				AnalyzeContainingTypes(symbol, cancellationToken) &&
-				AnalyzeTypeParameters(in typeParameters);
+				AnalyzeTypeParameters(symbol, in typeParameters);
 		}
 
 		/// <summary>
@@ -216,9 +216,10 @@ namespace Durian.Generator.DefaultParam
 		/// <summary>
 		/// Checks, if the specified <paramref name="typeParameters"/> are valid.
 		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze the type parameters of.</param>
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> to analyze.</param>
 		/// <returns><see langword="true"/> if the type parameters contained within the <see cref="TypeParameterContainer"/> are valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeTypeParameters(in TypeParameterContainer typeParameters)
+		public static bool AnalyzeTypeParameters(ISymbol symbol, in TypeParameterContainer typeParameters)
 		{
 			if (!typeParameters.HasDefaultParams)
 			{
@@ -233,11 +234,7 @@ namespace Durian.Generator.DefaultParam
 
 				if (data.IsDefaultParam)
 				{
-					if (data.TargetType is null)
-					{
-						return false;
-					}
-					else if (!data.TargetType.IsValidForTypeParameter(data.Symbol))
+					if(!ValidateTargetTypeParameter(symbol, in data, in typeParameters))
 					{
 						return false;
 					}
@@ -553,7 +550,10 @@ namespace Durian.Generator.DefaultParam
 				DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent,
 				DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast,
 				DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint,
-				DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists
+				DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists,
+				DefaultParamDiagnostics.DUR0123_DefaultParamValueCannotBeLessAccessibleThanTargetMember,
+				DefaultParamDiagnostics.DUR0124_TypeCannotBeUsedWithConstraint,
+				DefaultParamDiagnostics.DUR0125_TypeIsNotValidDefaultParamValue,
 			};
 		}
 
@@ -582,6 +582,168 @@ namespace Durian.Generator.DefaultParam
 
 			typeParameters = default;
 			return false;
+		}
+
+		private static bool ValidateTargetTypeParameter(ISymbol symbol, in TypeParameterData currentTypeParameter, in TypeParameterContainer typeParameters)
+		{
+			ITypeSymbol? targetType = currentTypeParameter.TargetType;
+			ITypeParameterSymbol typeParameterSymbol = currentTypeParameter.Symbol;
+
+			if (targetType is null || targetType is IErrorTypeSymbol)
+			{
+				return false;
+			}
+
+			if (targetType.IsStatic ||
+				targetType.IsRefLikeType ||
+				targetType is IFunctionPointerTypeSymbol ||
+				targetType is IPointerTypeSymbol ||
+				(targetType is INamedTypeSymbol t && (t.IsUnboundGenericType || t.SpecialType == SpecialType.System_Void))
+			)
+			{
+				return false;
+			}
+
+			if (!HasValidParameterAccessibility(symbol, targetType, typeParameterSymbol, in typeParameters))
+			{
+				return false;
+			}
+
+			if (targetType.SpecialType == SpecialType.System_Object ||
+				targetType.SpecialType == SpecialType.System_Array ||
+				targetType.SpecialType == SpecialType.System_ValueType ||
+				targetType is IArrayTypeSymbol ||
+				targetType.IsValueType ||
+				targetType.IsSealed
+			)
+			{
+				if (HasTypeParameterAsConstraint(typeParameterSymbol, in typeParameters))
+				{
+					return false;
+				}
+			}
+
+			return IsValidForConstraint(targetType, currentTypeParameter.Symbol, in typeParameters);
+		}
+
+		private static bool HasValidParameterAccessibility(ISymbol symbol, ITypeSymbol targetType, ITypeParameterSymbol currentTypeParameter, in TypeParameterContainer typeParameters)
+		{
+			if (targetType.GetEffectiveAccessibility() < symbol.GetEffectiveAccessibility())
+			{
+				if (symbol is IMethodSymbol m)
+				{
+					if (IsInvalidMethod(m))
+					{
+						return false;
+					}
+				}
+				else if (symbol is INamedTypeSymbol t)
+				{
+					if (t.TypeKind == TypeKind.Delegate && IsInvalidMethod(t.DelegateInvokeMethod))
+					{
+						return false;
+					}
+				}
+				else
+				{
+					return true;
+				}
+
+				return !HasTypeParameterAsConstraint(currentTypeParameter, in typeParameters);
+			}
+
+			return true;
+
+			bool IsInvalidMethod(IMethodSymbol? method)
+			{
+				return method is null || method.ReturnType.IsOrUsesTypeParameter(currentTypeParameter) || method.Parameters.Any(p => p.Type.IsOrUsesTypeParameter(currentTypeParameter));
+			}
+		}
+
+		private static bool HasTypeParameterAsConstraint(ITypeParameterSymbol currentTypeParameter, in TypeParameterContainer typeParameters)
+		{
+			int length = typeParameters.Length;
+
+			for (int i = 0; i < length; i++)
+			{
+				ref readonly TypeParameterData param = ref typeParameters[i];
+
+				foreach (ITypeSymbol constraint in param.Symbol.ConstraintTypes)
+				{
+					if (SymbolEqualityComparer.Default.Equals(constraint, currentTypeParameter))
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		private static bool IsValidForConstraint(ITypeSymbol type, ITypeParameterSymbol parameter, in TypeParameterContainer typeParameters)
+		{
+			if (parameter.HasReferenceTypeConstraint)
+			{
+				if (!type.IsReferenceType)
+				{
+					return false;
+				}
+			}
+			else if (parameter.HasUnmanagedTypeConstraint)
+			{
+				if (!type.IsUnmanagedType)
+				{
+					return false;
+				}
+			}
+			else if (parameter.HasValueTypeConstraint)
+			{
+				if (!type.IsValueType)
+				{
+					return false;
+				}
+			}
+
+			if (parameter.HasConstructorConstraint)
+			{
+				if (type is INamedTypeSymbol n)
+				{
+					if (!n.InstanceConstructors.Any(ctor => ctor.Parameters.Length == 0 && ctor.DeclaredAccessibility == Accessibility.Public))
+					{
+						return false;
+					}
+				}
+				else if (type is not IDynamicTypeSymbol)
+				{
+					return false;
+				}
+			}
+
+			foreach (ITypeSymbol constraint in parameter.ConstraintTypes)
+			{
+				if (constraint is ITypeParameterSymbol p)
+				{
+					ref readonly TypeParameterData data = ref typeParameters[p.Ordinal];
+
+					if (data.IsDefaultParam)
+					{
+						if (!type.InheritsOrImplementsFrom(data.TargetType))
+						{
+							return false;
+						}
+					}
+					else if (!IsValidForConstraint(type, p, in typeParameters))
+					{
+						return false;
+					}
+				}
+				else if (!type.InheritsOrImplementsFrom(constraint))
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 	}
 }

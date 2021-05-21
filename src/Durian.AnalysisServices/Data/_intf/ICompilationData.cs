@@ -10,7 +10,7 @@ namespace Durian.Generator.Data
 	public interface ICompilationData
 	{
 		/// <summary>
-		/// Current <see cref="Microsoft.CodeAnalysis.Compilation"/>.
+		/// Current <see cref="CSharpCompilation"/>.
 		/// </summary>
 		CSharpCompilation Compilation { get; }
 
@@ -26,7 +26,7 @@ namespace Durian.Generator.Data
 		void UpdateCompilation(CSharpSyntaxTree? tree);
 
 		/// <summary>
-		/// Replaces the <paramref name="original"/> <see cref="SyntaxTree"/> with the <paramref name="updated"/> one.
+		/// Replaces the <paramref name="original"/> <see cref="CSharpSyntaxTree"/> with the <paramref name="updated"/> one.
 		/// </summary>
 		/// <param name="original"><see cref="CSharpSyntaxTree"/> to replace.</param>
 		/// <param name="updated"><see cref="CSharpSyntaxTree"/> to replace the <paramref name="original"/> by.</param>

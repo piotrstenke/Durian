@@ -73,7 +73,7 @@ namespace Durian.Generator.DefaultParam
 
 				if (!symbol.IsOverride)
 				{
-					if (AnalyzeTypeParameters(diagnosticReceiver, in typeParameters))
+					if (AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters))
 					{
 						return AnalyzeInterfaceImplementation(diagnosticReceiver, symbol, in typeParameters, compilation, cancellationToken);
 					}
@@ -98,7 +98,7 @@ namespace Durian.Generator.DefaultParam
 
 				TypeParameterContainer baseTypeParameters = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
 
-				if (DefaultParamAnalyzer.AnalyzeTypeParameters(in baseTypeParameters) && AnalyzeBaseMethodParameters(diagnosticReceiver, in typeParameters, in baseTypeParameters))
+				if (DefaultParamAnalyzer.AnalyzeTypeParameters(symbol, in baseTypeParameters) && AnalyzeBaseMethodParameters(diagnosticReceiver, in typeParameters, in baseTypeParameters))
 				{
 					bool isValid = AnalyzeInterfaceImplementation(diagnosticReceiver, symbol, in typeParameters, compilation, cancellationToken);
 					typeParameters = TypeParameterContainer.Combine(in typeParameters, in baseTypeParameters);
@@ -276,10 +276,10 @@ namespace Durian.Generator.DefaultParam
 				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out containingTypes);
 			}
 
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(IDiagnosticReceiver, in TypeParameterContainer)"/>
-			public static bool AnalyzeTypeParameters(IDiagnosticReceiver diagnosticReceiver, in TypeParameterContainer typeParameters)
+			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(IDiagnosticReceiver, ISymbol, in TypeParameterContainer)"/>
+			public static bool AnalyzeTypeParameters(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters)
 			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(diagnosticReceiver, in typeParameters);
+				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
 			}
 
 			private static bool AnalyzeCore(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
@@ -332,7 +332,7 @@ namespace Durian.Generator.DefaultParam
 					return true;
 				}
 
-				if (!DefaultParamAnalyzer.AnalyzeTypeParameters(in baseTypeParameters))
+				if (!DefaultParamAnalyzer.AnalyzeTypeParameters(symbol, in baseTypeParameters))
 				{
 					return false;
 				}
@@ -391,7 +391,7 @@ namespace Durian.Generator.DefaultParam
 
 					TypeParameterContainer baseParameters = TypeParameterContainer.CreateFrom(method, compilation, cancellationToken);
 
-					if (!baseParameters.HasDefaultParams || !DefaultParamAnalyzer.AnalyzeTypeParameters(in baseParameters))
+					if (!baseParameters.HasDefaultParams || !DefaultParamAnalyzer.AnalyzeTypeParameters(symbol, in baseParameters))
 					{
 						continue;
 					}

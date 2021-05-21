@@ -22,11 +22,19 @@ namespace Durian.Info
 			id: default,
 			packages: new PackageIdentity[]
 			{
+				PackageRepository.Core,
 				PackageRepository.CoreAnalyzer,
 			},
 			docPath: null,
 			diagnostics: null,
-			types: null
+			types: new TypeIdentity[]
+			{
+				new TypeIdentity("DurianGeneratedAttribute", "Durian.Generator"),
+				new TypeIdentity("IncludeTypesAttribute", "Durian.Generator"),
+				new TypeIdentity("EnableModuleAttribute", "Durian.Generator"),
+				new TypeIdentity("DiagnosticFilesAttribute", "Durian.Generator"),
+				new TypeIdentity("PackageDefinitionAttribute", "Durian.Generator"),
+			}
 		);
 
 		/// <summary>
@@ -34,187 +42,13 @@ namespace Durian.Info
 		/// </summary>
 		public static ModuleIdentity DefaultParam => new(
 			module: DurianModule.DefaultParam,
-			id: 01,
-			packages: null,
-			docPath: @"docs\DefaultParam",
-			diagnostics: new DiagnosticData[]
+			id: default,
+			packages: new PackageIdentity[]
 			{
-				new DiagnosticData(
-					title: "Containing type of a member with the DefaultParam attribute must be partial",
-					id: 01,
-					docsPath: @"docs\DefaultParam\DUR0101.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Method with the DefaultParam attribute cannot be partial or extern",
-					id: 02,
-					docsPath: @"docs\DefaultParam\DUR0102.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "DefaultParamAttribute is not valid on local functions or lambdas",
-					id: 03,
-					docsPath: @"docs\DefaultParam\DUR0103.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "DefaultParamAttribute cannot be applied to members with the GeneratedCodeAttribute or DurianGeneratedAttribute",
-					id: 04,
-					docsPath: @"docs\DefaultParam\DUR0104.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "DefaultParamAttribute must be placed on the right-most type parameter",
-					id: 05,
-					docsPath: @"docs\DefaultParam\DUR0105.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Value of DefaultParamAttribute does not satisfy the type constraint",
-					id: 06,
-					docsPath: @"docs\DefaultParam\DUR0106.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Do not override methods generated using DefaultParamAttribute",
-					id: 07,
-					docsPath: @"docs\DefaultParam\DUR0107.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Value of DefaultParamAttribute of overriding method must match the base method",
-					id: 08,
-					docsPath: @"docs\DefaultParam\DUR0108.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Do not add the DefaultParamAttribute on overridden type parameters",
-					id: 09,
-					docsPath: @"docs\DefaultParam\DUR0109.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "DefaultParamAttribute of overridden type parameter should be added for clarity",
-					id: 10,
-					docsPath: @"docs\DefaultParam\DUR0110.md",
-					fatal: false,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "DefaultParamConfigurationAttribute is not valid on members without the DefaultParamAttribute",
-					id: 11,
-					docsPath: @"docs\DefaultParam\DUR0111.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "TypeConvention property should not be used on members other than types",
-					id: 12,
-					docsPath: @"docs\DefaultParam\DUR0112.md",
-					fatal: false,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "MethodConvention property should not be used on members other than methods",
-					id: 13,
-					docsPath: @"docs\DefaultParam\DUR0113.md",
-					fatal: false,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Method with generated signature already exist",
-					id: 14,
-					docsPath: @"docs\DefaultParam\DUR0114.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "DefaultParamConfigurationAttribute is not valid on this type of method",
-					id: 15,
-					docsPath: @"docs\DefaultParam\DUR0115.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Do not change value of the DefaultParamAttribute when implementing an interface method",
-					id: 16,
-					docsPath: @"docs\DefaultParam\DUR0116.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Do not implement interface methods generated using the DefaultParamAttribute",
-					id: 17,
-					docsPath: @"docs\DefaultParam\DUR0117.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Value of DefaultParam attribute is different than that of implicitly implemented method",
-					id: 18,
-					docsPath: @"docs\DefaultParam\DUR0118.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Value of DefaultParam attribute is different for inherited method and implicitly implemented interface method",
-					id: 19,
-					docsPath: @"docs\DefaultParam\DUR0119.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Member with generated name already exists",
-					id: 20,
-					docsPath: @"docs\DefaultParam\DUR0120.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "TypeConvention cannot be used on a struct or a sealed type",
-					id: 21,
-					docsPath: @"docs\DefaultParam\DUR0121.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity",
-					id: 22,
-					docsPath: @"docs\DefaultParam\DUR0122.md",
-					fatal: false,
-					hasLocation: true
-				),
+				PackageRepository.DefaultParam,
 			},
+			docPath: null,
+			diagnostics: null,
 			types: new TypeIdentity[]
 			{
 				new TypeIdentity("DefaultParamAttribute", "Durian"),
