@@ -244,7 +244,7 @@ namespace Durian.Generator.DefaultParam
 						continue;
 					}
 
-					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists, symbol, member.TypeParameters.GetGenericName());
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists, symbol, member.Symbol.GetGenericName(false));
 					isValid = false;
 
 					if (diagnosed.Add(targetIndex) && diagnosed.Count == typeParameters.NumDefaultParam)

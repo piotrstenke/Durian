@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using Durian.Configuration;
+using Durian.Generator;
 
 namespace Durian.DefaultParam.Samples
 {
-	internal class Program
+	class T
 	{
-		internal class Test
-		{
 
-		}
-
+	}
+	internal class Program : T
+	{
 		public static void Main()
 		{
 		}

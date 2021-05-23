@@ -18,6 +18,22 @@ namespace Durian.Generator.DefaultParam
 	internal static class DefaultParamUtilities
 	{
 		/// <summary>
+		/// Returns an array of <see cref="SyntaxTrivia"/> representing tabs applied for the specified <paramref name="indent"/> level.
+		/// </summary>
+		/// <param name="indent">Current indent level.</param>
+		public static SyntaxTrivia[] GetTabs(int indent)
+		{
+			SyntaxTrivia[] trivia = new SyntaxTrivia[indent];
+
+			for (int i = 0; i < indent; i++)
+			{
+				trivia[i] = SyntaxFactory.Tab;
+			}
+
+			return trivia;
+		}
+
+		/// <summary>
 		/// Tries to add the <see langword="new"/> modifier to the <paramref name="modifiers"/>.
 		/// </summary>
 		/// <param name="newModifierIndexes">Indexes at which the <see langword="new"/> modifier should be applied.</param>
@@ -26,9 +42,73 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="modifiers">Reference to a<see cref="SyntaxTokenList"/> to update.</param>
 		public static bool TryAddNewModifier(HashSet<int>? newModifierIndexes, int numTypeParameters, int numNonDefaultParam, ref SyntaxTokenList modifiers)
 		{
-			if (newModifierIndexes is not null && newModifierIndexes.Contains(numTypeParameters - numNonDefaultParam) && !modifiers.Any(m => m.IsKind(SyntaxKind.NewKeyword)))
+			if (newModifierIndexes is not null && newModifierIndexes.Contains(numTypeParameters - numNonDefaultParam))
 			{
+				int index = modifiers.IndexOf(SyntaxKind.NewKeyword);
+
+				if(index > -1)
+				{
+					return false;
+				}
+
 				modifiers = modifiers.Add(SyntaxFactory.Token(SyntaxKind.NewKeyword).WithTrailingTrivia(SyntaxFactory.Space));
+				return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Tries to add the <see langword="new"/> modifier to the <paramref name="modifiers"/> of a <see cref="INamedTypeSymbol"/>.
+		/// </summary>
+		/// <param name="newModifierIndexes">Indexes at which the <see langword="new"/> modifier should be applied.</param>
+		/// <param name="numTypeParameters">Number of type parameters.</param>
+		/// <param name="numNonDefaultParam">Number of non-DefaultParam type parameters.</param>
+		/// <param name="modifiers">Reference to a<see cref="SyntaxTokenList"/> to update.</param>
+		public static bool TryAddNewModifierForType(HashSet<int>? newModifierIndexes, int numTypeParameters, int numNonDefaultParam, ref SyntaxTokenList modifiers)
+		{
+			if (newModifierIndexes is not null && newModifierIndexes.Contains(numTypeParameters - numNonDefaultParam))
+			{
+				int index = modifiers.IndexOf(SyntaxKind.NewKeyword);
+
+				if (index > -1)
+				{
+					return false;
+				}
+
+				int refIndex = modifiers.IndexOf(SyntaxKind.RefKeyword);
+
+				if(refIndex > -1)
+				{
+					index = refIndex;
+				}
+				else
+				{
+					int partialIndex = modifiers.IndexOf(SyntaxKind.PartialKeyword);
+
+					if(partialIndex > -1)
+					{
+						index = partialIndex;
+					}
+				}
+
+				SyntaxToken token = SyntaxFactory.Token(SyntaxKind.NewKeyword).WithTrailingTrivia(SyntaxFactory.Space);
+
+				if(index == 0)
+				{
+					token = token.WithLeadingTrivia(modifiers[index].LeadingTrivia);
+					modifiers = modifiers.Replace(modifiers[index], modifiers[index].WithLeadingTrivia(null));
+				}
+				else if(index < 0)
+				{
+					index = 0;
+				}
+				else
+				{
+					index--;
+				}
+
+				modifiers = modifiers.Insert(index, token);
 				return true;
 			}
 
@@ -94,12 +174,11 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SyntaxList{TNode}"/> of <see cref="TypeParameterConstraintClauseSyntax"/> build from the given <paramref name="constraints"/> and updates trivia of the specified <paramref name="parameters"/> if necessary.
+		/// Returns a <see cref="SyntaxList{TNode}"/> of <see cref="TypeParameterConstraintClauseSyntax"/> build from the given <paramref name="constraints"/>.
 		/// </summary>
 		/// <param name="constraints">A collection of <see cref="TypeParameterConstraintClauseSyntax"/> to build the <see cref="SyntaxList{TNode}"/> from.</param>
 		/// <param name="numOriginalConstraints">Number of type constraints in the original declaration.</param>
-		/// <param name="parameters">Current <see cref="ParameterListSyntax"/>.</param>
-		public static SyntaxList<TypeParameterConstraintClauseSyntax> ApplyConstraints(IEnumerable<TypeParameterConstraintClauseSyntax> constraints, int numOriginalConstraints, [AllowNull] ref ParameterListSyntax parameters)
+		public static SyntaxList<TypeParameterConstraintClauseSyntax> ApplyConstraints(IEnumerable<TypeParameterConstraintClauseSyntax> constraints, int numOriginalConstraints)
 		{
 			SyntaxList<TypeParameterConstraintClauseSyntax> clauses = SyntaxFactory.List(constraints);
 
@@ -107,14 +186,7 @@ namespace Durian.Generator.DefaultParam
 			{
 				int count = clauses.Count;
 
-				if (count == 0)
-				{
-					if (parameters is not null)
-					{
-						parameters = parameters.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
-					}
-				}
-				else if (count < numOriginalConstraints)
+				if (count > 0 && count < numOriginalConstraints)
 				{
 					TypeParameterConstraintClauseSyntax last = clauses.Last();
 					TypeParameterConstraintClauseSyntax newLast = last.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
@@ -233,8 +305,13 @@ namespace Durian.Generator.DefaultParam
 		/// Converts an array of <see cref="ITypeData"/>s to an array of <see cref="INamedTypeSymbol"/>s.
 		/// </summary>
 		/// <param name="types">Array of <see cref="ITypeData"/>s to convert.</param>
-		public static INamedTypeSymbol[] TypeDatasToTypeSymbols(ITypeData[] types)
+		public static INamedTypeSymbol[] TypeDatasToTypeSymbols(ITypeData[]? types)
 		{
+			if(types is null)
+			{
+				return Array.Empty<INamedTypeSymbol>();
+			}
+
 			int length = types.Length;
 			INamedTypeSymbol[] symbols = new INamedTypeSymbol[length];
 

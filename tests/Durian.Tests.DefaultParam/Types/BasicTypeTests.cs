@@ -24,7 +24,6 @@ partial class Parent<T>
 			Assert.False(RunGenerator(input).IsGenerated);
 		}
 
-
 		[Fact]
 		public void SkipsContainingTypeAttributes()
 		{
@@ -661,6 +660,36 @@ class Test<T>
 		}
 
 		[Fact]
+		public void ProperlyHandlesTypeParameterOfParentType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Parent<TNumber> where TNumber : class
+{{
+	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	{{
+		TNumber number;
+		T Value {{ get; }}
+	}}
+}}
+";
+
+			string expected =
+@$"partial class Parent<TNumber>
+{{
+	{GetCodeGenerationAttributes("Parent<TNumber>.Test<T>")}
+	class Test
+	{{
+		TNumber number;
+		int Value {{ get; }}
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
 		public void Success_When_ArgumentIsGenericType()
 		{
 			string input =
@@ -902,5 +931,28 @@ partial class Parent
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
 		}
+
+		//		[Fact]
+		//		public void IncludesGeneratedMethodsAndDelegates()
+		//		{
+		//			string input =
+		//$@"partial class Test<[{nameof(DefaultParamAttribute)}typeof(string))]T>
+		//{{
+		//	void Method<[{nameof(DefaultParamAttribute)}typeof(int))]U>()
+		//	{{
+		//		U value = default;
+		//	}}
+
+		//	delegate float Del<[{nameof(DefaultParamAttribute)}typeof(decimal))]U>(U value);
+		//}}
+		//";
+		//			string expected =
+		//$@"partial class Test
+		//{{
+		//	{GetCodeGenerationAttributes("Test<T>.Method<U>()")}
+		//	void Method
+		//}}
+		//";
+		//		}
 	}
 }

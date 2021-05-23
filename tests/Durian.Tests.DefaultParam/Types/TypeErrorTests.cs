@@ -7,6 +7,19 @@ namespace Durian.Tests.DefaultParam.Types
 	public sealed class TypeErrorTests : DefaultParamGeneratorTest
 	{
 		[Fact]
+		public void Error_When_IsPartial()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string)]T>
+{{
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0126_DoNotUseDefaultParamOnPartialType.Id));
+		}
+
+		[Fact]
 		public void Error_When_DefaultParamAttributeIsNotLast()
 		{
 			string input =

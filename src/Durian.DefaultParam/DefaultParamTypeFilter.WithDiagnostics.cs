@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Generator.Data;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Durian.Generator.DefaultParam.DefaultParamTypeAnalyzer.WithDiagnostics;
@@ -116,16 +117,18 @@ namespace Durian.Generator.DefaultParam
 			)
 			{
 				bool isValid = AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
+				isValid &= AnalyzeAgainstPartial(diagnosticReceiver, symbol, cancellationToken);
 				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
 				isValid &= AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
 
-				if (isValid)
+				if(isValid)
 				{
-					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes!);
-					bool inherit = ShouldInheritInsteadOfCopying(diagnosticReceiver, symbol, compilation, attributes!, symbols);
+					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
 
 					if (AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, attributes!, symbols, out HashSet<int>? applyNewModifiers, cancellationToken))
 					{
+						bool inherit = ShouldInheritInsteadOfCopying(diagnosticReceiver, symbol, compilation, attributes!, symbols);
+
 						data = new DefaultParamTypeData(
 							declaration,
 							compilation,

@@ -5,7 +5,7 @@ using Durian.Generator.Logging;
 namespace Durian.Generator
 {
 	/// <inheritdoc cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/>
-	public abstract class SourceGenerator : SourceGenerator<ICompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
+	public abstract class SourceGenerator : SourceGenerator<ICompilationDataWithSymbols, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SourceGenerator"/> class.

@@ -8,7 +8,8 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Generator
 {
-	public abstract partial class SourceGenerator<TCompilationData, TSyntaxReceiver, TFilter> where TCompilationData : class, ICompilationData
+	public abstract partial class SourceGenerator<TCompilationData, TSyntaxReceiver, TFilter>
+		where TCompilationData : class, ICompilationDataWithSymbols
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
 		where TFilter : notnull, IGeneratorSyntaxFilterWithDiagnostics
 	{

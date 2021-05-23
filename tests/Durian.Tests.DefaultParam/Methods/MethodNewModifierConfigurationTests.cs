@@ -96,7 +96,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.False(RunGenerator(input).IsGenerated);
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -161,7 +161,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.False(RunGenerator(input).IsGenerated);
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -224,7 +224,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.False(RunGenerator(input).IsGenerated);
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
 		}
 
 		[Fact]

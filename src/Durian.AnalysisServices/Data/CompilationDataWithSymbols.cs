@@ -2,27 +2,31 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.CodeDom.Compiler;
 
 namespace Durian.Generator.Data
 {
 	/// <summary>
 	/// <see cref="CompilationData"/> with <see cref="INamedTypeSymbol"/> of code generation attributes.
 	/// </summary>
-	public class CompilationDataWithSymbols : CompilationData
+	public class CompilationDataWithSymbols : CompilationData, ICompilationDataWithSymbols
 	{
-		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> that represents the <c>DurianGeneratedAttribute</c> class.
-		/// </summary>
+		/// <inheritdoc/>
 		public INamedTypeSymbol? DurianGeneratedAttribute { get; private set; }
 
-		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> that represents the <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/>.
-		/// </summary>
+		/// <inheritdoc/>
 		public INamedTypeSymbol? GeneratedCodeAttribute { get; private set; }
 
 		/// <inheritdoc/>
-		[MemberNotNullWhen(false, nameof(GeneratedCodeAttribute), nameof(DurianGeneratedAttribute))]
+		public INamedTypeSymbol? EnableModuleAttribute { get; private set; }
+
+		/// <inheritdoc/>
+		[MemberNotNullWhen(false, nameof(GeneratedCodeAttribute), nameof(DurianGeneratedAttribute), nameof(EnableModuleAttribute))]
 		public override bool HasErrors { get; protected set; }
+
+		INamedTypeSymbol ICompilationDataWithSymbols.DurianGeneratedAttribute => DurianGeneratedAttribute!;
+		INamedTypeSymbol ICompilationDataWithSymbols.GeneratedCodeAttribute => GeneratedCodeAttribute!;
+		INamedTypeSymbol ICompilationDataWithSymbols.EnableModuleAttribute => EnableModuleAttribute!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CompilationDataWithSymbols"/> class.
@@ -39,10 +43,11 @@ namespace Durian.Generator.Data
 		/// </summary>
 		public virtual void Reset()
 		{
-			DurianGeneratedAttribute = Compilation.GetTypeByMetadataName($"{DurianStrings.GeneratorNamespace}.DurianGeneratedAttribute");
-			GeneratedCodeAttribute = Compilation.GetTypeByMetadataName("System.CodeDom.Compiler.GeneratedCodeAttribute");
+			DurianGeneratedAttribute = Compilation.GetTypeByMetadataName(typeof(DurianGeneratedAttribute).ToString());
+			GeneratedCodeAttribute = Compilation.GetTypeByMetadataName(typeof(GeneratedCodeAttribute).ToString());
+			EnableModuleAttribute = Compilation.GetTypeByMetadataName(typeof(EnableModuleAttribute).ToString());
 
-			HasErrors = DurianGeneratedAttribute is null || GeneratedCodeAttribute is null;
+			HasErrors = DurianGeneratedAttribute is null || GeneratedCodeAttribute is null || EnableModuleAttribute is null;
 		}
 
 		/// <inheritdoc/>

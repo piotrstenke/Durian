@@ -5,6 +5,7 @@ using Durian.Generator.Data;
 using Durian.Generator.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Durian.Info;
 
 namespace Durian.Tests
 {
@@ -35,7 +36,7 @@ namespace Durian.Tests
 		/// <summary>
 		/// Event invoked when the <see cref="CreateCompilationData"/> method is called.
 		/// </summary>
-		public event Func<CSharpCompilation, ICompilationData?>? OnCreateCompilationData;
+		public event Func<CSharpCompilation, ICompilationDataWithSymbols?>? OnCreateCompilationData;
 
 		/// <summary>
 		/// Event invoked when the <see cref="Generate"/> method is called.
@@ -108,6 +109,11 @@ namespace Durian.Tests
 		public event Action<IGeneratorSyntaxFilterWithDiagnostics, GeneratorExecutionContext>? OnIterateThroughFilter;
 
 		/// <summary>
+		/// Event invoked when the <see cref="GetEnabledModules()"/> method is called.
+		/// </summary>
+		public event Func<DurianModule[]>? OnGetEnabledModules;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianSourceGeneratorProxy"/> class.
 		/// </summary>
 		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
@@ -158,7 +164,7 @@ namespace Durian.Tests
 		}
 
 		/// <inheritdoc/>
-		protected override ICompilationData? CreateCompilationData(CSharpCompilation compilation)
+		protected override ICompilationDataWithSymbols? CreateCompilationData(CSharpCompilation compilation)
 		{
 			return OnCreateCompilationData?.Invoke(compilation);
 		}
@@ -170,6 +176,12 @@ namespace Durian.Tests
 			_exeContext = context;
 
 			return value;
+		}
+
+		/// <inheritdoc/>
+		protected override DurianModule[] GetEnabledModules()
+		{
+			return OnGetEnabledModules?.Invoke() ?? Array.Empty<DurianModule>();
 		}
 
 		/// <inheritdoc/>

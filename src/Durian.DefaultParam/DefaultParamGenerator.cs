@@ -5,6 +5,8 @@ using Durian.Generator.Logging;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Threading;
+using Durian.Info;
 
 namespace Durian.Generator.DefaultParam
 {
@@ -28,7 +30,7 @@ namespace Durian.Generator.DefaultParam
 		/// <summary>
 		/// Number of trees generated statically by this generator.
 		/// </summary>
-		public const int NumStaticTrees = 0;
+		public const int NumStaticTrees = 1;
 
 		private readonly DefaultParamRewriter _rewriter = new();
 
@@ -133,6 +135,12 @@ namespace Durian.Generator.DefaultParam
 		protected sealed override string GetGeneratorName()
 		{
 			return GeneratorName;
+		}
+
+		/// <inheritdoc/>
+		protected sealed override DurianModule[] GetEnabledModules()
+		{
+			return new DurianModule[] { DurianModule.DefaultParam };
 		}
 
 		/// <inheritdoc/>

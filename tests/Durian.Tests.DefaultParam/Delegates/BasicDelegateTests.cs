@@ -530,6 +530,28 @@ delegate void Del<T>(string value);
 		}
 
 		[Fact]
+		public void ProperlyHandlesTypeParameterOfParentType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test<TNumber> where TNumber : class
+{{
+	delegate TNumber Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value, TNumber number);
+}}
+";
+
+			string expected =
+@$"partial class Test<TNumber>
+{{
+	{GetCodeGenerationAttributes("Test<TNumber>.Del<T>")}
+	delegate TNumber Del(int value, TNumber number);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
 		public void Success_When_IsGenericType()
 		{
 			string input =

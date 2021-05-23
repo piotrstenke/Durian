@@ -1,9 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using System.Xml.Linq;
 using Durian.Configuration;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.Generator.DefaultParam
@@ -29,7 +33,8 @@ namespace Durian.Generator.DefaultParam
 		{
 			return new DiagnosticDescriptor[]
 			{
-				DefaultParamDiagnostics.DUR0122_ApplyCopyTypeConventionOnStructOrSealedType
+				DefaultParamDiagnostics.DUR0122_ApplyCopyTypeConventionOnStructOrSealedType,
+				DefaultParamDiagnostics.DUR0126_DoNotUseDefaultParamOnPartialType
 			};
 		}
 
@@ -97,7 +102,12 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the target <see cref="INamedTypeSymbol"/>.</param>
 		public static bool ShouldInheritInsteadOfCopying(INamedTypeSymbol symbol, DefaultParamCompilationData compilation, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes)
 		{
-			return symbol.TypeKind != TypeKind.Struct && !symbol.IsSealed && HasInheritConvention(attributes, containingTypes, compilation);
+			if(HasInheritConvention(attributes, containingTypes, compilation))
+			{
+				return symbol.TypeKind != TypeKind.Struct && !symbol.IsSealed;
+			}
+
+			return false;
 		}
 
 		/// <inheritdoc cref="DefaultParamDelegateAnalyzer.AllowsNewModifier(INamedTypeSymbol, DefaultParamCompilationData)"/>
@@ -112,7 +122,7 @@ namespace Durian.Generator.DefaultParam
 			return DefaultParamUtilities.AllowsNewModifier(attributes, containingTypes, compilation);
 		}
 
-		/// <inheritdoc cref="DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, out HashSet{int}?, CancellationToken)"/>
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
 		public static bool AnalyzeCollidingMembers(
 			INamedTypeSymbol symbol,
 			in TypeParameterContainer typeParameters,
@@ -121,10 +131,18 @@ namespace Durian.Generator.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			return DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(symbol, in typeParameters, compilation, out applyNew, cancellationToken);
+			return AnalyzeCollidingMembers(
+				symbol,
+				in typeParameters,
+				compilation,
+				symbol.GetAttributes(),
+				symbol.GetContainingTypeSymbols().ToArray(),
+				out applyNew,
+				cancellationToken
+			);
 		}
 
-		/// <inheritdoc cref="DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
 		public static bool AnalyzeCollidingMembers(
 			INamedTypeSymbol symbol,
 			in TypeParameterContainer typeParameters,
@@ -135,10 +153,12 @@ namespace Durian.Generator.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			return DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(symbol, in typeParameters, compilation, attributes, containingTypes, out applyNew, cancellationToken);
+			bool allowsNew = AllowsNewModifier(attributes, containingTypes, compilation);
+
+			return AnalyzeCollidingMembers(symbol, in typeParameters, compilation, allowsNew, out applyNew, cancellationToken);
 		}
 
-		/// <inheritdoc cref="DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, bool, out HashSet{int}?, CancellationToken)"/>
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, bool, out HashSet{int}?, CancellationToken)"/>
 		public static bool AnalyzeCollidingMembers(
 			INamedTypeSymbol symbol,
 			in TypeParameterContainer typeParameters,
@@ -149,6 +169,14 @@ namespace Durian.Generator.DefaultParam
 		)
 		{
 			return DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(symbol, in typeParameters, compilation, allowsNewModifier, out applyNew, cancellationToken);
+		}
+
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeAgainstPartial(IDiagnosticReceiver, INamedTypeSymbol, CancellationToken)"/>
+		public static bool AnalyzeAgainstPartial(INamedTypeSymbol symbol, CancellationToken cancellationToken = default)
+		{
+			TypeDeclarationSyntax[] syntaxes = symbol.DeclaringSyntaxReferences.Select(r => r.GetSyntax(cancellationToken)).OfType<TypeDeclarationSyntax>().ToArray();
+
+			return syntaxes.Length <= 1 && !syntaxes[0].Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
 		}
 	}
 }

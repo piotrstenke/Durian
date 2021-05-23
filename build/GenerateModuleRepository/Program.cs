@@ -378,6 +378,8 @@ internal class Program
 				{
 					data.Packages.Add(config.PackageName);
 				}
+
+				data.Diagnostics.AddRange(config.Diagnostics);
 			}
 
 			modules[i] = data;
@@ -450,7 +452,7 @@ $@"namespace Durian.Info
 				builder.AppendLine();
 				builder.AppendLine(
 	$@"		/// <summary>
-		/// Returns a <see cref=""PackageIdentity""/> for the <see cref=""DurianPackage.{config.PackageName}""/> package.
+		/// Creates a new instance of <see cref=""PackageIdentity""/> for the <see cref=""DurianPackage.{config.PackageName}""/> package.
 		/// </summary>
 		public static PackageIdentity {config.PackageName} => new(
 			enumValue: DurianPackage.{config.PackageName},
@@ -499,7 +501,7 @@ $@"	}}
 	{
 		builder.Append(
 $@"		/// <summary>
-		/// Returns a <see cref=""ModuleIdentity""/> for the <see cref=""DurianModule.{module.Name}""/> module.
+		/// Creates a new instance of <see cref=""ModuleIdentity""/> for the <see cref=""DurianModule.{module.Name}""/> module.
 		/// </summary>
 		public static ModuleIdentity {module.Name} => new(
 			module: DurianModule.{module.Name},

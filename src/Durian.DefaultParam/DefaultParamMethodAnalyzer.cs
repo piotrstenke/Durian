@@ -307,7 +307,7 @@ namespace Durian.Generator.DefaultParam
 		{
 			return
 				AnalyzeAgaintsPartialOrExtern(symbol, cancellationToken) &&
-				AnalyzeAgaintsProhibitedAttributes(symbol, compilation) &&
+				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
 				AnalyzeContainingTypes(symbol, cancellationToken) &&
 				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, compilation, cancellationToken) &&
 				AnalyzeMethodSignature(symbol, typeParameters, compilation, cancellationToken);

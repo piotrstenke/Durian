@@ -504,6 +504,8 @@ namespace Durian.Generator.DefaultParam
 						continue;
 					}
 
+					ParameterGeneration[] targetParameters = generations[targetIndex];
+
 					// Parameters are null when the member is not an IMethodSymbol.
 					if (member.Parameters is null)
 					{
@@ -513,7 +515,7 @@ namespace Durian.Generator.DefaultParam
 						}
 						else
 						{
-							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists, symbol, member.TypeParameters.GetGenericName());
+							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists, symbol, GetMethodSignatureString(symbol.Name, in typeParameters, targetIndex, targetParameters));
 							isValid = false;
 
 							if (diagnosed.Add(targetIndex) && diagnosed.Count == typeParameters.NumDefaultParam)
@@ -524,8 +526,6 @@ namespace Durian.Generator.DefaultParam
 
 						continue;
 					}
-
-					ParameterGeneration[] targetParameters = generations[targetIndex];
 
 					if (!AnalyzeCollidingMethodParameters(
 						diagnosticReceiver,

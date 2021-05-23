@@ -339,5 +339,18 @@ namespace Durian.Generator.DefaultParam
 			helpLinkUri: DocsPath + @"\DUR0125.md",
 			isEnabledByDefault: true
 		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that a <see cref="DefaultParamAttribute"/> cannot be used on a <see langword="partial"/> type.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0126_DoNotUseDefaultParamOnPartialType = new(
+			id: "DUR0126",
+			title: "DefaultParamAttribute cannot be used on a partial type",
+			messageFormat: "'{0}': DefaultParamAttribute cannot be used on a partial type",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0126.md",
+			isEnabledByDefault: true
+		);
 	}
 }

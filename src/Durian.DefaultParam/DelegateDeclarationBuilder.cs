@@ -132,10 +132,18 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="constraintClauses">Collection of <see cref="TypeParameterConstraintClauseSyntax"/> to apply to the <see cref="CurrentDeclaration"/>.</param>
 		public void WithConstraintClauses(IEnumerable<TypeParameterConstraintClauseSyntax> constraintClauses)
 		{
-			ParameterListSyntax parameters = CurrentDeclaration.ParameterList;
-			SyntaxList<TypeParameterConstraintClauseSyntax> clauses = DefaultParamUtilities.ApplyConstraints(constraintClauses, _numOriginalConstraints, ref parameters);
+			SyntaxList<TypeParameterConstraintClauseSyntax> clauses = DefaultParamUtilities.ApplyConstraints(constraintClauses, _numOriginalConstraints);
 
-			CurrentDeclaration = CurrentDeclaration.WithParameterList(parameters).WithConstraintClauses(clauses);
+			if(clauses.Any())
+			{
+				clauses = clauses.Replace(clauses.Last(), clauses.Last().WithTrailingTrivia(null));
+			}
+			else if(CurrentDeclaration.ConstraintClauses.Any())
+			{
+				CurrentDeclaration = CurrentDeclaration.WithParameterList(CurrentDeclaration.ParameterList.WithoutTrailingTrivia());
+			}
+
+			CurrentDeclaration = CurrentDeclaration.WithConstraintClauses(clauses);
 		}
 
 		/// <summary>

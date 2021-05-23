@@ -282,7 +282,7 @@ partial class Parent : Inner
 	}}
 }}
 ";
-			Assert.False(RunGenerator(input).IsGenerated);
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -347,7 +347,7 @@ partial class Parent : Inner
 	}}
 }}
 ";
-			Assert.False(RunGenerator(input).IsGenerated);
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -410,7 +410,7 @@ partial class Parent : Inner
 	}}
 }}
 ";
-			Assert.False(RunGenerator(input).IsGenerated);
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -545,6 +545,42 @@ partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void AppliesNewModifierBeforeRefKeyword()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace}
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+
+class Inner
+{{
+	public class Test
+	{{
+	}}
+}}
+
+partial class Parent : Inner
+{{
+	ref struct Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	{{
+	}}
+}}
+";
+
+			string expected =
+@$"partial class Parent
+{{
+	{GetCodeGenerationAttributes("Parent.Test<T>")}
+	new ref struct Test
 	{{
 	}}
 }}

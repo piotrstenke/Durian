@@ -162,7 +162,7 @@ namespace Durian.Generator.DefaultParam
 		)
 		{
 			if (AnalyzeAgaintsPartialOrExtern(symbol, declaration) &&
-				AnalyzeAgaintsProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
+				AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
 				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes))
 			{
 				TypeParameterContainer combinedParameters = typeParameters;

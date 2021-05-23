@@ -28,3 +28,4 @@ DUR0122 | Durian.DefaultParam | Warning | [https://github.com/piotrstenke/Durian
 DUR0123 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0123.md] DefaultParam value cannot be less accessible than the target member
 DUR0124 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0124.md] Type is not valid DefaultParam value when there is a type parameter constrained to this type parameter
 DUR0125 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0125.md] Type is not valid DefaultParam value
+DUR0126 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0126.md] DefaultParamAttribute cannot be used on a partial type

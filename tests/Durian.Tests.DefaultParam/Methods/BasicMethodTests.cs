@@ -484,6 +484,34 @@ partial class Test<TNumber> where TNumber : class
 		}
 
 		[Fact]
+		public void ProperlyHandlesTypeParameterOfParentType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test<TNumber> where TNumber : class
+{{
+	TNumber Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value, TNumber number)
+	{{
+		return default;
+	}}
+}}
+";
+
+			string expected =
+@$"partial class Test<TNumber>
+{{
+	{GetCodeGenerationAttributes("Test<TNumber>.Method<T>(T, TNumber)")}
+	TNumber Method(int value, TNumber number)
+	{{
+		return default;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
 		public void Success_When_IsGenericType()
 		{
 			string input =

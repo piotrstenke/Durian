@@ -30,7 +30,7 @@ namespace Durian.Generator.DefaultParam
 		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
 
 		/// <inheritdoc/>
-		public bool IncludeGeneratedSymbols { get; }
+		public bool IncludeGeneratedSymbols => true;
 
 		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
@@ -194,7 +194,7 @@ namespace Durian.Generator.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			if (AnalyzeAgaintsProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
+			if (AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
 				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes) &&
 				AnalyzeTypeParameters(symbol, in typeParameters))
 			{

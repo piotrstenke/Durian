@@ -248,7 +248,7 @@ partial class Test : Parent
 	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
 }}
 ";
-			Assert.False(RunGenerator(input).IsGenerated);
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -303,7 +303,7 @@ partial class Test : Parent
 	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
 }}
 ";
-			Assert.False(RunGenerator(input).IsGenerated);
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -356,7 +356,7 @@ partial class Test : Parent
 	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
 }}
 ";
-			Assert.False(RunGenerator(input).IsGenerated);
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]

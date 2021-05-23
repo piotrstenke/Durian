@@ -6,7 +6,7 @@ namespace Durian.Generator
 {
 	/// <inheritdoc cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/>
 	public abstract class SourceGenerator<TCompilationData, TSyntaxReceiver> : SourceGenerator<TCompilationData, TSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
-		where TCompilationData : class, ICompilationData
+		where TCompilationData : class, ICompilationDataWithSymbols
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
 	{
 		/// <summary>

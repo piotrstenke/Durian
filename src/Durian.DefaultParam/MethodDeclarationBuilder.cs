@@ -13,6 +13,7 @@ namespace Durian.Generator.DefaultParam
 	/// </summary>
 	public sealed class MethodDeclarationBuilder : IDefaultParamDeclarationBuilder
 	{
+		private IMethodSymbol _symbol;
 		private HashSet<int>? _newModifierIndexes;
 		private GenericNameSyntax? _callMethodSyntax;
 		private ArgumentListSyntax? _callArguments;
@@ -50,7 +51,8 @@ namespace Durian.Generator.DefaultParam
 			CurrentDeclaration = null!;
 			OriginalDeclaration = null!;
 			SemanticModel = null!;
-			_callTypeArguments = new();
+			_symbol = null!;
+			_callTypeArguments = new(4);
 		}
 
 		/// <summary>
@@ -60,7 +62,7 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public MethodDeclarationBuilder(DefaultParamMethodData data, CancellationToken cancellationToken = default)
 		{
-			_callTypeArguments = new();
+			_callTypeArguments = new(4);
 			SetData(data, cancellationToken);
 		}
 
@@ -102,18 +104,18 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		/// <param name="data"><see cref="DefaultParamMethodData"/> to set as the new <see cref="OriginalDeclaration"/>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		[MemberNotNull(nameof(OriginalDeclaration), nameof(CurrentDeclaration), nameof(SemanticModel))]
+		[MemberNotNull(nameof(OriginalDeclaration), nameof(CurrentDeclaration), nameof(SemanticModel), nameof(_symbol))]
 		public void SetData(DefaultParamMethodData data, CancellationToken cancellationToken = default)
 		{
 			SemanticModel = data.SemanticModel;
 			OriginalDeclaration = data.Declaration;
 
+			_symbol = data.Symbol;
 			_indentLevel = DefaultParamUtilities.GetIndent(data.Declaration);
 			_newModifierIndexes = data.NewModifierIndexes;
 			_numNonDefaultParam = data.TypeParameters.NumNonDefaultParam;
-			_callTypeArguments.Clear();
 
-			SetDeclarationWithoutDefaultParamAttribute(data, cancellationToken);
+			InitializeDeclaration(data, cancellationToken);
 
 			if (data.CallInsteadOfCopying)
 			{
@@ -134,10 +136,18 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="constraintClauses">Collection of <see cref="TypeParameterConstraintClauseSyntax"/> to apply to the <see cref="CurrentDeclaration"/>.</param>
 		public void WithConstraintClauses(IEnumerable<TypeParameterConstraintClauseSyntax> constraintClauses)
 		{
-			ParameterListSyntax parameters = CurrentDeclaration.ParameterList;
-			SyntaxList<TypeParameterConstraintClauseSyntax> clauses = DefaultParamUtilities.ApplyConstraints(constraintClauses, _numOriginalConstraints, ref parameters);
+			SyntaxList<TypeParameterConstraintClauseSyntax> clauses = DefaultParamUtilities.ApplyConstraints(constraintClauses, _numOriginalConstraints);
 
-			CurrentDeclaration = CurrentDeclaration.WithParameterList(parameters).WithConstraintClauses(clauses);
+			if (clauses.Any())
+			{
+				clauses = clauses.Replace(clauses.Last(), clauses.Last().WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed));
+			}
+			else if (!_symbol.IsAbstract)
+			{
+				CurrentDeclaration = CurrentDeclaration.WithParameterList(CurrentDeclaration.ParameterList.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed));
+			}
+
+			CurrentDeclaration = CurrentDeclaration.WithConstraintClauses(clauses);
 		}
 
 		/// <summary>
@@ -235,7 +245,7 @@ namespace Durian.Generator.DefaultParam
 
 			BlockSyntax GetBlock()
 			{
-				SyntaxTrivia[] indent = GetTabs(_indentLevel);
+				SyntaxTrivia[] indent = DefaultParamUtilities.GetTabs(_indentLevel);
 
 				return SyntaxFactory.Block(
 					SyntaxFactory.Token(SyntaxKind.OpenBraceToken).WithLeadingTrivia(indent).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed),
@@ -244,28 +254,13 @@ namespace Durian.Generator.DefaultParam
 			}
 		}
 
-		private static SyntaxTrivia[] GetTabs(int indent)
-		{
-			SyntaxTrivia[] trivia = new SyntaxTrivia[indent];
-
-			for (int i = 0; i < indent; i++)
-			{
-				trivia[i] = SyntaxFactory.Tab;
-			}
-
-			return trivia;
-		}
-
 		private void CheckDirectCall(int count)
 		{
 			if (_callMethodSyntax is not null)
 			{
-				if (_callTypeArguments is not null)
-				{
-					TypeSyntax[] typeArguments = _callMethodSyntax.TypeArgumentList.Arguments.ToArray();
-					typeArguments[count] = _callTypeArguments.Dequeue();
-					_callMethodSyntax = _callMethodSyntax.WithTypeArgumentList(SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(typeArguments)));
-				}
+				TypeSyntax[] typeArguments = _callMethodSyntax.TypeArgumentList.Arguments.ToArray();
+				typeArguments[count] = _callTypeArguments.Dequeue();
+				_callMethodSyntax = _callMethodSyntax.WithTypeArgumentList(SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(typeArguments)));
 
 				InvocationExpressionSyntax inv = SyntaxFactory.InvocationExpression(_callMethodSyntax, _callArguments!);
 				StatementSyntax statement;
@@ -279,14 +274,14 @@ namespace Durian.Generator.DefaultParam
 					statement = SyntaxFactory.ExpressionStatement(inv);
 				}
 
-				statement = statement.WithLeadingTrivia(GetTabs(_indentLevel + 1)).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+				statement = statement.WithLeadingTrivia(DefaultParamUtilities.GetTabs(_indentLevel + 1)).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
 
 				CurrentDeclaration = CurrentDeclaration.WithBody(SyntaxFactory.Block(CurrentDeclaration.Body!.OpenBraceToken, SyntaxFactory.SingletonList(statement), CurrentDeclaration.Body.CloseBraceToken));
 			}
 		}
 
 		[MemberNotNull(nameof(CurrentDeclaration))]
-		private void SetDeclarationWithoutDefaultParamAttribute(DefaultParamMethodData method, CancellationToken cancellationToken)
+		private void InitializeDeclaration(DefaultParamMethodData method, CancellationToken cancellationToken)
 		{
 			MethodDeclarationSyntax decl = method.Declaration;
 

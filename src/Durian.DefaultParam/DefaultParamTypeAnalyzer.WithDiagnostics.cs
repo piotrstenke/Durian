@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Generator.Data;
+using Durian.Configuration;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 
@@ -26,12 +29,13 @@ namespace Durian.Generator.DefaultParam
 					return false;
 				}
 
-				bool isValid = AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation);
-				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, cancellationToken);
-				isValid &= AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
-
 				ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
 				INamedTypeSymbol[] containingTypes = symbol.GetContainingTypeSymbols().ToArray();
+
+				bool isValid = AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation);
+				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, cancellationToken);
+				isValid &= AnalyzeAgainstPartial(diagnosticReceiver, symbol, cancellationToken);
+				isValid &= AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
 
 				if (isValid)
 				{
@@ -53,7 +57,16 @@ namespace Durian.Generator.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
-				return DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, out applyNew, cancellationToken);
+				return AnalyzeCollidingMembers(
+					diagnosticReceiver,
+					symbol,
+					in typeParameters,
+					compilation,
+					symbol.GetAttributes(),
+					symbol.GetContainingTypeSymbols().ToArray(),
+					out applyNew,
+					cancellationToken
+				);
 			}
 
 			/// <inheritdoc cref="DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
@@ -68,7 +81,9 @@ namespace Durian.Generator.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
-				return DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, attributes, containingTypes, out applyNew, cancellationToken);
+				bool allowsNew = AllowsNewModifier(attributes, containingTypes, compilation);
+
+				return AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, allowsNew, out applyNew, cancellationToken);
 			}
 
 			/// <inheritdoc cref="DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, bool, out HashSet{int}?, CancellationToken)"/>
@@ -102,13 +117,20 @@ namespace Durian.Generator.DefaultParam
 			/// <returns><see langword="true"/> if the configuration of the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 			public static bool ShouldInheritInsteadOfCopying(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, DefaultParamCompilationData compilation, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes)
 			{
-				if ((symbol.TypeKind == TypeKind.Struct || symbol.IsSealed) && HasInheritConvention(attributes, containingTypes, compilation))
+				if(HasInheritConvention(attributes, containingTypes, compilation))
 				{
-					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0122_ApplyCopyTypeConventionOnStructOrSealedType, symbol);
-					return false;
+					if (symbol.TypeKind == TypeKind.Struct || symbol.IsSealed)
+					{
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0122_ApplyCopyTypeConventionOnStructOrSealedType, symbol);
+						return false;
+					}
+					else
+					{
+						return true;
+					}
 				}
 
-				return true;
+				return false;
 			}
 
 			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgaintsProhibitedAttributes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData)"/>
@@ -139,6 +161,26 @@ namespace Durian.Generator.DefaultParam
 			public static bool AnalyzeTypeParameters(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, in TypeParameterContainer typeParameters)
 			{
 				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
+			}
+
+			/// <summary>
+			/// Analyzes if the specified <paramref name="symbol"/> is partial.
+			/// </summary>
+			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+			/// <param name="symbol"><see cref="INamedTypeSymbol"/> to analyze.</param>
+			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is not partial, <see langword="false"/> otherwise.</returns>
+			public static bool AnalyzeAgainstPartial(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, CancellationToken cancellationToken = default)
+			{
+				TypeDeclarationSyntax[] syntaxes = symbol.DeclaringSyntaxReferences.Select(r => r.GetSyntax(cancellationToken)).OfType<TypeDeclarationSyntax>().ToArray();
+
+				if(syntaxes.Length > 1 || syntaxes[0].Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+				{
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DoNotUseDefaultParamOnPartialType, symbol);
+					return false;
+				}
+
+				return true;
 			}
 		}
 	}

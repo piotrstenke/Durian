@@ -108,7 +108,7 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return
-				AnalyzeAgaintsProhibitedAttributes(symbol, compilation) &&
+				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
 				AnalyzeContainingTypes(symbol, cancellationToken) &&
 				AnalyzeTypeParameters(symbol, in typeParameters);
 		}
@@ -119,9 +119,9 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (does not have the prohibited attributes), otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeAgaintsProhibitedAttributes(ISymbol symbol, DefaultParamCompilationData compilation)
+		public static bool AnalyzeAgainstProhibitedAttributes(ISymbol symbol, DefaultParamCompilationData compilation)
 		{
-			return AnalyzeAgaintsProhibitedAttributes(symbol, compilation, out _);
+			return AnalyzeAgainstProhibitedAttributes(symbol, compilation, out _);
 		}
 
 		/// <summary>
@@ -131,7 +131,7 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="attributes">An array of <see cref="AttributeData"/>s of the <paramref name="symbol"/>. Returned if the method itself returns <see langword="true"/>.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (does not have the prohibited attributes), otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeAgaintsProhibitedAttributes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out AttributeData[]? attributes)
+		public static bool AnalyzeAgainstProhibitedAttributes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out AttributeData[]? attributes)
 		{
 			AttributeData[] attrs = symbol.GetAttributes().ToArray();
 			bool hasDurianGenerated = false;

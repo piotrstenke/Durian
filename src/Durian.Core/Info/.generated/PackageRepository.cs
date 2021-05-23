@@ -15,7 +15,7 @@ namespace Durian.Info
 	public static class PackageRepository
 	{
 		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.AnalysisServices"/> package.
+		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.AnalysisServices"/> package.
 		/// </summary>
 		public static PackageIdentity AnalysisServices => new(
 			enumValue: DurianPackage.AnalysisServices,
@@ -24,7 +24,7 @@ namespace Durian.Info
 		);
 
 		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.Core"/> package.
+		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.Core"/> package.
 		/// </summary>
 		public static PackageIdentity Core => new(
 			enumValue: DurianPackage.Core,
@@ -33,7 +33,7 @@ namespace Durian.Info
 		);
 
 		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.CoreAnalyzer"/> package.
+		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.CoreAnalyzer"/> package.
 		/// </summary>
 		public static PackageIdentity CoreAnalyzer => new(
 			enumValue: DurianPackage.CoreAnalyzer,
@@ -42,7 +42,7 @@ namespace Durian.Info
 		);
 
 		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.DefaultParam"/> package.
+		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.DefaultParam"/> package.
 		/// </summary>
 		public static PackageIdentity DefaultParam => new(
 			enumValue: DurianPackage.DefaultParam,
@@ -51,7 +51,7 @@ namespace Durian.Info
 		);
 
 		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.TestServices"/> package.
+		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.TestServices"/> package.
 		/// </summary>
 		public static PackageIdentity TestServices => new(
 			enumValue: DurianPackage.TestServices,
