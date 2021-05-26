@@ -19,8 +19,8 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0101_ContainingTypeMustBePartial = new(
 			id: "DUR0101",
-			title: "Containing type of a member with the DefaultParam attribute must be partial",
-			messageFormat: "'{0}': Containing type of a member with the DefaultParam attribute must be partial",
+			title: "Containing type of a member with the DefaultParamAttribute must be partial",
+			messageFormat: "'{0}': Containing type of a member with the DefaultParamAttribute must be partial",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0101.md",
@@ -32,8 +32,8 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0102_MethodCannotBePartialOrExtern = new(
 			id: "DUR0102",
-			title: "Method with the DefaultParam attribute cannot be partial or extern",
-			messageFormat: "'{0}': Method with the DefaultParam attribute cannot be partial or extern",
+			title: "Method with the DefaultParamAttribute cannot be partial or extern",
+			messageFormat: "'{0}': Method with the DefaultParamAttribute cannot be partial or extern",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0102.md",
@@ -41,7 +41,7 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> is not valid on local functions or lambdas.
+		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> is not valid on this type of method.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0103_DefaultParamIsNotOnThisTypeOfMethod = new(
 			id: "DUR0103",
@@ -67,12 +67,12 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> must be placed on the right-most type parameter.
+		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> must be placed on the right-most type parameter or right to the left-most DefaultParam type parameter.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0105_DefaultParamMustBeLast = new(
 			id: "DUR0105",
-			title: "DefaultParamAttribute must be placed on the right-most type parameter",
-			messageFormat: "'{0}': DefaultParamAttribute must be placed on the right-most type parameter",
+			title: "DefaultParamAttribute must be placed on the right-most type parameter or right to the left-most DefaultParam type parameter",
+			messageFormat: "'{0}': DefaultParamAttribute must be placed on the right-most type parameter or right to the left-most DefaultParam type parameter",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0105.md",
@@ -97,8 +97,8 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0107_DoNotOverrideGeneratedMethods = new(
 			id: "DUR0107",
-			title: "Do not override methods generated using DefaultParamAttribute",
-			messageFormat: "'{0}': Do not override methods generated using DefaultParamAttribute",
+			title: "Do not override methods generated using the DefaultParamAttribute",
+			messageFormat: "'{0}': Do not override methods generated using the DefaultParamAttribute",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0107.md",
@@ -119,12 +119,12 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the user should not add the <see cref="DefaultParamAttribute"/> on overridden type parameters.
+		/// Provides diagnostic message indicating that the user should not add the <see cref="DefaultParamAttribute"/> on overridden type parameters that are not DefaultParam.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters = new(
 			id: "DUR0109",
-			title: "Do not add the DefaultParamAttribute on overridden type parameters",
-			messageFormat: "'{0}': Do not add the DefaultParamAttribute on overridden type parameters",
+			title: "Do not add the DefaultParamAttribute on overridden type parameters that are not DefaultParam",
+			messageFormat: "'{0}': Do not add the DefaultParamAttribute on overridden type parameters that are not DefaultParam",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0109.md",
@@ -263,11 +263,11 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the target type is not valid <see cref="DefaultParamAttribute"/> value when there is a type parameter constrained to the target type parameter.
+		/// Provides diagnostic message indicating that the target type is invalid <see cref="DefaultParamAttribute"/> value when there is a type parameter constrained to the target type parameter.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0120_TypeCannotBeUsedWithConstraint = new(
 			id: "DUR0120",
-			title: "Type is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
+			title: "Type is invalid DefaultParam value when there is a type parameter constrained to this type parameter",
 			messageFormat: "'{0}': Type '{1}' is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
@@ -276,11 +276,11 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the target type is not valid <see cref="DefaultParamAttribute"/> value.
+		/// Provides diagnostic message indicating that the target type is invalid <see cref="DefaultParamAttribute"/> value.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0121_TypeIsNotValidDefaultParamValue = new(
 			id: "DUR0121",
-			title: "Type is not valid DefaultParam value",
+			title: "Type is invalid DefaultParam value",
 			messageFormat: "'{0}': Type '{1}' is not valid DefaultParam value",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
@@ -306,11 +306,24 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor = new(
 			id: "DUR0123",
-			title: "TypeConvention cannot be used on a type without accessible constructor",
-			messageFormat: "'{0}': TypeConvention cannot be used on a type without accessible constructor",
+			title: "TypeConvention.Inherit cannot be used on a type without accessible constructor",
+			messageFormat: "'{0}': TypeConvention.Inherit cannot be used on a type without accessible constructor",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0123.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the <see cref="DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible"/> should not be used when target is not a child type.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType = new(
+			id: "DUR0124",
+			title: "ApplyNewModifierWhenPossible should not be used when target is not a child type",
+			messageFormat: "'{0}': ApplyNewModifierWhenPossible should not be used when target is not a child type",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + @"\DUR0124.md",
 			isEnabledByDefault: true
 		);
 	}

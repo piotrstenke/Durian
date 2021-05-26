@@ -27,7 +27,8 @@ namespace Durian.Generator.DefaultParam
 			DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods,
 			DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod,
 			DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType,
-			DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor
+			DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor,
+			DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType
 		);
 
 		/// <summary>
@@ -113,7 +114,12 @@ namespace Durian.Generator.DefaultParam
 
 			(AttributeArgumentSyntax syntax, string name)[] arguments = GetArguments(node);
 
-			if (CheckArguments(arguments, nameof(DefaultParamConfigurationAttribute.MethodConvention), out AttributeArgumentSyntax? arg))
+			if (type.ContainingType is null && CheckArguments(arguments, nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible), out AttributeArgumentSyntax? arg))
+			{
+				_diagnosticReceiver.ReportDiagnostic(DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType, arg.GetLocation(), type);
+			}
+
+			if (CheckArguments(arguments, nameof(DefaultParamConfigurationAttribute.MethodConvention), out arg))
 			{
 				_diagnosticReceiver.ReportDiagnostic(DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods, arg.GetLocation(), type);
 			}

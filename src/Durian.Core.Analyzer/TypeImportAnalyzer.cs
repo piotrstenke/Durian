@@ -62,6 +62,11 @@ namespace Durian.Generator
 				}
 
 				type = info.Symbol!.ContainingType;
+
+				if (type is null)
+				{
+					return;
+				}
 			}
 
 			(bool isDurianType, bool isDisabled) = compilation.IsDisabledDurianType(type, out ModuleIdentity? module);

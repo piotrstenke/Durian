@@ -329,5 +329,21 @@ public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor.Id));
 		}
+
+		[Fact]
+		public async Task Warning_When_IsNotChildType_And_UsesApplyNewModifierProperty()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+{{
+}}
+";
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			Assert.True(diagnostics.Any(d => d.Id == DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType.Id));
+		}
 	}
 }

@@ -1,6 +1,6 @@
 ﻿namespace Durian.DefaultParam.Samples
 {
-	internal class Program
+	internal partial class Program
 	{
 		public static void Main()
 		{

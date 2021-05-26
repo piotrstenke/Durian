@@ -76,24 +76,32 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 		{
 			SemanticModel? semanticModel = await context.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
-			NameSyntax name;
+			NameSyntax attrName;
+			NameSyntax enumName;
 
 			if (CodeFixUtility.HasUsingDirective(semanticModel!, context.Root.Usings, attribute, context.CancellationToken))
 			{
-				name = SyntaxFactory.IdentifierName(attribute.Name);
+				attrName = SyntaxFactory.IdentifierName("DefaultParamConfiguration");
+				enumName = SyntaxFactory.IdentifierName(nameof(DPTypeConvention));
 			}
 			else
 			{
-				name = SyntaxFactory.ParseName(attribute.ToString());
+				QualifiedNameSyntax @namespace =
+					SyntaxFactory.QualifiedName(
+							SyntaxFactory.IdentifierName(nameof(Durian)),
+							SyntaxFactory.IdentifierName(nameof(Configuration)));
+
+				attrName = SyntaxFactory.QualifiedName(@namespace, SyntaxFactory.IdentifierName("DefaultParamConfiguration"));
+				enumName = SyntaxFactory.QualifiedName(@namespace, SyntaxFactory.IdentifierName(nameof(DPTypeConvention)));
 			}
 
 			TypeDeclarationSyntax type = context.Node.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
-				SyntaxFactory.Attribute(name,
+				SyntaxFactory.Attribute(attrName,
 					SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
 						SyntaxFactory.AttributeArgument(
 							SyntaxFactory.MemberAccessExpression(
 								SyntaxKind.SimpleMemberAccessExpression,
-								SyntaxFactory.IdentifierName(nameof(DPTypeConvention)),
+								enumName,
 								SyntaxFactory.IdentifierName(nameof(DPTypeConvention.Copy))))
 						.WithNameEquals(
 							SyntaxFactory.NameEquals(

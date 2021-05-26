@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Durian.Configuration;
 using Durian.Generator.Data;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
@@ -123,7 +124,10 @@ namespace Durian.Generator.DefaultParam
 				{
 					if (HasInheritConventionOnContainingTypes(containingTypes, compilation))
 					{
-						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor, symbol);
+						if (!DefaultParamUtilities.TryGetConfigurationPropertyName(attributes, compilation.ConfigurationAttribute!, nameof(DefaultParamConfiguration.TypeConvention), out int value) || value != (int)DPTypeConvention.Copy)
+						{
+							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor, symbol);
+						}
 					}
 
 					return false;

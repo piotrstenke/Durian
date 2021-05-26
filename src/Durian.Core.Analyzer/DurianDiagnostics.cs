@@ -54,13 +54,13 @@ namespace Durian.Generator
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that Durian modules can be used only in CSharp.
+		/// Provides diagnostic message indicating that Durian modules can be used only in C#.
 		/// </summary>
 		[WithoutLocation]
 		public static readonly DiagnosticDescriptor DUR0004_DurianModulesAreValidOnlyInCSharp = new(
 			id: "DUR0004",
-			title: "Durian modules can be used only in CSharp",
-			messageFormat: "Durian modules can be used only in CSharp",
+			title: "Durian modules can be used only in C#",
+			messageFormat: "Durian modules can be used only in C#",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0004.md",

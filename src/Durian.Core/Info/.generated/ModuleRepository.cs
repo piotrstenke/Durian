@@ -53,7 +53,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Durian modules can be used only in CSharp",
+					title: "Durian modules can be used only in C#",
 					id: 04,
 					docsPath: @"docs\Core\DUR0004.md",
 					fatal: true,
@@ -92,7 +92,7 @@ namespace Durian.Info
 			diagnostics: new DiagnosticData[]
 			{
 				new DiagnosticData(
-					title: "Containing type of a member with the DefaultParam attribute must be partial",
+					title: "Containing type of a member with the DefaultParamAttribute must be partial",
 					id: 01,
 					docsPath: @"docs\DefaultParam\DUR0101.md",
 					fatal: true,
@@ -100,7 +100,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Method with the DefaultParam attribute cannot be partial or extern",
+					title: "Method with the DefaultParamAttribute cannot be partial or extern",
 					id: 02,
 					docsPath: @"docs\DefaultParam\DUR0102.md",
 					fatal: true,
@@ -124,7 +124,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "DefaultParamAttribute must be placed on the right-most type parameter",
+					title: "DefaultParamAttribute must be placed on the right-most type parameter or right to the left-most DefaultParam type parameter",
 					id: 05,
 					docsPath: @"docs\DefaultParam\DUR0105.md",
 					fatal: true,
@@ -140,7 +140,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Do not override methods generated using DefaultParamAttribute",
+					title: "Do not override methods generated using the DefaultParamAttribute",
 					id: 07,
 					docsPath: @"docs\DefaultParam\DUR0107.md",
 					fatal: true,
@@ -156,7 +156,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Do not add the DefaultParamAttribute on overridden type parameters",
+					title: "Do not add the DefaultParamAttribute on overridden type parameters that are not DefaultParam",
 					id: 09,
 					docsPath: @"docs\DefaultParam\DUR0109.md",
 					fatal: true,
@@ -244,7 +244,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Type is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
+					title: "Type is invalid DefaultParam value when there is a type parameter constrained to this type parameter",
 					id: 20,
 					docsPath: @"docs\DefaultParam\DUR0120.md",
 					fatal: true,
@@ -252,7 +252,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Type is not valid DefaultParam value",
+					title: "Type is invalid DefaultParam value",
 					id: 21,
 					docsPath: @"docs\DefaultParam\DUR0121.md",
 					fatal: true,
@@ -268,10 +268,18 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "TypeConvention cannot be used on a type without accessible constructor",
+					title: "TypeConvention.Inherit cannot be used on a type without accessible constructor",
 					id: 23,
 					docsPath: @"docs\DefaultParam\DUR0123.md",
 					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "ApplyNewModifierWhenPossible should not be used when target is not a child type",
+					id: 24,
+					docsPath: @"docs\DefaultParam\DUR0124.md",
+					fatal: false,
 					hasLocation: true
 				),
 			},

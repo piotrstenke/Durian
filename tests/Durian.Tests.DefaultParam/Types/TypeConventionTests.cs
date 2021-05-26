@@ -502,15 +502,15 @@ partial class Parent
 {{
 	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
 	{{
-		public Test() : base()
+		public Test()
 		{{
 		}}
 
-		protected Test(T value) : base(value)
+		protected Test(T value)
 		{{
 		}}
 
-		internal Test(ref string value) : base(ref value)
+		internal Test(ref string value)
 		{{
 		}}
 	}}
