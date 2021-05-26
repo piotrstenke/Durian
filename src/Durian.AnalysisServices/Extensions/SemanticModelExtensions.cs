@@ -22,7 +22,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="compilationData"><see cref="ICompilationData"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="skipQualifiedNames">Determines whether to skip nodes that reside inside a qualified name.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilationData"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<string> GetUsedNamespaces(this SemanticModel semanticModel, SyntaxNode node, ICompilationData compilationData, bool skipQualifiedNames = false, CancellationToken cancellationToken = default)
 		{
@@ -41,7 +41,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="skipQualifiedNames">Determines whether to skip nodes that reside inside a qualified name.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<string> GetUsedNamespaces(this SemanticModel semanticModel, SyntaxNode node, CSharpCompilation compilation, bool skipQualifiedNames = false, CancellationToken cancellationToken = default)
 		{
@@ -60,7 +60,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="assembly"><see cref="IAssemblySymbol"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="skipQualifiedNames">Determines whether to skip nodes that reside inside a qualified name.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<string> GetUsedNamespaces(this SemanticModel semanticModel, SyntaxNode node, IAssemblySymbol assembly, bool skipQualifiedNames = false, CancellationToken cancellationToken = default)
 		{
@@ -79,7 +79,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="globalNamespace"><see cref="INamespaceSymbol"/> that represents the assembly's global namespace.</param>
 		/// <param name="skipQualifiedNames">Determines whether to skip nodes that reside inside a qualified name.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="globalNamespace"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="globalNamespace"/> is not an actual global namespace.</exception>
 		public static IEnumerable<string> GetUsedNamespaces(this SemanticModel semanticModel, SyntaxNode node, INamespaceSymbol globalNamespace, bool skipQualifiedNames = false, CancellationToken cancellationToken = default)
@@ -94,7 +94,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="compilationData"><see cref="ICompilationData"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="skipQualifiedNames">Determines whether to skip nodes that reside inside a qualified name.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilationData"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<string> GetUsedNamespacesWithoutDistinct(this SemanticModel semanticModel, SyntaxNode node, ICompilationData compilationData, bool skipQualifiedNames = false, CancellationToken cancellationToken = default)
 		{
@@ -113,7 +113,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="skipQualifiedNames">Determines whether to skip nodes that reside inside a qualified name.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<string> GetUsedNamespacesWithoutDistinct(this SemanticModel semanticModel, SyntaxNode node, CSharpCompilation compilation, bool skipQualifiedNames = false, CancellationToken cancellationToken = default)
 		{
@@ -132,7 +132,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="assembly"><see cref="IAssemblySymbol"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="skipQualifiedNames">Determines whether to skip nodes that reside inside a qualified name.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<string> GetUsedNamespacesWithoutDistinct(this SemanticModel semanticModel, SyntaxNode node, IAssemblySymbol assembly, bool skipQualifiedNames = false, CancellationToken cancellationToken = default)
 		{
@@ -151,7 +151,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="globalNamespace"><see cref="INamespaceSymbol"/> that represents the assembly's global namespace.</param>
 		/// <param name="skipQualifiedNames">Determines whether to skip nodes that reside inside a qualified name.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="globalNamespace"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="globalNamespace"/> is not an actual global namespace.</exception>
 		public static IEnumerable<string> GetUsedNamespacesWithoutDistinct(this SemanticModel semanticModel, SyntaxNode node, INamespaceSymbol globalNamespace, bool skipQualifiedNames = false, CancellationToken cancellationToken = default)
@@ -211,7 +211,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the parent namespace of.</param>
 		/// <param name="compilationData"><see cref="ICompilationData"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilationData"/> is <see langword="null"/>.</exception>
 		public static INamespaceSymbol GetContainingNamespace(this SemanticModel semanticModel, SyntaxNode node, ICompilationData compilationData, CancellationToken cancellationToken = default)
 		{
@@ -229,7 +229,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the parent namespace of.</param>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static INamespaceSymbol GetContainingNamespace(this SemanticModel semanticModel, SyntaxNode node, CSharpCompilation compilation, CancellationToken cancellationToken = default)
 		{
@@ -247,7 +247,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the parent namespace of.</param>
 		/// <param name="assembly"><see cref="IAssemblySymbol"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
 		public static INamespaceSymbol GetContainingNamespace(this SemanticModel semanticModel, SyntaxNode node, IAssemblySymbol assembly, CancellationToken cancellationToken = default)
 		{
@@ -265,7 +265,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the parent namespace of.</param>
 		/// <param name="globalNamespace"><see cref="INamespaceSymbol"/> that represents the assembly's global namespace.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="globalNamespace"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="globalNamespace"/> is not an actual global namespace.</exception>
 		public static INamespaceSymbol GetContainingNamespace(this SemanticModel semanticModel, SyntaxNode node, INamespaceSymbol globalNamespace, CancellationToken cancellationToken = default)
@@ -310,7 +310,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="compilationData"><see cref="ICompilationData"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilationData"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this SemanticModel semanticModel, SyntaxNode node, ICompilationData compilationData, bool includeGlobal = false, CancellationToken cancellationToken = default)
 		{
@@ -329,7 +329,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="assembly"><see cref="IAssemblySymbol"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this SemanticModel semanticModel, SyntaxNode node, IAssemblySymbol assembly, bool includeGlobal = false, CancellationToken cancellationToken = default)
 		{
@@ -347,7 +347,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this SemanticModel semanticModel, SyntaxNode node, CSharpCompilation compilation, bool includeGlobal = false, CancellationToken cancellationToken = default)
 		{
@@ -365,7 +365,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="globalNamespace"><see cref="INamespaceSymbol"/> that represents the assembly's global namespace.</param>
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="globalNamespace"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="globalNamespace"/> is not an actual global namespace.</exception>
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this SemanticModel semanticModel, SyntaxNode node, INamespaceSymbol globalNamespace, bool includeGlobal = false, CancellationToken cancellationToken = default)
@@ -420,7 +420,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Target <see cref="SemanticModel"/>.</param>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="compilationData"><see cref="ICompilationData"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilationData"/> is <see langword="null"/>.</exception>
 		public static INamespaceSymbol GetRootNamespace(this SemanticModel semanticModel, SyntaxNode node, ICompilationData compilationData, CancellationToken cancellationToken = default)
 		{
@@ -438,7 +438,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Target <see cref="SemanticModel"/>.</param>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static INamespaceSymbol GetRootNamespace(this SemanticModel semanticModel, SyntaxNode node, CSharpCompilation compilation, CancellationToken cancellationToken = default)
 		{
@@ -456,7 +456,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Target <see cref="SemanticModel"/>.</param>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="assembly"><see cref="IAssemblySymbol"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
 		public static INamespaceSymbol GetRootNamespace(this SemanticModel semanticModel, SyntaxNode node, IAssemblySymbol assembly, CancellationToken cancellationToken = default)
 		{
@@ -474,7 +474,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Target <see cref="SemanticModel"/>.</param>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="globalNamespace"><see cref="INamespaceSymbol"/> that represents the assembly's global namespace.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="globalNamespace"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="globalNamespace"/> is not an actual global namespace.</exception>
 		public static INamespaceSymbol GetRootNamespace(this SemanticModel semanticModel, SyntaxNode node, INamespaceSymbol globalNamespace, CancellationToken cancellationToken = default)
@@ -495,7 +495,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
 		/// <param name="syntaxNode"><see cref="MemberDeclarationSyntax"/> the attribute is declared on.</param>
 		/// <param name="attrSymbol">Type of attribute to look for.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns>
 		/// The <see cref="AttributeSyntax"/> that corresponds to the <paramref name="attrSymbol"/>. -or- <see langword="null"/> if no such <see cref="AttributeSyntax"/> found.
 		/// </returns>
@@ -516,7 +516,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
 		/// <param name="syntaxNode"><see cref="TypeParameterSyntax"/> the attribute is declared on.</param>
 		/// <param name="attrSymbol">Type of attribute to look for.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns>
 		/// The <see cref="AttributeSyntax"/> that corresponds to the <paramref name="attrSymbol"/>. -or- <see langword="null"/> if no such <see cref="AttributeSyntax"/> found.
 		/// </returns>
@@ -537,7 +537,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
 		/// <param name="syntaxNode"><see cref="ParameterSyntax"/> the attribute is declared on.</param>
 		/// <param name="attrSymbol">Type of attribute to look for.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns>
 		/// The <see cref="AttributeSyntax"/> that corresponds to the <paramref name="attrSymbol"/>. -or- <see langword="null"/> if no such <see cref="AttributeSyntax"/> found.
 		/// </returns>
@@ -558,7 +558,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
 		/// <param name="syntaxNode"><see cref="MemberDeclarationSyntax"/> the attributes are declared on.</param>
 		/// <param name="attrSymbol">Type of attributes to look for.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns>
 		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
 		/// </returns>
@@ -579,7 +579,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
 		/// <param name="syntaxNode"><see cref="TypeParameterSyntax"/> the attributes are declared on.</param>
 		/// <param name="attrSymbol">Type of attributes to look for.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns>
 		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
 		/// </returns>
@@ -600,7 +600,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
 		/// <param name="syntaxNode"><see cref="ParameterSyntax"/> the attributes are declared on.</param>
 		/// <param name="attrSymbol">Type of attributes to look for.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns>
 		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
 		/// </returns>

@@ -1,8 +1,8 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.CodeDom.Compiler;
 
 namespace Durian.Generator.Data
 {

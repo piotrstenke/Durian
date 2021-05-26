@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -34,15 +33,12 @@ namespace Durian.Generator.DefaultParam
 			return new[]
 			{
 				DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern,
-				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnLocalFunctionsOrLambdas,
+				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod,
 				DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods,
 				DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase,
 				DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters,
 				DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity,
 				DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists,
-				DefaultParamDiagnostics.DUR0116_DoNotChangeDefaultParamValueOfImplementedMethod,
-				DefaultParamDiagnostics.DUR0117_DoNotImplementGeneratedInterfaceMethods,
-				DefaultParamDiagnostics.DUR0118_ConflictBetweenExistingMethodAndInterfaceMethod,
 			};
 		}
 
@@ -75,19 +71,7 @@ namespace Durian.Generator.DefaultParam
 		{
 			TypeParameterContainer typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
 
-			if ((typeParameters.Length == 0 && !symbol.IsOverride) || symbol.ExplicitInterfaceImplementations.Length == 0)
-			{
-				return false;
-			}
-
-			if (typeParameters.HasDefaultParams)
-			{
-				if (!AnalyzeAgaintsLocalFunction(symbol))
-				{
-					return false;
-				}
-			}
-			else if (!symbol.IsOverride)
+			if (!typeParameters.HasDefaultParams && !symbol.IsOverride)
 			{
 				return false;
 			}
@@ -105,19 +89,9 @@ namespace Durian.Generator.DefaultParam
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeBaseMethodAndTypeParameters(IMethodSymbol symbol, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			if (symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
-			{
-				return AnalyzeExplicitImplementation(symbol, ref typeParameters, compilation, cancellationToken);
-			}
-
 			if (!symbol.IsOverride)
 			{
-				if (AnalyzeTypeParameters(symbol, in typeParameters))
-				{
-					return AnalyzeInterfaceImplementation(symbol, in typeParameters, compilation, cancellationToken);
-				}
-
-				return false;
+				return AnalyzeTypeParameters(symbol, in typeParameters);
 			}
 
 			IMethodSymbol? baseMethod = symbol.OverriddenMethod;
@@ -136,8 +110,8 @@ namespace Durian.Generator.DefaultParam
 
 			if (HasAddedDefaultParamAttributes(in typeParameters, in baseTypeParameters) ||
 				!AnalyzeTypeParameters(symbol, in baseTypeParameters) ||
-				!AnalyzeBaseMethodParameters(in typeParameters, in baseTypeParameters) ||
-				!AnalyzeInterfaceImplementation(symbol, in typeParameters, compilation, cancellationToken))
+				!AnalyzeBaseMethodParameters(in typeParameters, in baseTypeParameters))
+
 			{
 				return false;
 			}
@@ -147,13 +121,23 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <summary>
-		/// Analyzes, if the <paramref name="symbol"/> is a local function.
+		/// Analyzes, if the <paramref name="symbol"/> is of an invalid type.
 		/// </summary>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
-		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (is not local function), otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeAgaintsLocalFunction(IMethodSymbol symbol)
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
+		public static bool AnalyzeAgaintsInvalidMethodType(IMethodSymbol symbol)
 		{
-			return symbol.MethodKind != MethodKind.LocalFunction;
+			if (symbol.MethodKind is MethodKind.LocalFunction or MethodKind.AnonymousFunction or MethodKind.ExplicitInterfaceImplementation)
+			{
+				return false;
+			}
+
+			if (symbol.ContainingType is INamedTypeSymbol t && t.TypeKind == TypeKind.Interface)
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		/// <summary>
@@ -217,12 +201,6 @@ namespace Durian.Generator.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			if (symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
-			{
-				applyNew = null;
-				return true;
-			}
-
 			IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
 			CollidingMember[] collidingMethods = GetPotentiallyCollidingMembers(
 				symbol,
@@ -243,7 +221,7 @@ namespace Durian.Generator.DefaultParam
 				in typeParameters,
 				collidingMethods,
 				symbolParameters,
-				AllowsNewModifier(symbol, attributes, containingTypes, compilation),
+				AllowsNewModifier(attributes, containingTypes, compilation),
 				cancellationToken,
 				out applyNew
 			);
@@ -256,23 +234,17 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		public static bool AllowsNewModifier(IMethodSymbol method, DefaultParamCompilationData compilation)
 		{
-			return AllowsNewModifier(method, method.GetAttributes(), method.GetContainingTypeSymbols().ToArray(), compilation);
+			return AllowsNewModifier(method.GetAttributes(), method.GetContainingTypeSymbols().ToArray(), compilation);
 		}
 
 		/// <summary>
-		/// Determines whether the 'new' modifier is allowed to the target <paramref name="method"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
+		/// Determines whether the 'new' modifier is allowed to the target <see cref="IMethodSymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
 		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
-		/// <param name="attributes">A collection of the target <paramref name="method"/>'s attributes.</param>
+		/// <param name="attributes">A collection of the target <see cref="IMethodSymbol"/>'s attributes.</param>
 		/// <param name="containingTypes"><see cref="INamedTypeSymbol"/>s that contain this <see cref="IMethodSymbol"/>.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool AllowsNewModifier(IMethodSymbol method, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
+		public static bool AllowsNewModifier(IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
 		{
-			if (method.MethodKind == MethodKind.ExplicitInterfaceImplementation)
-			{
-				return false;
-			}
-
 			return DefaultParamUtilities.AllowsNewModifier(attributes, containingTypes, compilation);
 		}
 
@@ -295,7 +267,7 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the target <see cref="IMethodSymbol"/>.</param>
 		public static bool ShouldCallInsteadOfCopying(IMethodSymbol symbol, DefaultParamCompilationData compilation, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes)
 		{
-			if (symbol.IsAbstract || symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation || symbol.ContainingType.TypeKind == TypeKind.Interface)
+			if (symbol.IsAbstract)
 			{
 				return false;
 			}
@@ -306,115 +278,12 @@ namespace Durian.Generator.DefaultParam
 		private static bool AnalyzeCore(IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
 		{
 			return
+				AnalyzeAgaintsInvalidMethodType(symbol) &&
 				AnalyzeAgaintsPartialOrExtern(symbol, cancellationToken) &&
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
 				AnalyzeContainingTypes(symbol, cancellationToken) &&
 				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, compilation, cancellationToken) &&
 				AnalyzeMethodSignature(symbol, typeParameters, compilation, cancellationToken);
-		}
-
-		private static bool AnalyzeExplicitImplementation(IMethodSymbol symbol, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
-		{
-			ImmutableArray<IMethodSymbol> implementedMethods = symbol.ExplicitInterfaceImplementations;
-
-			if (implementedMethods.Length == 0)
-			{
-				return false;
-			}
-
-			TypeParameterContainer copyOfParameters = typeParameters;
-
-			foreach (IMethodSymbol method in implementedMethods)
-			{
-				if (IsDefaultParamGenerated(method, compilation))
-				{
-					return false;
-				}
-
-				TypeParameterContainer baseParameters = TypeParameterContainer.CreateFrom(method, compilation, cancellationToken);
-
-				if (!baseParameters.HasDefaultParams || !AnalyzeTypeParameters(symbol, in baseParameters))
-				{
-					continue;
-				}
-
-				if (!AnalyzeBaseMethodParameters(in typeParameters, in baseParameters))
-				{
-					return false;
-				}
-
-				copyOfParameters = TypeParameterContainer.Combine(in copyOfParameters, in baseParameters);
-			}
-
-			typeParameters = copyOfParameters;
-			return true;
-		}
-
-		private static bool AnalyzeInterfaceImplementation(IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
-		{
-			INamedTypeSymbol parent = symbol.ContainingType;
-			string name = symbol.Name;
-
-			foreach (INamedTypeSymbol intf in parent.AllInterfaces)
-			{
-				foreach (IMethodSymbol interfaceMethod in intf.GetMembers(name).OfType<IMethodSymbol>())
-				{
-					if (parent.FindImplementationForInterfaceMember(interfaceMethod) is not IMethodSymbol impl || impl.MethodKind == MethodKind.ExplicitInterfaceImplementation)
-					{
-						continue;
-					}
-
-					if (!SymbolEqualityComparer.Default.Equals(impl, symbol) || IsDefaultParamGenerated(interfaceMethod, compilation))
-					{
-						continue;
-					}
-
-					TypeParameterContainer baseTypeParameters = TypeParameterContainer.CreateFrom(interfaceMethod, compilation, cancellationToken);
-
-					if (!AnalyzeInterfaceMethod(interfaceMethod, in typeParameters, in baseTypeParameters))
-					{
-						return false;
-					}
-				}
-			}
-
-			return true;
-		}
-
-		private static bool AnalyzeInterfaceMethod(IMethodSymbol interfaceMethod, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
-		{
-			if (!baseTypeParameters.HasDefaultParams)
-			{
-				return true;
-			}
-
-			if (!AnalyzeTypeParameters(interfaceMethod, in baseTypeParameters))
-			{
-				return false;
-			}
-
-			int length = baseTypeParameters.Length;
-			int firstIndex = GetFirstDefaultParamIndex(in typeParameters, in baseTypeParameters);
-
-			for (int i = firstIndex; i < length; i++)
-			{
-				ref readonly TypeParameterData baseData = ref baseTypeParameters[i];
-				ref readonly TypeParameterData thisData = ref typeParameters[i];
-
-				if (baseData.IsDefaultParam)
-				{
-					if (!thisData.IsDefaultParam || !SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
-					{
-						return false;
-					}
-				}
-				else if (thisData.IsDefaultParam)
-				{
-					return false;
-				}
-			}
-
-			return true;
 		}
 
 		private static void FindAndAnalyzeLocalFunction(SyntaxNodeAnalysisContext context, DefaultParamCompilationData compilation)
@@ -435,7 +304,7 @@ namespace Durian.Generator.DefaultParam
 
 			if (typeParameters.Any(t => t.HasAttribute(compilation.MainAttribute!)))
 			{
-				DiagnosticDescriptor d = DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnLocalFunctionsOrLambdas;
+				DiagnosticDescriptor d = DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod;
 				context.ReportDiagnostic(Diagnostic.Create(d, l.GetLocation(), m));
 			}
 		}
@@ -546,7 +415,16 @@ namespace Durian.Generator.DefaultParam
 
 		private static TypeParameterContainer GetBaseMethodTypeParameters(IMethodSymbol baseMethod, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
 		{
-			return TypeParameterContainer.CreateFrom(baseMethod, compilation, cancellationToken);
+			TypeParameterContainer parameters = TypeParameterContainer.CreateFrom(baseMethod, compilation, cancellationToken);
+
+			foreach (IMethodSymbol m in baseMethod.GetBaseMethods())
+			{
+				TypeParameterContainer t = TypeParameterContainer.CreateFrom(m, compilation, cancellationToken);
+
+				parameters = TypeParameterContainer.Combine(parameters, t);
+			}
+
+			return parameters;
 		}
 
 		private static int GetFirstDefaultParamIndex(in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)

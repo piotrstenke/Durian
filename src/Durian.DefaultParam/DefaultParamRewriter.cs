@@ -129,11 +129,13 @@ namespace Durian.Generator.DefaultParam
 		/// Replaces the old <see cref="ITypeParameterSymbol"/> <see cref="CSharpSyntaxNode"/>s with the <paramref name="newType"/>.
 		/// </summary>
 		/// <param name="oldType"><see cref="ITypeParameterSymbol"/> to be replaced.</param>
-		/// <param name="newType"><see cref="string"/> to replace the encountered references to the target <see cref="ITypeParameterSymbol"/> with.</param>
-		public void ReplaceType(ITypeParameterSymbol oldType, string newType)
+		/// <param name="newType"><see cref="ITypeSymbol"/> to replace the encountered references to the target <see cref="ITypeParameterSymbol"/> with.</param>
+		/// <param name="newTypeName">Name that should be applied for the <paramref name="newType"/>.</param>
+		public void ReplaceType(ITypeParameterSymbol oldType, ITypeSymbol newType, string newTypeName)
 		{
 			_replacer.ParameterToReplace = oldType;
-			_replacer.Replacement = SyntaxFactory.IdentifierName(newType ?? string.Empty);
+			_replacer.Replacement = SyntaxFactory.IdentifierName(newTypeName ?? string.Empty);
+			_replacer.NewType = newType;
 			_replacer.ResetCounter();
 
 			DeclarationBuilder.AcceptTypeParameterReplacer(_replacer);

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 internal class Program
@@ -360,7 +360,7 @@ internal class Program
 				{
 					ref readonly IncludedType type = ref config.IncludedTypes[j];
 
-					if(includedTypes.Contains(type.Name))
+					if (includedTypes.Contains(type.Name))
 					{
 						Console.WriteLine($"Type '{type.Name}' is included by the '{config.ModuleName}' module in multiple places!");
 					}
@@ -370,7 +370,7 @@ internal class Program
 					}
 				}
 
-				if(packages.Contains(config.PackageName))
+				if (packages.Contains(config.PackageName))
 				{
 					Console.WriteLine($"Package '{config.PackageName}' is part of multiple modules! Last encounter: '{config.ModuleName}'");
 				}
@@ -397,12 +397,12 @@ internal class Program
 
 		foreach (Configuration configuration in configurations)
 		{
-			if(configuration.ModuleName == "None")
+			if (configuration.ModuleName == "None")
 			{
 				continue;
 			}
 
-			if(dict.TryGetValue(configuration.ModuleName, out int index))
+			if (dict.TryGetValue(configuration.ModuleName, out int index))
 			{
 				list[index].Add(configuration);
 			}

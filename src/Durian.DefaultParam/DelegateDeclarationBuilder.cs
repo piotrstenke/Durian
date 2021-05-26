@@ -134,11 +134,11 @@ namespace Durian.Generator.DefaultParam
 		{
 			SyntaxList<TypeParameterConstraintClauseSyntax> clauses = DefaultParamUtilities.ApplyConstraints(constraintClauses, _numOriginalConstraints);
 
-			if(clauses.Any())
+			if (clauses.Any())
 			{
 				clauses = clauses.Replace(clauses.Last(), clauses.Last().WithTrailingTrivia(null));
 			}
-			else if(CurrentDeclaration.ConstraintClauses.Any())
+			else if (CurrentDeclaration.ConstraintClauses.Any())
 			{
 				CurrentDeclaration = CurrentDeclaration.WithParameterList(CurrentDeclaration.ParameterList.WithoutTrailingTrivia());
 			}

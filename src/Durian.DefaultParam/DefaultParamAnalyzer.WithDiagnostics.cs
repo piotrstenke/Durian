@@ -5,9 +5,6 @@ using Durian.Generator.Data;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Immutable;
-using System.Reflection.Metadata;
-using System.Data.Common;
 
 namespace Durian.Generator.DefaultParam
 {
@@ -180,7 +177,7 @@ namespace Durian.Generator.DefaultParam
 
 					if (data.IsDefaultParam)
 					{
-						if(!ValidateTargetTypeParameter(diagnosticReceiver, symbol, in data, in typeParameters))
+						if (!ValidateTargetTypeParameter(diagnosticReceiver, symbol, in data, in typeParameters))
 						{
 							isValid = false;
 						}
@@ -216,13 +213,13 @@ namespace Durian.Generator.DefaultParam
 					(targetType is INamedTypeSymbol t && (t.IsUnboundGenericType || t.SpecialType == SpecialType.System_Void))
 				)
 				{
-					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0125_TypeIsNotValidDefaultParamValue, currentTypeParameter.Location, typeParameterSymbol, targetType);
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0121_TypeIsNotValidDefaultParamValue, currentTypeParameter.Location, typeParameterSymbol, targetType);
 					return false;
 				}
 
-				if(!HasValidParameterAccessibility(symbol, targetType, typeParameterSymbol, in typeParameters))
+				if (!HasValidParameterAccessibility(symbol, targetType, typeParameterSymbol, in typeParameters))
 				{
-					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0123_DefaultParamValueCannotBeLessAccessibleThanTargetMember, currentTypeParameter.Location, typeParameterSymbol, targetType);
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember, currentTypeParameter.Location, typeParameterSymbol, targetType);
 					return false;
 				}
 
@@ -234,14 +231,14 @@ namespace Durian.Generator.DefaultParam
 					targetType.IsSealed
 				)
 				{
-					if(HasTypeParameterAsConstraint(typeParameterSymbol, in typeParameters))
+					if (HasTypeParameterAsConstraint(typeParameterSymbol, in typeParameters))
 					{
-						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0124_TypeCannotBeUsedWithConstraint, currentTypeParameter.Location, typeParameters, targetType);
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0120_TypeCannotBeUsedWithConstraint, currentTypeParameter.Location, typeParameters, targetType);
 						return false;
 					}
 				}
 
-				if(!IsValidForConstraint(targetType, currentTypeParameter.Symbol, in typeParameters))
+				if (!IsValidForConstraint(targetType, currentTypeParameter.Symbol, in typeParameters))
 				{
 					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint, currentTypeParameter.Location, typeParameterSymbol, targetType);
 					return false;

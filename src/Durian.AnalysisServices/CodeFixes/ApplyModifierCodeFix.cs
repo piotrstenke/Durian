@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -26,12 +25,12 @@ namespace Durian.Generator.CodeFixes
 		}
 
 		/// <inheritdoc/>
-		protected override Task<Document> Execute(Document document, CSharpSyntaxNode root, T node, CancellationToken cancellationToken)
+		protected override Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
 		{
-			MemberDeclarationSyntax newNode = node.AddModifiers(ModifiersToApply.Select(m => SyntaxFactory.Token(m)).ToArray());
-			SyntaxNode newRoot = root.ReplaceNode(node, newNode);
+			MemberDeclarationSyntax newNode = context.Node.AddModifiers(ModifiersToApply.Select(m => SyntaxFactory.Token(m)).ToArray());
+			context.RegisterChangeAndUpdateDocument(context.Node, newNode);
 
-			return Task.FromResult(document.WithSyntaxRoot(newRoot));
+			return Task.FromResult(context.Document);
 		}
 	}
 }

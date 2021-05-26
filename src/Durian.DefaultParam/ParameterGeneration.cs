@@ -23,6 +23,14 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public readonly int GenericParameterIndex { get; }
 
+		/// <inheritdoc cref="ParameterGeneration(ITypeSymbol, RefKind, int)"/>
+		public ParameterGeneration(ITypeSymbol type, RefKind refKind)
+		{
+			Type = type;
+			RefKind = refKind;
+			GenericParameterIndex = -1;
+		}
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ParameterGeneration"/> struct.
 		/// </summary>

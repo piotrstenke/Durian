@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using Durian.Configuration;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
@@ -25,7 +26,8 @@ namespace Durian.Generator.DefaultParam
 			DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes,
 			DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods,
 			DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod,
-			DUR0121_InheritTypeConventionCannotBeUsedOnStructOrSealedType
+			DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType,
+			DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor
 		);
 
 		/// <summary>
@@ -73,7 +75,7 @@ namespace Durian.Generator.DefaultParam
 
 			if (symbol is INamedTypeSymbol t)
 			{
-				AnalyzeType(t, compilation, syntax);
+				AnalyzeType(t, compilation, syntax, context.CancellationToken);
 			}
 			else if (symbol is IMethodSymbol m)
 			{
@@ -97,7 +99,7 @@ namespace Durian.Generator.DefaultParam
 			}
 		}
 
-		private void AnalyzeType(INamedTypeSymbol type, DefaultParamCompilationData compilation, AttributeSyntax node)
+		private void AnalyzeType(INamedTypeSymbol type, DefaultParamCompilationData compilation, AttributeSyntax node, CancellationToken cancellationToken)
 		{
 			if (!type.TypeParameters.Any(t => t.HasAttribute(compilation.MainAttribute!)))
 			{
@@ -125,25 +127,35 @@ namespace Durian.Generator.DefaultParam
 					_diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), type);
 				}
 			}
-			else if ((type.TypeKind == TypeKind.Struct || type.IsSealed) && CheckArguments(arguments, propertyName, out arg))
+			else if (type.TypeKind == TypeKind.Struct || type.IsSealed)
 			{
-				AttributeData? attr = type.GetAttributeData(node);
-
-				if (attr is not null && attr.TryGetNamedArgumentValue(propertyName, out int value))
+				if (CheckArguments(arguments, propertyName, out arg) &&
+					type.GetAttributeData(node, cancellationToken) is AttributeData attr &&
+					attr.TryGetNamedArgumentValue(propertyName, out int value)
+				)
 				{
 					DPTypeConvention convention = (DPTypeConvention)value;
 
 					if (convention == DPTypeConvention.Inherit)
 					{
-						_diagnosticReceiver.ReportDiagnostic(DUR0121_InheritTypeConventionCannotBeUsedOnStructOrSealedType, arg.GetLocation(), type);
+						_diagnosticReceiver.ReportDiagnostic(DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType, arg.GetLocation(), type);
 					}
 				}
 			}
-			else if (type.IsSealed)
+			else if (type.TypeKind == TypeKind.Class)
 			{
-				if (CheckArguments(arguments, propertyName, out arg))
+				if (CheckArguments(arguments, propertyName, out arg) &&
+					!type.InstanceConstructors.Any(ctor => ctor.DeclaredAccessibility >= Accessibility.Protected) &&
+					type.GetAttributeData(node, cancellationToken) is AttributeData attr &&
+					attr.TryGetNamedArgumentValue(propertyName, out int value)
+				)
 				{
-					_diagnosticReceiver.ReportDiagnostic(DUR0121_InheritTypeConventionCannotBeUsedOnStructOrSealedType, arg.GetLocation(), type);
+					DPTypeConvention convention = (DPTypeConvention)value;
+
+					if (convention == DPTypeConvention.Inherit)
+					{
+						_diagnosticReceiver.ReportDiagnostic(DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor, arg.GetLocation(), type);
+					}
 				}
 			}
 		}

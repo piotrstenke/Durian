@@ -167,7 +167,7 @@ namespace Durian.Generator
 		/// Writes all usings that are needed by the specified <paramref name="member"/>.
 		/// </summary>
 		/// <param name="member">Target <see cref="IMemberData"/> to write the used namespaces of.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
 		public void WriteUsings(IMemberData member, CancellationToken cancellationToken = default)
 		{
@@ -184,7 +184,7 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">
 		/// If the <see cref="Generator"/> property is <see langword="null"/>,
@@ -206,7 +206,7 @@ namespace Durian.Generator
 		/// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
 		/// <param name="compilationData"><see cref="ICompilationData"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilationData"/> is <see langword="null"/>.</exception>
 		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, ICompilationData compilationData, CancellationToken cancellationToken = default)
 		{
@@ -219,7 +219,7 @@ namespace Durian.Generator
 		/// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, CSharpCompilation compilation, CancellationToken cancellationToken = default)
 		{
@@ -232,7 +232,7 @@ namespace Durian.Generator
 		/// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
 		/// <param name="assembly"><see cref="IAssemblySymbol"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
 		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, IAssemblySymbol assembly, CancellationToken cancellationToken = default)
 		{
@@ -245,7 +245,7 @@ namespace Durian.Generator
 		/// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
 		/// <param name="globalNamespace"><see cref="INamespaceSymbol"/> that represents the assembly's global namespace.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="globalNamespace"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="globalNamespace"/> is not an actual global namespace.</exception>
 		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, INamespaceSymbol globalNamespace, CancellationToken cancellationToken = default)

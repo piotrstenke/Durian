@@ -1,12 +1,10 @@
-﻿using Xunit;
-using Durian.Generator;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+﻿using System.Collections.Immutable;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.Immutable;
+using Durian.Generator;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.VisualBasic;
+using Xunit;
 
 namespace Durian.Tests.Core
 {

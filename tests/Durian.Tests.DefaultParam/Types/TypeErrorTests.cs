@@ -1,6 +1,6 @@
-﻿using Xunit;
-using Durian.Generator;
+﻿using Durian.Generator;
 using Durian.Generator.DefaultParam;
+using Xunit;
 
 namespace Durian.Tests.DefaultParam.Types
 {
@@ -16,7 +16,7 @@ partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string)]T>
 {{
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0126_DoNotUseDefaultParamOnPartialType.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0122_DoNotUseDefaultParamOnPartialType.Id));
 		}
 
 		[Fact]

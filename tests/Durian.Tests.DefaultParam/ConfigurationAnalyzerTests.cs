@@ -278,5 +278,56 @@ partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 ";
 			Assert.Empty(await RunAnalyzerAsync(input));
 		}
+
+		[Fact]
+		public async Task Error_When_IsInheritOnStruct()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+public struct Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+{{
+}}
+";
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
+		}
+
+		[Fact]
+		public async Task Error_When_IsInheritOnSealedType()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+public sealed class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+{{
+}}
+";
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
+		}
+
+		[Fact]
+		public async Task Error_When_IsInheritOnTypeWithNoAccessibleConstructors()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+{{
+	private Test()
+	{{
+	}}
+}}
+";
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			Assert.True(diagnostics.Any(d => d.Id == DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor.Id));
+		}
 	}
 }

@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.Generator.Data
 {
 	/// <inheritdoc cref="IMemberData"/>
-	[DebuggerDisplay("{Symbol}: {_location}")]
+	[DebuggerDisplay("{Symbol}")]
 	public class MemberData : IMemberData
 	{
 		// Used is some extension methods.

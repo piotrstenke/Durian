@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using System.Xml.Linq;
 using Durian.Configuration;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
@@ -33,8 +31,8 @@ namespace Durian.Generator.DefaultParam
 		{
 			return new DiagnosticDescriptor[]
 			{
-				DefaultParamDiagnostics.DUR0122_ApplyCopyTypeConventionOnStructOrSealedType,
-				DefaultParamDiagnostics.DUR0126_DoNotUseDefaultParamOnPartialType
+				DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor,
+				DefaultParamDiagnostics.DUR0122_DoNotUseDefaultParamOnPartialType
 			};
 		}
 
@@ -63,9 +61,9 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> has the <see cref="DPTypeConvention.Inherit"/> applied.
+		/// Checks if the target <paramref name="symbol"/> has the <see cref="DPTypeConvention.Inherit"/> applied, either directly or by one of the containing types.
 		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		public static bool HasInheritConvention(INamedTypeSymbol symbol, DefaultParamCompilationData compilation)
 		{
@@ -73,14 +71,34 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <summary>
-		/// Checks if the target <see cref="ISymbol"/> has the <see cref="DPTypeConvention.Inherit"/> applied.
+		/// Checks if the target <see cref="INamedTypeSymbol"/> has the <see cref="DPTypeConvention.Inherit"/> applied, either directly or by one of the <paramref name="containingTypes"/>.
 		/// </summary>
-		/// <param name="attributes">Attributes of the target <see cref="ISymbol"/>.</param>
-		/// <param name="containingTypes">Types that contain target <see cref="ISymbol"/>.</param>
+		/// <param name="attributes">Attributes of the target <see cref="INamedTypeSymbol"/>.</param>
+		/// <param name="containingTypes">Types that contain target <see cref="INamedTypeSymbol"/>.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		public static bool HasInheritConvention(IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
 		{
 			return DefaultParamUtilities.GetConfigurationEnumValue(nameof(DefaultParamConfigurationAttribute.TypeConvention), attributes, containingTypes, compilation, (int)compilation.Configuration.TypeConvention) == (int)DPTypeConvention.Inherit;
+		}
+
+		/// <summary>
+		/// Checks if one of containing types of the target <paramref name="symbol"/> has the <see cref="DPTypeConvention.Inherit"/> applied.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		public static bool HasInheritConventionOnContainingTypes(INamedTypeSymbol symbol, DefaultParamCompilationData compilation)
+		{
+			return HasInheritConventionOnContainingTypes(symbol.GetContainingTypeSymbols().ToArray(), compilation);
+		}
+
+		/// <summary>
+		/// Checks if one of <paramref name="containingTypes"/> of the target <see cref="INamedTypeSymbol"/> has the <see cref="DPTypeConvention.Inherit"/> applied.
+		/// </summary>
+		/// <param name="containingTypes">Types that contain target <see cref="INamedTypeSymbol"/>.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		public static bool HasInheritConventionOnContainingTypes(INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
+		{
+			return DefaultParamUtilities.GetConfigurationEnumValueOnContainingTypes(nameof(DefaultParamConfigurationAttribute.TypeConvention), containingTypes, compilation, (int)compilation.Configuration.TypeConvention) == (int)DPTypeConvention.Inherit;
 		}
 
 		/// <summary>
@@ -102,12 +120,15 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the target <see cref="INamedTypeSymbol"/>.</param>
 		public static bool ShouldInheritInsteadOfCopying(INamedTypeSymbol symbol, DefaultParamCompilationData compilation, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes)
 		{
-			if(HasInheritConvention(attributes, containingTypes, compilation))
+			if (symbol.TypeKind == TypeKind.Struct ||
+				symbol.IsSealed ||
+				(symbol.TypeKind == TypeKind.Class && !symbol.InstanceConstructors.Any(ctor => ctor.DeclaredAccessibility >= Accessibility.Protected))
+			)
 			{
-				return symbol.TypeKind != TypeKind.Struct && !symbol.IsSealed;
+				return false;
 			}
 
-			return false;
+			return HasInheritConvention(attributes, containingTypes, compilation);
 		}
 
 		/// <inheritdoc cref="DefaultParamDelegateAnalyzer.AllowsNewModifier(INamedTypeSymbol, DefaultParamCompilationData)"/>

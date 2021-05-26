@@ -219,7 +219,7 @@ namespace Durian.Generator.DefaultParam
 						}
 						else
 						{
-							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists, symbol, symbol.Name);
+							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists, symbol, symbol.Name);
 							isValid = false;
 
 							if (diagnosed.Add(index) && diagnosed.Count == typeParameters.NumDefaultParam)
@@ -244,7 +244,7 @@ namespace Durian.Generator.DefaultParam
 						continue;
 					}
 
-					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists, symbol, member.Symbol.GetGenericName(false));
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists, symbol, member.Symbol.GetGenericName(false));
 					isValid = false;
 
 					if (diagnosed.Add(targetIndex) && diagnosed.Count == typeParameters.NumDefaultParam)

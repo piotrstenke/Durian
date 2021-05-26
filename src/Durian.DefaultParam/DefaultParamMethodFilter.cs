@@ -161,9 +161,11 @@ namespace Durian.Generator.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			if (AnalyzeAgaintsPartialOrExtern(symbol, declaration) &&
+			if (AnalyzeAgaintsInvalidMethodType(symbol) &&
+				AnalyzeAgaintsPartialOrExtern(symbol, declaration) &&
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
-				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes))
+				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes)
+			)
 			{
 				TypeParameterContainer combinedParameters = typeParameters;
 
@@ -217,7 +219,7 @@ namespace Durian.Generator.DefaultParam
 			semanticModel = compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
 			typeParameters = GetParameters(declaration, semanticModel, compilation, cancellationToken);
 
-			if (typeParameters.HasDefaultParams || declaration.ExplicitInterfaceSpecifier is not null || declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
+			if (typeParameters.HasDefaultParams || declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
 			{
 				symbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken)!;
 

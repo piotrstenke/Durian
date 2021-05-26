@@ -234,7 +234,7 @@ namespace Durian.Generator.DefaultParam
 
 				if (data.IsDefaultParam)
 				{
-					if(!ValidateTargetTypeParameter(symbol, in data, in typeParameters))
+					if (!ValidateTargetTypeParameter(symbol, in data, in typeParameters))
 					{
 						return false;
 					}
@@ -419,6 +419,8 @@ namespace Durian.Generator.DefaultParam
 			if (method.IsOverride && method.OverriddenMethod is IMethodSymbol baseMethod)
 			{
 				string baseFullName = baseMethod.ToString();
+				List<string> methodNames = new() { fullName, baseFullName };
+				methodNames.AddRange(baseMethod.GetBaseMethods().Select(m => m.ToString()));
 
 				return members.Where(s =>
 				{
@@ -428,7 +430,7 @@ namespace Durian.Generator.DefaultParam
 						{
 							if (SymbolEqualityComparer.Default.Equals(generatedFromAttribute, attr.AttributeClass) && attr.TryGetConstructorArgumentValue(0, out string? value))
 							{
-								return value != fullName && value != baseFullName;
+								return value is not null && !methodNames.Contains(value);
 							}
 						}
 					}
@@ -550,10 +552,10 @@ namespace Durian.Generator.DefaultParam
 				DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent,
 				DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast,
 				DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint,
-				DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists,
-				DefaultParamDiagnostics.DUR0123_DefaultParamValueCannotBeLessAccessibleThanTargetMember,
-				DefaultParamDiagnostics.DUR0124_TypeCannotBeUsedWithConstraint,
-				DefaultParamDiagnostics.DUR0125_TypeIsNotValidDefaultParamValue,
+				DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists,
+				DefaultParamDiagnostics.DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember,
+				DefaultParamDiagnostics.DUR0120_TypeCannotBeUsedWithConstraint,
+				DefaultParamDiagnostics.DUR0121_TypeIsNotValidDefaultParamValue,
 			};
 		}
 

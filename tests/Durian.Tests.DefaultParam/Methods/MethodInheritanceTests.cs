@@ -159,6 +159,50 @@ partial class Child : Parent
 		}
 
 		[Fact]
+		public void Warning_When_HasNoAttributeOfBaseMethod_And_BaseMethodAlsoDoesNot()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Inner
+{{
+	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	{{
+	}}
+}}
+
+partial class Parent : Inner
+{{	
+	public override void Method<T>(T value)
+	{{
+	}}
+}}
+
+partial class Child : Parent
+{{
+	public override void Method<T>(T value)
+	{{
+	}}
+}}
+";
+
+			string expected =
+$@"partial class Child
+{{
+	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
+	public override void Method(int value)
+	{{
+	}}
+}}
+";
+
+			SingletonGeneratorTestResult result = RunGenerator(input, 2);
+
+			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
+			Assert.True(result.Compare(expected));
+		}
+
+		[Fact]
 		public void Warning_When_HasNoAttributeOfBaseMethod()
 		{
 			string input =
@@ -178,8 +222,19 @@ partial class Child : Parent
 	}}
 }}
 ";
+			string expected =
+$@"partial class Child
+{{
+	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
+	public override void Method(int value)
+	{{
+	}}
+}}
+";
+			SingletonGeneratorTestResult result = RunGenerator(input, 1);
 
-			Assert.True(RunGenerator(input, 1).HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
+			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
+			Assert.True(result.Compare(expected));
 		}
 
 		[Fact]
@@ -197,13 +252,31 @@ partial class Parent
 
 partial class Child : Parent
 {{
-	public override void Method<[[{nameof(DefaultParamAttribute)}(typeof(int))]T, U>(T value)
+	public override void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, U>(T value)
 	{{
 	}}
 }}
 ";
 
-			Assert.True(RunGenerator(input, 1).HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
+			string expected =
+$@"partial class Child
+{{
+	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
+	public override void Method<T>(T value)
+	{{
+	}}
+
+	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
+	public override void Method(int value)
+	{{
+	}}
+}}
+";
+
+			SingletonGeneratorTestResult result = RunGenerator(input, 1);
+
+			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
+			Assert.True(result.Compare(expected));
 		}
 
 		[Fact]

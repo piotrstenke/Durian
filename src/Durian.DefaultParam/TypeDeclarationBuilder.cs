@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Linq;
 
 namespace Durian.Generator.DefaultParam
 {
@@ -16,7 +17,8 @@ namespace Durian.Generator.DefaultParam
 	{
 		private HashSet<int>? _newModifierIndexes;
 		private GenericNameSyntax? _inheritedType;
-		private readonly Queue<IdentifierNameSyntax> _inheritTypeArguments;
+		private readonly Queue<IdentifierNameSyntax> _inheritTypeArguments = new(16);
+		private readonly List<(ConstructorDeclarationSyntax syntax, ParameterGeneration[] parameters)> _currentConstructors = new(16);
 		private int _numOriginalTypeParameters;
 		private int _numOriginalConstraints;
 		private int _numNonDefaultParam;
@@ -48,7 +50,6 @@ namespace Durian.Generator.DefaultParam
 			CurrentDeclaration = null!;
 			OriginalDeclaration = null!;
 			SemanticModel = null!;
-			_inheritTypeArguments = new(4);
 		}
 
 		/// <summary>
@@ -58,7 +59,6 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public TypeDeclarationBuilder(DefaultParamTypeData data, CancellationToken cancellationToken = default)
 		{
-			_inheritTypeArguments = new(4);
 			SetData(data, cancellationToken);
 		}
 
@@ -110,14 +110,15 @@ namespace Durian.Generator.DefaultParam
 
 			InitializeDeclaration(data, cancellationToken);
 
-			if(data.Inherit)
+			if (data.Inherit)
 			{
-				InitializeInheritData(data);
+				InitializeInheritData(data, cancellationToken);
 			}
 			else
 			{
 				_inheritedType = null;
 				_inheritTypeArguments.Clear();
+				_currentConstructors.Clear();
 			}
 		}
 
@@ -137,7 +138,6 @@ namespace Durian.Generator.DefaultParam
 				{
 					CurrentDeclaration = CurrentDeclaration.WithBaseList(CurrentDeclaration.BaseList.WithTrailingTrivia(SyntaxFactory.Space));
 				}
-
 			}
 			else if (CurrentDeclaration.TypeParameterList is null)
 			{
@@ -199,7 +199,12 @@ namespace Durian.Generator.DefaultParam
 		/// <inheritdoc/>
 		public void AcceptTypeParameterReplacer(TypeParameterReplacer replacer)
 		{
-			_inheritTypeArguments.Enqueue(replacer.Replacement!);
+			if (_inheritedType is not null)
+			{
+				_inheritTypeArguments.Enqueue(replacer.Replacement!);
+				UpdateConstructors(replacer.ParameterToReplace!, replacer.NewType!, replacer.Replacement!);
+			}
+
 			CurrentDeclaration = (TypeDeclarationSyntax)replacer.Visit(CurrentDeclaration);
 		}
 
@@ -244,7 +249,7 @@ namespace Durian.Generator.DefaultParam
 			CurrentDeclaration = type.WithTypeParameterList(updatedParameters);
 		}
 
-		private void InitializeInheritData(DefaultParamTypeData data)
+		private void InitializeInheritData(DefaultParamTypeData data, CancellationToken cancellationToken)
 		{
 			ref readonly TypeParameterContainer typeParameters = ref data.TypeParameters;
 			TypeSyntax[] typeArguments = new TypeSyntax[typeParameters.Length];
@@ -258,9 +263,178 @@ namespace Durian.Generator.DefaultParam
 
 			_inheritedType = SyntaxFactory.GenericName(data.Declaration.Identifier, SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(typeArguments)));
 
+			InitializeConstructorList(data.Declaration, data.SemanticModel, cancellationToken);
+
 			CurrentDeclaration = CurrentDeclaration
 				.WithMembers(SyntaxFactory.List<MemberDeclarationSyntax>())
 				.WithBaseList(null);
+		}
+
+		private void InitializeConstructorList(TypeDeclarationSyntax type, SemanticModel semanticModel, CancellationToken cancellationToken)
+		{
+			_currentConstructors.Clear();
+
+			ConstructorDeclarationSyntax[] constructors = type.Members.OfType<ConstructorDeclarationSyntax>().ToArray();
+
+			if (constructors.Length == 0)
+			{
+				return;
+			}
+
+			foreach (ConstructorDeclarationSyntax ctor in constructors)
+			{
+				if (ShouldIncludeConstructor(ctor))
+				{
+					if (semanticModel.GetDeclaredSymbol(ctor, cancellationToken) is not IMethodSymbol symbol)
+					{
+						continue;
+					}
+
+#pragma warning disable CA1826 // Do not use Enumerable methods on indexable collections
+					ArgumentListSyntax arguments = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(
+						ctor.ParameterList.Parameters.Select(p =>
+							SyntaxFactory.Argument(null, p.Modifiers.FirstOrDefault(), SyntaxFactory.IdentifierName(p.Identifier)))));
+#pragma warning restore CA1826 // Do not use Enumerable methods on indexable collections
+
+					ConstructorDeclarationSyntax decl = ctor
+						.WithParameterList(ctor.ParameterList.WithTrailingTrivia(SyntaxFactory.Space))
+						.WithBody(SyntaxFactory.Block().WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed))
+						.WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>())
+						.WithInitializer(SyntaxFactory.ConstructorInitializer(SyntaxKind.BaseConstructorInitializer, arguments)
+							.WithColonToken(SyntaxFactory.Token(SyntaxKind.ColonToken).WithTrailingTrivia(SyntaxFactory.Space))
+							.WithTrailingTrivia(SyntaxFactory.Space));
+
+					_currentConstructors.Add((decl, GetParameterGeneration(symbol)));
+				}
+			}
+
+			static bool ShouldIncludeConstructor(ConstructorDeclarationSyntax ctor)
+			{
+				foreach (SyntaxToken modifier in ctor.Modifiers)
+				{
+					if (modifier.IsKind(SyntaxKind.PublicKeyword) || modifier.IsKind(SyntaxKind.ProtectedKeyword) || modifier.IsKind(SyntaxKind.InternalKeyword))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+		}
+
+		private static ParameterGeneration[] GetParameterGeneration(IMethodSymbol symbol)
+		{
+			ImmutableArray<IParameterSymbol> parameters = symbol.Parameters;
+			List<ParameterGeneration> list = new(parameters.Length);
+
+			foreach (IParameterSymbol parameter in parameters)
+			{
+				if (parameter.Type is ITypeParameterSymbol s && s.DeclaringType is not null)
+				{
+					list.Add(new ParameterGeneration(s, parameter.RefKind, s.Ordinal));
+				}
+				else
+				{
+					list.Add(new ParameterGeneration(parameter.Type, parameter.RefKind));
+				}
+			}
+
+			return list.ToArray();
+		}
+
+		private void UpdateConstructors(ITypeParameterSymbol parameter, ITypeSymbol type, NameSyntax replacement)
+		{
+			if (_currentConstructors.Count == 0)
+			{
+				return;
+			}
+
+			int length = _currentConstructors.Count;
+
+			for (int i = 0; i < length; i++)
+			{
+				ParameterGeneration[] parameters = _currentConstructors[i].parameters;
+				int numParameters = parameters.Length;
+
+				ConstructorDeclarationSyntax ctor = _currentConstructors[i].syntax;
+
+				for (int j = 0; j < numParameters; j++)
+				{
+					ref readonly ParameterGeneration gen = ref parameters[j];
+
+					if (gen.GenericParameterIndex == parameter.Ordinal)
+					{
+						parameters[j] = new ParameterGeneration(type, gen.RefKind);
+						ParameterSyntax p = ctor.ParameterList.Parameters[j];
+
+						ctor = ctor.WithParameterList(
+							ctor.ParameterList.WithParameters(
+								ctor.ParameterList.Parameters.Replace(p, p.WithType(replacement.WithTriviaFrom(p.Type!)).WithTriviaFrom(p))));
+					}
+				}
+
+				_currentConstructors[i] = (ctor, parameters);
+			}
+		}
+
+		private ConstructorDeclarationSyntax[] GetValidConstructors()
+		{
+			if (_currentConstructors.Count == 0)
+			{
+				return Array.Empty<ConstructorDeclarationSyntax>();
+			}
+
+			List<ConstructorDeclarationSyntax> constructors = new(_currentConstructors.Count);
+			List<int> included = new(_currentConstructors.Count);
+
+			int length = _currentConstructors.Count;
+
+			for (int i = 0; i < length; i++)
+			{
+				ParameterGeneration[] parameters = _currentConstructors[i].parameters;
+				bool include = true;
+
+				foreach (int index in included)
+				{
+					if (!ShouldIncludeConstructor(index, parameters))
+					{
+						include = false;
+						break;
+					}
+				}
+
+				if (include)
+				{
+					included.Add(i);
+					constructors.Add(_currentConstructors[i].syntax);
+				}
+			}
+
+			return constructors.ToArray();
+
+			bool ShouldIncludeConstructor(int current, ParameterGeneration[] parameters)
+			{
+				int length = parameters.Length;
+				ParameterGeneration[] inc = _currentConstructors[current].parameters;
+
+				if (inc.Length != parameters.Length)
+				{
+					return true;
+				}
+
+				for (int i = 0; i < length; i++)
+				{
+					ref readonly ParameterGeneration gen = ref parameters[i];
+					ref readonly ParameterGeneration other = ref inc[i];
+
+					if (!SymbolEqualityComparer.Default.Equals(gen.Type, other.Type) || AnalysisUtilities.IsValidRefKindForOverload(gen.RefKind, other.RefKind))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
 		}
 
 		private void CheckInherit(int count)
@@ -271,7 +445,7 @@ namespace Durian.Generator.DefaultParam
 				typeArguments[count] = _inheritTypeArguments.Dequeue();
 				_inheritedType = _inheritedType.WithTypeArgumentList(SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(typeArguments)));
 
-				if(count == 0)
+				if (count == 0)
 				{
 					CurrentDeclaration = CurrentDeclaration.WithIdentifier(CurrentDeclaration.Identifier.WithTrailingTrivia(SyntaxFactory.Space));
 				}
@@ -284,6 +458,8 @@ namespace Durian.Generator.DefaultParam
 					SyntaxFactory.Token(SyntaxKind.ColonToken).WithTrailingTrivia(SyntaxFactory.Space),
 					SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
 						SyntaxFactory.SimpleBaseType(_inheritedType).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed))));
+
+				CurrentDeclaration = CurrentDeclaration.WithMembers(SyntaxFactory.List<MemberDeclarationSyntax>(GetValidConstructors()));
 			}
 		}
 	}

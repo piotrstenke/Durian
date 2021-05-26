@@ -1,7 +1,7 @@
-﻿using Xunit;
+﻿using Durian.Configuration;
 using Durian.Generator;
-using Durian.Configuration;
 using Durian.Generator.DefaultParam;
+using Xunit;
 using static Durian.Generator.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Tests.DefaultParam.Types
@@ -22,7 +22,7 @@ class Test<[{nameof(DefaultParamAttribute)}(typeof(string)]T>
 {{
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -78,7 +78,7 @@ partial class Parent : Inner
 }}
 ";
 
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -100,7 +100,7 @@ partial class Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -160,7 +160,7 @@ partial class Parent : Inner
 }}
 ";
 
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -184,7 +184,7 @@ partial class Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -282,7 +282,7 @@ partial class Parent : Inner
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -347,7 +347,7 @@ partial class Parent : Inner
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -410,7 +410,7 @@ partial class Parent : Inner
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -513,7 +513,7 @@ partial interface IChild : IParent
 }}
 ";
 
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]

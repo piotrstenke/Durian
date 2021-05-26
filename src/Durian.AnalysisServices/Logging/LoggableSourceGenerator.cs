@@ -17,16 +17,19 @@ namespace Durian.Generator.Logging
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableSourceGenerator"/> class.
 		/// </summary>
-		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
-		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
-		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="LoggableSourceGenerator"/> instance if logging is supported.</param>
-		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="GeneratorLoggingConfiguration.EnableDiagnostics"/> to <see langword="true"/> if <see cref="GeneratorLoggingConfiguration.SupportsDiagnostics"/> is <see langword="true"/>.</param>
-		/// <param name="enableExceptionsIfDebug">Determines whether to set <see cref="GeneratorLoggingConfiguration.EnableExceptions"/> to <see langword="true"/> if the DEBUG symbol is present and the initial value of <see cref="GeneratorLoggingConfiguration.EnableExceptions"/> is <see langword="false"/>.</param>
-		protected LoggableSourceGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported = true, bool enableDiagnosticsIfSupported = true, bool enableExceptionsIfDebug = true)
+		protected LoggableSourceGenerator() : this(null)
 		{
-			LoggingConfiguration = checkForConfigurationAttribute ? GeneratorLoggingConfiguration.CreateConfigurationForGenerator(this) : GeneratorLoggingConfiguration.Default;
+		}
 
-			if (!enableLoggingIfSupported)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="LoggableSourceGenerator"/> class.
+		/// </summary>
+		/// <param name="context">Configures how this <see cref="LoggableSourceGenerator"/> is initialized.</param>
+		protected LoggableSourceGenerator(in LoggableGeneratorConstructionContext context)
+		{
+			LoggingConfiguration = context.CheckForConfigurationAttribute ? GeneratorLoggingConfiguration.CreateConfigurationForGenerator(this) : GeneratorLoggingConfiguration.Default;
+
+			if (!context.EnableLoggingIfSupported)
 			{
 				LoggingConfiguration.EnableLogging = false;
 			}
@@ -35,7 +38,7 @@ namespace Durian.Generator.Logging
 				LoggingConfiguration.EnableLogging = true;
 			}
 
-			if (!enableDiagnosticsIfSupported)
+			if (!context.EnableDiagnosticsIfSupported)
 			{
 				LoggingConfiguration.EnableDiagnostics = false;
 			}
@@ -44,12 +47,10 @@ namespace Durian.Generator.Logging
 				LoggingConfiguration.EnableDiagnostics = true;
 			}
 
-#if DEBUG
-			if (enableExceptionsIfDebug)
+			if (context.EnableExceptions)
 			{
 				LoggingConfiguration.EnableExceptions = true;
 			}
-#endif
 		}
 
 		/// <summary>

@@ -3,17 +3,17 @@ using System.Threading;
 using Durian.Generator;
 using Durian.Generator.Data;
 using Durian.Generator.Logging;
+using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Durian.Info;
 
 namespace Durian.Tests
 {
 	/// <summary>
-	/// A simple proxy class that inherits the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class and leaves the actual implementation details to be defined by the user through appropriate C# events, as well as provides references to the passed <see cref="GeneratorInitializationContext"/> and <see cref="GeneratorExecutionContext"/>.
+	/// A simple proxy class that inherits the <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class and leaves the actual implementation details to be defined by the user through appropriate C# events, as well as provides references to the passed <see cref="GeneratorInitializationContext"/> and <see cref="GeneratorExecutionContext"/>.
 	/// </summary>
 	[GeneratorLoggingConfiguration(SupportsDiagnostics = true, LogDirectory = "test", RelativeToDefault = true, SupportedLogs = GeneratorLogs.All)]
-	public class DurianSourceGeneratorProxy : SourceGenerator
+	public class DurianGeneratorProxy : DurianGenerator
 	{
 		private GeneratorExecutionContext _exeContext;
 		private GeneratorInitializationContext _initContext;
@@ -113,14 +113,36 @@ namespace Durian.Tests
 		/// </summary>
 		public event Func<DurianModule[]>? OnGetEnabledModules;
 
+		/// <inheritdoc cref="DurianGeneratorProxy(in LoggableGeneratorConstructionContext, IFileNameProvider?)"/>
+		protected DurianGeneratorProxy()
+		{
+		}
+
+		/// <inheritdoc cref="DurianGeneratorProxy(in LoggableGeneratorConstructionContext, IFileNameProvider?)"/>
+		protected DurianGeneratorProxy(in LoggableGeneratorConstructionContext context) : base(in context)
+		{
+		}
+
 		/// <summary>
-		/// Initializes a new instance of the <see cref="DurianSourceGeneratorProxy"/> class.
+		/// Initializes a new instance of the <see cref="DurianGeneratorProxy"/> class.
 		/// </summary>
-		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
-		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
-		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="DurianSourceGeneratorProxy"/> instance if logging is supported.</param>
-		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.EnableDiagnostics"/> to <see langword="true"/> if <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SupportsDiagnostics"/> is <see langword="true"/>.</param>
-		public DurianSourceGeneratorProxy(bool checkForConfigurationAttribute, bool enableLoggingIfSupported = true, bool enableDiagnosticsIfSupported = true) : base(checkForConfigurationAttribute, enableLoggingIfSupported, enableDiagnosticsIfSupported)
+		/// <param name="context">Configures how this <see cref="LoggableSourceGenerator"/> is initialized.</param>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		protected DurianGeneratorProxy(in LoggableGeneratorConstructionContext context, IFileNameProvider? fileNameProvider) : base(in context, fileNameProvider)
+		{
+		}
+
+		/// <inheritdoc cref="DurianGeneratorProxy(GeneratorLoggingConfiguration?, IFileNameProvider?)"/>
+		protected DurianGeneratorProxy(GeneratorLoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DurianGeneratorProxy"/> class.
+		/// </summary>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		protected DurianGeneratorProxy(GeneratorLoggingConfiguration? loggingConfiguration, IFileNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
 		{
 		}
 
@@ -134,9 +156,9 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Initializes the <see cref="DurianSourceGeneratorProxy"/>.
+		/// Initializes the <see cref="DurianGeneratorProxy"/>.
 		/// </summary>
-		/// <param name="context"><see cref="GeneratorInitializationContext"/> to be used when initializing the <see cref="DurianSourceGeneratorProxy"/>.</param>
+		/// <param name="context"><see cref="GeneratorInitializationContext"/> to be used when initializing the <see cref="DurianGeneratorProxy"/>.</param>
 		public override void Initialize(GeneratorInitializationContext context)
 		{
 			base.Initialize(context);

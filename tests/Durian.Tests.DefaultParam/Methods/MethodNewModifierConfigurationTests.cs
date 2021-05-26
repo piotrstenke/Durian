@@ -8,35 +8,6 @@ namespace Durian.Tests.DefaultParam.Methods
 	public sealed class MethodNewModifierConfigurationTests : DefaultParamGeneratorTest
 	{
 		[Fact]
-		public void AppliesNewModifier_When_IsInterfaceMethod_And_GeneratedMethodExists()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
-
-interface IParent
-{{
-	void Method();
-}}
-
-partial interface IChild : IParent
-{{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
-}}
-";
-			string expected =
-$@"partial interface IChild
-{{
-	{GetCodeGenerationAttributes("IChild.Method<T>()")}
-	new void Method();
-}}";
-
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
 		public void AppliesNewModifier_When_GloballyFalse_And_InTypeTrue()
 		{
 			string input =
@@ -452,29 +423,6 @@ partial class Test : Parent
 		}
 
 		[Fact]
-		public void Error_When_GeneratedMethodExistsInBaseInterface_And_ApplyNewModifierIsFalse()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
-
-interface IParent
-{{
-	void Method();
-}}
-
-partial interface IChild : IParent
-{{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
-}}
-";
-
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
-
-		[Fact]
 		public void Error_When_SignatureExistsInBaseClass_And_ApplyNewModifierIsFalse()
 		{
 			string input =
@@ -589,7 +537,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]
@@ -614,7 +562,7 @@ partial class Test : Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0120_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists.Id));
 		}
 
 		[Fact]

@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Durian.Generator;
 using Xunit;
-using Durian.Generator;
-using System.Collections;
 
 namespace Durian.Tests.DefaultParam.Types
 {
@@ -931,28 +925,5 @@ partial class Parent
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
 		}
-
-		//		[Fact]
-		//		public void IncludesGeneratedMethodsAndDelegates()
-		//		{
-		//			string input =
-		//$@"partial class Test<[{nameof(DefaultParamAttribute)}typeof(string))]T>
-		//{{
-		//	void Method<[{nameof(DefaultParamAttribute)}typeof(int))]U>()
-		//	{{
-		//		U value = default;
-		//	}}
-
-		//	delegate float Del<[{nameof(DefaultParamAttribute)}typeof(decimal))]U>(U value);
-		//}}
-		//";
-		//			string expected =
-		//$@"partial class Test
-		//{{
-		//	{GetCodeGenerationAttributes("Test<T>.Method<U>()")}
-		//	void Method
-		//}}
-		//";
-		//		}
 	}
 }

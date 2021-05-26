@@ -21,6 +21,11 @@ namespace Durian.Generator.DefaultParam
 		public ITypeParameterSymbol? ParameterToReplace { get; set; }
 
 		/// <summary>
+		/// <see cref="ITypeSymbol"/> that replaces the <see cref="ParameterToReplace"/>.
+		/// </summary>
+		public ITypeSymbol? NewType { get; set; }
+
+		/// <summary>
 		/// <see cref="IdentifierNameSyntax"/> to replace the <see cref="ParameterToReplace"/> with.
 		/// </summary>
 		public IdentifierNameSyntax? Replacement { get; set; }
@@ -198,10 +203,11 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public void Reset()
 		{
-			ParameterToReplace = null!;
-			Replacement = null!;
+			ParameterToReplace = null;
+			Replacement = null;
 			InputSymbols.Clear();
 			VisitDeclarationBody = true;
+			NewType = null;
 			ResetCounter();
 		}
 

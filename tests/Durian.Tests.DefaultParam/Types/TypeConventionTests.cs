@@ -1,7 +1,7 @@
-﻿using Xunit;
+﻿using Durian.Configuration;
 using Durian.Generator;
-using Durian.Configuration;
 using Durian.Generator.DefaultParam;
+using Xunit;
 
 namespace Durian.Tests.DefaultParam.Types
 {
@@ -29,7 +29,7 @@ sealed class Test
 }}
 ";
 			SingletonGeneratorTestResult result = RunGenerator(input);
-			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0122_ApplyCopyTypeConventionOnStructOrSealedType.Id));
+			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
 			Assert.True(result.Compare(expected));
 		}
 
@@ -55,7 +55,41 @@ struct Test
 }}
 ";
 			SingletonGeneratorTestResult result = RunGenerator(input);
-			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0122_ApplyCopyTypeConventionOnStructOrSealedType.Id));
+			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
+			Assert.True(result.Compare(expected));
+		}
+
+		[Fact]
+		public void Warning_And_GeneratesAsCopy_When_IsScopedInherit_And_HasNoAccessibleConstructors()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+
+class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+{{
+	T value;
+
+	private Test()
+	{{
+	}}
+}}
+";
+			string expected =
+$@"{GetCodeGenerationAttributes("Test<T>", 0)}
+class Test
+{{
+	string value;
+
+	private Test()
+	{{
+	}}
+}}
+";
+			SingletonGeneratorTestResult result = RunGenerator(input);
+			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
 			Assert.True(result.Compare(expected));
 		}
 
@@ -449,6 +483,132 @@ partial class Parent
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	class Test : Test<int, string>
 	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void GeneratesConstructorsOfBaseType()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+
+partial class Parent
+{{
+	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	{{
+		public Test() : base()
+		{{
+		}}
+
+		protected Test(T value) : base(value)
+		{{
+		}}
+
+		internal Test(ref string value) : base(ref value)
+		{{
+		}}
+	}}
+}}
+";
+			string expected =
+@$"partial class Parent
+{{
+	{GetCodeGenerationAttributes("Parent.Test<T>")}
+	class Test : Test<int>
+	{{
+		public Test() : base()
+		{{
+		}}
+
+		protected Test(int value) : base(value)
+		{{
+		}}
+
+		internal Test(ref string value) : base(ref value)
+		{{
+		}}
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void SkipsPrivateConstructors()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+
+partial class Parent
+{{
+	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	{{
+		private Test()
+		{{
+		}}
+
+		protected Test(T value)
+		{{
+		}}
+	}}
+}}
+";
+			string expected =
+@$"partial class Parent
+{{
+	{GetCodeGenerationAttributes("Parent.Test<T>")}
+	class Test : Test<int>
+	{{
+		protected Test(int value) : base(value)
+		{{
+		}}
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void SkipsConstructorsWithSameParameters()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+
+partial class Parent
+{{
+	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	{{
+		protected Test(int value)
+		{{
+		}}
+
+		protected Test(T value)
+		{{
+		}}
+	}}
+}}
+";
+			string expected =
+@$"partial class Parent
+{{
+	{GetCodeGenerationAttributes("Parent.Test<T>")}
+	class Test : Test<int>
+	{{
+		protected Test(int value) : base(value)
+		{{
+		}}
 	}}
 }}
 ";

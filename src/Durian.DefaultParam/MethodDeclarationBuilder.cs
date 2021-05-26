@@ -119,7 +119,7 @@ namespace Durian.Generator.DefaultParam
 
 			if (data.CallInsteadOfCopying)
 			{
-				InitializeCallData(data);
+				InitializeCallData(in data.TypeParameters);
 			}
 			else
 			{
@@ -184,7 +184,11 @@ namespace Durian.Generator.DefaultParam
 		/// <inheritdoc/>
 		public void AcceptTypeParameterReplacer(TypeParameterReplacer replacer)
 		{
-			_callTypeArguments.Enqueue(replacer.Replacement!);
+			if (_callMethodSyntax is not null)
+			{
+				_callTypeArguments.Enqueue(replacer.Replacement!);
+			}
+
 			CurrentDeclaration = (MethodDeclarationSyntax)replacer.Visit(CurrentDeclaration);
 		}
 
@@ -202,11 +206,10 @@ namespace Durian.Generator.DefaultParam
 			CurrentDeclaration = (MethodDeclarationSyntax)node;
 		}
 
-		private void InitializeCallData(DefaultParamMethodData data)
+		private void InitializeCallData(in TypeParameterContainer typeParameters)
 		{
-			ref readonly TypeParameterContainer typeParameters = ref data.TypeParameters;
 			TypeSyntax[] typeArguments = new TypeSyntax[typeParameters.Length];
-			SeparatedSyntaxList<ParameterSyntax> parameters = data.Declaration.ParameterList.Parameters;
+			SeparatedSyntaxList<ParameterSyntax> parameters = CurrentDeclaration.ParameterList.Parameters;
 			ArgumentSyntax[] arguments = new ArgumentSyntax[parameters.Count];
 
 			for (int i = 0; i < typeParameters.Length; i++)
@@ -230,7 +233,7 @@ namespace Durian.Generator.DefaultParam
 				arguments[i] = arg;
 			}
 
-			_callMethodSyntax = SyntaxFactory.GenericName(data.Declaration.Identifier, SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(typeArguments)));
+			_callMethodSyntax = SyntaxFactory.GenericName(CurrentDeclaration.Identifier, SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(typeArguments)));
 			_callArguments = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments));
 			_applyReturnSyntax = CurrentDeclaration.ReturnType is not PredefinedTypeSyntax t || !t.Keyword.IsKind(SyntaxKind.VoidKeyword);
 

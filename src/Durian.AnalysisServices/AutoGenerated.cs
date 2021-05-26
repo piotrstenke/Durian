@@ -34,11 +34,11 @@ namespace Durian.Generator
 			}
 			else if (string.IsNullOrWhiteSpace(version))
 			{
-				name = $"the {generatorName} class";
+				name = $"the {generatorName} generator";
 			}
 			else
 			{
-				name = $"the {generatorName} class (version {version})";
+				name = $"the {generatorName} generator (version {version})";
 			}
 
 			return
@@ -80,7 +80,7 @@ $@"//---------------------------------------------------------------------------
 		/// <param name="version">Version of the generator that created the following code.</param>
 		public static string ApplyHeader(string? input, string? generatorName, string? version)
 		{
-			return $"{GetHeader(generatorName, version)}{(string.IsNullOrEmpty(input) ? string.Empty : $"\n{input}")}";
+			return GetHeader(generatorName, version) + (string.IsNullOrEmpty(input) ? string.Empty : $"\r\n{input}");
 		}
 
 		/// <summary>

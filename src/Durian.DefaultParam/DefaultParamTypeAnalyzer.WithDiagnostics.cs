@@ -4,11 +4,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Generator.Data;
-using Durian.Configuration;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Generator.DefaultParam
 {
@@ -117,20 +116,20 @@ namespace Durian.Generator.DefaultParam
 			/// <returns><see langword="true"/> if the configuration of the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 			public static bool ShouldInheritInsteadOfCopying(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, DefaultParamCompilationData compilation, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes)
 			{
-				if(HasInheritConvention(attributes, containingTypes, compilation))
+				if (symbol.TypeKind == TypeKind.Struct ||
+					symbol.IsSealed ||
+					(symbol.TypeKind == TypeKind.Class && !symbol.InstanceConstructors.Any(ctor => ctor.DeclaredAccessibility >= Accessibility.Protected))
+				)
 				{
-					if (symbol.TypeKind == TypeKind.Struct || symbol.IsSealed)
+					if (HasInheritConventionOnContainingTypes(containingTypes, compilation))
 					{
-						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0122_ApplyCopyTypeConventionOnStructOrSealedType, symbol);
-						return false;
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor, symbol);
 					}
-					else
-					{
-						return true;
-					}
+
+					return false;
 				}
 
-				return false;
+				return HasInheritConvention(attributes, containingTypes, compilation);
 			}
 
 			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgaintsProhibitedAttributes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData)"/>
@@ -174,9 +173,9 @@ namespace Durian.Generator.DefaultParam
 			{
 				TypeDeclarationSyntax[] syntaxes = symbol.DeclaringSyntaxReferences.Select(r => r.GetSyntax(cancellationToken)).OfType<TypeDeclarationSyntax>().ToArray();
 
-				if(syntaxes.Length > 1 || syntaxes[0].Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+				if (syntaxes.Length > 1 || syntaxes[0].Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
 				{
-					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DoNotUseDefaultParamOnPartialType, symbol);
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0122_DoNotUseDefaultParamOnPartialType, symbol);
 					return false;
 				}
 

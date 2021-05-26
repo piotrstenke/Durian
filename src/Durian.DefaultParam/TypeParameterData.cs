@@ -220,7 +220,7 @@ namespace Durian.Generator.DefaultParam
 			}
 			else
 			{
-				AttributeData? attrData = symbol.GetAttributeData(attrSyntax);
+				AttributeData? attrData = symbol.GetAttributeData(attrSyntax, cancellationToken);
 
 				if (attrData is null || attrData.ConstructorArguments.Length == 0)
 				{

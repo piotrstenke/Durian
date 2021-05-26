@@ -16,7 +16,7 @@ namespace Durian.Generator
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to report the diagnostics to.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
 		/// <param name="syntaxReceiver">A <see cref="IDurianSyntaxReceiver"/> that collected the <see cref="CSharpSyntaxNode"/>s that should be filtrated.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		IEnumerable<IMemberData> Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken = default);
 
 		/// <summary>
@@ -25,7 +25,7 @@ namespace Durian.Generator
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to report the diagnostics to.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
 		/// <param name="collectedNodes">A collection of <see cref="CSharpSyntaxNode"/>s to filtrate.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		IEnumerable<IMemberData> Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken = default);
 	}
 }

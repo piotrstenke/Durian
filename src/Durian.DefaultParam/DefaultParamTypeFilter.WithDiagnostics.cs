@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Generator.Data;
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Durian.Generator.DefaultParam.DefaultParamTypeAnalyzer.WithDiagnostics;
@@ -121,7 +120,7 @@ namespace Durian.Generator.DefaultParam
 				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
 				isValid &= AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
 
-				if(isValid)
+				if (isValid)
 				{
 					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
 

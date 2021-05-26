@@ -31,45 +31,69 @@ namespace Durian.Generator.CodeFixes
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public abstract IEnumerable<INamedTypeSymbol> GetAttributeSymbols(CSharpCompilation compilation, CancellationToken cancellationToken = default);
 
-#pragma warning disable IDE0019 // Use pattern matching
-#pragma warning disable RCS1221 // Use pattern matching instead of combination of 'as' operator and null check.
 		/// <inheritdoc/>
 		public override async Task RegisterCodeFixesAsync(CodeFixContext context)
 		{
-			Diagnostic? diagnostic = context.Diagnostics.FirstOrDefault();
+			CodeFixData<T> data = await CodeFixData<T>.FromAsync(context).ConfigureAwait(false);
 
-			if (diagnostic is null)
+			if (!data.Success)
 			{
 				return;
 			}
 
-			CSharpSyntaxNode? root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false) as CSharpSyntaxNode;
+			SemanticModel? semanticModel = await data.Document.GetSemanticModelAsync(data.CancellationToken).ConfigureAwait(false);
 
-			if (root is null)
+			if (semanticModel is null)
 			{
 				return;
 			}
 
-			T? node = root.FindNode(diagnostic.Location.SourceSpan)?.FirstAncestorOrSelf<T>();
-			Document document = context.Document;
-			CodeAction? action = GetCodeAction(document, diagnostic, root, node!, context.CancellationToken);
+			INamedTypeSymbol[] attributes = GetAttributeSymbols((CSharpCompilation)semanticModel.Compilation, context.CancellationToken).ToArray();
+
+			if (attributes.Length == 0)
+			{
+				return;
+			}
+
+			CodeAction? action = GetCodeAction(in data);
 
 			if (action is null)
 			{
 				return;
 			}
 
-			context.RegisterCodeFix(action, diagnostic);
+			context.RegisterCodeFix(action, context.Diagnostics);
 		}
-#pragma warning restore RCS1221 // Use pattern matching instead of combination of 'as' operator and null check.
-#pragma warning restore IDE0019 // Use pattern matching
 
 		/// <inheritdoc/>
-		protected override CodeAction? GetCodeAction(Document document, Diagnostic diagnostic, CSharpSyntaxNode root, T node, CancellationToken cancellationToken)
+		protected override CodeAction? GetCodeAction(in CodeFixData<T> data)
 		{
+			if (!data.Success || !data.HasSemanticModel)
+			{
+				return null;
+			}
+
+			INamedTypeSymbol[] attributes = GetAttributeSymbols((CSharpCompilation)data.SemanticModel.Compilation, data.CancellationToken).ToArray();
+
+			if (attributes.Length == 0)
+			{
+				return null;
+			}
+
 			Func<CancellationToken, Task<Document>> function;
 
-			if (node is null)
+			Document document = data.Document;
+			CompilationUnitSyntax root = data.Root;
+			Diagnostic diagnostic = data.Diagnostic;
+			SemanticModel semanticModel = data.SemanticModel;
+
+			if (data.HasNode)
+			{
+				T node = data.Node;
+
+				function = cancellationToken => RemoveAttributesAsync(document, semanticModel, attributes, root, node, cancellationToken);
+			}
+			else
 			{
 				AttributeListSyntax? attr = root.FindNode(diagnostic.Location.SourceSpan)?.FirstAncestorOrSelf<AttributeListSyntax>();
 
@@ -78,38 +102,34 @@ namespace Durian.Generator.CodeFixes
 					return null;
 				}
 
-				function = token => RemoveAttributesAsync(document, root, attr, token);
-			}
-			else
-			{
-				function = token => RemoveAttributesAsync(document, root, node, token);
+				function = cancellationToken => RemoveAttributesAsync(document, semanticModel, attributes, root, attr, cancellationToken);
 			}
 
-			return CodeAction.Create(Title, function, Title);
+			return CodeAction.Create(Title, function, Id);
 		}
 
 		/// <inheritdoc/>
-		protected override Task<Document> Execute(Document document, CSharpSyntaxNode root, T node, CancellationToken cancellationToken)
+		protected override async Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
 		{
-			return RemoveAttributesAsync(document, root, node, cancellationToken);
-		}
-
-		private async Task<Document> RemoveAttributesAsync(Document document, CSharpSyntaxNode root, T node, CancellationToken cancellationToken)
-		{
-			SemanticModel? semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+			SemanticModel? semanticModel = await context.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
 			if (semanticModel is null)
 			{
-				return document;
+				return context.Document;
 			}
 
-			INamedTypeSymbol[] attributes = GetAttributeSymbols((CSharpCompilation)semanticModel.Compilation, cancellationToken).ToArray();
+			INamedTypeSymbol[] attributes = GetAttributeSymbols((CSharpCompilation)semanticModel.Compilation, context.CancellationToken).ToArray();
 
 			if (attributes.Length == 0)
 			{
-				return document;
+				return context.Document;
 			}
 
+			return await RemoveAttributeCodeFix<T>.RemoveAttributesAsync(context.Document, semanticModel, attributes, context.Root, context.Node, context.CancellationToken).ConfigureAwait(false);
+		}
+
+		private static Task<Document> RemoveAttributesAsync(Document document, SemanticModel semanticModel, INamedTypeSymbol[] attributes, CompilationUnitSyntax root, T node, CancellationToken cancellationToken)
+		{
 			SyntaxList<AttributeListSyntax> attributeLists = SyntaxFactory.List(node.AttributeLists
 				.Where(attrList => attrList.Attributes
 					.Select(attr => semanticModel.GetSymbolInfo(attr, cancellationToken).Symbol)
@@ -120,7 +140,7 @@ namespace Durian.Generator.CodeFixes
 				MemberDeclarationSyntax newNode = node.WithAttributeLists(attributeLists);
 				SyntaxNode newRoot = root.ReplaceNode(node, newNode);
 
-				return document.WithSyntaxRoot(newRoot);
+				return Task.FromResult(document.WithSyntaxRoot(newRoot));
 			}
 			else
 			{
@@ -140,26 +160,12 @@ namespace Durian.Generator.CodeFixes
 
 				SyntaxNode newRoot = root.ReplaceNode(node, newNode);
 
-				return document.WithSyntaxRoot(newRoot);
+				return Task.FromResult(document.WithSyntaxRoot(newRoot));
 			}
 		}
 
-		private async Task<Document> RemoveAttributesAsync(Document document, CSharpSyntaxNode root, AttributeListSyntax attrList, CancellationToken cancellationToken)
+		private static Task<Document> RemoveAttributesAsync(Document document, SemanticModel semanticModel, INamedTypeSymbol[] attributes, CompilationUnitSyntax root, AttributeListSyntax attrList, CancellationToken cancellationToken)
 		{
-			SemanticModel? semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-
-			if (semanticModel is null)
-			{
-				return document;
-			}
-
-			INamedTypeSymbol[] attributes = GetAttributeSymbols((CSharpCompilation)semanticModel.Compilation, cancellationToken).ToArray();
-
-			if (attributes.Length == 0)
-			{
-				return document;
-			}
-
 			SeparatedSyntaxList<AttributeSyntax> list = SyntaxFactory.SeparatedList(attrList.Attributes
 				.Select(attr => (attr, semanticModel.GetSymbolInfo(attr, cancellationToken).Symbol))
 				.Where(attrData => attrData.Symbol is not null && !attributes.Any(attr => SymbolEqualityComparer.Default.Equals(attrData.Symbol.ContainingSymbol, attr)))
@@ -169,7 +175,7 @@ namespace Durian.Generator.CodeFixes
 			{
 				AttributeListSyntax newAttrList = attrList.WithAttributes(list);
 				SyntaxNode newRoot = root.ReplaceNode(attrList, newAttrList);
-				return document.WithSyntaxRoot(newRoot);
+				return Task.FromResult(document.WithSyntaxRoot(newRoot));
 			}
 			else
 			{
@@ -177,10 +183,10 @@ namespace Durian.Generator.CodeFixes
 
 				if (newRoot is null)
 				{
-					return document;
+					return Task.FromResult(document);
 				}
 
-				return document.WithSyntaxRoot(newRoot);
+				return Task.FromResult(document.WithSyntaxRoot(newRoot));
 			}
 		}
 	}

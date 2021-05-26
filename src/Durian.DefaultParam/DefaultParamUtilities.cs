@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Configuration;
@@ -46,7 +45,7 @@ namespace Durian.Generator.DefaultParam
 			{
 				int index = modifiers.IndexOf(SyntaxKind.NewKeyword);
 
-				if(index > -1)
+				if (index > -1)
 				{
 					return false;
 				}
@@ -78,7 +77,7 @@ namespace Durian.Generator.DefaultParam
 
 				int refIndex = modifiers.IndexOf(SyntaxKind.RefKeyword);
 
-				if(refIndex > -1)
+				if (refIndex > -1)
 				{
 					index = refIndex;
 				}
@@ -86,7 +85,7 @@ namespace Durian.Generator.DefaultParam
 				{
 					int partialIndex = modifiers.IndexOf(SyntaxKind.PartialKeyword);
 
-					if(partialIndex > -1)
+					if (partialIndex > -1)
 					{
 						index = partialIndex;
 					}
@@ -94,12 +93,12 @@ namespace Durian.Generator.DefaultParam
 
 				SyntaxToken token = SyntaxFactory.Token(SyntaxKind.NewKeyword).WithTrailingTrivia(SyntaxFactory.Space);
 
-				if(index == 0)
+				if (index == 0)
 				{
 					token = token.WithLeadingTrivia(modifiers[index].LeadingTrivia);
 					modifiers = modifiers.Replace(modifiers[index], modifiers[index].WithLeadingTrivia(null));
 				}
-				else if(index < 0)
+				else if (index < 0)
 				{
 					index = 0;
 				}
@@ -269,7 +268,7 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <summary>
-		/// Gets an <see cref="int"/> value of an enum property of either <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/> applied for the target <see cref="ISymbol"/>.
+		/// Gets an <see cref="int"/> value of an enum property of either <see cref="DefaultParamConfigurationAttribute"/> applied to the target <see cref="ISymbol"/> or <see cref="DefaultParamScopedConfigurationAttribute"/> applied to one of the <see cref="ISymbol"/>'s <paramref name="containingTypes"/>.
 		/// </summary>
 		/// <param name="propertyName">Name of the property to get the value of.</param>
 		/// <param name="attributes">Attributes of the target <see cref="ISymbol"/>.</param>
@@ -280,25 +279,37 @@ namespace Durian.Generator.DefaultParam
 		{
 			if (!TryGetConfigurationPropertyName(attributes, compilation.ConfigurationAttribute!, propertyName, out int value))
 			{
-				int length = containingTypes.Length;
-
-				if (length > 0)
-				{
-					INamedTypeSymbol scopedAttribute = compilation.ScopedConfigurationAttribute!;
-
-					for (int i = 0; i < length; i++)
-					{
-						if (TryGetConfigurationPropertyName(containingTypes[i].GetAttributes(), scopedAttribute, propertyName, out value))
-						{
-							return value;
-						}
-					}
-				}
-
-				return defaultValue;
+				return GetConfigurationEnumValueOnContainingTypes(propertyName, containingTypes, compilation, defaultValue);
 			}
 
 			return value;
+		}
+
+		/// <summary>
+		/// Gets an <see cref="int"/> value of an enum property <see cref="DefaultParamScopedConfigurationAttribute"/> applied to one of the <see cref="ISymbol"/>'s <paramref name="containingTypes"/>.
+		/// </summary>
+		/// <param name="propertyName">Name of the property to get the value of.</param>
+		/// <param name="containingTypes">Types that contain the target <see cref="ISymbol"/>.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="defaultValue">Value to be returned when no other valid configuration value is found.</param>
+		public static int GetConfigurationEnumValueOnContainingTypes(string propertyName, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation, int defaultValue)
+		{
+			int length = containingTypes.Length;
+
+			if (length > 0)
+			{
+				INamedTypeSymbol scopedAttribute = compilation.ScopedConfigurationAttribute!;
+
+				for (int i = 0; i < length; i++)
+				{
+					if (TryGetConfigurationPropertyName(containingTypes[i].GetAttributes(), scopedAttribute, propertyName, out int value))
+					{
+						return value;
+					}
+				}
+			}
+
+			return defaultValue;
 		}
 
 		/// <summary>
@@ -307,7 +318,7 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="types">Array of <see cref="ITypeData"/>s to convert.</param>
 		public static INamedTypeSymbol[] TypeDatasToTypeSymbols(ITypeData[]? types)
 		{
-			if(types is null)
+			if (types is null)
 			{
 				return Array.Empty<INamedTypeSymbol>();
 			}
@@ -578,7 +589,7 @@ namespace Durian.Generator.DefaultParam
 			{
 				SeparatedSyntaxList<AttributeSyntax> attributes = attrList.Attributes;
 
-				if(!attributes.Any())
+				if (!attributes.Any())
 				{
 					continue;
 				}

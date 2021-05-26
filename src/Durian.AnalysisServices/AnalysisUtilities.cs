@@ -222,7 +222,7 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="syntaxNode"><see cref="CSharpSyntaxNode"/> to get the <see cref="ISymbol"/> and <see cref="SemanticModel"/> of.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="syntaxNode"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
 		/// </exception>

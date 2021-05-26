@@ -5,7 +5,7 @@ Rule ID | Category | Severity | Notes
 --------|----------|----------|-----------------------------------------
 DUR0101 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0101.md] Containing type of a member with the DefaultParam attribute must be partial
 DUR0102 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0102.md] Method with the DefaultParam attribute cannot be partial or extern
-DUR0103 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0103.md] DefaultParamAttribute is not valid on local functions or lambdas
+DUR0103 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0103.md] DefaultParamAttribute is not valid on this type of method
 DUR0104 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0104.md] DefaultParamAttribute cannot be applied to members with the GeneratedCodeAttribute or DurianGeneratedAttribute
 DUR0105 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0105.md] DefaultParamAttribute must be placed on the right-most type parameter
 DUR0106 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0106.md] Value of DefaultParamAttribute does not satisfy the type constraint
@@ -18,14 +18,11 @@ DUR0112 | Durian.DefaultParam | Warning | [https://github.com/piotrstenke/Durian
 DUR0113 | Durian.DefaultParam | Warning | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0113.md] MethodConvention property should not be used on members other than methods
 DUR0114 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0114.md] Method with generated signature already exist
 DUR0115 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0115.md] DefaultParamConfigurationAttribute is not valid on this type of method
-DUR0116 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0116.md] Do not change value of the DefaultParamAttribute when implementing an interface method
-DUR0117 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0117.md] Do not implement interface methods generated using the DefaultParamAttribute
-DUR0118 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0118.md] Value of DefaultParam attribute is different than that of implicitly implemented method
-DUR0119 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0119.md] Value of DefaultParam attribute is different for inherited method and implicitly implemented interface method
-DUR0120 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0120.md] Member with generated name already exists
-DUR0121 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0121.md] TypeConvention cannot be used on a struct or a sealed type
-DUR0122 | Durian.DefaultParam | Warning | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0122.md] DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity
-DUR0123 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0123.md] DefaultParam value cannot be less accessible than the target member
-DUR0124 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0124.md] Type is not valid DefaultParam value when there is a type parameter constrained to this type parameter
-DUR0125 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0125.md] Type is not valid DefaultParam value
-DUR0126 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0126.md] DefaultParamAttribute cannot be used on a partial type
+DUR0116 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0116.md] Member with generated name already exists
+DUR0117 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0117.md] DPTypeConvention.Inherit cannot be used on a struct or a sealed type
+DUR0118 | Durian.DefaultParam | Warning | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0118.md] DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity
+DUR0119 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0119.md] DefaultParam value cannot be less accessible than the target member
+DUR0120 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0120.md] Type is not valid DefaultParam value when there is a type parameter constrained to this type parameter
+DUR0121 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0121.md] Type is not valid DefaultParam value
+DUR0122 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0122.md] DefaultParamAttribute cannot be used on a partial type
+DUR0123 | Durian.DefaultParam | Error | [https://github.com/piotrstenke/Durian/docs/DefaultParam/DUR0123.md] TypeConvention cannot be used on a type without accessible constructor

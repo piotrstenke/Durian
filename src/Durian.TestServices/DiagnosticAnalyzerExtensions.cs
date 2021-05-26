@@ -1,9 +1,9 @@
-﻿using System.Linq;
-using Microsoft.CodeAnalysis;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.Tests
 {
@@ -33,7 +33,7 @@ namespace Durian.Tests
 		{
 			CSharpCompilation compilation = RoslynUtilities.CreateBaseCompilation();
 
-			if(!string.IsNullOrWhiteSpace(source))
+			if (!string.IsNullOrWhiteSpace(source))
 			{
 				compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source!));
 			}

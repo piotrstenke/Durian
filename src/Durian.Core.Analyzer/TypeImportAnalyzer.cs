@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
-using Durian.Generator.Extensions;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -50,14 +49,14 @@ namespace Durian.Generator
 
 			SymbolInfo info = context.SemanticModel.GetSymbolInfo(node, context.CancellationToken);
 
-			if(info.Symbol is null)
+			if (info.Symbol is null)
 			{
 				return;
 			}
 
 			if (info.Symbol is not INamedTypeSymbol type)
 			{
-				if(!node.Ancestors().Any(a => a is AttributeSyntax))
+				if (!node.Ancestors().Any(a => a is AttributeSyntax))
 				{
 					return;
 				}
@@ -69,16 +68,13 @@ namespace Durian.Generator
 
 			if (isDurianType)
 			{
-				INamespaceSymbol[] namespaces = type.GetContainingNamespaces().ToArray();
-
-				if (namespaces.Length == 2 && namespaces[0].Name == "Durian" && namespaces[1].Name == "Generator")
+				if (module!.Module == DurianModule.Core)
 				{
 					context.ReportDiagnostic(Diagnostic.Create(DUR0003_DoNotUseTypeFromDurianGeneratorNamespace, node.GetLocation()));
 				}
-
-				if (isDisabled)
+				else if (isDisabled && module.Module != DurianModule.None)
 				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, node.GetLocation(), type.Name, module));
+					context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, node.GetLocation(), type, module.Module));
 				}
 			}
 		}

@@ -108,7 +108,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "DefaultParamAttribute is not valid on local functions or lambdas",
+					title: "DefaultParamAttribute is not valid on this type of method",
 					id: 03,
 					docsPath: @"docs\DefaultParam\DUR0103.md",
 					fatal: true,
@@ -212,7 +212,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Do not change value of the DefaultParamAttribute when implementing an interface method",
+					title: "Member with generated name already exists",
 					id: 16,
 					docsPath: @"docs\DefaultParam\DUR0116.md",
 					fatal: true,
@@ -220,7 +220,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Do not implement interface methods generated using the DefaultParamAttribute",
+					title: "DPTypeConvention.Inherit cannot be used on a struct or a sealed type",
 					id: 17,
 					docsPath: @"docs\DefaultParam\DUR0117.md",
 					fatal: true,
@@ -228,15 +228,15 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Value of DefaultParam attribute is different than that of implicitly implemented method",
+					title: "DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity",
 					id: 18,
 					docsPath: @"docs\DefaultParam\DUR0118.md",
-					fatal: true,
+					fatal: false,
 					hasLocation: true
 				),
 
 				new DiagnosticData(
-					title: "Value of DefaultParam attribute is different for inherited method and implicitly implemented interface method",
+					title: "DefaultParam value cannot be less accessible than the target member",
 					id: 19,
 					docsPath: @"docs\DefaultParam\DUR0119.md",
 					fatal: true,
@@ -244,7 +244,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Member with generated name already exists",
+					title: "Type is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
 					id: 20,
 					docsPath: @"docs\DefaultParam\DUR0120.md",
 					fatal: true,
@@ -252,7 +252,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "TypeConvention cannot be used on a struct or a sealed type",
+					title: "Type is not valid DefaultParam value",
 					id: 21,
 					docsPath: @"docs\DefaultParam\DUR0121.md",
 					fatal: true,
@@ -260,41 +260,17 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity",
+					title: "DefaultParamAttribute cannot be used on a partial type",
 					id: 22,
 					docsPath: @"docs\DefaultParam\DUR0122.md",
-					fatal: false,
+					fatal: true,
 					hasLocation: true
 				),
 
 				new DiagnosticData(
-					title: "DefaultParam value cannot be less accessible than the target member",
+					title: "TypeConvention cannot be used on a type without accessible constructor",
 					id: 23,
 					docsPath: @"docs\DefaultParam\DUR0123.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Type is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
-					id: 24,
-					docsPath: @"docs\DefaultParam\DUR0124.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Type is not valid DefaultParam value",
-					id: 25,
-					docsPath: @"docs\DefaultParam\DUR0125.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "DefaultParamAttribute cannot be used on a partial type",
-					id: 26,
-					docsPath: @"docs\DefaultParam\DUR0126.md",
 					fatal: true,
 					hasLocation: true
 				),

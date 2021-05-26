@@ -79,6 +79,41 @@ partial class Test
 		}
 
 		[Fact]
+		public void Error_When_IsInterfaceMethod()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial interface ITest
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod.Id));
+		}
+
+		[Fact]
+		public void Error_When_IsExplicitlyDeclaratedInterfaceMethod()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+interface ITest
+{{
+	void Method<T>();
+}}
+
+partial class Test : ITest
+{{
+	void ITest.Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod.Id));
+		}
+
+		[Fact]
 		public void Error_When_IsLocalFunction()
 		{
 			string input =
@@ -94,7 +129,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnLocalFunctionsOrLambdas.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod.Id));
 		}
 
 		[Fact]

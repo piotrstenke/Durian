@@ -43,10 +43,10 @@ namespace Durian.Generator.DefaultParam
 		/// <summary>
 		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> is not valid on local functions or lambdas.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0103_DefaultParamIsNotValidOnLocalFunctionsOrLambdas = new(
+		public static readonly DiagnosticDescriptor DUR0103_DefaultParamIsNotOnThisTypeOfMethod = new(
 			id: "DUR0103",
-			title: "DefaultParamAttribute is not valid on local functions or lambdas",
-			messageFormat: "'{0}': DefaultParamAttribute is not valid on local functions or lambdas",
+			title: "DefaultParamAttribute is not valid on this type of method",
+			messageFormat: "'{0}': DefaultParamAttribute is not valid on this type of method",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0103.md",
@@ -124,7 +124,7 @@ namespace Durian.Generator.DefaultParam
 		public static readonly DiagnosticDescriptor DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters = new(
 			id: "DUR0109",
 			title: "Do not add the DefaultParamAttribute on overridden type parameters",
-			messageFormat: "'{0}': Do not add the DefaultParamATtribute on overridden type parameters",
+			messageFormat: "'{0}': Do not add the DefaultParamAttribute on overridden type parameters",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0109.md",
@@ -210,12 +210,12 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the user should not change value of the <see cref="DefaultParamAttribute"/> when implementing an interface method.
+		/// Provides diagnostic message indicating that a member with name the same as the one generated using the <see cref="DefaultParamAttribute"/> already exists.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0116_DoNotChangeDefaultParamValueOfImplementedMethod = new(
+		public static readonly DiagnosticDescriptor DUR0116_MemberWithNameAlreadyExists = new(
 			id: "DUR0116",
-			title: "Do not change value of the DefaultParamAttribute when implementing an interface method",
-			messageFormat: "'{0}': Do not change value of the DefaultParamAttribute when implementing an interface method",
+			title: "Member with generated name already exists",
+			messageFormat: "'{0}': Member with generated name '{1}' already exists",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0116.md",
@@ -223,12 +223,12 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the user should not implement interface methods generated using the <see cref="DefaultParamAttribute"/>.
+		/// Provides diagnostic message indicating that <see cref="DPTypeConvention.Inherit"/> cannot be used on a struct or a <see langword="sealed"/> type.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0117_DoNotImplementGeneratedInterfaceMethods = new(
+		public static readonly DiagnosticDescriptor DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType = new(
 			id: "DUR0117",
-			title: "Do not implement interface methods generated using the DefaultParamAttribute",
-			messageFormat: "'{0}': Do not implement interface methods generated using the DefaultParamAttribute",
+			title: "DPTypeConvention.Inherit cannot be used on a struct or a sealed type",
+			messageFormat: "'{0}': DPTypeConvention.Inherit cannot be used on a struct or sealed type",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0117.md",
@@ -236,25 +236,26 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that there is conflict of <see cref="DefaultParamAttribute"/> values between an existing method and implicitly implemented interface method.
+		/// Provides diagnostic message indicating that <see cref="DPTypeConvention.Copy"/> or <see cref="DPTypeConvention.Default"/> should be applied for the struct/sealed type.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0118_ConflictBetweenExistingMethodAndInterfaceMethod = new(
+		public static readonly DiagnosticDescriptor DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor = new(
 			id: "DUR0118",
-			title: "Value of DefaultParam attribute is different than that of implicitly implemented method",
-			messageFormat: "'{0}': Value of DefaultParam attribute is different than that of the implicitly implemented '{1}' method. Try implementing the method explicitly",
+			title: "DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity",
+			messageFormat: "'{0}': Apply DPTypeConvention.Copy or DPTypeConvention.Default for clarity",
+			description: "DPTypeConvention.Inherit is applied to the enclosing scope, but it is ignored for structs, sealed types and classes with no accessible constructors. Explicitly apply DPTypeConvention.Copy or DPTypeConvention.Default to avoid confusion.",
 			category: "Durian.DefaultParam",
-			defaultSeverity: DiagnosticSeverity.Error,
+			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + @"\DUR0118.md",
 			isEnabledByDefault: true
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that there is conflict of <see cref="DefaultParamAttribute"/> values between inherited method and implicitly implemented interface method.
+		/// Provides diagnostic message indicating that value of <see cref="DefaultParamAttribute"/> cannot be less accessible than the target member.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0119_ConflictBetweenInheritedMethodAndInterfaceMethod = new(
+		public static readonly DiagnosticDescriptor DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember = new(
 			id: "DUR0119",
-			title: "Value of DefaultParam attribute is different for inherited method and implicitly implemented interface method",
-			messageFormat: "'{0}': Value of DefaultParam attribute is different for the inherited '{1}' method and implicitly implemented '{2}' method. Try implementing the method explicitly",
+			title: "DefaultParam value cannot be less accessible than the target member",
+			messageFormat: "'{0}': DefaultParam value '{1}' cannot be less accessible than the target member",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0119.md",
@@ -262,12 +263,12 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that a member with name the same as the one generated using the <see cref="DefaultParamAttribute"/> already exists.
+		/// Provides diagnostic message indicating that the target type is not valid <see cref="DefaultParamAttribute"/> value when there is a type parameter constrained to the target type parameter.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0120_MemberWithNameAlreadyExists = new(
+		public static readonly DiagnosticDescriptor DUR0120_TypeCannotBeUsedWithConstraint = new(
 			id: "DUR0120",
-			title: "Member with generated name already exists",
-			messageFormat: "'{0}': Member with generated name '{1}' already exists",
+			title: "Type is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
+			messageFormat: "'{0}': Type '{1}' is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0120.md",
@@ -275,12 +276,12 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that <see cref="DPTypeConvention.Inherit"/> cannot be used on a struct or a <see langword="sealed"/> type.
+		/// Provides diagnostic message indicating that the target type is not valid <see cref="DefaultParamAttribute"/> value.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0121_InheritTypeConventionCannotBeUsedOnStructOrSealedType = new(
+		public static readonly DiagnosticDescriptor DUR0121_TypeIsNotValidDefaultParamValue = new(
 			id: "DUR0121",
-			title: "TypeConvention cannot be used on a struct or a sealed type",
-			messageFormat: "'{0}': TypeConvention cannot be used on a struct or sealed type",
+			title: "Type is not valid DefaultParam value",
+			messageFormat: "'{0}': Type '{1}' is not valid DefaultParam value",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0121.md",
@@ -288,68 +289,28 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that <see cref="DPTypeConvention.Copy"/> or <see cref="DPTypeConvention.Default"/> should be applied for the struct/sealed type.
+		/// Provides diagnostic message indicating that a <see cref="DefaultParamAttribute"/> cannot be used on a <see langword="partial"/> type.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0122_ApplyCopyTypeConventionOnStructOrSealedType = new(
+		public static readonly DiagnosticDescriptor DUR0122_DoNotUseDefaultParamOnPartialType = new(
 			id: "DUR0122",
-			title: "DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity",
-			messageFormat: "'{0}': Apply DPTypeConvention.Copy or DPTypeConvention.Default for clarity",
-			description: "DPTypeConvention.Inherit is applied to the enclosing scope, but it is not valid on structs and sealed types. Explicitly apply DPTypeConvention.Copy or DPTypeConvention.Default to avoid confusion.",
+			title: "DefaultParamAttribute cannot be used on a partial type",
+			messageFormat: "'{0}': DefaultParamAttribute cannot be used on a partial type",
 			category: "Durian.DefaultParam",
-			defaultSeverity: DiagnosticSeverity.Warning,
+			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0122.md",
 			isEnabledByDefault: true
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that value of <see cref="DefaultParamAttribute"/> cannot be less accessible than the target member.
+		/// Provides diagnostic message indicating that the <see cref="DPTypeConvention.Inherit"/> cannot be used on a type without accessible constructor.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0123_DefaultParamValueCannotBeLessAccessibleThanTargetMember = new(
+		public static readonly DiagnosticDescriptor DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor = new(
 			id: "DUR0123",
-			title: "DefaultParam value cannot be less accessible than the target member",
-			messageFormat: "'{0}': DefaultParam value '{1}' cannot be less accessible than the target member",
+			title: "TypeConvention cannot be used on a type without accessible constructor",
+			messageFormat: "'{0}': TypeConvention cannot be used on a type without accessible constructor",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0123.md",
-			isEnabledByDefault: true
-		);
-
-		/// <summary>
-		/// Provides diagnostic message indicating that the target type is not valid <see cref="DefaultParamAttribute"/> value when there is a type parameter constrained to the target type parameter.
-		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0124_TypeCannotBeUsedWithConstraint = new(
-			id: "DUR0124",
-			title: "Type is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
-			messageFormat: "'{0}': Type '{1}' is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
-			category: "Durian.DefaultParam",
-			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0124.md",
-			isEnabledByDefault: true
-		);
-
-		/// <summary>
-		/// Provides diagnostic message indicating that the target type is not valid <see cref="DefaultParamAttribute"/> value.
-		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0125_TypeIsNotValidDefaultParamValue = new(
-			id: "DUR0125",
-			title: "Type is not valid DefaultParam value",
-			messageFormat: "'{0}': Type '{1}' is not valid DefaultParam value",
-			category: "Durian.DefaultParam",
-			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0125.md",
-			isEnabledByDefault: true
-		);
-
-		/// <summary>
-		/// Provides diagnostic message indicating that a <see cref="DefaultParamAttribute"/> cannot be used on a <see langword="partial"/> type.
-		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0126_DoNotUseDefaultParamOnPartialType = new(
-			id: "DUR0126",
-			title: "DefaultParamAttribute cannot be used on a partial type",
-			messageFormat: "'{0}': DefaultParamAttribute cannot be used on a partial type",
-			category: "Durian.DefaultParam",
-			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0126.md",
 			isEnabledByDefault: true
 		);
 	}

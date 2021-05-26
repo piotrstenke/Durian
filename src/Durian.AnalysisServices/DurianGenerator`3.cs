@@ -1,18 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Durian.Generator.Data;
-using Durian.Info;
 using Durian.Generator.Logging;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
-using System.Text;
-using System.Linq;
-using System.Collections.Immutable;
 
 namespace Durian.Generator
 {
@@ -22,72 +15,13 @@ namespace Durian.Generator
 	/// <typeparam name="TCompilationData">User-defined type of <see cref="ICompilationData"/> this <see cref="IDurianSourceGenerator"/> operates on.</typeparam>
 	/// <typeparam name="TSyntaxReceiver">User-defined type of <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="CSharpSyntaxNode"/>s to perform the generation on.</typeparam>
 	/// <typeparam name="TFilter">User-defined type of <see cref="ISyntaxFilter"/> that decides what <see cref="CSharpSyntaxNode"/>s collected by the <see cref="SyntaxReceiver"/> are valid for generation.</typeparam>
-	[DebuggerDisplay("Name = {GetGeneratorName()}, Version = {GetVersion()}")]
-	public abstract partial class SourceGenerator<TCompilationData, TSyntaxReceiver, TFilter> : LoggableSourceGenerator, IDurianSourceGenerator
+	public abstract partial class DurianGenerator<TCompilationData, TSyntaxReceiver, TFilter> : DurianGeneratorBase, IDurianSourceGenerator
 		where TCompilationData : class, ICompilationDataWithSymbols
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
 		where TFilter : notnull, IGeneratorSyntaxFilterWithDiagnostics
 	{
-		private ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? _diagnosticReceiver;
-		private IFileNameProvider _fileNameProvider;
-		private readonly List<CSharpSyntaxTree> _generatedDuringCurrentPass;
+		private readonly List<CSharpSyntaxTree> _generatedDuringCurrentPass = new(16);
 		private bool _isFilterWithGeneratedSymbols;
-
-		/// <summary>
-		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
-		/// </summary>
-		/// <remarks>Can be set only if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.</remarks>
-		/// <exception cref="InvalidOperationException">
-		/// <see cref="DiagnosticReceiver"/> cannot be set if <see cref="SupportsDiagnostics"/> is <see langword="false"/>. -or-
-		/// <see cref="DiagnosticReceiver"/> cannot be set to <see langword="null"/> if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.
-		/// </exception>
-		[DisallowNull]
-		public ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? DiagnosticReceiver
-		{
-			get => _diagnosticReceiver;
-			set
-			{
-				if (!SupportsDiagnostics)
-				{
-					throw new InvalidOperationException($"{nameof(DiagnosticReceiver)} cannot be set if {nameof(SupportsDiagnostics)} is false!");
-				}
-
-				if (value is null)
-				{
-					if (SupportsDiagnostics)
-					{
-						throw new InvalidOperationException($"{nameof(DiagnosticReceiver)} cannot be set to null if {nameof(SupportsDiagnostics)} is true!");
-					}
-				}
-				else
-				{
-					_diagnosticReceiver = value;
-				}
-			}
-		}
-
-		/// <summary>
-		/// A <see cref="IDiagnosticReceiver"/> that is used to create log files outside of this <see cref="ISourceGenerator"/>.
-		/// </summary>
-		public LoggableGeneratorDiagnosticReceiver LogReceiver { get; }
-
-		/// <summary>
-		/// Creates names for generated files.
-		/// </summary>
-		/// <exception cref="ArgumentNullException"><see cref="FileNameProvider"/> cannot be <see langword="null"/>.</exception>
-		public IFileNameProvider FileNameProvider
-		{
-			get => _fileNameProvider;
-			set
-			{
-				if (value is null)
-				{
-					throw new ArgumentNullException(nameof(FileNameProvider));
-				}
-
-				_fileNameProvider = value;
-			}
-		}
 
 		/// <inheritdoc cref="IDurianSourceGenerator.ParseOptions"/>
 		public CSharpParseOptions? ParseOptions { get; private set; }
@@ -108,37 +42,10 @@ namespace Durian.Generator
 		public bool IsSuccess { get; private set; }
 
 		/// <summary>
-		/// Determines whether data of this <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> was successfully initialized by the last call to the <see cref="Execute(in GeneratorExecutionContext)"/> method.
+		/// Determines whether data of this <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> was successfully initialized by the last call to the <see cref="Execute(in GeneratorExecutionContext)"/> method.
 		/// </summary>
 		[MemberNotNullWhen(true, nameof(TargetCompilation), nameof(SyntaxReceiver), nameof(ParseOptions))]
 		public bool HasValidData { get; private set; }
-
-		/// <inheritdoc/>
-		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
-		public bool SupportsDiagnostics => LoggingConfiguration.SupportsDiagnostics;
-
-		/// <inheritdoc/>
-		/// <exception cref="InvalidOperationException"><see cref="EnableDiagnostics"/> cannot be set to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</exception>
-		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
-		public bool EnableDiagnostics
-		{
-			get => LoggingConfiguration.EnableDiagnostics;
-			set => LoggingConfiguration.EnableDiagnostics = value;
-		}
-
-		/// <inheritdoc cref="GeneratorLoggingConfiguration.EnableLogging"/>
-		public bool EnableLogging
-		{
-			get => LoggingConfiguration.EnableLogging;
-			set => LoggingConfiguration.EnableLogging = value;
-		}
-
-		/// <inheritdoc cref="GeneratorLoggingConfiguration.EnableExceptions"/>
-		public bool EnableExceptions
-		{
-			get => LoggingConfiguration.EnableExceptions;
-			set => LoggingConfiguration.EnableExceptions = value;
-		}
 
 		CSharpParseOptions IDurianSourceGenerator.ParseOptions => ParseOptions!;
 		ICompilationData IDurianSourceGenerator.TargetCompilation => TargetCompilation!;
@@ -146,74 +53,37 @@ namespace Durian.Generator
 		string IDurianSourceGenerator.GeneratorName => GetGeneratorName();
 		string IDurianSourceGenerator.Version => GetVersion();
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
-		/// </summary>
-		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
-		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
-		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> instance if logging is supported.</param>
-		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="EnableDiagnostics"/> to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.</param>
-		/// <param name="enableExceptionsIfDebug">Determines whether to set <see cref="EnableExceptions"/> to <see langword="true"/> if the DEBUG symbol is present and the initial value of <see cref="EnableExceptions"/> is <see langword="false"/>.</param>
-		protected SourceGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported = true, bool enableDiagnosticsIfSupported = true, bool enableExceptionsIfDebug = true) : this(checkForConfigurationAttribute, enableLoggingIfSupported, enableDiagnosticsIfSupported, enableExceptionsIfDebug, new SymbolNameToFile())
+		/// <inheritdoc cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.DurianGenerator(in LoggableGeneratorConstructionContext, IFileNameProvider?)"/>
+		protected DurianGenerator()
+		{
+		}
+
+		/// <inheritdoc cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.DurianGenerator(in LoggableGeneratorConstructionContext, IFileNameProvider?)"/>
+		protected DurianGenerator(in LoggableGeneratorConstructionContext context) : base(in context)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
+		/// Initializes a new instance of the <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
 		/// </summary>
-		/// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
-		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para></param>
-		/// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> instance if logging is supported.</param>
-		/// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="EnableDiagnostics"/> to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.</param>
-		/// <param name="enableExceptionsIfDebug">Determines whether to set <see cref="EnableExceptions"/> to <see langword="true"/> if the DEBUG symbol is present and the initial value of <see cref="EnableExceptions"/> is <see langword="false"/>.</param>
+		/// <param name="context">Configures how this <see cref="LoggableSourceGenerator"/> is initialized.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="fileNameProvider"/> is <see langword="null"/>.</exception>
-		protected SourceGenerator(bool checkForConfigurationAttribute, bool enableLoggingIfSupported, bool enableDiagnosticsIfSupported, bool enableExceptionsIfDebug, IFileNameProvider fileNameProvider) : base(checkForConfigurationAttribute, enableLoggingIfSupported, enableDiagnosticsIfSupported, enableExceptionsIfDebug)
+		protected DurianGenerator(in LoggableGeneratorConstructionContext context, IFileNameProvider? fileNameProvider) : base(in context, fileNameProvider)
 		{
-			if (fileNameProvider is null)
-			{
-				throw new ArgumentNullException(nameof(fileNameProvider));
-			}
-
-			if (SupportsDiagnostics)
-			{
-				_diagnosticReceiver = DiagnosticReceiverFactory.SourceGenerator();
-			}
-
-			_fileNameProvider = fileNameProvider;
-			_generatedDuringCurrentPass = new();
-			LogReceiver = new(this);
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
-		/// </summary>
-		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-		protected SourceGenerator(GeneratorLoggingConfiguration? loggingConfiguration) : this(loggingConfiguration, new SymbolNameToFile())
+		/// <inheritdoc cref="DurianGenerator(GeneratorLoggingConfiguration?, IFileNameProvider?)"/>
+		protected DurianGenerator(GeneratorLoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SourceGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
+		/// Initializes a new instance of the <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="fileNameProvider"/> is <see langword="null"/>.</exception>
-		protected SourceGenerator(GeneratorLoggingConfiguration? loggingConfiguration, IFileNameProvider fileNameProvider) : base(loggingConfiguration)
+		protected DurianGenerator(GeneratorLoggingConfiguration? loggingConfiguration, IFileNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
 		{
-			if (fileNameProvider is null)
-			{
-				throw new ArgumentNullException(nameof(fileNameProvider));
-			}
-
-			if (SupportsDiagnostics)
-			{
-				_diagnosticReceiver = DiagnosticReceiverFactory.SourceGenerator();
-			}
-
-			_fileNameProvider = fileNameProvider;
-			_generatedDuringCurrentPass = new();
-			LogReceiver = new LoggableGeneratorDiagnosticReceiver(this);
 		}
 
 		/// <summary>
@@ -231,20 +101,16 @@ namespace Durian.Generator
 		/// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
 		public sealed override void Execute(in GeneratorExecutionContext context)
 		{
-			if (context.Compilation is not CSharpCompilation compilation || !HasReferenceToCoreProject(compilation))
+			ResetData();
+
+			if (context.SyntaxReceiver is not TSyntaxReceiver receiver || !ValidateSyntaxReceiver(receiver) || !InitializeCompilation(in context, out CSharpCompilation? compilation))
 			{
-				ResetData();
 				return;
 			}
 
 			try
 			{
-				ResetData();
-
-				DurianModule[] modules = GetEnabledModules();
-				EnableModules(in context, ref compilation, modules);
-				compilation = InitializeStaticTrees(compilation, in context);
-				InitializeExecutionData(compilation, in context);
+				InitializeExecutionData(compilation, receiver, in context);
 
 				if (!HasValidData)
 				{
@@ -274,21 +140,6 @@ namespace Durian.Generator
 		IDurianSyntaxReceiver IDurianSourceGenerator.CreateSyntaxReceiver()
 		{
 			return CreateSyntaxReceiver();
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing modules that should be enabled before the current generator pass is executed.
-		/// </summary>
-		protected abstract DurianModule[] GetEnabledModules();
-
-		/// <summary>
-		/// Returns an array of <see cref="CSharpSyntaxTree"/>s that are generated statically, outside of the <typeparamref name="TFilter"/>s, along with their proper hint names.
-		/// </summary>
-		/// <param name="cancellationToken">Target <see cref="System.Threading.CancellationToken"/>.</param>
-		/// <remarks>Do not use the <see cref="TargetCompilation"/>, <see cref="SyntaxReceiver"/>, <see cref="ParseOptions"/> and <see cref="CancellationToken"/> properties, as they are set to their types' respective <see langword="default"/> values before this method is called.</remarks>
-		protected virtual (CSharpSyntaxTree tree, string hintName)[]? GetStaticSyntaxTrees(CancellationToken cancellationToken)
-		{
-			return null;
 		}
 
 		/// <summary>
@@ -374,22 +225,6 @@ namespace Durian.Generator
 		}
 
 		/// <summary>
-		/// Returns version of this <see cref="IDurianSourceGenerator"/>.
-		/// </summary>
-		protected virtual string GetVersion()
-		{
-			return "1.0.0";
-		}
-
-		/// <summary>
-		/// Returns name of this <see cref="IDurianSourceGenerator"/>.
-		/// </summary>
-		protected virtual string GetGeneratorName()
-		{
-			return nameof(SourceGenerator);
-		}
-
-		/// <summary>
 		/// Manually iterates through a <typeparamref name="TFilter"/> that has the <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> property set to <see langword="true"/>.
 		/// </summary>
 		/// <param name="filter"><typeparamref name="TFilter"/> to iterate through.</param>
@@ -423,7 +258,7 @@ namespace Durian.Generator
 		/// Actually begins the generator execution.
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to generate the source for.</param>
-		/// <param name="hintName">A <see cref="string"/> that was generated using the <see cref="FileNameProvider"/>.</param>
+		/// <param name="hintName">A <see cref="string"/> that is used as the name of the generated file.</param>
 		/// <param name="context">The <see cref="GeneratorExecutionContext"/> to add source to.</param>
 		/// <returns>A <see cref="bool"/> value indicating whether the generation process was successful.</returns>
 		protected abstract bool Generate(IMemberData member, string hintName, in GeneratorExecutionContext context);
@@ -433,34 +268,6 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
 		protected abstract TCompilationData? CreateCompilationData(CSharpCompilation compilation);
-
-		/// <summary>
-		/// Adds the specified <paramref name="source"/> to the <paramref name="context"/>.
-		/// </summary>
-		/// <param name="source">A <see cref="string"/> representation of the generated code.</param>
-		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
-		/// <param name="context"><see cref="GeneratorPostInitializationContext"/> to add the source to.</param>
-		protected void InitializeSource(string source, string hintName, in GeneratorPostInitializationContext context)
-		{
-			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(source);
-			InitializeSource(tree, hintName, in context);
-		}
-
-		/// <summary>
-		/// Adds the specified <paramref name="tree"/> to the <paramref name="context"/>.
-		/// </summary>
-		/// <param name="tree"><see cref="CSharpSyntaxTree"/> to add to the <paramref name="context"/>.</param>
-		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
-		/// <param name="context"><see cref="GeneratorPostInitializationContext"/> to add the source to.</param>
-		protected void InitializeSource(CSharpSyntaxTree tree, string hintName, in GeneratorPostInitializationContext context)
-		{
-			context.AddSource(hintName, tree.GetText(context.CancellationToken));
-
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
-			{
-				LogNode_Internal(tree.GetRoot(context.CancellationToken), hintName);
-			}
-		}
 
 		/// <summary>
 		/// Adds the generated <paramref name="source"/> to the <paramref name="context"/>.
@@ -517,29 +324,6 @@ namespace Durian.Generator
 		{
 			ThrowIfHasNoValidData();
 			AddSource_Internal(original, tree, hintName, in context);
-		}
-
-		private CSharpCompilation InitializeStaticTrees(CSharpCompilation compilation, in GeneratorExecutionContext context)
-		{
-			(CSharpSyntaxTree tree, string hintName)[]? trees = GetStaticSyntaxTrees(context.CancellationToken);
-
-			if (trees is null)
-			{
-				return compilation;
-			}
-
-			foreach ((CSharpSyntaxTree tree, string hintName) in trees)
-			{
-				context.AddSource(hintName, tree.GetText(context.CancellationToken));
-				compilation = compilation.AddSyntaxTrees(tree);
-
-				if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
-				{
-					LogNode_Internal(tree.GetRoot(context.CancellationToken), hintName);
-				}
-			}
-
-			return compilation;
 		}
 
 		private void Filtrate(in GeneratorExecutionContext context)
@@ -633,13 +417,8 @@ namespace Durian.Generator
 			}
 		}
 
-		private void InitializeExecutionData(CSharpCompilation currentCompilation, in GeneratorExecutionContext context)
+		private void InitializeExecutionData(CSharpCompilation currentCompilation, TSyntaxReceiver syntaxReceiver, in GeneratorExecutionContext context)
 		{
-			if (context.SyntaxReceiver is not TSyntaxReceiver receiver || !ValidateSyntaxReceiver(receiver))
-			{
-				return;
-			}
-
 			TCompilationData? data = CreateCompilationData(currentCompilation);
 
 			if (data is null || data.HasErrors)
@@ -649,7 +428,7 @@ namespace Durian.Generator
 
 			TargetCompilation = data;
 			ParseOptions = context.ParseOptions as CSharpParseOptions ?? CSharpParseOptions.Default;
-			SyntaxReceiver = receiver;
+			SyntaxReceiver = syntaxReceiver;
 			CancellationToken = context.CancellationToken;
 			HasValidData = true;
 
@@ -713,24 +492,6 @@ namespace Durian.Generator
 			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput))
 			{
 				LogInputOutput_Internal(original, tree.GetRoot(context.CancellationToken), hintName);
-			}
-		}
-
-		private static bool HasReferenceToCoreProject(CSharpCompilation compilation)
-		{
-			return compilation.ReferencedAssemblyNames.Any(r => r.Name == "Durian.Core");
-		}
-
-		private void EnableModules(in GeneratorExecutionContext context, ref CSharpCompilation compilation, DurianModule[] modules)
-		{
-			foreach (DurianModule module in modules)
-			{
-				if (!ModuleUtilities.IsEnabled(module, compilation))
-				{
-					string source = AutoGenerated.ApplyHeader($"[assembly: global::{DurianStrings.GeneratorNamespace}.{nameof(EnableModuleAttribute)}({nameof(DurianModule)}.{module})]");
-					context.AddSource($"__enabled__{module}", SourceText.From(source, Encoding.UTF8));
-					compilation = compilation.AddSyntaxTrees((CSharpSyntaxTree)CSharpSyntaxTree.ParseText(source, ParseOptions, encoding: Encoding.UTF8, cancellationToken: CancellationToken));
-				}
 			}
 		}
 	}

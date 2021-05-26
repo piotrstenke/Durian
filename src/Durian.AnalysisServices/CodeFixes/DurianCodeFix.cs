@@ -1,34 +1,18 @@
-﻿using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Generator.CodeFixes
 {
 	/// <summary>
-	/// Base class for all Durian code fixes.
+	/// Base class for all Durian code fixes that provides methods for straight-up registration and exuection of <see cref="CodeAction"/>s.
 	/// </summary>
 	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> this <see cref="DurianCodeFix{T}"/> can handle.</typeparam>
-	public abstract class DurianCodeFix<T> : CodeFixProvider where T : CSharpSyntaxNode
+	public abstract class DurianCodeFix<T> : DurianCodeFixBase where T : CSharpSyntaxNode
 	{
-		/// <inheritdoc/>
-		public sealed override ImmutableArray<string> FixableDiagnosticIds
-		{
-			get
-			{
-				return ImmutableArray.Create(GetSupportedDiagnostics().Select(d => d.Id).ToArray());
-			}
-		}
-
-		/// <summary>
-		/// Title of this <see cref="DurianCodeFix{T}"/>.
-		/// </summary>
-		public abstract string Title { get; }
-
 		/// <summary>
 		/// Creates a new instance of the <see cref="DurianCodeFix{T}"/> class.
 		/// </summary>
@@ -37,74 +21,54 @@ namespace Durian.Generator.CodeFixes
 		}
 
 		/// <inheritdoc/>
-		public override FixAllProvider? GetFixAllProvider()
+		public override Task RegisterCodeFixesAsync(CodeFixContext context)
 		{
-			return WellKnownFixAllProviders.BatchFixer;
+			return RegisterCodeFixesAsync(context, false);
 		}
 
-		/// <inheritdoc/>
-		public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+		/// <summary>
+		/// Computes one or more fixes for the specified Microsoft.CodeAnalysis.CodeFixes.CodeFixContext.
+		/// </summary>
+		/// <param name="context">A Microsoft.CodeAnalysis.CodeFixes.CodeFixContext containing context information about the diagnostics to fix. The context must only contain diagnostics with a <see cref="Diagnostic.Id"/> included in the <see cref="CodeFixProvider.FixableDiagnosticIds"/> for the current provider.</param>
+		/// <param name="includeSemanticModel">Determines wheter to include the <see cref="SemanticModel"/> when creating this <see cref="CodeFixData{T}"/>.</param>
+		protected async Task RegisterCodeFixesAsync(CodeFixContext context, bool includeSemanticModel)
 		{
-			Diagnostic? diagnostic = context.Diagnostics.FirstOrDefault();
+			CodeFixData<T> data = await CodeFixData<T>.FromAsync(context, includeSemanticModel).ConfigureAwait(false);
 
-			if (diagnostic is null || !ValidateDiagnostic(diagnostic))
-			{
-				return;
-			}
-
-			CSharpSyntaxNode? root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false) as CSharpSyntaxNode;
-			T? node = root?.FindNode(diagnostic.Location.SourceSpan)?.FirstAncestorOrSelf<T>();
-
-			if (node is null)
-			{
-				return;
-			}
-
-			Document document = context.Document;
-			CodeAction? action = GetCodeAction(document, diagnostic, root!, node, context.CancellationToken);
+			CodeAction? action = GetCodeAction(in data);
 
 			if (action is null)
 			{
 				return;
 			}
 
-			context.RegisterCodeFix(action, diagnostic);
-		}
-
-		/// <summary>
-		/// Determines, whether the specified <paramref name="diagnostic"/> is valid for this <see cref="DurianCodeFix{T}"/>.
-		/// </summary>
-		/// <param name="diagnostic"><see cref="Diagnostic"/> to validate.</param>
-		protected virtual bool ValidateDiagnostic(Diagnostic diagnostic)
-		{
-			return true;
+			context.RegisterCodeFix(action, data.Diagnostic!);
 		}
 
 		/// <summary>
 		/// Returns a <see cref="CodeAction"/> to be executed.
 		/// </summary>
-		/// <param name="document">Current <see cref="Document"/>.</param>
-		/// <param name="diagnostic">Current <see cref="Diagnostic"/>.</param>
-		/// <param name="root">Root <see cref="SyntaxNode"/> of the <paramref name="document"/>.</param>
-		/// <param name="node">Target <see cref="CSharpSyntaxNode"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		protected virtual CodeAction? GetCodeAction(Document document, Diagnostic diagnostic, CSharpSyntaxNode root, T node, CancellationToken cancellationToken)
+		/// <param name="data">Represents data that is used when creating a <see cref="CodeAction"/> for the code fix.</param>
+		protected virtual CodeAction? GetCodeAction(in CodeFixData<T> data)
 		{
-			return CodeAction.Create(Title, cancellationToken => Execute(document, root, node, cancellationToken), Title);
+			if (!data.Success || !data.HasNode)
+			{
+				return null;
+			}
+
+			Document document = data.Document;
+			T node = data.Node;
+			CompilationUnitSyntax root = data.Root;
+			Diagnostic diagnostic = data.Diagnostic;
+			SemanticModel? semanticModel = data.SemanticModel;
+
+			return CodeAction.Create(Title, cancellationToken => ExecuteAsync(CodeFixExecutionContext<T>.From(diagnostic, document, semanticModel, root, node, cancellationToken)), Id);
 		}
 
 		/// <summary>
 		/// Actually executes the <see cref="CodeAction"/>.
 		/// </summary>
-		/// <param name="document">Current <see cref="Document"/>.</param>
-		/// <param name="root">Root <see cref="SyntaxNode"/> of the <paramref name="document"/>.</param>
-		/// <param name="node">Target <see cref="CSharpSyntaxNode"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		protected abstract Task<Document> Execute(Document document, CSharpSyntaxNode root, T node, CancellationToken cancellationToken);
-
-		/// <summary>
-		/// Returns the <see cref="DiagnosticDescriptor"/>s supported by this <see cref="DurianCodeFix{T}"/>.
-		/// </summary>
-		protected abstract DiagnosticDescriptor[] GetSupportedDiagnostics();
+		/// <param name="context"><see cref="CodeFixExecutionContext{T}"/> that contains all the data needed to properly perform a code fix.</param>
+		protected abstract Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context);
 	}
 }

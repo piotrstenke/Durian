@@ -31,7 +31,7 @@ namespace Durian.Generator.Extensions
 			ISymbol? s = symbol;
 			Accessibility lowest = Accessibility.Public;
 
-			while(s is not null)
+			while (s is not null)
 			{
 				Accessibility current = s.DeclaredAccessibility;
 
@@ -40,7 +40,7 @@ namespace Durian.Generator.Extensions
 					return current;
 				}
 
-				if(current != Accessibility.NotApplicable && current < lowest)
+				if (current != Accessibility.NotApplicable && current < lowest)
 				{
 					lowest = current;
 				}
@@ -59,17 +59,17 @@ namespace Durian.Generator.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="typeParameter"/> is <see langword="null"/>.</exception>
 		public static bool IsOrUsesTypeParameter(this ITypeSymbol type, ITypeParameterSymbol typeParameter)
 		{
-			if(type is null)
+			if (type is null)
 			{
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			if(typeParameter is null)
+			if (typeParameter is null)
 			{
 				throw new ArgumentNullException(nameof(typeParameter));
 			}
 
-			if(SymbolEqualityComparer.Default.Equals(type, typeParameter))
+			if (SymbolEqualityComparer.Default.Equals(type, typeParameter))
 			{
 				return true;
 			}
@@ -89,7 +89,7 @@ namespace Durian.Generator.Extensions
 				return false;
 			}
 
-			if(SymbolEqualityComparer.Default.Equals(symbol, typeParameter))
+			if (SymbolEqualityComparer.Default.Equals(symbol, typeParameter))
 			{
 				return true;
 			}
@@ -142,19 +142,19 @@ namespace Durian.Generator.Extensions
 		/// <returns>The effective underlaying type the <paramref name="pointer"/> or any of its child pointers point to. -or- <paramref name="pointer"/> if no such type was found.</returns>
 		public static ITypeSymbol GetUnderlayingPointedAtType(this IPointerTypeSymbol pointer)
 		{
-			if(pointer is null)
+			if (pointer is null)
 			{
 				throw new ArgumentNullException(nameof(pointer));
 			}
 
 			ITypeSymbol? p = pointer;
 
-			while(p is IPointerTypeSymbol t)
+			while (p is IPointerTypeSymbol t)
 			{
 				p = t.PointedAtType;
 			}
 
-			if(p is null)
+			if (p is null)
 			{
 				return pointer;
 			}
@@ -252,7 +252,7 @@ namespace Durian.Generator.Extensions
 		/// Determines whether the <paramref name="method"/> is partial.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
 		public static bool IsPartial(this IMethodSymbol method, CancellationToken cancellationToken = default)
 		{
@@ -730,7 +730,7 @@ namespace Durian.Generator.Extensions
 		/// Returns all <see cref="TypeDeclarationSyntax"/>es of the specified <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the <see cref="TypeDeclarationSyntax"/>es of.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<T> GetPartialDeclarations<T>(this INamedTypeSymbol type, CancellationToken cancellationToken = default) where T : TypeDeclarationSyntax
 		{
@@ -746,7 +746,7 @@ namespace Durian.Generator.Extensions
 		/// Returns modifiers applied to the target <see cref="INamedTypeSymbol"/>.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the modifiers of.</param>
-		/// <param name="cancellationToken">Target <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<SyntaxToken> GetModifiers(this INamedTypeSymbol type, CancellationToken cancellationToken = default)
 		{
@@ -1300,9 +1300,10 @@ namespace Durian.Generator.Extensions
 		/// </summary>
 		/// <param name="symbol">Target <see cref="ISymbol"/>.</param>
 		/// <param name="syntax"><see cref="AttributeSyntax"/> to get the data of.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns>The <see cref="AttributeData"/> of the given <see cref="AttributeSyntax"/> or <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="syntax"/> is <see langword="null"/>.</exception>
-		public static AttributeData? GetAttributeData(this ISymbol symbol, AttributeSyntax syntax)
+		public static AttributeData? GetAttributeData(this ISymbol symbol, AttributeSyntax syntax, CancellationToken cancellationToken = default)
 		{
 			if (symbol is null)
 			{
@@ -1323,7 +1324,7 @@ namespace Durian.Generator.Extensions
 					continue;
 				}
 
-				if (reference.GetSyntax().IsEquivalentTo(syntax))
+				if (reference.GetSyntax(cancellationToken).IsEquivalentTo(syntax))
 				{
 					return attr;
 				}
@@ -1368,12 +1369,12 @@ namespace Durian.Generator.Extensions
 
 		private static bool IsValidForTypeParameter_Internal(ITypeSymbol type, ITypeParameterSymbol parameter)
 		{
-			if(type.IsStatic || type.IsRefLikeType || type is IErrorTypeSymbol)
+			if (type.IsStatic || type.IsRefLikeType || type is IErrorTypeSymbol)
 			{
 				return false;
 			}
 
-			if(type is INamedTypeSymbol s && s.IsUnboundGenericType)
+			if (type is INamedTypeSymbol s && s.IsUnboundGenericType)
 			{
 				return false;
 			}
@@ -1417,9 +1418,9 @@ namespace Durian.Generator.Extensions
 
 			foreach (ITypeSymbol t in parameter.ConstraintTypes)
 			{
-				if(t is ITypeParameterSymbol p)
+				if (t is ITypeParameterSymbol p)
 				{
-					if(!IsValidForTypeParameter_Internal(type, p))
+					if (!IsValidForTypeParameter_Internal(type, p))
 					{
 						return false;
 					}

@@ -34,12 +34,12 @@ namespace Durian.Generator
 
 		private void Analyze(SyntaxNodeAnalysisContext context)
 		{
-			if(context.Node is not NamespaceDeclarationSyntax node)
+			if (context.Node is not NamespaceDeclarationSyntax node)
 			{
 				return;
 			}
 
-			if(node.Name.ToString() == DurianStrings.GeneratorNamespace)
+			if (node.Name.ToString() == DurianStrings.GeneratorNamespace)
 			{
 				context.ReportDiagnostic(Diagnostic.Create(DUR0005_DoNotAddTypesToGeneratorNamespace, node.GetLocation()));
 			}

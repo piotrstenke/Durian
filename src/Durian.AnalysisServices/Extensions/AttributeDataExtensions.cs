@@ -99,7 +99,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="position">Position where the target argument is to be found.</param>
 		/// <param name="symbol">Symbol that represents the <see cref="Type"/> value of the argument.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
-		public static bool TryGetConstructorArgumentTypeValue<T>(this AttributeData attribute, int position, [MaybeNull] out T symbol) where T : ITypeSymbol
+		public static bool TryGetConstructorArgumentTypeValue<T>(this AttributeData attribute, int position, out T? symbol) where T : ITypeSymbol
 		{
 			if (attribute is null)
 			{
@@ -131,10 +131,9 @@ namespace Durian.Generator.Extensions
 		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
 		/// <param name="position">Position where the target argument is to be found.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
-		[return: MaybeNull]
-		public static T GetConstructorArgumentTypeValue<T>(this AttributeData attribute, int position) where T : ITypeSymbol
+		public static T? GetConstructorArgumentTypeValue<T>(this AttributeData attribute, int position) where T : ITypeSymbol
 		{
-			TryGetConstructorArgumentTypeValue<T>(attribute, position, out T? symbol);
+			TryGetConstructorArgumentTypeValue(attribute, position, out T? symbol);
 			return symbol;
 		}
 
