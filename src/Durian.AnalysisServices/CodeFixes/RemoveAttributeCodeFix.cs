@@ -55,7 +55,7 @@ namespace Durian.Generator.CodeFixes
 				return;
 			}
 
-			CodeAction? action = GetCodeAction(in data);
+			CodeAction? action = await GetCodeActionAsync(data);
 
 			if (action is null)
 			{
@@ -66,18 +66,18 @@ namespace Durian.Generator.CodeFixes
 		}
 
 		/// <inheritdoc/>
-		protected override CodeAction? GetCodeAction(in CodeFixData<T> data)
+		protected override Task<CodeAction?> GetCodeActionAsync(CodeFixData<T> data)
 		{
 			if (!data.Success || !data.HasSemanticModel)
 			{
-				return null;
+				return Task.FromResult<CodeAction?>(null);
 			}
 
 			INamedTypeSymbol[] attributes = GetAttributeSymbols((CSharpCompilation)data.SemanticModel.Compilation, data.CancellationToken).ToArray();
 
 			if (attributes.Length == 0)
 			{
-				return null;
+				return Task.FromResult<CodeAction?>(null);
 			}
 
 			Func<CancellationToken, Task<Document>> function;
@@ -99,33 +99,26 @@ namespace Durian.Generator.CodeFixes
 
 				if (attr is null)
 				{
-					return null;
+					return Task.FromResult<CodeAction?>(null);
 				}
 
 				function = cancellationToken => RemoveAttributesAsync(document, semanticModel, attributes, root, attr, cancellationToken);
 			}
 
-			return CodeAction.Create(Title, function, Id);
+			return Task.FromResult<CodeAction?>(CodeAction.Create(Title, function, Id));
 		}
 
 		/// <inheritdoc/>
 		protected override async Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
 		{
-			SemanticModel? semanticModel = await context.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-
-			if (semanticModel is null)
-			{
-				return context.Document;
-			}
-
-			INamedTypeSymbol[] attributes = GetAttributeSymbols((CSharpCompilation)semanticModel.Compilation, context.CancellationToken).ToArray();
+			INamedTypeSymbol[] attributes = GetAttributeSymbols((CSharpCompilation)context.Compilation, context.CancellationToken).ToArray();
 
 			if (attributes.Length == 0)
 			{
 				return context.Document;
 			}
 
-			return await RemoveAttributeCodeFix<T>.RemoveAttributesAsync(context.Document, semanticModel, attributes, context.Root, context.Node, context.CancellationToken).ConfigureAwait(false);
+			return await RemoveAttributeCodeFix<T>.RemoveAttributesAsync(context.Document, context.SemanticModel, attributes, context.Root, context.Node, context.CancellationToken).ConfigureAwait(false);
 		}
 
 		private static Task<Document> RemoveAttributesAsync(Document document, SemanticModel semanticModel, INamedTypeSymbol[] attributes, CompilationUnitSyntax root, T node, CancellationToken cancellationToken)

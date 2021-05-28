@@ -6,6 +6,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Generator.DefaultParam.CodeFixes
 {
+	//
+	// For some unknown reason Visual Studio does not register this code fix.
+	//
+	// It's deffinitely not a problem with DurianCodeFix<T> or DurianCodeFIx, as they work as intended when used by other classes.
+	//
+
 	/// <summary>
 	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial"/> diagnostic.
 	/// </summary>

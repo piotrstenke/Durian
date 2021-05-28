@@ -47,7 +47,7 @@ namespace Durian.Info
 		public static PackageIdentity DefaultParam => new(
 			enumValue: DurianPackage.DefaultParam,
 			version: "1.0.0",
-			type: PackageType.SyntaxBasedGenerator | PackageType.Analyzer
+			type: PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary
 		);
 
 		/// <summary>

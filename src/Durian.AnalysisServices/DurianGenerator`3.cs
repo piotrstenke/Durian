@@ -103,7 +103,10 @@ namespace Durian.Generator
 		{
 			ResetData();
 
-			if (context.SyntaxReceiver is not TSyntaxReceiver receiver || !ValidateSyntaxReceiver(receiver) || !InitializeCompilation(in context, out CSharpCompilation? compilation))
+			if (!InitializeCompilation(in context, out CSharpCompilation? compilation) ||
+				context.SyntaxReceiver is not TSyntaxReceiver receiver ||
+				!ValidateSyntaxReceiver(receiver)
+			)
 			{
 				return;
 			}

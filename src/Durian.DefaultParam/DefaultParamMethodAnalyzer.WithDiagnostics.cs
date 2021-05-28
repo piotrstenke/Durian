@@ -203,13 +203,13 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			/// <summary>
-			/// Reports <see cref="Diagnostic"/>s for the specified <paramref name="localFunctionSymbol"/>.
+			/// Reports <see cref="Diagnostic"/>s for the specified <paramref name="method"/>.
 			/// </summary>
 			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-			/// <param name="localFunctionSymbol"><see cref="IMethodSymbol"/> of a local function to report the <see cref="Diagnostic"/>s for.</param>
-			public static void ReportDiagnosticForInvalidMethodType(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol localFunctionSymbol)
+			/// <param name="method"><see cref="IMethodSymbol"/> of a method to report the <see cref="Diagnostic"/>s for.</param>
+			public static void ReportDiagnosticForInvalidMethodType(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol method)
 			{
-				diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod, localFunctionSymbol);
+				diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod, method);
 			}
 
 			// These two method shouldn't be accessible from method analyzer

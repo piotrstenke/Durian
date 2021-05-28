@@ -16,6 +16,11 @@ namespace Durian.Generator
 		/// <inheritdoc cref="DurianGeneratorBase.GetGeneratorName"/>
 		public static string GeneratorName => nameof(EnableCoreGenerator);
 
+		/// <summary>
+		/// Number of trees generated statically by this generator.
+		/// </summary>
+		public const int NumStaticTrees = 1;
+
 		/// <inheritdoc cref="EnableCoreGenerator(in LoggableGeneratorConstructionContext, IFileNameProvider?)"/>
 		public EnableCoreGenerator()
 		{

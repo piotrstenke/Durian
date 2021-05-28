@@ -69,30 +69,30 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 			Diagnostic diagnostic = data.Diagnostic!;
 			SemanticModel semanticModel = data.SemanticModel!;
 
-			return CodeAction.Create(Title, cancenllationToken => ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax>.From(diagnostic, document, semanticModel, root, node!, cancenllationToken), attribute), Id);
+			return CodeAction.Create(Title, cancenllationToken => ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax>.From(diagnostic, document, root, node!, semanticModel, cancenllationToken), attribute), Id);
 		}
 
-		private static async Task<Document> ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax> context, INamedTypeSymbol attribute)
+		private static Task<Document> ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax> context, INamedTypeSymbol attribute)
 		{
-			SemanticModel? semanticModel = await context.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+			INamespaceSymbol? @namespace = (context.SemanticModel.GetSymbolInfo(context.Node).Symbol?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
 
 			NameSyntax attrName;
 			NameSyntax enumName;
 
-			if (CodeFixUtility.HasUsingDirective(semanticModel!, context.Root.Usings, attribute, context.CancellationToken))
+			if (CodeFixUtility.HasUsingDirective(context.SemanticModel, context.Root.Usings, @namespace, attribute, context.CancellationToken))
 			{
 				attrName = SyntaxFactory.IdentifierName("DefaultParamConfiguration");
 				enumName = SyntaxFactory.IdentifierName(nameof(DPTypeConvention));
 			}
 			else
 			{
-				QualifiedNameSyntax @namespace =
+				QualifiedNameSyntax n =
 					SyntaxFactory.QualifiedName(
 							SyntaxFactory.IdentifierName(nameof(Durian)),
 							SyntaxFactory.IdentifierName(nameof(Configuration)));
 
-				attrName = SyntaxFactory.QualifiedName(@namespace, SyntaxFactory.IdentifierName("DefaultParamConfiguration"));
-				enumName = SyntaxFactory.QualifiedName(@namespace, SyntaxFactory.IdentifierName(nameof(DPTypeConvention)));
+				attrName = SyntaxFactory.QualifiedName(n, SyntaxFactory.IdentifierName("DefaultParamConfiguration"));
+				enumName = SyntaxFactory.QualifiedName(n, SyntaxFactory.IdentifierName(nameof(DPTypeConvention)));
 			}
 
 			TypeDeclarationSyntax type = context.Node.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
@@ -108,8 +108,8 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 								SyntaxFactory.IdentifierName(nameof(DefaultParamConfigurationAttribute.TypeConvention)),
 								SyntaxFactory.Token(SyntaxKind.EqualsToken).WithTrailingTrivia(SyntaxFactory.Space)))))))));
 
-			context.RegisterChangeAndUpdateDocument(context.Node, type);
-			return context.Document;
+			context.RegisterChange(context.Node, type);
+			return Task.FromResult(context.Document);
 		}
 	}
 }

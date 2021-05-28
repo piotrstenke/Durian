@@ -43,9 +43,8 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 				return;
 			}
 
-			ITypeSymbol? targetType = await DUR0108_MakeValueTheSameAsBaseMethod.GetTargetTypeAsync(data.Document, data.Node, context.CancellationToken).ConfigureAwait(false);
-
-			if (targetType is null)
+			if(data.SemanticModel.GetDeclaredSymbol(data.Node, data.CancellationToken) is not ITypeParameterSymbol typeParameter ||
+				DUR0108_MakeValueTheSameAsBaseMethod.GetTargetType(data.Node, data.SemanticModel, typeParameter.Ordinal, data.CancellationToken) is not ITypeSymbol targetType)
 			{
 				return;
 			}
@@ -80,30 +79,22 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 			CompilationUnitSyntax root = data.Root!;
 			Diagnostic diagnostic = data.Diagnostic!;
 
-			return CodeAction.Create(Title, cancenllationToken => ExecuteAsync(CodeFixExecutionContext<TypeParameterSyntax>.From(diagnostic, document, semanticModel, root, node!, cancenllationToken), targetType, attribute), Id);
+			return CodeAction.Create(Title, cancenllationToken => ExecuteAsync(CodeFixExecutionContext<TypeParameterSyntax>.From(diagnostic, document, root, node, semanticModel, cancenllationToken), targetType, attribute), Id);
 		}
 
-		private static async Task<Document> ExecuteAsync(CodeFixExecutionContext<TypeParameterSyntax> context, ITypeSymbol targetType, INamedTypeSymbol attribute)
+		private static Task<Document> ExecuteAsync(CodeFixExecutionContext<TypeParameterSyntax> context, ITypeSymbol targetType, INamedTypeSymbol attribute)
 		{
-			SemanticModel? semanticModel = await context.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+			INamespaceSymbol? @namespace = (context.SemanticModel.GetDeclaredSymbol(context.Node)?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
 
-			NameSyntax attributeName;
+			NameSyntax attributeName = CodeFixUtility.GetNameSyntaxForAttribute(context.SemanticModel, context.Root.Usings, @namespace, attribute, context.CancellationToken);
 
-			if (CodeFixUtility.HasUsingDirective(semanticModel!, context.Root.Usings, attribute, context.CancellationToken))
-			{
-				attributeName = SyntaxFactory.IdentifierName(attribute.Name);
-			}
-			else
-			{
-				attributeName = SyntaxFactory.ParseName(attribute.ToString());
-			}
+			TypeParameterSyntax parameter = context.Node.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Attribute(attributeName))));
 
-			AttributeSyntax attr = SyntaxFactory.Attribute(attributeName);
-			TypeParameterSyntax parameter = context.Node.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(attr)));
+			context.RegisterChange(parameter);
 
-			context.RegisterChange(context.Node, parameter);
+			AttributeSyntax attr = context.Node.AttributeLists.Last().Attributes[0];
 
-			return DUR0108_MakeValueTheSameAsBaseMethod.Execute(context.WithNode(attr), targetType, semanticModel!);
+			return Task.FromResult(DUR0108_MakeValueTheSameAsBaseMethod.Execute(context.WithNode(attr), targetType));
 		}
 	}
 }

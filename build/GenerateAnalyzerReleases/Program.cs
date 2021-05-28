@@ -145,8 +145,7 @@ internal class Program
 				.Append(" | ")
 				.Append(data.Value.Severity)
 				.Append(" | ")
-				.Append($"[https://github.com/piotrstenke/Durian/docs/{moduleName}/{data.Value.Id}.md] ")
-				.AppendLine(data.Value.Title);
+				.AppendLine($"{data.Value.Title}. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/{moduleName}/{data.Value.Id}.md)]");
 		}
 	}
 

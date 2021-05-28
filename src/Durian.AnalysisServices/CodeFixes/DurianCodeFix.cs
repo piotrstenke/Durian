@@ -34,8 +34,7 @@ namespace Durian.Generator.CodeFixes
 		protected async Task RegisterCodeFixesAsync(CodeFixContext context, bool includeSemanticModel)
 		{
 			CodeFixData<T> data = await CodeFixData<T>.FromAsync(context, includeSemanticModel).ConfigureAwait(false);
-
-			CodeAction? action = GetCodeAction(in data);
+			CodeAction? action = await GetCodeActionAsync(data).ConfigureAwait(false);
 
 			if (action is null)
 			{
@@ -49,7 +48,7 @@ namespace Durian.Generator.CodeFixes
 		/// Returns a <see cref="CodeAction"/> to be executed.
 		/// </summary>
 		/// <param name="data">Represents data that is used when creating a <see cref="CodeAction"/> for the code fix.</param>
-		protected virtual CodeAction? GetCodeAction(in CodeFixData<T> data)
+		protected virtual async Task<CodeAction?> GetCodeActionAsync(CodeFixData<T> data)
 		{
 			if (!data.Success || !data.HasNode)
 			{
@@ -60,9 +59,14 @@ namespace Durian.Generator.CodeFixes
 			T node = data.Node;
 			CompilationUnitSyntax root = data.Root;
 			Diagnostic diagnostic = data.Diagnostic;
-			SemanticModel? semanticModel = data.SemanticModel;
+			SemanticModel? semanticModel = data.SemanticModel ?? await document.GetSemanticModelAsync(data.CancellationToken).ConfigureAwait(false);
 
-			return CodeAction.Create(Title, cancellationToken => ExecuteAsync(CodeFixExecutionContext<T>.From(diagnostic, document, semanticModel, root, node, cancellationToken)), Id);
+			if (semanticModel is null)
+			{
+				return null;
+			}
+
+			return CodeAction.Create(Title, cancellationToken => ExecuteAsync(CodeFixExecutionContext<T>.From(diagnostic, document, root, node, semanticModel, cancellationToken)), Id);
 		}
 
 		/// <summary>

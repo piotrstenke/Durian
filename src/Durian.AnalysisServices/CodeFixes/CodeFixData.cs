@@ -94,7 +94,17 @@ namespace Durian.Generator.CodeFixes
 				return default;
 			}
 
-			T? node = root.FindNode(diagnostic.Location.SourceSpan)?.FirstAncestorOrSelf<T>();
+			SyntaxNode? parent = root.FindNode(diagnostic.Location.SourceSpan);
+			T? node;
+
+			if(parent is null)
+			{
+				node = null;
+			}
+			else
+			{
+				node = parent.FirstAncestorOrSelf<T>() ?? parent.DescendantNodes().OfType<T>().FirstOrDefault();
+			}
 
 			SemanticModel? semanticModel;
 

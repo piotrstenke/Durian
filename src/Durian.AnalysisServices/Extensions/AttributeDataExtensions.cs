@@ -108,7 +108,7 @@ namespace Durian.Generator.Extensions
 
 			if (TryGetConstructorArgument(attribute, position, out TypedConstant value))
 			{
-				if (value.Type is T t)
+				if (value.Value is T t)
 				{
 					symbol = t;
 				}
@@ -344,7 +344,7 @@ namespace Durian.Generator.Extensions
 			{
 				if (arg.Key == argumentName)
 				{
-					if (arg.Value.Type is T t)
+					if (arg.Value.Value is T t)
 					{
 						symbol = t;
 					}

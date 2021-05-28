@@ -52,7 +52,46 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Core.Analyzer", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateModuleRepository", "build\GenerateModuleRepository\GenerateModuleRepository.csproj", "{BBE02246-FD88-4DF3-8141-940C7E73AF05}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Durian.Tests.Core", "tests\Durian.Tests.Core\Durian.Tests.Core.csproj", "{8E1557FD-6BE5-4162-9731-287E507A3E5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Tests.Core", "tests\Durian.Tests.Core\Durian.Tests.Core.csproj", "{8E1557FD-6BE5-4162-9731-287E507A3E5E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{BA3DE2E2-7B32-4612-8219-24FBCF850813}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{A6400D35-731B-41E1-A752-0D39F0169B90}"
+	ProjectSection(SolutionItems) = preProject
+		docs\Core\DUR0001.md = docs\Core\DUR0001.md
+		docs\Core\DUR0002.md = docs\Core\DUR0002.md
+		docs\Core\DUR0003.md = docs\Core\DUR0003.md
+		docs\Core\DUR0004.md = docs\Core\DUR0004.md
+		docs\Core\DUR0005.md = docs\Core\DUR0005.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DefaultParam", "DefaultParam", "{ED212D80-C490-4BDB-801C-E487EB7E390D}"
+	ProjectSection(SolutionItems) = preProject
+		docs\DefaultParam\DUR0101.md = docs\DefaultParam\DUR0101.md
+		docs\DefaultParam\DUR0102.md = docs\DefaultParam\DUR0102.md
+		docs\DefaultParam\DUR0103.md = docs\DefaultParam\DUR0103.md
+		docs\DefaultParam\DUR0104.md = docs\DefaultParam\DUR0104.md
+		docs\DefaultParam\DUR0105.md = docs\DefaultParam\DUR0105.md
+		docs\DefaultParam\DUR0106.md = docs\DefaultParam\DUR0106.md
+		docs\DefaultParam\DUR0107.md = docs\DefaultParam\DUR0107.md
+		docs\DefaultParam\DUR0108.md = docs\DefaultParam\DUR0108.md
+		docs\DefaultParam\DUR0109.md = docs\DefaultParam\DUR0109.md
+		docs\DefaultParam\DUR0110.md = docs\DefaultParam\DUR0110.md
+		docs\DefaultParam\DUR0111.md = docs\DefaultParam\DUR0111.md
+		docs\DefaultParam\DUR0112.md = docs\DefaultParam\DUR0112.md
+		docs\DefaultParam\DUR0113.md = docs\DefaultParam\DUR0113.md
+		docs\DefaultParam\DUR0114.md = docs\DefaultParam\DUR0114.md
+		docs\DefaultParam\DUR0115.md = docs\DefaultParam\DUR0115.md
+		docs\DefaultParam\DUR0116.md = docs\DefaultParam\DUR0116.md
+		docs\DefaultParam\DUR0117.md = docs\DefaultParam\DUR0117.md
+		docs\DefaultParam\DUR0118.md = docs\DefaultParam\DUR0118.md
+		docs\DefaultParam\DUR0119.md = docs\DefaultParam\DUR0119.md
+		docs\DefaultParam\DUR0120.md = docs\DefaultParam\DUR0120.md
+		docs\DefaultParam\DUR0121.md = docs\DefaultParam\DUR0121.md
+		docs\DefaultParam\DUR0122.md = docs\DefaultParam\DUR0122.md
+		docs\DefaultParam\DUR0123.md = docs\DefaultParam\DUR0123.md
+		docs\DefaultParam\DUR0124.md = docs\DefaultParam\DUR0124.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -214,6 +253,8 @@ Global
 		{8DCB04EE-4007-4AE3-A27B-DE63CDCAF0E5} = {74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}
 		{BBE02246-FD88-4DF3-8141-940C7E73AF05} = {80273A51-C8E4-433F-BD7C-4336BEB04A1D}
 		{8E1557FD-6BE5-4162-9731-287E507A3E5E} = {F7DC25BE-C8AA-4B1A-A752-70DB1234815E}
+		{A6400D35-731B-41E1-A752-0D39F0169B90} = {BA3DE2E2-7B32-4612-8219-24FBCF850813}
+		{ED212D80-C490-4BDB-801C-E487EB7E390D} = {BA3DE2E2-7B32-4612-8219-24FBCF850813}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {09524C45-0D6D-4456-B89D-9673853B9FA0}

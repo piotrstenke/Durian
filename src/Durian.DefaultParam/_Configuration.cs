@@ -7,7 +7,7 @@ using Durian.Info;
 
 #region Durian Configuration
 
-[assembly: PackageDefinition(DurianModule.DefaultParam, DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer, "1.0.0")]
+[assembly: PackageDefinition(DurianModule.DefaultParam, DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary, "1.0.0")]
 [assembly: DiagnosticFiles(nameof(DefaultParamDiagnostics))]
 [assembly: IncludeTypes(
 	nameof(DefaultParamAttribute),

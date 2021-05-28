@@ -29,7 +29,7 @@ namespace Durian.Generator.DefaultParam
 		/// <summary>
 		/// <see cref="Location"/> of the <see cref="Syntax"/>.
 		/// </summary>
-		public readonly Location Location => Syntax.GetLocation();
+		public readonly Location Location => Attribute?.GetLocation() ?? Syntax.GetLocation();
 
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="Syntax"/>.

@@ -28,7 +28,7 @@ namespace Durian.Generator.CodeFixes
 		protected override Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
 		{
 			MemberDeclarationSyntax newNode = context.Node.AddModifiers(ModifiersToApply.Select(m => SyntaxFactory.Token(m)).ToArray());
-			context.RegisterChangeAndUpdateDocument(context.Node, newNode);
+			context.RegisterChange(context.Node, newNode);
 
 			return Task.FromResult(context.Document);
 		}

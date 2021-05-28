@@ -210,7 +210,7 @@ namespace Durian.Generator.DefaultParam
 
 			CSharpSyntaxNode[] members = new CSharpSyntaxNode[length];
 
-			// Types must be replaces separately from the rest.
+			// Types must be replaced separately from the rest.
 
 			while (memberIndex < length)
 			{

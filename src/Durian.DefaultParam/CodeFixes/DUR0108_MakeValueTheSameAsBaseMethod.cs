@@ -45,9 +45,9 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 				return;
 			}
 
-			ITypeSymbol? targetType = await GetTargetTypeAsync(data.Document, data.Node, context.CancellationToken).ConfigureAwait(false);
-
-			if (targetType is null)
+			if (data.Node.Parent?.Parent is not TypeParameterSyntax typeParameter ||
+				data.SemanticModel.GetDeclaredSymbol(typeParameter, data.CancellationToken) is not ITypeParameterSymbol parameterSymbol ||
+				GetTargetType(data.Node, data.SemanticModel, parameterSymbol.Ordinal, data.CancellationToken) is not ITypeSymbol targetType)
 			{
 				return;
 			}
@@ -68,46 +68,36 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 			AttributeSyntax node = data.Node!;
 			CompilationUnitSyntax root = data.Root!;
 			Diagnostic diagnostic = data.Diagnostic!;
-			SemanticModel? semanticModel = data.SemanticModel;
+			SemanticModel semanticModel = data.SemanticModel!;
 
-			return CodeAction.Create(Title, cancenllationToken => ExecuteAsync(CodeFixExecutionContext<AttributeSyntax>.From(diagnostic, document, semanticModel, root, node!, cancenllationToken), targetType), Id);
+			return CodeAction.Create(Title, cancenllationToken =>
+			{
+				CodeFixExecutionContext<AttributeSyntax> context = CodeFixExecutionContext<AttributeSyntax>.From(diagnostic, document, root, node, semanticModel, cancenllationToken);
+
+				return Task.FromResult(Execute(context, targetType));
+			},
+			Id);
 		}
 
-		private static async Task<Document> ExecuteAsync(CodeFixExecutionContext<AttributeSyntax> context, ITypeSymbol targetType)
+		internal static Document Execute(CodeFixExecutionContext<AttributeSyntax> context, ITypeSymbol targetType)
 		{
-			SemanticModel? semanticModel = await context.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+			INamespaceSymbol? @namespace = (context.SemanticModel.GetSymbolInfo(context.Node).Symbol?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
 
-			return Execute(context, targetType, semanticModel!);
-		}
-
-		internal static Document Execute(CodeFixExecutionContext<AttributeSyntax> context, ITypeSymbol targetType, SemanticModel semanticModel)
-		{
-			NameSyntax name;
-
-			if (CodeFixUtility.HasUsingDirective(semanticModel, context.Root.Usings, targetType, context.CancellationToken))
-			{
-				name = SyntaxFactory.ParseName(targetType.GetGenericName(false));
-			}
-			else
-			{
-				name = SyntaxFactory.ParseName(targetType.ToString());
-			}
+			NameSyntax name = CodeFixUtility.GetNameSyntax(context.SemanticModel, context.Root.Usings, @namespace, targetType, context.CancellationToken);
 
 			AttributeSyntax attr = context.Node
 				.WithArgumentList(SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
 					SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(name)))));
 
-			context.RegisterChangeAndUpdateDocument(context.Node, attr);
+			context.RegisterChange(context.Node, attr);
 			return context.Document;
 		}
 
-		internal static async Task<ITypeSymbol?> GetTargetTypeAsync(Document document, CSharpSyntaxNode node, CancellationToken cancellationToken)
+		internal static ITypeSymbol? GetTargetType(CSharpSyntaxNode node, SemanticModel semanticModel, int ordinal, CancellationToken cancellationToken)
 		{
-			SemanticModel? semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+			MethodDeclarationSyntax? method = node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
 
-			if (semanticModel is null ||
-				node.Parent is null ||
-				node.Parent.Parent is not MethodDeclarationSyntax method ||
+			if (method is null ||
 				semanticModel.GetDeclaredSymbol(method, cancellationToken) is not IMethodSymbol symbol ||
 				symbol.OverriddenMethod is not IMethodSymbol
 			)
@@ -125,9 +115,9 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 
 			foreach (IMethodSymbol m in symbol.GetBaseMethods())
 			{
-				if (m.GetAttributeData(attribute) is AttributeData data)
+				if (m.TypeParameters[ordinal].GetAttributeData(attribute) is AttributeData data)
 				{
-					return data.GetConstructorArgumentTypeValue<INamedTypeSymbol>(0);
+					return data.GetConstructorArgumentTypeValue<ITypeSymbol>(0);
 				}
 			}
 
