@@ -291,7 +291,7 @@ partial class Test
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))T>
+partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
 	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
 	{{

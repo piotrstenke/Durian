@@ -159,7 +159,7 @@ partial class Parent
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))T>
+partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
 	class Child<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
 	{{

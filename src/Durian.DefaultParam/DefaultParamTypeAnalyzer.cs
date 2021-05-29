@@ -121,6 +121,7 @@ namespace Durian.Generator.DefaultParam
 		public static bool ShouldInheritInsteadOfCopying(INamedTypeSymbol symbol, DefaultParamCompilationData compilation, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes)
 		{
 			if (symbol.TypeKind == TypeKind.Struct ||
+				symbol.IsStatic ||
 				symbol.IsSealed ||
 				(symbol.TypeKind == TypeKind.Class && !symbol.InstanceConstructors.Any(ctor => ctor.DeclaredAccessibility >= Accessibility.Protected))
 			)

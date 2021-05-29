@@ -115,7 +115,7 @@ namespace Durian.Generator.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
-				bool isValid = AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
+				bool isValid = AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
 				isValid &= AnalyzeAgainstPartial(diagnosticReceiver, symbol, cancellationToken);
 				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out ITypeData[]? containingTypes);
 				isValid &= AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);

@@ -68,7 +68,7 @@ using {DurianStrings.ConfigurationNamespace};
 
 [assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
 
-static class<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+static class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
 	int value;
 }}

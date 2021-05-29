@@ -14,11 +14,6 @@ namespace Durian.DefaultParam.Samples
 		{
 		}
 
-		public override void Method<[DefaultParam(typeof(Attribute))] T>() where T : class
-		{
-			base.Method<T>();
-		}
-
 		[Durian.Configuration.DefaultParamConfiguration(TypeConvention = Durian.Configuration.DPTypeConvention.Copy)]
 		public struct Test<[DefaultParam(typeof(string))]T>
 		{

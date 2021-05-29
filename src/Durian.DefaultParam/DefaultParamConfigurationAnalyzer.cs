@@ -131,7 +131,7 @@ namespace Durian.Generator.DefaultParam
 					_diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), type);
 				}
 			}
-			else if (type.TypeKind == TypeKind.Struct || type.IsSealed)
+			else if (type.TypeKind == TypeKind.Struct || type.IsSealed || type.IsStatic)
 			{
 				if (CheckArguments(arguments, propertyName, out arg) &&
 					type.GetAttributeData(node, cancellationToken) is AttributeData attr &&

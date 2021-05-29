@@ -125,7 +125,7 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeAgaintsInvalidMethodType(IMethodSymbol symbol)
+		public static bool AnalyzeAgainstInvalidMethodType(IMethodSymbol symbol)
 		{
 			if (symbol.MethodKind is MethodKind.LocalFunction or MethodKind.AnonymousFunction or MethodKind.ExplicitInterfaceImplementation)
 			{
@@ -146,14 +146,14 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (is not <see langword="partial"/> or <see langword="extern"/>), otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeAgaintsPartialOrExtern(IMethodSymbol symbol, CancellationToken cancellationToken = default)
+		public static bool AnalyzeAgainstPartialOrExtern(IMethodSymbol symbol, CancellationToken cancellationToken = default)
 		{
 			if (symbol?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) is not MethodDeclarationSyntax declaration)
 			{
 				return false;
 			}
 
-			return AnalyzeAgaintsPartialOrExtern(symbol, declaration);
+			return AnalyzeAgainstPartialOrExtern(symbol, declaration);
 		}
 
 		/// <summary>
@@ -162,7 +162,7 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
 		/// <param name="declaration">Main <see cref="MethodDeclarationSyntax"/> of the <paramref name="symbol"/>.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (is not <see langword="partial"/> or <see langword="extern"/>), otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeAgaintsPartialOrExtern(IMethodSymbol symbol, MethodDeclarationSyntax declaration)
+		public static bool AnalyzeAgainstPartialOrExtern(IMethodSymbol symbol, MethodDeclarationSyntax declaration)
 		{
 			return !symbol.IsExtern && !symbol.IsPartial(declaration);
 		}
@@ -278,8 +278,8 @@ namespace Durian.Generator.DefaultParam
 		private static bool AnalyzeCore(IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
 		{
 			return
-				AnalyzeAgaintsInvalidMethodType(symbol) &&
-				AnalyzeAgaintsPartialOrExtern(symbol, cancellationToken) &&
+				AnalyzeAgainstInvalidMethodType(symbol) &&
+				AnalyzeAgainstPartialOrExtern(symbol, cancellationToken) &&
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
 				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
 				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, compilation, cancellationToken) &&

@@ -130,7 +130,7 @@ partial class Test
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))T>
+partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
 	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
 }}

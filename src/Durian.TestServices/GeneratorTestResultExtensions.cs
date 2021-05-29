@@ -83,10 +83,17 @@ namespace Durian.Tests
 
 			if (ids.Length == 0)
 			{
-				return result.Diagnostics.Length > 0;
+				return false;
 			}
 
-			return result.Diagnostics.Length >= ids.Length && result.Diagnostics.All(d => ids.Contains(d.Id));
+			string[] diag = new string[result.Diagnostics.Length];
+
+			for (int i = 0; i < diag.Length; i++)
+			{
+				diag[i] = result.Diagnostics[i].Id;
+			}
+
+			return result.Diagnostics.Length >= ids.Length && ids.All(d => Array.IndexOf(diag, d) != -1);
 		}
 
 		/// <summary>

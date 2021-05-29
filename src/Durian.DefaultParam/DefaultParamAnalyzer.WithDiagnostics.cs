@@ -1,9 +1,9 @@
 ﻿using System.CodeDom.Compiler;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Durian.Generator.Data;
 using Durian.Generator.Extensions;
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -50,7 +50,7 @@ namespace Durian.Generator.DefaultParam
 					return false;
 				}
 
-				bool isValid = AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation);
+				bool isValid = AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation);
 				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, cancellationToken);
 				isValid &= AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
 
@@ -64,9 +64,9 @@ namespace Durian.Generator.DefaultParam
 			/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
 			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (does not have the prohibited attributes), otherwise <see langword="false"/>.</returns>
-			public static bool AnalyzeAgaintsProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation)
+			public static bool AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation)
 			{
-				return AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation, out _);
+				return AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation, out _);
 			}
 
 			/// <summary>
@@ -77,7 +77,7 @@ namespace Durian.Generator.DefaultParam
 			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 			/// <param name="attributes">An array of <see cref="AttributeData"/>s of the <paramref name="symbol"/>. Returned if the method itself returns <see langword="true"/>.</param>
 			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (does not have the prohibited attributes), otherwise <see langword="false"/>.</returns>
-			public static bool AnalyzeAgaintsProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, out AttributeData[]? attributes)
+			public static bool AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, out AttributeData[]? attributes)
 			{
 				AttributeData[] attrs = symbol.GetAttributes().ToArray();
 				bool isValid = true;
@@ -158,7 +158,7 @@ namespace Durian.Generator.DefaultParam
 
 						ImmutableArray<ITypeParameterSymbol> typeParameters = parent.Symbol.TypeParameters;
 
-						if(typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute)))
+						if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute)))
 						{
 							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested, symbol);
 							isValid = false;

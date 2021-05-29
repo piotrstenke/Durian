@@ -291,7 +291,8 @@ using Durian.Configuration;
 [assembly: DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Call]
 
 // Method<T> does not specify its own configuration, so the scoped one is used instead.
-// However, it does not specify a value for the MethodConvention property, so the value from the global configuration is picked.
+// However, it does not specify a value for the MethodConvention property, 
+// so the value from the global configuration is picked.
 [DefaultParamScopedConfiguration]
 public partial class Test
 {
@@ -303,7 +304,8 @@ public partial class Test
 [DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Default]
 public partial class Other
 {
-    // This configuration does not specify a MethodConvention, so value of the scoped configuration of the containing type is used instead.
+    // This configuration does not specify a MethodConvention,
+    // so value of the scoped configuration of the containing type is used instead.
     [DefaultParamConfiguration]
     public void Method<[DefaultParam(typeof(string))]T>(T value)
     {

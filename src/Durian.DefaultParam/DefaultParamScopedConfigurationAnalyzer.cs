@@ -56,7 +56,7 @@ namespace Durian.Generator.DefaultParam
 				return;
 			}
 
-			if(!HasMemberWithDefaultParamAttribute(symbol, compilation.MainAttribute!))
+			if (!HasMemberWithDefaultParamAttribute(symbol, compilation.MainAttribute!))
 			{
 				context.ReportDiagnostic(Diagnostic.Create(DefaultParamDiagnostics.DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers, symbol.Locations.FirstOrDefault(), symbol));
 			}

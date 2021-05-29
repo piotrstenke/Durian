@@ -161,8 +161,8 @@ namespace Durian.Generator.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			if (AnalyzeAgaintsInvalidMethodType(symbol) &&
-				AnalyzeAgaintsPartialOrExtern(symbol, declaration) &&
+			if (AnalyzeAgainstInvalidMethodType(symbol) &&
+				AnalyzeAgainstPartialOrExtern(symbol, declaration) &&
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
 				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes)
 			)
