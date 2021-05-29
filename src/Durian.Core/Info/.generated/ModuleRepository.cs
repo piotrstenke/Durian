@@ -282,6 +282,22 @@ namespace Durian.Info
 					fatal: false,
 					hasLocation: true
 				),
+
+				new DiagnosticData(
+					title: "DefaultParamScopedConfigurationAttribute should not be used on types with no DefaultParam members",
+					id: 25,
+					docsPath: @"tree\master\docs\DefaultParam\DUR0125.md",
+					fatal: false,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Members with the DefaultParamAttribute cannot be nested within other DefaultParam members",
+					id: 26,
+					docsPath: @"tree\master\docs\DefaultParam\DUR0126.md",
+					fatal: true,
+					hasLocation: true
+				),
 			},
 			types: new TypeIdentity[]
 			{

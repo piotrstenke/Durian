@@ -188,7 +188,7 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0114_MethodWithSignatureAlreadyExists = new(
 			id: "DUR0114",
-			title: "Method with generated signature already exist",
+			title: "Method with generated signature already exists",
 			messageFormat: "'{0}': Method with generated signature '{1}' already exists",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
@@ -242,7 +242,7 @@ namespace Durian.Generator.DefaultParam
 			id: "DUR0118",
 			title: "DPTypeConvention.Copy or DPTypeConvention.Default should be applied for clarity",
 			messageFormat: "'{0}': Apply DPTypeConvention.Copy or DPTypeConvention.Default for clarity",
-			description: "DPTypeConvention.Inherit is applied to the enclosing scope, but it is ignored for structs, sealed types and classes with no accessible constructors. Explicitly apply DPTypeConvention.Copy or DPTypeConvention.Default to avoid confusion.",
+			description: "DPTypeConvention.Inherit is applied to the enclosing scope, but it is ignored for structs and classes marked as static or sealed with no accessible constructors. Explicitly apply DPTypeConvention.Copy or DPTypeConvention.Default to avoid confusion.",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + @"\DUR0118.md",
@@ -324,6 +324,32 @@ namespace Durian.Generator.DefaultParam
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + @"\DUR0124.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the <see cref="DefaultParamScopedConfigurationAttribute"/> should not be used on types with no DefaultParam members
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers = new(
+			id: "DUR0125",
+			title: "DefaultParamScopedConfigurationAttribute should not be used on types with no DefaultParam members",
+			messageFormat: "'{0}': DefaultParamScopedConfigurationAttribute should not be used on types with no DefaultParam members",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + @"\DUR0125.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating members with the <see cref="DefaultParamAttribute"/> cannot be nested within other DefaultParam members.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0126_DefaultParamMembersCannotBeNested = new(
+			id: "DUR0126",
+			title: "Members with the DefaultParamAttribute cannot be nested within other DefaultParam members",
+			messageFormat: "'{0}': Members with the DefaultParamAttribute cannot be nested within other DefaultParam members",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0126.md",
 			isEnabledByDefault: true
 		);
 	}

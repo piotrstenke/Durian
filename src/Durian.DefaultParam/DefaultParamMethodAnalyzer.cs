@@ -281,7 +281,7 @@ namespace Durian.Generator.DefaultParam
 				AnalyzeAgaintsInvalidMethodType(symbol) &&
 				AnalyzeAgaintsPartialOrExtern(symbol, cancellationToken) &&
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
-				AnalyzeContainingTypes(symbol, cancellationToken) &&
+				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
 				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, compilation, cancellationToken) &&
 				AnalyzeMethodSignature(symbol, typeParameters, compilation, cancellationToken);
 		}

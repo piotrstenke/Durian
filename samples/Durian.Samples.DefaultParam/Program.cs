@@ -1,14 +1,10 @@
-﻿using Durian.Configuration;
-using System;
+﻿using System;
+using Durian.Configuration;
 
 namespace Durian.DefaultParam.Samples
 {
 	public partial class Parent
 	{
-		public virtual void Method<[DefaultParam(typeof(System.Attribute))]T>()
-		{
-
-		}
 	}
 
 	[DefaultParamScopedConfiguration(TypeConvention = DPTypeConvention.Inherit)]
@@ -18,7 +14,7 @@ namespace Durian.DefaultParam.Samples
 		{
 		}
 
-		public override void Method<[DefaultParam(typeof(Attribute))] T>()
+		public override void Method<[DefaultParam(typeof(Attribute))] T>() where T : class
 		{
 			base.Method<T>();
 		}

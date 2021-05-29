@@ -60,6 +60,32 @@ struct Test
 		}
 
 		[Fact]
+		public void Warning_And_GeneratesAsCopy_When_IsScopedInherit_And_IsStatic()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+
+static class<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+{{
+	int value;
+}}
+";
+			string expected =
+$@"{GetCodeGenerationAttributes("Test<T>", 0)}
+static class Test
+{{
+	int value;
+}}
+";
+			SingletonGeneratorTestResult result = RunGenerator(input);
+			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
+			Assert.True(result.Compare(expected));
+		}
+
+		[Fact]
 		public void Warning_And_GeneratesAsCopy_When_IsScopedInherit_And_HasNoAccessibleConstructors()
 		{
 			string input =

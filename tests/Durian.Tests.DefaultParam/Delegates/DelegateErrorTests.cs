@@ -123,5 +123,20 @@ partial class Test
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
 		}
+
+		[Fact]
+		public void Error_When_ContainingTypeIsDefaultParam()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))T>
+{{
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+}}
+";
+
+			Assert.True(RunGenerator(input, 1).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested.Id));
+		}
 	}
 }

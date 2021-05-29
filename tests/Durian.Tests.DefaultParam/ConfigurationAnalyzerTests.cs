@@ -312,6 +312,22 @@ public sealed class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
 		}
 
 		[Fact]
+		public async Task Error_When_IsInheritOnStaticType()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+public static class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+{{
+}}
+";
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
+		}
+
+		[Fact]
 		public async Task Error_When_IsInheritOnTypeWithNoAccessibleConstructors()
 		{
 			string input =
@@ -344,6 +360,22 @@ public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType.Id));
+		}
+
+		[Fact]
+		public async Task Warning_When_HasScopedConfiguration_And_HasNoDefaultParamMembers()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(DefaultParamScopedConfigurationAttribute)}]
+public class Test
+{{
+}}
+";
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			Assert.True(diagnostics.Any(d => d.Id == DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers.Id));
 		}
 	}
 }

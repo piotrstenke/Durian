@@ -97,7 +97,7 @@ namespace Durian.Generator.CodeFixes
 			SyntaxNode? parent = root.FindNode(diagnostic.Location.SourceSpan);
 			T? node;
 
-			if(parent is null)
+			if (parent is null)
 			{
 				node = null;
 			}

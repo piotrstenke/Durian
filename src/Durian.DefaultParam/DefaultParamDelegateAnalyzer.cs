@@ -60,7 +60,7 @@ namespace Durian.Generator.DefaultParam
 
 			return
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
-				AnalyzeContainingTypes(symbol, cancellationToken) &&
+				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
 				AnalyzeTypeParameters(symbol, in typeParameters) &&
 				AnalyzeCollidingMembers(symbol, in typeParameters, compilation, out _, cancellationToken);
 		}

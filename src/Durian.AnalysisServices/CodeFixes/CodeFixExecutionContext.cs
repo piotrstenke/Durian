@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Linq;
 
 namespace Durian.Generator.CodeFixes
 {
@@ -154,7 +154,7 @@ namespace Durian.Generator.CodeFixes
 				throw new InvalidOperationException($"The {nameof(CodeFixData<T>.HasNode)} property of '{nameof(data)}' returned false!");
 			}
 
-			if(data.HasSemanticModel)
+			if (data.HasSemanticModel)
 			{
 				return new CodeFixExecutionContext<T>(data.Diagnostic, data.Document, data.Root, data.Node, data.SemanticModel.Compilation, cancellationToken);
 			}

@@ -65,9 +65,7 @@ namespace Durian.Generator.DefaultParam
 				return;
 			}
 
-			ISymbol? symbol = context.SemanticModel.GetDeclaredSymbol(node);
-
-			if (symbol is null)
+			if (context.SemanticModel.GetDeclaredSymbol(node) is not ISymbol symbol)
 			{
 				return;
 			}

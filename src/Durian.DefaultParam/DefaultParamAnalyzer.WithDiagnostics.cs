@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using Durian.Generator.Data;
 using Durian.Generator.Extensions;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -50,7 +51,7 @@ namespace Durian.Generator.DefaultParam
 				}
 
 				bool isValid = AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation);
-				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, cancellationToken);
+				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, cancellationToken);
 				isValid &= AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
 
 				return isValid;
@@ -101,9 +102,10 @@ namespace Durian.Generator.DefaultParam
 			/// </summary>
 			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 			/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, CancellationToken cancellationToken = default)
+			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 			{
 				INamedTypeSymbol[] types = symbol.GetContainingTypeSymbols().ToArray();
 				bool isValid = true;
@@ -115,6 +117,14 @@ namespace Durian.Generator.DefaultParam
 						if (!HasPartialKeyword(parent, cancellationToken))
 						{
 							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial, parent);
+							isValid = false;
+						}
+
+						ImmutableArray<ITypeParameterSymbol> typeParameters = parent.TypeParameters;
+
+						if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute)))
+						{
+							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested, symbol);
 							isValid = false;
 						}
 					}
@@ -143,6 +153,14 @@ namespace Durian.Generator.DefaultParam
 						if (!parent.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
 						{
 							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial, parent.Symbol);
+							isValid = false;
+						}
+
+						ImmutableArray<ITypeParameterSymbol> typeParameters = parent.Symbol.TypeParameters;
+
+						if(typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute)))
+						{
+							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested, symbol);
 							isValid = false;
 						}
 					}

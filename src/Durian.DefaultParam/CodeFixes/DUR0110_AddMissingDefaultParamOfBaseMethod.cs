@@ -43,7 +43,7 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 				return;
 			}
 
-			if(data.SemanticModel.GetDeclaredSymbol(data.Node, data.CancellationToken) is not ITypeParameterSymbol typeParameter ||
+			if (data.SemanticModel.GetDeclaredSymbol(data.Node, data.CancellationToken) is not ITypeParameterSymbol typeParameter ||
 				DUR0108_MakeValueTheSameAsBaseMethod.GetTargetType(data.Node, data.SemanticModel, typeParameter.Ordinal, data.CancellationToken) is not ITypeSymbol targetType)
 			{
 				return;

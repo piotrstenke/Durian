@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 
 namespace Durian.Generator.CodeFixes
 {
@@ -61,7 +61,7 @@ namespace Durian.Generator.CodeFixes
 			{
 				const string attribute = "Attribute";
 
-				if(str.EndsWith(attribute))
+				if (str.EndsWith(attribute))
 				{
 					return str.Substring(0, str.Length - attribute.Length);
 				}
@@ -96,7 +96,7 @@ namespace Durian.Generator.CodeFixes
 			string @namespace = currentNamespace.ToString();
 			string targetNamespace = targetType.ContainingNamespace.ToString();
 
-			if(@namespace.StartsWith(targetNamespace))
+			if (@namespace.StartsWith(targetNamespace))
 			{
 				return SyntaxFactory.ParseName(targetType.GetGenericName(false));
 			}

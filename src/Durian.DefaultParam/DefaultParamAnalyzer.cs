@@ -109,7 +109,7 @@ namespace Durian.Generator.DefaultParam
 
 			return
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
-				AnalyzeContainingTypes(symbol, cancellationToken) &&
+				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
 				AnalyzeTypeParameters(symbol, in typeParameters);
 		}
 
@@ -166,9 +166,10 @@ namespace Durian.Generator.DefaultParam
 		/// Analyzes, if the <paramref name="symbol"/> and its containing types are see <see langword="partial"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeContainingTypes(ISymbol symbol, CancellationToken cancellationToken = default)
+		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			INamedTypeSymbol[] types = symbol.GetContainingTypeSymbols().ToArray();
 
@@ -177,6 +178,13 @@ namespace Durian.Generator.DefaultParam
 				foreach (INamedTypeSymbol parent in types)
 				{
 					if (!HasPartialKeyword(parent, cancellationToken))
+					{
+						return false;
+					}
+
+					ImmutableArray<ITypeParameterSymbol> typeParameters = parent.TypeParameters;
+
+					if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute)))
 					{
 						return false;
 					}
@@ -202,6 +210,14 @@ namespace Durian.Generator.DefaultParam
 				foreach (ITypeData parent in types)
 				{
 					if (!HasPartialKeyword(parent))
+					{
+						containingTypes = null;
+						return false;
+					}
+
+					ImmutableArray<ITypeParameterSymbol> typeParameters = parent.Symbol.TypeParameters;
+
+					if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute)))
 					{
 						containingTypes = null;
 						return false;
@@ -556,6 +572,7 @@ namespace Durian.Generator.DefaultParam
 				DefaultParamDiagnostics.DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember,
 				DefaultParamDiagnostics.DUR0120_TypeCannotBeUsedWithConstraint,
 				DefaultParamDiagnostics.DUR0121_TypeIsNotValidDefaultParamValue,
+				DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested
 			};
 		}
 

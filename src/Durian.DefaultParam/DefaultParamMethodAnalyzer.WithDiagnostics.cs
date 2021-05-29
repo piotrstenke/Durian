@@ -236,10 +236,10 @@ namespace Durian.Generator.DefaultParam
 				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation, out attributes);
 			}
 
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, CancellationToken)"/>
-			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, CancellationToken cancellationToken = default)
+			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, CancellationToken)"/>
+			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, cancellationToken);
+				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, cancellationToken);
 			}
 
 			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, out ITypeData[])"/>
@@ -259,7 +259,7 @@ namespace Durian.Generator.DefaultParam
 				bool isValid = AnalyzeAgaintsInvalidMethodType(diagnosticReceiver, symbol);
 				isValid &= AnalyzeAgaintsPartialOrExtern(diagnosticReceiver, symbol, cancellationToken);
 				isValid &= AnalyzeAgaintsProhibitedAttributes(diagnosticReceiver, symbol, compilation);
-				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, cancellationToken);
+				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, cancellationToken);
 				isValid &= AnalyzeBaseMethodAndTypeParameters(diagnosticReceiver, symbol, ref typeParameters, compilation, cancellationToken);
 
 				if (!isValid)
