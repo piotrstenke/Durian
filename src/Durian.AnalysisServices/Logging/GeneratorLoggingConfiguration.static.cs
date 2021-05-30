@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Durian.Generator.Logging
 {
-	public sealed partial record GeneratorLoggingConfiguration
+	public sealed partial class GeneratorLoggingConfiguration
 	{
 		private static readonly Dictionary<Assembly, GeneratorLoggingConfiguration> _assemblyConfigurations = new();
 
@@ -289,12 +289,10 @@ namespace Durian.Generator.Logging
 
 				if (config.EnableLogging)
 				{
-					return config with { EnableLogging = IsEnabledForGenerator_Internal(type, false) };
+					config._enableLogging = IsEnabledForGenerator_Internal(type, false);
 				}
-				else
-				{
-					return config;
-				}
+
+				return config;
 			}
 			else
 			{

@@ -1,11 +1,11 @@
 ﻿internal class Configuration
 {
-	private readonly PackageDefinition _def;
+	internal readonly PackageDefinition _def;
 
-	public string ModuleName => _def.ModuleName;
 	public string PackageName => _def.PackageName;
 	public string PackageType => _def.PackageType;
 	public string Version => _def.Version;
+	public string[] Modules => _def.Modules;
 	public DiagnosticData[] Diagnostics { get; }
 	public IncludedType[] IncludedTypes { get; }
 	public DiagnosticData[]? ExternalDiagnostics { get; set; }

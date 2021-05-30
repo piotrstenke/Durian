@@ -69,17 +69,17 @@ namespace Durian.Generator
 				}
 			}
 
-			(bool isDurianType, bool isDisabled) = compilation.IsDisabledDurianType(type, out ModuleIdentity? module);
+			(bool isDurianType, bool isDisabled) = compilation.IsDisabledDurianType(type, out DurianModule module);
 
 			if (isDurianType)
 			{
-				if (module!.Module == DurianModule.Core)
+				if (module == DurianModule.Core)
 				{
 					context.ReportDiagnostic(Diagnostic.Create(DUR0003_DoNotUseTypeFromDurianGeneratorNamespace, node.GetLocation()));
 				}
-				else if (isDisabled && module.Module != DurianModule.None)
+				else if (isDisabled && module != DurianModule.None)
 				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, node.GetLocation(), type, module.Module));
+					context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, node.GetLocation(), type, module));
 				}
 			}
 		}

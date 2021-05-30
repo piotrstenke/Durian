@@ -4,7 +4,7 @@ using Durian.Info;
 
 #region Durian Configuration
 
-[assembly: PackageDefinition(DurianModule.Core, DurianPackage.CoreAnalyzer, PackageType.Analyzer, "1.0.0")]
+[assembly: PackageDefinition(DurianPackage.CoreAnalyzer, PackageType.Analyzer, "1.0.0", DurianModule.Core)]
 [assembly: DiagnosticFiles(nameof(DurianDiagnostics))]
 [assembly: IncludeTypes(nameof(DurianGeneratedAttribute), nameof(IncludeTypesAttribute), nameof(IncludeDiagnosticsAttribute), nameof(EnableModuleAttribute), nameof(DiagnosticFilesAttribute), nameof(PackageDefinitionAttribute))]
 

@@ -1,15 +1,17 @@
 ﻿using System.Diagnostics;
+using System;
 
 namespace Durian.Info
 {
 	/// <summary>
 	/// Contains information about a specific diagnostic.
 	/// </summary>
+	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
 	[DebuggerDisplay("{GetFullId}: {Title}")]
-	public sealed record DiagnosticData
+	public sealed class DiagnosticData : IEquatable<DiagnosticData>
 	{
-		private ModuleIdentity? _module;
-		private ModuleIdentity? _originalModule;
+		private ModuleReference? _module;
+		private ModuleReference? _originalModule;
 		private string? _docsPath;
 
 		/// <summary>
@@ -23,19 +25,20 @@ namespace Durian.Info
 		public string Documentation => _docsPath!;
 
 		/// <summary>
-		/// If <see cref="IsExtern"/> is <see langword="true"/>, returns <see cref="ModuleIdentity"/> of the module this diagnostic was created in, otherwise returns <see cref="Module"/>.
+		/// If <see cref="IsExtern"/> is <see langword="true"/>, returns <see cref="ModuleReference"/> to the module this diagnostic was created in, otherwise returns <see cref="Module"/>.
 		/// </summary>
-		public ModuleIdentity OriginalModule => _originalModule!;
+		public ModuleReference OriginalModule => _originalModule!;
 
 		/// <summary>
 		/// Durian module this diagnostic is reported in.
 		/// </summary>
-		public ModuleIdentity Module => _module!;
+		public ModuleReference Module => _module!;
 
 		/// <summary>
 		/// Two-digit number that precedes the actual <see cref="Id"/> of the diagnostic. Diagnostics created in the same module will have the same <see cref="ModuleId"/>.
 		/// </summary>
-		public IdSection ModuleId => _originalModule!.AnalysisId;
+		/// <remarks>NOTE: Using this property will call the <see cref="ModuleReference.GetModule"/> on the <see cref="OriginalModule"/>.</remarks>
+		public IdSection ModuleId => _originalModule!.GetModule().AnalysisId;
 
 		/// <summary>
 		/// Two-digit number representing the actual id of the diagnostic.
@@ -66,7 +69,7 @@ namespace Durian.Info
 
 			if (originalModule is not null)
 			{
-				_originalModule = originalModule;
+				_originalModule = new ModuleReference(originalModule);
 				_docsPath = $@"{originalModule.Documentation}\{docsPath}";
 				IsExtern = true;
 			}
@@ -96,23 +99,63 @@ namespace Durian.Info
 			return GetFullId();
 		}
 
+		/// <inheritdoc/>
+		public override bool Equals(object obj)
+		{
+			if(obj is not DiagnosticData d)
+			{
+				return false;
+			}
+
+			return d == this;
+		}
+
+		/// <inheritdoc/>
+		public bool Equals(DiagnosticData other)
+		{
+			return other == this;
+		}
+
 		/// <summary>
 		/// Returns a <see cref="string"/> that represents the full id of the diagnostic, composed of the <see cref="DurianInfo.IdPrefix"/>, <see cref="ModuleId"/> and <see cref="Id"/>.
 		/// </summary>
+		/// <remarks>NOTE: Using this property will call the <see cref="ModuleReference.GetModule"/> on the <see cref="OriginalModule"/>.</remarks>
 		public string GetFullId()
 		{
-			return $"{DurianInfo.IdPrefix}{Module.AnalysisId}{Id}";
+			return $"{DurianInfo.IdPrefix}{Module}{Id}";
 		}
 
 		internal void SetModule(ModuleIdentity module)
 		{
+			ModuleReference reference = new(module);
+
 			if (_originalModule is null)
 			{
-				_originalModule = module;
+				_originalModule = reference;
 				_docsPath = $@"{module.Documentation}\{_docsPath}";
 			}
 
-			_module = module;
+			_module = reference;
+		}
+
+		/// <inheritdoc/>
+		public static bool operator ==(DiagnosticData a, DiagnosticData b)
+		{
+			return
+				a.Title == b.Title &&
+				a.Documentation == b.Documentation &&
+				a.HasLocation == b.HasLocation &&
+				a.Id == b.Id &&
+				a.IsExtern == b.IsExtern &&
+				a.IsFatal == b.IsFatal &&
+				a.Module == b.Module &&
+				a.OriginalModule == b.OriginalModule;
+		}
+
+		/// <inheritdoc/>
+		public static bool operator !=(DiagnosticData a, DiagnosticData b)
+		{
+			return !(a == b);
 		}
 	}
 }

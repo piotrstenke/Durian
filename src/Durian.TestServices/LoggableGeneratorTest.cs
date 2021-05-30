@@ -27,8 +27,8 @@ namespace Durian.Tests
 		protected LoggableGeneratorTest(bool enableDiagnostics)
 		{
 			string typeName = GetType().Name;
-			GeneratorLoggingConfiguration defaultConfiguration = GeneratorLoggingConfiguration.CreateConfigurationForGenerator<T>();
-			_configuration = defaultConfiguration with { LogDirectory = defaultConfiguration.LogDirectory + $"/{typeName}" };
+			_configuration = GeneratorLoggingConfiguration.CreateConfigurationForGenerator<T>();
+			_configuration.LogDirectory += $"/{typeName}";
 			_enableDiagnostics = enableDiagnostics;
 		}
 

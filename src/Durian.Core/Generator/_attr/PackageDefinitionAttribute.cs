@@ -17,9 +17,9 @@ namespace Durian.Generator
 		public DurianPackage Package { get; }
 
 		/// <summary>
-		/// <see cref="DurianModule"/> this package is part of.
+		/// <see cref="DurianModule"/>s this package is part of.
 		/// </summary>
-		public DurianModule Module { get; }
+		public DurianModule[] Modules { get; }
 
 		/// <summary>
 		/// Target <see cref="PackageType"/>.
@@ -34,13 +34,13 @@ namespace Durian.Generator
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PackageDefinitionAttribute"/> class.
 		/// </summary>
-		/// <param name="module"><see cref="DurianModule"/> this package is part of.</param>
 		/// <param name="package">Target <see cref="DurianPackage"/>.</param>
 		/// <param name="type">Target <see cref="PackageType"/>.</param>
 		/// <param name="version">Version of the module.</param>
-		public PackageDefinitionAttribute(DurianModule module, DurianPackage package, PackageType type, string version)
+		/// <param name="modules"><see cref="DurianModule"/>s this package is part of.</param>
+		public PackageDefinitionAttribute(DurianPackage package, PackageType type, string version, params DurianModule[]? modules)
 		{
-			Module = module;
+			Modules = modules ?? new DurianModule[1] { DurianModule.None };
 			Package = package;
 			Type = type;
 			Version = version;

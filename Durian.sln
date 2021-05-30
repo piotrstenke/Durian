@@ -45,6 +45,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{C68009B1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{80273A51-C8E4-433F-BD7C-4336BEB04A1D}"
+	ProjectSection(SolutionItems) = preProject
+		build\README.md = build\README.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateAnalyzerReleases", "build\GenerateAnalyzerReleases\GenerateAnalyzerReleases.csproj", "{312B14BF-6208-4E10-81A8-53263C66DEB0}"
 EndProject

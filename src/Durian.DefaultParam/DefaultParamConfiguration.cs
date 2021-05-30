@@ -1,11 +1,13 @@
 ﻿using Durian.Configuration;
+using System;
 
 namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Configures optional features of the <see cref="DefaultParamGenerator"/>.
 	/// </summary>
-	public sealed record DefaultParamConfiguration
+	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
+	public sealed class DefaultParamConfiguration : IEquatable<DefaultParamConfiguration>
 	{
 		/// <summary>
 		/// Determines whether to apply the <see langword="new"/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword="true"/>.
@@ -44,12 +46,36 @@ namespace Durian.Generator.DefaultParam
 			return hashCode;
 		}
 
-#pragma warning disable RCS1132 // Remove redundant overriding member.
 		/// <inheritdoc/>
-		public override string ToString()
+		public override bool Equals(object obj)
 		{
-			return base.ToString();
+			if(obj is not DefaultParamConfiguration other)
+			{
+				return false;
+			}
+
+			return other == this;
 		}
-#pragma warning restore RCS1132 // Remove redundant overriding member.
+
+		/// <inheritdoc/>
+		public bool Equals(DefaultParamConfiguration other)
+		{
+			return other == this;
+		}
+
+		/// <inheritdoc/>
+		public static bool operator ==(DefaultParamConfiguration a, DefaultParamConfiguration b)
+		{
+			return
+				a.ApplyNewModifierWhenPossible == b.ApplyNewModifierWhenPossible &&
+				a.MethodConvention == b.MethodConvention &&
+				a.TypeConvention == b.TypeConvention;
+		}
+
+		/// <inheritdoc/>
+		public static bool operator !=(DefaultParamConfiguration a, DefaultParamConfiguration b)
+		{
+			return !(a == b);
+		}
 	}
 }

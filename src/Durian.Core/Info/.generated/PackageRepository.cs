@@ -7,6 +7,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Runtime.CompilerServices;
+
 namespace Durian.Info
 {
 	/// <summary>
@@ -17,46 +19,74 @@ namespace Durian.Info
 		/// <summary>
 		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.AnalysisServices"/> package.
 		/// </summary>
-		public static PackageIdentity AnalysisServices => new(
-			enumValue: DurianPackage.AnalysisServices,
+		public static PackageIdentity AnalysisServices => Initialize(
+			package: DurianPackage.AnalysisServices,
 			version: "1.0.0",
-			type: PackageType.Library
+			type: PackageType.Library,
+			modules: new DurianModule[]
+			{
+				DurianModule.None,
+			}
 		);
 
 		/// <summary>
 		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.Core"/> package.
 		/// </summary>
-		public static PackageIdentity Core => new(
-			enumValue: DurianPackage.Core,
+		public static PackageIdentity Core => Initialize(
+			package: DurianPackage.Core,
 			version: "1.0.0",
-			type: PackageType.Library
+			type: PackageType.Library,
+			modules: new DurianModule[]
+			{
+				DurianModule.Core,
+			}
 		);
 
 		/// <summary>
 		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.CoreAnalyzer"/> package.
 		/// </summary>
-		public static PackageIdentity CoreAnalyzer => new(
-			enumValue: DurianPackage.CoreAnalyzer,
+		public static PackageIdentity CoreAnalyzer => Initialize(
+			package: DurianPackage.CoreAnalyzer,
 			version: "1.0.0",
-			type: PackageType.Analyzer
+			type: PackageType.Analyzer,
+			modules: new DurianModule[]
+			{
+				DurianModule.Core,
+			}
 		);
 
 		/// <summary>
 		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.DefaultParam"/> package.
 		/// </summary>
-		public static PackageIdentity DefaultParam => new(
-			enumValue: DurianPackage.DefaultParam,
+		public static PackageIdentity DefaultParam => Initialize(
+			package: DurianPackage.DefaultParam,
 			version: "1.0.0",
-			type: PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary
+			type: PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary,
+			modules: new DurianModule[]
+			{
+				DurianModule.DefaultParam,
+			}
 		);
 
 		/// <summary>
 		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.TestServices"/> package.
 		/// </summary>
-		public static PackageIdentity TestServices => new(
-			enumValue: DurianPackage.TestServices,
+		public static PackageIdentity TestServices => Initialize(
+			package: DurianPackage.TestServices,
 			version: "1.0.0",
-			type: PackageType.Library
+			type: PackageType.Library,
+			modules: new DurianModule[]
+			{
+				DurianModule.None,
+			}
 		);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static PackageIdentity Initialize(DurianPackage package, string version, PackageType type, DurianModule[] modules)
+		{
+			PackageIdentity p = new PackageIdentity(package, version, type);
+			p.Initialize(modules);
+			return p;
+		}
 	}
 }

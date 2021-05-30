@@ -70,11 +70,46 @@ namespace Durian.Info
 			},
 			types: new TypeIdentity[]
 			{
-				new TypeIdentity("DurianGeneratedAttribute", "Durian.Generator"),
-				new TypeIdentity("IncludeTypesAttribute", "Durian.Generator"),
-				new TypeIdentity("EnableModuleAttribute", "Durian.Generator"),
-				new TypeIdentity("DiagnosticFilesAttribute", "Durian.Generator"),
-				new TypeIdentity("PackageDefinitionAttribute", "Durian.Generator"),
+				new TypeIdentity(
+					name: "DurianGeneratedAttribute",
+					@namespace: "Durian.Generator",
+					modules: new DurianModule[]
+					{
+						DurianModule.Core,
+					}
+				),
+				new TypeIdentity(
+					name: "IncludeTypesAttribute",
+					@namespace: "Durian.Generator",
+					modules: new DurianModule[]
+					{
+						DurianModule.Core,
+					}
+				),
+				new TypeIdentity(
+					name: "EnableModuleAttribute",
+					@namespace: "Durian.Generator",
+					modules: new DurianModule[]
+					{
+						DurianModule.Core,
+					}
+				),
+				new TypeIdentity(
+					name: "DiagnosticFilesAttribute",
+					@namespace: "Durian.Generator",
+					modules: new DurianModule[]
+					{
+						DurianModule.Core,
+					}
+				),
+				new TypeIdentity(
+					name: "PackageDefinitionAttribute",
+					@namespace: "Durian.Generator",
+					modules: new DurianModule[]
+					{
+						DurianModule.Core,
+					}
+				),
 			}
 		);
 
@@ -196,7 +231,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Method with generated signature already exist",
+					title: "Method with generated signature already exists",
 					id: 14,
 					docsPath: @"tree\master\docs\DefaultParam\DUR0114.md",
 					fatal: true,
@@ -301,11 +336,46 @@ namespace Durian.Info
 			},
 			types: new TypeIdentity[]
 			{
-				new TypeIdentity("DefaultParamAttribute", "Durian"),
-				new TypeIdentity("DefaultParamConfigurationAttribute", "Durian.Configuration"),
-				new TypeIdentity("DefaultParamScopedConfigurationAttribute", "Durian.Configuration"),
-				new TypeIdentity("DPMethodConvention", "Durian.Configuration"),
-				new TypeIdentity("DPTypeConvention", "Durian.Configuration"),
+				new TypeIdentity(
+					name: "DefaultParamAttribute",
+					@namespace: "Durian",
+					modules: new DurianModule[]
+					{
+						DurianModule.DefaultParam,
+					}
+				),
+				new TypeIdentity(
+					name: "DefaultParamConfigurationAttribute",
+					@namespace: "Durian.Configuration",
+					modules: new DurianModule[]
+					{
+						DurianModule.DefaultParam,
+					}
+				),
+				new TypeIdentity(
+					name: "DefaultParamScopedConfigurationAttribute",
+					@namespace: "Durian.Configuration",
+					modules: new DurianModule[]
+					{
+						DurianModule.DefaultParam,
+					}
+				),
+				new TypeIdentity(
+					name: "DPMethodConvention",
+					@namespace: "Durian.Configuration",
+					modules: new DurianModule[]
+					{
+						DurianModule.DefaultParam,
+					}
+				),
+				new TypeIdentity(
+					name: "DPTypeConvention",
+					@namespace: "Durian.Configuration",
+					modules: new DurianModule[]
+					{
+						DurianModule.DefaultParam,
+					}
+				),
 			}
 		);
 	}

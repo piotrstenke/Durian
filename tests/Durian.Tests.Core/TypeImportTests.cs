@@ -48,7 +48,6 @@ $@"using {DurianStrings.GeneratorNamespace};
 [{nameof(DurianGeneratedAttribute)}]
 class Test
 {{
-	
 }}
 ";
 			Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
@@ -63,7 +62,6 @@ $@"using A = {DurianStrings.GeneratorNamespace}.{nameof(DurianGeneratedAttribute
 [A]
 class Test
 {{
-	
 }}
 ";
 			Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
@@ -94,7 +92,6 @@ class Test
 $@"[{DurianStrings.GeneratorNamespace}.{nameof(DurianGeneratedAttribute)}]
 class Test
 {{
-	
 }}
 ";
 			Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
@@ -108,7 +105,6 @@ $@"using {DurianStrings.MainNamespace};
 
 class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
-
 }}
 ";
 
@@ -123,7 +119,6 @@ $@"using {DurianStrings.MainNamespace};
 
 class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
-
 }}
 ";
 

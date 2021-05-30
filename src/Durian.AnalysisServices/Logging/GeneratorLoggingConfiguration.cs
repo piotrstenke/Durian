@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.CodeAnalysis;
@@ -9,7 +10,7 @@ namespace Durian.Generator.Logging
 	/// Determines the behavior of the target <see cref="ISourceGenerator"/> when creating log files.
 	/// </summary>
 	[DebuggerDisplay("Enabled = {EnableLogging}, Supported = {SupportedLogs}")]
-	public sealed partial record GeneratorLoggingConfiguration
+	public sealed partial class GeneratorLoggingConfiguration :  IEquatable<GeneratorLoggingConfiguration>
 	{
 		private string _logDirectory;
 		private bool _enableLogging;
@@ -122,6 +123,51 @@ namespace Durian.Generator.Logging
 		public GeneratorLoggingConfiguration()
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
+		}
+
+		/// <inheritdoc/>
+		public override bool Equals(object obj)
+		{
+			return base.Equals(obj);
+		}
+
+		/// <inheritdoc/>
+		public bool Equals(GeneratorLoggingConfiguration other)
+		{
+			return other == this;
+		}
+
+		/// <inheritdoc/>
+		public override int GetHashCode()
+		{
+			int hashCode = -604981020;
+			hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(_logDirectory);
+			hashCode = (hashCode * -1521134295) + _enableLogging.GetHashCode();
+			hashCode = (hashCode * -1521134295) + _enableDiagnostics.GetHashCode();
+			hashCode = (hashCode * -1521134295) + SupportedLogs.GetHashCode();
+			hashCode = (hashCode * -1521134295) + CurrentFilterMode.GetHashCode();
+			hashCode = (hashCode * -1521134295) + SupportsDiagnostics.GetHashCode();
+			hashCode = (hashCode * -1521134295) + EnableExceptions.GetHashCode();
+			return hashCode;
+		}
+
+		/// <inheritdoc/>
+		public static bool operator ==(GeneratorLoggingConfiguration a, GeneratorLoggingConfiguration b)
+		{
+			return
+				a.SupportsDiagnostics == b.SupportsDiagnostics &&
+				a.CurrentFilterMode == b.CurrentFilterMode &&
+				a.EnableDiagnostics == b.EnableDiagnostics &&
+				a.EnableExceptions == b.EnableExceptions &&
+				a.EnableLogging == b.EnableLogging &&
+				a.LogDirectory == b.LogDirectory &&
+				a.SupportedLogs == b.SupportedLogs;
+		}
+
+		/// <inheritdoc/>
+		public static bool operator !=(GeneratorLoggingConfiguration a, GeneratorLoggingConfiguration b)
+		{
+			return !(a == b);
 		}
 	}
 }
