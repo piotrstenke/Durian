@@ -36,7 +36,7 @@ namespace Durian.Info
 		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>.</exception>
 		public ModuleReference(ModuleIdentity module)
 		{
-			if(module is null)
+			if (module is null)
 			{
 				throw new ArgumentNullException(nameof(module));
 			}
@@ -63,7 +63,7 @@ namespace Durian.Info
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
-			if(obj is not ModuleReference r)
+			if (obj is not ModuleReference r)
 			{
 				return false;
 			}

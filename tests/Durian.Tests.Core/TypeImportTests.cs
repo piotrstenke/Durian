@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Durian.Generator;
+using Durian.Generator.Core;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

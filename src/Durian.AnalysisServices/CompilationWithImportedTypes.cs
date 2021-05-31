@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Generator.Data;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Immutable;
 
 namespace Durian.Generator
 {
@@ -46,7 +46,7 @@ namespace Durian.Generator
 		{
 			SetAttributeSymbol();
 
-			if(HasErrors)
+			if (HasErrors)
 			{
 				_allSymbols = Array.Empty<INamedTypeSymbol>();
 				_enabledOrDisabled = Array.Empty<bool>();

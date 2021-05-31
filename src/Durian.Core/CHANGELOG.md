@@ -1,0 +1,280 @@
+﻿## Realease 1.0.0
+
+### Added
+
+ - Durian.DefaultParamAttribute
+ - Durian.DefaultParamAttribute(System.Type type)
+ - Durian.DefaultParamAttribute.get_Type
+ - Durian.Info.DiagnosticData
+ - Durian.Info.DiagnosticData.GetHashCode()
+ - Durian.Info.DiagnosticData.ToString()
+ - Durian.Info.DiagnosticData.Equals(System.Object obj)
+ - Durian.Info.DiagnosticData.Equals(Durian.Info.DiagnosticData other)
+ - Durian.Info.DiagnosticData.GetFullId()
+ - Durian.Info.DiagnosticData.op_Equality(Durian.Info.DiagnosticData a, Durian.Info.DiagnosticData b)
+ - Durian.Info.DiagnosticData.op_Inequality(Durian.Info.DiagnosticData a, Durian.Info.DiagnosticData b)
+ - Durian.Info.DiagnosticData.get_Title
+ - Durian.Info.DiagnosticData.get_Documentation
+ - Durian.Info.DiagnosticData.get_OriginalModule
+ - Durian.Info.DiagnosticData.get_Module
+ - Durian.Info.DiagnosticData.get_ModuleId
+ - Durian.Info.DiagnosticData.get_Id
+ - Durian.Info.DiagnosticData.get_IsFatal
+ - Durian.Info.DiagnosticData.get_IsExtern
+ - Durian.Info.DiagnosticData.get_HasLocation
+ - Durian.Info.DurianInfo
+ - Durian.Info.DurianInfo.get_IdPrefix
+ - Durian.Info.DurianInfo.get_Repository
+ - Durian.Info.DurianInfo.NumModules
+ - Durian.Info.DurianInfo.NumPackages
+ - Durian.Info.DurianInfo.ModuleMin
+ - Durian.Info.DurianInfo.ModuleMax
+ - Durian.Info.DurianInfo.PackageMin
+ - Durian.Info.DurianInfo.PackageMax
+ - Durian.Info.IdSection
+ - Durian.Info.IdSection.AsChars()
+ - Durian.Info.IdSection.ToString()
+ - Durian.Info.IdSection.GetHashCode()
+ - Durian.Info.IdSection.Equals(System.Object obj)
+ - Durian.Info.IdSection.Equals(Durian.Info.IdSection other)
+ - Durian.Info.IdSection.CompareTo(Durian.Info.IdSection other)
+ - Durian.Info.IdSection.op_Explicit(Int32 value)
+ - Durian.Info.IdSection.op_Implicit(Durian.Info.IdSection id)
+ - Durian.Info.IdSection.op_Equality(Durian.Info.IdSection left, Durian.Info.IdSection right)
+ - Durian.Info.IdSection.op_Inequality(Durian.Info.IdSection left, Durian.Info.IdSection right)
+ - Durian.Info.IdSection.op_LessThan(Durian.Info.IdSection left, Durian.Info.IdSection right)
+ - Durian.Info.IdSection.op_LessThanOrEqual(Durian.Info.IdSection left, Durian.Info.IdSection right)
+ - Durian.Info.IdSection.op_GreaterThan(Durian.Info.IdSection left, Durian.Info.IdSection right)
+ - Durian.Info.IdSection.op_GreaterThanOrEqual(Durian.Info.IdSection left, Durian.Info.IdSection right)
+ - Durian.Info.IdSection(System.String id)
+ - Durian.Info.IdSection(Char firstChar, Char secondChar)
+ - Durian.Info.IdSection(Int32 value)
+ - Durian.Info.IdSection.get_Value
+ - Durian.Info.ModuleEnumEqualityComparer
+ - Durian.Info.ModuleEnumEqualityComparer.Equals(Durian.Info.ModuleIdentity x, Durian.Info.ModuleIdentity y)
+ - Durian.Info.ModuleEnumEqualityComparer.GetHashCode(Durian.Info.ModuleIdentity obj)
+ - Durian.Info.ModuleEnumEqualityComparer()
+ - Durian.Info.ModuleEnumEqualityComparer.get_Instance
+ - Durian.Info.ModuleIdentity
+ - Durian.Info.ModuleIdentity.ToString()
+ - Durian.Info.ModuleIdentity.GetHashCode()
+ - Durian.Info.ModuleIdentity.Equals(System.Object obj)
+ - Durian.Info.ModuleIdentity.Equals(Durian.Info.ModuleIdentity other)
+ - Durian.Info.ModuleIdentity.op_Equality(Durian.Info.ModuleIdentity a, Durian.Info.ModuleIdentity b)
+ - Durian.Info.ModuleIdentity.op_Inequality(Durian.Info.ModuleIdentity a, Durian.Info.ModuleIdentity b)
+ - Durian.Info.ModuleIdentity.IsEnabled(Durian.Info.ModuleIdentity module)
+ - Durian.Info.ModuleIdentity.IsEnabled(Durian.Info.ModuleIdentity module, System.Reflection.Assembly assembly)
+ - Durian.Info.ModuleIdentity.IsEnabled(Durian.Info.DurianModule module)
+ - Durian.Info.ModuleIdentity.IsEnabled(Durian.Info.DurianModule module, System.Reflection.Assembly assembly)
+ - Durian.Info.ModuleIdentity.IsEnabled(System.String moduleName)
+ - Durian.Info.ModuleIdentity.IsEnabled(System.String moduleName, System.Reflection.Assembly assembly)
+ - Durian.Info.ModuleIdentity.GetEnabledModules()
+ - Durian.Info.ModuleIdentity.GetEnabledModules(System.Reflection.Assembly assembly)
+ - Durian.Info.ModuleIdentity.GetEnabledModules(Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.ModuleIdentity.GetEnabledModules(System.Reflection.Assembly assembly, Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.ModuleIdentity.GetEnabledModules(Durian.Info.DurianModule[] modules)
+ - Durian.Info.ModuleIdentity.GetEnabledModules(System.Reflection.Assembly assembly, Durian.Info.DurianModule[] modules)
+ - Durian.Info.ModuleIdentity.GetEnabledModulesAsEnums()
+ - Durian.Info.ModuleIdentity.GetEnabledModulesAsEnums(System.Reflection.Assembly assembly)
+ - Durian.Info.ModuleIdentity.GetEnabledModulesAsEnums(Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.ModuleIdentity.GetEnabledModulesAsEnums(System.Reflection.Assembly assembly, Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.ModuleIdentity.GetEnabledModulesAsEnums(Durian.Info.DurianModule[] modules)
+ - Durian.Info.ModuleIdentity.GetEnabledModulesAsEnums(System.Reflection.Assembly assembly, Durian.Info.DurianModule[] modules)
+ - Durian.Info.ModuleIdentity.GetDisabledModules()
+ - Durian.Info.ModuleIdentity.GetDisabledModules(System.Reflection.Assembly assembly)
+ - Durian.Info.ModuleIdentity.GetDisabledModules(Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.ModuleIdentity.GetDisabledModules(System.Reflection.Assembly assembly, Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.ModuleIdentity.GetDisabledModules(Durian.Info.DurianModule[] modules)
+ - Durian.Info.ModuleIdentity.GetDisabledModules(System.Reflection.Assembly assembly, Durian.Info.DurianModule[] modules)
+ - Durian.Info.ModuleIdentity.GetDisabledModulesAsEnums()
+ - Durian.Info.ModuleIdentity.GetDisabledModulesAsEnums(System.Reflection.Assembly assembly)
+ - Durian.Info.ModuleIdentity.GetDisabledModulesAsEnums(Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.ModuleIdentity.GetDisabledModulesAsEnums(System.Reflection.Assembly assembly, Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.ModuleIdentity.GetDisabledModulesAsEnums(Durian.Info.DurianModule[] modules)
+ - Durian.Info.ModuleIdentity.GetDisabledModulesAsEnums(System.Reflection.Assembly assembly, Durian.Info.DurianModule[] modules)
+ - Durian.Info.ModuleIdentity.GetAllModules()
+ - Durian.Info.ModuleIdentity.GetAllModulesAsEnums()
+ - Durian.Info.ModuleIdentity.GetReference(Durian.Info.DurianModule module)
+ - Durian.Info.ModuleIdentity.GetReference(System.String moduleName)
+ - Durian.Info.ModuleIdentity.GetModule(Durian.Info.DurianModule module)
+ - Durian.Info.ModuleIdentity.GetModule(System.String moduleName)
+ - Durian.Info.ModuleIdentity.ParseModule(System.String moduleName)
+ - Durian.Info.ModuleIdentity.get_Documentation
+ - Durian.Info.ModuleIdentity.get_Module
+ - Durian.Info.ModuleIdentity.get_AnalysisId
+ - Durian.Info.ModuleIdentity.get_Types
+ - Durian.Info.ModuleIdentity.get_Diagnostics
+ - Durian.Info.ModuleIdentity.get_Packages
+ - Durian.Info.ModuleReference
+ - Durian.Info.ModuleReference.GetModule()
+ - Durian.Info.ModuleReference.ToString()
+ - Durian.Info.ModuleReference.Equals(System.Object obj)
+ - Durian.Info.ModuleReference.Equals(Durian.Info.ModuleReference other)
+ - Durian.Info.ModuleReference.GetHashCode()
+ - Durian.Info.ModuleReference.op_Equality(Durian.Info.ModuleReference a, Durian.Info.ModuleReference b)
+ - Durian.Info.ModuleReference.op_Inequality(Durian.Info.ModuleReference a, Durian.Info.ModuleReference b)
+ - Durian.Info.ModuleReference(Durian.Info.DurianModule module)
+ - Durian.Info.ModuleReference(Durian.Info.ModuleIdentity module)
+ - Durian.Info.ModuleReference.get_EnumValue
+ - Durian.Info.PackageEnumEqualityComparer
+ - Durian.Info.PackageEnumEqualityComparer.Equals(Durian.Info.PackageIdentity x, Durian.Info.PackageIdentity y)
+ - Durian.Info.PackageEnumEqualityComparer.GetHashCode(Durian.Info.PackageIdentity obj)
+ - Durian.Info.PackageEnumEqualityComparer()
+ - Durian.Info.PackageEnumEqualityComparer.get_Instance
+ - Durian.Info.PackageIdentity
+ - Durian.Info.PackageIdentity.ToString()
+ - Durian.Info.PackageIdentity.GetHashCode()
+ - Durian.Info.PackageIdentity.Equals(System.Object obj)
+ - Durian.Info.PackageIdentity.Equals(Durian.Info.PackageIdentity other)
+ - Durian.Info.PackageIdentity.op_Equality(Durian.Info.PackageIdentity a, Durian.Info.PackageIdentity b)
+ - Durian.Info.PackageIdentity.op_Inequality(Durian.Info.PackageIdentity a, Durian.Info.PackageIdentity b)
+ - Durian.Info.PackageIdentity.HasReference(Durian.Info.PackageIdentity package)
+ - Durian.Info.PackageIdentity.HasReference(Durian.Info.PackageIdentity package, System.Reflection.Assembly assembly)
+ - Durian.Info.PackageIdentity.HasReference(Durian.Info.DurianPackage package)
+ - Durian.Info.PackageIdentity.HasReference(Durian.Info.DurianPackage package, System.Reflection.Assembly assembly)
+ - Durian.Info.PackageIdentity.HasReference(System.String packageName)
+ - Durian.Info.PackageIdentity.HasReference(System.String packageName, System.Reflection.Assembly assembly)
+ - Durian.Info.PackageIdentity.GetAllPackages()
+ - Durian.Info.PackageIdentity.GetAllPackagesAsEnums()
+ - Durian.Info.PackageIdentity.GetReferencedPackages()
+ - Durian.Info.PackageIdentity.GetReferencedPackages(System.Reflection.Assembly assembly)
+ - Durian.Info.PackageIdentity.GetReferencedPackages(Durian.Info.PackageIdentity[] packages)
+ - Durian.Info.PackageIdentity.GetReferencedPackages(System.Reflection.Assembly assembly, Durian.Info.PackageIdentity[] packages)
+ - Durian.Info.PackageIdentity.GetReferencedPackages(Durian.Info.DurianPackage[] packages)
+ - Durian.Info.PackageIdentity.GetReferencedPackages(System.Reflection.Assembly assembly, Durian.Info.DurianPackage[] packages)
+ - Durian.Info.PackageIdentity.GetReferencedPackagesAsEnums()
+ - Durian.Info.PackageIdentity.GetReferencedPackagesAsEnums(System.Reflection.Assembly assembly)
+ - Durian.Info.PackageIdentity.GetReferencedPackagesAsEnums(Durian.Info.PackageIdentity[] packages)
+ - Durian.Info.PackageIdentity.GetReferencedPackagesAsEnums(System.Reflection.Assembly assembly, Durian.Info.PackageIdentity[] packages)
+ - Durian.Info.PackageIdentity.GetReferencedPackagesAsEnums(Durian.Info.DurianPackage[] packages)
+ - Durian.Info.PackageIdentity.GetReferencedPackagesAsEnums(System.Reflection.Assembly assembly, Durian.Info.DurianPackage[] packages)
+ - Durian.Info.PackageIdentity.GetNotReferencedPackages()
+ - Durian.Info.PackageIdentity.GetNotReferencedPackages(System.Reflection.Assembly assembly)
+ - Durian.Info.PackageIdentity.GetNotReferencedPackages(Durian.Info.PackageIdentity[] packages)
+ - Durian.Info.PackageIdentity.GetNotReferencedPackages(System.Reflection.Assembly assembly, Durian.Info.PackageIdentity[] packages)
+ - Durian.Info.PackageIdentity.GetNotReferencedPackages(Durian.Info.DurianPackage[] packages)
+ - Durian.Info.PackageIdentity.GetNotReferencedPackages(System.Reflection.Assembly assembly, Durian.Info.DurianPackage[] packages)
+ - Durian.Info.PackageIdentity.GetNotReferencedPackagesAsEnums()
+ - Durian.Info.PackageIdentity.GetNotReferencedPackagesAsEnums(System.Reflection.Assembly assembly)
+ - Durian.Info.PackageIdentity.GetNotReferencedPackagesAsEnums(Durian.Info.PackageIdentity[] packages)
+ - Durian.Info.PackageIdentity.GetNotReferencedPackagesAsEnums(System.Reflection.Assembly assembly, Durian.Info.PackageIdentity[] packages)
+ - Durian.Info.PackageIdentity.GetNotReferencedPackagesAsEnums(Durian.Info.DurianPackage[] packages)
+ - Durian.Info.PackageIdentity.GetNotReferencedPackagesAsEnums(System.Reflection.Assembly assembly, Durian.Info.DurianPackage[] packages)
+ - Durian.Info.PackageIdentity.GetPackage(Durian.Info.DurianPackage package)
+ - Durian.Info.PackageIdentity.GetPackage(System.String packageName)
+ - Durian.Info.PackageIdentity.get_Name
+ - Durian.Info.PackageIdentity.get_Version
+ - Durian.Info.PackageIdentity.get_IsPartOfAnyModule
+ - Durian.Info.PackageIdentity.get_Modules
+ - Durian.Info.PackageIdentity.get_Type
+ - Durian.Info.PackageIdentity.get_EnumValue
+ - Durian.Info.TypeIdentity
+ - Durian.Info.TypeIdentity.ToString()
+ - Durian.Info.TypeIdentity.Equals(System.Object obj)
+ - Durian.Info.TypeIdentity.Equals(Durian.Info.TypeIdentity other)
+ - Durian.Info.TypeIdentity.GetHashCode()
+ - Durian.Info.TypeIdentity.op_Equality(Durian.Info.TypeIdentity a, Durian.Info.TypeIdentity b)
+ - Durian.Info.TypeIdentity.op_Inequality(Durian.Info.TypeIdentity a, Durian.Info.TypeIdentity b)
+ - Durian.Info.TypeIdentity.GetAllTypes()
+ - Durian.Info.TypeIdentity.GetAllTypes(Durian.Info.DurianModule[] modules)
+ - Durian.Info.TypeIdentity.GetAllTypes(Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.TypeIdentity.GetEnabledTypes()
+ - Durian.Info.TypeIdentity.GetEnabledTypes(System.Reflection.Assembly assembly)
+ - Durian.Info.TypeIdentity.GetEnabledTypes(Durian.Info.DurianModule[] modules)
+ - Durian.Info.TypeIdentity.GetEnabledTypes(System.Reflection.Assembly assembly, Durian.Info.DurianModule[] modules)
+ - Durian.Info.TypeIdentity.GetEnabledTypes(Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.TypeIdentity.GetEnabledTypes(System.Reflection.Assembly assembly, Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.TypeIdentity.GetDisabledTypes()
+ - Durian.Info.TypeIdentity.GetDisabledTypes(System.Reflection.Assembly assembly)
+ - Durian.Info.TypeIdentity.GetDisabledTypes(Durian.Info.DurianModule[] modules)
+ - Durian.Info.TypeIdentity.GetDisabledTypes(System.Reflection.Assembly assembly, Durian.Info.DurianModule[] modules)
+ - Durian.Info.TypeIdentity.GetDisabledTypes(Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.TypeIdentity.GetDisabledTypes(System.Reflection.Assembly assembly, Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.TypeIdentity.IsEnabled(Durian.Info.TypeIdentity type)
+ - Durian.Info.TypeIdentity.IsEnabled(Durian.Info.TypeIdentity type, System.Reflection.Assembly assembly)
+ - Durian.Info.TypeIdentity.IsEnabled(Durian.Info.TypeIdentity type, Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.TypeIdentity.IsEnabled(Durian.Info.TypeIdentity type, System.Reflection.Assembly assembly, Durian.Info.ModuleIdentity[] modules)
+ - Durian.Info.TypeIdentity.IsEnabled(Durian.Info.TypeIdentity type, Durian.Info.DurianModule[] modules)
+ - Durian.Info.TypeIdentity.IsEnabled(Durian.Info.TypeIdentity type, System.Reflection.Assembly assembly, Durian.Info.DurianModule[] modules)
+ - Durian.Info.TypeIdentity.get_Modules
+ - Durian.Info.TypeIdentity.get_Name
+ - Durian.Info.TypeIdentity.get_FullyQualifiedName
+ - Durian.Info.TypeIdentity.get_Namespace
+ - Durian.Info.DurianModule
+ - Durian.Info.DurianModule.None
+ - Durian.Info.DurianModule.Core
+ - Durian.Info.DurianModule.DefaultParam
+ - Durian.Info.DurianPackage
+ - Durian.Info.DurianPackage.Core
+ - Durian.Info.DurianPackage.CoreAnalyzer
+ - Durian.Info.DurianPackage.AnalysisServices
+ - Durian.Info.DurianPackage.TestServices
+ - Durian.Info.DurianPackage.DefaultParam
+ - Durian.Info.PackageType
+ - Durian.Info.PackageType.Unspecified
+ - Durian.Info.PackageType.Library
+ - Durian.Info.PackageType.Analyzer
+ - Durian.Info.PackageType.StaticGenerator
+ - Durian.Info.PackageType.SyntaxBasedGenerator
+ - Durian.Info.PackageType.FileBasedGenerator
+ - Durian.Info.PackageType.CodeFixLibrary
+ - Durian.Info.ModuleRepository
+ - Durian.Info.ModuleRepository.get_Core
+ - Durian.Info.ModuleRepository.get_DefaultParam
+ - Durian.Info.PackageRepository
+ - Durian.Info.PackageRepository.get_AnalysisServices
+ - Durian.Info.PackageRepository.get_Core
+ - Durian.Info.PackageRepository.get_CoreAnalyzer
+ - Durian.Info.PackageRepository.get_DefaultParam
+ - Durian.Info.PackageRepository.get_TestServices
+ - Durian.Generator.DiagnosticFilesAttribute
+ - Durian.Generator.DiagnosticFilesAttribute(System.String[] files)
+ - Durian.Generator.DiagnosticFilesAttribute.get_Files
+ - Durian.Generator.DurianGeneratedAttribute
+ - Durian.Generator.DurianGeneratedAttribute()
+ - Durian.Generator.DurianGeneratedAttribute(System.String source)
+ - Durian.Generator.DurianGeneratedAttribute.get_Source
+ - Durian.Generator.EnableModuleAttribute
+ - Durian.Generator.EnableModuleAttribute(Durian.Info.DurianModule module)
+ - Durian.Generator.EnableModuleAttribute.get_Module
+ - Durian.Generator.IncludeDiagnosticsAttribute
+ - Durian.Generator.IncludeDiagnosticsAttribute(System.String[] diagnosticIds)
+ - Durian.Generator.IncludeDiagnosticsAttribute.get_DiagnosticIds
+ - Durian.Generator.IncludeTypesAttribute
+ - Durian.Generator.IncludeTypesAttribute(System.String[] types)
+ - Durian.Generator.IncludeTypesAttribute(System.Type[] types)
+ - Durian.Generator.IncludeTypesAttribute.get_Types
+ - Durian.Generator.MovedFromAttribute
+ - Durian.Generator.MovedFromAttribute(System.String source)
+ - Durian.Generator.MovedFromAttribute.get_Source
+ - Durian.Generator.PackageDefinitionAttribute
+ - Durian.Generator.PackageDefinitionAttribute(Durian.Info.DurianPackage package, Durian.Info.PackageType type, System.String version, Durian.Info.DurianModule[] modules)
+ - Durian.Generator.PackageDefinitionAttribute.get_Package
+ - Durian.Generator.PackageDefinitionAttribute.get_Modules
+ - Durian.Generator.PackageDefinitionAttribute.get_Type
+ - Durian.Generator.PackageDefinitionAttribute.get_Version
+ - Durian.Configuration.DefaultParamConfigurationAttribute
+ - Durian.Configuration.DefaultParamConfigurationAttribute()
+ - Durian.Configuration.DefaultParamConfigurationAttribute.get_MethodConvention
+ - Durian.Configuration.DefaultParamConfigurationAttribute.set_MethodConvention
+ - Durian.Configuration.DefaultParamConfigurationAttribute.get_TypeConvention
+ - Durian.Configuration.DefaultParamConfigurationAttribute.set_TypeConvention
+ - Durian.Configuration.DefaultParamConfigurationAttribute.get_ApplyNewModifierWhenPossible
+ - Durian.Configuration.DefaultParamConfigurationAttribute.set_ApplyNewModifierWhenPossible
+ - Durian.Configuration.DefaultParamScopedConfigurationAttribute
+ - Durian.Configuration.DefaultParamScopedConfigurationAttribute()
+ - Durian.Configuration.DefaultParamScopedConfigurationAttribute.get_MethodConvention
+ - Durian.Configuration.DefaultParamScopedConfigurationAttribute.set_MethodConvention
+ - Durian.Configuration.DefaultParamScopedConfigurationAttribute.get_TypeConvention
+ - Durian.Configuration.DefaultParamScopedConfigurationAttribute.set_TypeConvention
+ - Durian.Configuration.DefaultParamScopedConfigurationAttribute.get_ApplyNewModifierWhenPossible
+ - Durian.Configuration.DefaultParamScopedConfigurationAttribute.set_ApplyNewModifierWhenPossible
+ - Durian.Configuration.DPMethodConvention
+ - Durian.Configuration.DPMethodConvention.Default
+ - Durian.Configuration.DPMethodConvention.Copy
+ - Durian.Configuration.DPMethodConvention.Call
+ - Durian.Configuration.DPTypeConvention
+ - Durian.Configuration.DPTypeConvention.Default
+ - Durian.Configuration.DPTypeConvention.Copy
+ - Durian.Configuration.DPTypeConvention.Inherit
+

@@ -5,9 +5,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using static Durian.Generator.DurianDiagnostics;
+using static Durian.Generator.Core.DurianDiagnostics;
 
-namespace Durian.Generator
+namespace Durian.Generator.Core
 {
 	/// <summary>
 	/// Analyzes if the Durian types used by the user are properly imported.

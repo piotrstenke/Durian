@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
 using System.Collections.Immutable;
 
 namespace Durian.Info
@@ -71,7 +69,7 @@ namespace Durian.Info
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
-			if(obj is not TypeIdentity other)
+			if (obj is not TypeIdentity other)
 			{
 				return false;
 			}

@@ -116,6 +116,12 @@ namespace Durian.Generator.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
+				if(!ShouldBeAnalyzed(diagnosticReceiver, symbol, in typeParameters, compilation, out TypeParameterContainer combinedTypeParameters, cancellationToken))
+				{
+					data = null;
+					return false;
+				}
+
 				bool isValid = AnalyzeAgainstInvalidMethodType(diagnosticReceiver, symbol);
 				isValid &= AnalyzeAgainstPartialOrExtern(diagnosticReceiver, symbol, declaration);
 				isValid &= AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation, out AttributeData[]? attributes);
@@ -125,7 +131,7 @@ namespace Durian.Generator.DefaultParam
 				{
 					TypeParameterContainer combinedParameters = typeParameters;
 
-					if (AnalyzeBaseMethodAndTypeParameters(diagnosticReceiver, symbol, ref combinedParameters, compilation, cancellationToken))
+					if (AnalyzeBaseMethodAndTypeParameters(diagnosticReceiver, symbol, ref combinedParameters, in combinedTypeParameters))
 					{
 						INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes!);
 

@@ -1,5 +1,5 @@
-﻿using Durian.Configuration;
-using System;
+﻿using System;
+using Durian.Configuration;
 
 namespace Durian.Generator.DefaultParam
 {
@@ -49,7 +49,7 @@ namespace Durian.Generator.DefaultParam
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
-			if(obj is not DefaultParamConfiguration other)
+			if (obj is not DefaultParamConfiguration other)
 			{
 				return false;
 			}

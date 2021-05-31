@@ -28,10 +28,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryType>git</RepositoryType>
-    <!--
-        <PackageIcon>$(MSBuildProjectName).png</PackageIcon>
-        <PackageIconUrl>..\..\icons\$(MSBuildProjectName).png</PackageIconUrl>
-    -->
+    <PackageIcon>Durian-pkg-icon-128.png</PackageIcon>
+    <PackageIconUrl>..\..\img\icons\Durian-pkg-icon-128.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/piotrstenke/Durian</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -54,9 +52,7 @@
   
   <ItemGroup Condition="$(MsBuildProjectDirectoryNoRoot.Contains('src'))">
     
-    <!--
-    <None Include="..\..\icons\$(MSBuildProjectName).png" Pack="true" Visible="false" PackagePath="" />
-    -->
+    <None Include="..\..\img\icons\Durian-pkg-icon-128.png" Pack="true" Visible="false" PackagePath="" />
   
   </ItemGroup>
 

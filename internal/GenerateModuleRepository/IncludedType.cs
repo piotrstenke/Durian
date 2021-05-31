@@ -17,7 +17,7 @@ internal class IncludedType
 	{
 		foreach (string module in modules)
 		{
-			if(!ModuleNames.Contains(module))
+			if (!ModuleNames.Contains(module))
 			{
 				ModuleNames.Add(module);
 			}

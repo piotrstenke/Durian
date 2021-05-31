@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Durian.Generator;
+using Durian.Generator.Core;
 using Durian.Info;
 
 #region Durian Configuration

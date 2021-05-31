@@ -66,7 +66,7 @@ namespace Durian.Generator.DefaultParam
 		public override int GetHashCode()
 		{
 			int hashCode = 2061023908;
-			hashCode = (hashCode * -1521134295) + Type.GetHashCode();
+			hashCode = (hashCode * -1521134295) + SymbolEqualityComparer.Default.GetHashCode(Type);
 			hashCode = (hashCode * -1521134295) + RefKind.GetHashCode();
 			hashCode = (hashCode * -1521134295) + GenericParameterIndex.GetHashCode();
 			return hashCode;

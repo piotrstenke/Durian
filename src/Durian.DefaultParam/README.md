@@ -1,5 +1,5 @@
 <div align="center">
-        <img src="../../img/icons/Durian.DefaultParam.png" alt="Durian.DefaultParam logo"/>
+        <img src="../../img/icons/Durian.DefaultParam-256.png" alt="Durian.DefaultParam logo"/>
 </div>
 
 ##

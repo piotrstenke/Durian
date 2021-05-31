@@ -16,7 +16,7 @@ DUR0110 | Durian.DefaultParam | Warning | DefaultParamAttribute of overridden ty
 DUR0111 | Durian.DefaultParam | Error | DefaultParamConfigurationAttribute is not valid on members without the DefaultParamAttribute. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0111.md)]
 DUR0112 | Durian.DefaultParam | Warning | TypeConvention property should not be used on members other than types. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0112.md)]
 DUR0113 | Durian.DefaultParam | Warning | MethodConvention property should not be used on members other than methods. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0113.md)]
-DUR0114 | Durian.DefaultParam | Error | Method with generated signature already exist. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0114.md)]
+DUR0114 | Durian.DefaultParam | Error | Method with generated signature already exists. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0114.md)]
 DUR0115 | Durian.DefaultParam | Error | DefaultParamConfigurationAttribute is not valid on this type of method. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0115.md)]
 DUR0116 | Durian.DefaultParam | Error | Member with generated name already exists. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0116.md)]
 DUR0117 | Durian.DefaultParam | Error | DPTypeConvention.Inherit cannot be used on a struct or a sealed type. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0117.md)]

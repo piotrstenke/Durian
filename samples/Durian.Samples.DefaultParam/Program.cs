@@ -1,23 +1,7 @@
-﻿using System;
-using Durian.Configuration;
-
-namespace Durian.DefaultParam.Samples
+﻿internal static class Program
 {
-	public partial class Parent
+	private static void Main()
 	{
-	}
 
-	[DefaultParamScopedConfiguration(TypeConvention = DPTypeConvention.Inherit)]
-	internal partial class Program : Parent
-	{
-		public static void Main()
-		{
-		}
-
-		[Durian.Configuration.DefaultParamConfiguration(TypeConvention = Durian.Configuration.DPTypeConvention.Copy)]
-		public struct Test<[DefaultParam(typeof(string))]T>
-		{
-
-		}
 	}
 }

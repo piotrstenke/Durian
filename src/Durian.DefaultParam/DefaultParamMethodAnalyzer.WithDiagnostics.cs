@@ -37,20 +37,68 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			/// <summary>
+			/// Determines, whether the specified <paramref name="symbol"/> should be analyzed.
+			/// </summary>
+			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+			/// <param name="symbol"><see cref="IMethodSymbol"/> to check if should be analyzed.</param>
+			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters to be analyzed.</param>
+			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+			/// <param name="combinedTypeParameters">Combined <see cref="TypeParameterContainer"/>s of the <paramref name="symbol"/>'s base methods.</param>
+			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+			/// <returns><see langword="true"/> if the <paramref name="symbol"/> should be analyzer, <see langword="false"/> otherwise.</returns>
+			public static bool ShouldBeAnalyzed(
+				IDiagnosticReceiver diagnosticReceiver,
+				IMethodSymbol symbol,
+				in TypeParameterContainer typeParameters,
+				DefaultParamCompilationData compilation,
+				out TypeParameterContainer combinedTypeParameters,
+				CancellationToken cancellationToken = default
+			)
+			{
+				if (!symbol.IsOverride)
+				{
+					combinedTypeParameters = typeParameters;
+					return true;
+				}
+
+				if (symbol.OverriddenMethod is not IMethodSymbol baseMethod)
+				{
+					combinedTypeParameters = default;
+					return false;
+				}
+
+				if (IsDefaultParamGenerated(baseMethod, compilation))
+				{
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods, symbol);
+					combinedTypeParameters = default;
+					return false;
+				}
+
+				TypeParameterContainer combined = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
+
+				if (typeParameters.HasDefaultParams || combined.HasDefaultParams)
+				{
+					combinedTypeParameters = combined;
+					return true;
+				}
+
+				combinedTypeParameters = default;
+				return false;
+			}
+
+			/// <summary>
 			/// Analyzes, if the <paramref name="symbol"/> has valid <paramref name="typeParameters"/> when compared to the <paramref name="symbol"/>'s base method.
 			/// </summary>
 			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 			/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
 			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters to be analyzed.</param>
-			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+			/// <param name="combinedTypeParameters">Combined <see cref="TypeParameterContainer"/>s of the <paramref name="symbol"/>'s base methods.</param>
 			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 			public static bool AnalyzeBaseMethodAndTypeParameters(
 				IDiagnosticReceiver diagnosticReceiver,
 				IMethodSymbol symbol,
 				ref TypeParameterContainer typeParameters,
-				DefaultParamCompilationData compilation,
-				CancellationToken cancellationToken = default
+				in TypeParameterContainer combinedTypeParameters
 			)
 			{
 				if (!symbol.IsOverride)
@@ -58,24 +106,9 @@ namespace Durian.Generator.DefaultParam
 					return AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
 				}
 
-				IMethodSymbol? baseMethod = symbol.OverriddenMethod;
-
-				if (baseMethod is null)
+				if (DefaultParamAnalyzer.AnalyzeTypeParameters(symbol, in combinedTypeParameters) && AnalyzeBaseMethodParameters(diagnosticReceiver, in typeParameters, in combinedTypeParameters))
 				{
-					return false;
-				}
-
-				if (IsDefaultParamGenerated(baseMethod, compilation))
-				{
-					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods, symbol);
-					return false;
-				}
-
-				TypeParameterContainer baseTypeParameters = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
-
-				if (DefaultParamAnalyzer.AnalyzeTypeParameters(symbol, in baseTypeParameters) && AnalyzeBaseMethodParameters(diagnosticReceiver, in typeParameters, in baseTypeParameters))
-				{
-					typeParameters = TypeParameterContainer.Combine(in typeParameters, in baseTypeParameters);
+					typeParameters = TypeParameterContainer.Combine(in typeParameters, in combinedTypeParameters);
 					return true;
 				}
 
@@ -256,11 +289,23 @@ namespace Durian.Generator.DefaultParam
 
 			private static bool AnalyzeCore(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
 			{
+				if(!ShouldBeAnalyzed(
+					diagnosticReceiver,
+					symbol,
+					in typeParameters,
+					compilation,
+					out TypeParameterContainer combinedTypeParameters,
+					cancellationToken)
+				)
+				{
+					return false;
+				}
+
 				bool isValid = AnalyzeAgainstInvalidMethodType(diagnosticReceiver, symbol);
 				isValid &= AnalyzeAgainstPartialOrExtern(diagnosticReceiver, symbol, cancellationToken);
 				isValid &= AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation);
 				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, cancellationToken);
-				isValid &= AnalyzeBaseMethodAndTypeParameters(diagnosticReceiver, symbol, ref typeParameters, compilation, cancellationToken);
+				isValid &= AnalyzeBaseMethodAndTypeParameters(diagnosticReceiver, symbol, ref typeParameters, in combinedTypeParameters);
 
 				if (!isValid)
 				{

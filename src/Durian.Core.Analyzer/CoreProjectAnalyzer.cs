@@ -1,9 +1,9 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using static Durian.Generator.DurianDiagnostics;
+using static Durian.Generator.Core.DurianDiagnostics;
 
-namespace Durian.Generator
+namespace Durian.Generator.Core
 {
 	/// <summary>
 	/// Analyzer that checks if the current compilation references the <c>Durian.Core</c> package.

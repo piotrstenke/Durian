@@ -2,7 +2,7 @@
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator
+namespace Durian.Generator.Core
 {
 	/// <summary>
 	/// Enables the <see cref="DurianModule.Core"/> module.

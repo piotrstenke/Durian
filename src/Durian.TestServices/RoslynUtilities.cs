@@ -373,7 +373,7 @@ namespace Durian.Tests
 		{
 			SourceGeneratorProxy proxy = new();
 			CSharpGeneratorDriver driver = CSharpGeneratorDriver.Create(proxy);
-			driver.RunGenerators(compilation ?? CreateBaseCompilation());
+			_ = driver.RunGenerators(compilation ?? CreateBaseCompilation());
 			return proxy.ExecutionContext;
 		}
 
@@ -397,7 +397,7 @@ namespace Durian.Tests
 			}
 
 			CSharpGeneratorDriver driver = CSharpGeneratorDriver.Create(proxy);
-			driver.RunGenerators(compilation ?? CreateBaseCompilation());
+			_ = driver.RunGenerators(compilation ?? CreateBaseCompilation());
 			return proxy.ExecutionContext;
 		}
 

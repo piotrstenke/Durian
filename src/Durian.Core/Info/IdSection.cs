@@ -134,18 +134,6 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public static explicit operator IdSection(string value)
-		{
-			return new IdSection(value);
-		}
-
-		/// <inheritdoc/>
-		public static implicit operator string(IdSection id)
-		{
-			return id.ToString();
-		}
-
-		/// <inheritdoc/>
 		public static bool operator ==(IdSection left, IdSection right)
 		{
 			return left.Value == right.Value;

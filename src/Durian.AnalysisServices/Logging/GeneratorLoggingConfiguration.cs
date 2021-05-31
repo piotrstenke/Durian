@@ -10,7 +10,7 @@ namespace Durian.Generator.Logging
 	/// Determines the behavior of the target <see cref="ISourceGenerator"/> when creating log files.
 	/// </summary>
 	[DebuggerDisplay("Enabled = {EnableLogging}, Supported = {SupportedLogs}")]
-	public sealed partial class GeneratorLoggingConfiguration :  IEquatable<GeneratorLoggingConfiguration>
+	public sealed partial class GeneratorLoggingConfiguration : IEquatable<GeneratorLoggingConfiguration>
 	{
 		private string _logDirectory;
 		private bool _enableLogging;

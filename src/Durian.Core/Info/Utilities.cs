@@ -1,5 +1,5 @@
-﻿using System.Collections.Immutable;
-using System;
+﻿using System;
+using System.Collections.Immutable;
 
 namespace Durian.Info
 {
@@ -27,7 +27,7 @@ namespace Durian.Info
 
 		public static int GetHashCodeOfImmutableArray<T>(ref ImmutableArray<T> array) where T : IEquatable<T>
 		{
-			if(array.Length == 0)
+			if (array.Length == 0)
 			{
 				return 0;
 			}

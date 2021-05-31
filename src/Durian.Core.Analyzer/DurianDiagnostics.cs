@@ -1,7 +1,7 @@
 ﻿using Durian.Info;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator
+namespace Durian.Generator.Core
 {
 	/// <summary>
 	/// Contains <see cref="DiagnosticDescriptor"/>s of the most common Durian errors.
@@ -77,6 +77,20 @@ namespace Durian.Generator
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0005.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating the target project must use C# 9 or greater.
+		/// </summary>
+		[WithoutLocation]
+		public static readonly DiagnosticDescriptor DUR0006_ProjectMustUseCSharp9 = new(
+			id: "DUR0006",
+			title: "Target project must use C# 9 or greater",
+			messageFormat: "Target project must use C# 9 or greater",
+			category: "Durian",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0006.md",
 			isEnabledByDefault: true
 		);
 	}

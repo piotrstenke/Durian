@@ -161,7 +161,8 @@ namespace Durian.Generator.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			if (AnalyzeAgainstInvalidMethodType(symbol) &&
+			if (ShouldBeAnalyzed(symbol, in typeParameters, compilation, out TypeParameterContainer combinedTypeParameters, cancellationToken) &&
+				AnalyzeAgainstInvalidMethodType(symbol) &&
 				AnalyzeAgainstPartialOrExtern(symbol, declaration) &&
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
 				AnalyzeContainingTypes(symbol, compilation, out ITypeData[]? containingTypes)
@@ -169,7 +170,7 @@ namespace Durian.Generator.DefaultParam
 			{
 				TypeParameterContainer combinedParameters = typeParameters;
 
-				if (AnalyzeBaseMethodAndTypeParameters(symbol, ref combinedParameters, compilation, cancellationToken))
+				if (AnalyzeBaseMethodAndTypeParameters(symbol, ref combinedParameters, in combinedTypeParameters))
 				{
 					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
 

@@ -33,27 +33,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "items", "items", "{669AA144
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "symbols", "symbols", "{BB249978-3546-4BA0-8F43-620F9C437F38}"
-	ProjectSection(SolutionItems) = preProject
-		symbols\NullableAttributes.cs = symbols\NullableAttributes.cs
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{C68009B1-28C1-4DFC-9806-F7030D658FB9}"
 	ProjectSection(SolutionItems) = preProject
 		tools\install.ps1 = tools\install.ps1
 		tools\uninstall.ps1 = tools\uninstall.ps1
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{80273A51-C8E4-433F-BD7C-4336BEB04A1D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "internal", "internal", "{80273A51-C8E4-433F-BD7C-4336BEB04A1D}"
 	ProjectSection(SolutionItems) = preProject
-		build\README.md = build\README.md
+		internal\README.md = internal\README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateAnalyzerReleases", "build\GenerateAnalyzerReleases\GenerateAnalyzerReleases.csproj", "{312B14BF-6208-4E10-81A8-53263C66DEB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateAnalyzerReleases", "internal\GenerateAnalyzerReleases\GenerateAnalyzerReleases.csproj", "{312B14BF-6208-4E10-81A8-53263C66DEB0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Core.Analyzer", "src\Durian.Core.Analyzer\Durian.Core.Analyzer.csproj", "{8DCB04EE-4007-4AE3-A27B-DE63CDCAF0E5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateModuleRepository", "build\GenerateModuleRepository\GenerateModuleRepository.csproj", "{BBE02246-FD88-4DF3-8141-940C7E73AF05}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateModuleRepository", "internal\GenerateModuleRepository\GenerateModuleRepository.csproj", "{BBE02246-FD88-4DF3-8141-940C7E73AF05}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Tests.Core", "tests\Durian.Tests.Core\Durian.Tests.Core.csproj", "{8E1557FD-6BE5-4162-9731-287E507A3E5E}"
 EndProject
@@ -66,6 +61,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{A6400D35-7
 		docs\Core\DUR0003.md = docs\Core\DUR0003.md
 		docs\Core\DUR0004.md = docs\Core\DUR0004.md
 		docs\Core\DUR0005.md = docs\Core\DUR0005.md
+		docs\Core\DUR0006.md = docs\Core\DUR0006.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DefaultParam", "DefaultParam", "{ED212D80-C490-4BDB-801C-E487EB7E390D}"
@@ -100,9 +96,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{180C285B-7C4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "icons", "icons", "{1321229E-C3C2-4B4B-AD81-88B76CB4A938}"
 	ProjectSection(SolutionItems) = preProject
-		img\icons\Durian.DefaultParam.png = img\icons\Durian.DefaultParam.png
-		img\icons\Durian.png = img\icons\Durian.png
+		img\icons\Durian-256.png = img\icons\Durian-256.png
+		img\icons\Durian-pkg-icon-128.png = img\icons\Durian-pkg-icon-128.png
+		img\icons\Durian.Core-256.png = img\icons\Durian.Core-256.png
+		img\icons\Durian.Core.svg = img\icons\Durian.Core.svg
+		img\icons\Durian.DefaultParam-256.png = img\icons\Durian.DefaultParam-256.png
+		img\icons\Durian.DefaultParam.svg = img\icons\Durian.DefaultParam.svg
+		img\icons\Durian.svg = img\icons\Durian.svg
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateChangeLog", "internal\GenerateChangeLog\GenerateChangeLog.csproj", "{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -246,6 +249,18 @@ Global
 		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Release|x64.Build.0 = Release|Any CPU
 		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Release|x86.ActiveCfg = Release|Any CPU
 		{8E1557FD-6BE5-4162-9731-287E507A3E5E}.Release|x86.Build.0 = Release|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Debug|x64.Build.0 = Debug|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Debug|x86.Build.0 = Debug|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Release|x64.ActiveCfg = Release|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Release|x64.Build.0 = Release|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Release|x86.ActiveCfg = Release|Any CPU
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -265,6 +280,7 @@ Global
 		{A6400D35-731B-41E1-A752-0D39F0169B90} = {BA3DE2E2-7B32-4612-8219-24FBCF850813}
 		{ED212D80-C490-4BDB-801C-E487EB7E390D} = {BA3DE2E2-7B32-4612-8219-24FBCF850813}
 		{1321229E-C3C2-4B4B-AD81-88B76CB4A938} = {180C285B-7C46-4E5B-9DC9-88439B518746}
+		{6991B5FA-2D84-4ED3-AF2D-8F7FB5AA415A} = {80273A51-C8E4-433F-BD7C-4336BEB04A1D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {09524C45-0D6D-4456-B89D-9673853B9FA0}

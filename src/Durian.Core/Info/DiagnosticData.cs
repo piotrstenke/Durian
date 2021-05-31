@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System;
+﻿using System;
+using System.Diagnostics;
 
 namespace Durian.Info
 {
@@ -102,7 +102,7 @@ namespace Durian.Info
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
-			if(obj is not DiagnosticData d)
+			if (obj is not DiagnosticData d)
 			{
 				return false;
 			}

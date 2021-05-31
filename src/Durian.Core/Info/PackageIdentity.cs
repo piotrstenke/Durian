@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Durian.Info
 {
@@ -57,7 +54,7 @@ namespace Durian.Info
 
 		internal void Initialize(DurianModule[]? modules)
 		{
-			if(modules is null)
+			if (modules is null)
 			{
 				_modules = ImmutableArray.Create<ModuleReference>();
 				return;
@@ -95,7 +92,7 @@ namespace Durian.Info
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
-			if(obj is not PackageIdentity other)
+			if (obj is not PackageIdentity other)
 			{
 				return false;
 			}

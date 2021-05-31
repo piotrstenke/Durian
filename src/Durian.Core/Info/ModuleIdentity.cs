@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Reflection;
-using Durian.Generator;
 
 namespace Durian.Info
 {
@@ -102,7 +98,7 @@ namespace Durian.Info
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
-			if(obj is not ModuleIdentity other)
+			if (obj is not ModuleIdentity other)
 			{
 				return false;
 			}

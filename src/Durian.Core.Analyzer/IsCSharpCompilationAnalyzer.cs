@@ -2,9 +2,9 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
-using static Durian.Generator.DurianDiagnostics;
+using static Durian.Generator.Core.DurianDiagnostics;
 
-namespace Durian.Generator
+namespace Durian.Generator.Core
 {
 	/// <summary>
 	/// Analyzes if the current compilation is <see cref="CSharpCompilation"/>.
@@ -14,7 +14,8 @@ namespace Durian.Generator
 	{
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
-			DUR0004_DurianModulesAreValidOnlyInCSharp
+			DUR0004_DurianModulesAreValidOnlyInCSharp,
+			DUR0006_ProjectMustUseCSharp9
 		);
 
 		/// <summary>
@@ -34,9 +35,15 @@ namespace Durian.Generator
 
 		private static void Analyze(CompilationAnalysisContext context)
 		{
-			if (context.Compilation is not CSharpCompilation)
+			if (context.Compilation is not CSharpCompilation c)
 			{
 				context.ReportDiagnostic(Diagnostic.Create(DUR0004_DurianModulesAreValidOnlyInCSharp, Location.None));
+				return;
+			}
+
+			if(c.LanguageVersion < LanguageVersion.CSharp9)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(DUR0006_ProjectMustUseCSharp9, Location.None));
 			}
 		}
 	}

@@ -2,36 +2,49 @@
 
   <PropertyGroup>
 
-    <Description>Contains various services that help unit testing Roslyn-related projects.</Description>
-    <PackageTags>dotnet;roslyn;Durian;source-generator;analyzer;analysis;extension;core;code-generation;test;unit;unit-test;testing</PackageTags>
-    <Version>1.0.0</Version>
+     <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>
+      Durian.TestServices is a package providing many utility methods and types that help to unit test and debug Roslyn-based libraries.
+    </Description>
+    <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;Analysis;Syntax;Tree;Node;Service;Utility;Test;Unit;Testing</PackageTags>
     <PackageVersion>1.0.0</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
+    <Version>1.0.0</Version>
     <RootNamespace>Durian.Tests</RootNamespace>
-    
+
   </PropertyGroup>
 
   <ItemGroup>
 
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
+    <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
+    <Compile Include="..\NullableAttributes.cs" />
     
   </ItemGroup>
 
   <ItemGroup>
     
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
+    
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='Debug'">
+
     <PackageReference Include="Roslynator.Analyzers" Version="3.1.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    
-  </ItemGroup>
 
-  <ItemGroup>
-    
-    <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
-    <Compile Include="..\..\symbols\NullableAttributes.cs" />
-    
+    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
   </ItemGroup>
 
 </Project>

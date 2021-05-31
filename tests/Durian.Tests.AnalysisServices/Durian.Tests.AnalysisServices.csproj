@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     
@@ -23,5 +23,5 @@
     <ProjectReference Include="..\..\src\Durian.TestServices\Durian.TestServices.csproj" />
 
   </ItemGroup>
-
+  
 </Project>

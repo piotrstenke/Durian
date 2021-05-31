@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 using System.Threading.Tasks;
-using Durian.Generator;
+using Durian.Generator.Core;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;

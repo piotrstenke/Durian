@@ -4,14 +4,14 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-internal class Program
+internal static class Program
 {
 	private static readonly Regex _diagnosticRegex = new(@"public\s*static\s*readonly\s*DiagnosticDescriptor\s*\w+\s*=\s*new\s*\w*\s*\(.*?\)\s*;", RegexOptions.Singleline);
 	private static readonly Regex _idRegex = new(@"id\s*:\s*""\s*(\w+)\s*""", RegexOptions.Singleline);
 	private static readonly Regex _titleRegex = new(@"title\s*:\s*""\s*(.*?)\s*""", RegexOptions.Singleline);
 	private static readonly Regex _categoryRegex = new(@"category\s*:\s*""\s*([\w.]+)\s*""", RegexOptions.Singleline);
 	private static readonly Regex _severityRegex = new(@"defaultSeverity\s*:\s*DiagnosticSeverity\s*.\s*(\w+)", RegexOptions.Singleline);
-	private static readonly Regex _moduleRegex = new(@"DurianModule\s*\.\s*(\w+)\s*,", RegexOptions.Singleline);
+	private static readonly Regex _packageRegex = new(@"DurianPackage\s*\.\s*(\w+)\s*,", RegexOptions.Singleline);
 	private static readonly Regex _diagnosticAttributeRegex = new(@"\[assembly\s*:\s*DiagnosticFiles\s*\(\s*(.*?)\]", RegexOptions.Singleline);
 	private static readonly Regex _diagnosticAttributeValueRegex = new(@"\s*(?:nameof\s*\(\s*(\w+)\s*\)|"".*?"")", RegexOptions.Singleline);
 
@@ -34,7 +34,7 @@ internal class Program
 		}
 
 		string content = File.ReadAllText(configFile);
-		string? moduleName = GetModuleName(content);
+		string? moduleName = GetPackageName(content);
 
 		if (moduleName is null)
 		{
@@ -75,9 +75,9 @@ internal class Program
 		File.WriteAllText(currentDirectory + @"\AnalyzerReleases.Shipped.md", builder.ToString(), Encoding.UTF8);
 	}
 
-	private static string? GetModuleName(string content)
+	private static string? GetPackageName(string content)
 	{
-		Match match = _moduleRegex.Match(content);
+		Match match = _packageRegex.Match(content);
 		string moduleName = match.Groups[1].ToString();
 
 		if (!string.IsNullOrWhiteSpace(moduleName))

@@ -67,6 +67,14 @@ namespace Durian.Info
 					fatal: true,
 					hasLocation: true
 				),
+
+				new DiagnosticData(
+					title: "Target project must use C# 9 or greater",
+					id: 06,
+					docsPath: @"tree\master\docs\Core\DUR0006.md",
+					fatal: true,
+					hasLocation: true
+				),
 			},
 			types: new TypeIdentity[]
 			{

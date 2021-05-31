@@ -47,7 +47,9 @@ namespace Durian.Tests.AnalysisServices.CompilationExtensions
 			{
 				TestableCompilationData compilation = TestableCompilationData.Create();
 				Compilation = compilation.CurrentCompilation;
+#pragma warning disable RS1024 // Compare symbols correctly
 				Set = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+#pragma warning restore RS1024 // Compare symbols correctly
 
 				foreach (INamedTypeSymbol types in compilation.CurrentCompilation.GetSpecialTypes())
 				{

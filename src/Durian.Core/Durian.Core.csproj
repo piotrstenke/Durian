@@ -3,8 +3,12 @@
   <PropertyGroup>
 
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>Provides a mechanism for retrieving information about the Durian API. Every project that wants to use any official Durian module must reference this package.</Description>
-    <PackageTags>dotnet;roslyn;Durian;source-generator;analyzer;analysis;extension;core;code-generation</PackageTags>
+    <Description>
+      Durian.Core is the main package of the Durian framework. 
+      It contains all the essential types needed by every given Durian-based generator. 
+      In order to use a Durian-based generator, the user's project must reference this package.
+    </Description>
+    <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;Analysis;Syntax;Tree;Node;Core</PackageTags>
     <PackageVersion>1.0.0</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <Version>1.0.0</Version>
@@ -25,13 +29,27 @@
 
   <ItemGroup>
     
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='Debug'">
+
     <PackageReference Include="Roslynator.Analyzers" Version="3.1.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
-    
+    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
   </ItemGroup>
 
 </Project>

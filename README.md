@@ -1,5 +1,5 @@
 <div align="center">
-        <img src="img/icons/Durian.png" alt="Durian logo"/>
+        <img src="img/icons/Durian-256.png" alt="Durian logo"/>
 </div>
 
 ##

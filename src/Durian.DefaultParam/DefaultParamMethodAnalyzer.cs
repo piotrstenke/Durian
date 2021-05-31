@@ -79,44 +79,66 @@ namespace Durian.Generator.DefaultParam
 			return AnalyzeCore(symbol, compilation, ref typeParameters, cancellationToken);
 		}
 
-		/// <summary>
-		/// Analyzes, if the <paramref name="symbol"/> has valid <paramref name="typeParameters"/> when compared to the <paramref name="symbol"/>'s base method.
-		/// </summary>
-		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters to be analyzed.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeBaseMethodAndTypeParameters(IMethodSymbol symbol, ref TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		/// <inheritdoc cref="WithDiagnostics.ShouldBeAnalyzed(IDiagnosticReceiver, IMethodSymbol, in TypeParameterContainer, DefaultParamCompilationData, out TypeParameterContainer, CancellationToken)"/>
+		public static bool ShouldBeAnalyzed(
+			IMethodSymbol symbol,
+			in TypeParameterContainer typeParameters,
+			DefaultParamCompilationData compilation,
+			out TypeParameterContainer combinedTypeParameters,
+			CancellationToken cancellationToken = default
+		)
+		{
+			if (!symbol.IsOverride)
+			{
+				combinedTypeParameters = typeParameters;
+				return true;
+			}
+
+			if (symbol.OverriddenMethod is not IMethodSymbol baseMethod)
+			{
+				combinedTypeParameters = default;
+				return false;
+			}
+
+			if (IsDefaultParamGenerated(baseMethod, compilation))
+			{
+				combinedTypeParameters = default;
+				return false;
+			}
+
+			TypeParameterContainer combined = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
+
+			if (typeParameters.HasDefaultParams || combined.HasDefaultParams)
+			{
+				combinedTypeParameters = combined;
+				return true;
+			}
+
+			combinedTypeParameters = default;
+			return false;
+		}
+
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeBaseMethodAndTypeParameters(IDiagnosticReceiver, IMethodSymbol, ref TypeParameterContainer, in TypeParameterContainer)"/>
+		public static bool AnalyzeBaseMethodAndTypeParameters(
+			IMethodSymbol symbol,
+			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer combinedTypeParameters
+		)
 		{
 			if (!symbol.IsOverride)
 			{
 				return AnalyzeTypeParameters(symbol, in typeParameters);
 			}
 
-			IMethodSymbol? baseMethod = symbol.OverriddenMethod;
-
-			if (baseMethod is null)
-			{
-				return false;
-			}
-
-			if (IsDefaultParamGenerated(baseMethod, compilation))
-			{
-				return false;
-			}
-
-			TypeParameterContainer baseTypeParameters = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
-
-			if (HasAddedDefaultParamAttributes(in typeParameters, in baseTypeParameters) ||
-				!AnalyzeTypeParameters(symbol, in baseTypeParameters) ||
-				!AnalyzeBaseMethodParameters(in typeParameters, in baseTypeParameters))
+			if (HasAddedDefaultParamAttributes(in typeParameters, in combinedTypeParameters) ||
+				!AnalyzeTypeParameters(symbol, in combinedTypeParameters) ||
+				!AnalyzeBaseMethodParameters(in typeParameters, in combinedTypeParameters))
 
 			{
 				return false;
 			}
 
-			typeParameters = TypeParameterContainer.Combine(in typeParameters, in baseTypeParameters);
+			typeParameters = TypeParameterContainer.Combine(in typeParameters, in combinedTypeParameters);
 			return true;
 		}
 
@@ -278,11 +300,12 @@ namespace Durian.Generator.DefaultParam
 		private static bool AnalyzeCore(IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
 		{
 			return
+				ShouldBeAnalyzed(symbol, in typeParameters, compilation, out TypeParameterContainer combinedTypeParameters, cancellationToken) &&
 				AnalyzeAgainstInvalidMethodType(symbol) &&
 				AnalyzeAgainstPartialOrExtern(symbol, cancellationToken) &&
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
 				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
-				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, compilation, cancellationToken) &&
+				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, combinedTypeParameters) &&
 				AnalyzeMethodSignature(symbol, typeParameters, compilation, cancellationToken);
 		}
 

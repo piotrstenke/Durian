@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-internal class Program
+internal static class Program
 {
 	private static readonly Regex _diagnosticRegex = new(@"public\s*static\s*readonly\s*DiagnosticDescriptor\s*\w+\s*=\s*new\s*\w*\s*\(.*?\)\s*;", RegexOptions.Singleline);
 	private static readonly Regex _idRegex = new(@"id\s*:\s*""\s*(\w+)\s*""", RegexOptions.Singleline);
@@ -153,8 +153,8 @@ internal class Program
 		string[] files = GetDiagnosticFiles(content);
 		string[] includedTypes = GetAttributeArguments(content, _includedTypesAttributeRegex);
 		string[] includedDiagnostics = GetAttributeArguments(content, _includedDiagnosticsAttributeRegex);
-		
-		if(modules.Length == 0)
+
+		if (modules.Length == 0)
 		{
 			modules = null!;
 		}
@@ -212,7 +212,7 @@ internal class Program
 
 			foreach (IncludedType t in existing)
 			{
-				if(t.Name == typeName && t.Namespace == @namespace)
+				if (t.Name == typeName && t.Namespace == @namespace)
 				{
 					type = t;
 					return true;
@@ -250,7 +250,7 @@ internal class Program
 	{
 		string value = match.Groups[4].ToString();
 
-		if(string.IsNullOrWhiteSpace(value))
+		if (string.IsNullOrWhiteSpace(value))
 		{
 			return new string[] { "None" };
 		}
@@ -264,7 +264,7 @@ internal class Program
 			modules[i] = modules[i].Trim();
 		}
 
-		if(modules.Length == 0)
+		if (modules.Length == 0)
 		{
 			return new string[] { "None" };
 		}
@@ -453,14 +453,14 @@ internal class Program
 		{
 			foreach (string module in configuration.Modules)
 			{
-				if(module == "None")
+				if (module == "None")
 				{
 					continue;
 				}
 
 				if (dict.TryGetValue(module, out int index))
 				{
-					if(module == configuration.Modules[0])
+					if (module == configuration.Modules[0])
 					{
 						list[index].Add(configuration);
 					}
@@ -493,7 +493,7 @@ internal class Program
 	{
 		int length = configuration.Diagnostics.Length;
 
-		if(length == 0)
+		if (length == 0)
 		{
 			return configuration;
 		}
@@ -553,7 +553,7 @@ namespace Durian.Info
 			type: {config.PackageType},
 			modules: ");
 
-				if(config.Modules is null)
+				if (config.Modules is null)
 				{
 					builder.AppendLine("null");
 				}
