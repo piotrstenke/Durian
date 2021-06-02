@@ -3,7 +3,7 @@
         <img src="https://img.shields.io/nuget/v/Durian.Core.Analyzer?color=seagreen&style=flat-square" alt="Version"/>
     </a>
     <a href="https://www.nuget.org/packages/Durian.Core.Analyzer">
-        <img src="https://img.shields.io/nuget/dt/Durian.Core.Analyzer?color=mediumgreen" alt="Downloads"/>
+        <img src="https://img.shields.io/nuget/dt/Durian.Core.Analyzer?color=blue&style=flat-square" alt="Downloads"/>
     </a> <br />
 </div>
 

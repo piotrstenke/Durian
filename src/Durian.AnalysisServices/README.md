@@ -3,7 +3,7 @@
         <img src="https://img.shields.io/nuget/v/Durian.AnalysisServices?color=seagreen&style=flat-square" alt="Version"/>
     </a>
     <a href="https://www.nuget.org/packages/Durian.AnalysisServices">
-        <img src="https://img.shields.io/nuget/dt/Durian.AnalysisServices?color=mediumgreen" alt="Downloads"/>
+        <img src="https://img.shields.io/nuget/dt/Durian.AnalysisServices?color=blue&style=flat-square" alt="Downloads"/>
     </a> <br />
 </div>
 

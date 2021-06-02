@@ -3,13 +3,13 @@
         <img src="https://img.shields.io/nuget/v/Durian?color=seagreen&style=flat-square" alt="Version"/>
     </a>
     <a href="https://www.nuget.org/packages/Durian">
-        <img src="https://img.shields.io/nuget/dt/Durian?color=mediumgreen" alt="Downloads"/>
+        <img src="https://img.shields.io/nuget/dt/Durian?color=blue&style=flat-square" alt="Downloads"/>
     </a> <br />
     <a href="https://github.com/piotrstenke/Durian/actions">
-        <img src="https://img.shields.io/github/checks-status/piotrstenke/Durian/master?style=flat-square" alt="Checks"/>
+        <img src="https://img.shields.io/github/workflow/status/piotrstenke/Durian/.NET?style=flat-square" alt="Build"/>
     </a>
     <a href="https://github.com//piotrstenke/Durian/blob/master/LICENSE.md">
-        <img src="https://img.shields.io/github/license/piotrstenke/Durian?color=blue&style=flat-squaree" alt="License"/>
+        <img src="https://img.shields.io/github/license/piotrstenke/Durian?color=orange&style=flat-square" alt="License"/>
     </a>
 </div>
 
