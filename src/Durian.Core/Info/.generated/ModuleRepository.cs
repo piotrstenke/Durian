@@ -87,7 +87,7 @@ namespace Durian.Info
 					}
 				),
 				new TypeIdentity(
-					name: "IncludeTypesAttribute",
+					name: "EnableModuleAttribute",
 					@namespace: "Durian.Generator",
 					modules: new DurianModule[]
 					{
@@ -95,7 +95,7 @@ namespace Durian.Info
 					}
 				),
 				new TypeIdentity(
-					name: "EnableModuleAttribute",
+					name: "IncludeTypesAttribute",
 					@namespace: "Durian.Generator",
 					modules: new DurianModule[]
 					{
@@ -112,6 +112,14 @@ namespace Durian.Info
 				),
 				new TypeIdentity(
 					name: "PackageDefinitionAttribute",
+					@namespace: "Durian.Generator",
+					modules: new DurianModule[]
+					{
+						DurianModule.Core,
+					}
+				),
+				new TypeIdentity(
+					name: "MovedFromAttribute",
 					@namespace: "Durian.Generator",
 					modules: new DurianModule[]
 					{

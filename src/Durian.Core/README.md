@@ -1,3 +1,12 @@
+<div align="left">
+    <a href="https://www.nuget.org/packages/Durian.Core">
+        <img src="https://img.shields.io/nuget/v/Durian.Core?color=seagreen&style=flat-square" alt="Version"/>
+    </a>
+    <a href="https://www.nuget.org/packages/Durian.Core">
+        <img src="https://img.shields.io/nuget/dt/Durian.Core?color=mediumgreen" alt="Downloads"/>
+    </a> <br />
+</div>
+
 <div align="center">
         <img src="../../img/icons/Durian.Core-256.png" alt="Durian.Core logo"/>
 </div>

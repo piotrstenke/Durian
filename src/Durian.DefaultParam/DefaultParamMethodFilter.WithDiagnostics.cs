@@ -116,7 +116,7 @@ namespace Durian.Generator.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
-				if(!ShouldBeAnalyzed(diagnosticReceiver, symbol, in typeParameters, compilation, out TypeParameterContainer combinedTypeParameters, cancellationToken))
+				if (!ShouldBeAnalyzed(diagnosticReceiver, symbol, in typeParameters, compilation, out TypeParameterContainer combinedTypeParameters, cancellationToken))
 				{
 					data = null;
 					return false;

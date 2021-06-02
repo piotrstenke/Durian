@@ -7,13 +7,18 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>..\..\bin\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
-    <BaseIntermediateOutputPath>..\..\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-    <MSBuildProjectExtensionsPath>..\..\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
     <Nullable>enable</Nullable>
     <LangVersion>9.0</LangVersion>
     <PreferredUILang>en-US</PreferredUILang>
   
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="!$(MSBuildProjectDirectoryNoRoot.Contains('samples'))">
+  
+	  <OutputPath>..\..\bin\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
+    <BaseIntermediateOutputPath>..\..\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>..\..\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
+	
   </PropertyGroup>
 
   <PropertyGroup Condition="$(MSBuildProjectDirectoryNoRoot.Contains('src'))">
@@ -31,15 +36,14 @@
     <PackageIcon>Durian-pkg-icon-128.png</PackageIcon>
     <PackageIconUrl>..\..\img\icons\Durian-pkg-icon-128.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/piotrstenke/Durian</RepositoryUrl>
+    <ProjectUrl>https://github.com/piotrstenke/Durian/tree/master/${MSBuildProjectName)</ProjectUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>$(BaseIntermediateOutputPath)$(MSBuildProjectName).xml</DocumentationFile>
-    <DebugType>portable</DebugType>
+    <DebugType>embedded</DebugType>
     <Deterministic>true</Deterministic>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <NeutralLanguage>en</NeutralLanguage>
     
   </PropertyGroup>
 

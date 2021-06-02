@@ -1,6 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 
 internal class ReleaseReader : IDisposable
 {
@@ -47,7 +47,7 @@ internal class ReleaseReader : IDisposable
 
 	public HashSet<string> ReadEntries()
 	{
-		while(!IsEnd)
+		while (!IsEnd)
 		{
 			MemberAction action = GetCurrentAction();
 
@@ -76,7 +76,7 @@ internal class ReleaseReader : IDisposable
 
 		while ((line = ReadLine()) is not null && !ShouldStop(line))
 		{
-			if(ShouldSkip(line) || !ValidateEntry(line))
+			if (ShouldSkip(line) || !ValidateEntry(line))
 			{
 				continue;
 			}
@@ -84,7 +84,7 @@ internal class ReleaseReader : IDisposable
 			int index = line.IndexOf('-');
 			string member = line[(index + 1)..].TrimStart();
 
-			if(!_members.Add(member))
+			if (!_members.Add(member))
 			{
 				Console.WriteLine($"Member '{member}' already added! At line: {_currentLine}");
 			}
@@ -104,7 +104,7 @@ internal class ReleaseReader : IDisposable
 
 			int arrow = line.IndexOf("->");
 
-			if(arrow == -1)
+			if (arrow == -1)
 			{
 				Console.WriteLine($"Wrong entry format! Expected move expression (->) At line {_currentLine}");
 				continue;
@@ -113,7 +113,7 @@ internal class ReleaseReader : IDisposable
 			string original = line.Substring(0, arrow).TrimEnd();
 			string target = line.Substring(arrow + 2, line.Length - arrow - 2).TrimStart();
 
-			if(original == target)
+			if (original == target)
 			{
 				continue;
 			}
@@ -223,7 +223,7 @@ internal class ReleaseReader : IDisposable
 
 	private string? ReadLine()
 	{
-		if(_cachedLine is not null)
+		if (_cachedLine is not null)
 		{
 			string temp = _cachedLine;
 			_cachedLine = null;

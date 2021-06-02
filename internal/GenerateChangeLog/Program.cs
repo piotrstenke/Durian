@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Reflection;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
 using Durian.Generator;
 using Durian.Generator.Core;
-using System.IO;
 using Durian.Generator.DefaultParam;
 using Durian.Tests;
-using System.Collections.Generic;
-using System.Reflection.PortableExecutable;
-using System.Text;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 
 internal static class Program
 {
@@ -20,7 +18,7 @@ internal static class Program
 		{
 			string? release = assembly.GetCustomAttribute<PackageDefinitionAttribute>()?.Version;
 
-			if(release is null)
+			if (release is null)
 			{
 				continue;
 			}
@@ -39,7 +37,7 @@ internal static class Program
 
 		foreach (Type type in assembly.GetTypes())
 		{
-			if(type.IsNotPublic)
+			if (type.IsNotPublic)
 			{
 				continue;
 			}
@@ -55,14 +53,14 @@ internal static class Program
 
 	private static void HandleType(Type type, HashSet<string> entries, List<string> add, List<string> move)
 	{
-		if(!ValidateMember(type, type.Name) || !HandleMember(type, entries, add, move, type.FullName!))
+		if (!ValidateMember(type, type.Name) || !HandleMember(type, entries, add, move, type.FullName!))
 		{
 			return;
 		}
 
 		MemberInfo[] members;
 
-		if(type.IsEnum)
+		if (type.IsEnum)
 		{
 			members = type.GetFields().Where(f => f.Name != "value__").ToArray();
 		}
@@ -73,7 +71,7 @@ internal static class Program
 
 		foreach (MemberInfo member in members)
 		{
-			if(member is TypeInfo t)
+			if (member is TypeInfo t)
 			{
 				continue;
 			}
@@ -81,7 +79,7 @@ internal static class Program
 			{
 				string? name = GetMemberName(member, type.FullName!, out string? additionalName);
 
-				if(name is null)
+				if (name is null)
 				{
 					continue;
 				}
@@ -89,7 +87,7 @@ internal static class Program
 				name = name.Replace('`', '\'');
 				HandleMember(member, entries, add, move, name);
 
-				if(additionalName is not null)
+				if (additionalName is not null)
 				{
 					additionalName = additionalName.Replace('`', '\'');
 					HandleMember(member, entries, add, move, additionalName);
@@ -104,16 +102,16 @@ internal static class Program
 
 		if (member is ConstructorInfo c)
 		{
-			if(c.IsPrivate || c.IsAssembly || c.IsFamilyAndAssembly)
+			if (c.IsPrivate || c.IsAssembly || c.IsFamilyAndAssembly)
 			{
 				return null;
 			}
 
 			return GetMethodName(c.GetParameters(), 0, fullTypeName);
 		}
-		else if(member is FieldInfo f)
+		else if (member is FieldInfo f)
 		{
-			if(f.IsPrivate || f.IsAssembly || f.IsFamilyAndAssembly)
+			if (f.IsPrivate || f.IsAssembly || f.IsFamilyAndAssembly)
 			{
 				return null;
 			}
@@ -139,17 +137,17 @@ internal static class Program
 			string? getName = null;
 			string? setName = null;
 
-			if(p.GetGetMethod() is MethodInfo get && !(get.IsPrivate || get.IsAssembly || get.IsFamilyAndAssembly))
+			if (p.GetGetMethod() is MethodInfo get && !(get.IsPrivate || get.IsAssembly || get.IsFamilyAndAssembly))
 			{
 				getName = fullTypeName + "." + get.Name;
 			}
 
-			if(p.GetSetMethod() is MethodInfo set && !(set.IsPrivate || set.IsAssembly || set.IsFamilyAndAssembly))
+			if (p.GetSetMethod() is MethodInfo set && !(set.IsPrivate || set.IsAssembly || set.IsFamilyAndAssembly))
 			{
 				setName = fullTypeName + "." + set.Name;
 			}
 
-			if(getName is null)
+			if (getName is null)
 			{
 				return setName;
 			}
@@ -157,7 +155,7 @@ internal static class Program
 			additionalName = setName;
 			return getName;
 		}
-		else if(member is EventInfo e)
+		else if (member is EventInfo e)
 		{
 			string? addName = null;
 			string? remName = null;
@@ -181,7 +179,7 @@ internal static class Program
 			return addName;
 		}
 
-		return fullTypeName + "." + member.Name; 
+		return fullTypeName + "." + member.Name;
 	}
 
 	private static bool ValidateMember(MemberInfo member, string name)
@@ -224,7 +222,7 @@ internal static class Program
 
 	private static string GetMethodName(ParameterInfo[] parameters, int numTypeParameters, string fullName)
 	{
-		if(parameters.Length == 0)
+		if (parameters.Length == 0)
 		{
 			return fullName + "()";
 		}
@@ -232,7 +230,7 @@ internal static class Program
 		StringBuilder builder = new(256);
 		builder.Append(fullName);
 
-		if(numTypeParameters > 0)
+		if (numTypeParameters > 0)
 		{
 			builder.Append('\'').Append(numTypeParameters);
 		}
@@ -269,7 +267,7 @@ internal static class Program
 		hasValue |= WriteSection("Moved", moved);
 		hasValue |= WriteSection("Removed", removed);
 
-		if(hasValue)
+		if (hasValue)
 		{
 			builder.AppendLine();
 			File.AppendAllText(filePath, builder.ToString(), Encoding.UTF8);

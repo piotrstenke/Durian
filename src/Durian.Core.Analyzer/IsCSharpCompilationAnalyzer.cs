@@ -41,7 +41,7 @@ namespace Durian.Generator.Core
 				return;
 			}
 
-			if(c.LanguageVersion < LanguageVersion.CSharp9)
+			if (c.LanguageVersion < LanguageVersion.CSharp9)
 			{
 				context.ReportDiagnostic(Diagnostic.Create(DUR0006_ProjectMustUseCSharp9, Location.None));
 			}

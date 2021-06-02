@@ -1,3 +1,12 @@
+<div align="left">
+    <a href="https://www.nuget.org/packages/Durian.DefaultParam">
+        <img src="https://img.shields.io/nuget/v/Durian.DefaultParam?color=seagreen&style=flat-square" alt="Version"/>
+    </a>
+    <a href="https://www.nuget.org/packages/Durian.DefaultParam">
+        <img src="https://img.shields.io/nuget/dt/Durian.DefaultParam?color=mediumgreen" alt="Downloads"/>
+    </a> <br />
+</div>
+
 <div align="center">
         <img src="../../img/icons/Durian.DefaultParam-256.png" alt="Durian.DefaultParam logo"/>
 </div>

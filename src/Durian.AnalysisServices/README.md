@@ -1,3 +1,16 @@
+<div align="left">
+    <a href="https://www.nuget.org/packages/Durian.AnalysisServices">
+        <img src="https://img.shields.io/nuget/v/Durian.AnalysisServices?color=seagreen&style=flat-square" alt="Version"/>
+    </a>
+    <a href="https://www.nuget.org/packages/Durian.AnalysisServices">
+        <img src="https://img.shields.io/nuget/dt/Durian.AnalysisServices?color=mediumgreen" alt="Downloads"/>
+    </a> <br />
+</div>
+
 # Analysis Services
 
 *Durian.AnalysisServices* is the base package for all Durian analyzers and source generators, oferring solutions for most features a Roslyn-based service could require, such as logging, code generation, node filtration, member data containers, and much more.
+
+##
+
+*\(Written by Piotr Stenke\)*

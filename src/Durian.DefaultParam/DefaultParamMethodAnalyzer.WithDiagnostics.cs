@@ -289,7 +289,7 @@ namespace Durian.Generator.DefaultParam
 
 			private static bool AnalyzeCore(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
 			{
-				if(!ShouldBeAnalyzed(
+				if (!ShouldBeAnalyzed(
 					diagnosticReceiver,
 					symbol,
 					in typeParameters,
