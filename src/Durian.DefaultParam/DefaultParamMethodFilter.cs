@@ -176,6 +176,9 @@ namespace Durian.Generator.DefaultParam
 
 					if (AnalyzeMethodSignature(symbol, in combinedParameters, compilation, attributes, symbols, out HashSet<int>? newModifiers, cancellationToken))
 					{
+						bool call = ShouldCallInsteadOfCopying(symbol, compilation, attributes!, symbols);
+						string targetNamespace = GetTargetNamespace(symbol, attributes, symbols, compilation);
+
 						data = new(
 							declaration,
 							compilation,
@@ -186,7 +189,8 @@ namespace Durian.Generator.DefaultParam
 							attributes,
 							in combinedParameters,
 							newModifiers,
-							ShouldCallInsteadOfCopying(symbol, compilation, attributes!, symbols)
+							call,
+							targetNamespace
 						);
 
 						return true;

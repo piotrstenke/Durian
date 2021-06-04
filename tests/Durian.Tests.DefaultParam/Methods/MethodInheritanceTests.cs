@@ -109,11 +109,13 @@ partial class Child : Parent
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method<T>(T value)
 	{{
+		Method<T, string>(value);
 	}}
 
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method(int value)
 	{{
+		Method<int, string>(value);
 	}}
 }}
 ";
@@ -147,11 +149,13 @@ partial class Child : Parent
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method<T>(T value)
 	{{
+		Method<T, string>(value);
 	}}
 
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method(int value)
 	{{
+		Method<int, string>(value);
 	}}
 }}
 ";
@@ -192,6 +196,7 @@ $@"partial class Child
 	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
 	public override void Method(int value)
 	{{
+		Method<int>(value);
 	}}
 }}
 ";
@@ -228,6 +233,7 @@ $@"partial class Child
 	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
 	public override void Method(int value)
 	{{
+		Method<int>(value);
 	}}
 }}
 ";
@@ -264,11 +270,13 @@ $@"partial class Child
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method<T>(T value)
 	{{
+		Method<T, string>(value);
 	}}
 
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method(int value)
 	{{
+		Method<int, string>(value);
 	}}
 }}
 ";
@@ -296,6 +304,7 @@ partial class Child : Parent
 {{
 	public override void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>(T value)
 	{{
+		Method<int>(value);
 	}}
 }}
 ";
@@ -353,6 +362,7 @@ partial class Child : Parent
 	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
 	public new void Method(int value)
 	{{
+		Method<int>(value);
 	}}
 }}
 ";
@@ -387,6 +397,7 @@ $@"partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	public void Method()
 	{{
+		Method<string>();
 	}}
 }}
 ";

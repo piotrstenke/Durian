@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Durian.Generator.Data;
+using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -31,6 +32,11 @@ namespace Durian.Generator.DefaultParam
 		public bool Inherit { get; }
 
 		/// <summary>
+		/// Specifies the namespace where the target member should be generated in.
+		/// </summary>
+		public string TargetNamespace { get; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamTypeData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="TypeDeclarationSyntax"/> this <see cref="DefaultParamTypeData"/> represents.</param>
@@ -42,6 +48,7 @@ namespace Durian.Generator.DefaultParam
 		public DefaultParamTypeData(TypeDeclarationSyntax declaration, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters) : base(declaration, compilation)
 		{
 			_typeParameters = typeParameters;
+			TargetNamespace = GetContainingNamespaces().JoinNamespaces();
 		}
 
 		/// <summary>
@@ -59,6 +66,8 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
 		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
 		/// <param name="inherit">Determines whether the generated members should inherit the original type.</param>
+		/// <param name="targetNamespace">Specifies the namespace where the target member should be generated in.</param>
+		[MovedFrom("Durian.Generator.DefaultParam.DefaultParamTypeData(Microsoft.CodeAnalysis.CSharp.Syntax.TypeDeclarationSyntax declaration, Durian.Generator.DefaultParam.DefaultParamCompilationData compilation, Microsoft.CodeAnalysis.INamedTypeSymbol symbol, Microsoft.CodeAnalysis.SemanticModel semanticModel, System.Collections.Generic.IEnumerable'1[Microsoft.CodeAnalysis.CSharp.Syntax.TypeDeclarationSyntax] partialDeclarations, System.Collections.Generic.IEnumerable'1[Microsoft.CodeAnalysis.SyntaxToken] modifiers, System.Collections.Generic.IEnumerable'1[Durian.Generator.Data.ITypeData] containingTypes, System.Collections.Generic.IEnumerable'1[Microsoft.CodeAnalysis.INamespaceSymbol] containingNamespaces, System.Collections.Generic.IEnumerable'1[Microsoft.CodeAnalysis.AttributeData] attributes, Durian.Generator.DefaultParam.TypeParameterContainer& typeParameters, System.Collections.Generic.HashSet'1[System.Int32] newModifierIndexes, Boolean inherit)")]
 		public DefaultParamTypeData(
 			TypeDeclarationSyntax declaration,
 			DefaultParamCompilationData compilation,
@@ -71,12 +80,14 @@ namespace Durian.Generator.DefaultParam
 			IEnumerable<AttributeData>? attributes,
 			in TypeParameterContainer typeParameters,
 			HashSet<int>? newModifierIndexes,
-			bool inherit
+			bool inherit,
+			string targetNamespace
 		) : base(declaration, compilation, symbol, semanticModel, partialDeclarations, modifiers, containingTypes, containingNamespaces, attributes)
 		{
 			_typeParameters = typeParameters;
 			NewModifierIndexes = newModifierIndexes;
 			Inherit = inherit;
+			TargetNamespace = targetNamespace;
 		}
 
 		/// <inheritdoc/>

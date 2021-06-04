@@ -48,7 +48,7 @@ partial class Parent : Inner
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
-	new class Test
+	new class Test : Test<int>
 	{{
 	}}
 }}
@@ -128,7 +128,7 @@ partial class Parent : Inner
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
-	new class Test<T>
+	new class Test<T> : Test<T, int>
 	{{
 	}}
 }}
@@ -214,7 +214,7 @@ partial interface IChild : IParent
 $@"partial interface IChild
 {{
 	{GetCodeGenerationAttributes("IChild.Test<T>")}
-	new class Test
+	new class Test : Test<string>
 	{{
 	}}
 }}";
@@ -250,7 +250,7 @@ partial class Parent : Inner
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
-	new class Test
+	new class Test : Test<int>
 	{{
 	}}
 }}
@@ -277,7 +277,7 @@ class Inner
 [{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
 partial class Parent : Inner
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T> : Test<int>
 	{{
 	}}
 }}
@@ -315,7 +315,7 @@ partial class Parent : Inner
 partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
-	new class Test
+	new class Test : Test<int>
 	{{
 	}}
 }}
@@ -379,7 +379,7 @@ partial class Parent : Inner
 partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
-	new class Test
+	new class Test : Test<int>
 	{{
 	}}
 }}
@@ -441,7 +441,7 @@ partial class Parent : Inner
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
-	new class Test<T>
+	new class Test<T> : Test<T, int>
 	{{
 	}}
 }}
@@ -481,7 +481,7 @@ partial class Parent : Inner
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U, V>")}
-	new class Test<T, U>
+	new class Test<T, U> : Test<T, U, int>
 	{{
 	}}
 }}
@@ -544,7 +544,7 @@ partial class Parent : Inner
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
-	class Test
+	class Test : Test<int>
 	{{
 	}}
 }}

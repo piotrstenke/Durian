@@ -1,5 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
+using Durian.Configuration;
+using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,7 +17,8 @@ namespace Durian.Generator.DefaultParam
 	{
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
-			DefaultParamDiagnostics.DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers
+			DefaultParamDiagnostics.DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers,
+			DefaultParamDiagnostics.DUR0127_InvalidTargetNamespace
 		);
 
 		/// <summary>
@@ -39,27 +42,26 @@ namespace Durian.Generator.DefaultParam
 
 		private static void Analyze(SyntaxNodeAnalysisContext context, DefaultParamCompilationData compilation)
 		{
-			if (context.Node is not AttributeSyntax syntax || syntax.Parent?.Parent is not TypeDeclarationSyntax node)
+			if (context.Node is not AttributeSyntax syntax || syntax.Parent?.Parent is not MemberDeclarationSyntax parent)
 			{
 				return;
 			}
 
 			INamedTypeSymbol? configurationAttribute = context.SemanticModel.GetSymbolInfo(syntax).Symbol?.ContainingType;
 
-			if (configurationAttribute is null || !SymbolEqualityComparer.Default.Equals(configurationAttribute, compilation.ScopedConfigurationAttribute))
+			if (configurationAttribute is null ||
+				!SymbolEqualityComparer.Default.Equals(configurationAttribute, compilation.ScopedConfigurationAttribute) ||
+				context.SemanticModel.GetDeclaredSymbol(parent) is not ISymbol symbol)
 			{
 				return;
 			}
 
-			if (context.SemanticModel.GetDeclaredSymbol(node) is not INamedTypeSymbol symbol)
-			{
-				return;
-			}
-
-			if (!HasMemberWithDefaultParamAttribute(symbol, compilation.MainAttribute!))
+			if (parent is TypeDeclarationSyntax && symbol is INamedTypeSymbol type && !HasMemberWithDefaultParamAttribute(type, compilation.MainAttribute!))
 			{
 				context.ReportDiagnostic(Diagnostic.Create(DefaultParamDiagnostics.DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers, symbol.Locations.FirstOrDefault(), symbol));
 			}
+
+			ReportIfInvalidTargetNamespace(symbol, syntax, context);
 		}
 
 		private static bool HasMemberWithDefaultParamAttribute(INamedTypeSymbol symbol, INamedTypeSymbol attributeSymbol)
@@ -96,6 +98,29 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return false;
+		}
+
+		private static void ReportIfInvalidTargetNamespace(ISymbol symbol, AttributeSyntax node, SyntaxNodeAnalysisContext context)
+		{
+			const string propertyName = nameof(DefaultParamConfigurationAttribute.TargetNamespace);
+
+			if (node.ArgumentList is null || !node.ArgumentList.Arguments.Any())
+			{
+				return;
+			}
+
+			AttributeArgumentSyntax? argument = node.ArgumentList.Arguments.FirstOrDefault(arg => arg.NameEquals is not null && arg.NameEquals.Name.ToString() == propertyName);
+
+			if (argument is not null &&
+				symbol.GetAttributeData(node, context.CancellationToken) is AttributeData data &&
+				data.TryGetNamedArgumentValue(propertyName, out string? value) &&
+				value is not null)
+			{
+				if (value == "Durian.Generator" || !AnalysisUtilities.IsValidNamespaceIdentifier(value))
+				{
+					context.ReportDiagnostic(Diagnostic.Create(DefaultParamDiagnostics.DUR0127_InvalidTargetNamespace, argument.GetLocation(), symbol, value));
+				}
+			}
 		}
 	}
 }

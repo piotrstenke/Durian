@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace Durian.Generator
 {
 	/// <summary>
-	/// Specifies that the target member was moved from another location.
+	/// Specifies that the target member was moved from another location in the previous release.
 	/// </summary>
-	[Conditional("DEBUG")]
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Enum | AttributeTargets.Delegate | AttributeTargets.Event, AllowMultiple = false, Inherited = false)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Enum | AttributeTargets.Delegate | AttributeTargets.Event | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
 	public sealed class MovedFromAttribute : Attribute
 	{
 		/// <summary>

@@ -42,13 +42,10 @@ public partial class Test<[DefaultParam(typeof(string))]T>
 
 // Generated
 
-public partial class Test
+public class Test : Test<string>
 {
-    public string Value { get; }
-
-    public Test(string value)
+    public Test(string value) : base(value)
     {
-        Value = value;
     }
 }
 

@@ -1129,8 +1129,10 @@ namespace Durian.Generator.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
+		/// <param name="order">Specifies order at types members should be returned.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<ITypeData> GetContainingTypes(this ISymbol symbol, ICompilationData compilation)
+		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingTypes(Microsoft.CodeAnalysis.ISymbol symbol, Durian.Generator.Data.ICompilationData compilation)")]
+		public static IEnumerable<ITypeData> GetContainingTypes(this ISymbol symbol, ICompilationData compilation, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)
 			{
@@ -1142,7 +1144,7 @@ namespace Durian.Generator.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			INamedTypeSymbol[] parentSymbols = GetContainingTypeSymbols(symbol).ToArray();
+			INamedTypeSymbol[] parentSymbols = GetContainingTypeSymbols(symbol, order).ToArray();
 			List<ITypeData> parentList = new(parentSymbols.Length);
 
 			return parentSymbols.Select<INamedTypeSymbol, ITypeData>(parent =>
@@ -1191,17 +1193,19 @@ namespace Durian.Generator.Extensions
 		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
+		/// <param name="order">Specifies order at types members should be returned.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<INamedTypeSymbol> GetContainingTypeSymbols(this ISymbol symbol)
+		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingTypeSymbols(Microsoft.CodeAnalysis.ISymbol symbol)")]
+		public static IEnumerable<INamedTypeSymbol> GetContainingTypeSymbols(this ISymbol symbol, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)
 			{
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			return GetTypes_WrongOrder().Reverse();
+			return AnalysisUtilities.ReturnByOrder(GetTypes(), order);
 
-			IEnumerable<INamedTypeSymbol> GetTypes_WrongOrder()
+			IEnumerable<INamedTypeSymbol> GetTypes()
 			{
 				INamedTypeSymbol parent = symbol.ContainingType;
 
@@ -1262,15 +1266,17 @@ namespace Durian.Generator.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent namespaces of.</param>
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
+		/// <param name="order">Specifies order at types members should be returned.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this ISymbol symbol, bool includeGlobal = false)
+		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingNamespaces(Microsoft.CodeAnalysis.ISymbol symbol, Boolean includeGlobal)")]
+		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this ISymbol symbol, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)
 			{
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			IEnumerable<INamespaceSymbol> namespaces = GetNamespaces_WrongOrder().Reverse();
+			IEnumerable<INamespaceSymbol> namespaces = AnalysisUtilities.ReturnByOrder(GetNamespaces(), order);
 
 			if (!includeGlobal)
 			{
@@ -1279,7 +1285,7 @@ namespace Durian.Generator.Extensions
 
 			return namespaces;
 
-			IEnumerable<INamespaceSymbol> GetNamespaces_WrongOrder()
+			IEnumerable<INamespaceSymbol> GetNamespaces()
 			{
 				INamespaceSymbol parent = symbol.ContainingNamespace;
 

@@ -17,6 +17,7 @@ namespace Durian.Samples.DefaultParam
 			Logger<string> logger = new();
 
 			// This is a new instance of the generated, Logger<T>-based Logger class.
+			// Logger has the TypeConvention.Copy applied.
 			Logger generatedLogger = new();
 
 			// The usage of 'string' is identical to Logger<string>.

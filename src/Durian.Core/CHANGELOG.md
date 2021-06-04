@@ -278,3 +278,12 @@
  - Durian.Configuration.DPTypeConvention.Copy
  - Durian.Configuration.DPTypeConvention.Inherit
 
+## Realease 1.1.0
+
+### Added
+
+ - Durian.Configuration.DefaultParamConfigurationAttribute.get_TargetNamespace
+ - Durian.Configuration.DefaultParamConfigurationAttribute.set_TargetNamespace
+ - Durian.Configuration.DefaultParamScopedConfigurationAttribute.get_TargetNamespace
+ - Durian.Configuration.DefaultParamScopedConfigurationAttribute.set_TargetNamespace
+

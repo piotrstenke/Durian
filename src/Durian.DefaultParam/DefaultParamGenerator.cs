@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Durian.Generator.Data;
 using Durian.Generator.Extensions;
 using Durian.Generator.Logging;
@@ -18,7 +19,7 @@ namespace Durian.Generator.DefaultParam
 		/// <summary>
 		/// Version of this source generator.
 		/// </summary>
-		public static string Version => "1.0.0";
+		public static string Version => "1.1.0";
 
 		/// <summary>
 		/// Name of this source generator, i.e. 'DefaultParam'.
@@ -179,7 +180,22 @@ namespace Durian.Generator.DefaultParam
 
 		private void WriteTargetLeadDeclaration(IDefaultParamTarget target)
 		{
-			CodeBuilder.WriteDeclarationLead(target, AnalysisUtilities.SortUsings(target.GetUsedNamespaces()), GeneratorName, Version);
+			CodeBuilder.WriteHeader(GeneratorName, Version);
+			CodeBuilder.AppendLine();
+			string[] namespaces = AnalysisUtilities.SortUsings(target.GetUsedNamespaces()).ToArray();
+
+			if (namespaces.Length > 0)
+			{
+				CodeBuilder.WriteUsings(namespaces);
+				CodeBuilder.AppendLine();
+			}
+
+			if (target.TargetNamespace != "global")
+			{
+				CodeBuilder.BeginNamespaceDeclaration(target.TargetNamespace);
+			}
+
+			CodeBuilder.WriteParentDeclarations(target.GetContainingTypes());
 		}
 
 		private void GenerateAllVersionsOfTarget(IDefaultParamTarget target, in GeneratorExecutionContext context)

@@ -1,4 +1,5 @@
-﻿using Durian.Generator;
+﻿using Durian.Configuration;
+using Durian.Generator;
 using Xunit;
 
 namespace Durian.Tests.DefaultParam.Types
@@ -38,7 +39,7 @@ partial class Parent
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
-	class Test
+	class Test : Test<int>
 	{{
 	}}
 }}
@@ -71,7 +72,7 @@ partial class Parent
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	[CLSCompliant(true)]
 	[Obsolete]
-	class Test
+	class Test : Test<int>
 	{{
 	}}
 }}
@@ -97,7 +98,7 @@ partial class Parent
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
-	class Test
+	class Test : Test<int>
 	{{
 	}}
 }}
@@ -123,12 +124,12 @@ partial class Parent
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
-	class Test<T>
+	class Test<T> : Test<T, string>
 	{{
 	}}
 
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
-	class Test
+	class Test : Test<int, string>
 	{{
 	}}
 }}
@@ -154,7 +155,7 @@ partial class Parent
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
-	class Test<T>
+	class Test<T> : Test<T, string>
 	{{
 	}}
 }}
@@ -167,9 +168,12 @@ partial class Parent
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
-using System.Collections;
+using {DurianStrings.ConfigurationNamespace};
 using System;
+using System.Collections;
 using System.Collections.Generic;
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{
@@ -227,7 +231,7 @@ partial class Parent
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
-	class Test
+	class Test : Test<int>
 	{{
 	}}
 }}
@@ -241,6 +245,9 @@ partial class Parent
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{
@@ -277,6 +284,9 @@ partial class Parent
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{
@@ -307,6 +317,7 @@ partial class Parent
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Parent
 {{
@@ -320,7 +331,7 @@ partial class Parent
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
-	public class Test
+	public class Test : Test<string>
 	{{
 	}}
 }}
@@ -335,8 +346,11 @@ partial class Parent
 			string input =
 @$"using {DurianStrings.MainNamespace};
 using System.Collections.Generic;
-using System.Numerics;
 using System;
+using System.Numerics;
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{
@@ -402,7 +416,7 @@ partial class Parent
 			public partial class Parent
 			{{
 				{GetCodeGenerationAttributes("N1.N2.Parent.Child.Parent.Test<T>", 4)}
-				public class Test
+				public class Test : Test<int>
 				{{
 				}}
 			}}
@@ -425,9 +439,8 @@ class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
 ";
 
 			string expected =
-@$"
-{GetCodeGenerationAttributes("Test<T>", 0)}
-class Test
+@$"{GetCodeGenerationAttributes("Test<T>", 0)}
+class Test : Test<int>
 {{
 }}
 ";
@@ -453,7 +466,7 @@ namespace Parent
 @$"namespace Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
-	public class Test
+	public class Test : Test<string>
 	{{
 	}}
 }}
@@ -479,7 +492,7 @@ partial class Parent<TNumber>
 @$"partial class Parent<TNumber>
 {{
 	{GetCodeGenerationAttributes("Parent<TNumber>.Test<T>")}
-	class Test
+	class Test : Test<string>
 	{{
 	}}
 }}
@@ -505,7 +518,7 @@ partial class Parent<TNumber> where TNumber : class
 @$"partial class Parent<TNumber>
 {{
 	{GetCodeGenerationAttributes("Parent<TNumber>.Test<T>")}
-	class Test
+	class Test : Test<string>
 	{{
 	}}
 }}
@@ -525,17 +538,17 @@ interface ITest<[{nameof(DefaultParamAttribute)}(typeof(float))]out T, [{nameof(
 ";
 			string expected =
 $@"{GetCodeGenerationAttributes("ITest<T, U, V>")}
-interface ITest<out T, in U>
+interface ITest<out T, in U> : ITest<T, U, int>
 {{
 }}
 
 {GetCodeGenerationAttributes("ITest<T, U, V>")}
-interface ITest<out T>
+interface ITest<out T> : ITest<T, string, int>
 {{
 }}
 
 {GetCodeGenerationAttributes("ITest<T, U, V>")}
-interface ITest
+interface ITest : ITest<float, string, int>
 {{
 }}
 ";
@@ -560,7 +573,7 @@ partial interface ITest<in TType, out TName>
 $@"partial interface ITest<in TType, out TName>
 {{
 	{GetCodeGenerationAttributes("ITest<TType, TName>.Test<T>")}
-	class Test
+	class Test : Test<string>
 	{{
 	}}
 }}";
@@ -590,7 +603,7 @@ partial class Parent
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
-	class Test<T>
+	class Test<T> : Test<T, string>
 	{{
 	}}
 }}
@@ -621,7 +634,7 @@ partial class Parent : Parent
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
-	class Test<T>
+	class Test<T> : Test<T, string>
 	{{
 	}}
 }}
@@ -646,7 +659,7 @@ class Test<T, [{nameof(DefaultParamAttribute)}(typeof(string)]U>
 
 			string expected =
 @$"{GetCodeGenerationAttributes("Test<T, U>")}
-class Test<T>
+class Test<T> : Test<T, string>
 {{
 }}
 ";
@@ -658,6 +671,9 @@ class Test<T>
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent<TNumber> where TNumber : class
 {{
@@ -688,6 +704,9 @@ partial class Parent<TNumber> where TNumber : class
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{
@@ -718,6 +737,9 @@ partial class Parent
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{
@@ -746,6 +768,9 @@ partial class Parent
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{
@@ -776,6 +801,9 @@ partial class Parent
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{
@@ -806,6 +834,9 @@ partial class Parent
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{
@@ -834,6 +865,9 @@ partial class Parent
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{
@@ -862,6 +896,9 @@ partial class Parent
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{
@@ -895,6 +932,9 @@ partial class Parent
 			string input =
 @$"using {DurianStrings.MainNamespace};
 using System.Collections;
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)}]
 
 partial class Parent
 {{

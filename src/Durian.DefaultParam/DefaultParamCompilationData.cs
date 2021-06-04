@@ -105,19 +105,21 @@ namespace Durian.Generator.DefaultParam
 				return DefaultParamConfiguration.Default;
 			}
 
-			const string applyNew = nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible);
-			const string methodConvention = nameof(DefaultParamScopedConfigurationAttribute.MethodConvention);
-			const string typeConvention = nameof(DefaultParamScopedConfigurationAttribute.TypeConvention);
-
 			foreach (AttributeData attribute in compilation.Assembly.GetAttributes())
 			{
 				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, configurationAttribute))
 				{
+					bool applyNewModififer = !attribute.TryGetNamedArgumentValue(nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible), out bool value) || value;
+					DPMethodConvention methodCon = (DPMethodConvention)DefaultParamUtilities.GetValidConventionEnumValue(attribute.GetNamedArgumentValue<int>(nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)));
+					DPTypeConvention typeCon = (DPTypeConvention)DefaultParamUtilities.GetValidConventionEnumValue(attribute.GetNamedArgumentValue<int>(nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)));
+					string? @namespace = attribute.GetNamedArgumentValue<string>(nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace));
+
 					return new()
 					{
-						ApplyNewModifierWhenPossible = attribute.GetNamedArgumentValue<bool>(applyNew),
-						MethodConvention = (DPMethodConvention)attribute.GetNamedArgumentValue<int>(methodConvention),
-						TypeConvention = (DPTypeConvention)attribute.GetNamedArgumentValue<int>(typeConvention)
+						ApplyNewModifierWhenPossible = applyNewModififer,
+						MethodConvention = methodCon,
+						TypeConvention = typeCon,
+						TargetNamespace = @namespace
 					};
 				}
 			}

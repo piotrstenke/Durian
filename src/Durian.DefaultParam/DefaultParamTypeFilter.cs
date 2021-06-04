@@ -171,6 +171,7 @@ namespace Durian.Generator.DefaultParam
 				if (AnalyzeCollidingMembers(symbol, in typeParameters, compilation, attributes, symbols, out HashSet<int>? applyNewModifiers, cancellationToken))
 				{
 					bool inherit = ShouldInheritInsteadOfCopying(symbol, compilation, attributes, symbols);
+					string targetNamespace = GetTargetNamespace(symbol, attributes, symbols, compilation);
 
 					data = new DefaultParamTypeData(
 						declaration,
@@ -184,7 +185,8 @@ namespace Durian.Generator.DefaultParam
 						attributes,
 						typeParameters,
 						applyNewModifiers,
-						inherit
+						inherit,
+						targetNamespace
 					);
 
 					return true;

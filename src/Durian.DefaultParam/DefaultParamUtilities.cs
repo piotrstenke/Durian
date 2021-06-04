@@ -242,7 +242,7 @@ namespace Durian.Generator.DefaultParam
 			const string configPropertyName = nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible);
 			const string scopedPropertyName = nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible);
 
-			if (TryGetConfigurationPropertyName(attributes, compilation.ConfigurationAttribute!, configPropertyName, out bool value))
+			if (TryGetConfigurationPropertyValue(attributes, compilation.ConfigurationAttribute!, configPropertyName, out bool value))
 			{
 				return value;
 			}
@@ -254,9 +254,9 @@ namespace Durian.Generator.DefaultParam
 				{
 					INamedTypeSymbol scopedAttribute = compilation.ScopedConfigurationAttribute!;
 
-					for (int i = 0; i < length; i++)
+					foreach (INamedTypeSymbol type in containingTypes.Reverse())
 					{
-						if (TryGetConfigurationPropertyName(containingTypes[i].GetAttributes(), scopedAttribute, scopedPropertyName, out value))
+						if (TryGetConfigurationPropertyValue(type.GetAttributes(), scopedAttribute, scopedPropertyName, out value))
 						{
 							return value;
 						}
@@ -277,7 +277,7 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="defaultValue">Value to be returned when no other valid configuration value is found.</param>
 		public static int GetConfigurationEnumValue(string propertyName, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation, int defaultValue)
 		{
-			if (!TryGetConfigurationPropertyName(attributes, compilation.ConfigurationAttribute!, propertyName, out int value))
+			if (!TryGetConfigurationPropertyValue(attributes, compilation.ConfigurationAttribute!, propertyName, out int value))
 			{
 				return GetConfigurationEnumValueOnContainingTypes(propertyName, containingTypes, compilation, defaultValue);
 			}
@@ -300,9 +300,9 @@ namespace Durian.Generator.DefaultParam
 			{
 				INamedTypeSymbol scopedAttribute = compilation.ScopedConfigurationAttribute!;
 
-				for (int i = 0; i < length; i++)
+				foreach (INamedTypeSymbol type in containingTypes.Reverse())
 				{
-					if (TryGetConfigurationPropertyName(containingTypes[i].GetAttributes(), scopedAttribute, propertyName, out int value))
+					if (TryGetConfigurationPropertyValue(type.GetAttributes(), scopedAttribute, propertyName, out int value))
 					{
 						return value;
 					}
@@ -341,7 +341,7 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="configurationAttribute"><see cref="INamedTypeSymbol"/> of the configuration attribute.</param>
 		/// <param name="propertyName">Name of property to get the value of.</param>
 		/// <param name="value">Returned enum value as an <see cref="int"/>.</param>
-		public static bool TryGetConfigurationPropertyName<T>(IEnumerable<AttributeData> attributes, INamedTypeSymbol configurationAttribute, string propertyName, out T? value)
+		public static bool TryGetConfigurationPropertyValue<T>(IEnumerable<AttributeData> attributes, INamedTypeSymbol configurationAttribute, string propertyName, out T? value)
 		{
 			AttributeData? attr = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, configurationAttribute));
 
@@ -426,7 +426,13 @@ namespace Durian.Generator.DefaultParam
 		public static IEnumerable<string> GetUsedNamespaces(IDefaultParamTarget target, in TypeParameterContainer parameters, CancellationToken cancellationToken = default)
 		{
 			int defaultParamCount = parameters.NumDefaultParam;
+			string currentNamespace = target.GetContainingNamespaces().JoinNamespaces();
 			List<string> namespaces = GetUsedNamespacesList(target, defaultParamCount, cancellationToken);
+
+			if (!string.IsNullOrWhiteSpace(currentNamespace) && target.TargetNamespace != currentNamespace && !namespaces.Contains(currentNamespace))
+			{
+				namespaces.Add(currentNamespace);
+			}
 
 			for (int i = 0; i < defaultParamCount; i++)
 			{
@@ -446,6 +452,20 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return namespaces;
+		}
+
+		/// <summary>
+		/// Returns an <see cref="int"/> representing a valid value of one of the convention enums (<see cref="DPMethodConvention"/> and <see cref="DPTypeConvention"/>).
+		/// </summary>
+		/// <param name="value">Value that is potentially invalid and should be converted to a valid one.</param>
+		public static int GetValidConventionEnumValue(int value)
+		{
+			if (value == 2)
+			{
+				return value;
+			}
+
+			return 1;
 		}
 
 		/// <summary>

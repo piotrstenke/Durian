@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Durian.Generator.Data;
+using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -32,6 +33,9 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public bool CallInsteadOfCopying { get; }
 
+		/// <inheritdoc cref="DefaultParamTypeData.TargetNamespace"/>
+		public string TargetNamespace { get; }
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamMethodData"/> class.
 		/// </summary>
@@ -44,6 +48,7 @@ namespace Durian.Generator.DefaultParam
 		public DefaultParamMethodData(MethodDeclarationSyntax declaration, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters) : base(declaration, compilation)
 		{
 			_typeParameters = typeParameters;
+			TargetNamespace = GetContainingNamespaces().JoinNamespaces();
 		}
 
 		/// <summary>
@@ -59,6 +64,8 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
 		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
 		/// <param name="callInsteadOfCopying">Determines whether the generated method should call this method instead of copying its contents.</param>
+		/// <param name="targetNamespace">Specifies the namespace where the target member should be generated in.</param>
+		[MovedFrom("Durian.Generator.DefaultParam.DefaultParamMethodData(Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax declaration, Durian.Generator.DefaultParam.DefaultParamCompilationData compilation, Microsoft.CodeAnalysis.IMethodSymbol symbol, Microsoft.CodeAnalysis.SemanticModel semanticModel, System.Collections.Generic.IEnumerable'1[Durian.Generator.Data.ITypeData] containingTypes, System.Collections.Generic.IEnumerable'1[Microsoft.CodeAnalysis.INamespaceSymbol] containingNamespaces, System.Collections.Generic.IEnumerable'1[Microsoft.CodeAnalysis.AttributeData] attributes, Durian.Generator.DefaultParam.TypeParameterContainer& typeParameters, System.Collections.Generic.HashSet'1[System.Int32] newModifierIndexes, Boolean callInsteadOfCopying)")]
 		public DefaultParamMethodData(
 			MethodDeclarationSyntax declaration,
 			DefaultParamCompilationData compilation,
@@ -69,12 +76,14 @@ namespace Durian.Generator.DefaultParam
 			IEnumerable<AttributeData>? attributes,
 			in TypeParameterContainer typeParameters,
 			HashSet<int>? newModifierIndexes,
-			bool callInsteadOfCopying
+			bool callInsteadOfCopying,
+			string targetNamespace
 		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
 		{
 			_typeParameters = typeParameters;
 			CallInsteadOfCopying = callInsteadOfCopying;
 			NewModifierIndexes = newModifierIndexes;
+			TargetNamespace = targetNamespace;
 		}
 
 		/// <inheritdoc/>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Generator.Extensions
@@ -52,7 +51,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="position">Position where the target argument is to be found.</param>
 		/// <param name="value">Value of the argument.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
-		public static bool TryGetConstructorArgumentValue<T>(this AttributeData attribute, int position, [MaybeNull] out T value)
+		public static bool TryGetConstructorArgumentValue<T>(this AttributeData attribute, int position, out T? value)
 		{
 			if (attribute is null)
 			{
@@ -84,8 +83,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
 		/// <param name="position">Position where the target argument is to be found.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
-		[return: MaybeNull]
-		public static T GetConstructorArgumentValue<T>(this AttributeData attribute, int position)
+		public static T? GetConstructorArgumentValue<T>(this AttributeData attribute, int position)
 		{
 			TryGetConstructorArgumentValue(attribute, position, out T? value);
 			return value;
@@ -283,7 +281,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="argumentName">Name of the argument to get the <paramref name="value"/> of.</param>
 		/// <param name="value">Value of the argument.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
-		public static bool TryGetNamedArgumentValue<T>(this AttributeData attribute, string argumentName, [MaybeNull] out T value)
+		public static bool TryGetNamedArgumentValue<T>(this AttributeData attribute, string argumentName, out T? value)
 		{
 			if (attribute is null)
 			{
@@ -318,8 +316,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
 		/// <param name="argumentName">Name of the argument to get the value of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
-		[return: MaybeNull]
-		public static T GetNamedArgumentValue<T>(this AttributeData attribute, string argumentName)
+		public static T? GetNamedArgumentValue<T>(this AttributeData attribute, string argumentName)
 		{
 			TryGetNamedArgumentValue(attribute, argumentName, out T? value);
 			return value;
@@ -333,7 +330,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="argumentName">Name of the argument to get the value of.</param>
 		/// <param name="symbol">Symbol that represents the <see cref="Type"/> value of the argument.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
-		public static bool TryGetNamedArgumentTypeValue<T>(this AttributeData attribute, string argumentName, [MaybeNull] out T symbol) where T : ITypeSymbol
+		public static bool TryGetNamedArgumentTypeValue<T>(this AttributeData attribute, string argumentName, out T? symbol) where T : ITypeSymbol
 		{
 			if (attribute is null)
 			{
@@ -368,8 +365,7 @@ namespace Durian.Generator.Extensions
 		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
 		/// <param name="argumentName">Name of the argument to get the value of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
-		[return: MaybeNull]
-		public static T GetNamedArgumentTypeValue<T>(this AttributeData attribute, string argumentName) where T : ITypeSymbol
+		public static T? GetNamedArgumentTypeValue<T>(this AttributeData attribute, string argumentName) where T : ITypeSymbol
 		{
 			TryGetNamedArgumentTypeValue<T>(attribute, argumentName, out T? symbol);
 			return symbol;

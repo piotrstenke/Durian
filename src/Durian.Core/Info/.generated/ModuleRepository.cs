@@ -349,6 +349,14 @@ namespace Durian.Info
 					fatal: true,
 					hasLocation: true
 				),
+
+				new DiagnosticData(
+					title: "Target namespace is not a valid identifier",
+					id: 27,
+					docsPath: @"tree\master\docs\DefaultParam\DUR0127.md",
+					fatal: false,
+					hasLocation: true
+				),
 			},
 			types: new TypeIdentity[]
 			{

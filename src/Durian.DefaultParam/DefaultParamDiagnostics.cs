@@ -341,7 +341,7 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating members with the <see cref="DefaultParamAttribute"/> cannot be nested within other DefaultParam members.
+		/// Provides diagnostic message indicating that members with the <see cref="DefaultParamAttribute"/> cannot be nested within other DefaultParam members.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0126_DefaultParamMembersCannotBeNested = new(
 			id: "DUR0126",
@@ -350,6 +350,19 @@ namespace Durian.Generator.DefaultParam
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0126.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the specified <see cref="DefaultParamConfigurationAttribute.TargetNamespace"/> or <see cref="DefaultParamScopedConfigurationAttribute.TargetNamespace"/> is not a valid identifier.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0127_InvalidTargetNamespace = new(
+			id: "DUR0127",
+			title: "Target namespace is not a valid identifier",
+			messageFormat: "'{0}': Target namespace '{1}' is not a valid identifier; parent namespace will be used instead",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + @"\DUR0127.md",
 			isEnabledByDefault: true
 		);
 	}

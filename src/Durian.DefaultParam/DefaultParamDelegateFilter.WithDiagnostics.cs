@@ -125,6 +125,8 @@ namespace Durian.Generator.DefaultParam
 
 					if (AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, attributes!, symbols, out HashSet<int>? applyNewModifiers, cancellationToken))
 					{
+						string targetNamespace = DefaultParamAnalyzer.GetTargetNamespace(symbol, attributes!, symbols, compilation);
+
 						data = new DefaultParamDelegateData(
 							declaration,
 							compilation,
@@ -134,7 +136,8 @@ namespace Durian.Generator.DefaultParam
 							null,
 							attributes,
 							typeParameters,
-							applyNewModifiers
+							applyNewModifiers,
+							targetNamespace
 						);
 
 						return true;

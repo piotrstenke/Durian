@@ -10,6 +10,11 @@ namespace Durian.Generator.DefaultParam
 	public interface IDefaultParamTarget : IMemberData
 	{
 		/// <summary>
+		/// Specifies the namespace where the target member should be generated in.
+		/// </summary>
+		string TargetNamespace { get; }
+
+		/// <summary>
 		/// <see cref="TypeParameterContainer"/> that contains type parameters of this member.
 		/// </summary>
 		ref readonly TypeParameterContainer TypeParameters { get; }

@@ -288,7 +288,8 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to write the full namespace it is declared in.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(IMemberData member)
+		[MovedFrom("Durian.Generator.CodeBuilder.BeginNamespaceDeclaration(Durian.Generator.Data.IMemberData member)")]
+		public void BeginNamespaceDeclarationOf(IMemberData member)
 		{
 			if (member is null)
 			{
@@ -303,7 +304,8 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="member"><see cref="ISymbol"/> to write the full namespace it is declared in.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(ISymbol member)
+		[MovedFrom("Durian.Generator.CodeBuilder.BeginNamespaceDeclaration(Microsoft.CodeAnalysis.ISymbol member)")]
+		public void BeginNamespaceDeclarationOf(ISymbol member)
 		{
 			if (member is null)
 			{
@@ -318,14 +320,15 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the full namespace it is declared in.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="node"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(CSharpSyntaxNode node)
+		[MovedFrom("Durian.Generator.CodeBuilder.BeginNamespaceDeclaration(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode node)")]
+		public void BeginNamespaceDeclarationOf(CSharpSyntaxNode node)
 		{
 			if (node is null)
 			{
 				throw new ArgumentNullException(nameof(node));
 			}
 
-			BeginNamespaceDeclaration_Internal(node.GetParentNamespaces());
+			BeginNamespaceDeclaration_Internal(AnalysisUtilities.JoinNamespaces(node.GetParentNamespaces()));
 		}
 
 		/// <summary>
@@ -353,7 +356,22 @@ namespace Durian.Generator
 				throw new ArgumentNullException(nameof(namespaces));
 			}
 
-			BeginNamespaceDeclaration_Internal(namespaces);
+			BeginNamespaceDeclaration_Internal(AnalysisUtilities.JoinNamespaces(namespaces));
+		}
+
+		/// <summary>
+		/// Writes declaration of the specified <paramref name="namespace"/>.
+		/// </summary>
+		/// <param name="namespace">Name of namespace to begin the declaration of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
+		public void BeginNamespaceDeclaration(string @namespace)
+		{
+			if (@namespace is null)
+			{
+				throw new ArgumentNullException(nameof(@namespace));
+			}
+
+			BeginNamespaceDeclaration_Internal(@namespace);
 		}
 
 		/// <summary>
@@ -646,13 +664,13 @@ namespace Durian.Generator
 
 		private void BeginNamespaceDeclaration_Internal(IEnumerable<INamespaceSymbol> namespaces)
 		{
-			BeginNamespaceDeclaration_Internal(namespaces.Select(n => n.Name));
+			BeginNamespaceDeclaration_Internal(namespaces.JoinNamespaces());
 		}
 
-		private void BeginNamespaceDeclaration_Internal(IEnumerable<string> namespaces)
+		private void BeginNamespaceDeclaration_Internal(string @namespace)
 		{
 			Indent();
-			TextBuilder.Append("namespace ").AppendLine(AnalysisUtilities.JoinNamespaces(namespaces));
+			TextBuilder.Append("namespace ").AppendLine(@namespace);
 			Indent();
 			TextBuilder.AppendLine("{");
 			CurrentIndent++;

@@ -9,20 +9,29 @@ namespace Durian.Generator.DefaultParam
 	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
 	public sealed class DefaultParamConfiguration : IEquatable<DefaultParamConfiguration>
 	{
+		private string? _targetNamespace;
+
 		/// <summary>
 		/// Determines whether to apply the <see langword="new"/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword="true"/>.
 		/// </summary>
 		public bool ApplyNewModifierWhenPossible { get; set; } = true;
 
-		/// <summary>
-		/// Determines, how the <c>DefaultParam</c> generator generates a type.
-		/// </summary>
-		public DPTypeConvention TypeConvention { get; set; }
+		/// <inheritdoc cref="DefaultParamConfigurationAttribute.TypeConvention"/>
+		public DPTypeConvention TypeConvention { get; set; } = DPTypeConvention.Default;
+
+		/// <inheritdoc cref="DefaultParamConfigurationAttribute.MethodConvention"/>
+		public DPMethodConvention MethodConvention { get; set; } = DPMethodConvention.Default;
 
 		/// <summary>
-		/// Determines, how the <c>DefaultParam</c> generator generates a method.
+		/// Specifies the namespace where the target member should be generated in.
 		/// </summary>
-		public DPMethodConvention MethodConvention { get; set; }
+		/// <remarks>The value will be set to <c>global</c> if the global namespace should be used or to <see langword="null"/> if the namespace of the original member should be used.
+		/// <para>Empty or white space only value is treated as <see langword="null"/>.</para></remarks>
+		public string? TargetNamespace
+		{
+			get => _targetNamespace;
+			set => _targetNamespace = string.IsNullOrWhiteSpace(value) ? null : value;
+		}
 
 		/// <summary>
 		/// Returns a new instance of <see cref="DefaultParamConfiguration"/> with all values set to <see langword="default"/>.
@@ -69,7 +78,8 @@ namespace Durian.Generator.DefaultParam
 			return
 				a.ApplyNewModifierWhenPossible == b.ApplyNewModifierWhenPossible &&
 				a.MethodConvention == b.MethodConvention &&
-				a.TypeConvention == b.TypeConvention;
+				a.TypeConvention == b.TypeConvention &&
+				a.TargetNamespace == b.TargetNamespace;
 		}
 
 		/// <inheritdoc/>

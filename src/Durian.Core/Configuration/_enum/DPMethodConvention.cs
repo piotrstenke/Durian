@@ -6,18 +6,18 @@
 	public enum DPMethodConvention
 	{
 		/// <summary>
-		/// Uses default convention, which is <see cref="Copy"/>.
+		/// Uses default convention, which is <see cref="Call"/>.
 		/// </summary>
-		Default = Copy,
+		Default = Call,
 
 		/// <summary>
 		/// Copies contents of the method.
 		/// </summary>
-		Copy = 1,
+		Call = 1,
 
 		/// <summary>
 		/// Call the method.
 		/// </summary>
-		Call = 2
+		Copy = 2
 	}
 }

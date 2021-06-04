@@ -29,3 +29,9 @@ DUR0123 | Durian.DefaultParam | Error | TypeConvention.Inherit cannot be used on
 DUR0124 | Durian.DefaultParam | Warning | ApplyNewModifierWhenPossible should not be used when target is not a child type. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0124.md)]
 DUR0125 | Durian.DefaultParam | Warning | DefaultParamScopedConfigurationAttribute should not be used on types with no DefaultParam members. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0125.md)]
 DUR0126 | Durian.DefaultParam | Error | Members with the DefaultParamAttribute cannot be nested within other DefaultParam members. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0126.md)]
+
+## Release 1.1.0
+
+### New Rules
+
+ DUR0127 | Durian.DefaultParam | Warning | Target namespace is not a valid identifier [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0127.md)]

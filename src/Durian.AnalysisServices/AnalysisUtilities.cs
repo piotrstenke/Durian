@@ -16,6 +16,96 @@ namespace Durian.Generator
 	/// </summary>
 	public static class AnalysisUtilities
 	{
+		private static readonly string[] _keywords = new string[]
+		{
+			"__arglist",    "__makeref",    "__reftype",    "__refvalue",
+			"abstract",     "as",           "base",         "bool",
+			"break",        "byte",         "case",         "catch",
+			"char",         "checked",      "class",        "const",
+			"continue",     "decimal",      "default",      "delegate",
+			"do",           "double",       "else",         "enum",
+			"event",        "explicit",     "extern",       "false",
+			"finally",      "fixed",        "float",        "for",
+			"foreach",      "goto",         "if",           "implicit",
+			"in",           "int",          "interface",    "internal",
+			"is",           "lock",         "long",         "namespace",
+			"new",          "null",         "object",       "operator",
+			"out",          "override",     "params",       "private",
+			"protected",    "public",       "readonly",     "ref",
+			"return",       "sbyte",        "sealed",       "short",
+			"sizeof",       "stackalloc",   "static",       "string",
+			"struct",       "switch",       "this",         "throw",
+			"true",         "try",          "typeof",       "uint",
+			"ulong",        "unchecked",    "unsafe",       "ushort",
+			"using",        "virtual",      "volatile",     "void",
+			"while"
+		};
+
+		private static readonly HashSet<string> _hashedKeywords = new(_keywords);
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="value"/> can be used as an identifier.
+		/// </summary>
+		/// <param name="value">Value to check if can be used as an identifier.</param>
+		public static bool IsValidIdentifier(string? value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+			{
+				return false;
+			}
+
+			string str = value!.Trim();
+
+			if (str[0] == '@')
+			{
+				str = str.Substring(1, str.Length - 1);
+				return SyntaxFacts.IsValidIdentifier(str);
+			}
+
+			return SyntaxFacts.IsValidIdentifier(str) && !_hashedKeywords.Contains(str);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="value"/> can be used as an identifier of a namespace.
+		/// </summary>
+		/// <param name="value">Value to check if can be used as an identifier of a namespace.</param>
+		public static bool IsValidNamespaceIdentifier(string? value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+			{
+				return false;
+			}
+
+			foreach (string st in value!.Split('.'))
+			{
+				if (!IsValidIdentifier(st))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="value"/> is a reserved C# keyword.
+		/// </summary>
+		/// <param name="value">Value to check if is a C# keyword.</param>
+		public static bool IsKeyword(string value)
+		{
+			return _hashedKeywords.Contains(value);
+		}
+
+		/// <summary>
+		/// Returns all reserved keywords of the C# language.
+		/// </summary>
+		public static string[] GetKeywords()
+		{
+			string[] keywords = new string[_keywords.Length];
+			Array.Copy(_keywords, keywords, _keywords.Length);
+			return keywords;
+		}
+
 		/// <summary>
 		/// Modifiers a modified version of the specified <paramref name="fullyQualifiedName"/> that can be used in the XML documentation.
 		/// </summary>
@@ -293,6 +383,16 @@ namespace Durian.Generator
 			}
 
 			return false;
+		}
+
+		internal static IEnumerable<T> ReturnByOrder<T>(IEnumerable<T> collection, ReturnOrder order)
+		{
+			if (order == ReturnOrder.Root)
+			{
+				return collection.Reverse();
+			}
+
+			return collection;
 		}
 
 		internal static void WriteTypeNameOfParameter(ITypeSymbol type, StringBuilder sb)

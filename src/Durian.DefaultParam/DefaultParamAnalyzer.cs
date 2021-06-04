@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Durian.Configuration;
 using Durian.Generator.Data;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
@@ -299,6 +300,53 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return false;
+		}
+
+		/// <inheritdoc cref="GetTargetNamespace(ISymbol, IEnumerable{AttributeData}, INamedTypeSymbol[], DefaultParamCompilationData)"/>
+		public static string GetTargetNamespace(ISymbol symbol, DefaultParamCompilationData compilation)
+		{
+			return GetTargetNamespace(symbol, symbol.GetAttributes(), symbol.GetContainingTypeSymbols().ToArray(), compilation);
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> representing a namespace the target member should be generated in.
+		/// </summary>
+		/// <param name="symbol">Original <see cref="ISymbol"/> the generated member is based on.</param>
+		/// <param name="attributes">A collection of <see cref="AttributeData"/>a of the target <paramref name="symbol"/>.</param>
+		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the <paramref name="symbol"/>'s containing types.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		public static string GetTargetNamespace(ISymbol symbol, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
+		{
+			const string propertyName = nameof(DefaultParamConfigurationAttribute.TargetNamespace);
+
+			if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.ConfigurationAttribute!, propertyName, out string? value))
+			{
+				return GetValueOrParentNamespace(value);
+			}
+
+			INamedTypeSymbol scopedConfigurationAttribute = compilation.ScopedConfigurationAttribute!;
+
+			foreach (INamedTypeSymbol type in containingTypes.Reverse())
+			{
+				if (DefaultParamUtilities.TryGetConfigurationPropertyValue(type.GetAttributes(), scopedConfigurationAttribute, propertyName, out value))
+				{
+					return GetValueOrParentNamespace(value);
+				}
+			}
+
+			return GetValueOrParentNamespace(compilation.Configuration.TargetNamespace);
+
+			string GetValueOrParentNamespace(string? value)
+			{
+				if (value == "Durian.Generator" || !AnalysisUtilities.IsValidNamespaceIdentifier(value!))
+				{
+					string n = symbol.JoinNamespaces();
+
+					return string.IsNullOrWhiteSpace(n) ? "global" : n;
+				}
+
+				return value!;
+			}
 		}
 
 		/// <summary>

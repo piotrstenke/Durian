@@ -37,6 +37,7 @@ partial class Test : Parent
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
 	{{
+		Method<int>(value);
 	}}
 }}
 ";
@@ -102,6 +103,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
 	{{
+		Method<int>(value);
 	}}
 }}
 ";
@@ -166,6 +168,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
 	{{
+		Method<int>(value);
 	}}
 }}
 ";
@@ -228,7 +231,7 @@ partial class Test : Parent
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
 	{{
-
+		Method<int>(value);
 	}}
 }}
 ";
@@ -265,6 +268,7 @@ partial class Test : Parent
 	{GetCodeGenerationAttributes("Test.Method<T, U>(U)")}
 	new void Method<T>(int value)
 	{{
+		Method<T, int>(value);
 	}}
 }}
 ";
@@ -305,6 +309,7 @@ partial class Test : Parent
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>(V)")}
 	new void Method<T, U>(int value)
 	{{
+		Method<T, U, int>(value);
 	}}
 }}
 ";
@@ -341,12 +346,13 @@ partial class Test : Parent
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>(U)")}
 	void Method<T, U>(U value)
 	{{
+		Method<T, U, string>(value);
 	}}
 
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>(U)")}
 	new void Method<T>(int value)
 	{{
-
+		Method<T, int, string>(value);
 	}}
 }}
 ";
@@ -387,12 +393,13 @@ partial class Test : Parent
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>(V)")}
 	new void Method<T, U>(int value)
 	{{
+		Method<T, U, int>(value);
 	}}
 
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>(V)")}
 	new void Method<T>(int value)
 	{{
-
+		Method<T, string, int>(value);
 	}}
 }}
 ";
@@ -476,6 +483,7 @@ partial class Test : Parent
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	new void Method()
 	{{
+		Method<int>();
 	}}
 }}
 ";
@@ -510,6 +518,7 @@ partial class Test : Parent
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	new void Method()
 	{{
+		Method<int>();
 	}}
 }}
 ";
@@ -595,6 +604,7 @@ partial class Test : Parent
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
 	{{
+		Method<int>();
 	}}
 }}
 ";

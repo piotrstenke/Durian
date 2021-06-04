@@ -6,18 +6,18 @@
 	public enum DPTypeConvention
 	{
 		/// <summary>
-		/// Uses default convention, which is <see cref="Copy"/>.
+		/// Uses default convention, which is <see cref="Inherit"/>.
 		/// </summary>
-		Default = Copy,
+		Default = Inherit,
 
 		/// <summary>
 		/// Copies contents of the type.
 		/// </summary>
-		Copy = 1,
+		Inherit = 1,
 
 		/// <summary>
 		/// Inherits the type.
 		/// </summary>
-		Inherit = 2
+		Copy = 2
 	}
 }

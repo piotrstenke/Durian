@@ -1,9 +1,11 @@
 ﻿using System;
-using System.Text;
 using System.IO;
+using System.Text;
+using Durian.Configuration;
 
 namespace Durian.Samples.DefaultParam
 {
+	[DefaultParamConfiguration(TypeConvention = DPTypeConvention.Copy)]
 	public class Logger<[DefaultParam(typeof(string))]T> : ILogger<T> where T : IEquatable<string>
 	{
 		private readonly StringBuilder _builder;

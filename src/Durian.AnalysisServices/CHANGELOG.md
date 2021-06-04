@@ -926,3 +926,24 @@
  - Durian.Generator.DurianGenerator'3+WithBuilder(Durian.Generator.Logging.GeneratorLoggingConfiguration loggingConfiguration, Durian.Generator.Logging.IFileNameProvider fileNameProvider)
  - Durian.Generator.DurianGenerator'3+WithBuilder.get_CodeBuilder
 
+## Realease 1.1.0
+
+### Added
+
+ - Durian.Generator.AnalysisUtilities.IsValidIdentifier(System.String value)
+ - Durian.Generator.AnalysisUtilities.IsValidNamespaceIdentifier(System.String value)
+ - Durian.Generator.AnalysisUtilities.IsKeyword(System.String value)
+ - Durian.Generator.AnalysisUtilities.GetKeywords()
+ - Durian.Generator.CodeBuilder.BeginNamespaceDeclaration(System.String namespace)
+ - Durian.Generator.Extensions.ReturnOrder
+ - Durian.Generator.Extensions.ReturnOrder.Root
+ - Durian.Generator.Extensions.ReturnOrder.Parent
+
+### Moved
+
+ - Durian.Generator.CodeBuilder.BeginNamespaceDeclaration(Durian.Generator.Data.IMemberData member) -> Durian.Generator.CodeBuilder.BeginNamespaceDeclarationOf(Durian.Generator.Data.IMemberData member)
+ - Durian.Generator.CodeBuilder.BeginNamespaceDeclaration(Microsoft.CodeAnalysis.ISymbol member) -> Durian.Generator.CodeBuilder.BeginNamespaceDeclarationOf(Microsoft.CodeAnalysis.ISymbol member)
+ - Durian.Generator.CodeBuilder.BeginNamespaceDeclaration(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode node) -> Durian.Generator.CodeBuilder.BeginNamespaceDeclarationOf(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode node)
+ - Durian.Generator.Extensions.SymbolExtensions.GetContainingTypes(Microsoft.CodeAnalysis.ISymbol symbol, Durian.Generator.Data.ICompilationData compilation) -> Durian.Generator.Extensions.SymbolExtensions.GetContainingTypes(Microsoft.CodeAnalysis.ISymbol symbol, Durian.Generator.Data.ICompilationData compilation, Durian.Generator.Extensions.ReturnOrder order)
+ - Durian.Generator.Extensions.SymbolExtensions.GetContainingTypeSymbols(Microsoft.CodeAnalysis.ISymbol symbol) -> Durian.Generator.Extensions.SymbolExtensions.GetContainingTypeSymbols(Microsoft.CodeAnalysis.ISymbol symbol, Durian.Generator.Extensions.ReturnOrder order)
+ - Durian.Generator.Extensions.SymbolExtensions.GetContainingNamespaces(Microsoft.CodeAnalysis.ISymbol symbol, Boolean includeGlobal) -> Durian.Generator.Extensions.SymbolExtensions.GetContainingNamespaces(Microsoft.CodeAnalysis.ISymbol symbol, Boolean includeGlobal, Durian.Generator.Extensions.ReturnOrder order)

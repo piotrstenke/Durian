@@ -5,7 +5,7 @@ using Durian.Generator;
 using Durian.Generator.DefaultParam;
 using Durian.Info;
 
-[assembly: PackageDefinition(DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary, "1.0.0", DurianModule.DefaultParam)]
+[assembly: PackageDefinition(DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary, "1.1.0", DurianModule.DefaultParam)]
 [assembly: DiagnosticFiles(nameof(DefaultParamDiagnostics))]
 [assembly: IncludeTypes(
 	nameof(DefaultParamAttribute),

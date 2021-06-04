@@ -1,3 +1,4 @@
+using Durian.Configuration;
 using Durian.Generator;
 using Xunit;
 
@@ -10,6 +11,7 @@ namespace Durian.Tests.DefaultParam.Methods
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -43,6 +45,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	void Method(int value)
 	{{
+		Method<int>(value);
 	}}
 }}
 ";
@@ -76,6 +79,7 @@ partial class Test
 	[Obsolete]
 	void Method(int value)
 	{{
+		Method<int>(value);
 	}}
 }}
 ";
@@ -102,7 +106,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	void Method(int value)
 	{{
-
+		Method<int>(value);
 	}}
 }}
 ";
@@ -114,6 +118,9 @@ partial class Test
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
 
 partial class Test
 {{
@@ -148,6 +155,9 @@ partial class Test
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
 
 partial class Test
 {{
@@ -176,9 +186,12 @@ partial class Test
 		{
 			string input =
 @$"using System;
-using {DurianStrings.MainNamespace};
 using System.Collections;
 using System.Collections.Generic;
+using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
 
 partial class Test
 {{
@@ -232,7 +245,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
 	{{
-
+		Method<int>();
 	}}
 }}
 ";
@@ -245,6 +258,9 @@ partial class Test
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
 
 partial class Test
 {{
@@ -281,6 +297,9 @@ partial class Test
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
 
 partial class Test
 {{
@@ -326,6 +345,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(string value)
 	{{
+		Method<string>(value);
 	}}
 }}
 ";
@@ -337,27 +357,37 @@ partial class Test
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
-using System.Collections;
 using System.Numerics;
+using System.Collections;
+using {DurianStrings.ConfigurationNamespace};
+using System;
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
 
 partial class Test
 {{
 	void Method<[{nameof(DefaultParamAttribute)}(typeof(System.Int32))]T>()
 	{{
+		Attribute atrr = null;
 		System.Collections.Generic.List<BigInteger> list = new();
+		IEnumerable e = default;
 	}}
 }}
 ";
 
 			string expected =
-@$"using System.Numerics;
+@$"using System;
+using System.Collections;
+using System.Numerics;
 
 partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
 	{{
+		Attribute atrr = null;
 		System.Collections.Generic.List<BigInteger> list = new();
+		IEnumerable e = default;
 	}}
 }}
 ";
@@ -400,6 +430,7 @@ partial class Test
 				{GetCodeGenerationAttributes("N1.N2.Parent.Child.Test.Method<T>()", 4)}
 				public void Method()
 				{{
+					Method<int>();
 				}}
 			}}
 		}}
@@ -451,6 +482,7 @@ partial class Test<TNumber>
 	{GetCodeGenerationAttributes("Test<TNumber>.Method<T>(T)")}
 	void Method(string value)
 	{{
+		Method<string>(value);
 	}}
 }}
 ";
@@ -477,6 +509,7 @@ partial class Test<TNumber> where TNumber : class
 	{GetCodeGenerationAttributes("Test<TNumber>.Method<T>(T)")}
 	void Method(string value)
 	{{
+		Method<string>(value);
 	}}
 }}
 ";
@@ -488,6 +521,9 @@ partial class Test<TNumber> where TNumber : class
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
 
 partial class Test<TNumber> where TNumber : class
 {{
@@ -516,6 +552,9 @@ partial class Test<TNumber> where TNumber : class
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
 
 partial class Test
 {{
@@ -562,7 +601,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(string[] value)
 	{{
-		string[] t = default;
+		Method<string[]>(value);
 	}}
 }}
 ";
@@ -592,7 +631,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(Array value)
 	{{
-		Array t = default;
+		Method<Array>(value);
 	}}
 }}
 ";
@@ -622,7 +661,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(ValueType value)
 	{{
-		ValueType t = default;
+		Method<ValueType>(value);
 	}}
 }}
 ";
@@ -650,7 +689,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(object value)
 	{{
-		object t = default;
+		Method<object>(value);
 	}}
 }}
 ";
@@ -678,7 +717,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(int value)
 	{{
-		int t = default;
+		Method<int>(value);
 	}}
 }}
 ";
@@ -710,7 +749,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	public static void Method()
 	{{
-		C t = default;
+		Method<C>();
 	}}
 }}
 ";
@@ -738,7 +777,7 @@ partial static class Test
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(this int value)
 	{{
-		int t = default;
+		Method<int>(value);
 	}}
 }}
 ";
@@ -769,13 +808,13 @@ partial class Test
 	{GetCodeGenerationAttributes("Test.Method<T, U>(T)")}
 	void Method<T>(T value) where T : IEnumerable
 	{{
-		T t = default;
+		Method<T, IEnumerable>(value);
 	}}
 
 	{GetCodeGenerationAttributes("Test.Method<T, U>(T)")}
 	void Method(ICollection value)
 	{{
-		ICollection t = default;
+		Method<ICollection, IEnumerable>(value);
 	}}
 }}
 ";
