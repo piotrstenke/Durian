@@ -5,9 +5,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>This package contains all released modules of the Durian framework.</Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Core</PackageTags>
-    <PackageVersion>1.0.1</PackageVersion>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <Version>1.0.1</Version>
+    <PackageVersion>1.1.0</PackageVersion>
+    <AssemblyVersion>1.1.0</AssemblyVersion>
+    <Version>1.1.0</Version>
     <RootNamespace>Durian</RootNamespace>
     
   </PropertyGroup>
