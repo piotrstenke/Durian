@@ -43,4 +43,4 @@ DUR0127 | Durian.DefaultParam | Warning | Target namespace is not a valid identi
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-----------------------------------------
 DUR0128 | Durian.DefaultParam | Warning | Do not specify target namespace for a nested member. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0128.md)]
-DUR0129 | Durian.DefaultParam | Error | Target namespace already contains member with the specified name. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0129.md)]
+DUR0129 | Durian.DefaultParam | Error | Target namespace already contains member with the generated name. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0129.md)]

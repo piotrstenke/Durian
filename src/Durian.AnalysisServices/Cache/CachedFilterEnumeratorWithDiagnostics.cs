@@ -69,8 +69,8 @@ namespace Durian.Generator.Cache
 		/// Initializes a new instance of the <see cref="CachedFilterEnumeratorWithDiagnostics{T}"/> struct.
 		/// </summary>
 		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
-		/// <param name="validator"><see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
+		/// <param name="validator"><see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
 		public CachedFilterEnumeratorWithDiagnostics(INodeProvider provider, ICompilationData compilation, INodeValidatorWithDiagnostics<T> validator, IDiagnosticReceiver diagnosticReceiver, in CachedData<T> cache) : this(provider.GetNodes().ToArray(), compilation, validator, diagnosticReceiver, in cache, default)
@@ -88,9 +88,9 @@ namespace Durian.Generator.Cache
 			_cache = cache;
 		}
 
-		/// <inheritdoc/>
 #pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
 
+		/// <inheritdoc/>
 		public static explicit operator CachedFilterEnumeratorWithDiagnostics<T>(in FilterEnumeratorWithDiagnostics<T> a)
 		{
 			return new CachedFilterEnumeratorWithDiagnostics<T>(a._nodes, a.Compilation, a.Validator, a.DiagnosticReceiver, CachedData<T>.Empty, a._index);
@@ -159,8 +159,5 @@ namespace Durian.Generator.Cache
 		{
 			return new FilterEnumerator<T>(_nodes, Compilation, Validator, _index);
 		}
-
-#pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
-#pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 	}
 }

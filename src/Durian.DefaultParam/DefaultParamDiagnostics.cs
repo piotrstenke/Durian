@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using Durian.Configuration;
-using Durian.Info;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Generator.DefaultParam
@@ -378,11 +377,11 @@ namespace Durian.Generator.DefaultParam
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the namespace specified in the <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/> already contains member with the target name.
+		/// Provides diagnostic message indicating that the namespace specified in the <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/> already contains member with the generated name.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0129_TargetNamespaceAlreadyContainsMemberWithName = new(
 			id: "DUR0129",
-			title: "Target namespace already contains member with the specified name",
+			title: "Target namespace already contains member with the generated name",
 			messageFormat: "'{0}': Namespace '{1]' already contains member with name '{2}'",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
@@ -393,6 +392,6 @@ namespace Durian.Generator.DefaultParam
 		/// <summary>
 		/// Documentation directory of the <c>DefaultParam</c> module.
 		/// </summary>
-		public static string DocsPath => ModuleIdentity.GetModule(DurianModule.DefaultParam).Documentation;
+		public static string DocsPath => @"tree\master\docs\DefaultParam";
 	}
 }

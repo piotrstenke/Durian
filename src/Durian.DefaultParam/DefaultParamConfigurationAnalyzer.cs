@@ -33,7 +33,9 @@ namespace Durian.Generator.DefaultParam
 			DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType,
 			DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor,
 			DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType,
-			DUR0127_InvalidTargetNamespace
+			DUR0127_InvalidTargetNamespace,
+			DUR0128_DoNotSpecifyTargetNamespaceForNestedMembers,
+			DUR0129_TargetNamespaceAlreadyContainsMemberWithName
 		);
 
 		/// <summary>
@@ -255,6 +257,11 @@ namespace Durian.Generator.DefaultParam
 				if (value == "Durian.Generator" || !AnalysisUtilities.IsValidNamespaceIdentifier(value))
 				{
 					diagnosticReceiver.ReportDiagnostic(DUR0127_InvalidTargetNamespace, arg.GetLocation(), symbol, value);
+				}
+
+				if (symbol.ContainingType is not null)
+				{
+					diagnosticReceiver.ReportDiagnostic(DUR0128_DoNotSpecifyTargetNamespaceForNestedMembers, arg.GetLocation(), symbol);
 				}
 			}
 		}

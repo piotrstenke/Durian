@@ -28,16 +28,16 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public HashSet<int>? NewModifierIndexes { get; }
 
-		/// <summary>
-		/// Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamMethodData"/>.
-		/// </summary>
-		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
-
 		/// <inheritdoc cref="DefaultParamTypeData.TargetNamespace"/>
 		public string TargetNamespace { get; }
 
 		/// <inheritdoc/>
 		public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
+
+		/// <summary>
+		/// Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamMethodData"/>.
+		/// </summary>
+		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamMethodData"/> class.
@@ -68,7 +68,6 @@ namespace Durian.Generator.DefaultParam
 		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
 		/// <param name="callInsteadOfCopying">Determines whether the generated method should call this method instead of copying its contents.</param>
 		/// <param name="targetNamespace">Specifies the namespace where the target member should be generated in.</param>
-		[MovedFrom("Durian.Generator.DefaultParam.DefaultParamMethodData(Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax declaration, Durian.Generator.DefaultParam.DefaultParamCompilationData compilation, Microsoft.CodeAnalysis.IMethodSymbol symbol, Microsoft.CodeAnalysis.SemanticModel semanticModel, System.Collections.Generic.IEnumerable'1[Durian.Generator.Data.ITypeData] containingTypes, System.Collections.Generic.IEnumerable'1[Microsoft.CodeAnalysis.INamespaceSymbol] containingNamespaces, System.Collections.Generic.IEnumerable'1[Microsoft.CodeAnalysis.AttributeData] attributes, Durian.Generator.DefaultParam.TypeParameterContainer& typeParameters, System.Collections.Generic.HashSet'1[System.Int32] newModifierIndexes, Boolean callInsteadOfCopying)", IgnoreError = true)]
 		public DefaultParamMethodData(
 			MethodDeclarationSyntax declaration,
 			DefaultParamCompilationData compilation,
@@ -98,15 +97,15 @@ namespace Durian.Generator.DefaultParam
 			return new MethodDeclarationBuilder(this, cancellationToken);
 		}
 
-		IDefaultParamDeclarationBuilder IDefaultParamTarget.GetDeclarationBuilder(CancellationToken cancellationToken)
-		{
-			return GetDeclarationBuilder(cancellationToken);
-		}
-
 		/// <inheritdoc/>
 		public IEnumerable<string> GetUsedNamespaces(CancellationToken cancellationToken = default)
 		{
 			return DefaultParamUtilities.GetUsedNamespaces(this, in _typeParameters, cancellationToken);
+		}
+
+		IDefaultParamDeclarationBuilder IDefaultParamTarget.GetDeclarationBuilder(CancellationToken cancellationToken)
+		{
+			return GetDeclarationBuilder(cancellationToken);
 		}
 
 		IEnumerable<string> IDefaultParamTarget.GetUsedNamespaces()

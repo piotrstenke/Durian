@@ -74,8 +74,8 @@ namespace Durian.Generator.Cache
 		}
 
 #pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
-		/// <inheritdoc/>
 
+		/// <inheritdoc/>
 		public static explicit operator CachedFilterEnumerator<T>(in FilterEnumerator<T> a)
 		{
 			return new CachedFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, CachedData<T>.Empty, a._index);
@@ -132,8 +132,5 @@ namespace Durian.Generator.Cache
 			_index = 0;
 			Current = default;
 		}
-
-#pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
-#pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 	}
 }

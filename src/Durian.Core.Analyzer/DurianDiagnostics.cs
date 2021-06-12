@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Info;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Generator.Core
@@ -98,6 +97,6 @@ namespace Durian.Generator.Core
 		/// <summary>
 		/// Documentation directory of the <c>AnalysisCore</c> module.
 		/// </summary>
-		public static string DocsPath => ModuleIdentity.GetModule(DurianModule.Core).Documentation;
+		public static string DocsPath => @"tree\master\docs\Core";
 	}
 }

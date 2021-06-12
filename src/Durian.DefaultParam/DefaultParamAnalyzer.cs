@@ -290,7 +290,7 @@ namespace Durian.Generator.DefaultParam
 
 			string GetValueOrParentNamespace(string? value)
 			{
-				if (value == "Durian.Generator" || !AnalysisUtilities.IsValidNamespaceIdentifier(value!))
+				if (symbol.ContainingType is not null || value == "Durian.Generator" || !AnalysisUtilities.IsValidNamespaceIdentifier(value!))
 				{
 					string n = symbol.JoinNamespaces();
 

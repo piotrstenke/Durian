@@ -228,7 +228,6 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to write the full namespace it is declared in.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		[MovedFrom("Durian.Generator.CodeBuilder.BeginNamespaceDeclaration(Durian.Generator.Data.IMemberData member)", IgnoreError = true)]
 		public void BeginNamespaceDeclarationOf(IMemberData member)
 		{
 			if (member is null)
@@ -244,7 +243,6 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="member"><see cref="ISymbol"/> to write the full namespace it is declared in.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		[MovedFrom("Durian.Generator.CodeBuilder.BeginNamespaceDeclaration(Microsoft.CodeAnalysis.ISymbol member)", IgnoreError = true)]
 		public void BeginNamespaceDeclarationOf(ISymbol member)
 		{
 			if (member is null)
@@ -260,7 +258,6 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the full namespace it is declared in.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="node"/> is <see langword="null"/>.</exception>
-		[MovedFrom("Durian.Generator.CodeBuilder.BeginNamespaceDeclaration(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode node)", IgnoreError = true)]
 		public void BeginNamespaceDeclarationOf(CSharpSyntaxNode node)
 		{
 			if (node is null)

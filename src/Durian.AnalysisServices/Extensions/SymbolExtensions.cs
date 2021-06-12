@@ -212,7 +212,6 @@ namespace Durian.Generator.Extensions
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
 		/// <param name="order">Specifies order at types members should be returned.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingNamespaces(Microsoft.CodeAnalysis.ISymbol symbol, Boolean includeGlobal)", IgnoreError = true)]
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this ISymbol symbol, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)
@@ -281,7 +280,6 @@ namespace Durian.Generator.Extensions
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
 		/// <param name="order">Specifies order at types members should be returned.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingTypes(Microsoft.CodeAnalysis.ISymbol symbol, Durian.Generator.Data.ICompilationData compilation)", IgnoreError = true)]
 		public static IEnumerable<ITypeData> GetContainingTypes(this ISymbol symbol, ICompilationData compilation, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)
@@ -345,7 +343,6 @@ namespace Durian.Generator.Extensions
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
 		/// <param name="order">Specifies order at types members should be returned.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingTypeSymbols(Microsoft.CodeAnalysis.ISymbol symbol)", IgnoreError = true)]
 		public static IEnumerable<INamedTypeSymbol> GetContainingTypeSymbols(this ISymbol symbol, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)

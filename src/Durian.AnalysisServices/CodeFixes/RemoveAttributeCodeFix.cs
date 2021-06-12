@@ -58,7 +58,7 @@ namespace Durian.Generator.CodeFixes
 				return;
 			}
 
-			CodeAction? action = await GetCodeActionAsync(data);
+			CodeAction? action = await GetCodeActionAsync(data).ConfigureAwait(false);
 
 			if (action is null)
 			{

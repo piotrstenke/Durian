@@ -1,0 +1,16 @@
+v1.2.0
+
+- Fixed issue when some packages were referenced multiple times.
+- Performance boost.
+
+v1.1.0
+
+- Updated DefaultParam to 1.1.0.
+
+v1.0.1
+
+- Bug-fixes related to package dependencies.
+
+v1.0.0
+
+- Initial release.

@@ -12,7 +12,7 @@
 
     <DevelopmentDependency>true</DevelopmentDependency>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    
+
   </PropertyGroup>
 
   <ItemGroup>

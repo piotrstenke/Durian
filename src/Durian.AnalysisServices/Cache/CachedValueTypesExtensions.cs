@@ -64,8 +64,5 @@ namespace Durian.Generator.Cache
 		{
 			return ref context._context;
 		}
-
-#pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
-#pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 	}
 }

@@ -389,6 +389,25 @@ partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 		}
 
 		[Fact]
+		public async Task Warning_When_TargetNamespaceIsDefinedOnNestedMember()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+public class Parent
+{{
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""Durian"")]
+	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	{{
+	}}
+}}
+";
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			Assert.True(diagnostics.Any(d => d.Id == DUR0128_DoNotSpecifyTargetNamespaceForNestedMembers.Id));
+		}
+
+		[Fact]
 		public async Task Warning_When_TargetNamespaceIsDurianGenerator()
 		{
 			string input =

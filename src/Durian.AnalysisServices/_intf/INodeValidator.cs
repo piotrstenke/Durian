@@ -19,8 +19,8 @@ namespace Durian.Generator
 		/// Checks whether a <see cref="SemanticModel"/> and a <see cref="ISymbol"/> can be created from the given <paramref name="node"/>. If so, returns them.
 		/// If so, returns them.
 		/// </summary>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the target <paramref name="node"/>.</param>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to get the data of.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the target <paramref name="node"/>.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="node"/>.</param>
 		/// <param name="symbol"><see cref="ISymbol"/> created for the <paramref name="node"/>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>

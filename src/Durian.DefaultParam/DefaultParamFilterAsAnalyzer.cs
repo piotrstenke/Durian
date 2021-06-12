@@ -81,7 +81,7 @@ namespace Durian.Generator.DefaultParam
 
 			if (data is not null)
 			{
-				dict.AddOrUpdate(context.Node.GetLocation().GetLineSpan(), data, (key, value) => data);
+				dict.AddOrUpdate(context.Node.GetLocation().GetLineSpan(), data, (_, _) => data);
 			}
 		}
 
@@ -91,7 +91,7 @@ namespace Durian.Generator.DefaultParam
 
 			if (data is not null)
 			{
-				dict.AddOrUpdate(context.Node.GetLocation().GetLineSpan(), data, (key, value) => data);
+				dict.AddOrUpdate(context.Node.GetLocation().GetLineSpan(), data, (_, _) => data);
 			}
 		}
 	}

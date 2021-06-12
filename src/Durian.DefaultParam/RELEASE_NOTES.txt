@@ -1,0 +1,13 @@
+v1.2.0
+
+- Added support for caching analyzer members.
+- Additional diagnostics and bug-fixes for the TargetNamespace property of both configuration attributes.
+
+v1.1.0
+
+- Changed default values of DPTypeConvetion and DPMethodConvention to Inherit and Call respectively.
+- Added mechanism for specifying a target namespace where for generated members.
+
+v.1.0.0
+
+- Initial release.

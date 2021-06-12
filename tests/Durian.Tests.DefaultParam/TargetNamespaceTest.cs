@@ -37,106 +37,17 @@ public class Test : Test<string>
 		}
 
 		[Fact]
-		public void LocalValueHasHighestPriority()
+		public void IgnoresTargetNamespace_When_IsNestedMember()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Durian"")]
 namespace Parent
 {{
-	[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Other"")]
-	public partial class P
+	public partial class A
 	{{
-		[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Testable"")]
-		public partial class A
-		{{
-			[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""Local"")]
-			public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
-			{{
-			}}
-		}}
-	}}
-}}
-";
-			string expected =
-$@"using {DurianStrings.ConfigurationNamespace};
-using Parent;
-
-namespace Local
-{{
-	public partial class P
-	{{
-		public partial class A
-		{{
-			{GetCodeGenerationAttributes("Parent.P.A.Test<T>")}
-			public class Test : Test<string>
-			{{
-			}}
-		}}
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void NestedScopedValueHasHigherPriority()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Durian"")]
-namespace Parent
-{{
-	[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Other"")]
-	public partial class P
-	{{
-		[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Testable"")]
-		public partial class A
-		{{
-			public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
-			{{
-			}}
-		}}
-	}}
-}}
-";
-			string expected =
-$@"using Parent;
-
-namespace Testable
-{{
-	public partial class P
-	{{
-		public partial class A
-		{{
-			{GetCodeGenerationAttributes("Parent.P.A.Test<T>")}
-			public class Test : Test<string>
-			{{
-			}}
-		}}
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void ScopedValueHasHigherPriority()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Durian"")]
-namespace Parent
-{{
-	[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Other"")]
-	public partial class P
-	{{
+		[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""Durian"")]
 		public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 		{{
 		}}
@@ -144,13 +55,13 @@ namespace Parent
 }}
 ";
 			string expected =
-$@"using Parent;
+$@"using {DurianStrings.ConfigurationNamespace};
 
-namespace Other
+namespace Parent
 {{
-	public partial class P
+	public partial class A
 	{{
-		{GetCodeGenerationAttributes("Parent.P.Test<T>")}
+		{GetCodeGenerationAttributes("Parent.A.Test<T>")}
 		public class Test : Test<string>
 		{{
 		}}
@@ -444,41 +355,6 @@ $@"namespace Parent
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	public class Test : Test<string>
 	{{
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void UsesScopedValue()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-namespace Parent
-{{
-	[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Durian"")]
-	public partial class P
-	{{
-		public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
-		{{
-		}}
-	}}
-}}
-";
-			string expected =
-$@"using Parent;
-
-namespace Durian
-{{
-	public partial class P
-	{{
-		{GetCodeGenerationAttributes("Parent.P.Test<T>")}
-		public class Test : Test<string>
-		{{
-		}}
 	}}
 }}
 ";

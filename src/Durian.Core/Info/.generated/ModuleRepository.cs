@@ -367,7 +367,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Target namespace already contains member with the specified name",
+					title: "Target namespace already contains member with the generated name",
 					id: 29,
 					docsPath: @"tree\master\docs\DefaultParam\DUR0129.md",
 					fatal: true,

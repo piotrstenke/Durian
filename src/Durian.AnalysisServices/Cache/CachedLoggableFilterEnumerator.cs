@@ -63,8 +63,8 @@ namespace Durian.Generator.Cache
 		/// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{T}"/> struct.
 		/// </summary>
 		/// <param name="nodes">An array of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
-		/// <param name="validator"><see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
+		/// <param name="validator"><see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
 		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <paramref name="nodes"/>.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
@@ -97,9 +97,9 @@ namespace Durian.Generator.Cache
 			Current = default;
 		}
 
-		/// <inheritdoc/>
 #pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
 
+		/// <inheritdoc/>
 		public static explicit operator CachedLoggableFilterEnumerator<T>(in LoggableFilterEnumerator<T> a)
 		{
 			return new CachedLoggableFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, a.LogReceiver, a.HintNameProvider, CachedData<T>.Empty, a._index);
@@ -188,8 +188,5 @@ namespace Durian.Generator.Cache
 		{
 			return new FilterEnumerator<T>(_nodes, Compilation, Validator, _index);
 		}
-
-#pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
-#pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 	}
 }

@@ -100,7 +100,6 @@ namespace Durian.Generator.Manager
 		/// <summary>
 		/// Returns a collection of <see cref="DiagnosticDescriptor"/> that are supported by this manager.
 		/// </summary>
-		/// <returns></returns>
 		protected abstract IEnumerable<DiagnosticDescriptor> GetManagerSpecificDiagnostics();
 
 		/// <inheritdoc/>

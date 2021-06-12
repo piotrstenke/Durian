@@ -1,0 +1,8 @@
+v1.1.0
+
+- Support for Durian.Core 1.2.0.
+- Minor bug-fixes.
+
+v.1.0.0
+
+- Initial release.
