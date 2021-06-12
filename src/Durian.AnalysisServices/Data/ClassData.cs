@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -19,6 +22,10 @@ namespace Durian.Generator.Data
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
 		public ClassData(ClassDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
+		{
+		}
+
+		internal ClassData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 
@@ -45,10 +52,6 @@ namespace Durian.Generator.Data
 			IEnumerable<INamespaceSymbol>? containingNamespaces,
 			IEnumerable<AttributeData>? attributes
 		) : base(declaration, compilation, symbol, semanticModel, partialDeclarations, modifiers, containingTypes, containingNamespaces, attributes)
-		{
-		}
-
-		internal ClassData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 	}

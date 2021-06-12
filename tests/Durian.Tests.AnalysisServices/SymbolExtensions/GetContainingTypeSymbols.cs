@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Linq;
 using Durian.Generator.Extensions;
@@ -10,17 +13,11 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class GetContainingTypeSymbols : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		public void CanReturnMultipleTypes()
 		{
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetContainingTypeSymbols());
-		}
-
-		[Fact]
-		public void ReturnsEmpty_When_IsNotNestedType()
-		{
-			INamedTypeSymbol type = GetSymbol("class Test { }");
+			INamedTypeSymbol type = GetSymbol("class Test { class Parent { class Child { } } }", 2);
 			INamedTypeSymbol[] containingTypes = type.GetContainingTypeSymbols().ToArray();
-			Assert.True(containingTypes.Length == 0);
+			Assert.True(containingTypes.Length == 2 && containingTypes.Any(t => t.Name == "Parent") && containingTypes.Any(t => t.Name == "Test"));
 		}
 
 		[Fact]
@@ -32,11 +29,11 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void CanReturnMultipleTypes()
+		public void ReturnsEmpty_When_IsNotNestedType()
 		{
-			INamedTypeSymbol type = GetSymbol("class Test { class Parent { class Child { } } }", 2);
+			INamedTypeSymbol type = GetSymbol("class Test { }");
 			INamedTypeSymbol[] containingTypes = type.GetContainingTypeSymbols().ToArray();
-			Assert.True(containingTypes.Length == 2 && containingTypes.Any(t => t.Name == "Parent") && containingTypes.Any(t => t.Name == "Test"));
+			Assert.True(containingTypes.Length == 0);
 		}
 
 		[Fact]
@@ -45,6 +42,12 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 			INamedTypeSymbol type = GetSymbol("class Test { class Parent { class Child { } } }", 2);
 			INamedTypeSymbol[] containingTypes = type.GetContainingTypeSymbols().ToArray();
 			Assert.True(containingTypes.Length == 2 && containingTypes[0].Name == "Test" && containingTypes[1].Name == "Parent");
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetContainingTypeSymbols());
 		}
 
 		private INamedTypeSymbol GetSymbol(string source, int index = 0)

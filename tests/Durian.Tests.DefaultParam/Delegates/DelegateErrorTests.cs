@@ -1,4 +1,7 @@
-﻿using Durian.Generator;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using Durian.Generator;
 using Durian.Generator.DefaultParam;
 using Xunit;
 
@@ -7,62 +10,18 @@ namespace Durian.Tests.DefaultParam.Delegates
 	public sealed class DelegateErrorTests : DefaultParamGeneratorTest
 	{
 		[Fact]
-		public void Error_When_DefaultParamAttributeIsNotLast()
+		public void Error_When_ContainingTypeIsDefaultParam()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-partial class Test
+partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string)]T, U>();
-}}
-";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
-		}
-
-		[Fact]
-		public void Error_When_OneOfMultipleDefaultParamAttributeIsNotLast()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T, U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>();
-}}
-";
-
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
-		}
-
-		[Fact]
-		public void Error_When_HasGeneratedCodeAttribute()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[System.CodeDom.Compiler.GeneratedCode("", "")]
 	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
-		}
 
-		[Fact]
-		public void Error_When_HasDurianGeneratedAttribute()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{DurianStrings.GeneratorNamespace}.{nameof(DurianGeneratedAttribute)}]
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
-}}
-";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
+			Assert.True(RunGenerator(input, 1).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested.Id));
 		}
 
 		[Fact]
@@ -74,23 +33,6 @@ partial class Test
 class Test
 {{
 	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
-}}
-";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
-		}
-
-		[Fact]
-		public void Error_When_OneOfContainingTypesIsNotPartial()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-class Parent
-{{
-	partial class Test
-	{{
-		delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
-	}}
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
@@ -111,6 +53,67 @@ partial class Test
 		}
 
 		[Fact]
+		public void Error_When_DefaultParamAttributeIsNotLast()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string)]T, U>();
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
+		}
+
+		[Fact]
+		public void Error_When_HasDurianGeneratedAttribute()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{DurianStrings.GeneratorNamespace}.{nameof(DurianGeneratedAttribute)}]
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
+		}
+
+		[Fact]
+		public void Error_When_HasGeneratedCodeAttribute()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[System.CodeDom.Compiler.GeneratedCode("", "")]
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
+		}
+
+		[Fact]
+		public void Error_When_OneOfContainingTypesIsNotPartial()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+class Parent
+{{
+	partial class Test
+	{{
+		delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
+		}
+
+		[Fact]
 		public void Error_When_OneOfDefaultParamArgumentsIsInvalidForConstraint()
 		{
 			string input =
@@ -125,18 +128,18 @@ partial class Test
 		}
 
 		[Fact]
-		public void Error_When_ContainingTypeIsDefaultParam()
+		public void Error_When_OneOfMultipleDefaultParamAttributeIsNotLast()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T, U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>();
 }}
 ";
 
-			Assert.True(RunGenerator(input, 1).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
 		}
 	}
 }

@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -12,26 +15,6 @@ namespace Durian.Generator.DefaultParam
 	public class DefaultParamSyntaxReceiver : IDurianSyntaxReceiver
 	{
 		private bool _allowsCollectingLocalFunctions;
-
-		/// <summary>
-		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
-		/// </summary>
-		public List<TypeDeclarationSyntax> CandidateTypes { get; }
-
-		/// <summary>
-		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
-		/// </summary>
-		public List<DelegateDeclarationSyntax> CandidateDelegates { get; }
-
-		/// <summary>
-		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
-		/// </summary>
-		public List<MethodDeclarationSyntax> CandidateMethods { get; }
-
-		/// <summary>
-		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied. -or- empty <see cref="List{T}"/> if <see cref="AllowsCollectingLocalFunctions"/> is <see langword="false"/>.
-		/// </summary>
-		public List<LocalFunctionStatementSyntax> CandidateLocalFunctions { get; }
 
 		/// <summary>
 		/// Determines whether to allow collecting <see cref="LocalFunctionStatementSyntax"/>es.
@@ -52,6 +35,26 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <summary>
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
+		/// </summary>
+		public List<DelegateDeclarationSyntax> CandidateDelegates { get; }
+
+		/// <summary>
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied. -or- empty <see cref="List{T}"/> if <see cref="AllowsCollectingLocalFunctions"/> is <see langword="false"/>.
+		/// </summary>
+		public List<LocalFunctionStatementSyntax> CandidateLocalFunctions { get; }
+
+		/// <summary>
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
+		/// </summary>
+		public List<MethodDeclarationSyntax> CandidateMethods { get; }
+
+		/// <summary>
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
+		/// </summary>
+		public List<TypeDeclarationSyntax> CandidateTypes { get; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamSyntaxReceiver"/> class.
 		/// </summary>
 		public DefaultParamSyntaxReceiver()
@@ -69,6 +72,32 @@ namespace Durian.Generator.DefaultParam
 		public DefaultParamSyntaxReceiver(bool collectLocalFunctions) : this()
 		{
 			AllowsCollectingLocalFunctions = collectLocalFunctions;
+		}
+
+		IEnumerable<CSharpSyntaxNode> INodeProvider.GetNodes()
+		{
+			foreach (MethodDeclarationSyntax m in CandidateMethods)
+			{
+				yield return m;
+			}
+
+			foreach (DelegateDeclarationSyntax d in CandidateDelegates)
+			{
+				yield return d;
+			}
+
+			foreach (TypeDeclarationSyntax t in CandidateTypes)
+			{
+				yield return t;
+			}
+
+			if (CandidateLocalFunctions is not null)
+			{
+				foreach (LocalFunctionStatementSyntax fn in CandidateLocalFunctions)
+				{
+					yield return fn;
+				}
+			}
 		}
 
 		/// <inheritdoc/>
@@ -102,40 +131,6 @@ namespace Durian.Generator.DefaultParam
 			}
 		}
 
-		private void CollectType(TypeDeclarationSyntax decl)
-		{
-			if (decl.TypeParameterList is null)
-			{
-				return;
-			}
-
-			SeparatedSyntaxList<TypeParameterSyntax> parameters = decl.TypeParameterList.Parameters;
-
-			if (parameters.Any() && parameters.Any(p => p.AttributeLists.Any()))
-			{
-				CandidateTypes.Add(decl);
-			}
-		}
-
-		private void CollectMethod(MethodDeclarationSyntax decl)
-		{
-			if (decl.TypeParameterList is not null)
-			{
-				SeparatedSyntaxList<TypeParameterSyntax> parameters = decl.TypeParameterList.Parameters;
-
-				if (parameters.Any() && parameters.Any(p => p.AttributeLists.Any()))
-				{
-					CandidateMethods.Add(decl);
-					return;
-				}
-			}
-
-			if (decl.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
-			{
-				CandidateMethods.Add(decl);
-			}
-		}
-
 		private void CollectDelegate(DelegateDeclarationSyntax decl)
 		{
 			if (decl.TypeParameterList is null)
@@ -166,29 +161,37 @@ namespace Durian.Generator.DefaultParam
 			}
 		}
 
-		IEnumerable<CSharpSyntaxNode> IDurianSyntaxReceiver.GetCollectedNodes()
+		private void CollectMethod(MethodDeclarationSyntax decl)
 		{
-			foreach (MethodDeclarationSyntax m in CandidateMethods)
+			if (decl.TypeParameterList is not null)
 			{
-				yield return m;
-			}
+				SeparatedSyntaxList<TypeParameterSyntax> parameters = decl.TypeParameterList.Parameters;
 
-			foreach (DelegateDeclarationSyntax d in CandidateDelegates)
-			{
-				yield return d;
-			}
-
-			foreach (TypeDeclarationSyntax t in CandidateTypes)
-			{
-				yield return t;
-			}
-
-			if (CandidateLocalFunctions is not null)
-			{
-				foreach (LocalFunctionStatementSyntax fn in CandidateLocalFunctions)
+				if (parameters.Any() && parameters.Any(p => p.AttributeLists.Any()))
 				{
-					yield return fn;
+					CandidateMethods.Add(decl);
+					return;
 				}
+			}
+
+			if (decl.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
+			{
+				CandidateMethods.Add(decl);
+			}
+		}
+
+		private void CollectType(TypeDeclarationSyntax decl)
+		{
+			if (decl.TypeParameterList is null)
+			{
+				return;
+			}
+
+			SeparatedSyntaxList<TypeParameterSyntax> parameters = decl.TypeParameterList.Parameters;
+
+			if (parameters.Any() && parameters.Any(p => p.AttributeLists.Any()))
+			{
+				CandidateTypes.Add(decl);
 			}
 		}
 	}

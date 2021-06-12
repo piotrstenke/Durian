@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Immutable;
 
 namespace Durian.Info
@@ -9,9 +12,19 @@ namespace Durian.Info
 	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
 	public sealed partial class ModuleIdentity : IEquatable<ModuleIdentity>
 	{
-		private ImmutableArray<TypeIdentity> _types;
 		private ImmutableArray<DiagnosticData> _diagnostics;
 		private ImmutableArray<PackageIdentity> _packages;
+		private ImmutableArray<TypeIdentity> _types;
+
+		/// <summary>
+		/// A two-digit number that precedes the id of a diagnostic.
+		/// </summary>
+		public IdSection AnalysisId { get; }
+
+		/// <summary>
+		/// A collection of diagnostics that can be reported by this module.
+		/// </summary>
+		public ImmutableArray<DiagnosticData> Diagnostics => _diagnostics;
 
 		/// <summary>
 		/// Link to documentation regarding this module. -or- empty <see cref="string"/> if the module has no documentation.
@@ -24,24 +37,14 @@ namespace Durian.Info
 		public DurianModule Module { get; }
 
 		/// <summary>
-		/// A two-digit number that precedes the id of a diagnostic.
+		/// A collection of packages that are part of this module.
 		/// </summary>
-		public IdSection AnalysisId { get; }
+		public ImmutableArray<PackageIdentity> Packages => _packages;
 
 		/// <summary>
 		/// A collection of types that are part of this module.
 		/// </summary>
 		public ImmutableArray<TypeIdentity> Types => _types;
-
-		/// <summary>
-		/// A collection of diagnostics that can be reported by this module.
-		/// </summary>
-		public ImmutableArray<DiagnosticData> Diagnostics => _diagnostics;
-
-		/// <summary>
-		/// A collection of packages that are part of this module.
-		/// </summary>
-		public ImmutableArray<PackageIdentity> Packages => _packages;
 
 		internal ModuleIdentity(
 			DurianModule module,
@@ -76,23 +79,21 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public override string ToString()
+		public static bool operator !=(ModuleIdentity a, ModuleIdentity b)
 		{
-			return Module.ToString();
+			return !(a == b);
 		}
 
 		/// <inheritdoc/>
-		public override int GetHashCode()
+		public static bool operator ==(ModuleIdentity a, ModuleIdentity b)
 		{
-			int hashCode = -726504116;
-			hashCode = (hashCode * -1521134295) + Documentation.GetHashCode();
-			hashCode = (hashCode * -1521134295) + AnalysisId.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Module.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _types);
-			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _packages);
-			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _diagnostics);
-
-			return hashCode;
+			return
+				a.Module == b.Module &&
+				a.Documentation == b.Documentation &&
+				a.AnalysisId == b.AnalysisId &&
+				Utilities.CompareImmutableArrays(ref a._types, ref b._types) &&
+				Utilities.CompareImmutableArrays(ref a._diagnostics, ref b._diagnostics) &&
+				Utilities.CompareImmutableArrays(ref a._packages, ref b._packages);
 		}
 
 		/// <inheritdoc/>
@@ -113,21 +114,23 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public static bool operator ==(ModuleIdentity a, ModuleIdentity b)
+		public override int GetHashCode()
 		{
-			return
-				a.Module == b.Module &&
-				a.Documentation == b.Documentation &&
-				a.AnalysisId == b.AnalysisId &&
-				Utilities.CompareImmutableArrays(ref a._types, ref b._types) &&
-				Utilities.CompareImmutableArrays(ref a._diagnostics, ref b._diagnostics) &&
-				Utilities.CompareImmutableArrays(ref a._packages, ref b._packages);
+			int hashCode = -726504116;
+			hashCode = (hashCode * -1521134295) + Documentation.GetHashCode();
+			hashCode = (hashCode * -1521134295) + AnalysisId.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Module.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _types);
+			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _packages);
+			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _diagnostics);
+
+			return hashCode;
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(ModuleIdentity a, ModuleIdentity b)
+		public override string ToString()
 		{
-			return !(a == b);
+			return Module.ToString();
 		}
 	}
 }

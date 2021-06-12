@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Xunit;
 
@@ -6,15 +9,9 @@ namespace Durian.Tests.AnalysisServices.AnalysisUtilities
 	public sealed class GetGenericName_IEnumerableString
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_TypeParametersIsNull()
+		public void CanReturnMultipleTypeParameters()
 		{
-			Assert.Throws<ArgumentNullException>(() => Durian.Generator.AnalysisUtilities.GetGenericName(null!));
-		}
-
-		[Fact]
-		public void ReturnsEmptyString_When_TypeParametersIsEmpty()
-		{
-			Assert.True(Durian.Generator.AnalysisUtilities.GetGenericName(Array.Empty<string>()) == string.Empty);
+			Assert.True(Durian.Generator.AnalysisUtilities.GetGenericName(new string[] { "T", "U" }) == "<T, U>");
 		}
 
 		[Fact]
@@ -24,9 +21,15 @@ namespace Durian.Tests.AnalysisServices.AnalysisUtilities
 		}
 
 		[Fact]
-		public void CanReturnMultipleTypeParameters()
+		public void ReturnsEmptyString_When_TypeParametersIsEmpty()
 		{
-			Assert.True(Durian.Generator.AnalysisUtilities.GetGenericName(new string[] { "T", "U" }) == "<T, U>");
+			Assert.True(Durian.Generator.AnalysisUtilities.GetGenericName(Array.Empty<string>()) == string.Empty);
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_TypeParametersIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => Durian.Generator.AnalysisUtilities.GetGenericName(null!));
 		}
 	}
 }

@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
@@ -8,12 +11,6 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 {
 	public sealed class JoinNamespaces_ISymbol : CompilationTest
 	{
-		[Fact]
-		public void ThrowsArgumentNullException_When_MemberIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).JoinNamespaces());
-		}
-
 		[Fact]
 		public void ReturnsEmptyString_When_IsInGlobalNamespace()
 		{
@@ -36,6 +33,12 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		public void ReturnsParentNamespaces_When_IsInNestedNamespaces_AndNamespacesAreWrittenSeparately()
 		{
 			Assert.True(GetSymbol("namespace N1 { namespace N2 { class Type { } } }").JoinNamespaces() == "N1.N2");
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_MemberIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).JoinNamespaces());
 		}
 
 		private INamedTypeSymbol GetSymbol(string source)

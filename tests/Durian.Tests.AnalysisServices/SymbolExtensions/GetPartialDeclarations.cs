@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Linq;
 using Durian.Generator.Extensions;
@@ -10,10 +13,15 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class GetPartialDeclarations : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_TypeIsNull()
+		public void CanReturnsMultipleDeclarations()
 		{
-			INamedTypeSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetPartialDeclarations<TypeDeclarationSyntax>());
+			ClassDeclarationSyntax decl1 = GetNode<ClassDeclarationSyntax>("partial class Test { }");
+			ClassDeclarationSyntax decl2 = GetNode<ClassDeclarationSyntax>("public partial sealed class Test { }");
+
+			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol>(decl1);
+			ClassDeclarationSyntax[] partialDecls = symbol.GetPartialDeclarations<ClassDeclarationSyntax>().ToArray();
+
+			Assert.True(partialDecls.Length == 2 && partialDecls.Any(d => d.IsEquivalentTo(decl1)) && partialDecls.Any(d => d.IsEquivalentTo(decl2)));
 		}
 
 		[Fact]
@@ -37,15 +45,10 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void CanReturnsMultipleDeclarations()
+		public void ThrowsArgumentNullException_When_TypeIsNull()
 		{
-			ClassDeclarationSyntax decl1 = GetNode<ClassDeclarationSyntax>("partial class Test { }");
-			ClassDeclarationSyntax decl2 = GetNode<ClassDeclarationSyntax>("public partial sealed class Test { }");
-
-			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol>(decl1);
-			ClassDeclarationSyntax[] partialDecls = symbol.GetPartialDeclarations<ClassDeclarationSyntax>().ToArray();
-
-			Assert.True(partialDecls.Length == 2 && partialDecls.Any(d => d.IsEquivalentTo(decl1)) && partialDecls.Any(d => d.IsEquivalentTo(decl2)));
+			INamedTypeSymbol symbol = null!;
+			Assert.Throws<ArgumentNullException>(() => symbol.GetPartialDeclarations<TypeDeclarationSyntax>());
 		}
 	}
 }

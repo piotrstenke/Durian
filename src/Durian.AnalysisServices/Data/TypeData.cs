@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,13 +21,13 @@ namespace Durian.Generator.Data
 		/// </summary>
 		public new TypeDeclarationSyntax Declaration => (base.Declaration as TypeDeclarationSyntax)!;
 
+		/// <inheritdoc/>
+		public SyntaxToken[] Modifiers => _modifiers ??= GetPartialDeclarations().GetModifiers().ToArray();
+
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
-
-		/// <inheritdoc/>
-		public SyntaxToken[] Modifiers => _modifiers ??= GetPartialDeclarations().GetModifiers().ToArray();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TypeData"/> class.
@@ -35,6 +38,10 @@ namespace Durian.Generator.Data
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
 		public TypeData(TypeDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
+		{
+		}
+
+		internal TypeData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 
@@ -68,10 +75,6 @@ namespace Durian.Generator.Data
 			{
 				_modifiers = modifiers.ToArray();
 			}
-		}
-
-		internal TypeData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
-		{
 		}
 
 		/// <summary>

@@ -1,4 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Generator.DefaultParam
@@ -9,9 +12,15 @@ namespace Durian.Generator.DefaultParam
 	public readonly struct CollidingMember
 	{
 		/// <summary>
-		/// <see cref="ISymbol"/> of the member.
+		/// Determines whether this member is contained within a type.
 		/// </summary>
-		public readonly ISymbol Symbol { get; }
+		public readonly bool IsChild => Symbol.ContainingType is not null;
+
+		/// <summary>
+		/// Determines whether this member is a method. If so, its full signature should be investigated when checking if in fact there is a collision.
+		/// </summary>
+		[MemberNotNullWhen(true, nameof(Parameters), nameof(TypeParameters))]
+		public readonly bool IsMethod => Parameters is not null && TypeParameters is not null;
 
 		/// <summary>
 		/// Parameters of the member.
@@ -19,20 +28,14 @@ namespace Durian.Generator.DefaultParam
 		public readonly IParameterSymbol[]? Parameters { get; }
 
 		/// <summary>
+		/// <see cref="ISymbol"/> of the member.
+		/// </summary>
+		public readonly ISymbol Symbol { get; }
+
+		/// <summary>
 		/// Type parameters of the member.
 		/// </summary>
 		public readonly ITypeParameterSymbol[]? TypeParameters { get; }
-
-		/// <summary>
-		/// Determines whether this member is a method. If so, its full signature should be investigated when checking if in fact there is a collision.
-		/// </summary>
-		[MemberNotNullWhen(true, nameof(Parameters), nameof(TypeParameters))]
-		public bool IsMethod => Parameters is not null && TypeParameters is not null;
-
-		/// <summary>
-		/// Determines whether this member is contained within a type.
-		/// </summary>
-		public bool IsChild => Symbol.ContainingType is not null;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CollidingMember"/> struct.
@@ -48,7 +51,7 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public override string ToString()
+		public override readonly string ToString()
 		{
 			return Symbol.ToString();
 		}

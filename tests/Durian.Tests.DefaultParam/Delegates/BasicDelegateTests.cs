@@ -1,4 +1,7 @@
-﻿using Durian.Generator;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using Durian.Generator;
 using Xunit;
 
 namespace Durian.Tests.DefaultParam.Delegates
@@ -6,90 +9,93 @@ namespace Durian.Tests.DefaultParam.Delegates
 	public sealed class BasicDelegateTests : DefaultParamGeneratorTest
 	{
 		[Fact]
-		public void SkipsDelegate_When_HasNoDefaultParamAttribute()
+		public void DoesNotRemoveConstraintOfNonDefaultParam()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	delegate void Del<T>(T value);
-}}";
+	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string))]U, [{nameof(DefaultParamAttribute)}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull;
+}}
+";
+			string expected =
+@$"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T, U, V>")}
+	delegate void Del<T, U>() where T : unmanaged where U : class;
 
-			Assert.False(RunGenerator(input).IsGenerated);
+	{GetCodeGenerationAttributes("Test.Del<T, U, V>")}
+	delegate void Del<T>() where T : unmanaged;
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
 		}
 
-
 		[Fact]
-		public void SkipsContainingTypeAttributes()
+		public void Generates_When_DelegateWithNameSameButOtherParametersExistsInGlobal()
 		{
 			string input =
-@$"using System;
-using {DurianStrings.MainNamespace};
+@$"using {DurianStrings.MainNamespace};
 
-[Serializable]
-partial class Test
+delegate void Del(string value);
+
+delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string)]U>(U value);
+";
+
+			string expected =
+@$"{GetCodeGenerationAttributes("Del<T, U>")}
+delegate void Del<T>(string value);
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Generates_When_DelegateWithSameNameButOtherParametersExistsInBaseType()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+class Parent
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
+	delegate void Del(string value);
+}}
+
+partial class Test : Parent
+{{
+	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string)]U>(U value);
 }}
 ";
 
 			string expected =
 @$"partial class Test
 {{
-	{GetCodeGenerationAttributes("Test.Del<T>")}
-	delegate void Del(int value);
+	{GetCodeGenerationAttributes("Test.Del<T, U>")}
+	delegate void Del<T>(string value);
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
 		}
 
 		[Fact]
-		public void PreservesTargetAttributes()
-		{
-			string input =
-@$"using System;
-using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[CLSCompliant(true)]
-	[Obsolete]
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
-}}
-";
-
-			string expected =
-@$"using System;
-
-partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T>")}
-	[CLSCompliant(true)]
-	[Obsolete]
-	delegate void Del(int value);
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void HandlesDelegateWithOneTypeParameter()
+		public void Generates_When_DelegateWithSameNameButOtherParametersExistsInSameType()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
+	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string)]U>(U value);
+
+	delegate void Del(string value);
 }}
 ";
 
 			string expected =
 @$"partial class Test
 {{
-	{GetCodeGenerationAttributes("Test.Del<T>")}
-	delegate void Del(int value);
+	{GetCodeGenerationAttributes("Test.Del<T, U>")}
+	delegate void Del<T>(string value);
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
@@ -143,41 +149,14 @@ partial class Test
 		}
 
 		[Fact]
-		public void ReplacesReferencesIsConstraintsAndParameters()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-using System.Collections;
-using System.Collections.Generic;
-
-partial class Test
-{{
-	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(System.Collections.IEnumerable))]U>(U value) where T : IEnumerable<U>;
-}}
-";
-
-			string expected =
-@$"using System.Collections;
-using System.Collections.Generic;
-
-partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T, U>")}
-	delegate void Del<T>(IEnumerable value) where T : IEnumerable<IEnumerable>;
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void RemovesConstraintsOfSingleDefaultParam()
+		public void HandlesDelegateWithOneTypeParameter()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>() where T : unmanaged;
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
 }}
 ";
 
@@ -185,10 +164,125 @@ partial class Test
 @$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
-	delegate void Del();
+	delegate void Del(int value);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void PreservesModifiers()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value);
 }}
 ";
 
+			string expected =
+@$"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T>")}
+	public delegate void Del(string value);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void PreservesTargetAttributes()
+		{
+			string input =
+@$"using System;
+using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[CLSCompliant(true)]
+	[Obsolete]
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
+}}
+";
+
+			string expected =
+@$"using System;
+
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T>")}
+	[CLSCompliant(true)]
+	[Obsolete]
+	delegate void Del(int value);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void PreservesVariance()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(float))]out T, [{nameof(DefaultParamAttribute)}(typeof(string))]in U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>();
+";
+			string expected =
+$@"{GetCodeGenerationAttributes("Del<T, U, V>")}
+delegate void Del<out T, in U>();
+
+{GetCodeGenerationAttributes("Del<T, U, V>")}
+delegate void Del<out T>();
+
+{GetCodeGenerationAttributes("Del<T, U, V>")}
+delegate void Del();
+";
+
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void PreservesVarianceOfParentInterface()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial interface ITest<in TType, out TName>
+{{
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+}}
+";
+			string expected =
+$@"partial interface ITest<in TType, out TName>
+{{
+	{GetCodeGenerationAttributes("ITest<TType, TName>.Del<T>")}
+	delegate void Del();
+}}";
+
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void ProperlyHandlesTypeParameterOfParentType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test<TNumber> where TNumber : class
+{{
+	delegate TNumber Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value, TNumber number);
+}}
+";
+
+			string expected =
+@$"partial class Test<TNumber>
+{{
+	{GetCodeGenerationAttributes("Test<TNumber>.Del<T>")}
+	delegate TNumber Del(int value, TNumber number);
+}}
+";
 			Assert.True(RunGenerator(input).Compare(expected));
 		}
 
@@ -221,38 +315,14 @@ partial class Test
 		}
 
 		[Fact]
-		public void DoesNotRemoveConstraintOfNonDefaultParam()
+		public void RemovesConstraintsOfSingleDefaultParam()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string))]U, [{nameof(DefaultParamAttribute)}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull;
-}}
-";
-			string expected =
-@$"partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T, U, V>")}
-	delegate void Del<T, U>() where T : unmanaged where U : class;
-
-	{GetCodeGenerationAttributes("Test.Del<T, U, V>")}
-	delegate void Del<T>() where T : unmanaged;
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void PreservesModifiers()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value);
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>() where T : unmanaged;
 }}
 ";
 
@@ -260,33 +330,239 @@ partial class Test
 @$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
-	public delegate void Del(string value);
+	delegate void Del();
+}}
+";
+
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void ReplacesReferencesIsConstraintsAndParameters()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using System.Collections;
+using System.Collections.Generic;
+
+partial class Test
+{{
+	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(System.Collections.IEnumerable))]U>(U value) where T : IEnumerable<U>;
+}}
+";
+
+			string expected =
+@$"using System.Collections;
+using System.Collections.Generic;
+
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T, U>")}
+	delegate void Del<T>(IEnumerable value) where T : IEnumerable<IEnumerable>;
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
 		}
 
-
 		[Fact]
-		public void WritesSortedUsings()
+		public void SkipsContainingTypeAttributes()
 		{
 			string input =
-@$"using {DurianStrings.MainNamespace};
-using System.Numerics;
+@$"using System;
+using {DurianStrings.MainNamespace};
 
+[Serializable]
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.Int32))]T>(BigInteger integer);
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
 }}
 ";
 
 			string expected =
-@$"using System.Numerics;
+@$"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T>")}
+	delegate void Del(int value);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void SkipsDelegate_When_HasNoDefaultParamAttribute()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	delegate void Del<T>(T value);
+}}";
+
+			Assert.False(RunGenerator(input).IsGenerated);
+		}
+
+		[Fact]
+		public void Success_When_HasTwoDefaultParam_And_FirstIsConstraintOfSecond()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using System.Collections;
+
+partial class Test
+{{
+	delegate U Del<[{nameof(DefaultParamAttribute)}(typeof(ICollection))]T, [{nameof(DefaultParamAttribute)}(typeof(IEnumerable))]U>(T value) where T : U;
+}}
+";
+
+			string expected =
+@$"using System.Collections;
+
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T, U>")}
+	delegate IEnumerable Del<T>(T value) where T : IEnumerable;
+
+	{GetCodeGenerationAttributes("Test.Del<T, U>")}
+	delegate IEnumerable Del(ICollection value);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_IsArray_And_IsNotConstraint()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string[])]T>(T value);
+}}
+";
+
+			string expected =
+@$"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T>")}
+	public delegate void Del(string[] value);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_IsGenericType()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.Collections.Generic.List<int>)]T>(T value);
+}}
+";
+
+			string expected =
+@$"using System.Collections.Generic;
 
 partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
-	delegate void Del(BigInteger integer);
+	public delegate void Del(List<int> value);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_IsObject_And_IsNotConstraint()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(object))]T>(T value);
+}}
+";
+
+			string expected =
+@$"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T>")}
+	public delegate void Del(object value);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_IsSystemArray_And_IsNotConstraint()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.Array))]T>(T value);
+}}
+";
+
+			string expected =
+@$"using System;
+
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T>")}
+	public delegate void Del(Array value);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_IsSystemValueType_And_IsNotConstraint()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.ValueType))]T>(T value);
+}}
+";
+
+			string expected =
+@$"using System;
+
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T>")}
+	public delegate void Del(ValueType value);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_IsValueType_And_IsNotConstraint()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
+}}
+";
+
+			string expected =
+@$"partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T>")}
+	public delegate void Del(int value);
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
@@ -352,28 +628,6 @@ delegate void Del();
 		}
 
 		[Fact]
-		public void WritesDelegate_When_IsIsNamespace()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-namespace Test
-{{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value);
-}}
-";
-
-			string expected =
-@$"namespace Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T>")}
-	public delegate void Del(string value);
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
 		public void WritesDelegate_When_IsInGenericType()
 		{
 			string input =
@@ -418,300 +672,47 @@ partial class Test<TNumber> where TNumber : class
 		}
 
 		[Fact]
-		public void PreservesVariance()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(float))]out T, [{nameof(DefaultParamAttribute)}(typeof(string))]in U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>();
-";
-			string expected =
-$@"{GetCodeGenerationAttributes("Del<T, U, V>")}
-delegate void Del<out T, in U>();
-
-{GetCodeGenerationAttributes("Del<T, U, V>")}
-delegate void Del<out T>();
-
-{GetCodeGenerationAttributes("Del<T, U, V>")}
-delegate void Del();
-";
-
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void PreservesVarianceOfParentInterface()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial interface ITest<in TType, out TName>
-{{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
-}}
-";
-			string expected =
-$@"partial interface ITest<in TType, out TName>
-{{
-	{GetCodeGenerationAttributes("ITest<TType, TName>.Del<T>")}
-	delegate void Del();
-}}";
-
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Generates_When_DelegateWithSameNameButOtherParametersExistsInSameType()
+		public void WritesDelegate_When_IsIsNamespace()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
+
+namespace Test
+{{
+	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value);
+}}
+";
+
+			string expected =
+@$"namespace Test
+{{
+	{GetCodeGenerationAttributes("Test.Del<T>")}
+	public delegate void Del(string value);
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void WritesSortedUsings()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using System.Numerics;
 
 partial class Test
 {{
-	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string)]U>(U value);
-
-	delegate void Del(string value);
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.Int32))]T>(BigInteger integer);
 }}
 ";
 
 			string expected =
-@$"partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T, U>")}
-	delegate void Del<T>(string value);
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Generates_When_DelegateWithSameNameButOtherParametersExistsInBaseType()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-class Parent
-{{
-	delegate void Del(string value);
-}}
-
-partial class Test : Parent
-{{
-	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string)]U>(U value);
-}}
-";
-
-			string expected =
-@$"partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T, U>")}
-	delegate void Del<T>(string value);
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Generates_When_DelegateWithNameSameButOtherParametersExistsInGlobal()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-delegate void Del(string value);
-
-delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string)]U>(U value);
-";
-
-			string expected =
-@$"{GetCodeGenerationAttributes("Del<T, U>")}
-delegate void Del<T>(string value);
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void ProperlyHandlesTypeParameterOfParentType()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test<TNumber> where TNumber : class
-{{
-	delegate TNumber Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value, TNumber number);
-}}
-";
-
-			string expected =
-@$"partial class Test<TNumber>
-{{
-	{GetCodeGenerationAttributes("Test<TNumber>.Del<T>")}
-	delegate TNumber Del(int value, TNumber number);
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_IsGenericType()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.Collections.Generic.List<int>)]T>(T value);
-}}
-";
-
-			string expected =
-@$"using System.Collections.Generic;
+@$"using System.Numerics;
 
 partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
-	public delegate void Del(List<int> value);
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_IsArray_And_IsNotConstraint()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string[])]T>(T value);
-}}
-";
-
-			string expected =
-@$"partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T>")}
-	public delegate void Del(string[] value);
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_IsSystemArray_And_IsNotConstraint()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.Array))]T>(T value);
-}}
-";
-
-			string expected =
-@$"using System;
-
-partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T>")}
-	public delegate void Del(Array value);
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_IsSystemValueType_And_IsNotConstraint()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.ValueType))]T>(T value);
-}}
-";
-
-			string expected =
-@$"using System;
-
-partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T>")}
-	public delegate void Del(ValueType value);
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_IsObject_And_IsNotConstraint()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(object))]T>(T value);
-}}
-";
-
-			string expected =
-@$"partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T>")}
-	public delegate void Del(object value);
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_IsValueType_And_IsNotConstraint()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
-}}
-";
-
-			string expected =
-@$"partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T>")}
-	public delegate void Del(int value);
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_HasTwoDefaultParam_And_FirstIsConstraintOfSecond()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-using System.Collections;
-
-partial class Test
-{{
-	delegate U Del<[{nameof(DefaultParamAttribute)}(typeof(ICollection))]T, [{nameof(DefaultParamAttribute)}(typeof(IEnumerable))]U>(T value) where T : U;
-}}
-";
-
-			string expected =
-@$"using System.Collections;
-
-partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Del<T, U>")}
-	delegate IEnumerable Del<T>(T value) where T : IEnumerable;
-
-	{GetCodeGenerationAttributes("Test.Del<T, U>")}
-	delegate IEnumerable Del(ICollection value);
+	delegate void Del(BigInteger integer);
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));

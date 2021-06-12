@@ -1,4 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Generator.Data
 {
@@ -8,14 +11,14 @@ namespace Durian.Generator.Data
 	public interface ICompilationDataWithSymbols : ICompilationData
 	{
 		/// <summary>
-		/// Returns a <see cref="INamedTypeSymbol"/> that represents the <see cref="Generator.EnableModuleAttribute"/>.
-		/// </summary>
-		public INamedTypeSymbol EnableModuleAttribute { get; }
-
-		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> that represents the <see cref="Generator.DurianGeneratedAttribute"/>.
 		/// </summary>
 		public INamedTypeSymbol DurianGeneratedAttribute { get; }
+
+		/// <summary>
+		/// Returns a <see cref="INamedTypeSymbol"/> that represents the <see cref="Generator.EnableModuleAttribute"/>.
+		/// </summary>
+		public INamedTypeSymbol EnableModuleAttribute { get; }
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> that represents the <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/>.

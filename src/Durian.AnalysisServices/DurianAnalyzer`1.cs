@@ -1,4 +1,7 @@
-﻿using Durian.Generator.Data;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using Durian.Generator.Data;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -18,9 +21,32 @@ namespace Durian.Generator
 		}
 
 		/// <inheritdoc/>
-		public override void Initialize(AnalysisContext context)
+		public sealed override void Register(IDurianAnalysisContext context)
 		{
-			base.Initialize(context);
+			// Do nothing
+		}
+
+		/// <summary>
+		/// Performs the analysis using the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="context"><see cref="IDurianAnalysisContext"/> to register the actions to.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to be used during the analysis.</param>
+		public abstract void Register(IDurianAnalysisContext context, T compilation);
+
+		/// <summary>
+		/// Creates a new <see cref="ICompilationData"/> based on the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to create the <see cref="ICompilationData"/> from.</param>
+		protected abstract T CreateCompilation(CSharpCompilation compilation);
+
+		private protected sealed override void InitializeCore(AnalysisContext context)
+		{
+			if (Concurrent)
+			{
+				context.EnableConcurrentExecution();
+			}
+
+			context.ConfigureGeneratedCodeAnalysis(AllowGenerated ? GeneratedCodeAnalysisFlags.Analyze : GeneratedCodeAnalysisFlags.None);
 
 			context.RegisterCompilationStartAction(c =>
 			{
@@ -33,22 +59,16 @@ namespace Durian.Generator
 
 				if (!data.HasErrors)
 				{
-					Register(c, data);
+					IDurianAnalysisContext durianContext = new DurianCompilationStartAnalysisContext(c);
+					Register(durianContext, data);
 				}
 			});
 		}
 
-		/// <summary>
-		/// Performs the analysis using the specified <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="context"><see cref="CompilationStartAnalysisContext"/> to register the actions to.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to be used during the analysis.</param>
-		protected abstract void Register(CompilationStartAnalysisContext context, T compilation);
-
-		/// <summary>
-		/// Creates a new <see cref="ICompilationData"/> based on the specified <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to create the <see cref="ICompilationData"/> from.</param>
-		protected abstract T CreateCompilation(CSharpCompilation compilation);
+		private protected sealed override void Register(IDurianAnalysisContext context, CSharpCompilation compilation)
+		{
+			T c = CreateCompilation(compilation);
+			Register(context, c);
+		}
 	}
 }

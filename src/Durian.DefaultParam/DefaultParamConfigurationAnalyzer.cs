@@ -1,4 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -15,7 +18,10 @@ namespace Durian.Generator.DefaultParam
 	/// <summary>
 	/// Analyzes the usage of the <see cref="DefaultParamConfigurationAttribute"/>
 	/// </summary>
+#if !MAIN_PACKAGE
+
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
+#endif
 	public sealed class DefaultParamConfigurationAnalyzer : DurianAnalyzer<DefaultParamCompilationData>
 	{
 		/// <inheritdoc/>
@@ -38,15 +44,15 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
+		public override void Register(IDurianAnalysisContext context, DefaultParamCompilationData compilation)
 		{
-			return new DefaultParamCompilationData(compilation);
+			context.RegisterSyntaxNodeAction(c => Analyze(c, compilation), SyntaxKind.Attribute);
 		}
 
 		/// <inheritdoc/>
-		protected override void Register(CompilationStartAnalysisContext context, DefaultParamCompilationData compilation)
+		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
 		{
-			context.RegisterSyntaxNodeAction(c => Analyze(c, compilation), SyntaxKind.Attribute);
+			return new DefaultParamCompilationData(compilation);
 		}
 
 		private static void Analyze(SyntaxNodeAnalysisContext context, DefaultParamCompilationData compilation)
@@ -95,6 +101,49 @@ namespace Durian.Generator.DefaultParam
 				{
 					diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), symbol);
 				}
+			}
+		}
+
+		private static void AnalyzeMethod(ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver, IMethodSymbol method, DefaultParamCompilationData compilation, AttributeSyntax node, CancellationToken cancellationToken)
+		{
+			if (method.MethodKind != MethodKind.Ordinary || method.ContainingType.TypeKind == TypeKind.Interface)
+			{
+				diagnosticReceiver.ReportDiagnostic(DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod, node.GetLocation(), method);
+				return;
+			}
+
+			ImmutableArray<ITypeParameterSymbol> typeParameters = method.TypeParameters;
+
+			if (typeParameters.Length == 0)
+			{
+				IMethodSymbol? baseMethod = method.OverriddenMethod;
+
+				if (baseMethod is null)
+				{
+					ReportConfig(diagnosticReceiver, method, node);
+				}
+				else
+				{
+					ReportIfMethodIsNotDefaultParam(diagnosticReceiver, baseMethod, compilation, node);
+				}
+			}
+			else if (!typeParameters.Any(m => m.HasAttribute(compilation.MainAttribute!)))
+			{
+				ReportConfig(diagnosticReceiver, method, node);
+			}
+
+			if (node.ArgumentList is null)
+			{
+				return;
+			}
+
+			(AttributeArgumentSyntax syntax, string name)[] arguments = GetArguments(node);
+
+			ReportIfInvalidTargetNamespace(diagnosticReceiver, method, node, arguments, cancellationToken);
+
+			if (CheckArguments(arguments, nameof(DefaultParamConfigurationAttribute.TypeConvention), out AttributeArgumentSyntax? arg))
+			{
+				diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), method);
 			}
 		}
 
@@ -166,57 +215,6 @@ namespace Durian.Generator.DefaultParam
 			}
 		}
 
-		private static void AnalyzeMethod(ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver, IMethodSymbol method, DefaultParamCompilationData compilation, AttributeSyntax node, CancellationToken cancellationToken)
-		{
-			if (method.MethodKind != MethodKind.Ordinary || method.ContainingType.TypeKind == TypeKind.Interface)
-			{
-				diagnosticReceiver.ReportDiagnostic(DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod, node.GetLocation(), method);
-				return;
-			}
-
-			ImmutableArray<ITypeParameterSymbol> typeParameters = method.TypeParameters;
-
-			if (typeParameters.Length == 0)
-			{
-				IMethodSymbol? baseMethod = method.OverriddenMethod;
-
-				if (baseMethod is null)
-				{
-					ReportConfig(diagnosticReceiver, method, node);
-				}
-				else
-				{
-					ReportIfMethodIsNotDefaultParam(diagnosticReceiver, baseMethod, compilation, node);
-				}
-			}
-			else if (!typeParameters.Any(m => m.HasAttribute(compilation.MainAttribute!)))
-			{
-				ReportConfig(diagnosticReceiver, method, node);
-			}
-
-			if (node.ArgumentList is null)
-			{
-				return;
-			}
-
-			(AttributeArgumentSyntax syntax, string name)[] arguments = GetArguments(node);
-
-			ReportIfInvalidTargetNamespace(diagnosticReceiver, method, node, arguments, cancellationToken);
-
-			if (CheckArguments(arguments, nameof(DefaultParamConfigurationAttribute.TypeConvention), out AttributeArgumentSyntax? arg))
-			{
-				diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), method);
-			}
-		}
-
-		private static (AttributeArgumentSyntax syntax, string name)[] GetArguments(AttributeSyntax node)
-		{
-			return node.ArgumentList!.Arguments
-				.Where(arg => arg.NameEquals is not null)
-				.Select(arg => (arg, arg.NameEquals!.Name.ToString()))
-				.ToArray();
-		}
-
 		private static bool CheckArguments((AttributeArgumentSyntax, string)[] arguments, string property, [NotNullWhen(true)] out AttributeArgumentSyntax? arg)
 		{
 			foreach ((AttributeArgumentSyntax syntax, string name) in arguments)
@@ -232,12 +230,12 @@ namespace Durian.Generator.DefaultParam
 			return false;
 		}
 
-		private static void ReportIfMethodIsNotDefaultParam(ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver, IMethodSymbol method, DefaultParamCompilationData compilation, AttributeSyntax node)
+		private static (AttributeArgumentSyntax syntax, string name)[] GetArguments(AttributeSyntax node)
 		{
-			if (!method.TypeParameters.Any(m => m.HasAttribute(compilation.MainAttribute!)))
-			{
-				ReportConfig(diagnosticReceiver, method, node);
-			}
+			return node.ArgumentList!.Arguments
+				.Where(arg => arg.NameEquals is not null)
+				.Select(arg => (arg, arg.NameEquals!.Name.ToString()))
+				.ToArray();
 		}
 
 		private static void ReportConfig(ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver, ISymbol symbol, AttributeSyntax node)
@@ -258,6 +256,14 @@ namespace Durian.Generator.DefaultParam
 				{
 					diagnosticReceiver.ReportDiagnostic(DUR0127_InvalidTargetNamespace, arg.GetLocation(), symbol, value);
 				}
+			}
+		}
+
+		private static void ReportIfMethodIsNotDefaultParam(ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver, IMethodSymbol method, DefaultParamCompilationData compilation, AttributeSyntax node)
+		{
+			if (!method.TypeParameters.Any(m => m.HasAttribute(compilation.MainAttribute!)))
+			{
+				ReportConfig(diagnosticReceiver, method, node);
 			}
 		}
 	}

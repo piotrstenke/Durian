@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,88 +15,16 @@ using Durian.Tests;
 
 internal static class Program
 {
-	private static void Main()
+	private static HashSet<string> GetCurrentState(string filePath)
 	{
-		foreach (Assembly assembly in GetReferencedAssemblies())
+		if (!File.Exists(filePath))
 		{
-			string? release = assembly.GetCustomAttribute<PackageDefinitionAttribute>()?.Version;
-
-			if (release is null)
-			{
-				continue;
-			}
-
-			string directory = $"../../../src/{assembly.GetName().Name}";
-			HandleChangeLog(assembly, directory, release);
-		}
-	}
-
-	private static void HandleChangeLog(Assembly assembly, string directory, string release)
-	{
-		string filePath = directory + "/CHANGELOG.md";
-		HashSet<string> entries = GetCurrentState(filePath);
-		List<string> add = new();
-		List<string> move = new();
-
-		foreach (Type type in assembly.GetTypes())
-		{
-			if (type.IsNotPublic)
-			{
-				continue;
-			}
-
-			HandleType(type, entries, add, move);
+			return new HashSet<string>();
 		}
 
-		string[] remove = new string[entries.Count];
-		entries.CopyTo(remove);
+		using ReleaseReader reader = new(filePath);
 
-		WriteOutput(filePath, release, add.ToArray(), move.ToArray(), remove);
-	}
-
-	private static void HandleType(Type type, HashSet<string> entries, List<string> add, List<string> move)
-	{
-		if (!ValidateMember(type, type.Name) || !HandleMember(type, entries, add, move, type.FullName!))
-		{
-			return;
-		}
-
-		MemberInfo[] members;
-
-		if (type.IsEnum)
-		{
-			members = type.GetFields().Where(f => f.Name != "value__").ToArray();
-		}
-		else
-		{
-			members = type.GetMembers(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic);
-		}
-
-		foreach (MemberInfo member in members)
-		{
-			if (member is TypeInfo t)
-			{
-				continue;
-			}
-			else
-			{
-				string? name = GetMemberName(member, type.FullName!, out string? additionalName);
-
-				if (name is null)
-				{
-					continue;
-				}
-
-				name = name.Replace('`', '\'');
-				HandleMember(member, entries, add, move, name);
-
-				if (additionalName is not null)
-				{
-					additionalName = additionalName.Replace('`', '\'');
-					HandleMember(member, entries, add, move, additionalName);
-				}
-			}
-		}
+		return reader.ReadEntries();
 	}
 
 	private static string? GetMemberName(MemberInfo member, string fullTypeName, out string? additionalName)
@@ -182,14 +113,75 @@ internal static class Program
 		return fullTypeName + "." + member.Name;
 	}
 
-	private static bool ValidateMember(MemberInfo member, string name)
+	private static string GetMethodName(ParameterInfo[] parameters, int numTypeParameters, string fullName)
 	{
-		if (name.StartsWith('<') || name.StartsWith('+') || member.GetCustomAttribute<CompilerGeneratedAttribute>() is not null)
+		if (parameters.Length == 0)
 		{
-			return false;
+			return fullName + "()";
 		}
 
-		return true;
+		StringBuilder builder = new(256);
+		builder.Append(fullName);
+
+		if (numTypeParameters > 0)
+		{
+			builder.Append('\'').Append(numTypeParameters);
+		}
+
+		builder.Append('(');
+
+		foreach (ParameterInfo parameter in parameters)
+		{
+			builder.Append(parameter.ToString()).Append(", ");
+		}
+
+		builder.Remove(builder.Length - 2, 2);
+		builder.Append(')');
+		return builder.ToString();
+	}
+
+	private static Assembly[] GetReferencedAssemblies()
+	{
+		return new Assembly[]
+		{
+			// Durian.Core
+			typeof(EnableModuleAttribute).Assembly,
+
+			// Durian.Core.Analyzer
+			typeof(IsCSharpCompilationAnalyzer).Assembly,
+
+			// Durian.AnalysisServices
+			typeof(DurianGenerator).Assembly,
+
+			// Durian.TestServices
+			typeof(SingletonGeneratorTestResult).Assembly,
+
+			// Durian.DefaultParam
+			typeof(DefaultParamAnalyzer).Assembly
+		};
+	}
+
+	private static void HandleChangeLog(Assembly assembly, string directory, string release)
+	{
+		string filePath = directory + "/CHANGELOG.md";
+		HashSet<string> entries = GetCurrentState(filePath);
+		List<string> add = new();
+		List<string> move = new();
+
+		foreach (Type type in assembly.GetTypes())
+		{
+			if (type.IsNotPublic)
+			{
+				continue;
+			}
+
+			HandleType(type, entries, add, move);
+		}
+
+		string[] remove = new string[entries.Count];
+		entries.CopyTo(remove);
+
+		WriteOutput(filePath, release, add.ToArray(), move.ToArray(), remove);
 	}
 
 	private static bool HandleMember(MemberInfo member, HashSet<string> entries, List<string> add, List<string> move, string name)
@@ -220,49 +212,81 @@ internal static class Program
 		return true;
 	}
 
-	private static string GetMethodName(ParameterInfo[] parameters, int numTypeParameters, string fullName)
+	private static void HandleType(Type type, HashSet<string> entries, List<string> add, List<string> move)
 	{
-		if (parameters.Length == 0)
+		if (!ValidateMember(type, type.Name) || !HandleMember(type, entries, add, move, type.FullName!))
 		{
-			return fullName + "()";
+			return;
 		}
 
-		StringBuilder builder = new(256);
-		builder.Append(fullName);
+		MemberInfo[] members;
 
-		if (numTypeParameters > 0)
+		if (type.IsEnum)
 		{
-			builder.Append('\'').Append(numTypeParameters);
+			members = type.GetFields().Where(f => f.Name != "value__").ToArray();
+		}
+		else
+		{
+			members = type.GetMembers(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic);
 		}
 
-		builder.Append('(');
-
-		foreach (ParameterInfo parameter in parameters)
+		foreach (MemberInfo member in members)
 		{
-			builder.Append(parameter.ToString()).Append(", ");
-		}
+			if (member is TypeInfo t)
+			{
+				continue;
+			}
+			else
+			{
+				string? name = GetMemberName(member, type.FullName!, out string? additionalName);
 
-		builder.Remove(builder.Length - 2, 2);
-		builder.Append(')');
-		return builder.ToString();
+				if (name is null)
+				{
+					continue;
+				}
+
+				name = name.Replace('`', '\'');
+				HandleMember(member, entries, add, move, name);
+
+				if (additionalName is not null)
+				{
+					additionalName = additionalName.Replace('`', '\'');
+					HandleMember(member, entries, add, move, additionalName);
+				}
+			}
+		}
 	}
 
-	private static HashSet<string> GetCurrentState(string filePath)
+	private static void Main()
 	{
-		if (!File.Exists(filePath))
+		foreach (Assembly assembly in GetReferencedAssemblies())
 		{
-			return new HashSet<string>();
+			string? release = assembly.GetCustomAttribute<PackageDefinitionAttribute>()?.Version;
+
+			if (release is null)
+			{
+				continue;
+			}
+
+			string directory = $"../../../src/{assembly.GetName().Name}";
+			HandleChangeLog(assembly, directory, release);
+		}
+	}
+
+	private static bool ValidateMember(MemberInfo member, string name)
+	{
+		if (name.StartsWith('<') || name.StartsWith('+') || member.GetCustomAttribute<CompilerGeneratedAttribute>() is not null)
+		{
+			return false;
 		}
 
-		using ReleaseReader reader = new(filePath);
-
-		return reader.ReadEntries();
+		return true;
 	}
 
 	private static void WriteOutput(string filePath, string release, string[] added, string[] moved, string[] removed)
 	{
 		StringBuilder builder = new(1024);
-		builder.Append("## Realease ").AppendLine(release);
+		builder.Append("## Release ").AppendLine(release);
 		bool hasValue = WriteSection("Added", added);
 		hasValue |= WriteSection("Moved", moved);
 		hasValue |= WriteSection("Removed", removed);
@@ -291,26 +315,5 @@ internal static class Program
 
 			return false;
 		}
-	}
-
-	private static Assembly[] GetReferencedAssemblies()
-	{
-		return new Assembly[]
-		{
-			// Durian.Core
-			typeof(EnableModuleAttribute).Assembly,
-
-			// Durian.Core.Analyzer
-			typeof(IsCSharpCompilationAnalyzer).Assembly,
-
-			// Durian.AnalysisServices
-			typeof(DurianGenerator).Assembly,
-
-			// Durian.TestServices
-			typeof(SingletonGeneratorTestResult).Assembly,
-
-			// Durian.DefaultParam
-			typeof(DefaultParamAnalyzer).Assembly
-		};
 	}
 }

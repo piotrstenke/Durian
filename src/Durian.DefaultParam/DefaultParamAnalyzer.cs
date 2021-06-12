@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -33,85 +36,6 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		protected DefaultParamAnalyzer()
 		{
-		}
-
-		/// <summary>
-		/// Returns a collection of <see cref="DiagnosticDescriptor"/>s that are used by this analyzer specifically.
-		/// </summary>
-		protected abstract IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics();
-
-		/// <inheritdoc/>
-		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
-		{
-			return new DefaultParamCompilationData(compilation);
-		}
-
-		/// <inheritdoc/>
-		public sealed override void Initialize(AnalysisContext context)
-		{
-			base.Initialize(context);
-		}
-
-		/// <inheritdoc/>
-		protected override void Register(CompilationStartAnalysisContext context, DefaultParamCompilationData compilation)
-		{
-			context.RegisterSymbolAction(c => AnalyzeSymbol(c, compilation), SupportedSymbolKind);
-		}
-
-		private void AnalyzeSymbol(SymbolAnalysisContext context, DefaultParamCompilationData compilation)
-		{
-			ContextualDiagnosticReceiver<SymbolAnalysisContext> diagnosticReceiver = DiagnosticReceiverFactory.Symbol(context);
-			Analyze(diagnosticReceiver, context.Symbol, compilation, context.CancellationToken);
-		}
-
-		/// <summary>
-		/// Analyzes the specified <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public virtual void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-		{
-			WithDiagnostics.DefaultAnalyze(diagnosticReceiver, symbol, compilation, cancellationToken);
-		}
-
-		/// <summary>
-		/// Performs basic analysis of the <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool DefaultAnalyze(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-		{
-			if (!TryGetTypeParameters(symbol, compilation, cancellationToken, out TypeParameterContainer typeParameters))
-			{
-				return false;
-			}
-
-			return DefaultAnalyze(symbol, compilation, in typeParameters, cancellationToken);
-		}
-
-		/// <summary>
-		/// Performs basic analysis of the <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="symbol"/>'s type parameters.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool DefaultAnalyze(ISymbol symbol, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters, CancellationToken cancellationToken = default)
-		{
-			if (!typeParameters.HasDefaultParams)
-			{
-				return false;
-			}
-
-			return
-				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
-				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
-				AnalyzeTypeParameters(symbol, in typeParameters);
 		}
 
 		/// <summary>
@@ -266,40 +190,68 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <summary>
-		/// Determines, whether the specified <paramref name="symbol"/> has a <see cref="GeneratedCodeAttribute"/> with the <see cref="DefaultParamGenerator.GeneratorName"/> specified as the <see cref="GeneratedCodeAttribute.Tool"/>.
+		/// Performs basic analysis of the <paramref name="symbol"/>.
 		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool IsDefaultParamGenerated(ISymbol symbol, DefaultParamCompilationData compilation)
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
+		public static bool DefaultAnalyze(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			AttributeData? attr = symbol.GetAttributeData(compilation.GeneratedCodeAttribute!);
-
-			if (attr is null)
+			if (!TryGetTypeParameters(symbol, compilation, cancellationToken, out TypeParameterContainer typeParameters))
 			{
 				return false;
 			}
 
-			if (attr.ConstructorArguments.FirstOrDefault().Value is not string tool)
-			{
-				return false;
-			}
-
-			return tool == DefaultParamGenerator.GeneratorName;
+			return DefaultAnalyze(symbol, compilation, in typeParameters, cancellationToken);
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="symbol"/> has the <see langword="new"/> modifier.
+		/// Performs basic analysis of the <paramref name="symbol"/>.
 		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="symbol"/>'s type parameters.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public static bool HasNewModifier(ISymbol symbol, CancellationToken cancellationToken = default)
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
+		public static bool DefaultAnalyze(ISymbol symbol, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters, CancellationToken cancellationToken = default)
 		{
-			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) is MemberDeclarationSyntax m)
+			if (!typeParameters.HasDefaultParams)
 			{
-				return m.Modifiers.Any(m => m.IsKind(SyntaxKind.NewKeyword));
+				return false;
 			}
 
-			return false;
+			return
+				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
+				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
+				AnalyzeTypeParameters(symbol, in typeParameters);
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="CollidingMember"/>s representing <see cref="ISymbol"/>s that can potentially collide with members generated from the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the colliding members of.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="numTypeParameters">Number of type parameters of this <paramref name="symbol"/>.</param>
+		/// <param name="numNonDefaultParam">Number of type parameters of this <paramref name="symbol"/> that don't have the <see cref="DefaultParamAttribute"/>.</param>
+		/// <param name="numParameters">Number of parameters of this <paramref name="symbol"/>. Always use <c>0</c> for members other than methods.</param>
+		public static CollidingMember[] GetPotentiallyCollidingMembers(ISymbol symbol, DefaultParamCompilationData compilation, int numTypeParameters, int numNonDefaultParam, int numParameters = 0)
+		{
+			return GetPotentiallyCollidingMembers_Internal(symbol, compilation, numTypeParameters, numNonDefaultParam, numParameters)
+				.Select(s =>
+				{
+					if (s is IMethodSymbol m)
+					{
+						return new CollidingMember(m, m.TypeParameters.ToArray(), m.Parameters.ToArray());
+					}
+					else if (s is INamedTypeSymbol t)
+					{
+						return new CollidingMember(t, t.TypeParameters.ToArray(), null);
+					}
+
+					return new CollidingMember(s, null, null);
+				})
+				.ToArray();
 		}
 
 		/// <inheritdoc cref="GetTargetNamespace(ISymbol, IEnumerable{AttributeData}, INamedTypeSymbol[], DefaultParamCompilationData)"/>
@@ -373,99 +325,95 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <summary>
-		/// Returns a collection of <see cref="CollidingMember"/>s representing <see cref="ISymbol"/>s that can potentially collide with members generated from the specified <paramref name="symbol"/>.
+		/// Determines whether the specified <paramref name="symbol"/> has the <see langword="new"/> modifier.
 		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the colliding members of.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="numTypeParameters">Number of type parameters of this <paramref name="symbol"/>.</param>
-		/// <param name="numNonDefaultParam">Number of type parameters of this <paramref name="symbol"/> that don't have the <see cref="DefaultParamAttribute"/>.</param>
-		/// <param name="numParameters">Number of parameters of this <paramref name="symbol"/>. Always use <c>0</c> for members other than methods.</param>
-		public static CollidingMember[] GetPotentiallyCollidingMembers(ISymbol symbol, DefaultParamCompilationData compilation, int numTypeParameters, int numNonDefaultParam, int numParameters = 0)
+		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static bool HasNewModifier(ISymbol symbol, CancellationToken cancellationToken = default)
 		{
-			return GetPotentiallyCollidingMembers_Internal(symbol, compilation, numTypeParameters, numNonDefaultParam, numParameters)
-				.Select(s =>
-				{
-					if (s is IMethodSymbol m)
-					{
-						return new CollidingMember(m, m.TypeParameters.ToArray(), m.Parameters.ToArray());
-					}
-					else if (s is INamedTypeSymbol t)
-					{
-						return new CollidingMember(t, t.TypeParameters.ToArray(), null);
-					}
+			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) is MemberDeclarationSyntax m)
+			{
+				return m.Modifiers.Any(m => m.IsKind(SyntaxKind.NewKeyword));
+			}
 
-					return new CollidingMember(s, null, null);
-				})
-				.ToArray();
+			return false;
 		}
 
-		private static IEnumerable<ISymbol> GetPotentiallyCollidingMembers_Internal(ISymbol symbol, DefaultParamCompilationData compilation, int numTypeParameters, int numNonDefaultParam, int numParameters)
+		/// <summary>
+		/// Determines, whether the specified <paramref name="symbol"/> has a <see cref="GeneratedCodeAttribute"/> with the <see cref="DefaultParamGenerator.GeneratorName"/> specified as the <see cref="GeneratedCodeAttribute.Tool"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		public static bool IsDefaultParamGenerated(ISymbol symbol, DefaultParamCompilationData compilation)
 		{
-			INamedTypeSymbol? containingType = symbol.ContainingType;
+			AttributeData? attr = symbol.GetAttributeData(compilation.GeneratedCodeAttribute!);
 
-			if (containingType is null)
+			if (attr is null)
 			{
-				return GetCollidingNotNestedTypes(symbol, compilation, numTypeParameters, numNonDefaultParam);
+				return false;
 			}
 
-			string name = symbol.Name;
-			string fullName = symbol.ToString();
-			INamedTypeSymbol generatedFrom = compilation.DurianGeneratedAttribute!;
-			int numDefaultParam = numTypeParameters - numNonDefaultParam;
-
-			IEnumerable<ISymbol> symbols = containingType.GetMembers(name);
-
-			if (containingType.TypeKind == TypeKind.Interface)
+			if (attr.ConstructorArguments.FirstOrDefault().Value is not string tool)
 			{
-				symbols = symbols
-					.Concat(containingType.AllInterfaces
-						.SelectMany(t => t.GetMembers(name)));
-			}
-			else
-			{
-				symbols = symbols
-					.Concat(containingType.GetBaseTypes()
-						.SelectMany(t => t.GetMembers(name))
-						.Where(s => s.DeclaredAccessibility > Accessibility.Private));
+				return false;
 			}
 
-			bool includeNonGenericCompatibleMembers = numDefaultParam == numTypeParameters;
+			return tool == DefaultParamGenerator.GeneratorName;
+		}
 
-			symbols = symbols.Where(s =>
+		/// <summary>
+		/// Analyzes the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public virtual void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			WithDiagnostics.DefaultAnalyze(diagnosticReceiver, symbol, compilation, cancellationToken);
+		}
+
+		/// <inheritdoc/>
+		public override void Register(IDurianAnalysisContext context, DefaultParamCompilationData compilation)
+		{
+			context.RegisterSymbolAction(c => AnalyzeSymbol(c, compilation), SupportedSymbolKind);
+		}
+
+		private protected static HashSet<int>? GetApplyNewOrNull(HashSet<int> applyNew)
+		{
+			if (applyNew.Count == 0)
 			{
-				if (s is IMethodSymbol m)
-				{
-					ImmutableArray<ITypeParameterSymbol> typeParameters = m.TypeParameters;
-					return typeParameters.Length >= numNonDefaultParam && typeParameters.Length < numTypeParameters;
-				}
-				else if (s is INamedTypeSymbol t)
-				{
-					ImmutableArray<ITypeParameterSymbol> typeParameters = t.TypeParameters;
-					return typeParameters.Length >= numNonDefaultParam && typeParameters.Length < numTypeParameters;
-				}
-
-				return includeNonGenericCompatibleMembers;
-			});
-
-			if (symbol is IMethodSymbol m)
-			{
-				return GetCollidingMembersForMethodSymbol(m, fullName, symbols, generatedFrom, numParameters);
+				return null;
 			}
 
-			if (symbol is INamedTypeSymbol type)
+			return applyNew;
+		}
+
+		/// <inheritdoc/>
+		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
+		{
+			return new DefaultParamCompilationData(compilation);
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="DiagnosticDescriptor"/>s that are used by this analyzer specifically.
+		/// </summary>
+		protected abstract IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics();
+
+		private static IEnumerable<DiagnosticDescriptor> GetBaseDiagnostics()
+		{
+			return new[]
 			{
-				return symbols.Where(s =>
-				{
-					if (s is INamedTypeSymbol t && t.TypeKind == type.TypeKind)
-					{
-						return !IsGeneratedFrom(s, fullName, generatedFrom);
-					}
-
-					return true;
-				});
-			}
-
-			return symbols.Where(s => !IsGeneratedFrom(s, fullName, generatedFrom));
+				DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial,
+				DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent,
+				DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast,
+				DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint,
+				DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists,
+				DefaultParamDiagnostics.DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember,
+				DefaultParamDiagnostics.DUR0120_TypeCannotBeUsedWithConstraint,
+				DefaultParamDiagnostics.DUR0121_TypeIsNotValidDefaultParamValue,
+				DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested
+			};
 		}
 
 		private static IEnumerable<ISymbol> GetCollidingMembersForMethodSymbol(IMethodSymbol method, string fullName, IEnumerable<ISymbol> symbols, INamedTypeSymbol generatedFromAttribute, int numParameters)
@@ -548,28 +496,6 @@ namespace Durian.Generator.DefaultParam
 			}
 		}
 
-		private static bool IsValidParameterInCollidingMember(ITypeParameterSymbol[] typeParameters, IParameterSymbol parameter, in ParameterGeneration targetGeneration)
-		{
-			if (parameter.Type is ITypeParameterSymbol)
-			{
-				if (targetGeneration.GenericParameterIndex > -1)
-				{
-					int typeParameterIndex = GetIndexOfTypeParameterInCollidingMethod(typeParameters, parameter);
-
-					if (targetGeneration.GenericParameterIndex == typeParameterIndex && !AnalysisUtilities.IsValidRefKindForOverload(parameter.RefKind, targetGeneration.RefKind))
-					{
-						return false;
-					}
-				}
-			}
-			else if (SymbolEqualityComparer.Default.Equals(parameter.Type, targetGeneration.Type) && !AnalysisUtilities.IsValidRefKindForOverload(parameter.RefKind, targetGeneration.RefKind))
-			{
-				return false;
-			}
-
-			return true;
-		}
-
 		private static int GetIndexOfTypeParameterInCollidingMethod(ITypeParameterSymbol[] typeParameters, IParameterSymbol parameter)
 		{
 			int currentTypeParameterCount = typeParameters.Length;
@@ -585,43 +511,73 @@ namespace Durian.Generator.DefaultParam
 			throw new InvalidOperationException($"Unknown parameter: {parameter}");
 		}
 
-		private protected static HashSet<int>? GetApplyNewOrNull(HashSet<int> applyNew)
+		private static IEnumerable<ISymbol> GetPotentiallyCollidingMembers_Internal(ISymbol symbol, DefaultParamCompilationData compilation, int numTypeParameters, int numNonDefaultParam, int numParameters)
 		{
-			if (applyNew.Count == 0)
+			INamedTypeSymbol? containingType = symbol.ContainingType;
+
+			if (containingType is null)
 			{
-				return null;
+				return GetCollidingNotNestedTypes(symbol, compilation, numTypeParameters, numNonDefaultParam);
 			}
 
-			return applyNew;
-		}
+			string name = symbol.Name;
+			string fullName = symbol.ToString();
+			INamedTypeSymbol generatedFrom = compilation.DurianGeneratedAttribute!;
+			int numDefaultParam = numTypeParameters - numNonDefaultParam;
 
-		private static bool IsGeneratedFrom(ISymbol symbol, string fullName, INamedTypeSymbol generatedFromAttribute)
-		{
-			return symbol.GetAttributes().Any(attr =>
+			IEnumerable<ISymbol> symbols = containingType.GetMembers(name);
+
+			if (containingType.TypeKind == TypeKind.Interface)
 			{
-				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, generatedFromAttribute) && attr.TryGetConstructorArgumentValue(0, out string? value))
+				symbols = symbols
+					.Concat(containingType.AllInterfaces
+						.SelectMany(t => t.GetMembers(name)));
+			}
+			else
+			{
+				symbols = symbols
+					.Concat(containingType.GetBaseTypes()
+						.SelectMany(t => t.GetMembers(name))
+						.Where(s => s.DeclaredAccessibility > Accessibility.Private));
+			}
+
+			bool includeNonGenericCompatibleMembers = numDefaultParam == numTypeParameters;
+
+			symbols = symbols.Where(s =>
+			{
+				if (s is IMethodSymbol m)
 				{
-					return value == fullName;
+					ImmutableArray<ITypeParameterSymbol> typeParameters = m.TypeParameters;
+					return typeParameters.Length >= numNonDefaultParam && typeParameters.Length < numTypeParameters;
+				}
+				else if (s is INamedTypeSymbol t)
+				{
+					ImmutableArray<ITypeParameterSymbol> typeParameters = t.TypeParameters;
+					return typeParameters.Length >= numNonDefaultParam && typeParameters.Length < numTypeParameters;
 				}
 
-				return false;
+				return includeNonGenericCompatibleMembers;
 			});
-		}
 
-		private static IEnumerable<DiagnosticDescriptor> GetBaseDiagnostics()
-		{
-			return new[]
+			if (symbol is IMethodSymbol m)
 			{
-				DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial,
-				DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent,
-				DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast,
-				DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint,
-				DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists,
-				DefaultParamDiagnostics.DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember,
-				DefaultParamDiagnostics.DUR0120_TypeCannotBeUsedWithConstraint,
-				DefaultParamDiagnostics.DUR0121_TypeIsNotValidDefaultParamValue,
-				DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested
-			};
+				return GetCollidingMembersForMethodSymbol(m, fullName, symbols, generatedFrom, numParameters);
+			}
+
+			if (symbol is INamedTypeSymbol type)
+			{
+				return symbols.Where(s =>
+				{
+					if (s is INamedTypeSymbol t && t.TypeKind == type.TypeKind)
+					{
+						return !IsGeneratedFrom(s, fullName, generatedFrom);
+					}
+
+					return true;
+				});
+			}
+
+			return symbols.Where(s => !IsGeneratedFrom(s, fullName, generatedFrom));
 		}
 
 		private static bool HasPartialKeyword(ITypeData data)
@@ -634,63 +590,24 @@ namespace Durian.Generator.DefaultParam
 			return symbol.GetModifiers(cancellationToken).Any(m => m.IsKind(SyntaxKind.PartialKeyword));
 		}
 
-		private static bool TryGetTypeParameters(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken, out TypeParameterContainer typeParameters)
+		private static bool HasTypeParameterAsConstraint(ITypeParameterSymbol currentTypeParameter, in TypeParameterContainer typeParameters)
 		{
-			if (symbol is IMethodSymbol m)
-			{
-				typeParameters = TypeParameterContainer.CreateFrom(m, compilation, cancellationToken);
-				return true;
-			}
-			else if (symbol is INamedTypeSymbol t)
-			{
-				typeParameters = TypeParameterContainer.CreateFrom(t, compilation, cancellationToken);
-				return true;
-			}
+			int length = typeParameters.Length;
 
-			typeParameters = default;
-			return false;
-		}
-
-		private static bool ValidateTargetTypeParameter(ISymbol symbol, in TypeParameterData currentTypeParameter, in TypeParameterContainer typeParameters)
-		{
-			ITypeSymbol? targetType = currentTypeParameter.TargetType;
-			ITypeParameterSymbol typeParameterSymbol = currentTypeParameter.Symbol;
-
-			if (targetType is null || targetType is IErrorTypeSymbol)
+			for (int i = 0; i < length; i++)
 			{
-				return false;
-			}
+				ref readonly TypeParameterData param = ref typeParameters[i];
 
-			if (targetType.IsStatic ||
-				targetType.IsRefLikeType ||
-				targetType is IFunctionPointerTypeSymbol ||
-				targetType is IPointerTypeSymbol ||
-				(targetType is INamedTypeSymbol t && (t.IsUnboundGenericType || t.SpecialType == SpecialType.System_Void))
-			)
-			{
-				return false;
-			}
-
-			if (!HasValidParameterAccessibility(symbol, targetType, typeParameterSymbol, in typeParameters))
-			{
-				return false;
-			}
-
-			if (targetType.SpecialType == SpecialType.System_Object ||
-				targetType.SpecialType == SpecialType.System_Array ||
-				targetType.SpecialType == SpecialType.System_ValueType ||
-				targetType is IArrayTypeSymbol ||
-				targetType.IsValueType ||
-				targetType.IsSealed
-			)
-			{
-				if (HasTypeParameterAsConstraint(typeParameterSymbol, in typeParameters))
+				foreach (ITypeSymbol constraint in param.Symbol.ConstraintTypes)
 				{
-					return false;
+					if (SymbolEqualityComparer.Default.Equals(constraint, currentTypeParameter))
+					{
+						return true;
+					}
 				}
 			}
 
-			return IsValidForConstraint(targetType, currentTypeParameter.Symbol, in typeParameters);
+			return false;
 		}
 
 		private static bool HasValidParameterAccessibility(ISymbol symbol, ITypeSymbol targetType, ITypeParameterSymbol currentTypeParameter, in TypeParameterContainer typeParameters)
@@ -727,24 +644,17 @@ namespace Durian.Generator.DefaultParam
 			}
 		}
 
-		private static bool HasTypeParameterAsConstraint(ITypeParameterSymbol currentTypeParameter, in TypeParameterContainer typeParameters)
+		private static bool IsGeneratedFrom(ISymbol symbol, string fullName, INamedTypeSymbol generatedFromAttribute)
 		{
-			int length = typeParameters.Length;
-
-			for (int i = 0; i < length; i++)
+			return symbol.GetAttributes().Any(attr =>
 			{
-				ref readonly TypeParameterData param = ref typeParameters[i];
-
-				foreach (ITypeSymbol constraint in param.Symbol.ConstraintTypes)
+				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, generatedFromAttribute) && attr.TryGetConstructorArgumentValue(0, out string? value))
 				{
-					if (SymbolEqualityComparer.Default.Equals(constraint, currentTypeParameter))
-					{
-						return true;
-					}
+					return value == fullName;
 				}
-			}
 
-			return false;
+				return false;
+			});
 		}
 
 		private static bool IsValidForConstraint(ITypeSymbol type, ITypeParameterSymbol parameter, in TypeParameterContainer typeParameters)
@@ -811,6 +721,93 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return true;
+		}
+
+		private static bool IsValidParameterInCollidingMember(ITypeParameterSymbol[] typeParameters, IParameterSymbol parameter, in ParameterGeneration targetGeneration)
+		{
+			if (parameter.Type is ITypeParameterSymbol)
+			{
+				if (targetGeneration.GenericParameterIndex > -1)
+				{
+					int typeParameterIndex = GetIndexOfTypeParameterInCollidingMethod(typeParameters, parameter);
+
+					if (targetGeneration.GenericParameterIndex == typeParameterIndex && !AnalysisUtilities.IsValidRefKindForOverload(parameter.RefKind, targetGeneration.RefKind))
+					{
+						return false;
+					}
+				}
+			}
+			else if (SymbolEqualityComparer.Default.Equals(parameter.Type, targetGeneration.Type) && !AnalysisUtilities.IsValidRefKindForOverload(parameter.RefKind, targetGeneration.RefKind))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		private static bool TryGetTypeParameters(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken, out TypeParameterContainer typeParameters)
+		{
+			if (symbol is IMethodSymbol m)
+			{
+				typeParameters = TypeParameterContainer.CreateFrom(m, compilation, cancellationToken);
+				return true;
+			}
+			else if (symbol is INamedTypeSymbol t)
+			{
+				typeParameters = TypeParameterContainer.CreateFrom(t, compilation, cancellationToken);
+				return true;
+			}
+
+			typeParameters = default;
+			return false;
+		}
+
+		private static bool ValidateTargetTypeParameter(ISymbol symbol, in TypeParameterData currentTypeParameter, in TypeParameterContainer typeParameters)
+		{
+			ITypeSymbol? targetType = currentTypeParameter.TargetType;
+			ITypeParameterSymbol typeParameterSymbol = currentTypeParameter.Symbol;
+
+			if (targetType is null || targetType is IErrorTypeSymbol)
+			{
+				return false;
+			}
+
+			if (targetType.IsStatic ||
+				targetType.IsRefLikeType ||
+				targetType is IFunctionPointerTypeSymbol ||
+				targetType is IPointerTypeSymbol ||
+				(targetType is INamedTypeSymbol t && (t.IsUnboundGenericType || t.SpecialType == SpecialType.System_Void))
+			)
+			{
+				return false;
+			}
+
+			if (!HasValidParameterAccessibility(symbol, targetType, typeParameterSymbol, in typeParameters))
+			{
+				return false;
+			}
+
+			if (targetType.SpecialType == SpecialType.System_Object ||
+				targetType.SpecialType == SpecialType.System_Array ||
+				targetType.SpecialType == SpecialType.System_ValueType ||
+				targetType is IArrayTypeSymbol ||
+				targetType.IsValueType ||
+				targetType.IsSealed
+			)
+			{
+				if (HasTypeParameterAsConstraint(typeParameterSymbol, in typeParameters))
+				{
+					return false;
+				}
+			}
+
+			return IsValidForConstraint(targetType, currentTypeParameter.Symbol, in typeParameters);
+		}
+
+		private void AnalyzeSymbol(SymbolAnalysisContext context, DefaultParamCompilationData compilation)
+		{
+			ContextualDiagnosticReceiver<SymbolAnalysisContext> diagnosticReceiver = DiagnosticReceiverFactory.Symbol(context);
+			Analyze(diagnosticReceiver, context.Symbol, compilation, context.CancellationToken);
 		}
 	}
 }

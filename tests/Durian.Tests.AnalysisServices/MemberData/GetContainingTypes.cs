@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Linq;
 using Durian.Generator.Data;
 using Microsoft.CodeAnalysis;
@@ -8,11 +11,11 @@ namespace Durian.Tests.AnalysisServices.MemberData
 	public sealed class GetContainingTypes : CompilationTest
 	{
 		[Fact]
-		public void ReturnsEmpty_When_IsNotNestedType()
+		public void CanReturnMultipleTypes()
 		{
-			Generator.Data.MemberData data = GetMember("class Test { }");
+			Generator.Data.MemberData data = GetMember("class Test { class Parent { class Child { } } }", 2);
 			ITypeData[] containingTypes = data.GetContainingTypes().ToArray();
-			Assert.True(containingTypes.Length == 0);
+			Assert.True(containingTypes.Length == 2 && containingTypes.Any(t => t.Symbol.Name == "Parent") && containingTypes.Any(t => t.Symbol.Name == "Test"));
 		}
 
 		[Fact]
@@ -24,11 +27,11 @@ namespace Durian.Tests.AnalysisServices.MemberData
 		}
 
 		[Fact]
-		public void CanReturnMultipleTypes()
+		public void ReturnsEmpty_When_IsNotNestedType()
 		{
-			Generator.Data.MemberData data = GetMember("class Test { class Parent { class Child { } } }", 2);
+			Generator.Data.MemberData data = GetMember("class Test { }");
 			ITypeData[] containingTypes = data.GetContainingTypes().ToArray();
-			Assert.True(containingTypes.Length == 2 && containingTypes.Any(t => t.Symbol.Name == "Parent") && containingTypes.Any(t => t.Symbol.Name == "Test"));
+			Assert.True(containingTypes.Length == 0);
 		}
 
 		[Fact]

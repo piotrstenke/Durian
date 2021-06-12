@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +16,11 @@ namespace Durian.Generator.Data
 	public class FieldData : MemberData
 	{
 		/// <summary>
+		/// Target <see cref="FieldDeclarationSyntax"/>.
+		/// </summary>
+		public new FieldDeclarationSyntax Declaration => (base.Declaration as FieldDeclarationSyntax)!;
+
+		/// <summary>
 		/// Index of this field in the <see cref="Declaration"/>.
 		/// </summary>
 		public int Index { get; }
@@ -21,11 +29,6 @@ namespace Durian.Generator.Data
 		/// <see cref="IFieldSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		public new IFieldSymbol Symbol => (base.Symbol as IFieldSymbol)!;
-
-		/// <summary>
-		/// Target <see cref="FieldDeclarationSyntax"/>.
-		/// </summary>
-		public new FieldDeclarationSyntax Declaration => (base.Declaration as FieldDeclarationSyntax)!;
 
 		/// <summary>
 		/// <see cref="VariableDeclaratorSyntax"/> used to declare this field. Equivalent to using <c>Declaration.Declaration.Variables[Index]</c>.
@@ -66,6 +69,18 @@ namespace Durian.Generator.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FieldData"/> class.
 		/// </summary>
+		/// <param name="symbol"><see cref="IFieldSymbol"/> this <see cref="FieldData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="FieldData"/>.</param>
+		internal FieldData(IFieldSymbol symbol, ICompilationData compilation)
+			: base(GetFieldDeclarationFromSymbol(symbol, compilation, out SemanticModel semanticModel, out VariableDeclaratorSyntax var, out int index), compilation, symbol, semanticModel, null, null, null)
+		{
+			Variable = var;
+			Index = index;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FieldData"/> class.
+		/// </summary>
 		/// <param name="declaration"><see cref="FieldDeclarationSyntax"/> this <see cref="FieldData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="FieldData"/>.</param>
 		/// <param name="symbol"><see cref="IFieldSymbol"/> this <see cref="FieldData"/> represents.</param>
@@ -89,18 +104,6 @@ namespace Durian.Generator.Data
 		{
 			Index = index;
 			Variable = variable;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FieldData"/> class.
-		/// </summary>
-		/// <param name="symbol"><see cref="IFieldSymbol"/> this <see cref="FieldData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="FieldData"/>.</param>
-		internal FieldData(IFieldSymbol symbol, ICompilationData compilation)
-			: base(GetFieldDeclarationFromSymbol(symbol, compilation, out SemanticModel semanticModel, out VariableDeclaratorSyntax var, out int index), compilation, symbol, semanticModel, null, null, null)
-		{
-			Variable = var;
-			Index = index;
 		}
 
 		private FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, IFieldSymbol symbol, SemanticModel semanticModel, VariableDeclaratorSyntax variable, int index)
@@ -145,31 +148,6 @@ namespace Durian.Generator.Data
 			}
 		}
 
-		private static SemanticModel GetSemanticModel(ICompilationData compilation, FieldDeclarationSyntax declaration)
-		{
-			if (declaration is null)
-			{
-				throw new ArgumentNullException(nameof(declaration));
-			}
-
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			return compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
-		}
-
-		private static VariableDeclaratorSyntax GetVariable(FieldDeclarationSyntax declaration, int index)
-		{
-			if (index < 0 || index >= declaration.Declaration.Variables.Count)
-			{
-				throw new IndexOutOfRangeException(nameof(index));
-			}
-
-			return declaration.Declaration.Variables[index];
-		}
-
 		private static FieldDeclarationSyntax GetFieldDeclarationFromSymbol(
 			IFieldSymbol symbol,
 			ICompilationData compilation,
@@ -198,6 +176,31 @@ namespace Durian.Generator.Data
 			}
 
 			throw Exc_NoSyntaxReference(symbol);
+		}
+
+		private static SemanticModel GetSemanticModel(ICompilationData compilation, FieldDeclarationSyntax declaration)
+		{
+			if (declaration is null)
+			{
+				throw new ArgumentNullException(nameof(declaration));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			return compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
+		}
+
+		private static VariableDeclaratorSyntax GetVariable(FieldDeclarationSyntax declaration, int index)
+		{
+			if (index < 0 || index >= declaration.Declaration.Variables.Count)
+			{
+				throw new IndexOutOfRangeException(nameof(index));
+			}
+
+			return declaration.Declaration.Variables[index];
 		}
 	}
 }

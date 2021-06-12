@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -11,12 +14,11 @@ namespace Durian.Tests
 	/// </summary>
 	public sealed class GeneratorRunResultBuilder
 	{
-		private readonly List<GeneratedSourceResult> _sources;
+		internal GeneratorDriverRunResultBuilder? _parent;
 		private readonly List<Diagnostic> _diagnostics;
+		private readonly List<GeneratedSourceResult> _sources;
 		private Exception? _exception;
 		private ISourceGenerator? _generator;
-
-		internal GeneratorDriverRunResultBuilder? _parent;
 
 		/// <inheritdoc cref="GeneratorRunResultBuilder(IEnumerable{GeneratedSourceResult})"/>
 		public GeneratorRunResultBuilder()
@@ -59,30 +61,6 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Assigns new <see cref="ISourceGenerator"/> to the <see cref="GeneratorRunResult.Generator"/> property.
-		/// </summary>
-		/// <param name="generator">A <see cref="ISourceGenerator"/> to be set to the <see cref="GeneratorRunResult.Generator"/> property.</param>
-		/// <returns>This <see cref="GeneratorRunResultBuilder"/>.</returns>
-		public GeneratorRunResultBuilder WithGenerator(ISourceGenerator? generator)
-		{
-			_generator = generator;
-
-			return this;
-		}
-
-		/// <summary>
-		/// Assigns new <see cref="Exception"/> to the <see cref="GeneratorRunResult.Exception"/> property.
-		/// </summary>
-		/// <param name="exception">An <see cref="Exception"/> to be set to the <see cref="GeneratorRunResult.Exception"/> property.</param>
-		/// <returns>This <see cref="GeneratorRunResultBuilder"/>.</returns>
-		public GeneratorRunResultBuilder WithException(Exception? exception)
-		{
-			_exception = exception;
-
-			return this;
-		}
-
-		/// <summary>
 		/// Adds a new <see cref="Diagnostic"/> to the <see cref="GeneratorRunResult.Diagnostics"/> collection.
 		/// </summary>
 		/// <param name="diagnostic">A <see cref="Diagnostic"/> to be added to the <see cref="GeneratorRunResult.Diagnostics"/> collection.</param>
@@ -106,22 +84,6 @@ namespace Durian.Tests
 		{
 			if (diagnostics is not null)
 			{
-				_diagnostics.AddRange(diagnostics);
-			}
-
-			return this;
-		}
-
-		/// <summary>
-		/// Assigns a new collection of <see cref="Diagnostic"/>s to the <see cref="GeneratorRunResult.Diagnostics"/> property.
-		/// </summary>
-		/// <param name="diagnostics">A collection of <see cref="Diagnostic"/>s to be set to the <see cref="GeneratorRunResult.Diagnostics"/> property.</param>
-		/// <returns>This <see cref="GeneratorRunResultBuilder"/>.</returns>
-		public GeneratorRunResultBuilder WithDiagnostics(IEnumerable<Diagnostic>? diagnostics)
-		{
-			if (diagnostics is not null)
-			{
-				_diagnostics.Clear();
 				_diagnostics.AddRange(diagnostics);
 			}
 
@@ -226,21 +188,6 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Assigns a new collection of <see cref="GeneratedSourceResult"/>s to the <see cref="GeneratorRunResult.GeneratedSources"/> property.
-		/// </summary>
-		/// <param name="sources">A collection of <see cref="Diagnostic"/>s to be set to the <see cref="GeneratorRunResult.GeneratedSources"/> property.</param>
-		/// <returns>This <see cref="GeneratorRunResultBuilder"/>.</returns>
-		public GeneratorRunResultBuilder WithSources(IEnumerable<GeneratedSourceResult>? sources)
-		{
-			if (sources is not null)
-			{
-				_sources.AddRange(sources);
-			}
-
-			return this;
-		}
-
-		/// <summary>
 		/// Actually creates the <see cref="GeneratorRunResult"/>.
 		/// </summary>
 		/// <exception cref="ArgumentException">The <see cref="GeneratorRunResult.Generator"/> property must be set before calling the <see cref="Build"/> method.</exception>
@@ -270,6 +217,61 @@ namespace Durian.Tests
 			_exception = null;
 			_diagnostics.Clear();
 			_sources.Clear();
+		}
+
+		/// <summary>
+		/// Assigns a new collection of <see cref="Diagnostic"/>s to the <see cref="GeneratorRunResult.Diagnostics"/> property.
+		/// </summary>
+		/// <param name="diagnostics">A collection of <see cref="Diagnostic"/>s to be set to the <see cref="GeneratorRunResult.Diagnostics"/> property.</param>
+		/// <returns>This <see cref="GeneratorRunResultBuilder"/>.</returns>
+		public GeneratorRunResultBuilder WithDiagnostics(IEnumerable<Diagnostic>? diagnostics)
+		{
+			if (diagnostics is not null)
+			{
+				_diagnostics.Clear();
+				_diagnostics.AddRange(diagnostics);
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Assigns new <see cref="Exception"/> to the <see cref="GeneratorRunResult.Exception"/> property.
+		/// </summary>
+		/// <param name="exception">An <see cref="Exception"/> to be set to the <see cref="GeneratorRunResult.Exception"/> property.</param>
+		/// <returns>This <see cref="GeneratorRunResultBuilder"/>.</returns>
+		public GeneratorRunResultBuilder WithException(Exception? exception)
+		{
+			_exception = exception;
+
+			return this;
+		}
+
+		/// <summary>
+		/// Assigns new <see cref="ISourceGenerator"/> to the <see cref="GeneratorRunResult.Generator"/> property.
+		/// </summary>
+		/// <param name="generator">A <see cref="ISourceGenerator"/> to be set to the <see cref="GeneratorRunResult.Generator"/> property.</param>
+		/// <returns>This <see cref="GeneratorRunResultBuilder"/>.</returns>
+		public GeneratorRunResultBuilder WithGenerator(ISourceGenerator? generator)
+		{
+			_generator = generator;
+
+			return this;
+		}
+
+		/// <summary>
+		/// Assigns a new collection of <see cref="GeneratedSourceResult"/>s to the <see cref="GeneratorRunResult.GeneratedSources"/> property.
+		/// </summary>
+		/// <param name="sources">A collection of <see cref="Diagnostic"/>s to be set to the <see cref="GeneratorRunResult.GeneratedSources"/> property.</param>
+		/// <returns>This <see cref="GeneratorRunResultBuilder"/>.</returns>
+		public GeneratorRunResultBuilder WithSources(IEnumerable<GeneratedSourceResult>? sources)
+		{
+			if (sources is not null)
+			{
+				_sources.AddRange(sources);
+			}
+
+			return this;
 		}
 	}
 }

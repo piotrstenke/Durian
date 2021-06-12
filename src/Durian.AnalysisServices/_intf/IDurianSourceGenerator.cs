@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Threading;
 using Durian.Generator.Data;
 using Microsoft.CodeAnalysis;
@@ -11,40 +14,9 @@ namespace Durian.Generator
 	public interface IDurianSourceGenerator : ISourceGenerator
 	{
 		/// <summary>
-		/// <see cref="ICompilationData"/> this <see cref="IDurianSourceGenerator"/> operates on.
-		/// </summary>
-		ICompilationData TargetCompilation { get; }
-
-		/// <summary>
-		/// <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="SyntaxNode"/>es that will take part in the generation.
-		/// </summary>
-		IDurianSyntaxReceiver SyntaxReceiver { get; }
-
-		/// <summary>
-		/// <see cref="CSharpParseOptions"/> that will be used to parse any added sources.
-		/// </summary>
-		CSharpParseOptions ParseOptions { get; }
-
-		/// <summary>
 		/// A <see cref="System.Threading.CancellationToken"/> that can be checked to see if the generation should be canceled.
 		/// </summary>
 		CancellationToken CancellationToken { get; }
-
-		/// <summary>
-		/// Version of this <see cref="IDurianSourceGenerator"/>.
-		/// </summary>
-		string Version { get; }
-
-		/// <summary>
-		/// Name of this <see cref="IDurianSourceGenerator"/>.
-		/// </summary>
-		string GeneratorName { get; }
-
-		/// <summary>
-		/// Determines whether this <see cref="IDurianSourceGenerator"/> supports reporting of <see cref="Diagnostic"/>s.
-		/// </summary>
-		/// <remarks>Value of this property should never change.</remarks>
-		bool SupportsDiagnostics { get; }
 
 		/// <summary>
 		/// Determines whether this <see cref="IDurianSourceGenerator"/> allows to report any <see cref="Diagnostic"/>s during the current execution pass.
@@ -55,6 +27,37 @@ namespace Durian.Generator
 		/// Determines whether this <see cref="IDurianSourceGenerator"/> allows to create log files during the current execution pass.
 		/// </summary>
 		bool EnableLogging { get; set; }
+
+		/// <summary>
+		/// Name of this <see cref="IDurianSourceGenerator"/>.
+		/// </summary>
+		string GeneratorName { get; }
+
+		/// <summary>
+		/// <see cref="CSharpParseOptions"/> that will be used to parse any added sources.
+		/// </summary>
+		CSharpParseOptions ParseOptions { get; }
+
+		/// <summary>
+		/// Determines whether this <see cref="IDurianSourceGenerator"/> supports reporting of <see cref="Diagnostic"/>s.
+		/// </summary>
+		/// <remarks>Value of this property should never change.</remarks>
+		bool SupportsDiagnostics { get; }
+
+		/// <summary>
+		/// <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="SyntaxNode"/>es that will take part in the generation.
+		/// </summary>
+		IDurianSyntaxReceiver SyntaxReceiver { get; }
+
+		/// <summary>
+		/// <see cref="ICompilationData"/> this <see cref="IDurianSourceGenerator"/> operates on.
+		/// </summary>
+		ICompilationData TargetCompilation { get; }
+
+		/// <summary>
+		/// Version of this <see cref="IDurianSourceGenerator"/>.
+		/// </summary>
+		string Version { get; }
 
 		/// <summary>
 		/// Creates a new <see cref="IDurianSyntaxReceiver"/> to be used during the generator execution pass.

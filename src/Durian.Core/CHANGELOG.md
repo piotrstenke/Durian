@@ -1,4 +1,4 @@
-﻿## Realease 1.0.0
+﻿## Release 1.0.0
 
 ### Added
 
@@ -278,7 +278,7 @@
  - Durian.Configuration.DPTypeConvention.Copy
  - Durian.Configuration.DPTypeConvention.Inherit
 
-## Realease 1.1.0
+## Release 1.1.0
 
 ### Added
 

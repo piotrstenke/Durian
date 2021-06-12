@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -6,22 +9,65 @@ using System.Text.RegularExpressions;
 
 internal static class Program
 {
-	private static readonly Regex _diagnosticRegex = new(@"public\s*static\s*readonly\s*DiagnosticDescriptor\s*\w+\s*=\s*new\s*\w*\s*\(.*?\)\s*;", RegexOptions.Singleline);
-	private static readonly Regex _idRegex = new(@"id\s*:\s*""\s*(\w+)\s*""", RegexOptions.Singleline);
-	private static readonly Regex _titleRegex = new(@"title\s*:\s*""\s*(.*?)\s*""", RegexOptions.Singleline);
 	private static readonly Regex _categoryRegex = new(@"category\s*:\s*""\s*([\w.]+)\s*""", RegexOptions.Singleline);
-	private static readonly Regex _severityRegex = new(@"defaultSeverity\s*:\s*DiagnosticSeverity\s*.\s*(\w+)", RegexOptions.Singleline);
-	private static readonly Regex _packageRegex = new(@"DurianPackage\s*\.\s*(\w+)\s*,", RegexOptions.Singleline);
 	private static readonly Regex _diagnosticAttributeRegex = new(@"\[assembly\s*:\s*DiagnosticFiles\s*\(\s*(.*?)\]", RegexOptions.Singleline);
 	private static readonly Regex _diagnosticAttributeValueRegex = new(@"\s*(?:nameof\s*\(\s*(\w+)\s*\)|"".*?"")", RegexOptions.Singleline);
+	private static readonly Regex _diagnosticRegex = new(@"public\s*static\s*readonly\s*DiagnosticDescriptor\s*\w+\s*=\s*new\s*\w*\s*\(.*?\)\s*;", RegexOptions.Singleline);
+	private static readonly Regex _idRegex = new(@"id\s*:\s*""\s*(\w+)\s*""", RegexOptions.Singleline);
+	private static readonly Regex _packageRegex = new(@"DurianPackage\s*\.\s*(\w+)\s*,", RegexOptions.Singleline);
+	private static readonly Regex _severityRegex = new(@"defaultSeverity\s*:\s*DiagnosticSeverity\s*.\s*(\w+)", RegexOptions.Singleline);
+	private static readonly Regex _titleRegex = new(@"title\s*:\s*""\s*(.*?)\s*""", RegexOptions.Singleline);
 
-	private static void Main(string[] args)
+	private static string[] GetDiagnosticFiles(string content)
 	{
-		for (int i = 0; i < args.Length; i++)
+		string attribute = _diagnosticAttributeRegex.Match(content).Groups[1].ToString();
+
+		if (string.IsNullOrWhiteSpace(attribute))
 		{
-			string configFile = args[i];
-			HandleConfigFile(configFile);
+			return Array.Empty<string>();
 		}
+
+		MatchCollection matches = _diagnosticAttributeValueRegex.Matches(attribute);
+
+		if (matches.Count == 0)
+		{
+			return Array.Empty<string>();
+		}
+
+		List<string> files = new(matches.Count);
+
+		for (int i = 0; i < matches.Count; i++)
+		{
+			Match match = matches[i];
+			string value = match.Groups[1].ToString();
+
+			if (!string.IsNullOrWhiteSpace(value))
+			{
+				value = value.Trim();
+
+				if (!value.EndsWith(".cs"))
+				{
+					value += ".cs";
+				}
+
+				files.Add(value);
+			}
+		}
+
+		return files.ToArray();
+	}
+
+	private static string? GetPackageName(string content)
+	{
+		Match match = _packageRegex.Match(content);
+		string moduleName = match.Groups[1].ToString();
+
+		if (!string.IsNullOrWhiteSpace(moduleName))
+		{
+			return moduleName;
+		}
+
+		return null;
 	}
 
 	private static void HandleConfigFile(string configFile)
@@ -75,56 +121,23 @@ internal static class Program
 		File.WriteAllText(currentDirectory + @"\AnalyzerReleases.Shipped.md", builder.ToString(), Encoding.UTF8);
 	}
 
-	private static string? GetPackageName(string content)
+	private static void Main(string[] args)
 	{
-		Match match = _packageRegex.Match(content);
-		string moduleName = match.Groups[1].ToString();
-
-		if (!string.IsNullOrWhiteSpace(moduleName))
+		for (int i = 0; i < args.Length; i++)
 		{
-			return moduleName;
+			string configFile = args[i];
+			HandleConfigFile(configFile);
 		}
-
-		return null;
 	}
 
-	private static string[] GetDiagnosticFiles(string content)
+	private static DiagnosticData? RetrieveDiagnosticData(string match)
 	{
-		string attribute = _diagnosticAttributeRegex.Match(content).Groups[1].ToString();
+		Match id = _idRegex.Match(match);
+		Match category = _categoryRegex.Match(match);
+		Match title = _titleRegex.Match(match);
+		Match severity = _severityRegex.Match(match);
 
-		if (string.IsNullOrWhiteSpace(attribute))
-		{
-			return Array.Empty<string>();
-		}
-
-		MatchCollection matches = _diagnosticAttributeValueRegex.Matches(attribute);
-
-		if (matches.Count == 0)
-		{
-			return Array.Empty<string>();
-		}
-
-		List<string> files = new(matches.Count);
-
-		for (int i = 0; i < matches.Count; i++)
-		{
-			Match match = matches[i];
-			string value = match.Groups[1].ToString();
-
-			if (!string.IsNullOrWhiteSpace(value))
-			{
-				value = value.Trim();
-
-				if (!value.EndsWith(".cs"))
-				{
-					value += ".cs";
-				}
-
-				files.Add(value);
-			}
-		}
-
-		return files.ToArray();
+		return new DiagnosticData(id.Groups[1].ToString(), title.Groups[1].ToString(), category.Groups[1].ToString(), severity.Groups[1].ToString());
 	}
 
 	private static void WriteMatchData(MatchCollection matches, string moduleName, StringBuilder builder)
@@ -147,15 +160,5 @@ internal static class Program
 				.Append(" | ")
 				.AppendLine($"{data.Value.Title}. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/{moduleName}/{data.Value.Id}.md)]");
 		}
-	}
-
-	private static DiagnosticData? RetrieveDiagnosticData(string match)
-	{
-		Match id = _idRegex.Match(match);
-		Match category = _categoryRegex.Match(match);
-		Match title = _titleRegex.Match(match);
-		Match severity = _severityRegex.Match(match);
-
-		return new DiagnosticData(id.Groups[1].ToString(), title.Groups[1].ToString(), category.Groups[1].ToString(), severity.Groups[1].ToString());
 	}
 }

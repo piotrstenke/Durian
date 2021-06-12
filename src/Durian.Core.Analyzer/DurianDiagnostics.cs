@@ -1,20 +1,19 @@
-﻿using Durian.Info;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using Durian.Info;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Generator.Core
 {
 	/// <summary>
-	/// Contains <see cref="DiagnosticDescriptor"/>s of the most common Durian errors.
+	/// Contains <see cref="DiagnosticDescriptor"/> s of the most common Durian errors.
 	/// </summary>
 	public static class DurianDiagnostics
 	{
 		/// <summary>
-		/// Documentation directory of the <c>AnalysisCore</c> module.
-		/// </summary>
-		public static string DocsPath => ModuleIdentity.GetModule(DurianModule.Core).Documentation;
-
-		/// <summary>
-		/// Provides diagnostic message indicating that the target project must reference the <c>Durian.Core</c> package.
+		/// Provides diagnostic message indicating that the target project must reference the
+		/// <c>Durian.Core</c> package.
 		/// </summary>
 		[WithoutLocation]
 		public static readonly DiagnosticDescriptor DUR0001_ProjectMustReferenceDurianCore = new(
@@ -28,7 +27,8 @@ namespace Durian.Generator.Core
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the target type cannot be accessed, because its module is not imported.
+		/// Provides diagnostic message indicating that the target type cannot be accessed, because
+		/// its module is not imported.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0002_ModuleOfTypeIsNotImported = new(
 			id: "DUR0002",
@@ -41,7 +41,8 @@ namespace Durian.Generator.Core
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the user should not use types from the Durian.Generator namespace.
+		/// Provides diagnostic message indicating that the user should not use types from the
+		/// Durian.Generator namespace.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0003_DoNotUseTypeFromDurianGeneratorNamespace = new(
 			id: "DUR0003",
@@ -86,12 +87,17 @@ namespace Durian.Generator.Core
 		[WithoutLocation]
 		public static readonly DiagnosticDescriptor DUR0006_ProjectMustUseCSharp9 = new(
 			id: "DUR0006",
-			title: "Target project must use C# 9 or greater",
-			messageFormat: "Target project must use C# 9 or greater",
+			title: "Target project must use C# 9 or newer",
+			messageFormat: "Target project must use C# 9 or newer",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0006.md",
 			isEnabledByDefault: true
 		);
+
+		/// <summary>
+		/// Documentation directory of the <c>AnalysisCore</c> module.
+		/// </summary>
+		public static string DocsPath => ModuleIdentity.GetModule(DurianModule.Core).Documentation;
 	}
 }

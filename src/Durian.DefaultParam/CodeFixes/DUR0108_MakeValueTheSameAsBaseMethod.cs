@@ -1,4 +1,7 @@
-﻿using System.Threading;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Threading;
 using System.Threading.Tasks;
 using Durian.Generator.CodeFixes;
 using Durian.Generator.Extensions;
@@ -17,22 +20,16 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 	public sealed class DUR0108_MakeValueTheSameAsBaseMethod : DurianCodeFixBase
 	{
 		/// <inheritdoc/>
-		public override string Title => "Make DefaultParam value the same as base method";
+		public override string Id => Title + " [DefaultParam]";
 
 		/// <inheritdoc/>
-		public override string Id => Title + " [DefaultParam]";
+		public override string Title => "Make DefaultParam value the same as base method";
 
 		/// <summary>
 		/// Creates a new instance of the <see cref="DUR0108_MakeValueTheSameAsBaseMethod"/> class.
 		/// </summary>
 		public DUR0108_MakeValueTheSameAsBaseMethod()
 		{
-		}
-
-		/// <inheritdoc/>
-		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
-		{
-			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase };
 		}
 
 		/// <inheritdoc/>
@@ -60,23 +57,6 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 			}
 
 			context.RegisterCodeFix(action, data.Diagnostic);
-		}
-
-		private CodeAction GetCodeAction(in CodeFixData<AttributeSyntax> data, ITypeSymbol targetType)
-		{
-			Document document = data.Document!;
-			AttributeSyntax node = data.Node!;
-			CompilationUnitSyntax root = data.Root!;
-			Diagnostic diagnostic = data.Diagnostic!;
-			SemanticModel semanticModel = data.SemanticModel!;
-
-			return CodeAction.Create(Title, cancenllationToken =>
-			{
-				CodeFixExecutionContext<AttributeSyntax> context = CodeFixExecutionContext<AttributeSyntax>.From(diagnostic, document, root, node, semanticModel, cancenllationToken);
-
-				return Task.FromResult(Execute(context, targetType));
-			},
-			Id);
 		}
 
 		internal static Document Execute(CodeFixExecutionContext<AttributeSyntax> context, ITypeSymbol targetType)
@@ -122,6 +102,29 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 			}
 
 			return null;
+		}
+
+		/// <inheritdoc/>
+		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
+		{
+			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase };
+		}
+
+		private CodeAction GetCodeAction(in CodeFixData<AttributeSyntax> data, ITypeSymbol targetType)
+		{
+			Document document = data.Document!;
+			AttributeSyntax node = data.Node!;
+			CompilationUnitSyntax root = data.Root!;
+			Diagnostic diagnostic = data.Diagnostic!;
+			SemanticModel semanticModel = data.SemanticModel!;
+
+			return CodeAction.Create(Title, cancenllationToken =>
+			{
+				CodeFixExecutionContext<AttributeSyntax> context = CodeFixExecutionContext<AttributeSyntax>.From(diagnostic, document, root, node, semanticModel, cancenllationToken);
+
+				return Task.FromResult(Execute(context, targetType));
+			},
+			Id);
 		}
 	}
 }

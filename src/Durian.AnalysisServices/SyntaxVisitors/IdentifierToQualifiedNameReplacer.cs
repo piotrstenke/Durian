@@ -1,4 +1,6 @@
-﻿
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Generator.Extensions;
@@ -15,15 +17,15 @@ namespace Durian.Generator.SyntaxVisitors
 	public class IdentifierToQualifiedNameReplacer : CSharpSyntaxRewriter
 	{
 		/// <summary>
+		/// Determines whether to delete using directives.
+		/// </summary>
+		public bool DeleteUsings { get; set; }
+
+		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> that is used to identify <see cref="ISymbol"/>s.
 		/// </summary>
 		[MaybeNull]
 		public SemanticModel SemanticModel { get; set; }
-
-		/// <summary>
-		/// Determines whether to delete using directives.
-		/// </summary>
-		public bool DeleteUsings { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="IdentifierToQualifiedNameReplacer"/> class.
@@ -51,86 +53,6 @@ namespace Durian.Generator.SyntaxVisitors
 		{
 			SemanticModel = semanticModel;
 			DeleteUsings = deleteUsings;
-		}
-
-		/// <inheritdoc/>
-		public override SyntaxNode? VisitUsingDirective(UsingDirectiveSyntax node)
-		{
-			if (DeleteUsings)
-			{
-				return null;
-			}
-
-			return base.VisitUsingDirective(node);
-		}
-
-		/// <inheritdoc/>
-		public override SyntaxNode? VisitQualifiedCref(QualifiedCrefSyntax node)
-		{
-			SymbolInfo info = SemanticModel.GetSymbolInfo(node);
-			if (info.Symbol is not INamedTypeSymbol symbol)
-			{
-				return base.VisitQualifiedCref(node);
-			}
-
-			string[] namespaces = symbol.GetContainingNamespacesAndTypes().Select(n => n.Name).ToArray();
-
-			if (namespaces.Length < 2)
-			{
-				return base.VisitQualifiedCref(node);
-			}
-			else
-			{
-				return QualifiedCref(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, node.Member.WithoutTrivia()).WithTriviaFrom(node);
-			}
-		}
-
-		/// <inheritdoc/>
-		public override SyntaxNode? VisitNameMemberCref(NameMemberCrefSyntax node)
-		{
-			SymbolInfo info = SemanticModel.GetSymbolInfo(node);
-
-			if (info.Symbol is not INamedTypeSymbol symbol)
-			{
-				return base.VisitNameMemberCref(node);
-			}
-
-			string[] namespaces = symbol.GetContainingNamespacesAndTypes().Select(n => n.Name).ToArray();
-
-			if (namespaces.Length == 0)
-			{
-				return base.VisitNameMemberCref(node);
-			}
-			else if (namespaces.Length == 1)
-			{
-				return QualifiedCref(IdentifierName(namespaces[0]), node.WithoutTrivia()).WithTriviaFrom(node);
-			}
-			else
-			{
-				return QualifiedCref(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, node.WithoutTrivia()).WithTriviaFrom(node);
-			}
-		}
-
-		/// <inheritdoc/>
-		public override SyntaxNode? VisitQualifiedName(QualifiedNameSyntax node)
-		{
-			TypeInfo info = SemanticModel.GetTypeInfo(node);
-
-			if (info.Type is not INamedTypeSymbol symbol)
-			{
-				return base.VisitQualifiedName(node);
-			}
-
-			string[] namespaces = symbol.GetContainingNamespacesAndTypes().Select(n => n.Name).ToArray();
-
-			if (namespaces.Length < 2)
-			{
-				return base.VisitQualifiedName(node);
-			}
-			else
-			{
-				return QualifiedName(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, node.Right.WithoutTrivia()).WithTriviaFrom(node);
-			}
 		}
 
 		/// <inheritdoc/>
@@ -200,6 +122,86 @@ namespace Durian.Generator.SyntaxVisitors
 			{
 				return QualifiedName(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, node.WithoutTrivia()).WithTriviaFrom(node);
 			}
+		}
+
+		/// <inheritdoc/>
+		public override SyntaxNode? VisitNameMemberCref(NameMemberCrefSyntax node)
+		{
+			SymbolInfo info = SemanticModel.GetSymbolInfo(node);
+
+			if (info.Symbol is not INamedTypeSymbol symbol)
+			{
+				return base.VisitNameMemberCref(node);
+			}
+
+			string[] namespaces = symbol.GetContainingNamespacesAndTypes().Select(n => n.Name).ToArray();
+
+			if (namespaces.Length == 0)
+			{
+				return base.VisitNameMemberCref(node);
+			}
+			else if (namespaces.Length == 1)
+			{
+				return QualifiedCref(IdentifierName(namespaces[0]), node.WithoutTrivia()).WithTriviaFrom(node);
+			}
+			else
+			{
+				return QualifiedCref(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, node.WithoutTrivia()).WithTriviaFrom(node);
+			}
+		}
+
+		/// <inheritdoc/>
+		public override SyntaxNode? VisitQualifiedCref(QualifiedCrefSyntax node)
+		{
+			SymbolInfo info = SemanticModel.GetSymbolInfo(node);
+			if (info.Symbol is not INamedTypeSymbol symbol)
+			{
+				return base.VisitQualifiedCref(node);
+			}
+
+			string[] namespaces = symbol.GetContainingNamespacesAndTypes().Select(n => n.Name).ToArray();
+
+			if (namespaces.Length < 2)
+			{
+				return base.VisitQualifiedCref(node);
+			}
+			else
+			{
+				return QualifiedCref(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, node.Member.WithoutTrivia()).WithTriviaFrom(node);
+			}
+		}
+
+		/// <inheritdoc/>
+		public override SyntaxNode? VisitQualifiedName(QualifiedNameSyntax node)
+		{
+			TypeInfo info = SemanticModel.GetTypeInfo(node);
+
+			if (info.Type is not INamedTypeSymbol symbol)
+			{
+				return base.VisitQualifiedName(node);
+			}
+
+			string[] namespaces = symbol.GetContainingNamespacesAndTypes().Select(n => n.Name).ToArray();
+
+			if (namespaces.Length < 2)
+			{
+				return base.VisitQualifiedName(node);
+			}
+			else
+			{
+				return QualifiedName(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, node.Right.WithoutTrivia()).WithTriviaFrom(node);
+			}
+		}
+
+		/// <inheritdoc/>
+		public override SyntaxNode? VisitUsingDirective(UsingDirectiveSyntax node)
+		{
+			if (DeleteUsings)
+			{
+				return null;
+			}
+
+			return base.VisitUsingDirective(node);
 		}
 	}
 }

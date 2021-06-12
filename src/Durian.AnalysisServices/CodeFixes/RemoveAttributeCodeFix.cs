@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -66,6 +69,19 @@ namespace Durian.Generator.CodeFixes
 		}
 
 		/// <inheritdoc/>
+		protected override async Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
+		{
+			INamedTypeSymbol[] attributes = GetAttributeSymbols((CSharpCompilation)context.Compilation, context.CancellationToken).ToArray();
+
+			if (attributes.Length == 0)
+			{
+				return context.Document;
+			}
+
+			return await RemoveAttributeCodeFix<T>.RemoveAttributesAsync(context.Document, context.SemanticModel, attributes, context.Root, context.Node, context.CancellationToken).ConfigureAwait(false);
+		}
+
+		/// <inheritdoc/>
 		protected override Task<CodeAction?> GetCodeActionAsync(CodeFixData<T> data)
 		{
 			if (!data.Success || !data.HasSemanticModel)
@@ -106,19 +122,6 @@ namespace Durian.Generator.CodeFixes
 			}
 
 			return Task.FromResult<CodeAction?>(CodeAction.Create(Title, function, Id));
-		}
-
-		/// <inheritdoc/>
-		protected override async Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
-		{
-			INamedTypeSymbol[] attributes = GetAttributeSymbols((CSharpCompilation)context.Compilation, context.CancellationToken).ToArray();
-
-			if (attributes.Length == 0)
-			{
-				return context.Document;
-			}
-
-			return await RemoveAttributeCodeFix<T>.RemoveAttributesAsync(context.Document, context.SemanticModel, attributes, context.Root, context.Node, context.CancellationToken).ConfigureAwait(false);
 		}
 
 		private static Task<Document> RemoveAttributesAsync(Document document, SemanticModel semanticModel, INamedTypeSymbol[] attributes, CompilationUnitSyntax root, T node, CancellationToken cancellationToken)

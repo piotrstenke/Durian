@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,9 +15,73 @@ namespace Durian.Generator.Logging
 	[DebuggerDisplay("Enabled = {EnableLogging}, Supported = {SupportedLogs}")]
 	public sealed partial class GeneratorLoggingConfiguration : IEquatable<GeneratorLoggingConfiguration>
 	{
-		private string _logDirectory;
-		private bool _enableLogging;
 		private bool _enableDiagnostics;
+		private bool _enableLogging;
+		private string _logDirectory;
+
+		/// <summary>
+		/// Gets the <see cref="FilterMode"/> the current configuration is valid for.
+		/// </summary>
+		public FilterMode CurrentFilterMode
+		{
+			get
+			{
+				FilterMode mode = FilterMode.None;
+
+				if (EnableDiagnostics)
+				{
+					mode += (int)FilterMode.Diagnostics;
+				}
+
+				if (EnableLogging)
+				{
+					mode += (int)FilterMode.Logs;
+				}
+
+				return mode;
+			}
+		}
+
+		/// <summary>
+		/// Determines whether this <see cref="IDurianSourceGenerator"/> allows to report any <see cref="Diagnostic"/>s during the current execution pass.
+		/// </summary>
+		/// <exception cref="InvalidOperationException"><see cref="EnableDiagnostics"/> cannot be set to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</exception>
+		public bool EnableDiagnostics
+		{
+			get => _enableDiagnostics;
+			set
+			{
+				if (value && !SupportsDiagnostics)
+				{
+					throw new InvalidOperationException($"{nameof(EnableDiagnostics)} cannot be set to true if {nameof(SupportsDiagnostics)} is false!");
+				}
+
+				_enableDiagnostics = value;
+			}
+		}
+
+		/// <summary>
+		/// Determines whether to enable the <see cref="ISourceGenerator"/> can throw <see cref="Exception"/>s.
+		/// </summary>
+		public bool EnableExceptions { get; set; }
+
+		/// <summary>
+		/// Determines whether to enable logging.
+		/// </summary>
+		/// <exception cref="InvalidOperationException"><see cref="EnableLogging"/> cannot be set to <see langword="true"/> if generator logging is globally disabled.</exception>
+		public bool EnableLogging
+		{
+			get => _enableLogging;
+			set
+			{
+				if (value && !IsEnabled)
+				{
+					throw new InvalidOperationException($"{nameof(EnableLogging)} cannot be set to true if generator logging is globally disabled!");
+				}
+
+				_enableLogging = value;
+			}
+		}
 
 		/// <summary>
 		/// The directory the source generator logs will be written to.
@@ -48,81 +115,37 @@ namespace Durian.Generator.Logging
 		public GeneratorLogs SupportedLogs { get; set; }
 
 		/// <summary>
-		/// Gets the <see cref="FilterMode"/> the current configuration is valid for.
-		/// </summary>
-		public FilterMode CurrentFilterMode
-		{
-			get
-			{
-				FilterMode mode = FilterMode.None;
-
-				if (EnableDiagnostics)
-				{
-					mode += (int)FilterMode.Diagnostics;
-				}
-
-				if (EnableLogging)
-				{
-					mode += (int)FilterMode.Logs;
-				}
-
-				return mode;
-			}
-		}
-
-		/// <summary>
-		/// Determines whether to enable logging.
-		/// </summary>
-		/// <exception cref="InvalidOperationException"><see cref="EnableLogging"/> cannot be set to <see langword="true"/> if generator logging is globally disabled.</exception>
-		public bool EnableLogging
-		{
-			get => _enableLogging;
-			set
-			{
-				if (value && !IsEnabled)
-				{
-					throw new InvalidOperationException($"{nameof(EnableLogging)} cannot be set to true if generator logging is globally disabled!");
-				}
-
-				_enableLogging = value;
-			}
-		}
-
-		/// <summary>
-		/// Determines whether this <see cref="IDurianSourceGenerator"/> allows to report any <see cref="Diagnostic"/>s during the current execution pass.
-		/// </summary>
-		/// <exception cref="InvalidOperationException"><see cref="EnableDiagnostics"/> cannot be set to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</exception>
-		public bool EnableDiagnostics
-		{
-			get => _enableDiagnostics;
-			set
-			{
-				if (value && !SupportsDiagnostics)
-				{
-					throw new InvalidOperationException($"{nameof(EnableDiagnostics)} cannot be set to true if {nameof(SupportsDiagnostics)} is false!");
-				}
-
-				_enableDiagnostics = value;
-			}
-		}
-
-		/// <summary>
 		/// Determines whether the <see cref="ISourceGenerator"/> supports reporting <see cref="Diagnostic"/>s.
 		/// </summary>
 		public bool SupportsDiagnostics { get; init; }
 
 		/// <summary>
-		/// Determines whether to enable the <see cref="ISourceGenerator"/> can throw <see cref="Exception"/>s.
-		/// </summary>
-		public bool EnableExceptions { get; set; }
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLoggingConfiguration"/> class.
 		/// </summary>
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 		public GeneratorLoggingConfiguration()
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
+		}
+
+		/// <inheritdoc/>
+		public static bool operator !=(GeneratorLoggingConfiguration a, GeneratorLoggingConfiguration b)
+		{
+			return !(a == b);
+		}
+
+		/// <inheritdoc/>
+		public static bool operator ==(GeneratorLoggingConfiguration a, GeneratorLoggingConfiguration b)
+		{
+			return
+				a.SupportsDiagnostics == b.SupportsDiagnostics &&
+				a.CurrentFilterMode == b.CurrentFilterMode &&
+				a.EnableDiagnostics == b.EnableDiagnostics &&
+				a.EnableExceptions == b.EnableExceptions &&
+				a.EnableLogging == b.EnableLogging &&
+				a.LogDirectory == b.LogDirectory &&
+				a.SupportedLogs == b.SupportedLogs;
 		}
 
 		/// <inheritdoc/>
@@ -149,25 +172,6 @@ namespace Durian.Generator.Logging
 			hashCode = (hashCode * -1521134295) + SupportsDiagnostics.GetHashCode();
 			hashCode = (hashCode * -1521134295) + EnableExceptions.GetHashCode();
 			return hashCode;
-		}
-
-		/// <inheritdoc/>
-		public static bool operator ==(GeneratorLoggingConfiguration a, GeneratorLoggingConfiguration b)
-		{
-			return
-				a.SupportsDiagnostics == b.SupportsDiagnostics &&
-				a.CurrentFilterMode == b.CurrentFilterMode &&
-				a.EnableDiagnostics == b.EnableDiagnostics &&
-				a.EnableExceptions == b.EnableExceptions &&
-				a.EnableLogging == b.EnableLogging &&
-				a.LogDirectory == b.LogDirectory &&
-				a.SupportedLogs == b.SupportedLogs;
-		}
-
-		/// <inheritdoc/>
-		public static bool operator !=(GeneratorLoggingConfiguration a, GeneratorLoggingConfiguration b)
-		{
-			return !(a == b);
 		}
 	}
 }

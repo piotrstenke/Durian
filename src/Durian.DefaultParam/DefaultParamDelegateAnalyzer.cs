@@ -1,18 +1,29 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Durian.Configuration;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
+
+#if !MAIN_PACKAGE
+
 using Microsoft.CodeAnalysis.Diagnostics;
+
+#endif
 
 namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Analyzes delegates with type parameters marked by the <see cref="DefaultParamAttribute"/>.
 	/// </summary>
+#if !MAIN_PACKAGE
+
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
+#endif
 	public partial class DefaultParamDelegateAnalyzer : DefaultParamAnalyzer
 	{
 		/// <inheritdoc/>
@@ -25,21 +36,25 @@ namespace Durian.Generator.DefaultParam
 		{
 		}
 
-		/// <inheritdoc/>
-		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
+		/// <summary>
+		/// Determines whether the 'new' modifier is allowed to be applied to the target <see cref="INamedTypeSymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		public static bool AllowsNewModifier(INamedTypeSymbol symbol, DefaultParamCompilationData compilation)
 		{
-			return Array.Empty<DiagnosticDescriptor>();
+			return AllowsNewModifier(symbol.GetAttributes(), symbol.GetContainingTypeSymbols().ToArray(), compilation);
 		}
 
-		/// <inheritdoc/>
-		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		/// <summary>
+		/// Determines whether the 'new' modifier is allowed to the target <see cref="INamedTypeSymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
+		/// </summary>
+		/// <param name="attributes">A collection of the target <see cref="ISymbol"/>'s attributes.</param>
+		/// <param name="containingTypes"><see cref="INamedTypeSymbol"/>s that contain this <see cref="IMethodSymbol"/>.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		public static bool AllowsNewModifier(IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
 		{
-			if (symbol is not INamedTypeSymbol t || t.TypeKind != TypeKind.Delegate)
-			{
-				return;
-			}
-
-			WithDiagnostics.Analyze(diagnosticReceiver, t, compilation, cancellationToken);
+			return DefaultParamUtilities.AllowsNewModifier(attributes, containingTypes, compilation);
 		}
 
 		/// <summary>
@@ -152,25 +167,21 @@ namespace Durian.Generator.DefaultParam
 			);
 		}
 
-		/// <summary>
-		/// Determines whether the 'new' modifier is allowed to be applied to the target <see cref="INamedTypeSymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool AllowsNewModifier(INamedTypeSymbol symbol, DefaultParamCompilationData compilation)
+		/// <inheritdoc/>
+		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			return AllowsNewModifier(symbol.GetAttributes(), symbol.GetContainingTypeSymbols().ToArray(), compilation);
+			if (symbol is not INamedTypeSymbol t || t.TypeKind != TypeKind.Delegate)
+			{
+				return;
+			}
+
+			WithDiagnostics.Analyze(diagnosticReceiver, t, compilation, cancellationToken);
 		}
 
-		/// <summary>
-		/// Determines whether the 'new' modifier is allowed to the target <see cref="INamedTypeSymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
-		/// </summary>
-		/// <param name="attributes">A collection of the target <see cref="ISymbol"/>'s attributes.</param>
-		/// <param name="containingTypes"><see cref="INamedTypeSymbol"/>s that contain this <see cref="IMethodSymbol"/>.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool AllowsNewModifier(IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
+		/// <inheritdoc/>
+		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
 		{
-			return DefaultParamUtilities.AllowsNewModifier(attributes, containingTypes, compilation);
+			return Array.Empty<DiagnosticDescriptor>();
 		}
 
 		private static bool AnalyzeCollidingMembers_Internal(

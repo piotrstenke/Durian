@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -13,15 +16,14 @@ namespace Durian.Tests
 	/// </summary>
 	public readonly struct SingletonGeneratorTestResult : IGeneratorTestResult
 	{
-		private readonly GeneratedSourceResult _sourceResult;
 		private readonly GeneratorRunResult _runResult;
+		private readonly GeneratedSourceResult _sourceResult;
 		private readonly CSharpSyntaxTree? _tree;
 
-		/// <inheritdoc/>
-		public readonly CSharpCompilation InputCompilation { get; }
-
-		/// <inheritdoc/>
-		public readonly CSharpCompilation OutputCompilation { get; }
+		/// <summary>
+		/// A collection of <see cref="Diagnostic"/>s that were reported during the generator pass.
+		/// </summary>
+		public readonly ImmutableArray<Diagnostic> Diagnostics => _runResult.Diagnostics;
 
 		/// <inheritdoc/>
 		public readonly Exception? Exception => _runResult.Exception;
@@ -30,9 +32,21 @@ namespace Durian.Tests
 		public readonly ISourceGenerator Generator => _runResult.Generator;
 
 		/// <summary>
-		/// A <see cref="CSharpSyntaxTree"/> that was generated during the generator pass.
+		/// An identifier provided by the generator that identifies the added <see cref="SourceText"/>
 		/// </summary>
-		public readonly CSharpSyntaxTree? SyntaxTree => _sourceResult.SyntaxTree as CSharpSyntaxTree;
+		public readonly string? HintName => _sourceResult.HintName;
+
+		/// <inheritdoc/>
+		public readonly CSharpCompilation InputCompilation { get; }
+
+		/// <summary>
+		/// Determines whether the <see cref="ISourceGenerator"/> actually generated any <see cref="CSharpSyntaxTree"/>.
+		/// </summary>
+		[MemberNotNullWhen(true, "SourceText", "SyntaxTree", "HintName")]
+		public readonly bool IsGenerated { get; }
+
+		/// <inheritdoc/>
+		public readonly CSharpCompilation OutputCompilation { get; }
 
 		/// <summary>
 		/// The <see cref="Microsoft.CodeAnalysis.Text.SourceText"/> that was added by the generator.
@@ -40,20 +54,9 @@ namespace Durian.Tests
 		public readonly SourceText? SourceText => _sourceResult.SourceText;
 
 		/// <summary>
-		/// A collection of <see cref="Diagnostic"/>s that were reported during the generator pass.
+		/// A <see cref="CSharpSyntaxTree"/> that was generated during the generator pass.
 		/// </summary>
-		public readonly ImmutableArray<Diagnostic> Diagnostics => _runResult.Diagnostics;
-
-		/// <summary>
-		/// An identifier provided by the generator that identifies the added <see cref="SourceText"/>
-		/// </summary>
-		public readonly string? HintName => _sourceResult.HintName;
-
-		/// <summary>
-		/// Determines whether the <see cref="ISourceGenerator"/> actually generated any <see cref="CSharpSyntaxTree"/>.
-		/// </summary>
-		[MemberNotNullWhen(true, "SourceText", "SyntaxTree", "HintName")]
-		public readonly bool IsGenerated { get; }
+		public readonly CSharpSyntaxTree? SyntaxTree => _sourceResult.SyntaxTree as CSharpSyntaxTree;
 
 		/// <inheritdoc cref="SingletonGeneratorTestResult(CSharpGeneratorDriver, CSharpCompilation, CSharpCompilation, int)"/>
 		public SingletonGeneratorTestResult(CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation) : this(generatorDriver, inputCompilation, outputCompilation, 0)
@@ -89,11 +92,23 @@ namespace Durian.Tests
 			IsGenerated = isGenerated;
 		}
 
+		/// <inheritdoc cref="SingletonGeneratorTestResult(CSharpGeneratorDriver, CSharpCompilation, CSharpCompilation, int)"/>
+		public static SingletonGeneratorTestResult Create(CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
+		{
+			return new SingletonGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation);
+		}
+
+		/// <inheritdoc cref="SingletonGeneratorTestResult(CSharpGeneratorDriver, CSharpCompilation, CSharpCompilation, int)"/>
+		public static SingletonGeneratorTestResult Create(CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation, int sourceIndex)
+		{
+			return new SingletonGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation, sourceIndex);
+		}
+
 		/// <summary>
 		/// Checks if the <paramref name="expected"/> <see cref="CSharpSyntaxTree"/> is equivalent to the <see cref="CSharpSyntaxTree"/> created by the <see cref="ISourceGenerator"/>.
 		/// </summary>
 		/// <param name="expected">A <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
-		public bool Compare(CSharpSyntaxTree? expected)
+		public readonly bool Compare(CSharpSyntaxTree? expected)
 		{
 			if (expected is null)
 			{
@@ -107,7 +122,7 @@ namespace Durian.Tests
 		/// Checks if the <see cref="CSharpSyntaxTree"/> created from the <paramref name="expected"/> source is equivalent to the <see cref="CSharpSyntaxTree"/> created by the <see cref="ISourceGenerator"/>.
 		/// </summary>
 		/// <param name="expected">A <see cref="string"/> that represents a <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
-		public bool Compare(string? expected)
+		public readonly bool Compare(string? expected)
 		{
 			if (expected is null)
 			{
@@ -122,7 +137,7 @@ namespace Durian.Tests
 			return SyntaxTree?.IsEquivalentTo(tree) ?? false;
 		}
 
-		bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result)
+		readonly bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result)
 		{
 			if (result is null || result.GeneratedTrees.IsDefaultOrEmpty)
 			{
@@ -135,18 +150,6 @@ namespace Durian.Tests
 			}
 
 			return SyntaxTree?.IsEquivalentTo(tree) ?? false;
-		}
-
-		/// <inheritdoc cref="SingletonGeneratorTestResult(CSharpGeneratorDriver, CSharpCompilation, CSharpCompilation, int)"/>
-		public static SingletonGeneratorTestResult Create(CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
-		{
-			return new SingletonGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation);
-		}
-
-		/// <inheritdoc cref="SingletonGeneratorTestResult(CSharpGeneratorDriver, CSharpCompilation, CSharpCompilation, int)"/>
-		public static SingletonGeneratorTestResult Create(CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation, int sourceIndex)
-		{
-			return new SingletonGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation, sourceIndex);
 		}
 	}
 }

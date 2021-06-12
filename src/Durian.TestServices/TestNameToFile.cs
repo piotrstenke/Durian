@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Diagnostics;
 using Durian.Generator.Logging;
 using Microsoft.CodeAnalysis;
@@ -6,14 +9,14 @@ using Microsoft.CodeAnalysis;
 namespace Durian.Tests
 {
 	/// <summary>
-	/// A <see cref="IFileNameProvider"/> that returns name of the current test.
+	/// A <see cref="IHintNameProvider"/> that returns name of the current test.
 	/// </summary>
 	[DebuggerDisplay("TestName = {TestName}, Counter = {Counter}")]
-	public sealed class TestNameToFile : IFileNameProvider
+	public sealed class TestNameToFile : IHintNameProvider
 	{
 		private int _counter = 0;
-		private string _testName;
 		private string _current;
+		private string _testName;
 
 		/// <summary>
 		/// Number that is added to the <see cref="TestName"/> when creating the file name. Each call to the <see cref="Success"/> method adds <c>1</c> to this value.
@@ -67,6 +70,7 @@ namespace Durian.Tests
 		}
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TestNameToFile"/> class.
 		/// </summary>
@@ -75,6 +79,7 @@ namespace Durian.Tests
 		{
 			TestName = testName;
 		}
+
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 		/// <inheritdoc/>
@@ -83,16 +88,9 @@ namespace Durian.Tests
 			return _current;
 		}
 
-		string IFileNameProvider.GetFileName(ISymbol symbol)
+		string IHintNameProvider.GetFileName(ISymbol symbol)
 		{
 			return GetFileName();
-		}
-
-		/// <inheritdoc/>
-		public void Success()
-		{
-			_counter++;
-			_current = $"{_testName}_{_counter}";
 		}
 
 		/// <summary>
@@ -102,6 +100,13 @@ namespace Durian.Tests
 		{
 			_current = _testName;
 			_counter = 0;
+		}
+
+		/// <inheritdoc/>
+		public void Success()
+		{
+			_counter++;
+			_current = $"{_testName}_{_counter}";
 		}
 	}
 }

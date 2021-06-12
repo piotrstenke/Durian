@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Diagnostics;
 
 namespace Durian.Info
@@ -10,14 +13,9 @@ namespace Durian.Info
 	[DebuggerDisplay("{GetFullId}: {Title}")]
 	public sealed class DiagnosticData : IEquatable<DiagnosticData>
 	{
+		private string? _docsPath;
 		private ModuleReference? _module;
 		private ModuleReference? _originalModule;
-		private string? _docsPath;
-
-		/// <summary>
-		/// Title of the diagnostic.
-		/// </summary>
-		public string Title { get; }
 
 		/// <summary>
 		/// Link to the documentation regarding this diagnostic.
@@ -25,9 +23,24 @@ namespace Durian.Info
 		public string Documentation => _docsPath!;
 
 		/// <summary>
-		/// If <see cref="IsExtern"/> is <see langword="true"/>, returns <see cref="ModuleReference"/> to the module this diagnostic was created in, otherwise returns <see cref="Module"/>.
+		/// Determines whether this diagnostic is reported on a specific location or compilation-wide.
 		/// </summary>
-		public ModuleReference OriginalModule => _originalModule!;
+		public bool HasLocation { get; }
+
+		/// <summary>
+		/// Two-digit number representing the actual id of the diagnostic.
+		/// </summary>
+		public IdSection Id { get; }
+
+		/// <summary>
+		/// Determines whether this diagnostic was created in different module than it was reported in.
+		/// </summary>
+		public bool IsExtern { get; }
+
+		/// <summary>
+		/// Determines whether the current generation pass will be stopped once this diagnostic is detected.
+		/// </summary>
+		public bool IsFatal { get; }
 
 		/// <summary>
 		/// Durian module this diagnostic is reported in.
@@ -41,24 +54,14 @@ namespace Durian.Info
 		public IdSection ModuleId => _originalModule!.GetModule().AnalysisId;
 
 		/// <summary>
-		/// Two-digit number representing the actual id of the diagnostic.
+		/// If <see cref="IsExtern"/> is <see langword="true"/>, returns <see cref="ModuleReference"/> to the module this diagnostic was created in, otherwise returns <see cref="Module"/>.
 		/// </summary>
-		public IdSection Id { get; }
+		public ModuleReference OriginalModule => _originalModule!;
 
 		/// <summary>
-		/// Determines whether the current generation pass will be stopped once this diagnostic is detected.
+		/// Title of the diagnostic.
 		/// </summary>
-		public bool IsFatal { get; }
-
-		/// <summary>
-		/// Determines whether this diagnostic was created in different module than it was reported in.
-		/// </summary>
-		public bool IsExtern { get; }
-
-		/// <summary>
-		/// Determines whether this diagnostic is reported on a specific location or compilation-wide.
-		/// </summary>
-		public bool HasLocation { get; }
+		public string Title { get; }
 
 		internal DiagnosticData(string title, int id, string docsPath, bool fatal, bool hasLocation, ModuleIdentity? originalModule = null)
 		{
@@ -80,23 +83,23 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public override int GetHashCode()
+		public static bool operator !=(DiagnosticData a, DiagnosticData b)
 		{
-			int hashCode = -726504116;
-			hashCode = (hashCode * -1521134295) + Title.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Documentation.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Id.GetHashCode();
-			hashCode = (hashCode * -1521134295) + IsFatal.GetHashCode();
-			hashCode = (hashCode * -1521134295) + HasLocation.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Module.GetHashCode();
-			hashCode = (hashCode * -1521134295) + OriginalModule.GetHashCode();
-			return hashCode;
+			return !(a == b);
 		}
 
 		/// <inheritdoc/>
-		public override string ToString()
+		public static bool operator ==(DiagnosticData a, DiagnosticData b)
 		{
-			return GetFullId();
+			return
+				a.Title == b.Title &&
+				a.Documentation == b.Documentation &&
+				a.HasLocation == b.HasLocation &&
+				a.Id == b.Id &&
+				a.IsExtern == b.IsExtern &&
+				a.IsFatal == b.IsFatal &&
+				a.Module == b.Module &&
+				a.OriginalModule == b.OriginalModule;
 		}
 
 		/// <inheritdoc/>
@@ -125,6 +128,26 @@ namespace Durian.Info
 			return $"{DurianInfo.IdPrefix}{Module}{Id}";
 		}
 
+		/// <inheritdoc/>
+		public override int GetHashCode()
+		{
+			int hashCode = -726504116;
+			hashCode = (hashCode * -1521134295) + Title.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Documentation.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Id.GetHashCode();
+			hashCode = (hashCode * -1521134295) + IsFatal.GetHashCode();
+			hashCode = (hashCode * -1521134295) + HasLocation.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Module.GetHashCode();
+			hashCode = (hashCode * -1521134295) + OriginalModule.GetHashCode();
+			return hashCode;
+		}
+
+		/// <inheritdoc/>
+		public override string ToString()
+		{
+			return GetFullId();
+		}
+
 		internal void SetModule(ModuleIdentity module)
 		{
 			ModuleReference reference = new(module);
@@ -136,26 +159,6 @@ namespace Durian.Info
 			}
 
 			_module = reference;
-		}
-
-		/// <inheritdoc/>
-		public static bool operator ==(DiagnosticData a, DiagnosticData b)
-		{
-			return
-				a.Title == b.Title &&
-				a.Documentation == b.Documentation &&
-				a.HasLocation == b.HasLocation &&
-				a.Id == b.Id &&
-				a.IsExtern == b.IsExtern &&
-				a.IsFatal == b.IsFatal &&
-				a.Module == b.Module &&
-				a.OriginalModule == b.OriginalModule;
-		}
-
-		/// <inheritdoc/>
-		public static bool operator !=(DiagnosticData a, DiagnosticData b)
-		{
-			return !(a == b);
 		}
 	}
 }

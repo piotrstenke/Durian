@@ -1,4 +1,7 @@
-﻿using Durian.Generator;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using Durian.Generator;
 using Durian.Generator.DefaultParam;
 using Xunit;
 
@@ -6,6 +9,46 @@ namespace Durian.Tests.DefaultParam.Methods
 {
 	public sealed class MethodSignatureTests : DefaultParamGeneratorTest
 	{
+		[Fact]
+		public void Error_When_HasOnlyNonTypeArgumentParameters_And_SignatureAlreadyExists()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
+	{{
+	}}
+
+	void Method(string value)
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
+
+		[Fact]
+		public void Error_When_HasOnlyTypeArgumentParameters_And_GeneratedSignatureExists()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	{{
+	}}
+
+	void Method(int value)
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
+
 		[Fact]
 		public void Error_When_IsParameterless_And_OtherParameterlessExists()
 		{
@@ -41,46 +84,6 @@ partial class Test
 	string Method()
 	{{
 		return null;
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
-
-		[Fact]
-		public void Error_When_HasOnlyNonTypeArgumentParameters_And_SignatureAlreadyExists()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
-	{{
-	}}
-
-	void Method(string value)
-	{{
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
-
-		[Fact]
-		public void Error_When_HasOnlyTypeArgumentParameters_And_GeneratedSignatureExists()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
-	{{
-	}}
-
-	void Method(int value)
-	{{
 	}}
 }}
 ";
@@ -151,6 +154,22 @@ partial class Test : Parent
 		}
 
 		[Fact]
+		public void IgnoresMethodsGeneratedFromThisMethod()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
+	{{
+	}}
+}}
+";
+			Assert.False(RunGenerator(input).ContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
+
+		[Fact]
 		public void IgnoresMethodWhenHasNewModifier()
 		{
 			string input =
@@ -166,22 +185,6 @@ class Parent
 partial class Test : Parent
 {{
 	public new void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
-	{{
-	}}
-}}
-";
-			Assert.False(RunGenerator(input).ContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
-
-		[Fact]
-		public void IgnoresMethodsGeneratedFromThisMethod()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
 	{{
 	}}
 }}

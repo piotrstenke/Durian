@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +20,24 @@ namespace Durian.Generator
 		internal List<FilterContainer<TFilter>> _containers;
 		private readonly List<TFilter> _filters;
 		private string? _name;
+
+		/// <summary>
+		/// Number of <typeparamref name="TFilter"/>s in this <see cref="FilterGroup{TFilter}"/>.
+		/// </summary>
+		public int Count => _filters.Count;
+
+		/// <summary>
+		/// Determines whether this <see cref="FilterGroup{TFilter}"/> has a name.
+		/// </summary>
+		[MemberNotNullWhen(true, nameof(Name))]
+		public bool HasName => Name is not null;
+
+		bool ICollection<TFilter>.IsReadOnly => IsSealed;
+
+		/// <summary>
+		/// Determines whether this <see cref="FilterGroup{TFilter}"/> is sealed by calling the <see cref="Seal"/> method.
+		/// </summary>
+		public bool IsSealed { get; private set; }
 
 		/// <summary>
 		/// Name of this <see cref="FilterGroup{TFilter}"/>.
@@ -45,26 +66,8 @@ namespace Durian.Generator
 			}
 		}
 
-		/// <summary>
-		/// Determines whether this <see cref="FilterGroup{TFilter}"/> has a name.
-		/// </summary>
-		[MemberNotNullWhen(true, nameof(Name))]
-		public bool HasName => Name is not null;
-
-		/// <summary>
-		/// Determines whether this <see cref="FilterGroup{TFilter}"/> is sealed by calling the <see cref="Seal"/> method.
-		/// </summary>
-		public bool IsSealed { get; private set; }
-
-		/// <summary>
-		/// Number of <typeparamref name="TFilter"/>s in this <see cref="FilterGroup{TFilter}"/>.
-		/// </summary>
-		public int Count => _filters.Count;
-
 		/// <inheritdoc cref="GetFilter(int)"/>
 		public TFilter this[int index] => GetFilter(index);
-
-		bool ICollection<TFilter>.IsReadOnly => IsSealed;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FilterGroup{TFilter}"/> class.
@@ -115,6 +118,11 @@ namespace Durian.Generator
 			Name = name;
 		}
 
+		void ICollection<TFilter>.Add(TFilter item)
+		{
+			AddFilter(item);
+		}
+
 		/// <summary>
 		/// Adds the specified <paramref name="filter"/> to this <see cref="FilterGroup{TFilter}"/>.
 		/// </summary>
@@ -152,6 +160,46 @@ namespace Durian.Generator
 		}
 
 		/// <summary>
+		/// Removes all <typeparamref name="TFilter"/>s from the <see cref="FilterGroup{TFilter}"/>.
+		/// </summary>
+		/// <exception cref="InvalidOperationException"><see cref="FilterGroup{TFilter}"/> is sealed. -or- Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
+		public void Clear()
+		{
+			ThrowIfSealed();
+			_filters.Clear();
+		}
+
+		bool ICollection<TFilter>.Contains(TFilter item)
+		{
+			return ContainsFilter(item);
+		}
+
+		/// <summary>
+		/// Checks if the <see cref="FilterGroup{TFilter}"/> contains the specified <paramref name="filter"/>.
+		/// </summary>
+		/// <param name="filter"><typeparamref name="TFilter"/> to add to the <see cref="FilterGroup{TFilter}"/>.</param>
+		public bool ContainsFilter(TFilter filter)
+		{
+			return _filters.Contains(filter);
+		}
+
+		void ICollection<TFilter>.CopyTo(TFilter[] array, int arrayIndex)
+		{
+			_filters.CopyTo(array, arrayIndex);
+		}
+
+		/// <inheritdoc/>
+		public IEnumerator<TFilter> GetEnumerator()
+		{
+			return _filters.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		/// <summary>
 		/// Returns a <typeparamref name="TFilter"/> at the specified <paramref name="index"/>.
 		/// </summary>
 		/// <param name="index">Index to get the <typeparamref name="TFilter"/> at.</param>
@@ -169,6 +217,11 @@ namespace Durian.Generator
 		public TFilter[] GetFilters(int index, int count)
 		{
 			return _filters.GetRange(index, count).ToArray();
+		}
+
+		bool ICollection<TFilter>.Remove(TFilter item)
+		{
+			return RemoveFilter(item);
 		}
 
 		/// <summary>
@@ -210,22 +263,11 @@ namespace Durian.Generator
 		}
 
 		/// <summary>
-		/// Removes all <typeparamref name="TFilter"/>s from the <see cref="FilterGroup{TFilter}"/>.
+		/// After this method is called, no more <typeparamref name="TFilter"/>s can be added to or removed from this <see cref="FilterGroup{TFilter}"/>.
 		/// </summary>
-		/// <exception cref="InvalidOperationException"><see cref="FilterGroup{TFilter}"/> is sealed. -or- Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
-		public void Clear()
+		public void Seal()
 		{
-			ThrowIfSealed();
-			_filters.Clear();
-		}
-
-		/// <summary>
-		/// Checks if the <see cref="FilterGroup{TFilter}"/> contains the specified <paramref name="filter"/>.
-		/// </summary>
-		/// <param name="filter"><typeparamref name="TFilter"/> to add to the <see cref="FilterGroup{TFilter}"/>.</param>
-		public bool ContainsFilter(TFilter filter)
-		{
-			return _filters.Contains(filter);
+			IsSealed = true;
 		}
 
 		/// <summary>
@@ -237,50 +279,11 @@ namespace Durian.Generator
 		}
 
 		/// <summary>
-		/// After this method is called, no more <typeparamref name="TFilter"/>s can be added to or removed from this <see cref="FilterGroup{TFilter}"/>.
-		/// </summary>
-		public void Seal()
-		{
-			IsSealed = true;
-		}
-
-		/// <summary>
 		/// Removes effect of the <see cref="Seal"/> method.
 		/// </summary>
 		public void Unseal()
 		{
 			IsSealed = false;
-		}
-
-		/// <inheritdoc/>
-		public IEnumerator<TFilter> GetEnumerator()
-		{
-			return _filters.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		void ICollection<TFilter>.Add(TFilter item)
-		{
-			AddFilter(item);
-		}
-
-		bool ICollection<TFilter>.Remove(TFilter item)
-		{
-			return RemoveFilter(item);
-		}
-
-		void ICollection<TFilter>.CopyTo(TFilter[] array, int arrayIndex)
-		{
-			_filters.CopyTo(array, arrayIndex);
-		}
-
-		bool ICollection<TFilter>.Contains(TFilter item)
-		{
-			return ContainsFilter(item);
 		}
 
 		private void ThrowIfSealed()

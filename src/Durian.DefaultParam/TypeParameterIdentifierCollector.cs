@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -16,14 +19,14 @@ namespace Durian.Generator.DefaultParam
 		public List<ISymbol?> OutputSymbols { get; }
 
 		/// <summary>
-		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the input <see cref="CSharpSyntaxNode"/>.
-		/// </summary>
-		public SemanticModel? SemanticModel { get; set; }
-
-		/// <summary>
 		/// Parent <see cref="DefaultParamCompilationData"/> of the input <see cref="CSharpSyntaxNode"/>.
 		/// </summary>
 		public DefaultParamCompilationData? ParentCompilation { get; set; }
+
+		/// <summary>
+		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the input <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
+		public SemanticModel? SemanticModel { get; set; }
 
 		/// <summary>
 		/// Determines whether to visit the declaration body of a <see cref="MethodDeclarationSyntax"/>. Defaults to <see langword="true"/>.
@@ -62,13 +65,12 @@ namespace Durian.Generator.DefaultParam
 			OutputSymbols = new List<ISymbol?>();
 		}
 
-		/// <inheritdoc/>
-		public override void VisitBlock(BlockSyntax node)
+		/// <summary>
+		/// Resets the collector.
+		/// </summary>
+		public void Reset()
 		{
-			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
-			{
-				base.VisitBlock(node);
-			}
+			OutputSymbols.Clear();
 		}
 
 		/// <inheritdoc/>
@@ -77,15 +79,6 @@ namespace Durian.Generator.DefaultParam
 			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
 			{
 				base.VisitArrowExpressionClause(node);
-			}
-		}
-
-		/// <inheritdoc/>
-		public override void VisitTypeParameterConstraintClause(TypeParameterConstraintClauseSyntax node)
-		{
-			foreach (TypeParameterConstraintSyntax constraint in node.Constraints)
-			{
-				base.Visit(constraint);
 			}
 		}
 
@@ -104,18 +97,28 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <inheritdoc/>
+		public override void VisitBlock(BlockSyntax node)
+		{
+			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
+			{
+				base.VisitBlock(node);
+			}
+		}
+
+		/// <inheritdoc/>
 		public override void VisitIdentifierName(IdentifierNameSyntax node)
 		{
 			ISymbol? symbol = SemanticModel.GetSymbolInfo(node).Symbol;
 			OutputSymbols.Add(symbol is ITypeParameterSymbol or IAliasSymbol ? symbol : null);
 		}
 
-		/// <summary>
-		/// Resets the collector.
-		/// </summary>
-		public void Reset()
+		/// <inheritdoc/>
+		public override void VisitTypeParameterConstraintClause(TypeParameterConstraintClauseSyntax node)
 		{
-			OutputSymbols.Clear();
+			foreach (TypeParameterConstraintSyntax constraint in node.Constraints)
+			{
+				base.Visit(constraint);
+			}
 		}
 	}
 }

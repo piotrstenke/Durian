@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -32,6 +35,10 @@ namespace Durian.Generator.Data
 		{
 		}
 
+		internal PropertyData(IPropertySymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		{
+		}
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PropertyData"/> class.
 		/// </summary>
@@ -51,10 +58,6 @@ namespace Durian.Generator.Data
 			IEnumerable<INamespaceSymbol>? containingNamespaces,
 			IEnumerable<AttributeData>? attributes
 		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
-		{
-		}
-
-		internal PropertyData(IPropertySymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 	}

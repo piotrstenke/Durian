@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -17,602 +20,72 @@ namespace Durian.Generator
 	public static class ModuleUtilities
 	{
 		/// <summary>
-		/// Checks if the specified <paramref name="module"/> is enabled for the specified <paramref name="compilation"/>.
+		/// Returns an array of <see cref="INamedTypeSymbol"/>s representing all types that are part of any disabled Durian module.
 		/// </summary>
-		/// <param name="module"><see cref="ModuleIdentity"/> representing a Durian module to check.</param>
-		/// <param name="compilation"><see cref="Assembly"/> to check if the <paramref name="module"/> is enabled for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		public static bool IsEnabled(ModuleIdentity module, CSharpCompilation compilation)
-		{
-			if (module is null)
-			{
-				throw new ArgumentNullException(nameof(module));
-			}
-
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
-			return IsEnabled_Internal(module.Module, compilation.Assembly, attr);
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="module"/> is enabled for the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="module"><see cref="ModuleIdentity"/> representing a Durian module to check.</param>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the <paramref name="module"/> is enabled for.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		public static bool IsEnabled(ModuleIdentity module, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
-		{
-			if (module is null)
-			{
-				throw new ArgumentNullException(nameof(module));
-			}
-
-			return IsEnabled(module.Module, assembly, enableModuleAttribute);
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="module"/> is enabled for the specified <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="module"><see cref="DurianModule"/> to check.</param>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the <paramref name="module"/> is enabled for.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static bool IsEnabled(DurianModule module, CSharpCompilation compilation)
+		public static INamedTypeSymbol[] GetDisabledDurianTypes(CSharpCompilation compilation)
 		{
 			if (compilation is null)
 			{
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			CheckIsValidModuleEnum(module);
-			INamedTypeSymbol symbol = GetEnableAttributeSymbol(compilation);
-			return IsEnabled_Internal(module, compilation.Assembly, symbol);
+			return GetDisabledDurianTypes(compilation, GetAllModules());
 		}
 
 		/// <summary>
-		/// Checks if the specified <paramref name="module"/> is enabled for the specified <paramref name="assembly"/>.
+		/// Returns an array of <see cref="INamedTypeSymbol"/>s representing all types that are part of only those of the specified Durian <paramref name="modules"/> that are disabled for the current <paramref name="compilation"/>.
 		/// </summary>
-		/// <param name="module"><see cref="DurianModule"/> to check.</param>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the <paramref name="module"/> is enabled for.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static bool IsEnabled(DurianModule module, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (enableModuleAttribute is null)
-			{
-				throw new ArgumentNullException(nameof(enableModuleAttribute));
-			}
-
-			CheckIsValidModuleEnum(module);
-			return IsEnabled_Internal(module, assembly, enableModuleAttribute);
-		}
-
-		/// <summary>
-		/// Checks if the Durian module with the specified <paramref name="moduleName"/> is enabled for the specified <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="moduleName">Name of the module to check.</param>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the module is enabled for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>. -or- <paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		public static bool IsEnabled(string moduleName, CSharpCompilation compilation)
-		{
-			if (moduleName is null)
-			{
-				throw new ArgumentNullException(nameof(moduleName));
-			}
-
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			DurianModule module = ParseModule(moduleName);
-			INamedTypeSymbol symbol = GetEnableAttributeSymbol(compilation);
-			return IsEnabled_Internal(module, compilation.Assembly, symbol);
-		}
-
-		/// <summary>
-		/// Checks if the Durian module with the specified <paramref name="moduleName"/> is enabled for the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="moduleName">Name of the module to check.</param>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the module is enabled for.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>.</exception>
-		public static bool IsEnabled(string moduleName, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (enableModuleAttribute is null)
-			{
-				throw new ArgumentNullException(nameof(enableModuleAttribute));
-			}
-
-			DurianModule module = ParseModule(moduleName);
-			return IsEnabled_Internal(module, assembly, enableModuleAttribute);
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the <paramref name="symbol"/> is enabled for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		public static bool IsEnabled(INamedTypeSymbol symbol, CSharpCompilation compilation)
-		{
-			return IsEnabled(symbol, compilation, out ModuleIdentity _);
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the <paramref name="symbol"/> is enabled for.</param>
-		/// <param name="module"><see cref="DurianModule"/> this <paramref name="symbol"/> is part of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		public static bool IsEnabled(INamedTypeSymbol symbol, CSharpCompilation compilation, out DurianModule module)
-		{
-			bool enabled = IsEnabled(symbol, compilation, out ModuleIdentity? identity);
-			module = enabled ? identity!.Module : DurianModule.None;
-			return enabled;
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the <paramref name="symbol"/> is enabled for.</param>
-		/// <param name="module"><see cref="ModuleIdentity"/> this <paramref name="symbol"/> is part of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		public static bool IsEnabled(INamedTypeSymbol symbol, CSharpCompilation compilation, [NotNullWhen(true)] out ModuleIdentity? module)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
-			return IsEnabled_Internal(symbol, attr, compilation.Assembly.GetAttributes(), out module);
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the <paramref name="symbol"/> is enabled for.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		public static bool IsEnabled(INamedTypeSymbol symbol, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
-		{
-			return IsEnabled(symbol, assembly, enableModuleAttribute, out ModuleIdentity _);
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the <paramref name="symbol"/> is enabled for.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <param name="module"><see cref="DurianModule"/> this <paramref name="symbol"/> is part of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		public static bool IsEnabled(INamedTypeSymbol symbol, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, out DurianModule module)
-		{
-			bool enabled = IsEnabled(symbol, assembly, enableModuleAttribute, out ModuleIdentity? identity);
-			module = enabled ? identity!.Module : DurianModule.None;
-			return enabled;
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the <paramref name="symbol"/> is enabled for.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <param name="module"><see cref="ModuleIdentity"/> this <paramref name="symbol"/> is part of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		public static bool IsEnabled(INamedTypeSymbol symbol, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, [NotNullWhen(true)] out ModuleIdentity? module)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (enableModuleAttribute is null)
-			{
-				throw new ArgumentNullException(nameof(enableModuleAttribute));
-			}
-
-			return IsEnabled_Internal(symbol, enableModuleAttribute, assembly.GetAttributes(), out module);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the module is enabled for.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="INamedTypeSymbol"/>s from.</param>
+		/// <param name="modules">An array of <see cref="ModuleIdentity"/> representing Durian modules to get the types of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		public static ModuleIdentity[] GetEnabledModules(CSharpCompilation compilation)
+		public static INamedTypeSymbol[] GetDisabledDurianTypes(CSharpCompilation compilation, ModuleIdentity[]? modules)
 		{
 			if (compilation is null)
 			{
 				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
-			return GetEnabledModules(compilation.Assembly, attr);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> to get the enabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/></exception>
-		public static ModuleIdentity[] GetEnabledModules(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (enableModuleAttribute is null)
-			{
-				throw new ArgumentNullException(nameof(enableModuleAttribute));
-			}
-
-			List<ModuleIdentity> modules = new(8);
-
-			foreach (AttributeData attribute in assembly.GetAttributes())
-			{
-				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
-				{
-					DurianModule module = (DurianModule)value;
-					modules.Add(GetModule(module));
-				}
-			}
-
-			return modules.ToArray();
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="compilation"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the enabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		public static ModuleIdentity[] GetEnabledModules(CSharpCompilation compilation, ModuleIdentity[]? modules)
-		{
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
-			return GetEnabledModules(compilation.Assembly, attr, modules);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the enabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		public static ModuleIdentity[] GetEnabledModules(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, ModuleIdentity[]? modules)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (enableModuleAttribute is null)
-			{
-				throw new ArgumentNullException(nameof(enableModuleAttribute));
 			}
 
 			if (modules is null || modules.Length == 0)
 			{
-				return Array.Empty<ModuleIdentity>();
+				return Array.Empty<INamedTypeSymbol>();
 			}
 
-			HashSet<ModuleIdentity> set = new(ModuleEnumEqualityComparer.Instance);
-
-			foreach (AttributeData attribute in assembly.GetAttributes())
-			{
-				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
-				{
-					DurianModule enumValue = (DurianModule)value;
-
-					foreach (ModuleIdentity module in modules)
-					{
-						if (module.Module == enumValue)
-						{
-							set.Add(module);
-						}
-					}
-				}
-			}
-
-			ModuleIdentity[] array = new ModuleIdentity[set.Count];
-			set.CopyTo(array);
-			return array;
+			return GetDisabledDurianTypes_Internal(compilation, modules);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="compilation"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns an array of <see cref="INamedTypeSymbol"/>s representing all types that are part of only those of the specified Durian <paramref name="modules"/> that are disabled for the current <paramref name="compilation"/>.
 		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the enabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="INamedTypeSymbol"/>s from.</param>
+		/// <param name="modules">An array of <see cref="DurianModule"/>s representing Durian modules to get the types of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static ModuleIdentity[] GetEnabledModules(CSharpCompilation compilation, DurianModule[]? modules)
+		public static INamedTypeSymbol[] GetDisabledDurianTypes(CSharpCompilation compilation, DurianModule[]? modules)
 		{
 			if (compilation is null)
 			{
 				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
-			return GetEnabledModules(compilation.Assembly, attr, modules);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> to get the enabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static ModuleIdentity[] GetEnabledModules(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, DurianModule[]? modules)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (enableModuleAttribute is null)
-			{
-				throw new ArgumentNullException(nameof(enableModuleAttribute));
 			}
 
 			if (modules is null || modules.Length == 0)
 			{
-				return Array.Empty<ModuleIdentity>();
+				return Array.Empty<INamedTypeSymbol>();
 			}
 
-			HashSet<DurianModule> set = new();
-			List<ModuleIdentity> list = new(16);
+			int length = modules.Length;
+			ModuleIdentity[] identities = new ModuleIdentity[length];
 
-			foreach (AttributeData attribute in assembly.GetAttributes())
+			for (int i = 0; i < length; i++)
 			{
-				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
-				{
-					DurianModule enumValue = (DurianModule)value;
-
-					foreach (DurianModule module in modules)
-					{
-						if (module == enumValue && set.Add(module))
-						{
-							list.Add(GetModule(module));
-						}
-					}
-				}
+				identities[i] = GetModule(modules[i]);
 			}
 
-			return list.ToArray();
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the enabled Durian modules of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		public static DurianModule[] GetEnabledModulesAsEnums(CSharpCompilation compilation)
-		{
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
-			return GetEnabledModulesAsEnums(compilation.Assembly, attr);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> to get the enabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		public static DurianModule[] GetEnabledModulesAsEnums(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (enableModuleAttribute is null)
-			{
-				throw new ArgumentNullException(nameof(enableModuleAttribute));
-			}
-
-			List<DurianModule> modules = new(8);
-
-			foreach (AttributeData attribute in assembly.GetAttributes())
-			{
-				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
-				{
-					DurianModule module = (DurianModule)value;
-					modules.Add(module);
-				}
-			}
-
-			return modules.ToArray();
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="compilation"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the enabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		public static DurianModule[] GetEnabledModulesAsEnums(CSharpCompilation compilation, ModuleIdentity[]? modules)
-		{
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
-			return GetEnabledModulesAsEnums(compilation.Assembly, attr, modules);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the enabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		public static DurianModule[] GetEnabledModulesAsEnums(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, ModuleIdentity[]? modules)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (enableModuleAttribute is null)
-			{
-				throw new ArgumentNullException(nameof(enableModuleAttribute));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return Array.Empty<DurianModule>();
-			}
-
-			HashSet<DurianModule> set = new();
-
-			foreach (AttributeData attribute in assembly.GetAttributes())
-			{
-				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
-				{
-					DurianModule enumValue = (DurianModule)value;
-
-					foreach (ModuleIdentity module in modules)
-					{
-						if (module.Module == enumValue)
-						{
-							set.Add(enumValue);
-						}
-					}
-				}
-			}
-
-			DurianModule[] array = new DurianModule[set.Count];
-			set.CopyTo(array);
-			return array;
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="compilation"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the enabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static DurianModule[] GetEnabledModulesAsEnums(CSharpCompilation compilation, DurianModule[]? modules)
-		{
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
-			return GetEnabledModulesAsEnums(compilation.Assembly, attr, modules);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> to get the enabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static DurianModule[] GetEnabledModulesAsEnums(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, DurianModule[]? modules)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (enableModuleAttribute is null)
-			{
-				throw new ArgumentNullException(nameof(enableModuleAttribute));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return Array.Empty<DurianModule>();
-			}
-
-			HashSet<DurianModule> set = new();
-
-			foreach (AttributeData attribute in assembly.GetAttributes())
-			{
-				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
-				{
-					DurianModule enumValue = (DurianModule)value;
-
-					foreach (DurianModule module in modules)
-					{
-						if (module == enumValue)
-						{
-							set.Add(module);
-						}
-					}
-				}
-			}
-
-			DurianModule[] array = new DurianModule[set.Count];
-			set.CopyTo(array);
-			return array;
+			return GetDisabledDurianTypes_Internal(compilation, identities);
 		}
 
 		/// <summary>
@@ -1094,72 +567,364 @@ namespace Durian.Generator
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="INamedTypeSymbol"/>s representing all types that are part of any disabled Durian module.
+		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="compilation"/>.
 		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="INamedTypeSymbol"/>s from.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the module is enabled for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		public static INamedTypeSymbol[] GetDisabledDurianTypes(CSharpCompilation compilation)
+		public static ModuleIdentity[] GetEnabledModules(CSharpCompilation compilation)
 		{
 			if (compilation is null)
 			{
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			return GetDisabledDurianTypes(compilation, GetAllModules());
+			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
+			return GetEnabledModules(compilation.Assembly, attr);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="INamedTypeSymbol"/>s representing all types that are part of only those of the specified Durian <paramref name="modules"/> that are disabled for the current <paramref name="compilation"/>.
+		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="assembly"/>.
 		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="INamedTypeSymbol"/>s from.</param>
-		/// <param name="modules">An array of <see cref="ModuleIdentity"/> representing Durian modules to get the types of.</param>
+		/// <param name="assembly"><see cref="IAssemblySymbol"/> to get the enabled Durian modules of.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/></exception>
+		public static ModuleIdentity[] GetEnabledModules(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (enableModuleAttribute is null)
+			{
+				throw new ArgumentNullException(nameof(enableModuleAttribute));
+			}
+
+			List<ModuleIdentity> modules = new(8);
+
+			foreach (AttributeData attribute in assembly.GetAttributes())
+			{
+				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
+				{
+					DurianModule module = (DurianModule)value;
+					modules.Add(GetModule(module));
+				}
+			}
+
+			return modules.ToArray();
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="compilation"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// </summary>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the enabled Durian modules of.</param>
+		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
-		public static INamedTypeSymbol[] GetDisabledDurianTypes(CSharpCompilation compilation, ModuleIdentity[]? modules)
+		public static ModuleIdentity[] GetEnabledModules(CSharpCompilation compilation, ModuleIdentity[]? modules)
 		{
 			if (compilation is null)
 			{
 				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
+			return GetEnabledModules(compilation.Assembly, attr, modules);
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to get the enabled Durian modules of.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
+		public static ModuleIdentity[] GetEnabledModules(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, ModuleIdentity[]? modules)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (enableModuleAttribute is null)
+			{
+				throw new ArgumentNullException(nameof(enableModuleAttribute));
 			}
 
 			if (modules is null || modules.Length == 0)
 			{
-				return Array.Empty<INamedTypeSymbol>();
+				return Array.Empty<ModuleIdentity>();
 			}
 
-			return GetDisabledDurianTypes_Internal(compilation, modules);
+			HashSet<ModuleIdentity> set = new(ModuleEnumEqualityComparer.Instance);
+
+			foreach (AttributeData attribute in assembly.GetAttributes())
+			{
+				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
+				{
+					DurianModule enumValue = (DurianModule)value;
+
+					foreach (ModuleIdentity module in modules)
+					{
+						if (module.Module == enumValue)
+						{
+							set.Add(module);
+						}
+					}
+				}
+			}
+
+			ModuleIdentity[] array = new ModuleIdentity[set.Count];
+			set.CopyTo(array);
+			return array;
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="INamedTypeSymbol"/>s representing all types that are part of only those of the specified Durian <paramref name="modules"/> that are disabled for the current <paramref name="compilation"/>.
+		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="compilation"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
 		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="INamedTypeSymbol"/>s from.</param>
-		/// <param name="modules">An array of <see cref="DurianModule"/>s representing Durian modules to get the types of.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the enabled Durian modules of.</param>
+		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static INamedTypeSymbol[] GetDisabledDurianTypes(CSharpCompilation compilation, DurianModule[]? modules)
+		public static ModuleIdentity[] GetEnabledModules(CSharpCompilation compilation, DurianModule[]? modules)
 		{
 			if (compilation is null)
 			{
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
+			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
+			return GetEnabledModules(compilation.Assembly, attr, modules);
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
+		/// </summary>
+		/// <param name="assembly"><see cref="IAssemblySymbol"/> to get the enabled Durian modules of.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		public static ModuleIdentity[] GetEnabledModules(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, DurianModule[]? modules)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (enableModuleAttribute is null)
+			{
+				throw new ArgumentNullException(nameof(enableModuleAttribute));
+			}
+
 			if (modules is null || modules.Length == 0)
 			{
-				return Array.Empty<INamedTypeSymbol>();
+				return Array.Empty<ModuleIdentity>();
 			}
 
-			int length = modules.Length;
-			ModuleIdentity[] identities = new ModuleIdentity[length];
+			HashSet<DurianModule> set = new();
+			List<ModuleIdentity> list = new(16);
 
-			for (int i = 0; i < length; i++)
+			foreach (AttributeData attribute in assembly.GetAttributes())
 			{
-				identities[i] = GetModule(modules[i]);
+				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
+				{
+					DurianModule enumValue = (DurianModule)value;
+
+					foreach (DurianModule module in modules)
+					{
+						if (module == enumValue && set.Add(module))
+						{
+							list.Add(GetModule(module));
+						}
+					}
+				}
 			}
 
-			return GetDisabledDurianTypes_Internal(compilation, identities);
+			return list.ToArray();
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the enabled Durian modules of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
+		public static DurianModule[] GetEnabledModulesAsEnums(CSharpCompilation compilation)
+		{
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
+			return GetEnabledModulesAsEnums(compilation.Assembly, attr);
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="assembly"><see cref="IAssemblySymbol"/> to get the enabled Durian modules of.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
+		public static DurianModule[] GetEnabledModulesAsEnums(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (enableModuleAttribute is null)
+			{
+				throw new ArgumentNullException(nameof(enableModuleAttribute));
+			}
+
+			List<DurianModule> modules = new(8);
+
+			foreach (AttributeData attribute in assembly.GetAttributes())
+			{
+				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
+				{
+					DurianModule module = (DurianModule)value;
+					modules.Add(module);
+				}
+			}
+
+			return modules.ToArray();
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="compilation"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// </summary>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the enabled Durian modules of.</param>
+		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
+		public static DurianModule[] GetEnabledModulesAsEnums(CSharpCompilation compilation, ModuleIdentity[]? modules)
+		{
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
+			return GetEnabledModulesAsEnums(compilation.Assembly, attr, modules);
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to get the enabled Durian modules of.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
+		public static DurianModule[] GetEnabledModulesAsEnums(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, ModuleIdentity[]? modules)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (enableModuleAttribute is null)
+			{
+				throw new ArgumentNullException(nameof(enableModuleAttribute));
+			}
+
+			if (modules is null || modules.Length == 0)
+			{
+				return Array.Empty<DurianModule>();
+			}
+
+			HashSet<DurianModule> set = new();
+
+			foreach (AttributeData attribute in assembly.GetAttributes())
+			{
+				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
+				{
+					DurianModule enumValue = (DurianModule)value;
+
+					foreach (ModuleIdentity module in modules)
+					{
+						if (module.Module == enumValue)
+						{
+							set.Add(enumValue);
+						}
+					}
+				}
+			}
+
+			DurianModule[] array = new DurianModule[set.Count];
+			set.CopyTo(array);
+			return array;
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="compilation"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
+		/// </summary>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the enabled Durian modules of.</param>
+		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		public static DurianModule[] GetEnabledModulesAsEnums(CSharpCompilation compilation, DurianModule[]? modules)
+		{
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
+			return GetEnabledModulesAsEnums(compilation.Assembly, attr, modules);
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
+		/// </summary>
+		/// <param name="assembly"><see cref="IAssemblySymbol"/> to get the enabled Durian modules of.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		public static DurianModule[] GetEnabledModulesAsEnums(IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, DurianModule[]? modules)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (enableModuleAttribute is null)
+			{
+				throw new ArgumentNullException(nameof(enableModuleAttribute));
+			}
+
+			if (modules is null || modules.Length == 0)
+			{
+				return Array.Empty<DurianModule>();
+			}
+
+			HashSet<DurianModule> set = new();
+
+			foreach (AttributeData attribute in assembly.GetAttributes())
+			{
+				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enableModuleAttribute) && attribute.TryGetConstructorArgumentValue(0, out int value))
+				{
+					DurianModule enumValue = (DurianModule)value;
+
+					foreach (DurianModule module in modules)
+					{
+						if (module == enumValue)
+						{
+							set.Add(module);
+						}
+					}
+				}
+			}
+
+			DurianModule[] array = new DurianModule[set.Count];
+			set.CopyTo(array);
+			return array;
 		}
 
 		/// <summary>
@@ -1252,6 +1017,275 @@ namespace Durian.Generator
 			return false;
 		}
 
+		/// <summary>
+		/// Checks if the specified <paramref name="module"/> is enabled for the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="module"><see cref="ModuleIdentity"/> representing a Durian module to check.</param>
+		/// <param name="compilation"><see cref="Assembly"/> to check if the <paramref name="module"/> is enabled for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
+		public static bool IsEnabled(ModuleIdentity module, CSharpCompilation compilation)
+		{
+			if (module is null)
+			{
+				throw new ArgumentNullException(nameof(module));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
+			return IsEnabled_Internal(module.Module, compilation.Assembly, attr);
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="module"/> is enabled for the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="module"><see cref="ModuleIdentity"/> representing a Durian module to check.</param>
+		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the <paramref name="module"/> is enabled for.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
+		public static bool IsEnabled(ModuleIdentity module, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
+		{
+			if (module is null)
+			{
+				throw new ArgumentNullException(nameof(module));
+			}
+
+			return IsEnabled(module.Module, assembly, enableModuleAttribute);
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="module"/> is enabled for the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="module"><see cref="DurianModule"/> to check.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the <paramref name="module"/> is enabled for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		public static bool IsEnabled(DurianModule module, CSharpCompilation compilation)
+		{
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			CheckIsValidModuleEnum(module);
+			INamedTypeSymbol symbol = GetEnableAttributeSymbol(compilation);
+			return IsEnabled_Internal(module, compilation.Assembly, symbol);
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="module"/> is enabled for the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="module"><see cref="DurianModule"/> to check.</param>
+		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the <paramref name="module"/> is enabled for.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		public static bool IsEnabled(DurianModule module, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (enableModuleAttribute is null)
+			{
+				throw new ArgumentNullException(nameof(enableModuleAttribute));
+			}
+
+			CheckIsValidModuleEnum(module);
+			return IsEnabled_Internal(module, assembly, enableModuleAttribute);
+		}
+
+		/// <summary>
+		/// Checks if the Durian module with the specified <paramref name="moduleName"/> is enabled for the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="moduleName">Name of the module to check.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the module is enabled for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>. -or- <paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
+		public static bool IsEnabled(string moduleName, CSharpCompilation compilation)
+		{
+			if (moduleName is null)
+			{
+				throw new ArgumentNullException(nameof(moduleName));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			DurianModule module = ParseModule(moduleName);
+			INamedTypeSymbol symbol = GetEnableAttributeSymbol(compilation);
+			return IsEnabled_Internal(module, compilation.Assembly, symbol);
+		}
+
+		/// <summary>
+		/// Checks if the Durian module with the specified <paramref name="moduleName"/> is enabled for the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="moduleName">Name of the module to check.</param>
+		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the module is enabled for.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>.</exception>
+		public static bool IsEnabled(string moduleName, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (enableModuleAttribute is null)
+			{
+				throw new ArgumentNullException(nameof(enableModuleAttribute));
+			}
+
+			DurianModule module = ParseModule(moduleName);
+			return IsEnabled_Internal(module, assembly, enableModuleAttribute);
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the <paramref name="symbol"/> is enabled for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
+		public static bool IsEnabled(INamedTypeSymbol symbol, CSharpCompilation compilation)
+		{
+			return IsEnabled(symbol, compilation, out ModuleIdentity _);
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the <paramref name="symbol"/> is enabled for.</param>
+		/// <param name="module"><see cref="DurianModule"/> this <paramref name="symbol"/> is part of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
+		public static bool IsEnabled(INamedTypeSymbol symbol, CSharpCompilation compilation, out DurianModule module)
+		{
+			bool enabled = IsEnabled(symbol, compilation, out ModuleIdentity? identity);
+			module = enabled ? identity!.Module : DurianModule.None;
+			return enabled;
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to check if the <paramref name="symbol"/> is enabled for.</param>
+		/// <param name="module"><see cref="ModuleIdentity"/> this <paramref name="symbol"/> is part of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="compilation"/> does not contain the <see cref="EnableModuleAttribute"/>.</exception>
+		public static bool IsEnabled(INamedTypeSymbol symbol, CSharpCompilation compilation, [NotNullWhen(true)] out ModuleIdentity? module)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			INamedTypeSymbol attr = GetEnableAttributeSymbol(compilation);
+			return IsEnabled_Internal(symbol, attr, compilation.Assembly.GetAttributes(), out module);
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
+		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the <paramref name="symbol"/> is enabled for.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
+		public static bool IsEnabled(INamedTypeSymbol symbol, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute)
+		{
+			return IsEnabled(symbol, assembly, enableModuleAttribute, out ModuleIdentity _);
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
+		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the <paramref name="symbol"/> is enabled for.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <param name="module"><see cref="DurianModule"/> this <paramref name="symbol"/> is part of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
+		public static bool IsEnabled(INamedTypeSymbol symbol, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, out DurianModule module)
+		{
+			bool enabled = IsEnabled(symbol, assembly, enableModuleAttribute, out ModuleIdentity? identity);
+			module = enabled ? identity!.Module : DurianModule.None;
+			return enabled;
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
+		/// <param name="assembly"><see cref="IAssemblySymbol"/> to check if the <paramref name="symbol"/> is enabled for.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>.</param>
+		/// <param name="module"><see cref="ModuleIdentity"/> this <paramref name="symbol"/> is part of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
+		public static bool IsEnabled(INamedTypeSymbol symbol, IAssemblySymbol assembly, INamedTypeSymbol enableModuleAttribute, [NotNullWhen(true)] out ModuleIdentity? module)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (enableModuleAttribute is null)
+			{
+				throw new ArgumentNullException(nameof(enableModuleAttribute));
+			}
+
+			return IsEnabled_Internal(symbol, enableModuleAttribute, assembly.GetAttributes(), out module);
+		}
+
+		private static INamedTypeSymbol[] GetDisabledDurianTypes_Internal(CSharpCompilation compilation, ModuleIdentity[] modules)
+		{
+#pragma warning disable RS1024 // Compare symbols correctly
+			HashSet<INamedTypeSymbol> symbols = new(SymbolEqualityComparer.Default);
+#pragma warning restore RS1024 // Compare symbols correctly
+
+			DurianModule[] enabledModules = GetEnabledModulesAsEnums(compilation, modules);
+
+			foreach (ModuleIdentity module in modules)
+			{
+				if (IsEnabled_Internal(module, enabledModules))
+				{
+					continue;
+				}
+
+				foreach (TypeIdentity type in module.Types)
+				{
+					INamedTypeSymbol? symbol = compilation.GetTypeByMetadataName(type.FullyQualifiedName);
+
+					if (symbol is not null)
+					{
+						symbols.Add(symbol);
+					}
+				}
+			}
+
+			INamedTypeSymbol[] array = new INamedTypeSymbol[symbols.Count];
+			symbols.CopyTo(array);
+			return array;
+		}
+
 		private static INamedTypeSymbol[] GetDurianTypes_Internal(CSharpCompilation compilation, ModuleIdentity[] modules)
 		{
 #pragma warning disable RS1024 // Compare symbols correctly
@@ -1276,6 +1310,16 @@ namespace Durian.Generator
 			return array;
 		}
 
+		private static INamedTypeSymbol GetEnableAttributeSymbol(CSharpCompilation compilation)
+		{
+			if (compilation.GetTypeByMetadataName(typeof(EnableModuleAttribute).ToString()) is not INamedTypeSymbol symbol)
+			{
+				throw new ArgumentException($"{nameof(compilation)} does not contain the {nameof(EnableModuleAttribute)}!");
+			}
+
+			return symbol;
+		}
+
 		private static INamedTypeSymbol[] GetEnabledDurianTypes_Internal(CSharpCompilation compilation, ModuleIdentity[] modules)
 		{
 #pragma warning disable RS1024 // Compare symbols correctly
@@ -1287,37 +1331,6 @@ namespace Durian.Generator
 			foreach (ModuleIdentity module in modules)
 			{
 				if (!IsEnabled_Internal(module, enabledModules))
-				{
-					continue;
-				}
-
-				foreach (TypeIdentity type in module.Types)
-				{
-					INamedTypeSymbol? symbol = compilation.GetTypeByMetadataName(type.FullyQualifiedName);
-
-					if (symbol is not null)
-					{
-						symbols.Add(symbol);
-					}
-				}
-			}
-
-			INamedTypeSymbol[] array = new INamedTypeSymbol[symbols.Count];
-			symbols.CopyTo(array);
-			return array;
-		}
-
-		private static INamedTypeSymbol[] GetDisabledDurianTypes_Internal(CSharpCompilation compilation, ModuleIdentity[] modules)
-		{
-#pragma warning disable RS1024 // Compare symbols correctly
-			HashSet<INamedTypeSymbol> symbols = new(SymbolEqualityComparer.Default);
-#pragma warning restore RS1024 // Compare symbols correctly
-
-			DurianModule[] enabledModules = GetEnabledModulesAsEnums(compilation, modules);
-
-			foreach (ModuleIdentity module in modules)
-			{
-				if (IsEnabled_Internal(module, enabledModules))
 				{
 					continue;
 				}
@@ -1395,16 +1408,6 @@ namespace Durian.Generator
 			}
 
 			return false;
-		}
-
-		private static INamedTypeSymbol GetEnableAttributeSymbol(CSharpCompilation compilation)
-		{
-			if (compilation.GetTypeByMetadataName(typeof(EnableModuleAttribute).ToString()) is not INamedTypeSymbol symbol)
-			{
-				throw new ArgumentException($"{nameof(compilation)} does not contain the {nameof(EnableModuleAttribute)}!");
-			}
-
-			return symbol;
 		}
 	}
 }

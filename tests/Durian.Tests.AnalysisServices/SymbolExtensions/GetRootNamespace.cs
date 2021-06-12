@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
@@ -9,16 +12,11 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class GetRootNamespace : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		public void ReturnsGlobalNamespace_When_IsInNamespace_And_IncludeGlobalIsTrue()
 		{
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetRootNamespace());
-		}
-
-		[Fact]
-		public void ReturnsNull_When_IsNotInNamespace()
-		{
-			INamedTypeSymbol type = GetSymbol("class Test { }");
-			Assert.True(type.GetRootNamespace() is null);
+			INamedTypeSymbol type = GetSymbol("namespace N1.N2 { class Test { } }");
+			INamespaceSymbol? n = type.GetRootNamespace(true);
+			Assert.True(n is not null && SymbolEqualityComparer.Default.Equals(n, Compilation.CurrentCompilation.Assembly.GlobalNamespace));
 		}
 
 		[Fact]
@@ -30,11 +28,10 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void ReturnsRootNamespace_When_IsInRootNamespace()
+		public void ReturnsNull_When_IsNotInNamespace()
 		{
-			INamedTypeSymbol type = GetSymbol("namespace N1 { class Test { } }");
-			INamespaceSymbol? n = type.GetRootNamespace();
-			Assert.True(n is not null && n.Name == "N1");
+			INamedTypeSymbol type = GetSymbol("class Test { }");
+			Assert.True(type.GetRootNamespace() is null);
 		}
 
 		[Fact]
@@ -46,11 +43,17 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void ReturnsGlobalNamespace_When_IsInNamespace_And_IncludeGlobalIsTrue()
+		public void ReturnsRootNamespace_When_IsInRootNamespace()
 		{
-			INamedTypeSymbol type = GetSymbol("namespace N1.N2 { class Test { } }");
-			INamespaceSymbol? n = type.GetRootNamespace(true);
-			Assert.True(n is not null && SymbolEqualityComparer.Default.Equals(n, Compilation.CurrentCompilation.Assembly.GlobalNamespace));
+			INamedTypeSymbol type = GetSymbol("namespace N1 { class Test { } }");
+			INamespaceSymbol? n = type.GetRootNamespace();
+			Assert.True(n is not null && n.Name == "N1");
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetRootNamespace());
 		}
 
 		private INamedTypeSymbol GetSymbol(string source)

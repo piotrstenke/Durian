@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -39,30 +42,6 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Creates a new instance of <see cref="ISourceGenerator"/> for the current test.
-		/// </summary>
-		protected abstract ISourceGenerator CreateGenerator();
-
-		/// <summary>
-		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
-		/// </summary>
-		/// <param name="input">Input for the generator.</param>
-		public virtual SingletonGeneratorTestResult RunGenerator(string? input)
-		{
-			return RunGenerator(input, Generator);
-		}
-
-		/// <summary>
-		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
-		/// </summary>
-		/// <param name="input">Input for the generator.</param>
-		/// <param name="index">Index of the source in the generator's output.</param>
-		public virtual SingletonGeneratorTestResult RunGenerator(string? input, int index)
-		{
-			return RunGenerator(input, Generator, index);
-		}
-
-		/// <summary>
 		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <paramref name="sourceGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
@@ -94,5 +73,29 @@ namespace Durian.Tests
 				(CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
 					=> new SingletonGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation, index), input);
 		}
+
+		/// <summary>
+		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+		/// </summary>
+		/// <param name="input">Input for the generator.</param>
+		public virtual SingletonGeneratorTestResult RunGenerator(string? input)
+		{
+			return RunGenerator(input, Generator);
+		}
+
+		/// <summary>
+		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+		/// </summary>
+		/// <param name="input">Input for the generator.</param>
+		/// <param name="index">Index of the source in the generator's output.</param>
+		public virtual SingletonGeneratorTestResult RunGenerator(string? input, int index)
+		{
+			return RunGenerator(input, Generator, index);
+		}
+
+		/// <summary>
+		/// Creates a new instance of <see cref="ISourceGenerator"/> for the current test.
+		/// </summary>
+		protected abstract ISourceGenerator CreateGenerator();
 	}
 }

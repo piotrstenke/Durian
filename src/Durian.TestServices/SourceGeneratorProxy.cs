@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Tests
@@ -11,6 +14,16 @@ namespace Durian.Tests
 		private GeneratorInitializationContext _initContext;
 
 		/// <summary>
+		/// Event invoked when the <see cref="Execute"/> method is called.
+		/// </summary>
+		public event GeneratorExecute? OnExecute;
+
+		/// <summary>
+		/// Event invoked when the <see cref="Initialize"/> method is called.
+		/// </summary>
+		public event GeneratorInitialize? OnInitialize;
+
+		/// <summary>
 		/// Returns a readonly reference to the last <see cref="GeneratorExecutionContext"/>.
 		/// </summary>
 		public ref readonly GeneratorExecutionContext ExecutionContext => ref _exeContext;
@@ -21,31 +34,10 @@ namespace Durian.Tests
 		public ref readonly GeneratorInitializationContext InitializationContext => ref _initContext;
 
 		/// <summary>
-		/// Event invoked when the <see cref="Initialize"/> method is called.
-		/// </summary>
-		public event GeneratorInitialize? OnInitialize;
-
-		/// <summary>
-		/// Event invoked when the <see cref="Execute"/> method is called.
-		/// </summary>
-		public event GeneratorExecute? OnExecute;
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="SourceGeneratorProxy"/> class.
 		/// </summary>
 		public SourceGeneratorProxy()
 		{
-		}
-
-		/// <summary>
-		/// Initializes the <see cref="SourceGeneratorProxy"/>.
-		/// </summary>
-		/// <param name="context"><see cref="GeneratorInitializationContext"/> to be used when initializing the <see cref="SourceGeneratorProxy"/>.</param>
-		public void Initialize(GeneratorInitializationContext context)
-		{
-			_initContext = context;
-
-			OnInitialize?.Invoke(_initContext);
 		}
 
 		/// <summary>
@@ -57,6 +49,17 @@ namespace Durian.Tests
 			_exeContext = context;
 
 			OnExecute?.Invoke(in _exeContext);
+		}
+
+		/// <summary>
+		/// Initializes the <see cref="SourceGeneratorProxy"/>.
+		/// </summary>
+		/// <param name="context"><see cref="GeneratorInitializationContext"/> to be used when initializing the <see cref="SourceGeneratorProxy"/>.</param>
+		public void Initialize(GeneratorInitializationContext context)
+		{
+			_initContext = context;
+
+			OnInitialize?.Invoke(_initContext);
 		}
 
 		/// <summary>

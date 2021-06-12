@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -13,27 +16,29 @@ namespace Durian.Generator.DefaultParam
 	public sealed class DelegateDeclarationBuilder : IDefaultParamDeclarationBuilder
 	{
 		private HashSet<int>? _newModifierIndexes;
-		private int _numOriginalTypeParameters;
-		private int _numOriginalConstraints;
 		private int _numNonDefaultParam;
-
-		/// <summary>
-		/// Original <see cref="DelegateDeclarationSyntax"/>.
-		/// </summary>
-		public DelegateDeclarationSyntax OriginalDeclaration { get; private set; }
+		private int _numOriginalConstraints;
+		private int _numOriginalTypeParameters;
 
 		/// <summary>
 		/// <see cref="OriginalDeclaration"/> after modification.
 		/// </summary>
 		public DelegateDeclarationSyntax CurrentDeclaration { get; private set; }
 
+		CSharpSyntaxNode IDefaultParamDeclarationBuilder.CurrentNode => CurrentDeclaration;
+
+		/// <summary>
+		/// Original <see cref="DelegateDeclarationSyntax"/>.
+		/// </summary>
+		public DelegateDeclarationSyntax OriginalDeclaration { get; private set; }
+
+		CSharpSyntaxNode IDefaultParamDeclarationBuilder.OriginalNode => OriginalDeclaration;
+
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="OriginalDeclaration"/>.
 		/// </summary>
 		public SemanticModel SemanticModel { get; private set; }
 
-		CSharpSyntaxNode IDefaultParamDeclarationBuilder.CurrentNode => CurrentDeclaration;
-		CSharpSyntaxNode IDefaultParamDeclarationBuilder.OriginalNode => OriginalDeclaration;
 		bool IDefaultParamDeclarationBuilder.VisitDeclarationBody => true;
 
 		/// <summary>
@@ -56,12 +61,24 @@ namespace Durian.Generator.DefaultParam
 			SetData(data, cancellationToken);
 		}
 
-		/// <summary>
-		/// Returns a <see cref="SyntaxList{TNode}"/> of the <see cref="OriginalDeclaration"/>'s <see cref="TypeParameterConstraintClauseSyntax"/>es.
-		/// </summary>
-		public SyntaxList<TypeParameterConstraintClauseSyntax> GetOriginalConstraintClauses()
+		/// <inheritdoc/>
+		public void AcceptTypeParameterReplacer(TypeParameterReplacer replacer)
 		{
-			return OriginalDeclaration.ConstraintClauses;
+			CurrentDeclaration = (DelegateDeclarationSyntax)replacer.Visit(CurrentDeclaration);
+		}
+
+		/// <summary>
+		/// Sets the specified <paramref name="declaration"/> as the <see cref="CurrentDeclaration"/> without changing the <see cref="OriginalDeclaration"/>.
+		/// </summary>
+		/// <param name="declaration"><see cref="DelegateDeclarationSyntax"/> to set as <see cref="CurrentDeclaration"/>.</param>
+		public void Emplace(DelegateDeclarationSyntax declaration)
+		{
+			CurrentDeclaration = declaration;
+		}
+
+		void IDefaultParamDeclarationBuilder.Emplace(CSharpSyntaxNode node)
+		{
+			CurrentDeclaration = (DelegateDeclarationSyntax)node;
 		}
 
 		/// <summary>
@@ -71,6 +88,14 @@ namespace Durian.Generator.DefaultParam
 		public TypeParameterConstraintClauseSyntax GetCurrentConstraintClause(int index)
 		{
 			return CurrentDeclaration.ConstraintClauses[index];
+		}
+
+		/// <summary>
+		/// Returns a <see cref="SyntaxList{TNode}"/> of the <see cref="OriginalDeclaration"/>'s <see cref="TypeParameterConstraintClauseSyntax"/>es.
+		/// </summary>
+		public SyntaxList<TypeParameterConstraintClauseSyntax> GetOriginalConstraintClauses()
+		{
+			return OriginalDeclaration.ConstraintClauses;
 		}
 
 		/// <summary>
@@ -174,26 +199,6 @@ namespace Durian.Generator.DefaultParam
 			{
 				CurrentDeclaration = CurrentDeclaration.WithModifiers(modifiers);
 			}
-		}
-
-		/// <inheritdoc/>
-		public void AcceptTypeParameterReplacer(TypeParameterReplacer replacer)
-		{
-			CurrentDeclaration = (DelegateDeclarationSyntax)replacer.Visit(CurrentDeclaration);
-		}
-
-		/// <summary>
-		/// Sets the specified <paramref name="declaration"/> as the <see cref="CurrentDeclaration"/> without changing the <see cref="OriginalDeclaration"/>.
-		/// </summary>
-		/// <param name="declaration"><see cref="DelegateDeclarationSyntax"/> to set as <see cref="CurrentDeclaration"/>.</param>
-		public void Emplace(DelegateDeclarationSyntax declaration)
-		{
-			CurrentDeclaration = declaration;
-		}
-
-		void IDefaultParamDeclarationBuilder.Emplace(CSharpSyntaxNode node)
-		{
-			CurrentDeclaration = (DelegateDeclarationSyntax)node;
 		}
 	}
 }

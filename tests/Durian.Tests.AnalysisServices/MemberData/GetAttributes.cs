@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Xunit;
@@ -8,22 +11,6 @@ namespace Durian.Tests.AnalysisServices.MemberData
 	{
 		public GetAttributes() : base(Utilities.TestAttribute, Utilities.OtherAttribute)
 		{
-
-		}
-
-		[Fact]
-		public void ReturnsEmpty_When_HasNoAttributes()
-		{
-			Generator.Data.MemberData data = GetMember("class Test { }");
-			Assert.Empty(data.GetAttributes());
-		}
-
-		[Fact]
-		public void CanReturnSingleAttribute()
-		{
-			Generator.Data.MemberData data = GetMember("[Test]class Test { }");
-			AttributeData[] attributes = data.GetAttributes().ToArray();
-			Assert.True(attributes.Length == 1 && SymbolEqualityComparer.Default.Equals(attributes[0].AttributeClass, Compilation.CurrentCompilation.GetTypeByMetadataName("TestAttribute")!));
 		}
 
 		[Fact]
@@ -37,6 +24,21 @@ namespace Durian.Tests.AnalysisServices.MemberData
 				attributes.Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, Compilation.CurrentCompilation.GetTypeByMetadataName("TestAttribute")!)) &&
 				attributes.Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, Compilation.CurrentCompilation.GetTypeByMetadataName("OtherAttribute")!))
 			);
+		}
+
+		[Fact]
+		public void CanReturnSingleAttribute()
+		{
+			Generator.Data.MemberData data = GetMember("[Test]class Test { }");
+			AttributeData[] attributes = data.GetAttributes().ToArray();
+			Assert.True(attributes.Length == 1 && SymbolEqualityComparer.Default.Equals(attributes[0].AttributeClass, Compilation.CurrentCompilation.GetTypeByMetadataName("TestAttribute")!));
+		}
+
+		[Fact]
+		public void ReturnsEmpty_When_HasNoAttributes()
+		{
+			Generator.Data.MemberData data = GetMember("class Test { }");
+			Assert.Empty(data.GetAttributes());
 		}
 	}
 }

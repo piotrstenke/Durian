@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -9,6 +12,12 @@ namespace Durian.Generator.Extensions
 	/// </summary>
 	public static class DiagnosticReceiverExtensions
 	{
+		/// <inheritdoc cref="ReportDiagnostic(IDiagnosticReceiver, DiagnosticDescriptor, ISymbol?, object[])"/>
+		public static void ReportDiagnostic(this IDiagnosticReceiver diagnosticReceiver, DiagnosticDescriptor descriptor)
+		{
+			diagnosticReceiver.ReportDiagnostic(descriptor, Location.None);
+		}
+
 		/// <inheritdoc cref="ReportDiagnostic(IDiagnosticReceiver, DiagnosticDescriptor, ISymbol?, object[])"/>
 		public static void ReportDiagnostic(this IDiagnosticReceiver diagnosticReceiver, DiagnosticDescriptor descriptor, ISymbol? symbol)
 		{

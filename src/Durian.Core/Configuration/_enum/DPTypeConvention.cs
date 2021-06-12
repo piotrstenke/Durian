@@ -1,4 +1,7 @@
-﻿namespace Durian.Configuration
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+namespace Durian.Configuration
 {
 	/// <summary>
 	/// Determines how a <c>DefaultParam</c> type is generated.

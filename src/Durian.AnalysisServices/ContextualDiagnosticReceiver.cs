@@ -1,13 +1,13 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Generator
 {
-	/// <summary>
-	/// Provides a mechanism for reporting diagnostic messages to a context.
-	/// </summary>
-	/// <typeparam name="T">Type of context this <see cref="ContextualDiagnosticReceiver{T}"/> is compliant with.</typeparam>
-	public sealed class ContextualDiagnosticReceiver<T> : IDirectDiagnosticReceiver where T : struct
+	/// <inheritdoc cref="IContextualDiagnosticReceiver{T}"/>
+	public sealed class ContextualDiagnosticReceiver<T> : IContextualDiagnosticReceiver<T> where T : struct
 	{
 		private readonly ContextualDirectReportAction<T> _action;
 		private T _context;
@@ -52,19 +52,7 @@ namespace Durian.Generator
 			return ref _context;
 		}
 
-		/// <summary>
-		/// Sets the target context.
-		/// </summary>
-		/// <param name="context">Context to set as a target if this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
-		public void SetContext(in T context)
-		{
-			_contextIsSet = true;
-			_context = context;
-		}
-
-		/// <summary>
-		/// Resets the internal context to <see langword="default"/>.
-		/// </summary>
+		/// <inheritdoc/>
 		public void RemoveContext()
 		{
 			_contextIsSet = false;
@@ -85,6 +73,16 @@ namespace Durian.Generator
 		{
 			CheckContext();
 			_action.Invoke(_context, diagnostic);
+		}
+
+		/// <summary>
+		/// Sets the target context.
+		/// </summary>
+		/// <param name="context">Context to set as a target of this <see cref="ContextualDiagnosticReceiver{T}"/>.</param>
+		public void SetContext(in T context)
+		{
+			_contextIsSet = true;
+			_context = context;
 		}
 
 		private void CheckContext()

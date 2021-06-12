@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Generic;
 using Durian.Generator.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -23,7 +26,8 @@ namespace Durian.Generator
 		/// <summary>
 		/// Decides, which <see cref="CSharpSyntaxNode"/>s collected by the <see cref="IDurianSourceGenerator.SyntaxReceiver"/> of the <see cref="Generator"/> are valid and returns a collection of <see cref="IMemberData"/> based on those <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
-		IMemberData[] Filtrate();
+		/// <param name="context"><see cref="GeneratorExecutionContext"/> that is used when filtrating the <see cref="IMemberData"/>s.</param>
+		IEnumerable<IMemberData> Filtrate(in GeneratorExecutionContext context);
 
 		/// <summary>
 		/// Returns an <see cref="IEnumerator{T}"/> that allows to manually iterate through the filtrated <see cref="IMemberData"/>s.

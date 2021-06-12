@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Extensions;
 using Xunit;
@@ -7,21 +10,39 @@ namespace Durian.Tests.AnalysisServices.MemberDataExtensions
 	public sealed class GetParentTypesString : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_MemberIsNull()
+		public void IsSuccess_When_HasMultipleParentTypes()
 		{
-			Assert.Throws<ArgumentNullException>(() => GetClass(null).GetParentTypesString());
+			Assert.True(GetClass("class Parent { class Child1 { class Child2 { } } }", 2).GetParentTypesString() == "Parent.Child1.Child2");
+		}
+
+		[Fact]
+		public void IsSuccess_When_IsGeneric()
+		{
+			Assert.True(GetClass("class Parent { class Child<T> { } }", 1).GetParentTypesString() == "Parent.Child<T>");
+		}
+
+		[Fact]
+		public void IsSuccess_When_IsGeneric_And_HasMultipleTypeParameters()
+		{
+			Assert.True(GetClass("class Parent { class Child<T, U> { } }", 1).GetParentTypesString() == "Parent.Child<T, U>");
+		}
+
+		[Fact]
+		public void IsSuccess_When_IsGeneric_And_ParentIsGeneric()
+		{
+			Assert.True(GetClass("class Parent<T> { class Child<U> { } }", 1).GetParentTypesString() == "Parent<T>.Child<U>");
+		}
+
+		[Fact]
+		public void IsSuccess_When_ParentIsGeneric()
+		{
+			Assert.True(GetClass("class Parent<T> { class Child { } }", 1).GetParentTypesString() == "Parent<T>.Child");
 		}
 
 		[Fact]
 		public void ReturnsMemberName_When_HasNoParentTypes()
 		{
 			Assert.True(GetClass("class Test { }").GetParentTypesString() == "Test");
-		}
-
-		[Fact]
-		public void ReturnsNameWithParameters_When_IsMethod_And_IncludeParametersIsTrue()
-		{
-			Assert.True(GetMethod("class Test { void Method(int a) { } }").GetParentTypesString(true) == "Test.Method(int)");
 		}
 
 		[Fact]
@@ -37,33 +58,15 @@ namespace Durian.Tests.AnalysisServices.MemberDataExtensions
 		}
 
 		[Fact]
-		public void IsSuccess_When_HasMultipleParentTypes()
+		public void ReturnsNameWithParameters_When_IsMethod_And_IncludeParametersIsTrue()
 		{
-			Assert.True(GetClass("class Parent { class Child1 { class Child2 { } } }", 2).GetParentTypesString() == "Parent.Child1.Child2");
+			Assert.True(GetMethod("class Test { void Method(int a) { } }").GetParentTypesString(true) == "Test.Method(int)");
 		}
 
 		[Fact]
-		public void IsSuccess_When_ParentIsGeneric()
+		public void ThrowsArgumentNullException_When_MemberIsNull()
 		{
-			Assert.True(GetClass("class Parent<T> { class Child { } }", 1).GetParentTypesString() == "Parent<T>.Child");
-		}
-
-		[Fact]
-		public void IsSuccess_When_IsGeneric()
-		{
-			Assert.True(GetClass("class Parent { class Child<T> { } }", 1).GetParentTypesString() == "Parent.Child<T>");
-		}
-
-		[Fact]
-		public void IsSuccess_When_IsGeneric_And_ParentIsGeneric()
-		{
-			Assert.True(GetClass("class Parent<T> { class Child<U> { } }", 1).GetParentTypesString() == "Parent<T>.Child<U>");
-		}
-
-		[Fact]
-		public void IsSuccess_When_IsGeneric_And_HasMultipleTypeParameters()
-		{
-			Assert.True(GetClass("class Parent { class Child<T, U> { } }", 1).GetParentTypesString() == "Parent.Child<T, U>");
+			Assert.Throws<ArgumentNullException>(() => GetClass(null).GetParentTypesString());
 		}
 	}
 }

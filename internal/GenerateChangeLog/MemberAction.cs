@@ -1,4 +1,7 @@
-﻿internal enum MemberAction
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+internal enum MemberAction
 {
 	None,
 	Add,

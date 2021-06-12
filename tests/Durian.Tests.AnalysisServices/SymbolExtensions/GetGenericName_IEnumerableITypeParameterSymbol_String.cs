@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using Durian.Generator.Extensions;
@@ -10,9 +13,21 @@ namespace Durian.Tests.AnalysisServices.AnalysisUtilities
 	public sealed class GetGenericName_IEnumerableITypeParameterSymbol_String
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_TypeParametersIsNull()
+		public void CanReturnGenericNameWithMultipleTypeParameters()
 		{
-			Assert.Throws<ArgumentNullException>(() => ((IEnumerable<ITypeParameterSymbol>)null!).GetGenericName("Test"));
+			Mock<ITypeParameterSymbol> mock = new();
+			mock.Setup(p => p.Name).Returns("U");
+
+			ITypeParameterSymbol parameter1 = GetValidTypeParameter();
+			ITypeParameterSymbol parameter2 = mock.Object;
+
+			Assert.True(new ITypeParameterSymbol[] { parameter1, parameter2 }.GetGenericName("Test") == "Test<T, U>");
+		}
+
+		[Fact]
+		public void CanReturnGenericNameWithOneTypeParameter()
+		{
+			Assert.True(new ITypeParameterSymbol[] { GetValidTypeParameter() }.GetGenericName("Test") == "Test<T>");
 		}
 
 		[Fact]
@@ -29,21 +44,9 @@ namespace Durian.Tests.AnalysisServices.AnalysisUtilities
 		}
 
 		[Fact]
-		public void CanReturnGenericNameWithOneTypeParameter()
+		public void ThrowsArgumentNullException_When_TypeParametersIsNull()
 		{
-			Assert.True(new ITypeParameterSymbol[] { GetValidTypeParameter() }.GetGenericName("Test") == "Test<T>");
-		}
-
-		[Fact]
-		public void CanReturnGenericNameWithMultipleTypeParameters()
-		{
-			Mock<ITypeParameterSymbol> mock = new();
-			mock.Setup(p => p.Name).Returns("U");
-
-			ITypeParameterSymbol parameter1 = GetValidTypeParameter();
-			ITypeParameterSymbol parameter2 = mock.Object;
-
-			Assert.True(new ITypeParameterSymbol[] { parameter1, parameter2 }.GetGenericName("Test") == "Test<T, U>");
+			Assert.Throws<ArgumentNullException>(() => ((IEnumerable<ITypeParameterSymbol>)null!).GetGenericName("Test"));
 		}
 
 		private static ITypeParameterSymbol GetValidTypeParameter()

@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Linq;
 using Durian.Generator.Data;
@@ -12,53 +15,16 @@ namespace Durian.Tests.AnalysisServices.SemanticModelExtensions
 		private INamespaceSymbol GlobalNamespace => Compilation.CurrentCompilation.Assembly.GlobalNamespace;
 
 		[Fact]
-		public void ThrowsArgumentNullException_When_SemanticModelIsNull()
+		public void IsSuccess_When_IsInsideType()
 		{
-			IMemberData member = GetClass("class Test { }");
-			SemanticModel? semanticModel = null;
-			Assert.Throws<ArgumentNullException>(() => semanticModel!.GetContainingNamespaces(member.Declaration, Compilation));
+			INamespaceSymbol[] namespaces = Execute("namespace N1.N2 { class Parent { class Child { } } }", false, 1);
+			Assert.True(namespaces.Length == 2 && namespaces.Any(n => n.Name == "N1") && namespaces.Any(n => n.Name == "N2"));
 		}
 
 		[Fact]
-		public void ThrowsArgumentNullException_When_SyntaxNodeIsNull()
+		public void ReturnsEmpty_When_IsInGlobalNamespace_And_IncludeGlobalIsFalse()
 		{
-			IMemberData member = GetClass("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(null!, Compilation));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationDataIsNull()
-		{
-			IMemberData member = GetClass("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, compilationData: null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			IMemberData member = GetClass("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, compilation: null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_AssemblySymbolIsNull()
-		{
-			IMemberData member = GetClass("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, assembly: null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_GlobalNamespaceIsNull()
-		{
-			IMemberData member = GetClass("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, globalNamespace: null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentException_When_GlobalNamespaceIsNotActuallyGlobal()
-		{
-			IMemberData member = GetClass("namespace N { class Test { } }");
-			Assert.Throws<ArgumentException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, member.Symbol.ContainingNamespace));
+			Assert.True(Execute("class Test { }").Length == 0);
 		}
 
 		[Fact]
@@ -72,9 +38,29 @@ namespace Durian.Tests.AnalysisServices.SemanticModelExtensions
 		}
 
 		[Fact]
-		public void ReturnsEmpty_When_IsInGlobalNamespace_And_IncludeGlobalIsFalse()
+		public void ReturnsMultipleNamespaces_When_IsInNestedNamespace()
 		{
-			Assert.True(Execute("class Test { }").Length == 0);
+			INamespaceSymbol[] namespaces = Execute("namespace N1.N2 { class Test { } }");
+			Assert.True(namespaces.Length == 2 && namespaces.Any(n => n.Name == "N1") && namespaces.Any(n => n.Name == "N2"));
+		}
+
+		[Fact]
+		public void ReturnsNamespacesFromLeftToRight()
+		{
+			INamespaceSymbol[] namespaces = Execute("namespace N1.N2 { class Test { } }");
+			Assert.True(namespaces.Length == 2 && namespaces[0].Name == "N1" && namespaces[1].Name == "N2");
+		}
+
+		[Fact]
+		public void ReturnsNamespacesFromLeftToRightAndGlobalNamespaceIsFirst_When_IncludeGlobalIsTrue()
+		{
+			INamespaceSymbol[] namespaces = Execute("namespace N1.N2 { class Test { } }", true);
+			Assert.True(
+				namespaces.Length == 3 &&
+				SymbolEqualityComparer.Default.Equals(namespaces[0], GlobalNamespace) &&
+				namespaces[1].Name == "N1" &&
+				namespaces[2].Name == "N2"
+			);
 		}
 
 		[Fact]
@@ -96,36 +82,53 @@ namespace Durian.Tests.AnalysisServices.SemanticModelExtensions
 		}
 
 		[Fact]
-		public void ReturnsMultipleNamespaces_When_IsInNestedNamespace()
+		public void ThrowsArgumentException_When_GlobalNamespaceIsNotActuallyGlobal()
 		{
-			INamespaceSymbol[] namespaces = Execute("namespace N1.N2 { class Test { } }");
-			Assert.True(namespaces.Length == 2 && namespaces.Any(n => n.Name == "N1") && namespaces.Any(n => n.Name == "N2"));
+			IMemberData member = GetClass("namespace N { class Test { } }");
+			Assert.Throws<ArgumentException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, member.Symbol.ContainingNamespace));
 		}
 
 		[Fact]
-		public void IsSuccess_When_IsInsideType()
+		public void ThrowsArgumentNullException_When_AssemblySymbolIsNull()
 		{
-			INamespaceSymbol[] namespaces = Execute("namespace N1.N2 { class Parent { class Child { } } }", false, 1);
-			Assert.True(namespaces.Length == 2 && namespaces.Any(n => n.Name == "N1") && namespaces.Any(n => n.Name == "N2"));
+			IMemberData member = GetClass("class Test { }");
+			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, assembly: null!));
 		}
 
 		[Fact]
-		public void ReturnsNamespacesFromLeftToRight()
+		public void ThrowsArgumentNullException_When_CompilationDataIsNull()
 		{
-			INamespaceSymbol[] namespaces = Execute("namespace N1.N2 { class Test { } }");
-			Assert.True(namespaces.Length == 2 && namespaces[0].Name == "N1" && namespaces[1].Name == "N2");
+			IMemberData member = GetClass("class Test { }");
+			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, compilationData: null!));
 		}
 
 		[Fact]
-		public void ReturnsNamespacesFromLeftToRightAndGlobalNamespaceIsFirst_When_IncludeGlobalIsTrue()
+		public void ThrowsArgumentNullException_When_CompilationIsNull()
 		{
-			INamespaceSymbol[] namespaces = Execute("namespace N1.N2 { class Test { } }", true);
-			Assert.True(
-				namespaces.Length == 3 &&
-				SymbolEqualityComparer.Default.Equals(namespaces[0], GlobalNamespace) &&
-				namespaces[1].Name == "N1" &&
-				namespaces[2].Name == "N2"
-			);
+			IMemberData member = GetClass("class Test { }");
+			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, compilation: null!));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_GlobalNamespaceIsNull()
+		{
+			IMemberData member = GetClass("class Test { }");
+			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, globalNamespace: null!));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SemanticModelIsNull()
+		{
+			IMemberData member = GetClass("class Test { }");
+			SemanticModel? semanticModel = null;
+			Assert.Throws<ArgumentNullException>(() => semanticModel!.GetContainingNamespaces(member.Declaration, Compilation));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SyntaxNodeIsNull()
+		{
+			IMemberData member = GetClass("class Test { }");
+			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(null!, Compilation));
 		}
 
 		private INamespaceSymbol[] Execute(string src, bool includeGlobal = false, int index = 0)

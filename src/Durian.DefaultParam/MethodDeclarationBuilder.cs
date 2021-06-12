@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -13,34 +16,36 @@ namespace Durian.Generator.DefaultParam
 	/// </summary>
 	public sealed class MethodDeclarationBuilder : IDefaultParamDeclarationBuilder
 	{
-		private IMethodSymbol _symbol;
-		private HashSet<int>? _newModifierIndexes;
-		private GenericNameSyntax? _callMethodSyntax;
-		private ArgumentListSyntax? _callArguments;
 		private readonly Queue<IdentifierNameSyntax> _callTypeArguments;
+		private bool _applyReturnSyntax;
+		private ArgumentListSyntax? _callArguments;
+		private GenericNameSyntax? _callMethodSyntax;
+		private int _indentLevel;
+		private HashSet<int>? _newModifierIndexes;
+		private int _numNonDefaultParam;
 		private int _numOriginalConstraints;
 		private int _numOriginalTypeParameters;
-		private int _numNonDefaultParam;
-		private int _indentLevel;
-		private bool _applyReturnSyntax;
-
-		/// <summary>
-		/// Original <see cref="MethodDeclarationSyntax"/>.
-		/// </summary>
-		public MethodDeclarationSyntax OriginalDeclaration { get; private set; }
+		private IMethodSymbol _symbol;
 
 		/// <summary>
 		/// <see cref="OriginalDeclaration"/> after modification.
 		/// </summary>
 		public MethodDeclarationSyntax CurrentDeclaration { get; private set; }
 
+		CSharpSyntaxNode IDefaultParamDeclarationBuilder.CurrentNode => CurrentDeclaration;
+
+		/// <summary>
+		/// Original <see cref="MethodDeclarationSyntax"/>.
+		/// </summary>
+		public MethodDeclarationSyntax OriginalDeclaration { get; private set; }
+
+		CSharpSyntaxNode IDefaultParamDeclarationBuilder.OriginalNode => OriginalDeclaration;
+
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="OriginalDeclaration"/>.
 		/// </summary>
 		public SemanticModel SemanticModel { get; private set; }
 
-		CSharpSyntaxNode IDefaultParamDeclarationBuilder.CurrentNode => CurrentDeclaration;
-		CSharpSyntaxNode IDefaultParamDeclarationBuilder.OriginalNode => OriginalDeclaration;
 		bool IDefaultParamDeclarationBuilder.VisitDeclarationBody => _callMethodSyntax is null;
 
 		/// <summary>
@@ -66,12 +71,29 @@ namespace Durian.Generator.DefaultParam
 			SetData(data, cancellationToken);
 		}
 
-		/// <summary>
-		/// Returns a <see cref="SyntaxList{TNode}"/> of the <see cref="OriginalDeclaration"/>'s <see cref="TypeParameterConstraintClauseSyntax"/>es.
-		/// </summary>
-		public SyntaxList<TypeParameterConstraintClauseSyntax> GetOriginalConstraintClauses()
+		/// <inheritdoc/>
+		public void AcceptTypeParameterReplacer(TypeParameterReplacer replacer)
 		{
-			return OriginalDeclaration.ConstraintClauses;
+			if (_callMethodSyntax is not null)
+			{
+				_callTypeArguments.Enqueue(replacer.Replacement!);
+			}
+
+			CurrentDeclaration = (MethodDeclarationSyntax)replacer.Visit(CurrentDeclaration);
+		}
+
+		/// <summary>
+		/// Sets the specified <paramref name="declaration"/> as the <see cref="CurrentDeclaration"/> without changing the <see cref="OriginalDeclaration"/>.
+		/// </summary>
+		/// <param name="declaration"><see cref="MethodDeclarationSyntax"/> to set as <see cref="CurrentDeclaration"/>.</param>
+		public void Emplace(MethodDeclarationSyntax declaration)
+		{
+			CurrentDeclaration = declaration;
+		}
+
+		void IDefaultParamDeclarationBuilder.Emplace(CSharpSyntaxNode node)
+		{
+			CurrentDeclaration = (MethodDeclarationSyntax)node;
 		}
 
 		/// <summary>
@@ -81,6 +103,14 @@ namespace Durian.Generator.DefaultParam
 		public TypeParameterConstraintClauseSyntax GetCurrentConstraintClause(int index)
 		{
 			return CurrentDeclaration.ConstraintClauses[index];
+		}
+
+		/// <summary>
+		/// Returns a <see cref="SyntaxList{TNode}"/> of the <see cref="OriginalDeclaration"/>'s <see cref="TypeParameterConstraintClauseSyntax"/>es.
+		/// </summary>
+		public SyntaxList<TypeParameterConstraintClauseSyntax> GetOriginalConstraintClauses()
+		{
+			return OriginalDeclaration.ConstraintClauses;
 		}
 
 		/// <summary>
@@ -181,29 +211,30 @@ namespace Durian.Generator.DefaultParam
 			}
 		}
 
-		/// <inheritdoc/>
-		public void AcceptTypeParameterReplacer(TypeParameterReplacer replacer)
+		private void CheckDirectCall(int count)
 		{
 			if (_callMethodSyntax is not null)
 			{
-				_callTypeArguments.Enqueue(replacer.Replacement!);
+				TypeSyntax[] typeArguments = _callMethodSyntax.TypeArgumentList.Arguments.ToArray();
+				typeArguments[count] = _callTypeArguments.Dequeue();
+				_callMethodSyntax = _callMethodSyntax.WithTypeArgumentList(SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(typeArguments)));
+
+				InvocationExpressionSyntax inv = SyntaxFactory.InvocationExpression(_callMethodSyntax, _callArguments!);
+				StatementSyntax statement;
+
+				if (_applyReturnSyntax)
+				{
+					statement = SyntaxFactory.ReturnStatement(SyntaxFactory.Token(SyntaxKind.ReturnKeyword).WithTrailingTrivia(SyntaxFactory.Space), inv, SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+				}
+				else
+				{
+					statement = SyntaxFactory.ExpressionStatement(inv);
+				}
+
+				statement = statement.WithLeadingTrivia(DefaultParamUtilities.GetTabs(_indentLevel + 1)).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+
+				CurrentDeclaration = CurrentDeclaration.WithBody(SyntaxFactory.Block(CurrentDeclaration.Body!.OpenBraceToken, SyntaxFactory.SingletonList(statement), CurrentDeclaration.Body.CloseBraceToken));
 			}
-
-			CurrentDeclaration = (MethodDeclarationSyntax)replacer.Visit(CurrentDeclaration);
-		}
-
-		/// <summary>
-		/// Sets the specified <paramref name="declaration"/> as the <see cref="CurrentDeclaration"/> without changing the <see cref="OriginalDeclaration"/>.
-		/// </summary>
-		/// <param name="declaration"><see cref="MethodDeclarationSyntax"/> to set as <see cref="CurrentDeclaration"/>.</param>
-		public void Emplace(MethodDeclarationSyntax declaration)
-		{
-			CurrentDeclaration = declaration;
-		}
-
-		void IDefaultParamDeclarationBuilder.Emplace(CSharpSyntaxNode node)
-		{
-			CurrentDeclaration = (MethodDeclarationSyntax)node;
 		}
 
 		private void InitializeCallData(in TypeParameterContainer typeParameters)
@@ -254,32 +285,6 @@ namespace Durian.Generator.DefaultParam
 					SyntaxFactory.Token(SyntaxKind.OpenBraceToken).WithLeadingTrivia(indent).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed),
 					SyntaxFactory.List<StatementSyntax>(),
 					SyntaxFactory.Token(SyntaxKind.CloseBraceToken).WithLeadingTrivia(indent).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed));
-			}
-		}
-
-		private void CheckDirectCall(int count)
-		{
-			if (_callMethodSyntax is not null)
-			{
-				TypeSyntax[] typeArguments = _callMethodSyntax.TypeArgumentList.Arguments.ToArray();
-				typeArguments[count] = _callTypeArguments.Dequeue();
-				_callMethodSyntax = _callMethodSyntax.WithTypeArgumentList(SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(typeArguments)));
-
-				InvocationExpressionSyntax inv = SyntaxFactory.InvocationExpression(_callMethodSyntax, _callArguments!);
-				StatementSyntax statement;
-
-				if (_applyReturnSyntax)
-				{
-					statement = SyntaxFactory.ReturnStatement(SyntaxFactory.Token(SyntaxKind.ReturnKeyword).WithTrailingTrivia(SyntaxFactory.Space), inv, SyntaxFactory.Token(SyntaxKind.SemicolonToken));
-				}
-				else
-				{
-					statement = SyntaxFactory.ExpressionStatement(inv);
-				}
-
-				statement = statement.WithLeadingTrivia(DefaultParamUtilities.GetTabs(_indentLevel + 1)).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
-
-				CurrentDeclaration = CurrentDeclaration.WithBody(SyntaxFactory.Block(CurrentDeclaration.Body!.OpenBraceToken, SyntaxFactory.SingletonList(statement), CurrentDeclaration.Body.CloseBraceToken));
 			}
 		}
 

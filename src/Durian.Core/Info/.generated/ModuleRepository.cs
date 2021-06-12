@@ -69,7 +69,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Target project must use C# 9 or greater",
+					title: "Target project must use C# 9 or newer",
 					id: 06,
 					docsPath: @"tree\master\docs\Core\DUR0006.md",
 					fatal: true,
@@ -355,6 +355,22 @@ namespace Durian.Info
 					id: 27,
 					docsPath: @"tree\master\docs\DefaultParam\DUR0127.md",
 					fatal: false,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Do not specify target namespace for a nested member",
+					id: 28,
+					docsPath: @"tree\master\docs\DefaultParam\DUR0128.md",
+					fatal: false,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Target namespace already contains member with the specified name",
+					id: 29,
+					docsPath: @"tree\master\docs\DefaultParam\DUR0129.md",
+					fatal: true,
 					hasLocation: true
 				),
 			},

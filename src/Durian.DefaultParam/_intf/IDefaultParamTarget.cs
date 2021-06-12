@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Collections.Generic;
 using System.Threading;
 using Durian.Generator.Data;
@@ -20,14 +23,14 @@ namespace Durian.Generator.DefaultParam
 		ref readonly TypeParameterContainer TypeParameters { get; }
 
 		/// <summary>
-		/// Returns a collection of <see cref="string"/>s representing namespaces used by this member.
-		/// </summary>
-		IEnumerable<string> GetUsedNamespaces();
-
-		/// <summary>
 		/// Returns a new instance of <see cref="IDefaultParamDeclarationBuilder"/> with <see cref="IDefaultParamDeclarationBuilder.OriginalNode"/> set to this member's declaration.
 		/// </summary>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		IDefaultParamDeclarationBuilder GetDeclarationBuilder(CancellationToken cancellationToken = default);
+
+		/// <summary>
+		/// Returns a collection of <see cref="string"/>s representing namespaces used by this member.
+		/// </summary>
+		IEnumerable<string> GetUsedNamespaces();
 	}
 }

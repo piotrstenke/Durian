@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,18 +16,38 @@ namespace Durian.Generator.Extensions
 	public static class SyntaxNodeExtensions
 	{
 		/// <summary>
-		/// Checks if the target <paramref name="method"/> has a body, either block or expression.
+		/// Returns new instance of <see cref="IMemberData"/> associated with the specified <paramref name="member"/>.
 		/// </summary>
-		/// <param name="method"><see cref="MethodDeclarationSyntax"/> to check if has a body.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static bool HasBody(this MethodDeclarationSyntax method)
+		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to get the data of.</param>
+		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		public static IMemberData GetMemberData(this MemberDeclarationSyntax member, ICompilationData compilation)
 		{
-			if (method is null)
+			if (member is null)
 			{
-				throw new ArgumentNullException(nameof(method));
+				throw new ArgumentNullException(nameof(member));
 			}
 
-			return method.Body is not null || method.ExpressionBody is not null;
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			return member switch
+			{
+				ClassDeclarationSyntax => new ClassData((ClassDeclarationSyntax)member, compilation),
+				StructDeclarationSyntax => new StructData((StructDeclarationSyntax)member, compilation),
+				InterfaceDeclarationSyntax => new InterfaceData((InterfaceDeclarationSyntax)member, compilation),
+				RecordDeclarationSyntax => new RecordData((RecordDeclarationSyntax)member, compilation),
+				TypeDeclarationSyntax => new MethodData((MethodDeclarationSyntax)member, compilation),
+				MethodDeclarationSyntax => new MethodData((MethodDeclarationSyntax)member, compilation),
+				FieldDeclarationSyntax => new FieldData((FieldDeclarationSyntax)member, compilation),
+				PropertyDeclarationSyntax => new PropertyData((PropertyDeclarationSyntax)member, compilation),
+				EventDeclarationSyntax => new EventData((EventDeclarationSyntax)member, compilation),
+				EventFieldDeclarationSyntax => new EventData((EventFieldDeclarationSyntax)member, compilation),
+				DelegateDeclarationSyntax => new DelegateData((DelegateDeclarationSyntax)member, compilation),
+				_ => new MemberData(member, compilation),
+			};
 		}
 
 		/// <summary>
@@ -62,41 +85,6 @@ namespace Durian.Generator.Extensions
 		}
 
 		/// <summary>
-		/// Returns new instance of <see cref="IMemberData"/> associated with the specified <paramref name="member"/>.
-		/// </summary>
-		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to get the data of.</param>
-		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IMemberData GetMemberData(this MemberDeclarationSyntax member, ICompilationData compilation)
-		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
-
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			return member switch
-			{
-				ClassDeclarationSyntax => new ClassData((ClassDeclarationSyntax)member, compilation),
-				StructDeclarationSyntax => new StructData((StructDeclarationSyntax)member, compilation),
-				InterfaceDeclarationSyntax => new InterfaceData((InterfaceDeclarationSyntax)member, compilation),
-				RecordDeclarationSyntax => new RecordData((RecordDeclarationSyntax)member, compilation),
-				TypeDeclarationSyntax => new MethodData((MethodDeclarationSyntax)member, compilation),
-				MethodDeclarationSyntax => new MethodData((MethodDeclarationSyntax)member, compilation),
-				FieldDeclarationSyntax => new FieldData((FieldDeclarationSyntax)member, compilation),
-				PropertyDeclarationSyntax => new PropertyData((PropertyDeclarationSyntax)member, compilation),
-				EventDeclarationSyntax => new EventData((EventDeclarationSyntax)member, compilation),
-				EventFieldDeclarationSyntax => new EventData((EventFieldDeclarationSyntax)member, compilation),
-				DelegateDeclarationSyntax => new DelegateData((DelegateDeclarationSyntax)member, compilation),
-				_ => new MemberData(member, compilation),
-			};
-		}
-
-		/// <summary>
 		/// Returns a <see cref="TypeParameterListSyntax"/> of the <paramref name="member"/> or <see langword="null"/> if the <paramref name="member"/> has no type parameters.
 		/// </summary>
 		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to get the <see cref="TypeParameterListSyntax"/> of.</param>
@@ -115,6 +103,21 @@ namespace Durian.Generator.Extensions
 				DelegateDeclarationSyntax d => d.TypeParameterList,
 				_ => null
 			};
+		}
+
+		/// <summary>
+		/// Checks if the target <paramref name="method"/> has a body, either block or expression.
+		/// </summary>
+		/// <param name="method"><see cref="MethodDeclarationSyntax"/> to check if has a body.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool HasBody(this MethodDeclarationSyntax method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return method.Body is not null || method.ExpressionBody is not null;
 		}
 	}
 }

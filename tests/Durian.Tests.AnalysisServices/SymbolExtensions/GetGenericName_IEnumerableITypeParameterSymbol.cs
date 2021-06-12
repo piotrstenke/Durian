@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using Durian.Generator.Extensions;
@@ -10,15 +13,15 @@ namespace Durian.Tests.AnalysisServices.AnalysisUtilities
 	public sealed class GetGenericName_IEnumerableITypeParameterSymbol
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_TypeParametersIsNull()
+		public void CanReturnMultipleTypeParameters()
 		{
-			Assert.Throws<ArgumentNullException>(() => ((IEnumerable<ITypeParameterSymbol>)null!).GetGenericName());
-		}
+			Mock<ITypeParameterSymbol> parameter1 = new();
+			parameter1.Setup(p => p.Name).Returns("T");
 
-		[Fact]
-		public void ReturnsEmptyString_When_TypeParametersIsEmpty()
-		{
-			Assert.True(Array.Empty<ITypeParameterSymbol>().GetGenericName() == string.Empty);
+			Mock<ITypeParameterSymbol> parameter2 = new();
+			parameter2.Setup(p => p.Name).Returns("U");
+
+			Assert.True(new ITypeParameterSymbol[] { parameter1.Object, parameter2.Object }.GetGenericName() == "<T, U>");
 		}
 
 		[Fact]
@@ -31,15 +34,15 @@ namespace Durian.Tests.AnalysisServices.AnalysisUtilities
 		}
 
 		[Fact]
-		public void CanReturnMultipleTypeParameters()
+		public void ReturnsEmptyString_When_TypeParametersIsEmpty()
 		{
-			Mock<ITypeParameterSymbol> parameter1 = new();
-			parameter1.Setup(p => p.Name).Returns("T");
+			Assert.True(Array.Empty<ITypeParameterSymbol>().GetGenericName() == string.Empty);
+		}
 
-			Mock<ITypeParameterSymbol> parameter2 = new();
-			parameter2.Setup(p => p.Name).Returns("U");
-
-			Assert.True(new ITypeParameterSymbol[] { parameter1.Object, parameter2.Object }.GetGenericName() == "<T, U>");
+		[Fact]
+		public void ThrowsArgumentNullException_When_TypeParametersIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => ((IEnumerable<ITypeParameterSymbol>)null!).GetGenericName());
 		}
 	}
 }

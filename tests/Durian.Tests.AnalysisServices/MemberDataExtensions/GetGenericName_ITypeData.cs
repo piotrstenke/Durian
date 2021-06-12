@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Extensions;
 using Xunit;
@@ -7,15 +10,9 @@ namespace Durian.Tests.AnalysisServices.MemberDataExtensions
 	public sealed class GetGenericName_ITypeData : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_TypeIsNull()
+		public void IsSuccess_When_HasMultipleTypeParameters()
 		{
-			Assert.Throws<ArgumentNullException>(() => GetClass(null).GetGenericName());
-		}
-
-		[Fact]
-		public void ReturnsTypeName_When_IsNotGeneric()
-		{
-			Assert.True(GetClass("class Test { }").GetGenericName() == "Test");
+			Assert.True(GetClass("class Test<T, U> { }").GetGenericName() == "Test<T, U>");
 		}
 
 		[Fact]
@@ -25,9 +22,15 @@ namespace Durian.Tests.AnalysisServices.MemberDataExtensions
 		}
 
 		[Fact]
-		public void IsSuccess_When_HasMultipleTypeParameters()
+		public void ReturnsTypeName_When_IsNotGeneric()
 		{
-			Assert.True(GetClass("class Test<T, U> { }").GetGenericName() == "Test<T, U>");
+			Assert.True(GetClass("class Test { }").GetGenericName() == "Test");
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_TypeIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => GetClass(null).GetGenericName());
 		}
 	}
 }

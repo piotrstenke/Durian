@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
@@ -12,41 +15,6 @@ namespace Durian.Tests.AnalysisServices.SemanticModelExtensions
 
 		public GetAttribute_ParameterSyntax() : base(Utilities.TestAttribute, Utilities.OtherAttribute)
 		{
-
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SemanticModelIsNull()
-		{
-			ParameterSyntax parameter = GetNode<ParameterSyntax>("class Test { void Method([Test]int a) { } }");
-			SemanticModel? semanticModel = null;
-			Assert.Throws<ArgumentNullException>(() => semanticModel!.GetAttribute(parameter, AttributeSymbol));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SyntaxNodelIsNull()
-		{
-			(_, SemanticModel semanticModel) = GetParameter("class Test { void Method([Test]int a) { } }");
-			Assert.Throws<ArgumentNullException>(() => semanticModel.GetAttribute((TypeParameterSyntax)null!, AttributeSymbol));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_AttributeSymbolIsNull()
-		{
-			(ParameterSyntax parameter, SemanticModel semanticModel) = GetParameter("class Test { void Method([Test]int a) { } }");
-			Assert.Throws<ArgumentNullException>(() => semanticModel.GetAttribute(parameter, null!));
-		}
-
-		[Fact]
-		public void ReturnsNull_When_HasNoAttributes()
-		{
-			Assert.True(Execute("class Test { void Method(int a) { } }") is null);
-		}
-
-		[Fact]
-		public void ReturnsNull_When_HasOtherAttribute()
-		{
-			Assert.True(Execute("class Test { void Method([Other]int a) { } }") is null);
 		}
 
 		[Fact]
@@ -62,9 +30,43 @@ namespace Durian.Tests.AnalysisServices.SemanticModelExtensions
 		}
 
 		[Fact]
+		public void ReturnsNull_When_HasNoAttributes()
+		{
+			Assert.True(Execute("class Test { void Method(int a) { } }") is null);
+		}
+
+		[Fact]
+		public void ReturnsNull_When_HasOtherAttribute()
+		{
+			Assert.True(Execute("class Test { void Method([Other]int a) { } }") is null);
+		}
+
+		[Fact]
 		public void ReturnsValidAttribute_When_FirstAttributeIsOfOtherType()
 		{
 			Assert.True(Execute("class Test { void Method([Other][Test(\"name\")][Test]int a) { } }")!.ToString() == "Test(\"name\")");
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_AttributeSymbolIsNull()
+		{
+			(ParameterSyntax parameter, SemanticModel semanticModel) = GetParameter("class Test { void Method([Test]int a) { } }");
+			Assert.Throws<ArgumentNullException>(() => semanticModel.GetAttribute(parameter, null!));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SemanticModelIsNull()
+		{
+			ParameterSyntax parameter = GetNode<ParameterSyntax>("class Test { void Method([Test]int a) { } }");
+			SemanticModel? semanticModel = null;
+			Assert.Throws<ArgumentNullException>(() => semanticModel!.GetAttribute(parameter, AttributeSymbol));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SyntaxNodelIsNull()
+		{
+			(_, SemanticModel semanticModel) = GetParameter("class Test { void Method([Test]int a) { } }");
+			Assert.Throws<ArgumentNullException>(() => semanticModel.GetAttribute((TypeParameterSyntax)null!, AttributeSymbol));
 		}
 
 		private AttributeSyntax? Execute(string src)

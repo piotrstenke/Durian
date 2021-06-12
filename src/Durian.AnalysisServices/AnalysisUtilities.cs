@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,70 +44,7 @@ namespace Durian.Generator
 			"while"
 		};
 
-		private static readonly HashSet<string> _hashedKeywords = new(_keywords);
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="value"/> can be used as an identifier.
-		/// </summary>
-		/// <param name="value">Value to check if can be used as an identifier.</param>
-		public static bool IsValidIdentifier(string? value)
-		{
-			if (string.IsNullOrWhiteSpace(value))
-			{
-				return false;
-			}
-
-			string str = value!.Trim();
-
-			if (str[0] == '@')
-			{
-				str = str.Substring(1, str.Length - 1);
-				return SyntaxFacts.IsValidIdentifier(str);
-			}
-
-			return SyntaxFacts.IsValidIdentifier(str) && !_hashedKeywords.Contains(str);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="value"/> can be used as an identifier of a namespace.
-		/// </summary>
-		/// <param name="value">Value to check if can be used as an identifier of a namespace.</param>
-		public static bool IsValidNamespaceIdentifier(string? value)
-		{
-			if (string.IsNullOrWhiteSpace(value))
-			{
-				return false;
-			}
-
-			foreach (string st in value!.Split('.'))
-			{
-				if (!IsValidIdentifier(st))
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="value"/> is a reserved C# keyword.
-		/// </summary>
-		/// <param name="value">Value to check if is a C# keyword.</param>
-		public static bool IsKeyword(string value)
-		{
-			return _hashedKeywords.Contains(value);
-		}
-
-		/// <summary>
-		/// Returns all reserved keywords of the C# language.
-		/// </summary>
-		public static string[] GetKeywords()
-		{
-			string[] keywords = new string[_keywords.Length];
-			Array.Copy(_keywords, keywords, _keywords.Length);
-			return keywords;
-		}
+		private static readonly HashSet<string> _keywordsHashed = new(_keywords);
 
 		/// <summary>
 		/// Modifiers a modified version of the specified <paramref name="fullyQualifiedName"/> that can be used in the XML documentation.
@@ -113,124 +53,6 @@ namespace Durian.Generator
 		public static string ConvertFullyQualifiedNameToXml(string? fullyQualifiedName)
 		{
 			return fullyQualifiedName?.Replace('<', '{').Replace('>', '}') ?? string.Empty;
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> that is created by joining the provided <paramref name="namespaces"/> using the dot (".") character.
-		/// </summary>
-		/// <param name="namespaces">Namespaces to join.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> is <see langword="null"/>.</exception>
-		public static string JoinNamespaces(IEnumerable<string> namespaces)
-		{
-			if (namespaces is null)
-			{
-				throw new ArgumentNullException(nameof(namespaces));
-			}
-
-			return string.Join(".", namespaces);
-		}
-
-		/// <summary>
-		/// Joins the collection of <see cref="string"/>s into a <see cref="QualifiedNameSyntax"/>.
-		/// </summary>
-		/// <param name="names">A collection of <see cref="string"/>s to join into a <see cref="QualifiedNameSyntax"/>.</param>
-		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="names"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="names"/> provided.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="names"/> is <see langword="null"/>.</exception>
-		public static QualifiedNameSyntax? JoinIntoQualifiedName(IEnumerable<string> names)
-		{
-			if (names is null)
-			{
-				throw new ArgumentNullException(nameof(names));
-			}
-
-			string[] n = names.ToArray();
-			int length = n.Length;
-
-			if (length < 2)
-			{
-				return null;
-			}
-
-			QualifiedNameSyntax q = SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName(n[0]), SyntaxFactory.IdentifierName(n[1]));
-
-			for (int i = 2; i < length; i++)
-			{
-				q = SyntaxFactory.QualifiedName(q, SyntaxFactory.IdentifierName(n[i]));
-			}
-
-			return q;
-		}
-
-		/// <summary>
-		/// Converts the type keyword to its proper .NET type (<see langword="int"/> to <c>Int32</c>, <see langword="float"/> to <c>Single</c> etc.).
-		/// </summary>
-		/// <param name="keyword">C# keyword to convert.</param>
-		/// <returns>Name of the type behind the given <paramref name="keyword"/>. -or- <paramref name="keyword"/> if it's not a C# type keyword. -or- <see cref="string.Empty"/> of the <paramref name="keyword"/> is <see langword="null"/>.</returns>
-		public static string KeywordToType(string? keyword)
-		{
-			if (keyword is null)
-			{
-				return string.Empty;
-			}
-
-			return keyword switch
-			{
-				"int" => "Int32",
-				"string" => "String",
-				"bool" => "Boolean",
-				"float" => "Single",
-				"double" => "Double",
-				"decimal" => "Decimal",
-				"char" => "Char",
-				"long" => "Int64",
-				"short" => "Int16",
-				"byte" => "Byte",
-				"uint" => "UInt32",
-				"ulong" => "UInt64",
-				"ushort" => "UInt16",
-				"sbyte" => "SByte",
-				"nint" => "IntPtr",
-				"nuint" => "UIntPtr",
-				"object" => "Object",
-				"void" => "Void",
-				_ => keyword,
-			};
-		}
-
-		/// <summary>
-		/// Converts the type name to its proper C# keyword (<c>Int32</c> to <see langword="int"/>, <c>Single</c> to <see langword="float"/> etc.).
-		/// </summary>
-		/// <param name="type">Type to get the associated C# keyword of.</param>
-		/// <returns>Keyword that represents the given <paramref name="type"/>. -or- <paramref name="type"/> if the type name is not associated with a C# keyword. -or- <see cref="string.Empty"/> of the <paramref name="type"/> is <see langword="null"/>.</returns>
-		public static string TypeToKeyword(string? type)
-		{
-			if (string.IsNullOrWhiteSpace(type))
-			{
-				return string.Empty;
-			}
-
-			return type switch
-			{
-				"Int32" => "int",
-				"String" => "string",
-				"Boolean" => "bool",
-				"Single" => "float",
-				"Double" => "double",
-				"Decimal" => "decimal",
-				"Char" => "char",
-				"Int64" => "long",
-				"Int16" => "short",
-				"Byte" => "byte",
-				"UInt32" => "uint",
-				"UInt64" => "ulong",
-				"UInt16" => "ushort",
-				"SByte" => "sbyte",
-				"IntPtr" => "nint",
-				"UIntPtr" => "nuint",
-				"Object" => "object",
-				"Void" => "void",
-				_ => type!,
-			};
 		}
 
 		/// <summary>
@@ -279,32 +101,13 @@ namespace Durian.Generator
 		}
 
 		/// <summary>
-		/// Sorts the collection of namespace names.
+		/// Returns all reserved keywords of the C# language.
 		/// </summary>
-		/// <param name="collection">A collection of namespace names.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<string> SortUsings(IEnumerable<string> collection)
+		public static string[] GetKeywords()
 		{
-			if (collection is null)
-			{
-				throw new ArgumentNullException(nameof(collection));
-			}
-
-			return collection.OrderBy(n =>
-			{
-				if (n == "System")
-				{
-					return 0;
-				}
-				else if (n.StartsWith("System."))
-				{
-					return 1;
-				}
-				else
-				{
-					return 2;
-				}
-			}).ThenBy(n => n);
+			string[] keywords = new string[_keywords.Length];
+			Array.Copy(_keywords, keywords, _keywords.Length);
+			return keywords;
 		}
 
 		/// <summary>
@@ -366,6 +169,59 @@ namespace Durian.Generator
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="value"/> is a reserved C# keyword.
+		/// </summary>
+		/// <param name="value">Value to check if is a C# keyword.</param>
+		public static bool IsKeyword(string value)
+		{
+			return _keywordsHashed.Contains(value);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="value"/> can be used as an identifier.
+		/// </summary>
+		/// <param name="value">Value to check if can be used as an identifier.</param>
+		public static bool IsValidIdentifier(string? value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+			{
+				return false;
+			}
+
+			string str = value!.Trim();
+
+			if (str[0] == '@')
+			{
+				str = str.Substring(1, str.Length - 1);
+				return SyntaxFacts.IsValidIdentifier(str);
+			}
+
+			return SyntaxFacts.IsValidIdentifier(str) && !_keywordsHashed.Contains(str);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="value"/> can be used as an identifier of a namespace.
+		/// </summary>
+		/// <param name="value">Value to check if can be used as an identifier of a namespace.</param>
+		public static bool IsValidNamespaceIdentifier(string? value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+			{
+				return false;
+			}
+
+			foreach (string st in value!.Split('.'))
+			{
+				if (!IsValidIdentifier(st))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		/// <summary>
 		/// Determines whether the <paramref name="first"/> <see cref="RefKind"/> is valid on a method when there is an overload that takes the same parameter, but with the <paramref name="second"/> <see cref="RefKind"/>.
 		/// </summary>
 		/// <param name="first">First <see cref="RefKind"/>.</param>
@@ -383,6 +239,153 @@ namespace Durian.Generator
 			}
 
 			return false;
+		}
+
+		/// <summary>
+		/// Joins the collection of <see cref="string"/>s into a <see cref="QualifiedNameSyntax"/>.
+		/// </summary>
+		/// <param name="names">A collection of <see cref="string"/>s to join into a <see cref="QualifiedNameSyntax"/>.</param>
+		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="names"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="names"/> provided.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="names"/> is <see langword="null"/>.</exception>
+		public static QualifiedNameSyntax? JoinIntoQualifiedName(IEnumerable<string> names)
+		{
+			if (names is null)
+			{
+				throw new ArgumentNullException(nameof(names));
+			}
+
+			string[] n = names.ToArray();
+			int length = n.Length;
+
+			if (length < 2)
+			{
+				return null;
+			}
+
+			QualifiedNameSyntax q = SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName(n[0]), SyntaxFactory.IdentifierName(n[1]));
+
+			for (int i = 2; i < length; i++)
+			{
+				q = SyntaxFactory.QualifiedName(q, SyntaxFactory.IdentifierName(n[i]));
+			}
+
+			return q;
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> that is created by joining the provided <paramref name="namespaces"/> using the dot (".") character.
+		/// </summary>
+		/// <param name="namespaces">Namespaces to join.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> is <see langword="null"/>.</exception>
+		public static string JoinNamespaces(IEnumerable<string> namespaces)
+		{
+			if (namespaces is null)
+			{
+				throw new ArgumentNullException(nameof(namespaces));
+			}
+
+			return string.Join(".", namespaces);
+		}
+
+		/// <summary>
+		/// Converts the type keyword to its proper .NET type (<see langword="int"/> to <c>Int32</c>, <see langword="float"/> to <c>Single</c> etc.).
+		/// </summary>
+		/// <param name="keyword">C# keyword to convert.</param>
+		/// <returns>Name of the type behind the given <paramref name="keyword"/>. -or- <paramref name="keyword"/> if it's not a C# type keyword. -or- <see cref="string.Empty"/> of the <paramref name="keyword"/> is <see langword="null"/>.</returns>
+		public static string KeywordToType(string? keyword)
+		{
+			if (keyword is null)
+			{
+				return string.Empty;
+			}
+
+			return keyword switch
+			{
+				"int" => "Int32",
+				"string" => "String",
+				"bool" => "Boolean",
+				"float" => "Single",
+				"double" => "Double",
+				"decimal" => "Decimal",
+				"char" => "Char",
+				"long" => "Int64",
+				"short" => "Int16",
+				"byte" => "Byte",
+				"uint" => "UInt32",
+				"ulong" => "UInt64",
+				"ushort" => "UInt16",
+				"sbyte" => "SByte",
+				"nint" => "IntPtr",
+				"nuint" => "UIntPtr",
+				"object" => "Object",
+				"void" => "Void",
+				_ => keyword,
+			};
+		}
+
+		/// <summary>
+		/// Sorts the collection of namespace names.
+		/// </summary>
+		/// <param name="collection">A collection of namespace names.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<string> SortUsings(IEnumerable<string> collection)
+		{
+			if (collection is null)
+			{
+				throw new ArgumentNullException(nameof(collection));
+			}
+
+			return collection.OrderBy(n =>
+			{
+				if (n == "System")
+				{
+					return 0;
+				}
+				else if (n.StartsWith("System."))
+				{
+					return 1;
+				}
+				else
+				{
+					return 2;
+				}
+			}).ThenBy(n => n);
+		}
+
+		/// <summary>
+		/// Converts the type name to its proper C# keyword (<c>Int32</c> to <see langword="int"/>, <c>Single</c> to <see langword="float"/> etc.).
+		/// </summary>
+		/// <param name="type">Type to get the associated C# keyword of.</param>
+		/// <returns>Keyword that represents the given <paramref name="type"/>. -or- <paramref name="type"/> if the type name is not associated with a C# keyword. -or- <see cref="string.Empty"/> of the <paramref name="type"/> is <see langword="null"/>.</returns>
+		public static string TypeToKeyword(string? type)
+		{
+			if (string.IsNullOrWhiteSpace(type))
+			{
+				return string.Empty;
+			}
+
+			return type switch
+			{
+				"Int32" => "int",
+				"String" => "string",
+				"Boolean" => "bool",
+				"Single" => "float",
+				"Double" => "double",
+				"Decimal" => "decimal",
+				"Char" => "char",
+				"Int64" => "long",
+				"Int16" => "short",
+				"Byte" => "byte",
+				"UInt32" => "uint",
+				"UInt64" => "ulong",
+				"UInt16" => "ushort",
+				"SByte" => "sbyte",
+				"IntPtr" => "nint",
+				"UIntPtr" => "nuint",
+				"Object" => "object",
+				"Void" => "void",
+				_ => type!,
+			};
 		}
 
 		internal static IEnumerable<T> ReturnByOrder<T>(IEnumerable<T> collection, ReturnOrder order)
@@ -428,28 +431,6 @@ namespace Durian.Generator
 				}
 
 				if (type.NullableAnnotation == NullableAnnotation.Annotated)
-				{
-					sb.Append('?');
-				}
-			}
-		}
-
-		private static void WriteParameterAsNamedType(INamedTypeSymbol n, StringBuilder sb)
-		{
-			string name;
-
-			if (n.IsValueType && n.Name == "Nullable" && n.TypeArguments.Length > 0)
-			{
-				name = n.TypeArguments[0].GetGenericName(false);
-				sb.Append(TypeToKeyword(name));
-				sb.Append('?');
-			}
-			else
-			{
-				name = n.TypeArguments.Length > 0 ? n.GetGenericName(false) : n.Name;
-				sb.Append(TypeToKeyword(name));
-
-				if (n.NullableAnnotation == NullableAnnotation.Annotated)
 				{
 					sb.Append('?');
 				}
@@ -508,6 +489,28 @@ namespace Durian.Generator
 				}
 
 				sb.Append(']');
+			}
+		}
+
+		private static void WriteParameterAsNamedType(INamedTypeSymbol n, StringBuilder sb)
+		{
+			string name;
+
+			if (n.IsValueType && n.Name == "Nullable" && n.TypeArguments.Length > 0)
+			{
+				name = n.TypeArguments[0].GetGenericName(false);
+				sb.Append(TypeToKeyword(name));
+				sb.Append('?');
+			}
+			else
+			{
+				name = n.TypeArguments.Length > 0 ? n.GetGenericName(false) : n.Name;
+				sb.Append(TypeToKeyword(name));
+
+				if (n.NullableAnnotation == NullableAnnotation.Annotated)
+				{
+					sb.Append('?');
+				}
 			}
 		}
 	}

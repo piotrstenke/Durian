@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Immutable;
 using Durian.Generator.Extensions;
@@ -11,22 +14,11 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class IsValidForTypeParameter_ITypeSymbol : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_TypelIsNull()
+		public void CanHandleArrayType()
 		{
-			ITypeSymbol type = null!;
-			Mock<ITypeParameterSymbol> parameter = new();
-			parameter.SetupGet(p => p.Name).Returns("T");
-			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
+			ITypeSymbol type = GetSymbol<IArrayTypeSymbol, ArrayTypeSyntax>("class Test { void Method(int[] a) { } }");
 
-			Assert.Throws<ArgumentNullException>(() => type.IsValidForTypeParameter(parameter.Object));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_ParameterIsNull()
-		{
-			ITypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }");
-
-			Assert.Throws<ArgumentNullException>(() => type.IsValidForTypeParameter(null!));
+			Assert.True(type.IsValidForTypeParameter(GetTypeParameter()));
 		}
 
 		[Fact]
@@ -46,19 +38,30 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void CanHandleArrayType()
-		{
-			ITypeSymbol type = GetSymbol<IArrayTypeSymbol, ArrayTypeSyntax>("class Test { void Method(int[] a) { } }");
-
-			Assert.True(type.IsValidForTypeParameter(GetTypeParameter()));
-		}
-
-		[Fact]
 		public void CanHandleTypeParameter()
 		{
 			ITypeSymbol type = GetSymbol<ITypeParameterSymbol, TypeParameterSyntax>("class Test<T> { }");
 
 			Assert.True(type.IsValidForTypeParameter(GetTypeParameter()));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_ParameterIsNull()
+		{
+			ITypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }");
+
+			Assert.Throws<ArgumentNullException>(() => type.IsValidForTypeParameter(null!));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_TypelIsNull()
+		{
+			ITypeSymbol type = null!;
+			Mock<ITypeParameterSymbol> parameter = new();
+			parameter.SetupGet(p => p.Name).Returns("T");
+			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
+
+			Assert.Throws<ArgumentNullException>(() => type.IsValidForTypeParameter(parameter.Object));
 		}
 
 		private static ITypeParameterSymbol GetTypeParameter()

@@ -1,4 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,7 +13,10 @@ namespace Durian.Generator.Core
 	/// <summary>
 	/// Analyzes if the user added custom types to the <c>Durian.Generator.Core</c> namespace.
 	/// </summary>
+#if !MAIN_PACKAGE
+
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
+#endif
 	public sealed class CustomTypesInGeneratorNamespaceAnalyzer : DurianAnalyzer
 	{
 		/// <inheritdoc/>
@@ -26,23 +32,27 @@ namespace Durian.Generator.Core
 		}
 
 		/// <inheritdoc/>
-		public override void Initialize(AnalysisContext context)
+		public override void Register(IDurianAnalysisContext context)
 		{
-			base.Initialize(context);
 			context.RegisterSyntaxNodeAction(Analyze, SyntaxKind.NamespaceDeclaration);
 		}
 
-		private void Analyze(SyntaxNodeAnalysisContext context)
+		private static void Analyze(SyntaxNodeAnalysisContext context)
 		{
-			if (context.Node is not NamespaceDeclarationSyntax node)
+			if (!Analyze(context.Node))
 			{
-				return;
+				context.ReportDiagnostic(Diagnostic.Create(DUR0005_DoNotAddTypesToGeneratorNamespace, context.Node.GetLocation()));
+			}
+		}
+
+		private static bool Analyze(SyntaxNode node)
+		{
+			if (node is not NamespaceDeclarationSyntax n)
+			{
+				return true;
 			}
 
-			if (node.Name.ToString() == DurianStrings.GeneratorNamespace)
-			{
-				context.ReportDiagnostic(Diagnostic.Create(DUR0005_DoNotAddTypesToGeneratorNamespace, node.GetLocation()));
-			}
+			return n.Name.ToString() != DurianStrings.GeneratorNamespace;
 		}
 	}
 }

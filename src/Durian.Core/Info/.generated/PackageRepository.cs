@@ -21,7 +21,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity AnalysisServices => Initialize(
 			package: DurianPackage.AnalysisServices,
-			version: "1.1.0",
+			version: "1.2.0",
 			type: PackageType.Library,
 			modules: new DurianModule[]
 			{
@@ -34,7 +34,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity Core => Initialize(
 			package: DurianPackage.Core,
-			version: "1.1.0",
+			version: "1.2.0",
 			type: PackageType.Library,
 			modules: new DurianModule[]
 			{
@@ -47,7 +47,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity CoreAnalyzer => Initialize(
 			package: DurianPackage.CoreAnalyzer,
-			version: "1.0.0",
+			version: "1.1.0",
 			type: PackageType.Analyzer,
 			modules: new DurianModule[]
 			{
@@ -60,7 +60,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity DefaultParam => Initialize(
 			package: DurianPackage.DefaultParam,
-			version: "1.1.0",
+			version: "1.2.0",
 			type: PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary,
 			modules: new DurianModule[]
 			{
@@ -73,7 +73,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity TestServices => Initialize(
 			package: DurianPackage.TestServices,
-			version: "1.0.0",
+			version: "1.1.0",
 			type: PackageType.Library,
 			modules: new DurianModule[]
 			{

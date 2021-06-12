@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -17,271 +20,37 @@ namespace Durian.Generator.Extensions
 	public static class SymbolExtensions
 	{
 		/// <summary>
-		/// Returns the effective <see cref="Accessibility"/> of the specified <paramref name="symbol"/>.
+		/// Determines whether the <paramref name="child"/> is contained withing the <paramref name="parent"/> at any nesting level.
 		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the effective <see cref="Accessibility"/> of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static Accessibility GetEffectiveAccessibility(this ISymbol symbol)
+		/// <param name="parent">Parent <see cref="ISymbol"/>.</param>
+		/// <param name="child">Child <see cref="ISymbol"/>.</param>
+		/// <returns>True if the <paramref name="parent"/> contains the <paramref name="child"/> or the <paramref name="parent"/> is equivalent to <paramref name="child"/>, otherwise false.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="parent"/> is <see langword="null"/>. -or- <paramref name="child"/> is <see langword="null"/>.</exception>
+		public static bool ContainsSymbol(this ISymbol parent, ISymbol child)
 		{
-			if (symbol is null)
+			if (parent is null)
 			{
-				throw new ArgumentNullException(nameof(symbol));
+				throw new ArgumentNullException(nameof(parent));
 			}
 
-			ISymbol? s = symbol;
-			Accessibility lowest = Accessibility.Public;
-
-			while (s is not null)
+			if (child is null)
 			{
-				Accessibility current = s.DeclaredAccessibility;
+				throw new ArgumentNullException(nameof(child));
+			}
 
-				if (current == Accessibility.Private)
+			ISymbol? current = child;
+
+			while (current is not null)
+			{
+				if (SymbolEqualityComparer.Default.Equals(current, parent))
 				{
-					return current;
+					return true;
 				}
 
-				if (current != Accessibility.NotApplicable && current < lowest)
-				{
-					lowest = current;
-				}
-
-				s = s.ContainingSymbol;
-			}
-
-			return lowest;
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="type"/> is the <paramref name="typeParameter"/> or if it uses it as its element type (for <see cref="IArrayTypeSymbol"/>) or pointed at type (for <see cref="IPointerTypeSymbol"/>).
-		/// </summary>
-		/// <param name="type"><see cref="ITypeSymbol"/> to check.</param>
-		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to check if is used by the target <paramref name="type"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="typeParameter"/> is <see langword="null"/>.</exception>
-		public static bool IsOrUsesTypeParameter(this ITypeSymbol type, ITypeParameterSymbol typeParameter)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			if (typeParameter is null)
-			{
-				throw new ArgumentNullException(nameof(typeParameter));
-			}
-
-			if (SymbolEqualityComparer.Default.Equals(type, typeParameter))
-			{
-				return true;
-			}
-
-			ITypeSymbol symbol;
-
-			if (type is IArrayTypeSymbol array)
-			{
-				symbol = array.GetUnderlayingElementType();
-			}
-			else if (type is IPointerTypeSymbol pointer)
-			{
-				symbol = pointer.GetUnderlayingPointedAtType();
-			}
-			else
-			{
-				return false;
-			}
-
-			if (SymbolEqualityComparer.Default.Equals(symbol, typeParameter))
-			{
-				return true;
-			}
-
-			if (symbol is INamedTypeSymbol t && t.Arity > 0)
-			{
-				foreach (ITypeSymbol s in t.TypeArguments)
-				{
-					if (IsOrUsesTypeParameter(s, typeParameter))
-					{
-						return true;
-					}
-				}
+				current = current.ContainingSymbol;
 			}
 
 			return false;
-		}
-
-		/// <summary>
-		/// Returns the effective underlaying element type of the <paramref name="array"/> or any of its element array types.
-		/// </summary>
-		/// <param name="array"><see cref="IArrayTypeSymbol"/> to get the effective underlaying type of.</param>
-		/// <returns>The effective underlaying type the <paramref name="array"/> or any of its element array types. -or- <paramref name="array"/> if no such type was found.</returns>
-		public static ITypeSymbol GetUnderlayingElementType(this IArrayTypeSymbol array)
-		{
-			if (array is null)
-			{
-				throw new ArgumentNullException(nameof(array));
-			}
-
-			ITypeSymbol? a = array;
-
-			while (a is IArrayTypeSymbol t)
-			{
-				a = t.ElementType;
-			}
-
-			if (a is null)
-			{
-				return array;
-			}
-
-			return a;
-		}
-
-		/// <summary>
-		/// Returns the effective underlaying type the <paramref name="pointer"/> or any of its child pointers point to.
-		/// </summary>
-		/// <param name="pointer"><see cref="IPointerTypeSymbol"/> to get the effective underlaying type of.</param>
-		/// <returns>The effective underlaying type the <paramref name="pointer"/> or any of its child pointers point to. -or- <paramref name="pointer"/> if no such type was found.</returns>
-		public static ITypeSymbol GetUnderlayingPointedAtType(this IPointerTypeSymbol pointer)
-		{
-			if (pointer is null)
-			{
-				throw new ArgumentNullException(nameof(pointer));
-			}
-
-			ITypeSymbol? p = pointer;
-
-			while (p is IPointerTypeSymbol t)
-			{
-				p = t.PointedAtType;
-			}
-
-			if (p is null)
-			{
-				return pointer;
-			}
-
-			return p;
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="symbol"/> was generated from the <paramref name="target"/> <see cref="ISymbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
-		/// <param name="target"><see cref="ISymbol"/> to check if the <paramref name="symbol"/> is generated from.</param>
-		/// <param name="compilation"><see cref="CompilationDataWithSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="symbol"/> is <see langword="null"/>. -or-
-		/// <paramref name="target"/> is <see langword="null"/>. -or-
-		/// <paramref name="compilation"/> is <see langword="null"/>.
-		/// </exception>
-		/// <exception cref="InvalidOperationException">Target <paramref name="compilation"/> has errors.</exception>
-		public static bool IsGeneratedFrom(this ISymbol symbol, ISymbol target, CompilationDataWithSymbols compilation)
-		{
-			return IsGeneratedFrom(symbol, target?.ToString()!, compilation);
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="symbol"/> was generated from the <paramref name="target"/> member.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
-		/// <param name="target"><see cref="string"/> representing a <see cref="ISymbol"/> to check if the <paramref name="symbol"/> was generated from.</param>
-		/// <param name="compilation"><see cref="CompilationDataWithSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="symbol"/> is <see langword="null"/>. -or-
-		/// <paramref name="target"/> is <see langword="null"/>. -or-
-		/// <paramref name="compilation"/> is <see langword="null"/>.
-		/// </exception>
-		/// <exception cref="InvalidOperationException">Target <paramref name="compilation"/> has errors.</exception>
-		public static bool IsGeneratedFrom(this ISymbol symbol, string target, CompilationDataWithSymbols compilation)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			if (target is null)
-			{
-				throw new ArgumentNullException(nameof(target));
-			}
-
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			if (compilation.HasErrors)
-			{
-				throw new InvalidOperationException($"Target {nameof(compilation)} has errors!");
-			}
-
-			AttributeData? attribute = symbol.GetAttributeData(compilation.DurianGeneratedAttribute);
-
-			if (attribute is null)
-			{
-				return false;
-			}
-
-			return attribute.ConstructorArguments.FirstOrDefault().Value is string value && value == target;
-		}
-
-		/// <summary>
-		/// Returns all <see cref="IMethodSymbol"/> this <paramref name="method"/> overrides.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the base methods of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<IMethodSymbol> GetBaseMethods(this IMethodSymbol method)
-		{
-			if (method is null)
-			{
-				throw new ArgumentNullException(nameof(method));
-			}
-
-			return Yield();
-
-			IEnumerable<IMethodSymbol> Yield()
-			{
-				IMethodSymbol? m = method;
-
-				while ((m = m!.OverriddenMethod) is not null)
-				{
-					yield return m;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="method"/> is partial.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static bool IsPartial(this IMethodSymbol method, CancellationToken cancellationToken = default)
-		{
-			return IsPartial(method, (method?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as MethodDeclarationSyntax)!);
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="method"/> is partial.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
-		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="declaration"/> is <see langword="null"/>.</exception>
-		public static bool IsPartial(this IMethodSymbol method, MethodDeclarationSyntax declaration)
-		{
-			if (method is null)
-			{
-				throw new ArgumentNullException(nameof(method));
-			}
-
-			if (declaration is null)
-			{
-				throw new ArgumentNullException(nameof(declaration));
-			}
-
-			return
-				method.DeclaringSyntaxReferences.Length > 1 ||
-				method.PartialImplementationPart is not null ||
-				method.PartialDefinitionPart is not null ||
-				declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
 		}
 
 		/// <inheritdoc cref="GetAllMembers(ITypeSymbol, string)"/>
@@ -321,6 +90,92 @@ namespace Durian.Generator.Extensions
 		}
 
 		/// <summary>
+		/// Gets <see cref="AttributeData"/> of the <paramref name="syntax"/> defined on the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol">Target <see cref="ISymbol"/>.</param>
+		/// <param name="syntax"><see cref="AttributeSyntax"/> to get the data of.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns>The <see cref="AttributeData"/> of the given <see cref="AttributeSyntax"/> or <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="syntax"/> is <see langword="null"/>.</exception>
+		public static AttributeData? GetAttributeData(this ISymbol symbol, AttributeSyntax syntax, CancellationToken cancellationToken = default)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (syntax is null)
+			{
+				throw new ArgumentNullException(nameof(syntax));
+			}
+
+			foreach (AttributeData attr in symbol.GetAttributes())
+			{
+				SyntaxReference? reference = attr.ApplicationSyntaxReference;
+
+				if (reference is null)
+				{
+					continue;
+				}
+
+				if (reference.GetSyntax(cancellationToken).IsEquivalentTo(syntax))
+				{
+					return attr;
+				}
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Gets <see cref="AttributeData"/> that corresponds to the <paramref name="attrSymbol"/> and is defined on the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol">Target <see cref="ISymbol"/>.</param>
+		/// <param name="attrSymbol">Type of attribute to look for.</param>
+		/// <returns>The <see cref="AttributeData"/> that corresponds to the <paramref name="attrSymbol"/> or <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="attrSymbol"/> is <see langword="null"/>.</exception>
+		public static AttributeData? GetAttributeData(this ISymbol symbol, INamedTypeSymbol attrSymbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (attrSymbol is null)
+			{
+				throw new ArgumentNullException(nameof(attrSymbol));
+			}
+
+			return symbol.GetAttributes()
+				.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol));
+		}
+
+		/// <summary>
+		/// Returns all <see cref="IMethodSymbol"/> this <paramref name="method"/> overrides.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the base methods of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<IMethodSymbol> GetBaseMethods(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return Yield();
+
+			IEnumerable<IMethodSymbol> Yield()
+			{
+				IMethodSymbol? m = method;
+
+				while ((m = m!.OverriddenMethod) is not null)
+				{
+					yield return m;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Returns all types the specified <paramref name="symbol"/> inherits from.
 		/// </summary>
 		/// <param name="symbol"><see cref="ITypeSymbol"/> to get the base types of.</param>
@@ -351,80 +206,83 @@ namespace Durian.Generator.Extensions
 		}
 
 		/// <summary>
-		/// Determines whether the <paramref name="first"/> <see cref="IParameterSymbol"/> is equivalent to the <paramref name="second"/> <see cref="IParameterSymbol"/>.
+		/// Returns all <see cref="INamespaceSymbol"/>s that contain the target <paramref name="symbol"/>.
 		/// </summary>
-		/// <param name="first">First <see cref="IParameterSymbol"/>.</param>
-		/// <param name="second">Second <see cref="IParameterSymbol"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="first"/> is <see langword="null"/>. -or <paramref name="second"/> is <see langword="null"/>.</exception>
-		public static bool IsEquivalentTo(this IParameterSymbol first, IParameterSymbol second)
+		/// <param name="symbol"><see cref="ISymbol"/> to get the parent namespaces of.</param>
+		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
+		/// <param name="order">Specifies order at types members should be returned.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingNamespaces(Microsoft.CodeAnalysis.ISymbol symbol, Boolean includeGlobal)", IgnoreError = true)]
+		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this ISymbol symbol, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
 		{
-			if (first is null)
+			if (symbol is null)
 			{
-				throw new ArgumentNullException(nameof(first));
+				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			if (second is null)
+			IEnumerable<INamespaceSymbol> namespaces = AnalysisUtilities.ReturnByOrder(GetNamespaces(), order);
+
+			if (!includeGlobal)
 			{
-				throw new ArgumentNullException(nameof(second));
+				namespaces = namespaces.Where(n => !n.IsGlobalNamespace);
 			}
 
-			if (AnalysisUtilities.IsValidRefKindForOverload(first.RefKind, second.RefKind))
+			return namespaces;
+
+			IEnumerable<INamespaceSymbol> GetNamespaces()
 			{
-				return false;
-			}
+				INamespaceSymbol parent = symbol.ContainingNamespace;
 
-			if (!SymbolEqualityComparer.Default.Equals(first.Type, second.Type))
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="first"/> <see cref="IMethodSymbol"/> has equivalent parameters to the <paramref name="second"/> <see cref="IMethodSymbol"/>.
-		/// </summary>
-		/// <param name="first">First <see cref="IMethodSymbol"/>.</param>
-		/// <param name="second">Second <see cref="IMethodSymbol"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="first"/> is <see langword="null"/>. -or <paramref name="second"/> is <see langword="null"/>.</exception>
-		public static bool HasEquivalentParameters(this IMethodSymbol first, IMethodSymbol second)
-		{
-			if (first is null)
-			{
-				throw new ArgumentNullException(nameof(first));
-			}
-
-			if (second is null)
-			{
-				throw new ArgumentNullException(nameof(second));
-			}
-
-			ImmutableArray<IParameterSymbol> firstParameters = first.Parameters;
-			ImmutableArray<IParameterSymbol> secondParameters = second.Parameters;
-
-			if (firstParameters.Length != secondParameters.Length)
-			{
-				return false;
-			}
-
-			for (int i = 0; i < firstParameters.Length; i++)
-			{
-				if (!IsEquivalentTo(firstParameters[i], secondParameters[i]))
+				if (parent is not null)
 				{
-					return false;
+					yield return parent;
+
+					while ((parent = parent!.ContainingNamespace) is not null)
+					{
+						yield return parent;
+					}
 				}
 			}
-
-			return true;
 		}
 
 		/// <summary>
-		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="symbol"/>.
+		/// Returns all <see cref="INamespaceOrTypeSymbol"/>s contain the target <paramref name="symbol"/> in namespace-first order.
 		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types and namespaces of.</param>
+		/// <param name="includeGlobal">Determines whether to return the global namespace as well</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<INamespaceOrTypeSymbol> GetContainingNamespacesAndTypes(this ISymbol symbol, bool includeGlobal = false)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return GetNamespacesAndTypes();
+
+			IEnumerable<INamespaceOrTypeSymbol> GetNamespacesAndTypes()
+			{
+				foreach (INamespaceSymbol s in GetContainingNamespaces(symbol, includeGlobal))
+				{
+					yield return s;
+				}
+
+				foreach (INamedTypeSymbol s in GetContainingTypeSymbols(symbol))
+				{
+					yield return s;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns all <see cref="ITypeData"/>s that contain the target <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
+		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
+		/// <param name="order">Specifies order at types members should be returned.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IMemberData GetMemberData(this ISymbol symbol, ICompilationData compilation)
+		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingTypes(Microsoft.CodeAnalysis.ISymbol symbol, Durian.Generator.Data.ICompilationData compilation)", IgnoreError = true)]
+		public static IEnumerable<ITypeData> GetContainingTypes(this ISymbol symbol, ICompilationData compilation, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)
 			{
@@ -436,42 +294,116 @@ namespace Durian.Generator.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			if (symbol is INamedTypeSymbol type)
+			INamedTypeSymbol[] parentSymbols = GetContainingTypeSymbols(symbol, order).ToArray();
+			List<ITypeData> parentList = new(parentSymbols.Length);
+
+			return parentSymbols.Select<INamedTypeSymbol, ITypeData>(parent =>
 			{
-				if (type.IsRecord)
+				if (parent.IsRecord)
 				{
-					return new RecordData(type, compilation);
+					RecordData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
+					parentList.Add(data);
+					return data;
 				}
 
-				return type.TypeKind switch
+				switch (parent.TypeKind)
 				{
-					TypeKind.Class => new ClassData(type, compilation),
-					TypeKind.Struct => new StructData(type, compilation),
-					TypeKind.Interface => new InterfaceData(type, compilation),
-					TypeKind.Delegate => new DelegateData(type, compilation),
-					_ => new TypeData(type, compilation),
-				};
-			}
-			else if (symbol is IMethodSymbol method)
+					case TypeKind.Class:
+					{
+						ClassData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
+						parentList.Add(data);
+						return data;
+					}
+
+					case TypeKind.Interface:
+					{
+						InterfaceData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
+						parentList.Add(data);
+						return data;
+					}
+
+					case TypeKind.Struct:
+					{
+						StructData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
+						parentList.Add(data);
+						return data;
+					}
+
+					default:
+					{
+						TypeData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
+						parentList.Add(data);
+						return data;
+					}
+				}
+			});
+		}
+
+		/// <summary>
+		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
+		/// <param name="order">Specifies order at types members should be returned.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingTypeSymbols(Microsoft.CodeAnalysis.ISymbol symbol)", IgnoreError = true)]
+		public static IEnumerable<INamedTypeSymbol> GetContainingTypeSymbols(this ISymbol symbol, ReturnOrder order = ReturnOrder.Root)
+		{
+			if (symbol is null)
 			{
-				return new MethodData(method, compilation);
+				throw new ArgumentNullException(nameof(symbol));
 			}
-			else if (symbol is IFieldSymbol field)
+
+			return AnalysisUtilities.ReturnByOrder(GetTypes(), order);
+
+			IEnumerable<INamedTypeSymbol> GetTypes()
 			{
-				return new FieldData(field, compilation);
+				INamedTypeSymbol parent = symbol.ContainingType;
+
+				if (parent is not null)
+				{
+					yield return parent;
+
+					while ((parent = parent!.ContainingType) is not null)
+					{
+						yield return parent;
+					}
+				}
 			}
-			else if (symbol is IEventSymbol e)
+		}
+
+		/// <summary>
+		/// Returns the effective <see cref="Accessibility"/> of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the effective <see cref="Accessibility"/> of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static Accessibility GetEffectiveAccessibility(this ISymbol symbol)
+		{
+			if (symbol is null)
 			{
-				return new EventData(e, compilation);
+				throw new ArgumentNullException(nameof(symbol));
 			}
-			else if (symbol is IPropertySymbol p)
+
+			ISymbol? s = symbol;
+			Accessibility lowest = Accessibility.Public;
+
+			while (s is not null)
 			{
-				return new PropertyData(p, compilation);
+				Accessibility current = s.DeclaredAccessibility;
+
+				if (current == Accessibility.Private)
+				{
+					return current;
+				}
+
+				if (current != Accessibility.NotApplicable && current < lowest)
+				{
+					lowest = current;
+				}
+
+				s = s.ContainingSymbol;
 			}
-			else
-			{
-				return new MemberData(symbol, compilation);
-			}
+
+			return lowest;
 		}
 
 		/// <summary>
@@ -676,6 +608,115 @@ namespace Durian.Generator.Extensions
 		}
 
 		/// <summary>
+		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		public static IMemberData GetMemberData(this ISymbol symbol, ICompilationData compilation)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			if (symbol is INamedTypeSymbol type)
+			{
+				if (type.IsRecord)
+				{
+					return new RecordData(type, compilation);
+				}
+
+				return type.TypeKind switch
+				{
+					TypeKind.Class => new ClassData(type, compilation),
+					TypeKind.Struct => new StructData(type, compilation),
+					TypeKind.Interface => new InterfaceData(type, compilation),
+					TypeKind.Delegate => new DelegateData(type, compilation),
+					_ => new TypeData(type, compilation),
+				};
+			}
+			else if (symbol is IMethodSymbol method)
+			{
+				return new MethodData(method, compilation);
+			}
+			else if (symbol is IFieldSymbol field)
+			{
+				return new FieldData(field, compilation);
+			}
+			else if (symbol is IEventSymbol e)
+			{
+				return new EventData(e, compilation);
+			}
+			else if (symbol is IPropertySymbol p)
+			{
+				return new PropertyData(p, compilation);
+			}
+			else
+			{
+				return new MemberData(symbol, compilation);
+			}
+		}
+
+		/// <summary>
+		/// Returns modifiers applied to the target <see cref="INamedTypeSymbol"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the modifiers of.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<SyntaxToken> GetModifiers(this INamedTypeSymbol type, CancellationToken cancellationToken = default)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return GetModifiers(type.DeclaringSyntaxReferences.Select(e => e.GetSyntax(cancellationToken)).Cast<TypeDeclarationSyntax>());
+		}
+
+		/// <summary>
+		/// Returns modifiers contained withing the given collection of <see cref="TypeDeclarationSyntax"/>es.
+		/// </summary>
+		/// <param name="decl">Collection of <see cref="TypeDeclarationSyntax"/>es to get the modifiers from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="decl"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<SyntaxToken> GetModifiers(this IEnumerable<TypeDeclarationSyntax> decl)
+		{
+			if (decl is null)
+			{
+				throw new ArgumentNullException(nameof(decl));
+			}
+
+			return Yield();
+
+			IEnumerable<SyntaxToken> Yield()
+			{
+				List<SyntaxToken> tokens = new();
+
+				foreach (TypeDeclarationSyntax d in decl)
+				{
+					if (d is null)
+					{
+						continue;
+					}
+
+					foreach (SyntaxToken modifier in d.Modifiers)
+					{
+						if (!tokens.Exists(m => m.IsKind(modifier.Kind())))
+						{
+							tokens.Add(modifier);
+							yield return modifier;
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		/// Returns a <see cref="string"/> that represents the parameter signature of the <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the signature of.</param>
@@ -743,56 +784,373 @@ namespace Durian.Generator.Extensions
 		}
 
 		/// <summary>
-		/// Returns modifiers applied to the target <see cref="INamedTypeSymbol"/>.
+		/// Returns root namespace of the <paramref name="symbol"/>.
 		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the modifiers of.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<SyntaxToken> GetModifiers(this INamedTypeSymbol type, CancellationToken cancellationToken = default)
+		/// <param name="symbol"><see cref="ISymbol"/> to get the root namespaces of.</param>
+		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
+		/// <returns>The root <see cref="INamespaceSymbol"/> -or- <see langword="null"/> if root <see cref="INamespaceSymbol"/> was not found.</returns>
+		public static INamespaceSymbol? GetRootNamespace(this ISymbol symbol, bool includeGlobal = false)
+		{
+			return GetContainingNamespaces(symbol, includeGlobal).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Returns the effective underlaying element type of the <paramref name="array"/> or any of its element array types.
+		/// </summary>
+		/// <param name="array"><see cref="IArrayTypeSymbol"/> to get the effective underlaying type of.</param>
+		/// <returns>The effective underlaying type the <paramref name="array"/> or any of its element array types. -or- <paramref name="array"/> if no such type was found.</returns>
+		public static ITypeSymbol GetUnderlayingElementType(this IArrayTypeSymbol array)
+		{
+			if (array is null)
+			{
+				throw new ArgumentNullException(nameof(array));
+			}
+
+			ITypeSymbol? a = array;
+
+			while (a is IArrayTypeSymbol t)
+			{
+				a = t.ElementType;
+			}
+
+			if (a is null)
+			{
+				return array;
+			}
+
+			return a;
+		}
+
+		/// <summary>
+		/// Returns the effective underlaying type the <paramref name="pointer"/> or any of its child pointers point to.
+		/// </summary>
+		/// <param name="pointer"><see cref="IPointerTypeSymbol"/> to get the effective underlaying type of.</param>
+		/// <returns>The effective underlaying type the <paramref name="pointer"/> or any of its child pointers point to. -or- <paramref name="pointer"/> if no such type was found.</returns>
+		public static ITypeSymbol GetUnderlayingPointedAtType(this IPointerTypeSymbol pointer)
+		{
+			if (pointer is null)
+			{
+				throw new ArgumentNullException(nameof(pointer));
+			}
+
+			ITypeSymbol? p = pointer;
+
+			while (p is IPointerTypeSymbol t)
+			{
+				p = t.PointedAtType;
+			}
+
+			if (p is null)
+			{
+				return pointer;
+			}
+
+			return p;
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> representing the fully qualified name of the <paramref name="symbol"/> that can be used in the XML documentation.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the fully qualified name of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static string GetXmlFullyQualifiedName(this ISymbol symbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return AnalysisUtilities.ConvertFullyQualifiedNameToXml(symbol.ToString());
+		}
+
+		/// <summary>
+		/// Checks if an attribute of type <paramref name="attrSymbol"/> is defined on the target <paramref name="symbol"/>
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check if contains the specified attribute.</param>
+		/// <param name="attrSymbol"><see cref="INamedTypeSymbol"/> of attribute to check for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="attrSymbol"/> is <see langword="null"/>.</exception>
+		public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attrSymbol)
+		{
+			return GetAttributeData(symbol, attrSymbol) is not null;
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="first"/> <see cref="IMethodSymbol"/> has equivalent parameters to the <paramref name="second"/> <see cref="IMethodSymbol"/>.
+		/// </summary>
+		/// <param name="first">First <see cref="IMethodSymbol"/>.</param>
+		/// <param name="second">Second <see cref="IMethodSymbol"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="first"/> is <see langword="null"/>. -or <paramref name="second"/> is <see langword="null"/>.</exception>
+		public static bool HasEquivalentParameters(this IMethodSymbol first, IMethodSymbol second)
+		{
+			if (first is null)
+			{
+				throw new ArgumentNullException(nameof(first));
+			}
+
+			if (second is null)
+			{
+				throw new ArgumentNullException(nameof(second));
+			}
+
+			ImmutableArray<IParameterSymbol> firstParameters = first.Parameters;
+			ImmutableArray<IParameterSymbol> secondParameters = second.Parameters;
+
+			if (firstParameters.Length != secondParameters.Length)
+			{
+				return false;
+			}
+
+			for (int i = 0; i < firstParameters.Length; i++)
+			{
+				if (!IsEquivalentTo(firstParameters[i], secondParameters[i]))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Determines whether the target <paramref name="type"/> inherits the <paramref name="baseType"/>.
+		/// </summary>
+		/// <param name="type">Type to check if inherits the <paramref name="baseType"/>.</param>
+		/// <param name="baseType">Base type to check if is inherited by the target <paramref name="type"/>.</param>
+		/// <param name="toReturnIfSame">Determines what to return when the <paramref name="type"/> and <paramref name="baseType"/> are the same.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or - <paramref name="baseType"/> is <see langword="null"/>.</exception>
+		public static bool InheritsOrImplementsFrom(this ITypeSymbol type, ITypeSymbol baseType, bool toReturnIfSame = true)
 		{
 			if (type is null)
 			{
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			return GetModifiers(type.DeclaringSyntaxReferences.Select(e => e.GetSyntax(cancellationToken)).Cast<TypeDeclarationSyntax>());
-		}
-
-		/// <summary>
-		/// Returns modifiers contained withing the given collection of <see cref="TypeDeclarationSyntax"/>es.
-		/// </summary>
-		/// <param name="decl">Collection of <see cref="TypeDeclarationSyntax"/>es to get the modifiers from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="decl"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<SyntaxToken> GetModifiers(this IEnumerable<TypeDeclarationSyntax> decl)
-		{
-			if (decl is null)
+			if (baseType is null)
 			{
-				throw new ArgumentNullException(nameof(decl));
+				throw new ArgumentNullException(nameof(baseType));
 			}
 
-			return Yield();
-
-			IEnumerable<SyntaxToken> Yield()
+			if (SymbolEqualityComparer.Default.Equals(type, baseType))
 			{
-				List<SyntaxToken> tokens = new();
+				return toReturnIfSame;
+			}
 
-				foreach (TypeDeclarationSyntax d in decl)
+			if (baseType.TypeKind == TypeKind.Interface)
+			{
+				if (type.AllInterfaces.IsDefaultOrEmpty)
 				{
-					if (d is null)
-					{
-						continue;
-					}
+					return false;
+				}
 
-					foreach (SyntaxToken modifier in d.Modifiers)
+				foreach (INamedTypeSymbol intf in type.AllInterfaces)
+				{
+					if (SymbolEqualityComparer.Default.Equals(baseType, intf))
 					{
-						if (!tokens.Exists(m => m.IsKind(modifier.Kind())))
-						{
-							tokens.Add(modifier);
-							yield return modifier;
-						}
+						return true;
 					}
 				}
 			}
+			else
+			{
+				INamedTypeSymbol? current = type.BaseType;
+
+				while (current is not null)
+				{
+					if (SymbolEqualityComparer.Default.Equals(current, baseType))
+					{
+						return true;
+					}
+
+					current = current.BaseType;
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="first"/> <see cref="IParameterSymbol"/> is equivalent to the <paramref name="second"/> <see cref="IParameterSymbol"/>.
+		/// </summary>
+		/// <param name="first">First <see cref="IParameterSymbol"/>.</param>
+		/// <param name="second">Second <see cref="IParameterSymbol"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="first"/> is <see langword="null"/>. -or <paramref name="second"/> is <see langword="null"/>.</exception>
+		public static bool IsEquivalentTo(this IParameterSymbol first, IParameterSymbol second)
+		{
+			if (first is null)
+			{
+				throw new ArgumentNullException(nameof(first));
+			}
+
+			if (second is null)
+			{
+				throw new ArgumentNullException(nameof(second));
+			}
+
+			if (AnalysisUtilities.IsValidRefKindForOverload(first.RefKind, second.RefKind))
+			{
+				return false;
+			}
+
+			if (!SymbolEqualityComparer.Default.Equals(first.Type, second.Type))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="symbol"/> was generated from the <paramref name="target"/> <see cref="ISymbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="target"><see cref="ISymbol"/> to check if the <paramref name="symbol"/> is generated from.</param>
+		/// <param name="compilation"><see cref="CompilationDataWithSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="symbol"/> is <see langword="null"/>. -or-
+		/// <paramref name="target"/> is <see langword="null"/>. -or-
+		/// <paramref name="compilation"/> is <see langword="null"/>.
+		/// </exception>
+		/// <exception cref="InvalidOperationException">Target <paramref name="compilation"/> has errors.</exception>
+		public static bool IsGeneratedFrom(this ISymbol symbol, ISymbol target, CompilationDataWithSymbols compilation)
+		{
+			return IsGeneratedFrom(symbol, target?.ToString()!, compilation);
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="symbol"/> was generated from the <paramref name="target"/> member.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="target"><see cref="string"/> representing a <see cref="ISymbol"/> to check if the <paramref name="symbol"/> was generated from.</param>
+		/// <param name="compilation"><see cref="CompilationDataWithSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="symbol"/> is <see langword="null"/>. -or-
+		/// <paramref name="target"/> is <see langword="null"/>. -or-
+		/// <paramref name="compilation"/> is <see langword="null"/>.
+		/// </exception>
+		/// <exception cref="InvalidOperationException">Target <paramref name="compilation"/> has errors.</exception>
+		public static bool IsGeneratedFrom(this ISymbol symbol, string target, CompilationDataWithSymbols compilation)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (target is null)
+			{
+				throw new ArgumentNullException(nameof(target));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			if (compilation.HasErrors)
+			{
+				throw new InvalidOperationException($"Target {nameof(compilation)} has errors!");
+			}
+
+			AttributeData? attribute = symbol.GetAttributeData(compilation.DurianGeneratedAttribute);
+
+			if (attribute is null)
+			{
+				return false;
+			}
+
+			return attribute.ConstructorArguments.FirstOrDefault().Value is string value && value == target;
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="type"/> is the <paramref name="typeParameter"/> or if it uses it as its element type (for <see cref="IArrayTypeSymbol"/>) or pointed at type (for <see cref="IPointerTypeSymbol"/>).
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to check.</param>
+		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to check if is used by the target <paramref name="type"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="typeParameter"/> is <see langword="null"/>.</exception>
+		public static bool IsOrUsesTypeParameter(this ITypeSymbol type, ITypeParameterSymbol typeParameter)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			if (typeParameter is null)
+			{
+				throw new ArgumentNullException(nameof(typeParameter));
+			}
+
+			if (SymbolEqualityComparer.Default.Equals(type, typeParameter))
+			{
+				return true;
+			}
+
+			ITypeSymbol symbol;
+
+			if (type is IArrayTypeSymbol array)
+			{
+				symbol = array.GetUnderlayingElementType();
+			}
+			else if (type is IPointerTypeSymbol pointer)
+			{
+				symbol = pointer.GetUnderlayingPointedAtType();
+			}
+			else
+			{
+				return false;
+			}
+
+			if (SymbolEqualityComparer.Default.Equals(symbol, typeParameter))
+			{
+				return true;
+			}
+
+			if (symbol is INamedTypeSymbol t && t.Arity > 0)
+			{
+				foreach (ITypeSymbol s in t.TypeArguments)
+				{
+					if (IsOrUsesTypeParameter(s, typeParameter))
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="method"/> is partial.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool IsPartial(this IMethodSymbol method, CancellationToken cancellationToken = default)
+		{
+			return IsPartial(method, (method?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as MethodDeclarationSyntax)!);
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="method"/> is partial.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
+		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="declaration"/> is <see langword="null"/>.</exception>
+		public static bool IsPartial(this IMethodSymbol method, MethodDeclarationSyntax declaration)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			if (declaration is null)
+			{
+				throw new ArgumentNullException(nameof(declaration));
+			}
+
+			return
+				method.DeclaringSyntaxReferences.Length > 1 ||
+				method.PartialImplementationPart is not null ||
+				method.PartialDefinitionPart is not null ||
+				declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
 		}
 
 		/// <summary>
@@ -863,63 +1221,6 @@ namespace Durian.Generator.Extensions
 			}
 
 			return IsPredefined(type) || SymbolEqualityComparer.Default.Equals(type, compilation.DynamicType);
-		}
-
-		/// <summary>
-		/// Determines whether the target <paramref name="type"/> inherits the <paramref name="baseType"/>.
-		/// </summary>
-		/// <param name="type">Type to check if inherits the <paramref name="baseType"/>.</param>
-		/// <param name="baseType">Base type to check if is inherited by the target <paramref name="type"/>.</param>
-		/// <param name="toReturnIfSame">Determines what to return when the <paramref name="type"/> and <paramref name="baseType"/> are the same.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or - <paramref name="baseType"/> is <see langword="null"/>.</exception>
-		public static bool InheritsOrImplementsFrom(this ITypeSymbol type, ITypeSymbol baseType, bool toReturnIfSame = true)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			if (baseType is null)
-			{
-				throw new ArgumentNullException(nameof(baseType));
-			}
-
-			if (SymbolEqualityComparer.Default.Equals(type, baseType))
-			{
-				return toReturnIfSame;
-			}
-
-			if (baseType.TypeKind == TypeKind.Interface)
-			{
-				if (type.AllInterfaces.IsDefaultOrEmpty)
-				{
-					return false;
-				}
-
-				foreach (INamedTypeSymbol intf in type.AllInterfaces)
-				{
-					if (SymbolEqualityComparer.Default.Equals(baseType, intf))
-					{
-						return true;
-					}
-				}
-			}
-			else
-			{
-				INamedTypeSymbol? current = type.BaseType;
-
-				while (current is not null)
-				{
-					if (SymbolEqualityComparer.Default.Equals(current, baseType))
-					{
-						return true;
-					}
-
-					current = current.BaseType;
-				}
-			}
-
-			return false;
 		}
 
 		/// <summary>
@@ -1013,6 +1314,22 @@ namespace Durian.Generator.Extensions
 		}
 
 		/// <summary>
+		/// Returns a <see cref="QualifiedNameSyntax"/> created from the specified <paramref name="namespaces"/>.
+		/// </summary>
+		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to create the <see cref="QualifiedNameSyntax"/> from.</param>
+		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="namespaces"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="namespaces"/> provided.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> is <see langword="null"/>.</exception>
+		public static QualifiedNameSyntax? JoinIntoQualifiedName(this IEnumerable<INamespaceSymbol> namespaces)
+		{
+			if (namespaces is null)
+			{
+				throw new ArgumentNullException(nameof(namespaces));
+			}
+
+			return AnalysisUtilities.JoinIntoQualifiedName(namespaces.Select(n => n.Name));
+		}
+
+		/// <summary>
 		/// Returns a <see cref="string"/> that is created by joining the names of the namespaces the provided <paramref name="symbol"/> is contained in.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the containing namespaces of.</param>
@@ -1057,320 +1374,6 @@ namespace Durian.Generator.Extensions
 			}
 
 			return sb.ToString().TrimEnd('.');
-		}
-
-		/// <summary>
-		/// Returns a <see cref="QualifiedNameSyntax"/> created from the specified <paramref name="namespaces"/>.
-		/// </summary>
-		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to create the <see cref="QualifiedNameSyntax"/> from.</param>
-		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="namespaces"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="namespaces"/> provided.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> is <see langword="null"/>.</exception>
-		public static QualifiedNameSyntax? JoinIntoQualifiedName(this IEnumerable<INamespaceSymbol> namespaces)
-		{
-			if (namespaces is null)
-			{
-				throw new ArgumentNullException(nameof(namespaces));
-			}
-
-			return AnalysisUtilities.JoinIntoQualifiedName(namespaces.Select(n => n.Name));
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> representing the fully qualified name of the <paramref name="symbol"/> that can be used in the XML documentation.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the fully qualified name of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static string GetXmlFullyQualifiedName(this ISymbol symbol)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			return AnalysisUtilities.ConvertFullyQualifiedNameToXml(symbol.ToString());
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="child"/> is contained withing the <paramref name="parent"/> at any nesting level.
-		/// </summary>
-		/// <param name="parent">Parent <see cref="ISymbol"/>.</param>
-		/// <param name="child">Child <see cref="ISymbol"/>.</param>
-		/// <returns>True if the <paramref name="parent"/> contains the <paramref name="child"/> or the <paramref name="parent"/> is equivalent to <paramref name="child"/>, otherwise false.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="parent"/> is <see langword="null"/>. -or- <paramref name="child"/> is <see langword="null"/>.</exception>
-		public static bool ContainsSymbol(this ISymbol parent, ISymbol child)
-		{
-			if (parent is null)
-			{
-				throw new ArgumentNullException(nameof(parent));
-			}
-
-			if (child is null)
-			{
-				throw new ArgumentNullException(nameof(child));
-			}
-
-			ISymbol? current = child;
-
-			while (current is not null)
-			{
-				if (SymbolEqualityComparer.Default.Equals(current, parent))
-				{
-					return true;
-				}
-
-				current = current.ContainingSymbol;
-			}
-
-			return false;
-		}
-
-		/// <summary>
-		/// Returns all <see cref="ITypeData"/>s that contain the target <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
-		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
-		/// <param name="order">Specifies order at types members should be returned.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingTypes(Microsoft.CodeAnalysis.ISymbol symbol, Durian.Generator.Data.ICompilationData compilation)")]
-		public static IEnumerable<ITypeData> GetContainingTypes(this ISymbol symbol, ICompilationData compilation, ReturnOrder order = ReturnOrder.Root)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			INamedTypeSymbol[] parentSymbols = GetContainingTypeSymbols(symbol, order).ToArray();
-			List<ITypeData> parentList = new(parentSymbols.Length);
-
-			return parentSymbols.Select<INamedTypeSymbol, ITypeData>(parent =>
-			{
-				if (parent.IsRecord)
-				{
-					RecordData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
-					parentList.Add(data);
-					return data;
-				}
-
-				switch (parent.TypeKind)
-				{
-					case TypeKind.Class:
-					{
-						ClassData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
-						parentList.Add(data);
-						return data;
-					}
-
-					case TypeKind.Interface:
-					{
-						InterfaceData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
-						parentList.Add(data);
-						return data;
-					}
-
-					case TypeKind.Struct:
-					{
-						StructData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
-						parentList.Add(data);
-						return data;
-					}
-
-					default:
-					{
-						TypeData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
-						parentList.Add(data);
-						return data;
-					}
-				}
-			});
-		}
-
-		/// <summary>
-		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
-		/// <param name="order">Specifies order at types members should be returned.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingTypeSymbols(Microsoft.CodeAnalysis.ISymbol symbol)")]
-		public static IEnumerable<INamedTypeSymbol> GetContainingTypeSymbols(this ISymbol symbol, ReturnOrder order = ReturnOrder.Root)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			return AnalysisUtilities.ReturnByOrder(GetTypes(), order);
-
-			IEnumerable<INamedTypeSymbol> GetTypes()
-			{
-				INamedTypeSymbol parent = symbol.ContainingType;
-
-				if (parent is not null)
-				{
-					yield return parent;
-
-					while ((parent = parent!.ContainingType) is not null)
-					{
-						yield return parent;
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Returns all <see cref="INamespaceOrTypeSymbol"/>s contain the target <paramref name="symbol"/> in namespace-first order.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types and namespaces of.</param>
-		/// <param name="includeGlobal">Determines whether to return the global namespace as well</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<INamespaceOrTypeSymbol> GetContainingNamespacesAndTypes(this ISymbol symbol, bool includeGlobal = false)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			return GetNamespacesAndTypes();
-
-			IEnumerable<INamespaceOrTypeSymbol> GetNamespacesAndTypes()
-			{
-				foreach (INamespaceSymbol s in GetContainingNamespaces(symbol, includeGlobal))
-				{
-					yield return s;
-				}
-
-				foreach (INamedTypeSymbol s in GetContainingTypeSymbols(symbol))
-				{
-					yield return s;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Returns root namespace of the <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the root namespaces of.</param>
-		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
-		/// <returns>The root <see cref="INamespaceSymbol"/> -or- <see langword="null"/> if root <see cref="INamespaceSymbol"/> was not found.</returns>
-		public static INamespaceSymbol? GetRootNamespace(this ISymbol symbol, bool includeGlobal = false)
-		{
-			return GetContainingNamespaces(symbol, includeGlobal).FirstOrDefault();
-		}
-
-		/// <summary>
-		/// Returns all <see cref="INamespaceSymbol"/>s that contain the target <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the parent namespaces of.</param>
-		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
-		/// <param name="order">Specifies order at types members should be returned.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		[MovedFrom("Durian.Generator.Extensions.SymbolExtensions.GetContainingNamespaces(Microsoft.CodeAnalysis.ISymbol symbol, Boolean includeGlobal)")]
-		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this ISymbol symbol, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			IEnumerable<INamespaceSymbol> namespaces = AnalysisUtilities.ReturnByOrder(GetNamespaces(), order);
-
-			if (!includeGlobal)
-			{
-				namespaces = namespaces.Where(n => !n.IsGlobalNamespace);
-			}
-
-			return namespaces;
-
-			IEnumerable<INamespaceSymbol> GetNamespaces()
-			{
-				INamespaceSymbol parent = symbol.ContainingNamespace;
-
-				if (parent is not null)
-				{
-					yield return parent;
-
-					while ((parent = parent!.ContainingNamespace) is not null)
-					{
-						yield return parent;
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets <see cref="AttributeData"/> of the <paramref name="syntax"/> defined on the specified <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol">Target <see cref="ISymbol"/>.</param>
-		/// <param name="syntax"><see cref="AttributeSyntax"/> to get the data of.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns>The <see cref="AttributeData"/> of the given <see cref="AttributeSyntax"/> or <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="syntax"/> is <see langword="null"/>.</exception>
-		public static AttributeData? GetAttributeData(this ISymbol symbol, AttributeSyntax syntax, CancellationToken cancellationToken = default)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			if (syntax is null)
-			{
-				throw new ArgumentNullException(nameof(syntax));
-			}
-
-			foreach (AttributeData attr in symbol.GetAttributes())
-			{
-				SyntaxReference? reference = attr.ApplicationSyntaxReference;
-
-				if (reference is null)
-				{
-					continue;
-				}
-
-				if (reference.GetSyntax(cancellationToken).IsEquivalentTo(syntax))
-				{
-					return attr;
-				}
-			}
-
-			return null;
-		}
-
-		/// <summary>
-		/// Gets <see cref="AttributeData"/> that corresponds to the <paramref name="attrSymbol"/> and is defined on the specified <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol">Target <see cref="ISymbol"/>.</param>
-		/// <param name="attrSymbol">Type of attribute to look for.</param>
-		/// <returns>The <see cref="AttributeData"/> that corresponds to the <paramref name="attrSymbol"/> or <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="attrSymbol"/> is <see langword="null"/>.</exception>
-		public static AttributeData? GetAttributeData(this ISymbol symbol, INamedTypeSymbol attrSymbol)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			if (attrSymbol is null)
-			{
-				throw new ArgumentNullException(nameof(attrSymbol));
-			}
-
-			return symbol.GetAttributes()
-				.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol));
-		}
-
-		/// <summary>
-		/// Checks if an attribute of type <paramref name="attrSymbol"/> is defined on the target <paramref name="symbol"/>
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check if contains the specified attribute.</param>
-		/// <param name="attrSymbol"><see cref="INamedTypeSymbol"/> of attribute to check for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="attrSymbol"/> is <see langword="null"/>.</exception>
-		public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attrSymbol)
-		{
-			return GetAttributeData(symbol, attrSymbol) is not null;
 		}
 
 		private static bool IsValidForTypeParameter_Internal(ITypeSymbol type, ITypeParameterSymbol parameter)

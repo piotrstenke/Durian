@@ -1,4 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Immutable;
 using System.Linq;
 using Durian.Configuration;
 using Durian.Generator.Extensions;
@@ -12,7 +15,10 @@ namespace Durian.Generator.DefaultParam
 	/// <summary>
 	/// Analyzes the usage of the <see cref="DefaultParamScopedConfigurationAnalyzer"/>
 	/// </summary>
+#if !MAIN_PACKAGE
+
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
+#endif
 	public sealed class DefaultParamScopedConfigurationAnalyzer : DurianAnalyzer<DefaultParamCompilationData>
 	{
 		/// <inheritdoc/>
@@ -29,15 +35,15 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
+		public override void Register(IDurianAnalysisContext context, DefaultParamCompilationData compilation)
 		{
-			return new DefaultParamCompilationData(compilation);
+			context.RegisterSyntaxNodeAction(c => Analyze(c, compilation), SyntaxKind.Attribute);
 		}
 
 		/// <inheritdoc/>
-		protected override void Register(CompilationStartAnalysisContext context, DefaultParamCompilationData compilation)
+		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
 		{
-			context.RegisterSyntaxNodeAction(c => Analyze(c, compilation), SyntaxKind.Attribute);
+			return new DefaultParamCompilationData(compilation);
 		}
 
 		private static void Analyze(SyntaxNodeAnalysisContext context, DefaultParamCompilationData compilation)

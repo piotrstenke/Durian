@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.IO;
 using Microsoft.CodeAnalysis;
 
@@ -11,17 +14,14 @@ namespace Durian.Generator.Logging
 		private string? _validatedDirectory;
 
 		/// <summary>
+		/// Determines whether to enable the <see cref="ISourceGenerator"/> can throw <see cref="Exception"/>s. Defaults to <see langword="false"/>
+		/// </summary>
+		public bool EnableExceptions { get; init; }
+
+		/// <summary>
 		/// The directory the source generator logs will be written to. If not specified, <see cref="GeneratorLoggingConfiguration.DefaultLogDirectory"/> is used instead.
 		/// </summary>
 		public string? LogDirectory { get; init; }
-
-		/// <inheritdoc cref="GeneratorLoggingConfiguration.SupportedLogs"/>
-		public GeneratorLogs SupportedLogs { get; init; }
-
-		/// <summary>
-		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/>. Defaults to <see langword="true"/>.
-		/// </summary>
-		public bool RelativeToGlobal { get; init; } = true;
 
 		/// <summary>
 		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="GeneratorLoggingConfiguration.DefaultLogDirectory"/>. Defaults to <see langword="false"/>.
@@ -30,14 +30,17 @@ namespace Durian.Generator.Logging
 		public bool RelativeToDefault { get; init; }
 
 		/// <summary>
+		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/>. Defaults to <see langword="true"/>.
+		/// </summary>
+		public bool RelativeToGlobal { get; init; } = true;
+
+		/// <inheritdoc cref="GeneratorLoggingConfiguration.SupportedLogs"/>
+		public GeneratorLogs SupportedLogs { get; init; }
+
+		/// <summary>
 		/// Determines whether the <see cref="ISourceGenerator"/> supports reporting <see cref="Diagnostic"/>s. Defaults to <see langword="false"/>
 		/// </summary>
 		public bool SupportsDiagnostics { get; init; }
-
-		/// <summary>
-		/// Determines whether to enable the <see cref="ISourceGenerator"/> can throw <see cref="Exception"/>s. Defaults to <see langword="false"/>
-		/// </summary>
-		public bool EnableExceptions { get; init; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLoggingConfigurationAttribute"/> class.

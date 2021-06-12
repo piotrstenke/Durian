@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 
 namespace Durian.Generator
 {
@@ -8,6 +11,11 @@ namespace Durian.Generator
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Enum | AttributeTargets.Delegate | AttributeTargets.Event | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
 	public sealed class MovedFromAttribute : Attribute
 	{
+		/// <summary>
+		/// Determines whether to ignore error when the <see cref="Source"/> is not found.
+		/// </summary>
+		public bool IgnoreError { get; set; }
+
 		/// <summary>
 		/// Location the target member was moved from.
 		/// </summary>

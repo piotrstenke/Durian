@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Immutable;
 
 namespace Durian.Info
@@ -10,16 +13,6 @@ namespace Durian.Info
 	public sealed partial class TypeIdentity : IEquatable<TypeIdentity>
 	{
 		private ImmutableArray<ModuleReference> _modules;
-
-		/// <summary>
-		/// Modules this <see cref="TypeIdentity"/> is part of.
-		/// </summary>
-		public ImmutableArray<ModuleReference> Modules => _modules;
-
-		/// <summary>
-		/// Name of the type.
-		/// </summary>
-		public string Name { get; }
 
 		/// <summary>
 		/// Fully qualified name of the type.
@@ -38,6 +31,16 @@ namespace Durian.Info
 				return $"{n}.{Name}";
 			}
 		}
+
+		/// <summary>
+		/// Modules this <see cref="TypeIdentity"/> is part of.
+		/// </summary>
+		public ImmutableArray<ModuleReference> Modules => _modules;
+
+		/// <summary>
+		/// Name of the type.
+		/// </summary>
+		public string Name { get; }
 
 		/// <summary>
 		/// Namespace where the type is to be found.
@@ -61,9 +64,18 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public override string ToString()
+		public static bool operator !=(TypeIdentity a, TypeIdentity b)
 		{
-			return FullyQualifiedName;
+			return !(a == b);
+		}
+
+		/// <inheritdoc/>
+		public static bool operator ==(TypeIdentity a, TypeIdentity b)
+		{
+			return
+				a.Name == b.Name &&
+				b.Namespace == b.Namespace &&
+				Utilities.CompareImmutableArrays(ref a._modules, ref b._modules);
 		}
 
 		/// <inheritdoc/>
@@ -95,18 +107,9 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public static bool operator ==(TypeIdentity a, TypeIdentity b)
+		public override string ToString()
 		{
-			return
-				a.Name == b.Name &&
-				b.Namespace == b.Namespace &&
-				Utilities.CompareImmutableArrays(ref a._modules, ref b._modules);
-		}
-
-		/// <inheritdoc/>
-		public static bool operator !=(TypeIdentity a, TypeIdentity b)
-		{
-			return !(a == b);
+			return FullyQualifiedName;
 		}
 	}
 }

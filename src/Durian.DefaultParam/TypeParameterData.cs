@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -22,9 +25,10 @@ namespace Durian.Generator.DefaultParam
 		public readonly AttributeSyntax? Attribute { get; }
 
 		/// <summary>
-		/// <see cref="TypeParameterSyntax"/> of the target <see cref="Symbol"/>.
+		/// Determines whether the type target <see cref="Symbol"/> has a valid <see cref="DefaultParamAttribute"/>.
 		/// </summary>
-		public readonly TypeParameterSyntax Syntax { get; }
+		[MemberNotNullWhen(true, nameof(Attribute), nameof(TargetType))]
+		public readonly bool IsDefaultParam => Attribute is not null && TargetType is not null;
 
 		/// <summary>
 		/// <see cref="Location"/> of the <see cref="Syntax"/>.
@@ -32,9 +36,9 @@ namespace Durian.Generator.DefaultParam
 		public readonly Location Location => Attribute?.GetLocation() ?? Syntax.GetLocation();
 
 		/// <summary>
-		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="Syntax"/>.
+		/// Name of the <see cref="Symbol"/>.
 		/// </summary>
-		public readonly SemanticModel SemanticModel { get; }
+		public readonly string Name => Symbol.Name;
 
 		/// <summary>
 		/// Parent <see cref="MemberDeclarationSyntax"/> of the <see cref="Syntax"/>.
@@ -42,9 +46,9 @@ namespace Durian.Generator.DefaultParam
 		public readonly MemberDeclarationSyntax Parent { get; }
 
 		/// <summary>
-		/// The <see cref="ITypeSymbol"/> that was specified using the <see cref="Attribute"/>. -or- <see langword="null"/> if <see cref="Attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.
+		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="Syntax"/>.
 		/// </summary>
-		public readonly ITypeSymbol? TargetType { get; }
+		public readonly SemanticModel SemanticModel { get; }
 
 		/// <summary>
 		/// Target <see cref="ITypeParameterSymbol"/>.
@@ -52,15 +56,14 @@ namespace Durian.Generator.DefaultParam
 		public readonly ITypeParameterSymbol Symbol { get; }
 
 		/// <summary>
-		/// Name of the <see cref="Symbol"/>.
+		/// <see cref="TypeParameterSyntax"/> of the target <see cref="Symbol"/>.
 		/// </summary>
-		public readonly string Name => Symbol.Name;
+		public readonly TypeParameterSyntax Syntax { get; }
 
 		/// <summary>
-		/// Determines whether the type target <see cref="Symbol"/> has a valid <see cref="DefaultParamAttribute"/>.
+		/// The <see cref="ITypeSymbol"/> that was specified using the <see cref="Attribute"/>. -or- <see langword="null"/> if <see cref="Attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.
 		/// </summary>
-		[MemberNotNullWhen(true, nameof(Attribute), nameof(TargetType))]
-		public readonly bool IsDefaultParam => Attribute is not null && TargetType is not null;
+		public readonly ITypeSymbol? TargetType { get; }
 
 		/// <inheritdoc cref="TypeParameterData(TypeParameterSyntax, ITypeParameterSymbol, SemanticModel, AttributeSyntax, ITypeSymbol)"/>
 		public TypeParameterData(TypeParameterSyntax syntax, ITypeParameterSymbol symbol, SemanticModel semanticModel) : this(syntax, symbol, semanticModel, null, null)
@@ -83,41 +86,6 @@ namespace Durian.Generator.DefaultParam
 			TargetType = targetType;
 			Parent = (MemberDeclarationSyntax)syntax.Parent!.Parent!;
 			SemanticModel = semanticModel;
-		}
-
-		/// <inheritdoc/>
-		public override bool Equals(object obj)
-		{
-			if (obj is TypeParameterData data)
-			{
-				return Equals(data);
-			}
-
-			return false;
-		}
-
-		/// <inheritdoc/>
-		public bool Equals(TypeParameterData other)
-		{
-			return other == this;
-		}
-
-		/// <inheritdoc/>
-		public override int GetHashCode()
-		{
-			int hashCode = -2050731313;
-			hashCode = (hashCode * -1521134295) + EqualityComparer<AttributeSyntax?>.Default.GetHashCode(Attribute);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<TypeParameterSyntax>.Default.GetHashCode(Syntax);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<MemberDeclarationSyntax>.Default.GetHashCode(Parent);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<ITypeSymbol?>.Default.GetHashCode(TargetType);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<ITypeParameterSymbol>.Default.GetHashCode(Symbol);
-			return hashCode;
-		}
-
-		/// <inheritdoc/>
-		public override string ToString()
-		{
-			return $"Symbol = \"{Symbol}\", TargetType = \"{TargetType?.ToString() ?? string.Empty}\"";
 		}
 
 		/// <summary>
@@ -190,18 +158,65 @@ namespace Durian.Generator.DefaultParam
 			return new TypeParameterData(syntax, symbol, semanticModel);
 		}
 
-		private static ITypeParameterSymbol GetParameterSymbol(TypeParameterSyntax syntax, SemanticModel semanticModel, CancellationToken cancellationToken)
+		/// <inheritdoc/>
+		public static bool operator !=(in TypeParameterData first, in TypeParameterData second)
 		{
-			ITypeParameterSymbol? symbol = semanticModel.GetDeclaredSymbol(syntax, cancellationToken);
+			return !(first == second);
+		}
 
-			if (symbol is null)
+		/// <inheritdoc/>
+		public static bool operator ==(in TypeParameterData first, in TypeParameterData second)
+		{
+			bool areEqual = first.Attribute is null
+				? second.Attribute is null
+				: second.Attribute is not null && first.Attribute.IsEquivalentTo(second.Attribute);
+
+			if (!areEqual)
 			{
-				throw new InvalidOperationException($"Syntax node {nameof(syntax)} is not a descendant node of the target node!");
+				return false;
 			}
-			else
+
+			return
+				areEqual &&
+				SymbolEqualityComparer.Default.Equals(first.TargetType, second.TargetType) &&
+				SymbolEqualityComparer.Default.Equals(first.Symbol, second.Symbol) &&
+				first.Syntax.IsEquivalentTo(second.Syntax) &&
+				first.Parent.IsEquivalentTo(second.Parent);
+		}
+
+		/// <inheritdoc/>
+		public override readonly bool Equals(object obj)
+		{
+			if (obj is TypeParameterData data)
 			{
-				return symbol;
+				return Equals(data);
 			}
+
+			return false;
+		}
+
+		/// <inheritdoc/>
+		public readonly bool Equals(TypeParameterData other)
+		{
+			return other == this;
+		}
+
+		/// <inheritdoc/>
+		public override readonly int GetHashCode()
+		{
+			int hashCode = -2050731313;
+			hashCode = (hashCode * -1521134295) + EqualityComparer<AttributeSyntax?>.Default.GetHashCode(Attribute);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<TypeParameterSyntax>.Default.GetHashCode(Syntax);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<MemberDeclarationSyntax>.Default.GetHashCode(Parent);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<ITypeSymbol?>.Default.GetHashCode(TargetType);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<ITypeParameterSymbol>.Default.GetHashCode(Symbol);
+			return hashCode;
+		}
+
+		/// <inheritdoc/>
+		public override readonly string ToString()
+		{
+			return $"Symbol = \"{Symbol}\", TargetType = \"{TargetType?.ToString() ?? string.Empty}\"";
 		}
 
 		private static (AttributeSyntax?, AttributeData?) GetParameterAttribute(
@@ -233,35 +248,23 @@ namespace Durian.Generator.DefaultParam
 			}
 		}
 
+		private static ITypeParameterSymbol GetParameterSymbol(TypeParameterSyntax syntax, SemanticModel semanticModel, CancellationToken cancellationToken)
+		{
+			ITypeParameterSymbol? symbol = semanticModel.GetDeclaredSymbol(syntax, cancellationToken);
+
+			if (symbol is null)
+			{
+				throw new InvalidOperationException($"Syntax node {nameof(syntax)} is not a descendant node of the target node!");
+			}
+			else
+			{
+				return symbol;
+			}
+		}
+
 		private static ITypeSymbol? GetTargetType(AttributeData data)
 		{
 			return data.ConstructorArguments.FirstOrDefault().Value as ITypeSymbol;
-		}
-
-		/// <inheritdoc/>
-		public static bool operator ==(in TypeParameterData first, in TypeParameterData second)
-		{
-			bool areEqual = first.Attribute is null
-				? second.Attribute is null
-				: second.Attribute is not null && first.Attribute.IsEquivalentTo(second.Attribute);
-
-			if (!areEqual)
-			{
-				return false;
-			}
-
-			return
-				areEqual &&
-				SymbolEqualityComparer.Default.Equals(first.TargetType, second.TargetType) &&
-				SymbolEqualityComparer.Default.Equals(first.Symbol, second.Symbol) &&
-				first.Syntax.IsEquivalentTo(second.Syntax) &&
-				first.Parent.IsEquivalentTo(second.Parent);
-		}
-
-		/// <inheritdoc/>
-		public static bool operator !=(in TypeParameterData first, in TypeParameterData second)
-		{
-			return !(first == second);
 		}
 	}
 }

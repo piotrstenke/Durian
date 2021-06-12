@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
@@ -27,18 +30,18 @@ namespace Durian.Generator.Logging
 		void LogException(Exception exception);
 
 		/// <summary>
-		/// Logs a generated <see cref="SyntaxNode"/>.
-		/// </summary>
-		/// <param name="node"><see cref="SyntaxNode"/> to log.</param>
-		/// <param name="hintName">Name of the log file to log to.</param>
-		void LogNode(SyntaxNode node, string hintName);
-
-		/// <summary>
 		/// Logs an input and output <see cref="SyntaxNode"/>.
 		/// </summary>
 		/// <param name="input">Input <see cref="SyntaxNode"/>.</param>
 		/// <param name="output">Output <see cref="SyntaxNode"/>.</param>
 		/// <param name="hintName">Name of the log file to log to.</param>
 		void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName);
+
+		/// <summary>
+		/// Logs a generated <see cref="SyntaxNode"/>.
+		/// </summary>
+		/// <param name="node"><see cref="SyntaxNode"/> to log.</param>
+		/// <param name="hintName">Name of the log file to log to.</param>
+		void LogNode(SyntaxNode node, string hintName);
 	}
 }

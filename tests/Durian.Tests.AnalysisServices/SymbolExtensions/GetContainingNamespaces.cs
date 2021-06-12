@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Linq;
 using Durian.Generator.Extensions;
@@ -10,9 +13,19 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class GetContainingNamespaces : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		public void CanReturnMultipleNamespaces()
 		{
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetContainingNamespaces());
+			INamedTypeSymbol type = GetSymbol("namespace N1.N2 { class Parent { } }");
+			INamespaceSymbol[] containingNamespaces = type.GetContainingNamespaces().ToArray();
+			Assert.True(containingNamespaces.Length == 2 && containingNamespaces.Any(t => t.Name == "N1") && containingNamespaces.Any(t => t.Name == "N2"));
+		}
+
+		[Fact]
+		public void CanReturnSingleNamespace()
+		{
+			INamedTypeSymbol type = GetSymbol("namespace N1 { class Parent { } }");
+			INamespaceSymbol[] containingNamespaces = type.GetContainingNamespaces().ToArray();
+			Assert.True(containingNamespaces.Length == 1 && containingNamespaces[0].Name == "N1");
 		}
 
 		[Fact]
@@ -29,22 +42,6 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 			INamedTypeSymbol type = GetSymbol("class Test { }");
 			INamespaceSymbol[] containingNamespaces = type.GetContainingNamespaces(true).ToArray();
 			Assert.True(containingNamespaces.Length == 1 && SymbolEqualityComparer.Default.Equals(containingNamespaces[0], Compilation.CurrentCompilation.Assembly.GlobalNamespace));
-		}
-
-		[Fact]
-		public void CanReturnSingleNamespace()
-		{
-			INamedTypeSymbol type = GetSymbol("namespace N1 { class Parent { } }");
-			INamespaceSymbol[] containingNamespaces = type.GetContainingNamespaces().ToArray();
-			Assert.True(containingNamespaces.Length == 1 && containingNamespaces[0].Name == "N1");
-		}
-
-		[Fact]
-		public void CanReturnMultipleNamespaces()
-		{
-			INamedTypeSymbol type = GetSymbol("namespace N1.N2 { class Parent { } }");
-			INamespaceSymbol[] containingNamespaces = type.GetContainingNamespaces().ToArray();
-			Assert.True(containingNamespaces.Length == 2 && containingNamespaces.Any(t => t.Name == "N1") && containingNamespaces.Any(t => t.Name == "N2"));
 		}
 
 		[Fact]
@@ -67,6 +64,12 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 				containingNamespaces[1].Name == "N1" &&
 				containingNamespaces[2].Name == "N2"
 			);
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetContainingNamespaces());
 		}
 
 		private INamedTypeSymbol GetSymbol(string source)

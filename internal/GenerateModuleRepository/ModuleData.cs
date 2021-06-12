@@ -1,13 +1,21 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Generic;
 
 internal class ModuleData
 {
-	public string Name { get; }
-	public string Documentation { get; }
-	public List<string> Packages { get; }
 	public List<DiagnosticData> Diagnostics { get; }
+
+	public string Documentation { get; }
+
 	public List<DiagnosticData> ExternalDiagnostics { get; }
+
 	public List<IncludedType> IncludedTypes { get; }
+
+	public string Name { get; }
+
+	public List<string> Packages { get; }
 
 	public ModuleData(string moduleName)
 	{

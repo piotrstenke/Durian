@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -11,14 +14,14 @@ namespace Durian.Generator.Data
 	public class DelegateData : MemberData
 	{
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.
-		/// </summary>
-		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
-
-		/// <summary>
 		/// Target <see cref="DelegateDeclarationSyntax"/>.
 		/// </summary>
 		public new DelegateDeclarationSyntax Declaration => (base.Declaration as DelegateDeclarationSyntax)!;
+
+		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.
+		/// </summary>
+		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DelegateData"/> class.
@@ -29,6 +32,10 @@ namespace Durian.Generator.Data
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
 		public DelegateData(DelegateDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
+		{
+		}
+
+		internal DelegateData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 
@@ -51,10 +58,6 @@ namespace Durian.Generator.Data
 			IEnumerable<INamespaceSymbol>? containingNamespaces,
 			IEnumerable<AttributeData>? attributes
 		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
-		{
-		}
-
-		internal DelegateData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 	}

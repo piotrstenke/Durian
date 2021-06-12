@@ -1,16 +1,25 @@
-﻿internal class Configuration
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+internal class Configuration
 {
 	internal readonly PackageDefinition _def;
 
-	public string PackageName => _def.PackageName;
-	public string PackageType => _def.PackageType;
-	public string Version => _def.Version;
-	public string[] Modules => _def.Modules;
+	public ref readonly PackageDefinition Definition => ref _def;
+
 	public DiagnosticData[] Diagnostics { get; }
-	public IncludedType[] IncludedTypes { get; }
+
 	public DiagnosticData[]? ExternalDiagnostics { get; set; }
 
-	public ref readonly PackageDefinition Definition => ref _def;
+	public IncludedType[] IncludedTypes { get; }
+
+	public string[] Modules => _def.Modules;
+
+	public string PackageName => _def.PackageName;
+
+	public string PackageType => _def.PackageType;
+
+	public string Version => _def.Version;
 
 	public Configuration(in PackageDefinition definition, DiagnosticData[] diagnostics, IncludedType[] includedTypes)
 	{

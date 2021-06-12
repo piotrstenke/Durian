@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,10 +11,17 @@ namespace Durian.Tests.AnalysisServices.SyntaxNodeExtensions
 	public sealed class HasBody : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_MethodIsNull()
+		public void ReturnsFalse_When_IsAbstract()
 		{
-			MethodDeclarationSyntax method = null!;
-			Assert.Throws<ArgumentNullException>(() => method.HasBody());
+			MethodDeclarationSyntax method = GetNode<MethodDeclarationSyntax>("class Test { abstract void Method(); }");
+			Assert.False(method.HasBody());
+		}
+
+		[Fact]
+		public void ReturnsFalse_When_IsPartial()
+		{
+			MethodDeclarationSyntax method = GetNode<MethodDeclarationSyntax>("class Test { partial void Method(); }");
+			Assert.False(method.HasBody());
 		}
 
 		[Fact]
@@ -29,17 +39,10 @@ namespace Durian.Tests.AnalysisServices.SyntaxNodeExtensions
 		}
 
 		[Fact]
-		public void ReturnsFalse_When_IsPartial()
+		public void ThrowsArgumentNullException_When_MethodIsNull()
 		{
-			MethodDeclarationSyntax method = GetNode<MethodDeclarationSyntax>("class Test { partial void Method(); }");
-			Assert.False(method.HasBody());
-		}
-
-		[Fact]
-		public void ReturnsFalse_When_IsAbstract()
-		{
-			MethodDeclarationSyntax method = GetNode<MethodDeclarationSyntax>("class Test { abstract void Method(); }");
-			Assert.False(method.HasBody());
+			MethodDeclarationSyntax method = null!;
+			Assert.Throws<ArgumentNullException>(() => method.HasBody());
 		}
 	}
 }

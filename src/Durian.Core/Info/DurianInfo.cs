@@ -1,4 +1,7 @@
-﻿namespace Durian.Info
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+namespace Durian.Info
 {
 	/// <summary>
 	/// Contains information about the Durian project.
@@ -6,14 +9,14 @@
 	public static class DurianInfo
 	{
 		/// <summary>
-		/// A <see cref="string"/> that represents the three-letter prefix of each diagnostic id.
+		/// Specifies the maximal valid value of the <see cref="DurianModule"/> enum.
 		/// </summary>
-		public static string IdPrefix => "DUR";
+		public const DurianModule ModuleMax = DurianModule.DefaultParam;
 
 		/// <summary>
-		/// Link to the Durian repository.
+		/// Specifies the minimal valid value of the <see cref="DurianModule"/> enum.
 		/// </summary>
-		public static string Repository => "https://github.com/piotrstenke/Durian";
+		public const DurianModule ModuleMin = DurianModule.Core;
 
 		/// <summary>
 		/// Number of Durian modules published.
@@ -26,14 +29,9 @@
 		public const int NumPackages = 5;
 
 		/// <summary>
-		/// Specifies the minimal valid value of the <see cref="DurianModule"/> enum.
+		/// Specifies the maximal valid value of the <see cref="DurianPackage"/> enum.
 		/// </summary>
-		public const DurianModule ModuleMin = DurianModule.Core;
-
-		/// <summary>
-		/// Specifies the maximal valid value of the <see cref="DurianModule"/> enum.
-		/// </summary>
-		public const DurianModule ModuleMax = DurianModule.DefaultParam;
+		public const DurianPackage PackageMax = DurianPackage.DefaultParam;
 
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianPackage"/> enum.
@@ -41,8 +39,13 @@
 		public const DurianPackage PackageMin = DurianPackage.Core;
 
 		/// <summary>
-		/// Specifies the maximal valid value of the <see cref="DurianPackage"/> enum.
+		/// A <see cref="string"/> that represents the three-letter prefix of each diagnostic id.
 		/// </summary>
-		public const DurianPackage PackageMax = DurianPackage.DefaultParam;
+		public static string IdPrefix => "DUR";
+
+		/// <summary>
+		/// Link to the Durian repository.
+		/// </summary>
+		public static string Repository => "https://github.com/piotrstenke/Durian";
 	}
 }

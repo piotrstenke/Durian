@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using Durian.Generator;
 using Microsoft.CodeAnalysis;
@@ -19,7 +22,7 @@ namespace Durian.Tests
 		}
 
 		/// <inheritdoc/>
-		public IEnumerable<CSharpSyntaxNode> GetCollectedNodes()
+		public IEnumerable<CSharpSyntaxNode> GetNodes()
 		{
 			return Array.Empty<CSharpSyntaxNode>();
 		}

@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Collections;
 using System.Collections.Generic;
 using Xunit;
@@ -6,25 +9,6 @@ namespace Durian.Tests.AnalysisServices.AnalysisUtilities
 {
 	public sealed class KeywordToType
 	{
-		[Fact]
-		public void ReturnsEmpty_When_KeywordIsNull()
-		{
-			Assert.True(Durian.Generator.AnalysisUtilities.KeywordToType(null) == string.Empty);
-		}
-
-		[Theory]
-		[ClassData(typeof(KeywordCollection))]
-		public void ReturnsDotNetType_When_IsValidCSharpTypeKeyword(string keyword, string expected)
-		{
-			Assert.True(Durian.Generator.AnalysisUtilities.KeywordToType(keyword) == expected);
-		}
-
-		[Fact]
-		public void ReturnsInput_When_InputIsNotCSharpTypeKeyword()
-		{
-			Assert.True(Durian.Generator.AnalysisUtilities.KeywordToType("type") == "type");
-		}
-
 		private sealed class KeywordCollection : IEnumerable<object[]>
 		{
 			public IEnumerator<object[]> GetEnumerator()
@@ -44,6 +28,25 @@ namespace Durian.Tests.AnalysisServices.AnalysisUtilities
 			{
 				return GetEnumerator();
 			}
+		}
+
+		[Theory]
+		[ClassData(typeof(KeywordCollection))]
+		public void ReturnsDotNetType_When_IsValidCSharpTypeKeyword(string keyword, string expected)
+		{
+			Assert.True(Durian.Generator.AnalysisUtilities.KeywordToType(keyword) == expected);
+		}
+
+		[Fact]
+		public void ReturnsEmpty_When_KeywordIsNull()
+		{
+			Assert.True(Durian.Generator.AnalysisUtilities.KeywordToType(null) == string.Empty);
+		}
+
+		[Fact]
+		public void ReturnsInput_When_InputIsNotCSharpTypeKeyword()
+		{
+			Assert.True(Durian.Generator.AnalysisUtilities.KeywordToType("type") == "type");
 		}
 	}
 }

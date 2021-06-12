@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -14,32 +17,32 @@ namespace Durian.Tests
 		private readonly GeneratorRunResult _runResult;
 
 		/// <inheritdoc/>
-		public readonly CSharpCompilation InputCompilation { get; }
-
-		/// <inheritdoc/>
-		public readonly CSharpCompilation OutputCompilation { get; }
+		public readonly ImmutableArray<Diagnostic> Diagnostics => _runResult.Diagnostics;
 
 		/// <inheritdoc/>
 		public readonly Exception? Exception => _runResult.Exception;
+
+		/// <summary>
+		/// A collection of <see cref="GeneratedSourceResult"/> that act as the output of the <see cref="Generator"/>.
+		/// </summary>
+		public readonly ImmutableArray<GeneratedSourceResult> GeneratedSources => _runResult.GeneratedSources;
 
 		/// <inheritdoc/>
 		public readonly ISourceGenerator Generator => _runResult.Generator;
 
 		/// <inheritdoc/>
-		public readonly ImmutableArray<Diagnostic> Diagnostics => _runResult.Diagnostics;
+		public readonly CSharpCompilation InputCompilation { get; }
 
-		/// <summary>
-		/// A collection of <see cref="GeneratedSourceResult"/> that act as the output of the <see cref="Generator"/>.
-		/// </summary>
-		public ImmutableArray<GeneratedSourceResult> GeneratedSources => _runResult.GeneratedSources;
+		/// <inheritdoc/>
+		public readonly bool IsGenerated => Exception is null && GeneratedSources.Length > 0;
 
 		/// <summary>
 		/// Number of <see cref="GeneratedSourceResult"/> that were created by the <see cref="Generator"/>.
 		/// </summary>
-		public int Length => GeneratedSources.Length;
+		public readonly int Length => GeneratedSources.Length;
 
 		/// <inheritdoc/>
-		public readonly bool IsGenerated => Exception is null && GeneratedSources.Length > 0;
+		public readonly CSharpCompilation OutputCompilation { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MultiOutputGeneratorTestResult"/> struct.
@@ -54,12 +57,18 @@ namespace Durian.Tests
 			_runResult = generatorDriver.GetRunResult().Results[0];
 		}
 
+		/// <inheritdoc cref="MultiOutputGeneratorTestResult(GeneratorDriver, CSharpCompilation, CSharpCompilation)"/>
+		public static MultiOutputGeneratorTestResult Create(GeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
+		{
+			return new MultiOutputGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation);
+		}
+
 		/// <summary>
 		/// Checks if the <see cref="CSharpSyntaxTree"/> at the specified <paramref name="index"/> in <see cref="GeneratedSources"/> is equivalent to a <see cref="CSharpSyntaxTree"/> created from the given <paramref name="expected"/> source.
 		/// </summary>
 		/// <param name="index">Index at which the <see cref="CSharpSyntaxTree"/> to compare is located at.</param>
 		/// <param name="expected">A <see cref="string"/> that represents a <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
-		public bool Compare(int index, string? expected)
+		public readonly bool Compare(int index, string? expected)
 		{
 			if (index < 0 && index > Length)
 			{
@@ -79,7 +88,7 @@ namespace Durian.Tests
 		/// </summary>
 		/// <param name="index">Index at which the <see cref="CSharpSyntaxTree"/> to compare is located at.</param>
 		/// <param name="syntaxTree"><see cref="CSharpSyntaxTree"/> to compare.</param>
-		public bool Compare(int index, CSharpSyntaxTree? syntaxTree)
+		public readonly bool Compare(int index, CSharpSyntaxTree? syntaxTree)
 		{
 			if (index < 0 && index > Length)
 			{
@@ -89,7 +98,7 @@ namespace Durian.Tests
 			return Compare_Internal(index, syntaxTree);
 		}
 
-		bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result)
+		readonly bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result)
 		{
 			if (result.GeneratedTrees.Length != Length)
 			{
@@ -109,7 +118,7 @@ namespace Durian.Tests
 			return true;
 		}
 
-		private bool Compare_Internal(int index, SyntaxTree? syntaxTree)
+		private readonly bool Compare_Internal(int index, SyntaxTree? syntaxTree)
 		{
 			if (syntaxTree is null)
 			{
@@ -117,12 +126,6 @@ namespace Durian.Tests
 			}
 
 			return GeneratedSources[index].SyntaxTree.IsEquivalentTo(syntaxTree);
-		}
-
-		/// <inheritdoc cref="MultiOutputGeneratorTestResult(GeneratorDriver, CSharpCompilation, CSharpCompilation)"/>
-		public static MultiOutputGeneratorTestResult Create(GeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
-		{
-			return new MultiOutputGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation);
 		}
 	}
 }

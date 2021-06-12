@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Generator.DefaultParam
@@ -9,9 +12,9 @@ namespace Durian.Generator.DefaultParam
 	public readonly struct ParameterGeneration : IEquatable<ParameterGeneration>
 	{
 		/// <summary>
-		/// <see cref="ITypeSymbol"/> representing type of this parameter.
+		/// Index of generic parameter this parameter is of type of.
 		/// </summary>
-		public readonly ITypeSymbol Type { get; }
+		public readonly int GenericParameterIndex { get; }
 
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.RefKind"/> of this parameter.
@@ -19,9 +22,9 @@ namespace Durian.Generator.DefaultParam
 		public readonly RefKind RefKind { get; }
 
 		/// <summary>
-		/// Index of generic parameter this parameter is of type of.
+		/// <see cref="ITypeSymbol"/> representing type of this parameter.
 		/// </summary>
-		public readonly int GenericParameterIndex { get; }
+		public readonly ITypeSymbol Type { get; }
 
 		/// <inheritdoc cref="ParameterGeneration(ITypeSymbol, RefKind, int)"/>
 		public ParameterGeneration(ITypeSymbol type, RefKind refKind)
@@ -45,31 +48,9 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public override string ToString()
+		public static bool operator !=(ParameterGeneration a, ParameterGeneration b)
 		{
-			return (RefKind != RefKind.None ? $"{RefKind} " : "") + Type.Name;
-		}
-
-		/// <inheritdoc/>
-		public bool Equals(ParameterGeneration other)
-		{
-			return this == other;
-		}
-
-		/// <inheritdoc/>
-		public override bool Equals(object obj)
-		{
-			return obj is ParameterGeneration other && other == this;
-		}
-
-		/// <inheritdoc/>
-		public override int GetHashCode()
-		{
-			int hashCode = 2061023908;
-			hashCode = (hashCode * -1521134295) + SymbolEqualityComparer.Default.GetHashCode(Type);
-			hashCode = (hashCode * -1521134295) + RefKind.GetHashCode();
-			hashCode = (hashCode * -1521134295) + GenericParameterIndex.GetHashCode();
-			return hashCode;
+			return !(a == b);
 		}
 
 		/// <inheritdoc/>
@@ -79,9 +60,31 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(ParameterGeneration a, ParameterGeneration b)
+		public readonly bool Equals(ParameterGeneration other)
 		{
-			return !(a == b);
+			return this == other;
+		}
+
+		/// <inheritdoc/>
+		public override readonly bool Equals(object obj)
+		{
+			return obj is ParameterGeneration other && other == this;
+		}
+
+		/// <inheritdoc/>
+		public override readonly int GetHashCode()
+		{
+			int hashCode = 2061023908;
+			hashCode = (hashCode * -1521134295) + SymbolEqualityComparer.Default.GetHashCode(Type);
+			hashCode = (hashCode * -1521134295) + RefKind.GetHashCode();
+			hashCode = (hashCode * -1521134295) + GenericParameterIndex.GetHashCode();
+			return hashCode;
+		}
+
+		/// <inheritdoc/>
+		public override readonly string ToString()
+		{
+			return (RefKind != RefKind.None ? $"{RefKind} " : "") + Type.Name;
 		}
 	}
 }

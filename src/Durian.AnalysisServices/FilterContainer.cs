@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,11 +17,6 @@ namespace Durian.Generator
 	public class FilterContainer<TFilter> : ICollection<FilterGroup<TFilter>> where TFilter : ISyntaxFilter
 	{
 		private readonly List<FilterGroup<TFilter>> _filterGroups;
-
-		/// <summary>
-		/// Number of filter groups in this list.
-		/// </summary>
-		public int NumGroups => _filterGroups.Count;
 
 		/// <summary>
 		/// Number of filters in this list.
@@ -39,12 +37,17 @@ namespace Durian.Generator
 			}
 		}
 
+		bool ICollection<FilterGroup<TFilter>>.IsReadOnly => IsSealed;
+
 		/// <summary>
 		/// Determines whether this <see cref="FilterContainer{TFilter}"/> is sealed by calling the <see cref="Seal"/> method.
 		/// </summary>
 		public bool IsSealed { get; private set; }
 
-		bool ICollection<FilterGroup<TFilter>>.IsReadOnly => IsSealed;
+		/// <summary>
+		/// Number of filter groups in this list.
+		/// </summary>
+		public int NumGroups => _filterGroups.Count;
 
 		/// <inheritdoc cref="GetFilterGroup(int)"/>
 		public FilterGroup<TFilter> this[int index] => _filterGroups[index];
@@ -118,6 +121,11 @@ namespace Durian.Generator
 			RegisterFilterGroups(groups);
 		}
 
+		void ICollection<FilterGroup<TFilter>>.Add(FilterGroup<TFilter> item)
+		{
+			RegisterFilterGroup(item);
+		}
+
 		/// <summary>
 		/// Adds a <typeparamref name="TFilter"/> to a <see cref="FilterGroup{TFilter}"/> at the specified <paramref name="index"/>
 		/// </summary>
@@ -184,6 +192,64 @@ namespace Durian.Generator
 		}
 
 		/// <summary>
+		/// Removes all <see cref="FilterGroup{TFilter}"/>s from the <see cref="FilterContainer{TFilter}"/>.
+		/// </summary>
+		/// <exception cref="InvalidOperationException"><see cref="FilterContainer{TFilter}"/> is sealed.</exception>
+		public void Clear()
+		{
+			ThrowIfSealed();
+			_filterGroups.Clear();
+		}
+
+		bool ICollection<FilterGroup<TFilter>>.Contains(FilterGroup<TFilter> item)
+		{
+			return ContainsFilterGroup(item);
+		}
+
+		/// <summary>
+		/// Determines whether any <see cref="FilterGroup{TFilter}"/> has the specified <paramref name="name"/>.
+		/// </summary>
+		/// <param name="name">Name to check for.</param>
+		/// <exception cref="ArgumentException"><paramref name="name"/> cannot be null or white space only.</exception>
+		public bool ContainsFilterGroup(string name)
+		{
+			ThrowIfNullOrWhiteSpace(name);
+
+			return _filterGroups.Any(g => g.Name == name);
+		}
+
+		/// <summary>
+		/// Determines whether this <see cref="FilterContainer{TFilter}"/> contains the specified <paramref name="group"/>.
+		/// </summary>
+		/// <param name="group"><see cref="FilterGroup{TFilter}"/> to check.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="group"/> is <see langword="null"/>.</exception>
+		public bool ContainsFilterGroup(FilterGroup<TFilter> group)
+		{
+			if (group is null)
+			{
+				throw new ArgumentNullException(nameof(group));
+			}
+
+			return _filterGroups.Contains(group);
+		}
+
+		void ICollection<FilterGroup<TFilter>>.CopyTo(FilterGroup<TFilter>[] array, int arrayIndex)
+		{
+			_filterGroups.CopyTo(array, arrayIndex);
+		}
+
+		/// <inheritdoc/>
+		public IEnumerator<FilterGroup<TFilter>> GetEnumerator()
+		{
+			return _filterGroups.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		/// <summary>
 		/// Returns a <typeparamref name="TFilter"/> at the given <paramref name="index"/> in the specified <paramref name="group"/>.
 		/// </summary>
 		/// <param name="group">Group to get the <typeparamref name="TFilter"/> from.</param>
@@ -215,41 +281,6 @@ namespace Durian.Generator
 		}
 
 		/// <summary>
-		/// Removes a <typeparamref name="TFilter"/> at the given <paramref name="index"/> in the specified <paramref name="group"/>.
-		/// </summary>
-		/// <param name="group">Group to remove the <typeparamref name="TFilter"/> from.</param>
-		/// <param name="index">Index of the <typeparamref name="TFilter"/> in the specified <paramref name="group"/>.</param>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// <paramref name="group"/> is less than <c>0</c>. -or-
-		/// <paramref name="group"/> is equal to or greater than <see cref="NumGroups"/>. -or-
-		/// <paramref name="index"/> is less than <c>0</c>. -or-
-		/// <paramref name="index"/> is equal to or greater than <see cref="FilterGroup{TFilter}.Count"/>.
-		/// </exception>
-		/// <exception cref="InvalidOperationException"><see cref="FilterContainer{TFilter}"/> is sealed. -or- <see cref="FilterGroup{TFilter}"/> is sealed.</exception>
-		public void RemoveFilter(int group, int index)
-		{
-			ThrowIfSealed();
-			GetFilterGroup(group).RemoveFilter(index);
-		}
-
-		/// <summary>
-		/// Removes a <typeparamref name="TFilter"/> at the given <paramref name="index"/> in a <see cref="FilterGroup{TFilter}"/> with the specified <paramref name="name"/>.
-		/// </summary>
-		/// <param name="name">Name of the <see cref="FilterGroup{TFilter}"/> to remove the <typeparamref name="TFilter"/> from.</param>
-		/// <param name="index">Index of the <typeparamref name="TFilter"/> in the specified group.</param>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than <c>0</c>. -or- <paramref name="index"/> is equal to or greater than <see cref="FilterGroup{TFilter}.Count"/>.</exception>
-		/// <exception cref="ArgumentException">
-		/// <paramref name="name"/> cannot be null or whitespace only. -or-
-		/// <see cref="FilterGroup{TFilter}"/> with the specified <paramref name="name"/> not found.
-		/// </exception>
-		/// <exception cref="InvalidOperationException"><see cref="FilterContainer{TFilter}"/> is sealed. -or- <see cref="FilterGroup{TFilter}"/> is sealed.</exception>
-		public void RemoveFilter(string name, int index)
-		{
-			ThrowIfSealed();
-			GetFilterGroup(name).RemoveFilter(index);
-		}
-
-		/// <summary>
 		/// Returns a <see cref="FilterGroup{TFilter}"/> at the specified <paramref name="index"/>.
 		/// </summary>
 		/// <param name="index">Index of the <see cref="FilterGroup{TFilter}"/> to get.</param>
@@ -277,6 +308,28 @@ namespace Durian.Generator
 			}
 
 			return group;
+		}
+
+		/// <summary>
+		/// Returns index of a <see cref="FilterGroup{TFilter}"/> with the specified <paramref name="name"/>.
+		/// </summary>
+		/// <param name="name">Name of <see cref="FilterGroup{TFilter}"/> to return the index of.</param>
+		/// <exception cref="ArgumentException"><paramref name="name"/> cannot be <see langword="null"/> or white space only.</exception>
+		public int IndexOf(string name)
+		{
+			ThrowIfNullOrWhiteSpace(name);
+			return _filterGroups.FindIndex(g => g.Name == name);
+		}
+
+		/// <summary>
+		/// Returns name of the <see cref="FilterGroup{TFilter}"/> at the specified <paramref name="index"/>.
+		/// </summary>
+		/// <param name="index"></param>
+		/// <returns>Name of the <see cref="FilterGroup{TFilter}"/> at the specified <paramref name="index"/>. -or- <see langword="null"/> if group at the specified <paramref name="index"/> doesn't have a name.</returns>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than <c>0</c>. -or- <paramref name="index"/> is equal to or greater than <see cref="NumGroups"/>.</exception>
+		public string? NameOf(int index)
+		{
+			return _filterGroups[index].Name;
 		}
 
 		/// <summary>
@@ -454,6 +507,125 @@ namespace Durian.Generator
 			}
 		}
 
+		bool ICollection<FilterGroup<TFilter>>.Remove(FilterGroup<TFilter> item)
+		{
+			UnregisterFilterGroup(item);
+			return true;
+		}
+
+		/// <summary>
+		/// Removes a <typeparamref name="TFilter"/> at the given <paramref name="index"/> in the specified <paramref name="group"/>.
+		/// </summary>
+		/// <param name="group">Group to remove the <typeparamref name="TFilter"/> from.</param>
+		/// <param name="index">Index of the <typeparamref name="TFilter"/> in the specified <paramref name="group"/>.</param>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <paramref name="group"/> is less than <c>0</c>. -or-
+		/// <paramref name="group"/> is equal to or greater than <see cref="NumGroups"/>. -or-
+		/// <paramref name="index"/> is less than <c>0</c>. -or-
+		/// <paramref name="index"/> is equal to or greater than <see cref="FilterGroup{TFilter}.Count"/>.
+		/// </exception>
+		/// <exception cref="InvalidOperationException"><see cref="FilterContainer{TFilter}"/> is sealed. -or- <see cref="FilterGroup{TFilter}"/> is sealed.</exception>
+		public void RemoveFilter(int group, int index)
+		{
+			ThrowIfSealed();
+			GetFilterGroup(group).RemoveFilter(index);
+		}
+
+		/// <summary>
+		/// Removes a <typeparamref name="TFilter"/> at the given <paramref name="index"/> in a <see cref="FilterGroup{TFilter}"/> with the specified <paramref name="name"/>.
+		/// </summary>
+		/// <param name="name">Name of the <see cref="FilterGroup{TFilter}"/> to remove the <typeparamref name="TFilter"/> from.</param>
+		/// <param name="index">Index of the <typeparamref name="TFilter"/> in the specified group.</param>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than <c>0</c>. -or- <paramref name="index"/> is equal to or greater than <see cref="FilterGroup{TFilter}.Count"/>.</exception>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="name"/> cannot be null or whitespace only. -or-
+		/// <see cref="FilterGroup{TFilter}"/> with the specified <paramref name="name"/> not found.
+		/// </exception>
+		/// <exception cref="InvalidOperationException"><see cref="FilterContainer{TFilter}"/> is sealed. -or- <see cref="FilterGroup{TFilter}"/> is sealed.</exception>
+		public void RemoveFilter(string name, int index)
+		{
+			ThrowIfSealed();
+			GetFilterGroup(name).RemoveFilter(index);
+		}
+
+		/// <summary>
+		/// Changes the name of the <see cref="FilterGroup{TFilter}"/> at the specified <paramref name="index"/>.
+		/// </summary>
+		/// <param name="index">Index of group to rename.</param>
+		/// <param name="newName">New name for the <see cref="FilterGroup{TFilter}"/>.</param>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than <c>0</c>. -or- <paramref name="index"/> is equal to or greater than <see cref="NumGroups"/>.</exception>
+		/// <exception cref="ArgumentException"><see cref="FilterGroup{TFilter}"/> with the specified <paramref name="newName"/> already defined. -or- <paramref name="newName"/> cannot be empty or white space only.</exception>
+		public void Rename(int index, string? newName)
+		{
+			if (newName is not null && string.IsNullOrWhiteSpace(newName))
+			{
+				throw new ArgumentException($"{nameof(newName)} cannot be empty or white space only!");
+			}
+
+			FilterGroup<TFilter> group = _filterGroups[index];
+
+			if (newName != group.Name)
+			{
+				bool exists = false;
+
+				foreach (string? n in _filterGroups.Select(g => g.Name))
+				{
+					if (n == newName)
+					{
+						if (exists)
+						{
+							throw Exc_GroupWithNameAlreadyDefined(newName!);
+						}
+
+						exists = true;
+					}
+				}
+			}
+
+			group.Name = newName;
+		}
+
+		/// <summary>
+		/// Changes the name of a <see cref="FilterGroup{TFilter}"/>.
+		/// </summary>
+		/// <param name="name">Name of target <see cref="FilterGroup{TFilter}"/>.</param>
+		/// <param name="newName">New name for the <see cref="FilterGroup{TFilter}"/>.</param>
+		/// <exception cref="ArgumentException">
+		/// <see cref="FilterGroup{TFilter}"/> with the specified <paramref name="newName"/> already defined. -or-
+		/// <see cref="FilterGroup{TFilter}"/> with the <paramref name="name"/> not found. -or-
+		/// <paramref name="name"/> cannot be null or white space only. -or-
+		/// <paramref name="newName"/> cannot be empty or white space only.
+		/// </exception>
+		public void Rename(string name, string? newName)
+		{
+			ThrowIfNullOrWhiteSpace(name);
+
+			int index = _filterGroups.FindIndex(g => g.Name == name);
+
+			if (index == -1)
+			{
+				throw new ArgumentException($"Group with name '{name}' not found!");
+			}
+
+			Rename(index, newName);
+		}
+
+		/// <summary>
+		/// After this method is called, no more <typeparamref name="TFilter"/>s or <see cref="FilterGroup{TFilter}"/>s can be added to or removed from this <see cref="FilterContainer{TFilter}"/>.
+		/// </summary>
+		public void Seal()
+		{
+			IsSealed = true;
+		}
+
+		/// <summary>
+		/// Converts this <see cref="FilterContainer{TFilter}"/> into an array of <see cref="FilterGroup{TFilter}"/>s.
+		/// </summary>
+		public FilterGroup<TFilter>[] ToArray()
+		{
+			return _filterGroups.ToArray();
+		}
+
 		/// <summary>
 		/// Unregisters the <see cref="FilterGroup{TFilter}"/> group at the specified <paramref name="index"/>.
 		/// </summary>
@@ -544,180 +716,11 @@ namespace Durian.Generator
 		}
 
 		/// <summary>
-		/// Changes the name of the <see cref="FilterGroup{TFilter}"/> at the specified <paramref name="index"/>.
-		/// </summary>
-		/// <param name="index">Index of group to rename.</param>
-		/// <param name="newName">New name for the <see cref="FilterGroup{TFilter}"/>.</param>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than <c>0</c>. -or- <paramref name="index"/> is equal to or greater than <see cref="NumGroups"/>.</exception>
-		/// <exception cref="ArgumentException"><see cref="FilterGroup{TFilter}"/> with the specified <paramref name="newName"/> already defined. -or- <paramref name="newName"/> cannot be empty or white space only.</exception>
-		public void Rename(int index, string? newName)
-		{
-			if (newName is not null && string.IsNullOrWhiteSpace(newName))
-			{
-				throw new ArgumentException($"{nameof(newName)} cannot be empty or white space only!");
-			}
-
-			FilterGroup<TFilter> group = _filterGroups[index];
-
-			if (newName != group.Name)
-			{
-				bool exists = false;
-
-				foreach (string? n in _filterGroups.Select(g => g.Name))
-				{
-					if (n == newName)
-					{
-						if (exists)
-						{
-							throw Exc_GroupWithNameAlreadyDefined(newName!);
-						}
-
-						exists = true;
-					}
-				}
-			}
-
-			group.Name = newName;
-		}
-
-		/// <summary>
-		/// Changes the name of a <see cref="FilterGroup{TFilter}"/>.
-		/// </summary>
-		/// <param name="name">Name of target <see cref="FilterGroup{TFilter}"/>.</param>
-		/// <param name="newName">New name for the <see cref="FilterGroup{TFilter}"/>.</param>
-		/// <exception cref="ArgumentException">
-		/// <see cref="FilterGroup{TFilter}"/> with the specified <paramref name="newName"/> already defined. -or-
-		/// <see cref="FilterGroup{TFilter}"/> with the <paramref name="name"/> not found. -or-
-		/// <paramref name="name"/> cannot be null or white space only. -or-
-		/// <paramref name="newName"/> cannot be empty or white space only.
-		/// </exception>
-		public void Rename(string name, string? newName)
-		{
-			ThrowIfNullOrWhiteSpace(name);
-
-			int index = _filterGroups.FindIndex(g => g.Name == name);
-
-			if (index == -1)
-			{
-				throw new ArgumentException($"Group with name '{name}' not found!");
-			}
-
-			Rename(index, newName);
-		}
-
-		/// <summary>
-		/// Returns name of the <see cref="FilterGroup{TFilter}"/> at the specified <paramref name="index"/>.
-		/// </summary>
-		/// <param name="index"></param>
-		/// <returns>Name of the <see cref="FilterGroup{TFilter}"/> at the specified <paramref name="index"/>. -or- <see langword="null"/> if group at the specified <paramref name="index"/> doesn't have a name.</returns>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than <c>0</c>. -or- <paramref name="index"/> is equal to or greater than <see cref="NumGroups"/>.</exception>
-		public string? NameOf(int index)
-		{
-			return _filterGroups[index].Name;
-		}
-
-		/// <summary>
-		/// Returns index of a <see cref="FilterGroup{TFilter}"/> with the specified <paramref name="name"/>.
-		/// </summary>
-		/// <param name="name">Name of <see cref="FilterGroup{TFilter}"/> to return the index of.</param>
-		/// <exception cref="ArgumentException"><paramref name="name"/> cannot be <see langword="null"/> or white space only.</exception>
-		public int IndexOf(string name)
-		{
-			ThrowIfNullOrWhiteSpace(name);
-			return _filterGroups.FindIndex(g => g.Name == name);
-		}
-
-		/// <summary>
-		/// Determines whether any <see cref="FilterGroup{TFilter}"/> has the specified <paramref name="name"/>.
-		/// </summary>
-		/// <param name="name">Name to check for.</param>
-		/// <exception cref="ArgumentException"><paramref name="name"/> cannot be null or white space only.</exception>
-		public bool ContainsFilterGroup(string name)
-		{
-			ThrowIfNullOrWhiteSpace(name);
-
-			return _filterGroups.Any(g => g.Name == name);
-		}
-
-		/// <summary>
-		/// Determines whether this <see cref="FilterContainer{TFilter}"/> contains the specified <paramref name="group"/>.
-		/// </summary>
-		/// <param name="group"><see cref="FilterGroup{TFilter}"/> to check.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="group"/> is <see langword="null"/>.</exception>
-		public bool ContainsFilterGroup(FilterGroup<TFilter> group)
-		{
-			if (group is null)
-			{
-				throw new ArgumentNullException(nameof(group));
-			}
-
-			return _filterGroups.Contains(group);
-		}
-
-		/// <summary>
-		/// Removes all <see cref="FilterGroup{TFilter}"/>s from the <see cref="FilterContainer{TFilter}"/>.
-		/// </summary>
-		/// <exception cref="InvalidOperationException"><see cref="FilterContainer{TFilter}"/> is sealed.</exception>
-		public void Clear()
-		{
-			ThrowIfSealed();
-			_filterGroups.Clear();
-		}
-
-		/// <summary>
-		/// Converts this <see cref="FilterContainer{TFilter}"/> into an array of <see cref="FilterGroup{TFilter}"/>s.
-		/// </summary>
-		public FilterGroup<TFilter>[] ToArray()
-		{
-			return _filterGroups.ToArray();
-		}
-
-		/// <summary>
-		/// After this method is called, no more <typeparamref name="TFilter"/>s or <see cref="FilterGroup{TFilter}"/>s can be added to or removed from this <see cref="FilterContainer{TFilter}"/>.
-		/// </summary>
-		public void Seal()
-		{
-			IsSealed = true;
-		}
-
-		/// <summary>
 		/// Removes effect of the <see cref="Seal"/> method.
 		/// </summary>
 		public void Unseal()
 		{
 			IsSealed = false;
-		}
-
-		/// <inheritdoc/>
-		public IEnumerator<FilterGroup<TFilter>> GetEnumerator()
-		{
-			return _filterGroups.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		bool ICollection<FilterGroup<TFilter>>.Remove(FilterGroup<TFilter> item)
-		{
-			UnregisterFilterGroup(item);
-			return true;
-		}
-
-		void ICollection<FilterGroup<TFilter>>.CopyTo(FilterGroup<TFilter>[] array, int arrayIndex)
-		{
-			_filterGroups.CopyTo(array, arrayIndex);
-		}
-
-		void ICollection<FilterGroup<TFilter>>.Add(FilterGroup<TFilter> item)
-		{
-			RegisterFilterGroup(item);
-		}
-
-		bool ICollection<FilterGroup<TFilter>>.Contains(FilterGroup<TFilter> item)
-		{
-			return ContainsFilterGroup(item);
 		}
 
 		private static ArgumentException Exc_GroupWithNameAlreadyDefined(string name)
@@ -730,14 +733,6 @@ namespace Durian.Generator
 			return new InvalidOperationException("Specified group is not contained within this filter container!");
 		}
 
-		private static void ThrowIfNullOrWhiteSpace(string name)
-		{
-			if (string.IsNullOrWhiteSpace(name))
-			{
-				throw new ArgumentException($"{nameof(name)} cannot be null or whitespace only!");
-			}
-		}
-
 		private static void ThrowIfEmptyOrWhiteSpace(string name)
 		{
 			if (string.IsNullOrWhiteSpace(name))
@@ -746,19 +741,19 @@ namespace Durian.Generator
 			}
 		}
 
-		private void ThrowIfNameExists(string name)
+		private static void ThrowIfNullOrWhiteSpace(string name)
 		{
-			if (_filterGroups.Any(g => g.Name == name))
+			if (string.IsNullOrWhiteSpace(name))
 			{
-				throw Exc_GroupWithNameAlreadyDefined(name);
+				throw new ArgumentException($"{nameof(name)} cannot be null or whitespace only!");
 			}
 		}
 
-		private void ThrowIfSealed()
+		private void AddParent(FilterGroup<TFilter> group)
 		{
-			if (IsSealed)
+			if (!group._containers.Contains(this))
 			{
-				throw new InvalidOperationException("Filter container is sealed!");
+				group._containers.Add(this);
 			}
 		}
 
@@ -775,11 +770,19 @@ namespace Durian.Generator
 			}
 		}
 
-		private void AddParent(FilterGroup<TFilter> group)
+		private void ThrowIfNameExists(string name)
 		{
-			if (!group._containers.Contains(this))
+			if (_filterGroups.Any(g => g.Name == name))
 			{
-				group._containers.Add(this);
+				throw Exc_GroupWithNameAlreadyDefined(name);
+			}
+		}
+
+		private void ThrowIfSealed()
+		{
+			if (IsSealed)
+			{
+				throw new InvalidOperationException("Filter container is sealed!");
 			}
 		}
 	}

@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -15,8 +18,17 @@ namespace Durian.Tests
 	/// </summary>
 	public sealed class TestableCompilationData : ICompilationData
 	{
-		private CSharpCompilation? _originalCompilation;
 		private CSharpCompilation? _currentCompilation;
+		private CSharpCompilation? _originalCompilation;
+		CSharpCompilation ICompilationData.Compilation => _currentCompilation!;
+
+		/// <summary>
+		/// A <see cref="CSharpCompilation"/> that is affected by the <see cref="UpdateCompilation(CSharpSyntaxTree)"/> method or its overloads.
+		/// </summary>
+		public CSharpCompilation CurrentCompilation => _currentCompilation!;
+
+		/// <inheritdoc/>
+		public bool HasErrors { get; set; }
 
 		/// <summary>
 		/// Original <see cref="CSharpCompilation"/> that is not affected by the <see cref="UpdateCompilation(CSharpSyntaxTree)"/> method or its overloads.
@@ -34,16 +46,6 @@ namespace Durian.Tests
 			}
 		}
 
-		/// <summary>
-		/// A <see cref="CSharpCompilation"/> that is affected by the <see cref="UpdateCompilation(CSharpSyntaxTree)"/> method or its overloads.
-		/// </summary>
-		public CSharpCompilation CurrentCompilation => _currentCompilation!;
-
-		/// <inheritdoc/>
-		public bool HasErrors { get; set; }
-
-		CSharpCompilation ICompilationData.Compilation => _currentCompilation!;
-
 		private TestableCompilationData(CSharpCompilation? compilation)
 		{
 			_originalCompilation = compilation;
@@ -51,111 +53,74 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Resets the <see cref="TestableCompilationData"/>, so that the <see cref="CurrentCompilation"/> now references the <see cref="OriginalCompilation"/>.
+		/// Creates a new <see cref="TestableCompilationData"/>.
 		/// </summary>
-		public void Reset()
+		/// <param name="includeDefaultAssemblies">Determines whether to include all the default assemblies returned bu the <see cref="RoslynUtilities.GetBaseReferences()"/> method.</param>
+		public static TestableCompilationData Create(bool includeDefaultAssemblies = true)
 		{
-			_currentCompilation = _originalCompilation;
+			return new TestableCompilationData(includeDefaultAssemblies ? RoslynUtilities.CreateBaseCompilation() : null);
 		}
 
 		/// <summary>
-		/// Parses the <paramref name="source"/> <see cref="string"/> and adds the created <see cref="CSharpSyntaxTree"/> to the <see cref="Compilation"/>.
+		/// Creates a new <see cref="TestableCompilationData"/>.
 		/// </summary>
-		/// <param name="source"><see cref="string"/> to parse and add.</param>
-		public void UpdateCompilation(string? source)
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the newly-created <see cref="TestableCompilationData"/>.</param>
+		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the newly-created <see cref="TestableCompilationData"/>.</param>
+		public static TestableCompilationData Create(IEnumerable<string>? sources, IEnumerable<Assembly>? assemblies)
 		{
-			if (source is null)
-			{
-				return;
-			}
-
-			UpdateCompilation(CSharpSyntaxTree.ParseText(source, encoding: Encoding.UTF8) as CSharpSyntaxTree);
+			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(sources, assemblies?.ToArray()));
 		}
 
 		/// <summary>
-		/// Adds the <paramref name="tree"/> to the <see cref="Compilation"/>.
+		/// Creates a new <see cref="TestableCompilationData"/>.
 		/// </summary>
-		/// <param name="tree"><see cref="CSharpSyntaxTree"/> to add.</param>
-		public void UpdateCompilation(CSharpSyntaxTree? tree)
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the newly-created <see cref="TestableCompilationData"/>.</param>
+		public static TestableCompilationData Create(IEnumerable<string>? sources)
 		{
-			if (tree is null)
-			{
-				return;
-			}
-
-			_currentCompilation = _currentCompilation?.AddSyntaxTrees(tree);
+			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(sources));
 		}
 
 		/// <summary>
-		/// Replaces the <paramref name="original"/> <see cref="SyntaxTree"/> with the <paramref name="updated"/> one.
+		/// Creates a new <see cref="TestableCompilationData"/>.
 		/// </summary>
-		/// <param name="original"><see cref="CSharpSyntaxTree"/> to replace.</param>
-		/// <param name="updated"><see cref="CSharpSyntaxTree"/> to replace the <paramref name="original"/> by.</param>
-		public void UpdateCompilation(CSharpSyntaxTree? original, CSharpSyntaxTree? updated)
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the newly-created <see cref="TestableCompilationData"/>.</param>
+		public static TestableCompilationData Create(string? source)
 		{
-			if (original is null || updated is null)
-			{
-				return;
-			}
-
-			_currentCompilation = _currentCompilation?.ReplaceSyntaxTree(original, updated);
+			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(source));
 		}
 
 		/// <summary>
-		/// Adds the following <paramref name="trees"/> to the <see cref="Compilation"/>.
+		/// Creates a new <see cref="TestableCompilationData"/>.
 		/// </summary>
-		/// <param name="trees"><see cref="CSharpSyntaxTree"/>s to add.</param>
-		public void UpdateCompilation(IEnumerable<CSharpSyntaxTree>? trees)
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the newly-created <see cref="TestableCompilationData"/>.</param>
+		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the newly-created <see cref="TestableCompilationData"/>.</param>
+		public static TestableCompilationData Create(string? source, IEnumerable<Assembly>? assemblies)
 		{
-			if (trees is null)
-			{
-				return;
-			}
-
-			_currentCompilation = _currentCompilation?.AddSyntaxTrees(trees);
+			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(source, assemblies?.ToArray()));
 		}
 
 		/// <summary>
-		/// Adds the <paramref name="reference"/> to the <see cref="Compilation"/>.
+		/// Creates a new <see cref="TestableCompilationData"/>.
 		/// </summary>
-		/// <param name="reference"><see cref="MetadataReference"/> to add.</param>
-		public void UpdateCompilation(MetadataReference? reference)
+		/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used as the base compilation of the newly-created <see cref="TestableCompilationData"/>.</param>
+		public static TestableCompilationData Create(CSharpCompilation? compilation)
 		{
-			if (reference is null)
-			{
-				return;
-			}
-
-			_currentCompilation = _currentCompilation?.AddReferences(reference);
+			return new TestableCompilationData(compilation);
 		}
 
 		/// <summary>
-		/// Replaces the <paramref name="original"/> <see cref="MetadataReference"/> with the <paramref name="updated"/> one.
+		/// Creates a new <see cref="IMemberData"/> from the specified <paramref name="source"/>.
 		/// </summary>
-		/// <param name="original"><see cref="MetadataReference"/> to replace.</param>
-		/// <param name="updated"><see cref="MetadataReference"/> to replace the <paramref name="original"/> by.</param>
-		public void UpdateCompilation(MetadataReference? original, MetadataReference? updated)
+		/// <param name="source"></param>
+		/// <param name="index">Index at which the <see cref="IMemberData"/> should be returned. Can be thought of as a number of <see cref="CSharpSyntaxNode"/> of type <typeparamref name="TNode"/> to skip before creating a valid <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TNode">Type of <see cref="CSharpSyntaxNode"/> to find and convert to a <see cref="IMemberData"/>.</typeparam>
+		/// <returns>
+		/// A new <see cref="IMemberData"/> created from a <see cref="CSharpSyntaxTree"/> of type <typeparamref name="TNode"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
+		/// </returns>
+		public IMemberData? GetMemberData<TNode>(string? source, int index = 0) where TNode : MemberDeclarationSyntax
 		{
-			if (original is null || updated is null)
-			{
-				return;
-			}
-
-			_currentCompilation = _currentCompilation?.ReplaceReference(original, updated);
-		}
-
-		/// <summary>
-		/// Adds the following <paramref name="references"/> to the <see cref="Compilation"/>.
-		/// </summary>
-		/// <param name="references"><see cref="MetadataReference"/>s to add.</param>
-		public void UpdateCompilation(IEnumerable<MetadataReference>? references)
-		{
-			if (references is null)
-			{
-				return;
-			}
-
-			_currentCompilation = _currentCompilation?.AddReferences(references);
+			return GetNode<TNode>(source, index)?.GetMemberData(this);
 		}
 
 		/// <summary>
@@ -273,74 +238,111 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="IMemberData"/> from the specified <paramref name="source"/>.
+		/// Resets the <see cref="TestableCompilationData"/>, so that the <see cref="CurrentCompilation"/> now references the <see cref="OriginalCompilation"/>.
 		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="index">Index at which the <see cref="IMemberData"/> should be returned. Can be thought of as a number of <see cref="CSharpSyntaxNode"/> of type <typeparamref name="TNode"/> to skip before creating a valid <see cref="IMemberData"/>.</param>
-		/// <typeparam name="TNode">Type of <see cref="CSharpSyntaxNode"/> to find and convert to a <see cref="IMemberData"/>.</typeparam>
-		/// <returns>
-		/// A new <see cref="IMemberData"/> created from a <see cref="CSharpSyntaxTree"/> of type <typeparamref name="TNode"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
-		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> exists.
-		/// </returns>
-		public IMemberData? GetMemberData<TNode>(string? source, int index = 0) where TNode : MemberDeclarationSyntax
+		public void Reset()
 		{
-			return GetNode<TNode>(source, index)?.GetMemberData(this);
+			_currentCompilation = _originalCompilation;
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// Parses the <paramref name="source"/> <see cref="string"/> and adds the created <see cref="CSharpSyntaxTree"/> to the <see cref="Compilation"/>.
 		/// </summary>
-		/// <param name="includeDefaultAssemblies">Determines whether to include all the default assemblies returned bu the <see cref="RoslynUtilities.GetBaseReferences()"/> method.</param>
-		public static TestableCompilationData Create(bool includeDefaultAssemblies = true)
+		/// <param name="source"><see cref="string"/> to parse and add.</param>
+		public void UpdateCompilation(string? source)
 		{
-			return new TestableCompilationData(includeDefaultAssemblies ? RoslynUtilities.CreateBaseCompilation() : null);
+			if (source is null)
+			{
+				return;
+			}
+
+			UpdateCompilation(CSharpSyntaxTree.ParseText(source, encoding: Encoding.UTF8) as CSharpSyntaxTree);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// Adds the <paramref name="tree"/> to the <see cref="Compilation"/>.
 		/// </summary>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the newly-created <see cref="TestableCompilationData"/>.</param>
-		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the newly-created <see cref="TestableCompilationData"/>.</param>
-		public static TestableCompilationData Create(IEnumerable<string>? sources, IEnumerable<Assembly>? assemblies)
+		/// <param name="tree"><see cref="CSharpSyntaxTree"/> to add.</param>
+		public void UpdateCompilation(CSharpSyntaxTree? tree)
 		{
-			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(sources, assemblies?.ToArray()));
+			if (tree is null)
+			{
+				return;
+			}
+
+			_currentCompilation = _currentCompilation?.AddSyntaxTrees(tree);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// Replaces the <paramref name="original"/> <see cref="SyntaxTree"/> with the <paramref name="updated"/> one.
 		/// </summary>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the newly-created <see cref="TestableCompilationData"/>.</param>
-		public static TestableCompilationData Create(IEnumerable<string>? sources)
+		/// <param name="original"><see cref="CSharpSyntaxTree"/> to replace.</param>
+		/// <param name="updated"><see cref="CSharpSyntaxTree"/> to replace the <paramref name="original"/> by.</param>
+		public void UpdateCompilation(CSharpSyntaxTree? original, CSharpSyntaxTree? updated)
 		{
-			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(sources));
+			if (original is null || updated is null)
+			{
+				return;
+			}
+
+			_currentCompilation = _currentCompilation?.ReplaceSyntaxTree(original, updated);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// Adds the following <paramref name="trees"/> to the <see cref="Compilation"/>.
 		/// </summary>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the newly-created <see cref="TestableCompilationData"/>.</param>
-		public static TestableCompilationData Create(string? source)
+		/// <param name="trees"><see cref="CSharpSyntaxTree"/>s to add.</param>
+		public void UpdateCompilation(IEnumerable<CSharpSyntaxTree>? trees)
 		{
-			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(source));
+			if (trees is null)
+			{
+				return;
+			}
+
+			_currentCompilation = _currentCompilation?.AddSyntaxTrees(trees);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// Adds the <paramref name="reference"/> to the <see cref="Compilation"/>.
 		/// </summary>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the newly-created <see cref="TestableCompilationData"/>.</param>
-		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the newly-created <see cref="TestableCompilationData"/>.</param>
-		public static TestableCompilationData Create(string? source, IEnumerable<Assembly>? assemblies)
+		/// <param name="reference"><see cref="MetadataReference"/> to add.</param>
+		public void UpdateCompilation(MetadataReference? reference)
 		{
-			return new TestableCompilationData(RoslynUtilities.CreateCompilationWithAssemblies(source, assemblies?.ToArray()));
+			if (reference is null)
+			{
+				return;
+			}
+
+			_currentCompilation = _currentCompilation?.AddReferences(reference);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="TestableCompilationData"/>.
+		/// Replaces the <paramref name="original"/> <see cref="MetadataReference"/> with the <paramref name="updated"/> one.
 		/// </summary>
-		/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used as the base compilation of the newly-created <see cref="TestableCompilationData"/>.</param>
-		public static TestableCompilationData Create(CSharpCompilation? compilation)
+		/// <param name="original"><see cref="MetadataReference"/> to replace.</param>
+		/// <param name="updated"><see cref="MetadataReference"/> to replace the <paramref name="original"/> by.</param>
+		public void UpdateCompilation(MetadataReference? original, MetadataReference? updated)
 		{
-			return new TestableCompilationData(compilation);
+			if (original is null || updated is null)
+			{
+				return;
+			}
+
+			_currentCompilation = _currentCompilation?.ReplaceReference(original, updated);
+		}
+
+		/// <summary>
+		/// Adds the following <paramref name="references"/> to the <see cref="Compilation"/>.
+		/// </summary>
+		/// <param name="references"><see cref="MetadataReference"/>s to add.</param>
+		public void UpdateCompilation(IEnumerable<MetadataReference>? references)
+		{
+			if (references is null)
+			{
+				return;
+			}
+
+			_currentCompilation = _currentCompilation?.AddReferences(references);
 		}
 	}
 }

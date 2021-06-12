@@ -1,32 +1,43 @@
-﻿using Durian.Generator.Logging;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using Durian.Generator.Logging;
 using Durian.Info;
+
+#if !MAIN_PACKAGE
+
 using Microsoft.CodeAnalysis;
+
+#endif
 
 namespace Durian.Generator.Core
 {
 	/// <summary>
 	/// Enables the <see cref="DurianModule.Core"/> module.
 	/// </summary>
+#if !MAIN_PACKAGE
+
 	[Generator(LanguageNames.CSharp)]
+#endif
 	public sealed class EnableCoreGenerator : DurianGeneratorBase
 	{
-		/// <inheritdoc cref="DurianGeneratorBase.GetVersion"/>
-		public static string Version => "1.0.0";
-
-		/// <inheritdoc cref="DurianGeneratorBase.GetGeneratorName"/>
-		public static string GeneratorName => nameof(EnableCoreGenerator);
-
 		/// <summary>
 		/// Number of trees generated statically by this generator.
 		/// </summary>
 		public const int NumStaticTrees = 1;
 
-		/// <inheritdoc cref="EnableCoreGenerator(in LoggableGeneratorConstructionContext, IFileNameProvider?)"/>
+		/// <inheritdoc cref="DurianGeneratorBase.GetGeneratorName"/>
+		public static string GeneratorName => nameof(EnableCoreGenerator);
+
+		/// <inheritdoc cref="DurianGeneratorBase.GetVersion"/>
+		public static string Version => "1.0.0";
+
+		/// <inheritdoc cref="EnableCoreGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
 		public EnableCoreGenerator()
 		{
 		}
 
-		/// <inheritdoc cref="EnableCoreGenerator(in LoggableGeneratorConstructionContext, IFileNameProvider?)"/>
+		/// <inheritdoc cref="EnableCoreGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
 		public EnableCoreGenerator(in LoggableGeneratorConstructionContext context) : base(in context)
 		{
 		}
@@ -36,11 +47,11 @@ namespace Durian.Generator.Core
 		/// </summary>
 		/// <param name="context">Configures how this <see cref="LoggableSourceGenerator"/> is initialized.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public EnableCoreGenerator(in LoggableGeneratorConstructionContext context, IFileNameProvider? fileNameProvider) : base(in context, fileNameProvider)
+		public EnableCoreGenerator(in LoggableGeneratorConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
 		{
 		}
 
-		/// <inheritdoc cref="EnableCoreGenerator(GeneratorLoggingConfiguration?, IFileNameProvider?)"/>
+		/// <inheritdoc cref="EnableCoreGenerator(GeneratorLoggingConfiguration?, IHintNameProvider?)"/>
 		public EnableCoreGenerator(GeneratorLoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
@@ -50,14 +61,14 @@ namespace Durian.Generator.Core
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public EnableCoreGenerator(GeneratorLoggingConfiguration? loggingConfiguration, IFileNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		public EnableCoreGenerator(GeneratorLoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
 		{
 		}
 
 		/// <inheritdoc/>
-		protected override string GetVersion()
+		protected override DurianModule[] GetEnabledModules()
 		{
-			return Version;
+			return new DurianModule[] { DurianModule.Core };
 		}
 
 		/// <inheritdoc/>
@@ -67,9 +78,9 @@ namespace Durian.Generator.Core
 		}
 
 		/// <inheritdoc/>
-		protected override DurianModule[] GetEnabledModules()
+		protected override string GetVersion()
 		{
-			return new DurianModule[] { DurianModule.Core };
+			return Version;
 		}
 	}
 }

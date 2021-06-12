@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,15 +16,14 @@ namespace Durian.Generator.Data
 	[DebuggerDisplay("{Symbol}")]
 	public class MemberData : IMemberData
 	{
-		// Used is some extension methods.
-		internal ITypeData[]? _containingTypes;
-		internal INamespaceSymbol[]? _containingNamespaces;
 		internal ImmutableArray<AttributeData> _attributes;
 
-		private Location? _location;
+		internal INamespaceSymbol[]? _containingNamespaces;
 
-		/// <inheritdoc/>
-		public SemanticModel SemanticModel { get; }
+		// Used is some extension methods.
+		internal ITypeData[]? _containingTypes;
+
+		private Location? _location;
 
 		/// <inheritdoc/>
 		public MemberDeclarationSyntax Declaration { get; }
@@ -31,16 +33,19 @@ namespace Durian.Generator.Data
 		/// </summary>
 		public Location Location => _location ??= Declaration.GetLocation();
 
-		/// <inheritdoc/>
-		public ISymbol Symbol { get; }
-
-		/// <inheritdoc/>
-		public ICompilationData ParentCompilation { get; }
-
 		/// <summary>
 		/// Name of the member.
 		/// </summary>
 		public string Name => Symbol.Name;
+
+		/// <inheritdoc/>
+		public ICompilationData ParentCompilation { get; }
+
+		/// <inheritdoc/>
+		public SemanticModel SemanticModel { get; }
+
+		/// <inheritdoc/>
+		public ISymbol Symbol { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemberData"/> class.
@@ -57,6 +62,19 @@ namespace Durian.Generator.Data
 		{
 			(SemanticModel, Symbol) = AnalysisUtilities.GetSymbolAndSemanticModel(declaration, compilation);
 			Declaration = declaration;
+			ParentCompilation = compilation;
+		}
+
+		internal MemberData(ISymbol symbol, ICompilationData compilation)
+		{
+			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not MemberDeclarationSyntax decl)
+			{
+				throw Exc_NoSyntaxReference(symbol);
+			}
+
+			Symbol = symbol;
+			Declaration = decl;
+			SemanticModel = compilation.Compilation.GetSemanticModel(decl.SyntaxTree);
 			ParentCompilation = compilation;
 		}
 
@@ -93,23 +111,10 @@ namespace Durian.Generator.Data
 			}
 		}
 
-		internal MemberData(ISymbol symbol, ICompilationData compilation)
-		{
-			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not MemberDeclarationSyntax decl)
-			{
-				throw Exc_NoSyntaxReference(symbol);
-			}
-
-			Symbol = symbol;
-			Declaration = decl;
-			SemanticModel = compilation.Compilation.GetSemanticModel(decl.SyntaxTree);
-			ParentCompilation = compilation;
-		}
-
 		/// <inheritdoc/>
-		public virtual IEnumerable<ITypeData> GetContainingTypes()
+		public virtual ImmutableArray<AttributeData> GetAttributes()
 		{
-			return _containingTypes ??= Symbol.GetContainingTypes(ParentCompilation).ToArray();
+			return _attributes.IsDefault ? (_attributes = Symbol.GetAttributes()) : _attributes;
 		}
 
 		/// <inheritdoc/>
@@ -119,15 +124,15 @@ namespace Durian.Generator.Data
 		}
 
 		/// <inheritdoc/>
-		public virtual bool Validate(in GeneratorExecutionContext context)
+		public virtual IEnumerable<ITypeData> GetContainingTypes()
 		{
-			return true;
+			return _containingTypes ??= Symbol.GetContainingTypes(ParentCompilation).ToArray();
 		}
 
 		/// <inheritdoc/>
-		public virtual ImmutableArray<AttributeData> GetAttributes()
+		public virtual bool Validate(in GeneratorExecutionContext context)
 		{
-			return _attributes.IsDefault ? (_attributes = Symbol.GetAttributes()) : _attributes;
+			return true;
 		}
 
 		private protected static InvalidOperationException Exc_NoSyntaxReference(ISymbol symbol)

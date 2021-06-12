@@ -1,4 +1,7 @@
-﻿namespace Durian.Generator.Logging
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+namespace Durian.Generator.Logging
 {
 	/// <summary>
 	/// Contains data passed to a <see cref="LoggableSourceGenerator"/>'s constructor.
@@ -6,25 +9,11 @@
 	public readonly struct LoggableGeneratorConstructionContext
 	{
 		/// <summary>
-		/// Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
-		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para>
+		/// Returns <see cref="Debug"/> or <see cref="Runtime"/>, depending on the current configuration.
 		/// </summary>
-		public bool CheckForConfigurationAttribute { get; init; }
-
-		/// <summary>
-		/// Determines whether to enable logging for this <see cref="LoggableSourceGenerator"/> instance if logging is supported.
-		/// </summary>
-		public bool EnableLoggingIfSupported { get; init; }
-
-		/// <summary>
-		/// Determines whether to set <see cref="GeneratorLoggingConfiguration.EnableDiagnostics"/> to <see langword="true"/> if <see cref="GeneratorLoggingConfiguration.SupportsDiagnostics"/> is <see langword="true"/>.
-		/// </summary>
-		public bool EnableDiagnosticsIfSupported { get; init; }
-
-		/// <summary>
-		/// Determines whether to set enable exceptions to be thrown.
-		/// </summary>
-		public bool EnableExceptions { get; init; }
+		public static LoggableGeneratorConstructionContext CurrentConfig =>
+#if DEBUG
+			Debug;
 
 		/// <summary>
 		/// Returns a new <see cref="LoggableGeneratorConstructionContext"/> with all properties set to <see langword="true"/>.
@@ -43,11 +32,26 @@
 		public static LoggableGeneratorConstructionContext Runtime => new();
 
 		/// <summary>
-		/// Returns <see cref="Debug"/> or <see cref="Runtime"/>, depending on the current configuration.
+		/// Determines whether to try to create a <see cref="GeneratorLoggingConfiguration"/> based on one of the logging attributes.
+		/// <para>See: <see cref="GeneratorLoggingConfigurationAttribute"/>, <see cref="DefaultGeneratorLoggingConfigurationAttribute"/></para>
 		/// </summary>
-		public static LoggableGeneratorConstructionContext CurrentConfig =>
-#if DEBUG
-			Debug;
+		public readonly bool CheckForConfigurationAttribute { get; init; }
+
+		/// <summary>
+		/// Determines whether to set <see cref="GeneratorLoggingConfiguration.EnableDiagnostics"/> to <see langword="true"/> if <see cref="GeneratorLoggingConfiguration.SupportsDiagnostics"/> is <see langword="true"/>.
+		/// </summary>
+		public readonly bool EnableDiagnosticsIfSupported { get; init; }
+
+		/// <summary>
+		/// Determines whether to set enable exceptions to be thrown.
+		/// </summary>
+		public readonly bool EnableExceptions { get; init; }
+
+		/// <summary>
+		/// Determines whether to enable logging for this <see cref="LoggableSourceGenerator"/> instance if logging is supported.
+		/// </summary>
+		public readonly bool EnableLoggingIfSupported { get; init; }
+
 #else
 			Runtime;
 #endif

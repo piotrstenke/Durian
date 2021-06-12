@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -9,8 +12,8 @@ namespace Durian.Tests
 	/// </summary>
 	public sealed class GeneratorDriverRunResultBuilder
 	{
-		private readonly List<GeneratorRunResult> _results;
 		private readonly List<GeneratorRunResultBuilder> _childBuilders;
+		private readonly List<GeneratorRunResult> _results;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorRunResultBuilder"/> class.
@@ -68,17 +71,6 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Begins building a new <see cref="GeneratorRunResult"/>.
-		/// </summary>
-		public GeneratorRunResultBuilder BeginResult()
-		{
-			return new()
-			{
-				_parent = this
-			};
-		}
-
-		/// <summary>
 		/// Adds a range of <see cref="GeneratorRunResult"/>s to the <see cref="GeneratorDriverRunResult.Results"/> collection.
 		/// </summary>
 		/// <param name="generatedSources">A range <see cref="GeneratorRunResult"/>s to be added to the <see cref="GeneratorDriverRunResult.Results"/> collection.</param>
@@ -94,18 +86,14 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Assigns a new collection of <see cref="GeneratorRunResult"/>s to the <see cref="GeneratorDriverRunResult.Results"/> property.
+		/// Begins building a new <see cref="GeneratorRunResult"/>.
 		/// </summary>
-		/// <param name="results">A collection of <see cref="GeneratorRunResult"/>s to be set to the <see cref="GeneratorDriverRunResult.Results"/> property.</param>
-		/// <returns>This <see cref="GeneratorDriverRunResultBuilder"/>.</returns>
-		public GeneratorDriverRunResultBuilder WithResults(IEnumerable<GeneratorRunResult>? results)
+		public GeneratorRunResultBuilder BeginResult()
 		{
-			if (results is not null)
+			return new()
 			{
-				_results.AddRange(results);
-			}
-
-			return this;
+				_parent = this
+			};
 		}
 
 		/// <summary>
@@ -129,6 +117,21 @@ namespace Durian.Tests
 			}
 
 			_childBuilders.Clear();
+		}
+
+		/// <summary>
+		/// Assigns a new collection of <see cref="GeneratorRunResult"/>s to the <see cref="GeneratorDriverRunResult.Results"/> property.
+		/// </summary>
+		/// <param name="results">A collection of <see cref="GeneratorRunResult"/>s to be set to the <see cref="GeneratorDriverRunResult.Results"/> property.</param>
+		/// <returns>This <see cref="GeneratorDriverRunResultBuilder"/>.</returns>
+		public GeneratorDriverRunResultBuilder WithResults(IEnumerable<GeneratorRunResult>? results)
+		{
+			if (results is not null)
+			{
+				_results.AddRange(results);
+			}
+
+			return this;
 		}
 	}
 }

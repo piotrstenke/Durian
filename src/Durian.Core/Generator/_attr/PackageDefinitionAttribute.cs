@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Diagnostics;
 using Durian.Info;
 
@@ -12,14 +15,14 @@ namespace Durian.Generator
 	public sealed class PackageDefinitionAttribute : Attribute
 	{
 		/// <summary>
-		/// Target <see cref="DurianPackage"/>.
-		/// </summary>
-		public DurianPackage Package { get; }
-
-		/// <summary>
 		/// <see cref="DurianModule"/>s this package is part of.
 		/// </summary>
 		public DurianModule[] Modules { get; }
+
+		/// <summary>
+		/// Target <see cref="DurianPackage"/>.
+		/// </summary>
+		public DurianPackage Package { get; }
 
 		/// <summary>
 		/// Target <see cref="PackageType"/>.

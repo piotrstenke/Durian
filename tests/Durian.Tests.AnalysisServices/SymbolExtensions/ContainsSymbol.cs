@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Linq;
 using Durian.Generator.Extensions;
@@ -10,19 +13,12 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class ContainsSymbol : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_ParentIsNull()
+		public void ReturnsFalse_When_ParentDoesNotContainChild()
 		{
-			INamedTypeSymbol child = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Child { }");
-			INamedTypeSymbol parent = null!;
-			Assert.Throws<ArgumentNullException>(() => parent.ContainsSymbol(child));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_ChildIsNull()
-		{
-			INamedTypeSymbol child = null!;
 			INamedTypeSymbol parent = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Parent { }");
-			Assert.Throws<ArgumentNullException>(() => parent.ContainsSymbol(child));
+			INamedTypeSymbol child = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Child { }");
+
+			Assert.False(parent.ContainsSymbol(child));
 		}
 
 		[Fact]
@@ -36,12 +32,19 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void ReturnsFalse_When_ParentDoesNotContainChild()
+		public void ThrowsArgumentNullException_When_ChildIsNull()
 		{
+			INamedTypeSymbol child = null!;
 			INamedTypeSymbol parent = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Parent { }");
-			INamedTypeSymbol child = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Child { }");
+			Assert.Throws<ArgumentNullException>(() => parent.ContainsSymbol(child));
+		}
 
-			Assert.False(parent.ContainsSymbol(child));
+		[Fact]
+		public void ThrowsArgumentNullException_When_ParentIsNull()
+		{
+			INamedTypeSymbol child = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Child { }");
+			INamedTypeSymbol parent = null!;
+			Assert.Throws<ArgumentNullException>(() => parent.ContainsSymbol(child));
 		}
 	}
 }

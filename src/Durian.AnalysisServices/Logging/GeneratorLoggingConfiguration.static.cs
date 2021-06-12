@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,16 +12,6 @@ namespace Durian.Generator.Logging
 	public sealed partial class GeneratorLoggingConfiguration
 	{
 		private static readonly Dictionary<Assembly, GeneratorLoggingConfiguration> _assemblyConfigurations = new();
-
-		/// <summary>
-		/// Default directory where the generator log files are placed, which is '<c>&lt;documents&gt;/Durian/logs</c>'.
-		/// </summary>
-		public static string DefaultLogDirectory => Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/Durian/logs";
-
-		/// <summary>
-		/// Determines whether there is any assembly in the current <see cref="AppDomain"/> has applied the <see cref="GloballyDisableGeneratorLoggingAttribute"/>.
-		/// </summary>
-		public static bool IsEnabled { get; } = CheckLoggingIsEnabled();
 
 		/// <summary>
 		/// Creates a new instance of the <see cref="GeneratorLoggingConfiguration"/> class with its values set to default.
@@ -32,6 +25,167 @@ namespace Durian.Generator.Logging
 			SupportedLogs = GeneratorLogs.None,
 			SupportsDiagnostics = false,
 		};
+
+		/// <summary>
+		/// Default directory where the generator log files are placed, which is '<c>&lt;documents&gt;/Durian/logs</c>'.
+		/// </summary>
+		public static string DefaultLogDirectory => Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/Durian/logs";
+
+		/// <summary>
+		/// Determines whether there is any assembly in the current <see cref="AppDomain"/> has applied the <see cref="GloballyDisableGeneratorLoggingAttribute"/>.
+		/// </summary>
+		public static bool IsEnabled { get; } = CheckLoggingIsEnabled();
+
+		/// <summary>
+		/// Creates new instance of the <see cref="GeneratorLoggingConfiguration"/> for the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</param>
+		/// <exception cref="ArgumentException">
+		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only. -or-
+		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if <see cref="DefaultGeneratorLoggingConfigurationAttribute.RelativeToDefault"/> is set to <see langword="false"/>.
+		/// </exception>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		public static GeneratorLoggingConfiguration CreateConfigurationForAssembly(Assembly assembly)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			DefaultGeneratorLoggingConfigurationAttribute? attr = assembly.GetCustomAttribute<DefaultGeneratorLoggingConfigurationAttribute>();
+
+			if (attr is null)
+			{
+				return Default;
+			}
+			else
+			{
+				return new GeneratorLoggingConfiguration()
+				{
+					LogDirectory = attr.GetAndValidateFullLogDirectory(),
+					SupportedLogs = attr.SupportedLogs,
+					EnableLogging = IsEnabled && assembly.GetCustomAttribute(typeof(DisableGeneratorLoggingAttribute)) is null,
+					SupportsDiagnostics = attr.SupportsDiagnostics,
+					EnableDiagnostics = attr.SupportsDiagnostics,
+					EnableExceptions = attr.EnableExceptions
+				};
+			}
+		}
+
+		/// <summary>
+		/// Creates new instance of the <see cref="GeneratorLoggingConfiguration"/> for the specified type.
+		/// </summary>
+		/// <typeparam name="T">Type of <see cref="ISourceGenerator"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</typeparam>
+		/// <exception cref="ArgumentException">
+		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
+		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="GeneratorLoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
+		/// </exception>
+		public static GeneratorLoggingConfiguration CreateConfigurationForGenerator<T>() where T : ISourceGenerator
+		{
+			return CreateConfigurationForGenerator_Internal(typeof(T));
+		}
+
+		/// <summary>
+		/// Creates new instance of the <see cref="GeneratorLoggingConfiguration"/> for the specified type.
+		/// </summary>
+		/// <param name="type"><see cref="Type"/> of <see cref="ISourceGenerator"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</param>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface. -or-
+		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
+		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="GeneratorLoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
+		/// </exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static GeneratorLoggingConfiguration CreateConfigurationForGenerator(Type type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			CheckTypeIsISourceGenerator(type);
+			return CreateConfigurationForGenerator_Internal(type);
+		}
+
+		/// <summary>
+		/// Creates new instance of the <see cref="GeneratorLoggingConfiguration"/> for the specified type.
+		/// </summary>
+		/// <param name="generator"><see cref="ISourceGenerator"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</param>
+		/// <exception cref="ArgumentException">
+		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
+		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="GeneratorLoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
+		/// </exception>
+		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+		public static GeneratorLoggingConfiguration CreateConfigurationForGenerator(ISourceGenerator generator)
+		{
+			if (generator is null)
+			{
+				throw new ArgumentNullException(nameof(generator));
+			}
+
+			return CreateConfigurationForGenerator_Internal(generator.GetType());
+		}
+
+		/// <summary>
+		/// Returns a reference to the <see cref="GeneratorLoggingConfiguration"/> for the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</param>
+		/// <exception cref="ArgumentException"><see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		public static GeneratorLoggingConfiguration GetConfigurationForAssembly(Assembly assembly)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			lock (_assemblyConfigurations)
+			{
+				if (_assemblyConfigurations.TryGetValue(assembly, out GeneratorLoggingConfiguration config))
+				{
+					return config;
+				}
+				else
+				{
+					config = CreateConfigurationForAssembly(assembly);
+					_assemblyConfigurations.Add(assembly, config);
+					return config;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="type"/> has the <see cref="DisableGeneratorLoggingAttribute"/> applied, either directly or by inheritance.
+		/// </summary>
+		/// <param name="type"><see cref="Type"/> to perform the check for.</param>
+		/// <exception cref="ArgumentException"><paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool HasDisableAttribute(Type type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			CheckTypeIsISourceGenerator(type);
+			return HasDisableAttribute_Internal(type);
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="assembly"/> has the <see cref="DisableGeneratorLoggingAttribute"/> applied.
+		/// </summary>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		public static bool HasDisableAttribute(Assembly assembly)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			return !IsEnabledForAssembly_Internal(assembly);
+		}
 
 		/// <summary>
 		/// Checks if generator logging is enabled for the specified <paramref name="assembly"/>.
@@ -128,155 +282,34 @@ namespace Durian.Generator.Logging
 			return IsEnabledForGenerator_Internal(type, true);
 		}
 
-		/// <summary>
-		/// Returns a reference to the <see cref="GeneratorLoggingConfiguration"/> for the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</param>
-		/// <exception cref="ArgumentException"><see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static GeneratorLoggingConfiguration GetConfigurationForAssembly(Assembly assembly)
+		internal static ReportDiagnosticTarget GetReportDiagnosticTarget(bool enableLogging, bool enableReport)
 		{
-			if (assembly is null)
+			ReportDiagnosticTarget target = ReportDiagnosticTarget.None;
+
+			if (enableLogging)
 			{
-				throw new ArgumentNullException(nameof(assembly));
+				target += (int)ReportDiagnosticTarget.Log;
 			}
 
-			lock (_assemblyConfigurations)
+			if (enableReport)
 			{
-				if (_assemblyConfigurations.TryGetValue(assembly, out GeneratorLoggingConfiguration config))
-				{
-					return config;
-				}
-				else
-				{
-					config = CreateConfigurationForAssembly(assembly);
-					_assemblyConfigurations.Add(assembly, config);
-					return config;
-				}
+				target += (int)ReportDiagnosticTarget.Report;
 			}
+
+			return target;
 		}
 
-		/// <summary>
-		/// Creates new instance of the <see cref="GeneratorLoggingConfiguration"/> for the specified type.
-		/// </summary>
-		/// <typeparam name="T">Type of <see cref="ISourceGenerator"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</typeparam>
-		/// <exception cref="ArgumentException">
-		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
-		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
-		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="GeneratorLoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
-		/// </exception>
-		public static GeneratorLoggingConfiguration CreateConfigurationForGenerator<T>() where T : ISourceGenerator
+		private static bool CheckLoggingIsEnabled()
 		{
-			return CreateConfigurationForGenerator_Internal(typeof(T));
+			return !AppDomain.CurrentDomain.GetAssemblies().Any(assembly => assembly.GetCustomAttribute(typeof(GloballyDisableGeneratorLoggingAttribute)) is not null);
 		}
 
-		/// <summary>
-		/// Creates new instance of the <see cref="GeneratorLoggingConfiguration"/> for the specified type.
-		/// </summary>
-		/// <param name="type"><see cref="Type"/> of <see cref="ISourceGenerator"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</param>
-		/// <exception cref="ArgumentException">
-		/// <paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface. -or-
-		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
-		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
-		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="GeneratorLoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
-		/// </exception>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static GeneratorLoggingConfiguration CreateConfigurationForGenerator(Type type)
+		private static void CheckTypeIsISourceGenerator(Type type)
 		{
-			if (type is null)
+			if (!typeof(ISourceGenerator).IsAssignableFrom(type))
 			{
-				throw new ArgumentNullException(nameof(type));
+				throw new ArgumentException($"Specified type does not implement the {nameof(ISourceGenerator)} interface!");
 			}
-
-			CheckTypeIsISourceGenerator(type);
-			return CreateConfigurationForGenerator_Internal(type);
-		}
-
-		/// <summary>
-		/// Creates new instance of the <see cref="GeneratorLoggingConfiguration"/> for the specified type.
-		/// </summary>
-		/// <param name="generator"><see cref="ISourceGenerator"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</param>
-		/// <exception cref="ArgumentException">
-		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
-		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> must be specified if <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
-		/// <see cref="GeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="GeneratorLoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="GeneratorLoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
-		/// </exception>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		public static GeneratorLoggingConfiguration CreateConfigurationForGenerator(ISourceGenerator generator)
-		{
-			if (generator is null)
-			{
-				throw new ArgumentNullException(nameof(generator));
-			}
-
-			return CreateConfigurationForGenerator_Internal(generator.GetType());
-		}
-
-		/// <summary>
-		/// Creates new instance of the <see cref="GeneratorLoggingConfiguration"/> for the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the <see cref="GeneratorLoggingConfiguration"/> for.</param>
-		/// <exception cref="ArgumentException">
-		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only. -or-
-		/// <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/> must be specified if <see cref="DefaultGeneratorLoggingConfigurationAttribute.RelativeToDefault"/> is set to <see langword="false"/>.
-		/// </exception>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static GeneratorLoggingConfiguration CreateConfigurationForAssembly(Assembly assembly)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			DefaultGeneratorLoggingConfigurationAttribute? attr = assembly.GetCustomAttribute<DefaultGeneratorLoggingConfigurationAttribute>();
-
-			if (attr is null)
-			{
-				return Default;
-			}
-			else
-			{
-				return new GeneratorLoggingConfiguration()
-				{
-					LogDirectory = attr.GetAndValidateFullLogDirectory(),
-					SupportedLogs = attr.SupportedLogs,
-					EnableLogging = IsEnabled && assembly.GetCustomAttribute(typeof(DisableGeneratorLoggingAttribute)) is null,
-					SupportsDiagnostics = attr.SupportsDiagnostics,
-					EnableDiagnostics = attr.SupportsDiagnostics,
-					EnableExceptions = attr.EnableExceptions
-				};
-			}
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="type"/> has the <see cref="DisableGeneratorLoggingAttribute"/> applied, either directly or by inheritance.
-		/// </summary>
-		/// <param name="type"><see cref="Type"/> to perform the check for.</param>
-		/// <exception cref="ArgumentException"><paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static bool HasDisableAttribute(Type type)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			CheckTypeIsISourceGenerator(type);
-			return HasDisableAttribute_Internal(type);
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="assembly"/> has the <see cref="DisableGeneratorLoggingAttribute"/> applied.
-		/// </summary>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static bool HasDisableAttribute(Assembly assembly)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			return !IsEnabledForAssembly_Internal(assembly);
 		}
 
 		private static GeneratorLoggingConfiguration CreateConfigurationForGenerator_Internal(Type type)
@@ -308,21 +341,6 @@ namespace Durian.Generator.Logging
 			}
 		}
 
-		private static bool IsEnabledForGenerator_Internal(Type type, bool checkForConfigurationAttribute)
-		{
-			if (HasDisableAttribute_Internal(type))
-			{
-				return false;
-			}
-
-			if (checkForConfigurationAttribute)
-			{
-				return type.GetCustomAttribute(typeof(GeneratorLoggingConfigurationAttribute), true) is not null;
-			}
-
-			return false;
-		}
-
 		private static bool HasDisableAttribute_Internal(Type type)
 		{
 			DisableGeneratorLoggingAttribute? attr = type.GetCustomAttribute<DisableGeneratorLoggingAttribute>();
@@ -345,17 +363,19 @@ namespace Durian.Generator.Logging
 			return assembly.GetCustomAttribute(typeof(DisableGeneratorLoggingAttribute)) is null;
 		}
 
-		private static bool CheckLoggingIsEnabled()
+		private static bool IsEnabledForGenerator_Internal(Type type, bool checkForConfigurationAttribute)
 		{
-			return !AppDomain.CurrentDomain.GetAssemblies().Any(assembly => assembly.GetCustomAttribute(typeof(GloballyDisableGeneratorLoggingAttribute)) is not null);
-		}
-
-		private static void CheckTypeIsISourceGenerator(Type type)
-		{
-			if (!typeof(ISourceGenerator).IsAssignableFrom(type))
+			if (HasDisableAttribute_Internal(type))
 			{
-				throw new ArgumentException($"Specified type does not implement the {nameof(ISourceGenerator)} interface!");
+				return false;
 			}
+
+			if (checkForConfigurationAttribute)
+			{
+				return type.GetCustomAttribute(typeof(GeneratorLoggingConfigurationAttribute), true) is not null;
+			}
+
+			return false;
 		}
 	}
 }

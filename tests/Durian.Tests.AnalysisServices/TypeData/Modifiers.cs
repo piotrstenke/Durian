@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -7,23 +10,6 @@ namespace Durian.Tests.AnalysisServices.TypeData
 {
 	public sealed class Modifiers : CompilationTest
 	{
-		[Fact]
-		public void ReturnsEmpty_When_DeclHasNoModifiers()
-		{
-			Generator.Data.TypeData data = GetType("class Test { }");
-			SyntaxToken[] tokens = data.Modifiers;
-			Assert.True(tokens.Length == 0);
-		}
-
-		[Fact]
-		public void CanReturnSingleModifier()
-		{
-			Generator.Data.TypeData data = GetType("internal class Test { }");
-			SyntaxToken[] tokens = data.Modifiers;
-
-			Assert.True(tokens.Length == 1 && tokens[0].IsKind(SyntaxKind.InternalKeyword));
-		}
-
 		[Fact]
 		public void CanReturnMultipleModifiers()
 		{
@@ -36,6 +22,30 @@ namespace Durian.Tests.AnalysisServices.TypeData
 				tokens.Any(t => t.IsKind(SyntaxKind.UnsafeKeyword)) &&
 				tokens.Any(t => t.IsKind(SyntaxKind.ReadOnlyKeyword)) &&
 				tokens.Any(t => t.IsKind(SyntaxKind.RefKeyword)) &&
+				tokens.Any(t => t.IsKind(SyntaxKind.PartialKeyword))
+			);
+		}
+
+		[Fact]
+		public void CanReturnSingleModifier()
+		{
+			Generator.Data.TypeData data = GetType("internal class Test { }");
+			SyntaxToken[] tokens = data.Modifiers;
+
+			Assert.True(tokens.Length == 1 && tokens[0].IsKind(SyntaxKind.InternalKeyword));
+		}
+
+		[Fact]
+		public void DoesNotReturnIdenticalModifiers()
+		{
+			Compilation.UpdateCompilation("public sealed partial class Test { }");
+			Generator.Data.TypeData data = GetType("public sealed partial class Test { }");
+			SyntaxToken[] tokens = data.Modifiers;
+
+			Assert.True(
+				tokens.Length == 3 &&
+				tokens.Any(t => t.IsKind(SyntaxKind.PublicKeyword)) &&
+				tokens.Any(t => t.IsKind(SyntaxKind.SealedKeyword)) &&
 				tokens.Any(t => t.IsKind(SyntaxKind.PartialKeyword))
 			);
 		}
@@ -55,18 +65,11 @@ namespace Durian.Tests.AnalysisServices.TypeData
 		}
 
 		[Fact]
-		public void DoesNotReturnIdenticalModifiers()
+		public void ReturnsEmpty_When_DeclHasNoModifiers()
 		{
-			Compilation.UpdateCompilation("public sealed partial class Test { }");
-			Generator.Data.TypeData data = GetType("public sealed partial class Test { }");
+			Generator.Data.TypeData data = GetType("class Test { }");
 			SyntaxToken[] tokens = data.Modifiers;
-
-			Assert.True(
-				tokens.Length == 3 &&
-				tokens.Any(t => t.IsKind(SyntaxKind.PublicKeyword)) &&
-				tokens.Any(t => t.IsKind(SyntaxKind.SealedKeyword)) &&
-				tokens.Any(t => t.IsKind(SyntaxKind.PartialKeyword))
-			);
+			Assert.True(tokens.Length == 0);
 		}
 	}
 }

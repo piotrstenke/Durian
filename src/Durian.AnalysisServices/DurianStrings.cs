@@ -1,4 +1,7 @@
-﻿namespace Durian.Generator
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+namespace Durian.Generator
 {
 	/// <summary>
 	/// Contains some of the most commonly-used <see cref="string"/>s.
@@ -6,24 +9,24 @@
 	public static class DurianStrings
 	{
 		/// <summary>
-		/// Main namespace of the Durian project.
-		/// </summary>
-		public static string MainNamespace { get; } = "Durian";
-
-		/// <summary>
 		/// Configuration namespace of the Durian project.
 		/// </summary>
-		public static string ConfigurationNamespace { get; } = $"{MainNamespace}.Configuration";
+		public static string ConfigurationNamespace => $"{MainNamespace}.Configuration";
 
 		/// <summary>
 		/// Namespace where the Durian code generation attributes are to be found.
 		/// </summary>
-		public static string GeneratorNamespace { get; } = $"{MainNamespace}.Generator";
+		public static string GeneratorNamespace => $"{MainNamespace}.Generator";
 
 		/// <summary>
 		/// Namespace where module and package types are to be found.
 		/// </summary>
-		public static string InfoNamespace { get; } = $"{MainNamespace}.Info";
+		public static string InfoNamespace => $"{MainNamespace}.Info";
+
+		/// <summary>
+		/// Main namespace of the Durian project.
+		/// </summary>
+		public static string MainNamespace => "Durian";
 
 		/// <summary>
 		/// Returns the <paramref name="attributeName"/> with a 'Attribute' at the end.

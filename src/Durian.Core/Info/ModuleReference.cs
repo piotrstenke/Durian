@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 
 namespace Durian.Info
 {
@@ -45,19 +48,16 @@ namespace Durian.Info
 			EnumValue = module.Module;
 		}
 
-		/// <summary>
-		/// Returns the <see cref="ModuleIdentity"/> this <see cref="ModuleReference"/> references.
-		/// </summary>
-		/// <remarks>NOTE: This method uses lazy initialization.</remarks>
-		public ModuleIdentity GetModule()
+		/// <inheritdoc/>
+		public static bool operator !=(ModuleReference a, ModuleReference b)
 		{
-			return _module ??= ModuleIdentity.GetModule(EnumValue);
+			return !(a == b);
 		}
 
 		/// <inheritdoc/>
-		public override string ToString()
+		public static bool operator ==(ModuleReference a, ModuleReference b)
 		{
-			return EnumValue.ToString();
+			return a.EnumValue == b.EnumValue;
 		}
 
 		/// <inheritdoc/>
@@ -83,16 +83,19 @@ namespace Durian.Info
 			return base.GetHashCode();
 		}
 
-		/// <inheritdoc/>
-		public static bool operator ==(ModuleReference a, ModuleReference b)
+		/// <summary>
+		/// Returns the <see cref="ModuleIdentity"/> this <see cref="ModuleReference"/> references.
+		/// </summary>
+		/// <remarks>NOTE: This method uses lazy initialization.</remarks>
+		public ModuleIdentity GetModule()
 		{
-			return a.EnumValue == b.EnumValue;
+			return _module ??= ModuleIdentity.GetModule(EnumValue);
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(ModuleReference a, ModuleReference b)
+		public override string ToString()
 		{
-			return !(a == b);
+			return EnumValue.ToString();
 		}
 	}
 }

@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
@@ -6,12 +9,6 @@ namespace Durian.Tests.AnalysisServices.AnalysisUtilities
 {
 	public sealed class JoinIntoQualifiedName
 	{
-		[Fact]
-		public void ThrowsArgumentNullException_When_NamesIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => Durian.Generator.AnalysisUtilities.JoinIntoQualifiedName(null!));
-		}
-
 		[Fact]
 		public void ReturnsNull_When_ThereWereLessThan2Names()
 		{
@@ -23,6 +20,12 @@ namespace Durian.Tests.AnalysisServices.AnalysisUtilities
 		{
 			QualifiedNameSyntax? syntax = Durian.Generator.AnalysisUtilities.JoinIntoQualifiedName(new string[] { "System", "Collections", "Generic" });
 			Assert.True(syntax is not null && syntax.ToFullString() == "System.Collections.Generic");
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_NamesIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => Durian.Generator.AnalysisUtilities.JoinIntoQualifiedName(null!));
 		}
 	}
 }

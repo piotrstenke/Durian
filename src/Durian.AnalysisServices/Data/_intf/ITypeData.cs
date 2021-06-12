@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,11 +13,6 @@ namespace Durian.Generator.Data
 	public interface ITypeData : IMemberData
 	{
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.
-		/// </summary>
-		new INamedTypeSymbol Symbol { get; }
-
-		/// <summary>
 		/// Target <see cref="TypeDeclarationSyntax"/>.
 		/// </summary>
 		new TypeDeclarationSyntax Declaration { get; }
@@ -25,14 +23,19 @@ namespace Durian.Generator.Data
 		SyntaxToken[] Modifiers { get; }
 
 		/// <summary>
-		/// If the type is partial, returns all declarations of the type (including <see cref="IMemberData.Declaration"/>), otherwise returns only <see cref="IMemberData.Declaration"/>.
+		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
-		IEnumerable<TypeDeclarationSyntax> GetPartialDeclarations();
+		new INamedTypeSymbol Symbol { get; }
 
 		/// <summary>
 		/// Returns all <see cref="ITypeData"/>s that contain the <see cref="Symbol"/>.
 		/// </summary>
 		/// <param name="includeSelf">Determines whether the <see cref="ITypeData"/> should return itself as well.</param>
 		IEnumerable<ITypeData> GetContainingTypes(bool includeSelf);
+
+		/// <summary>
+		/// If the type is partial, returns all declarations of the type (including <see cref="IMemberData.Declaration"/>), otherwise returns only <see cref="IMemberData.Declaration"/>.
+		/// </summary>
+		IEnumerable<TypeDeclarationSyntax> GetPartialDeclarations();
 	}
 }

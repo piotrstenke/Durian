@@ -1,10 +1,15 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Generic;
 
 internal class IncludedType
 {
-	public string Name { get; }
-	public string Namespace { get; }
 	public List<string> ModuleNames { get; }
+
+	public string Name { get; }
+
+	public string Namespace { get; }
 
 	public IncludedType(string name, string @namespace)
 	{

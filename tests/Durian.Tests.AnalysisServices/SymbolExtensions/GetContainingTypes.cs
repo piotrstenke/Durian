@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Linq;
 using Durian.Generator.Data;
@@ -11,24 +14,11 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class GetContainingTypes : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		public void CanReturnMultipleTypes()
 		{
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetContainingTypes(Compilation));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			INamedTypeSymbol type = GetSymbol("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => type.GetContainingTypes(null!));
-		}
-
-		[Fact]
-		public void ReturnsEmpty_When_IsNotNestedType()
-		{
-			INamedTypeSymbol type = GetSymbol("class Test { }");
+			INamedTypeSymbol type = GetSymbol("class Test { class Parent { class Child { } } }", 2);
 			ITypeData[] containingTypes = type.GetContainingTypes(Compilation).ToArray();
-			Assert.True(containingTypes.Length == 0);
+			Assert.True(containingTypes.Length == 2 && containingTypes.Any(t => t.Symbol.Name == "Parent") && containingTypes.Any(t => t.Symbol.Name == "Test"));
 		}
 
 		[Fact]
@@ -40,11 +30,11 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void CanReturnMultipleTypes()
+		public void ReturnsEmpty_When_IsNotNestedType()
 		{
-			INamedTypeSymbol type = GetSymbol("class Test { class Parent { class Child { } } }", 2);
+			INamedTypeSymbol type = GetSymbol("class Test { }");
 			ITypeData[] containingTypes = type.GetContainingTypes(Compilation).ToArray();
-			Assert.True(containingTypes.Length == 2 && containingTypes.Any(t => t.Symbol.Name == "Parent") && containingTypes.Any(t => t.Symbol.Name == "Test"));
+			Assert.True(containingTypes.Length == 0);
 		}
 
 		[Fact]
@@ -53,6 +43,19 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 			INamedTypeSymbol type = GetSymbol("class Test { class Parent { class Child { } } }", 2);
 			ITypeData[] containingTypes = type.GetContainingTypes(Compilation).ToArray();
 			Assert.True(containingTypes.Length == 2 && containingTypes[0].Symbol.Name == "Test" && containingTypes[1].Symbol.Name == "Parent");
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_CompilationIsNull()
+		{
+			INamedTypeSymbol type = GetSymbol("class Test { }");
+			Assert.Throws<ArgumentNullException>(() => type.GetContainingTypes(null!));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetContainingTypes(Compilation));
 		}
 
 		private INamedTypeSymbol GetSymbol(string source, int index = 0)

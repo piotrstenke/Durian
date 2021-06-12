@@ -1,5 +1,9 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -12,7 +16,10 @@ namespace Durian.Generator.Core
 	/// <summary>
 	/// Analyzes if the Durian types used by the user are properly imported.
 	/// </summary>
+#if !MAIN_PACKAGE
+
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
+#endif
 	public sealed class TypeImportAnalyzer : DurianAnalyzer<CompilationWithImportedTypes>
 	{
 		/// <inheritdoc/>
@@ -29,59 +36,74 @@ namespace Durian.Generator.Core
 		}
 
 		/// <inheritdoc/>
+		public override void Register(IDurianAnalysisContext context, CompilationWithImportedTypes compilation)
+		{
+			context.RegisterSyntaxNodeAction(c => Analyze(c, compilation), SyntaxKind.IdentifierName, SyntaxKind.GenericName);
+		}
+
+		/// <inheritdoc/>
 		protected override CompilationWithImportedTypes CreateCompilation(CSharpCompilation compilation)
 		{
 			return new CompilationWithImportedTypes(compilation);
 		}
 
-		/// <inheritdoc/>
-		protected override void Register(CompilationStartAnalysisContext context, CompilationWithImportedTypes compilation)
-		{
-			context.RegisterSyntaxNodeAction(c => Analyze(c, compilation), SyntaxKind.IdentifierName, SyntaxKind.GenericName);
-		}
-
 		private static void Analyze(SyntaxNodeAnalysisContext context, CompilationWithImportedTypes compilation)
 		{
-			if (context.Node is not SimpleNameSyntax node)
+			if (!IsValidForAnalysis(context.Node, context.SemanticModel, context.CancellationToken, out INamedTypeSymbol? type))
 			{
 				return;
 			}
 
-			SymbolInfo info = context.SemanticModel.GetSymbolInfo(node, context.CancellationToken);
-
-			if (info.Symbol is null)
-			{
-				return;
-			}
-
-			if (info.Symbol is not INamedTypeSymbol type)
-			{
-				if (!node.Ancestors().Any(a => a is AttributeSyntax))
-				{
-					return;
-				}
-
-				type = info.Symbol!.ContainingType;
-
-				if (type is null)
-				{
-					return;
-				}
-			}
-
-			(bool isDurianType, bool isDisabled) = compilation.IsDisabledDurianType(type, out DurianModule module);
+			(bool isDurianType, bool isDisabled) = compilation.IsDisabledDurianType(type!, out DurianModule module);
 
 			if (isDurianType)
 			{
 				if (module == DurianModule.Core)
 				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0003_DoNotUseTypeFromDurianGeneratorNamespace, node.GetLocation()));
+					context.ReportDiagnostic(Diagnostic.Create(DUR0003_DoNotUseTypeFromDurianGeneratorNamespace, context.Node.GetLocation()));
 				}
 				else if (isDisabled && module != DurianModule.None)
 				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, node.GetLocation(), type, module));
+					context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, context.Node.GetLocation(), type, module));
 				}
 			}
+		}
+
+		private static bool IsValidForAnalysis(SyntaxNode node, SemanticModel semanticModel, CancellationToken cancellationToken, out INamedTypeSymbol? type)
+		{
+			if (node is not SimpleNameSyntax name)
+			{
+				type = null;
+				return false;
+			}
+
+			SymbolInfo info = semanticModel.GetSymbolInfo(name, cancellationToken);
+
+			if (info.Symbol is null)
+			{
+				type = null;
+				return false;
+			}
+
+			if (info.Symbol is not INamedTypeSymbol t)
+			{
+				if (!name.Ancestors().Any(a => a is AttributeSyntax))
+				{
+					type = null;
+					return false;
+				}
+
+				t = info.Symbol!.ContainingType;
+
+				if (t is null)
+				{
+					type = null;
+					return false;
+				}
+			}
+
+			type = t;
+			return true;
 		}
 	}
 }

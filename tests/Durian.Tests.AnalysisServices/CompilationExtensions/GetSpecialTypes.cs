@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,38 +13,11 @@ namespace Durian.Tests.AnalysisServices.CompilationExtensions
 {
 	public sealed class GetSpecialTypes : IClassFixture<GetSpecialTypes.Fixture>
 	{
-		private const int _numSpecialTypes = 45;
-		private readonly Fixture _fixture;
-
-		public GetSpecialTypes(Fixture fixture)
-		{
-			_fixture = fixture;
-		}
-
-		[Fact]
-		public void ThrowsNull_When_CompilationIsNull()
-		{
-			CSharpCompilation compilation = null!;
-			Assert.Throws<ArgumentNullException>(() => compilation.GetSpecialTypes());
-		}
-
-		[Theory]
-		[ClassData(typeof(SpecialTypeCollection))]
-		public void ContainsSpecialType(SpecialType type)
-		{
-			Assert.Contains(_fixture.Compilation.GetSpecialType(type), _fixture.Set);
-		}
-
-		[Fact]
-		public void ReturnsSameAmountOfTypesAsThereAreSpecialTypes()
-		{
-			Assert.True(_fixture.Set.Count == _numSpecialTypes);
-		}
-
 		public sealed class Fixture
 		{
-			public HashSet<INamedTypeSymbol> Set { get; }
 			public CSharpCompilation Compilation { get; }
+
+			public HashSet<INamedTypeSymbol> Set { get; }
 
 			public Fixture()
 			{
@@ -72,6 +48,34 @@ namespace Durian.Tests.AnalysisServices.CompilationExtensions
 			{
 				return GetEnumerator();
 			}
+		}
+
+		private const int _numSpecialTypes = 45;
+		private readonly Fixture _fixture;
+
+		public GetSpecialTypes(Fixture fixture)
+		{
+			_fixture = fixture;
+		}
+
+		[Theory]
+		[ClassData(typeof(SpecialTypeCollection))]
+		public void ContainsSpecialType(SpecialType type)
+		{
+			Assert.Contains(_fixture.Compilation.GetSpecialType(type), _fixture.Set);
+		}
+
+		[Fact]
+		public void ReturnsSameAmountOfTypesAsThereAreSpecialTypes()
+		{
+			Assert.True(_fixture.Set.Count == _numSpecialTypes);
+		}
+
+		[Fact]
+		public void ThrowsNull_When_CompilationIsNull()
+		{
+			CSharpCompilation compilation = null!;
+			Assert.Throws<ArgumentNullException>(() => compilation.GetSpecialTypes());
 		}
 	}
 }

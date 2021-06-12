@@ -1,4 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -12,6 +15,28 @@ namespace Durian.Tests
 	/// </summary>
 	public static class DiagnosticAnalyzerExtensions
 	{
+		/// <summary>
+		/// Runs the specified <paramref name="analyzer"/> and checks if it produces <see cref="Diagnostic"/> described by the specified <paramref name="descriptor"/>.
+		/// </summary>
+		/// <param name="analyzer"><see cref="DiagnosticAnalyzer"/> to run and check.</param>
+		/// <param name="compilation"><see cref="Compilation"/> that is the input for the <paramref name="analyzer"/>.</param>
+		/// <param name="descriptor"><see cref="DiagnosticDescriptor"/> of the target <see cref="Diagnostic"/>.</param>
+		public static Task<bool> ProducesDiagnostic(this DiagnosticAnalyzer analyzer, Compilation compilation, DiagnosticDescriptor descriptor)
+		{
+			return ProducesDiagnostic(analyzer, compilation, descriptor.Id);
+		}
+
+		/// <summary>
+		/// Runs the specified <paramref name="analyzer"/> and checks if it produces <see cref="Diagnostic"/> with the specified <paramref name="id"/>.
+		/// </summary>
+		/// <param name="analyzer"><see cref="DiagnosticAnalyzer"/> to run and check.</param>
+		/// <param name="compilation"><see cref="Compilation"/> that is the input for the <paramref name="analyzer"/>.</param>
+		/// <param name="id">Id of <see cref="Diagnostic"/> to check for.</param>
+		public static Task<bool> ProducesDiagnostic(this DiagnosticAnalyzer analyzer, Compilation compilation, string id)
+		{
+			return RunAnalyzer(analyzer, compilation).ContinueWith(task => task.Result.Any(d => d.Id == id));
+		}
+
 		/// <summary>
 		/// Runs the specified <paramref name="analyzer"/> and returns an <see cref="ImmutableArray{T}"/> of produced <see cref="Diagnostic"/>s.
 		/// </summary>
@@ -56,28 +81,6 @@ namespace Durian.Tests
 			}
 
 			return RunAnalyzer(analyzer, compilation);
-		}
-
-		/// <summary>
-		/// Runs the specified <paramref name="analyzer"/> and checks if it produces <see cref="Diagnostic"/> described by the specified <paramref name="descriptor"/>.
-		/// </summary>
-		/// <param name="analyzer"><see cref="DiagnosticAnalyzer"/> to run and check.</param>
-		/// <param name="compilation"><see cref="Compilation"/> that is the input for the <paramref name="analyzer"/>.</param>
-		/// <param name="descriptor"><see cref="DiagnosticDescriptor"/> of the target <see cref="Diagnostic"/>.</param>
-		public static Task<bool> ProducesDiagnostic(this DiagnosticAnalyzer analyzer, Compilation compilation, DiagnosticDescriptor descriptor)
-		{
-			return ProducesDiagnostic(analyzer, compilation, descriptor.Id);
-		}
-
-		/// <summary>
-		/// Runs the specified <paramref name="analyzer"/> and checks if it produces <see cref="Diagnostic"/> with the specified <paramref name="id"/>.
-		/// </summary>
-		/// <param name="analyzer"><see cref="DiagnosticAnalyzer"/> to run and check.</param>
-		/// <param name="compilation"><see cref="Compilation"/> that is the input for the <paramref name="analyzer"/>.</param>
-		/// <param name="id">Id of <see cref="Diagnostic"/> to check for.</param>
-		public static Task<bool> ProducesDiagnostic(this DiagnosticAnalyzer analyzer, Compilation compilation, string id)
-		{
-			return RunAnalyzer(analyzer, compilation).ContinueWith(task => task.Result.Any(d => d.Id == id));
 		}
 	}
 }

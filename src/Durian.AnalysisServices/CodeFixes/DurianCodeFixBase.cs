@@ -1,4 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -20,14 +23,14 @@ namespace Durian.Generator.CodeFixes
 		}
 
 		/// <summary>
-		/// Title of this <see cref="DurianCodeFixBase"/>.
-		/// </summary>
-		public abstract string Title { get; }
-
-		/// <summary>
 		/// Id of this <see cref="DurianCodeFixBase"/>.
 		/// </summary>
 		public virtual string Id => Title;
+
+		/// <summary>
+		/// Title of this <see cref="DurianCodeFixBase"/>.
+		/// </summary>
+		public abstract string Title { get; }
 
 		/// <summary>
 		/// Creates a new instance of the <see cref="DurianCodeFixBase"/> class.
@@ -37,15 +40,15 @@ namespace Durian.Generator.CodeFixes
 		}
 
 		/// <inheritdoc/>
-		public override string ToString()
-		{
-			return Title;
-		}
-
-		/// <inheritdoc/>
 		public override FixAllProvider? GetFixAllProvider()
 		{
 			return WellKnownFixAllProviders.BatchFixer;
+		}
+
+		/// <inheritdoc/>
+		public override string ToString()
+		{
+			return Title;
 		}
 
 		/// <summary>

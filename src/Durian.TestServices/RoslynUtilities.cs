@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -22,35 +25,6 @@ namespace Durian.Tests
 		/// Name applied to a created <see cref="Compilation"/> when no other name is specified.
 		/// </summary>
 		public static string DefaultCompilationName => "TestCompilation";
-
-		/// <summary>
-		/// Returns a collection of <see cref="CSharpSyntaxTree"/>s created from the specified <paramref name="sources"/>.
-		/// </summary>
-		/// <param name="sources">A collection of <see cref="string"/>s that represent the sources to parse and create the <see cref="SyntaxTree"/>s from.</param>
-		public static IEnumerable<CSharpSyntaxTree> GetSyntaxTrees(IEnumerable<string>? sources)
-		{
-			if (sources is null)
-			{
-				yield break;
-			}
-			else
-			{
-				foreach (string s in sources)
-				{
-					if (s is null)
-					{
-						continue;
-					}
-
-					SyntaxTree tree = CSharpSyntaxTree.ParseText(s, encoding: Encoding.UTF8);
-
-					if (tree is CSharpSyntaxTree t)
-					{
-						yield return t;
-					}
-				}
-			}
-		}
 
 		/// <summary>
 		/// Creates a <see cref="CSharpCompilation"/> that contains <see cref="MetadataReference"/>s to all the essential .NET assemblies.
@@ -196,6 +170,81 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
+		/// Creates a new, non-defaulted <see cref="GeneratorExecutionContext"/> using a <see cref="CSharpGeneratorDriver"/>.
+		/// </summary>
+		public static GeneratorExecutionContext CreateExecutionContext()
+		{
+			return CreateExecutionContext(CreateBaseCompilation());
+		}
+
+		/// <inheritdoc cref="CreateExecutionContext(Compilation, GeneratorInitialize)"/>
+		public static GeneratorExecutionContext CreateExecutionContext(Compilation? compilation)
+		{
+			SourceGeneratorProxy proxy = new();
+			CSharpGeneratorDriver driver = CSharpGeneratorDriver.Create(proxy);
+			_ = driver.RunGenerators(compilation ?? CreateBaseCompilation());
+			return proxy.ExecutionContext;
+		}
+
+		/// <summary>
+		/// Creates a new, non-defaulted <see cref="GeneratorExecutionContext"/> using a <see cref="CSharpGeneratorDriver"/>.
+		/// </summary>
+		/// <param name="compilation">A <see cref="Compilation"/> to be assigned to the newly-created <see cref="GeneratorExecutionContext"/>.</param>
+		/// <param name="onInitialize">Action to be performed instead of the proper <see cref="ISourceGenerator.Initialize(GeneratorInitializationContext)"/> method.</param>
+		/// <remarks>
+		/// This method accepts <see cref="Compilation"/> instead of <see cref="CSharpCompilation"/>
+		/// to allow the user to intentionally pass invalid <see cref="Compilation"/> to the <see cref="ISourceGenerator.Execute(GeneratorExecutionContext)"/>
+		/// to perform proper unit tests regarding validation.
+		/// </remarks>
+		public static GeneratorExecutionContext CreateExecutionContext(Compilation? compilation, GeneratorInitialize? onInitialize)
+		{
+			SourceGeneratorProxy proxy = new();
+
+			if (onInitialize is not null)
+			{
+				proxy.OnInitialize += onInitialize;
+			}
+
+			CSharpGeneratorDriver driver = CSharpGeneratorDriver.Create(proxy);
+			_ = driver.RunGenerators(compilation ?? CreateBaseCompilation());
+			return proxy.ExecutionContext;
+		}
+
+		/// <summary>
+		/// Creates a new, non-defaulted <see cref="GeneratorInitializationContext"/> using <c>System.Reflection</c>.
+		/// </summary>
+		public static GeneratorInitializationContext CreateInitializationContext()
+		{
+			return (GeneratorInitializationContext)Activator.CreateInstance(
+				type: typeof(GeneratorInitializationContext),
+				bindingAttr: BindingFlags.Instance | BindingFlags.NonPublic,
+				binder: null,
+				args: new object[] { default(CancellationToken) },
+				culture: CultureInfo.InvariantCulture
+			)!;
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="MetadataReference"/> to some essential assemblies.
+		/// </summary>
+		public static MetadataReference[] GetBaseReferences()
+		{
+			string directory = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+
+			return new[]
+			{
+				MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(File).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
+				MetadataReference.CreateFromFile(Path.Combine(directory, "System.Runtime.dll")),
+				MetadataReference.CreateFromFile(Path.Combine(directory, "netstandard.dll")),
+				MetadataReference.CreateFromFile(typeof(DurianGeneratedAttribute).Assembly.Location),
+			};
+		}
+
+		/// <summary>
 		/// Returns a collection of <see cref="MetadataReference"/>s created from the provided <paramref name="types"/>.
 		/// </summary>
 		/// <param name="types">A collection of <see cref="Type"/>s to get the assemblies to reference to.</param>
@@ -258,23 +307,32 @@ namespace Durian.Tests
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="MetadataReference"/> to some essential assemblies.
+		/// Returns a collection of <see cref="CSharpSyntaxTree"/>s created from the specified <paramref name="sources"/>.
 		/// </summary>
-		public static MetadataReference[] GetBaseReferences()
+		/// <param name="sources">A collection of <see cref="string"/>s that represent the sources to parse and create the <see cref="SyntaxTree"/>s from.</param>
+		public static IEnumerable<CSharpSyntaxTree> GetSyntaxTrees(IEnumerable<string>? sources)
 		{
-			string directory = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
-
-			return new[]
+			if (sources is null)
 			{
-				MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(File).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
-				MetadataReference.CreateFromFile(Path.Combine(directory, "System.Runtime.dll")),
-				MetadataReference.CreateFromFile(Path.Combine(directory, "netstandard.dll")),
-				MetadataReference.CreateFromFile(typeof(DurianGeneratedAttribute).Assembly.Location),
-			};
+				yield break;
+			}
+			else
+			{
+				foreach (string s in sources)
+				{
+					if (s is null)
+					{
+						continue;
+					}
+
+					SyntaxTree tree = CSharpSyntaxTree.ParseText(s, encoding: Encoding.UTF8);
+
+					if (tree is CSharpSyntaxTree t)
+					{
+						yield return t;
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -358,61 +416,6 @@ namespace Durian.Tests
 			}
 
 			return null;
-		}
-
-		/// <summary>
-		/// Creates a new, non-defaulted <see cref="GeneratorExecutionContext"/> using a <see cref="CSharpGeneratorDriver"/>.
-		/// </summary>
-		public static GeneratorExecutionContext CreateExecutionContext()
-		{
-			return CreateExecutionContext(CreateBaseCompilation());
-		}
-
-		/// <inheritdoc cref="CreateExecutionContext(Compilation, GeneratorInitialize)"/>
-		public static GeneratorExecutionContext CreateExecutionContext(Compilation? compilation)
-		{
-			SourceGeneratorProxy proxy = new();
-			CSharpGeneratorDriver driver = CSharpGeneratorDriver.Create(proxy);
-			_ = driver.RunGenerators(compilation ?? CreateBaseCompilation());
-			return proxy.ExecutionContext;
-		}
-
-		/// <summary>
-		/// Creates a new, non-defaulted <see cref="GeneratorExecutionContext"/> using a <see cref="CSharpGeneratorDriver"/>.
-		/// </summary>
-		/// <param name="compilation">A <see cref="Compilation"/> to be assigned to the newly-created <see cref="GeneratorExecutionContext"/>.</param>
-		/// <param name="onInitialize">Action to be performed instead of the proper <see cref="ISourceGenerator.Initialize(GeneratorInitializationContext)"/> method.</param>
-		/// <remarks>
-		/// This method accepts <see cref="Compilation"/> instead of <see cref="CSharpCompilation"/>
-		/// to allow the user to intentionally pass invalid <see cref="Compilation"/> to the <see cref="ISourceGenerator.Execute(GeneratorExecutionContext)"/>
-		/// to perform proper unit tests regarding validation.
-		/// </remarks>
-		public static GeneratorExecutionContext CreateExecutionContext(Compilation? compilation, GeneratorInitialize? onInitialize)
-		{
-			SourceGeneratorProxy proxy = new();
-
-			if (onInitialize is not null)
-			{
-				proxy.OnInitialize += onInitialize;
-			}
-
-			CSharpGeneratorDriver driver = CSharpGeneratorDriver.Create(proxy);
-			_ = driver.RunGenerators(compilation ?? CreateBaseCompilation());
-			return proxy.ExecutionContext;
-		}
-
-		/// <summary>
-		/// Creates a new, non-defaulted <see cref="GeneratorInitializationContext"/> using <c>System.Reflection</c>.
-		/// </summary>
-		public static GeneratorInitializationContext CreateInitializationContext()
-		{
-			return (GeneratorInitializationContext)Activator.CreateInstance(
-				type: typeof(GeneratorInitializationContext),
-				bindingAttr: BindingFlags.Instance | BindingFlags.NonPublic,
-				binder: null,
-				args: new object[] { default(CancellationToken) },
-				culture: CultureInfo.InvariantCulture
-			)!;
 		}
 	}
 }

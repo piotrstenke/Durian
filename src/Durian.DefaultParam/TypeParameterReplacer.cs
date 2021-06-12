@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -11,30 +14,9 @@ namespace Durian.Generator.DefaultParam
 	/// </summary>
 	public class TypeParameterReplacer : CSharpSyntaxRewriter
 	{
-		private int _identifierCounter;
 		private int _constraintCounter;
+		private int _identifierCounter;
 		private bool _skip;
-
-		/// <summary>
-		/// <see cref="ITypeParameterSymbol"/> that should be replaced.
-		/// </summary>
-		public ITypeParameterSymbol? ParameterToReplace { get; set; }
-
-		/// <summary>
-		/// <see cref="ITypeSymbol"/> that replaces the <see cref="ParameterToReplace"/>.
-		/// </summary>
-		public ITypeSymbol? NewType { get; set; }
-
-		/// <summary>
-		/// <see cref="IdentifierNameSyntax"/> to replace the <see cref="ParameterToReplace"/> with.
-		/// </summary>
-		public IdentifierNameSyntax? Replacement { get; set; }
-
-		/// <summary>
-		/// A <see cref="List{T}"/> that contains <see cref="ISymbol"/>s in order they appear in the visited <see cref="CSharpSyntaxNode"/>.
-		/// </summary>
-		/// <remarks>Best practice is to use the <see cref="TypeParameterIdentifierCollector"/> and pass its <see cref="TypeParameterIdentifierCollector.OutputSymbols"/> here.</remarks>
-		public List<ISymbol?> InputSymbols { get; set; }
 
 		/// <summary>
 		/// A <see cref="List{T}"/> that contains the indexes of <see cref="TypeParameterConstraintClauseSyntax"/> that were modified during last visit.
@@ -50,6 +32,27 @@ namespace Durian.Generator.DefaultParam
 		/// Determines whether any <see cref="TypeParameterConstraintClauseSyntax"/> was modified during last visit.
 		/// </summary>
 		public bool HasModifiedConstraints => ChangedConstraintIndices.Count > 0;
+
+		/// <summary>
+		/// A <see cref="List{T}"/> that contains <see cref="ISymbol"/>s in order they appear in the visited <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
+		/// <remarks>Best practice is to use the <see cref="TypeParameterIdentifierCollector"/> and pass its <see cref="TypeParameterIdentifierCollector.OutputSymbols"/> here.</remarks>
+		public List<ISymbol?> InputSymbols { get; set; }
+
+		/// <summary>
+		/// <see cref="ITypeSymbol"/> that replaces the <see cref="ParameterToReplace"/>.
+		/// </summary>
+		public ITypeSymbol? NewType { get; set; }
+
+		/// <summary>
+		/// <see cref="ITypeParameterSymbol"/> that should be replaced.
+		/// </summary>
+		public ITypeParameterSymbol? ParameterToReplace { get; set; }
+
+		/// <summary>
+		/// <see cref="IdentifierNameSyntax"/> to replace the <see cref="ParameterToReplace"/> with.
+		/// </summary>
+		public IdentifierNameSyntax? Replacement { get; set; }
 
 		/// <summary>
 		/// Determines whether to visit the declaration body of a <see cref="MethodDeclarationSyntax"/>. Defaults to <see langword="true"/>.
@@ -76,20 +79,27 @@ namespace Durian.Generator.DefaultParam
 			ChangedConstraintIndices = new();
 		}
 
-		/// <inheritdoc/>
-		public override SyntaxNode? VisitBlock(BlockSyntax node)
+		/// <summary>
+		/// Resets the replacer.
+		/// </summary>
+		public void Reset()
 		{
-			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
-			{
-				return base.VisitBlock(node);
-			}
-			else
-			{
-				_skip = true;
-				SyntaxNode? n = base.VisitBlock(node);
-				_skip = false;
-				return n;
-			}
+			ParameterToReplace = null;
+			Replacement = null;
+			InputSymbols.Clear();
+			VisitDeclarationBody = true;
+			NewType = null;
+			ResetCounter();
+		}
+
+		/// <summary>
+		/// Resets the counter of encountered <see cref="IdentifierNameSyntax"/>es.
+		/// </summary>
+		public void ResetCounter()
+		{
+			_identifierCounter = 0;
+			_constraintCounter = 0;
+			ChangedConstraintIndices.Clear();
 		}
 
 		/// <inheritdoc/>
@@ -109,39 +119,19 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public override SyntaxNode? VisitTypeParameterConstraintClause(TypeParameterConstraintClauseSyntax node)
+		public override SyntaxNode? VisitBlock(BlockSyntax node)
 		{
-			bool changed = false;
-			TypeParameterConstraintClauseSyntax clause = node;
-			SeparatedSyntaxList<TypeParameterConstraintSyntax> originalConstraints = clause.Constraints;
-			int length = originalConstraints.Count;
-			TypeParameterConstraintSyntax[] constraints = new TypeParameterConstraintSyntax[length];
-
-			for (int i = 0; i < length; i++)
+			if (VisitDeclarationBody || node.Parent is not MethodDeclarationSyntax)
 			{
-				TypeParameterConstraintSyntax current = originalConstraints[i];
-				SyntaxNode? n = base.Visit(current);
-
-				if (n != current)
-				{
-					changed = true;
-					constraints[i] = (TypeParameterConstraintSyntax)n;
-				}
-				else
-				{
-					constraints[i] = current;
-				}
+				return base.VisitBlock(node);
 			}
-
-			if (changed)
+			else
 			{
-				ChangedConstraintIndices.Add(_constraintCounter);
-				clause = clause.WithConstraints(SyntaxFactory.SeparatedList(constraints));
+				_skip = true;
+				SyntaxNode? n = base.VisitBlock(node);
+				_skip = false;
+				return n;
 			}
-
-			_constraintCounter++;
-
-			return clause;
 		}
 
 		/// <inheritdoc/>
@@ -198,27 +188,40 @@ namespace Durian.Generator.DefaultParam
 			return toReturn;
 		}
 
-		/// <summary>
-		/// Resets the replacer.
-		/// </summary>
-		public void Reset()
+		/// <inheritdoc/>
+		public override SyntaxNode? VisitTypeParameterConstraintClause(TypeParameterConstraintClauseSyntax node)
 		{
-			ParameterToReplace = null;
-			Replacement = null;
-			InputSymbols.Clear();
-			VisitDeclarationBody = true;
-			NewType = null;
-			ResetCounter();
-		}
+			bool changed = false;
+			TypeParameterConstraintClauseSyntax clause = node;
+			SeparatedSyntaxList<TypeParameterConstraintSyntax> originalConstraints = clause.Constraints;
+			int length = originalConstraints.Count;
+			TypeParameterConstraintSyntax[] constraints = new TypeParameterConstraintSyntax[length];
 
-		/// <summary>
-		/// Resets the counter of encountered <see cref="IdentifierNameSyntax"/>es.
-		/// </summary>
-		public void ResetCounter()
-		{
-			_identifierCounter = 0;
-			_constraintCounter = 0;
-			ChangedConstraintIndices.Clear();
+			for (int i = 0; i < length; i++)
+			{
+				TypeParameterConstraintSyntax current = originalConstraints[i];
+				SyntaxNode? n = base.Visit(current);
+
+				if (n != current)
+				{
+					changed = true;
+					constraints[i] = (TypeParameterConstraintSyntax)n;
+				}
+				else
+				{
+					constraints[i] = current;
+				}
+			}
+
+			if (changed)
+			{
+				ChangedConstraintIndices.Add(_constraintCounter);
+				clause = clause.WithConstraints(SyntaxFactory.SeparatedList(constraints));
+			}
+
+			_constraintCounter++;
+
+			return clause;
 		}
 	}
 }

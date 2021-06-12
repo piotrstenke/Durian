@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.CodeDom.Compiler;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
@@ -14,19 +17,21 @@ namespace Durian.Generator.Data
 		/// <inheritdoc/>
 		public INamedTypeSymbol? DurianGeneratedAttribute { get; private set; }
 
-		/// <inheritdoc/>
-		public INamedTypeSymbol? GeneratedCodeAttribute { get; private set; }
+		INamedTypeSymbol ICompilationDataWithSymbols.DurianGeneratedAttribute => DurianGeneratedAttribute!;
 
 		/// <inheritdoc/>
 		public INamedTypeSymbol? EnableModuleAttribute { get; private set; }
 
+		INamedTypeSymbol ICompilationDataWithSymbols.EnableModuleAttribute => EnableModuleAttribute!;
+
+		/// <inheritdoc/>
+		public INamedTypeSymbol? GeneratedCodeAttribute { get; private set; }
+
+		INamedTypeSymbol ICompilationDataWithSymbols.GeneratedCodeAttribute => GeneratedCodeAttribute!;
+
 		/// <inheritdoc/>
 		[MemberNotNullWhen(false, nameof(GeneratedCodeAttribute), nameof(DurianGeneratedAttribute), nameof(EnableModuleAttribute))]
 		public override bool HasErrors { get; protected set; }
-
-		INamedTypeSymbol ICompilationDataWithSymbols.DurianGeneratedAttribute => DurianGeneratedAttribute!;
-		INamedTypeSymbol ICompilationDataWithSymbols.GeneratedCodeAttribute => GeneratedCodeAttribute!;
-		INamedTypeSymbol ICompilationDataWithSymbols.EnableModuleAttribute => EnableModuleAttribute!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CompilationDataWithSymbols"/> class.

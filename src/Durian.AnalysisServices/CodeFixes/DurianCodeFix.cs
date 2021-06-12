@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -27,22 +30,10 @@ namespace Durian.Generator.CodeFixes
 		}
 
 		/// <summary>
-		/// Computes one or more fixes for the specified Microsoft.CodeAnalysis.CodeFixes.CodeFixContext.
+		/// Actually executes the <see cref="CodeAction"/>.
 		/// </summary>
-		/// <param name="context">A Microsoft.CodeAnalysis.CodeFixes.CodeFixContext containing context information about the diagnostics to fix. The context must only contain diagnostics with a <see cref="Diagnostic.Id"/> included in the <see cref="CodeFixProvider.FixableDiagnosticIds"/> for the current provider.</param>
-		/// <param name="includeSemanticModel">Determines wheter to include the <see cref="SemanticModel"/> when creating this <see cref="CodeFixData{T}"/>.</param>
-		protected async Task RegisterCodeFixesAsync(CodeFixContext context, bool includeSemanticModel)
-		{
-			CodeFixData<T> data = await CodeFixData<T>.FromAsync(context, includeSemanticModel).ConfigureAwait(false);
-			CodeAction? action = await GetCodeActionAsync(data).ConfigureAwait(false);
-
-			if (action is null)
-			{
-				return;
-			}
-
-			context.RegisterCodeFix(action, data.Diagnostic!);
-		}
+		/// <param name="context"><see cref="CodeFixExecutionContext{T}"/> that contains all the data needed to properly perform a code fix.</param>
+		protected abstract Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context);
 
 		/// <summary>
 		/// Returns a <see cref="CodeAction"/> to be executed.
@@ -70,9 +61,21 @@ namespace Durian.Generator.CodeFixes
 		}
 
 		/// <summary>
-		/// Actually executes the <see cref="CodeAction"/>.
+		/// Computes one or more fixes for the specified Microsoft.CodeAnalysis.CodeFixes.CodeFixContext.
 		/// </summary>
-		/// <param name="context"><see cref="CodeFixExecutionContext{T}"/> that contains all the data needed to properly perform a code fix.</param>
-		protected abstract Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context);
+		/// <param name="context">A Microsoft.CodeAnalysis.CodeFixes.CodeFixContext containing context information about the diagnostics to fix. The context must only contain diagnostics with a <see cref="Diagnostic.Id"/> included in the <see cref="CodeFixProvider.FixableDiagnosticIds"/> for the current provider.</param>
+		/// <param name="includeSemanticModel">Determines whether to include the <see cref="SemanticModel"/> when creating this <see cref="CodeFixData{T}"/>.</param>
+		protected async Task RegisterCodeFixesAsync(CodeFixContext context, bool includeSemanticModel)
+		{
+			CodeFixData<T> data = await CodeFixData<T>.FromAsync(context, includeSemanticModel).ConfigureAwait(false);
+			CodeAction? action = await GetCodeActionAsync(data).ConfigureAwait(false);
+
+			if (action is null)
+			{
+				return;
+			}
+
+			context.RegisterCodeFix(action, data.Diagnostic!);
+		}
 	}
 }

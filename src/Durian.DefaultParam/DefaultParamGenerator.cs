@@ -1,5 +1,8 @@
-using System.Collections.Generic;
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Linq;
+using Durian.Generator.Cache;
 using Durian.Generator.Data;
 using Durian.Generator.Extensions;
 using Durian.Generator.Logging;
@@ -12,20 +15,13 @@ namespace Durian.Generator.DefaultParam
 	/// <summary>
 	/// Main class of the <c>DefaultParam</c> module. Generates the source code of the members marked with the <see cref="DefaultParamAttribute"/>.
 	/// </summary>
-	[Generator]
+#if !MAIN_PACKAGE
+
+	[Generator(LanguageNames.CSharp)]
+#endif
 	[GeneratorLoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "DefaultParam", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
-	public class DefaultParamGenerator : DurianGenerator<DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>.WithBuilder
+	public class DefaultParamGenerator : CachedDurianGenerator<DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter, IDefaultParamTarget>
 	{
-		/// <summary>
-		/// Version of this source generator.
-		/// </summary>
-		public static string Version => "1.1.0";
-
-		/// <summary>
-		/// Name of this source generator, i.e. 'DefaultParam'.
-		/// </summary>
-		public static string GeneratorName => "DefaultParam";
-
 		/// <summary>
 		/// Number of trees generated statically by this generator.
 		/// </summary>
@@ -33,12 +29,40 @@ namespace Durian.Generator.DefaultParam
 
 		private readonly DefaultParamRewriter _rewriter = new();
 
-		/// <inheritdoc cref="DefaultParamGenerator(in LoggableGeneratorConstructionContext, IFileNameProvider?)"/>
+		private FilterContainer<IDefaultParamFilter>? _filters;
+
+		/// <summary>
+		/// Name of this source generator, i.e. 'DefaultParam'.
+		/// </summary>
+		public static string GeneratorName => "DefaultParam";
+
+		/// <summary>
+		/// Version of this source generator.
+		/// </summary>
+		public static string Version => "1.1.0";
+
+		/// <inheritdoc/>
+		public override bool EnableDiagnostics
+		{
+			get => base.EnableDiagnostics;
+			set
+			{
+				bool old = base.EnableDiagnostics;
+
+				if (old != value)
+				{
+					base.EnableDiagnostics = value;
+					_filters = null;
+				}
+			}
+		}
+
+		/// <inheritdoc cref="DefaultParamGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
 		public DefaultParamGenerator()
 		{
 		}
 
-		/// <inheritdoc cref="DefaultParamGenerator(in LoggableGeneratorConstructionContext, IFileNameProvider?)"/>
+		/// <inheritdoc cref="DefaultParamGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
 		public DefaultParamGenerator(in LoggableGeneratorConstructionContext context) : base(in context)
 		{
 		}
@@ -48,11 +72,11 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		/// <param name="context">Configures how this <see cref="LoggableSourceGenerator"/> is initialized.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public DefaultParamGenerator(in LoggableGeneratorConstructionContext context, IFileNameProvider? fileNameProvider) : base(in context, fileNameProvider)
+		public DefaultParamGenerator(in LoggableGeneratorConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
 		{
 		}
 
-		/// <inheritdoc cref="DefaultParamGenerator(GeneratorLoggingConfiguration?, IFileNameProvider?)"/>
+		/// <inheritdoc cref="DefaultParamGenerator(GeneratorLoggingConfiguration?, IHintNameProvider?)"/>
 		public DefaultParamGenerator(GeneratorLoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
@@ -62,7 +86,7 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public DefaultParamGenerator(GeneratorLoggingConfiguration? loggingConfiguration, IFileNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		public DefaultParamGenerator(GeneratorLoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
 		{
 		}
 
@@ -75,7 +99,7 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		protected override FilterContainer<IDefaultParamFilter> GetFilters(in GeneratorExecutionContext context)
+		public override FilterContainer<IDefaultParamFilter> GetFilters(in GeneratorExecutionContext context)
 		{
 			return GetFilters(new SymbolNameToFile());
 		}
@@ -84,50 +108,43 @@ namespace Durian.Generator.DefaultParam
 		/// Returns a <see cref="FilterContainer{TFilter}"/> to be used during the current generation pass.
 		/// </summary>
 		/// <param name="fileNameProvider">Creates name for the generated files.</param>
-		protected FilterContainer<IDefaultParamFilter> GetFilters(IFileNameProvider fileNameProvider)
+		public FilterContainer<IDefaultParamFilter> GetFilters(IHintNameProvider fileNameProvider)
 		{
-			FilterContainer<IDefaultParamFilter> list = new();
-
-			list.RegisterFilterGroup("Methods", new DefaultParamMethodFilter(this, fileNameProvider));
-			list.RegisterFilterGroup("Delegates", new DefaultParamDelegateFilter(this, fileNameProvider));
-			list.RegisterFilterGroup("Types", new DefaultParamTypeFilter(this, fileNameProvider));
-
-			if (EnableDiagnostics)
+			if (_filters is null)
 			{
-				list.RegisterFilterGroup("Local Functions", new DefaultParamLocalFunctionFilter(this, fileNameProvider));
+				FilterContainer<IDefaultParamFilter> list = new();
+
+				list.RegisterFilterGroup("Methods", new DefaultParamMethodFilter(this, fileNameProvider));
+				list.RegisterFilterGroup("Delegates", new DefaultParamDelegateFilter(this, fileNameProvider));
+				list.RegisterFilterGroup("Types", new DefaultParamTypeFilter(this, fileNameProvider));
+
+				if (EnableDiagnostics)
+				{
+					list.RegisterFilterGroup("Local Functions", new DefaultParamLocalFunctionFilter(this, fileNameProvider));
+				}
+
+				_filters = list;
 			}
 
-			return list;
+			return _filters;
 		}
 
 		/// <inheritdoc/>
-		protected override DefaultParamCompilationData CreateCompilationData(CSharpCompilation compilation)
+		public override FilterContainer<IDefaultParamFilter> GetFilters(in CachedGeneratorExecutionContext<IDefaultParamTarget> context)
 		{
-			return new DefaultParamCompilationData(compilation);
-		}
-
-		/// <inheritdoc/>
-		protected sealed override string GetVersion()
-		{
-			return Version;
-		}
-
-		/// <inheritdoc/>
-		protected sealed override string GetGeneratorName()
-		{
-			return GeneratorName;
-		}
-
-		/// <inheritdoc/>
-		protected sealed override DurianModule[] GetEnabledModules()
-		{
-			return new DurianModule[] { DurianModule.DefaultParam };
+			return GetFilters(new SymbolNameToFile());
 		}
 
 		/// <inheritdoc/>
 		protected override void BeforeExecution(in GeneratorExecutionContext context)
 		{
 			_rewriter.ParentCompilation = TargetCompilation;
+		}
+
+		/// <inheritdoc/>
+		protected override DefaultParamCompilationData CreateCompilationData(CSharpCompilation compilation)
+		{
+			return new DefaultParamCompilationData(compilation);
 		}
 
 		/// <inheritdoc/>
@@ -145,70 +162,149 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <inheritdoc/>
+		protected sealed override DurianModule[] GetEnabledModules()
+		{
+			return new DurianModule[] { DurianModule.DefaultParam };
+		}
+
+		/// <inheritdoc/>
+		protected sealed override string GetGeneratorName()
+		{
+			return GeneratorName;
+		}
+
+		/// <inheritdoc/>
+		protected sealed override string GetVersion()
+		{
+			return Version;
+		}
+
+		/// <inheritdoc/>
 		protected override void IterateThroughFilter(IDefaultParamFilter filter, in GeneratorExecutionContext context)
 		{
 			switch (filter.Mode)
 			{
-				case FilterMode.None:
-					IterateThroughFilter(new FilterEnumerator(filter), in context);
-					break;
-
 				case FilterMode.Diagnostics:
-					IterateThroughFilter(new DiagnosticEnumerator(filter), in context);
+				{
+					FilterEnumeratorWithDiagnostics<IDefaultParamTarget> enumerator = new(filter, TargetCompilation!, filter, DiagnosticReceiver!);
+
+					while (enumerator.MoveNext())
+					{
+						GenerateFromData(enumerator.Current, in context);
+					}
+
 					break;
+				}
 
 				case FilterMode.Logs:
-					IterateThroughFilter(new LoggableEnumerator(filter), in context);
+				{
+					DefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter);
+
+					while (enumerator.MoveNext())
+					{
+						GenerateFromData(enumerator.Current, in context);
+					}
+
 					break;
+				}
 
 				case FilterMode.Both:
-					IterateThroughFilter(new LoggableDiagnosticEnumerator(filter), in context);
+				{
+					DefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, LoggableGeneratorDiagnosticReceiverFactory.SourceGenerator(this, DiagnosticReceiver!));
+
+					while (enumerator.MoveNext())
+					{
+						GenerateFromData(enumerator.Current, in context);
+					}
+
 					break;
+				}
 
 				default:
-					goto case FilterMode.None;
+				{
+					FilterEnumerator<IDefaultParamTarget> enumerator = new(filter, TargetCompilation!, filter);
+
+					while (enumerator.MoveNext())
+					{
+						GenerateFromData(enumerator.Current, in context);
+					}
+
+					break;
+				}
 			}
 		}
 
-		private void IterateThroughFilter<T>(T iter, in GeneratorExecutionContext context) where T : IEnumerator<IDefaultParamTarget>
+		/// <inheritdoc/>
+		protected override void IterateThroughFilter(IDefaultParamFilter filter, in CachedGeneratorExecutionContext<IDefaultParamTarget> context)
 		{
-			while (iter.MoveNext())
+			ref readonly CachedData<IDefaultParamTarget> cache = ref context.GetCachedData();
+			ref readonly GeneratorExecutionContext c = ref context.GetContext();
+
+			switch (filter.Mode)
 			{
-				GenerateFromData(iter.Current, in context);
+				case FilterMode.Diagnostics:
+				{
+					CachedFilterEnumeratorWithDiagnostics<IDefaultParamTarget> enumerator = new(filter, TargetCompilation!, filter, DiagnosticReceiver!, in cache);
+
+					while (enumerator.MoveNext())
+					{
+						GenerateFromData(enumerator.Current, in c);
+					}
+
+					break;
+				}
+
+				case FilterMode.Logs:
+				{
+					CachedDefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, in cache);
+
+					while (enumerator.MoveNext())
+					{
+						GenerateFromData(enumerator.Current, in c);
+					}
+
+					break;
+				}
+
+				case FilterMode.Both:
+				{
+					CachedDefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, LoggableGeneratorDiagnosticReceiverFactory.SourceGenerator(this, DiagnosticReceiver!), in cache);
+
+					while (enumerator.MoveNext())
+					{
+						GenerateFromData(enumerator.Current, in c);
+					}
+
+					break;
+				}
+
+				default:
+				{
+					CachedFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, TargetCompilation!, filter, in cache);
+
+					while (enumerator.MoveNext())
+					{
+						GenerateFromData(enumerator.Current, in c);
+					}
+
+					break;
+				}
 			}
 		}
 
-		private void WriteTargetLeadDeclaration(IDefaultParamTarget target)
+		private static string GetTargetName(ITypeSymbol targetType)
 		{
-			CodeBuilder.WriteHeader(GeneratorName, Version);
-			CodeBuilder.AppendLine();
-			string[] namespaces = AnalysisUtilities.SortUsings(target.GetUsedNamespaces()).ToArray();
-
-			if (namespaces.Length > 0)
+			if (targetType is INamedTypeSymbol t)
 			{
-				CodeBuilder.WriteUsings(namespaces);
-				CodeBuilder.AppendLine();
+				return t.Arity > 0 ? t.GetGenericName(false) : AnalysisUtilities.TypeToKeyword(targetType.Name);
 			}
-
-			if (target.TargetNamespace != "global")
+			else if (targetType is IArrayTypeSymbol a)
 			{
-				CodeBuilder.BeginNamespaceDeclaration(target.TargetNamespace);
+				return a.ToString();
 			}
-
-			CodeBuilder.WriteParentDeclarations(target.GetContainingTypes());
-		}
-
-		private void GenerateAllVersionsOfTarget(IDefaultParamTarget target, in GeneratorExecutionContext context)
-		{
-			IDefaultParamDeclarationBuilder declBuilder = target.GetDeclarationBuilder(context.CancellationToken);
-			_rewriter.Acquire(declBuilder);
-			CSharpSyntaxNode[] members = CreateDefaultParamDeclarations(in target.TypeParameters);
-
-			if (members.Length > 0)
+			else
 			{
-				WriteTargetLeadDeclaration(target);
-				WriteGeneratedMembers(members, target);
-				CodeBuilder.EndAllBlocks();
+				return AnalysisUtilities.TypeToKeyword(targetType.Name);
 			}
 		}
 
@@ -262,20 +358,38 @@ namespace Durian.Generator.DefaultParam
 			return members;
 		}
 
-		private static string GetTargetName(ITypeSymbol targetType)
+		private void GenerateAllVersionsOfTarget(IDefaultParamTarget target, in GeneratorExecutionContext context)
 		{
-			if (targetType is INamedTypeSymbol t)
+			IDefaultParamDeclarationBuilder declBuilder = target.GetDeclarationBuilder(context.CancellationToken);
+			_rewriter.Acquire(declBuilder);
+			CSharpSyntaxNode[] members = CreateDefaultParamDeclarations(in target.TypeParameters);
+
+			if (members.Length > 0)
 			{
-				return t.Arity > 0 ? t.GetGenericName(false) : AnalysisUtilities.TypeToKeyword(targetType.Name);
+				WriteTargetLeadDeclaration(target);
+				WriteGeneratedMembers(members, target);
+				CodeBuilder.EndAllBlocks();
 			}
-			else if (targetType is IArrayTypeSymbol a)
+		}
+
+		private void WriteTargetLeadDeclaration(IDefaultParamTarget target)
+		{
+			CodeBuilder.WriteHeader(GeneratorName, Version);
+			CodeBuilder.AppendLine();
+			string[] namespaces = AnalysisUtilities.SortUsings(target.GetUsedNamespaces()).ToArray();
+
+			if (namespaces.Length > 0)
 			{
-				return a.ToString();
+				CodeBuilder.WriteUsings(namespaces);
+				CodeBuilder.AppendLine();
 			}
-			else
+
+			if (target.TargetNamespace != "global")
 			{
-				return AnalysisUtilities.TypeToKeyword(targetType.Name);
+				CodeBuilder.BeginNamespaceDeclaration(target.TargetNamespace);
 			}
+
+			CodeBuilder.WriteParentDeclarations(target.GetContainingTypes());
 		}
 	}
 }

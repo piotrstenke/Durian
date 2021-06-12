@@ -1,4 +1,7 @@
-﻿namespace Durian.Info
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+namespace Durian.Info
 {
 	/// <summary>
 	/// Defines all modules a package can be part of.

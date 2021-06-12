@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +35,10 @@ namespace Durian.Generator.Data
 		{
 		}
 
+		internal TypeData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		{
+		}
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TypeData{TDeclaration}"/> class.
 		/// </summary>
@@ -55,10 +62,6 @@ namespace Durian.Generator.Data
 			IEnumerable<INamespaceSymbol>? containingNamespaces,
 			IEnumerable<AttributeData>? attributes
 		) : base(declaration, compilation, symbol, semanticModel, partialDeclarations, modifiers, containingTypes, containingNamespaces, attributes)
-		{
-		}
-
-		internal TypeData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 

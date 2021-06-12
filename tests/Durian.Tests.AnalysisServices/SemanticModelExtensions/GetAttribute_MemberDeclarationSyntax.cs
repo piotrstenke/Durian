@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Data;
 using Durian.Generator.Extensions;
@@ -9,47 +12,10 @@ namespace Durian.Tests.AnalysisServices.SemanticModelExtensions
 {
 	public sealed class GetAttribute_MemberDeclarationSyntax : CompilationTest
 	{
-
-
 		private INamedTypeSymbol AttributeSymbol => Compilation.CurrentCompilation.GetTypeByMetadataName("TestAttribute")!;
 
 		public GetAttribute_MemberDeclarationSyntax() : base(Utilities.TestAttribute, Utilities.OtherAttribute)
 		{
-
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SemanticModelIsNull()
-		{
-			IMemberData member = GetClass("class Test { }");
-			SemanticModel? semanticModel = null;
-			Assert.Throws<ArgumentNullException>(() => semanticModel!.GetAttribute(member.Declaration, AttributeSymbol));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SyntaxNodelIsNull()
-		{
-			IMemberData member = GetClass("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetAttribute((MemberDeclarationSyntax)null!, AttributeSymbol));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_AttributeSymbolIsNull()
-		{
-			IMemberData member = GetClass("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetAttribute(member.Declaration, null!));
-		}
-
-		[Fact]
-		public void ReturnsNull_When_HasNoAttributes()
-		{
-			Assert.True(Execute("class Test { }") is null);
-		}
-
-		[Fact]
-		public void ReturnsNull_When_HasOtherAttribute()
-		{
-			Assert.True(Execute("[Other]class Test { }") is null);
 		}
 
 		[Fact]
@@ -65,9 +31,43 @@ namespace Durian.Tests.AnalysisServices.SemanticModelExtensions
 		}
 
 		[Fact]
+		public void ReturnsNull_When_HasNoAttributes()
+		{
+			Assert.True(Execute("class Test { }") is null);
+		}
+
+		[Fact]
+		public void ReturnsNull_When_HasOtherAttribute()
+		{
+			Assert.True(Execute("[Other]class Test { }") is null);
+		}
+
+		[Fact]
 		public void ReturnsValidAttribute_When_FirstAttributeIsOfOtherType()
 		{
 			Assert.True(Execute("[Other][Test(\"name\")][Test]class Test { }")!.ToString() == "Test(\"name\")");
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_AttributeSymbolIsNull()
+		{
+			IMemberData member = GetClass("class Test { }");
+			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetAttribute(member.Declaration, null!));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SemanticModelIsNull()
+		{
+			IMemberData member = GetClass("class Test { }");
+			SemanticModel? semanticModel = null;
+			Assert.Throws<ArgumentNullException>(() => semanticModel!.GetAttribute(member.Declaration, AttributeSymbol));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SyntaxNodelIsNull()
+		{
+			IMemberData member = GetClass("class Test { }");
+			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetAttribute((MemberDeclarationSyntax)null!, AttributeSymbol));
 		}
 
 		private AttributeSyntax? Execute(string src)

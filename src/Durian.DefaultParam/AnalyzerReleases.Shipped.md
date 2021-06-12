@@ -33,5 +33,14 @@ DUR0126 | Durian.DefaultParam | Error | Members with the DefaultParamAttribute c
 ## Release 1.1.0
 
 ### New Rules
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-----------------------------------------
+DUR0127 | Durian.DefaultParam | Warning | Target namespace is not a valid identifier. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0127.md)]
 
- DUR0127 | Durian.DefaultParam | Warning | Target namespace is not a valid identifier [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0127.md)]
+## Release 1.2.0
+
+### New Rules
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-----------------------------------------
+DUR0128 | Durian.DefaultParam | Warning | Do not specify target namespace for a nested member. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0128.md)]
+DUR0129 | Durian.DefaultParam | Error | Target namespace already contains member with the specified name. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam/DUR0129.md)]

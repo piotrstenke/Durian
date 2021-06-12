@@ -1,4 +1,7 @@
-﻿using Durian.Configuration;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using Durian.Configuration;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 
@@ -9,11 +12,6 @@ namespace Durian.Generator.DefaultParam
 	/// </summary>
 	public static class DefaultParamDiagnostics
 	{
-		/// <summary>
-		/// Documentation directory of the <c>DefaultParam</c> module.
-		/// </summary>
-		public static string DocsPath => ModuleIdentity.GetModule(DurianModule.DefaultParam).Documentation;
-
 		/// <summary>
 		/// Provides diagnostic message indicating that a containing type of a member with the <see cref="DefaultParamAttribute"/> must be <see langword="partial"/>.
 		/// </summary>
@@ -365,5 +363,36 @@ namespace Durian.Generator.DefaultParam
 			helpLinkUri: DocsPath + @"\DUR0127.md",
 			isEnabledByDefault: true
 		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the user should not specify target namespace for a nested member.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0128_DoNotSpecifyTargetNamespaceForNestedMembers = new(
+			id: "DUR0128",
+			title: "Do not specify target namespace for a nested member",
+			messageFormat: "'{0}': Do not specify target namespace for a nested member",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + @"\DUR0128.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the namespace specified in the <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/> already contains member with the target name.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0129_TargetNamespaceAlreadyContainsMemberWithName = new(
+			id: "DUR0129",
+			title: "Target namespace already contains member with the specified name",
+			messageFormat: "'{0}': Namespace '{1]' already contains member with name '{2}'",
+			category: "Durian.DefaultParam",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + @"\DUR0129.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Documentation directory of the <c>DefaultParam</c> module.
+		/// </summary>
+		public static string DocsPath => ModuleIdentity.GetModule(DurianModule.DefaultParam).Documentation;
 	}
 }

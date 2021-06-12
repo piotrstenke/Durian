@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Linq;
 using Durian.Generator.Data;
 using Microsoft.CodeAnalysis;
@@ -7,6 +10,22 @@ namespace Durian.Tests.AnalysisServices.TypeData
 {
 	public sealed class GetContainingTypes : CompilationTest
 	{
+		[Fact]
+		public void CanReturnMultipleTypes()
+		{
+			Generator.Data.TypeData data = GetType("class Test { class Parent { class Child { } } }", 2);
+			ITypeData[] containingTypes = data.GetContainingTypes(false).ToArray();
+			Assert.True(containingTypes.Length == 2 && containingTypes.Any(t => t.Symbol.Name == "Parent") && containingTypes.Any(t => t.Symbol.Name == "Test"));
+		}
+
+		[Fact]
+		public void CanReturnSingleType()
+		{
+			Generator.Data.TypeData data = GetType("class Parent { class Child { } }", 1);
+			ITypeData[] containingTypes = data.GetContainingTypes(false).ToArray();
+			Assert.True(containingTypes.Length == 1 && containingTypes[0].Symbol.Name == "Parent");
+		}
+
 		[Fact]
 		public void ReturnsEmpty_When_IsNotNestedType()
 		{
@@ -21,22 +40,6 @@ namespace Durian.Tests.AnalysisServices.TypeData
 			Generator.Data.TypeData data = GetType("class Test { }");
 			ITypeData[] containingTypes = data.GetContainingTypes(true).ToArray();
 			Assert.True(containingTypes.Length == 1 && data == containingTypes[0]);
-		}
-
-		[Fact]
-		public void CanReturnSingleType()
-		{
-			Generator.Data.TypeData data = GetType("class Parent { class Child { } }", 1);
-			ITypeData[] containingTypes = data.GetContainingTypes(false).ToArray();
-			Assert.True(containingTypes.Length == 1 && containingTypes[0].Symbol.Name == "Parent");
-		}
-
-		[Fact]
-		public void CanReturnMultipleTypes()
-		{
-			Generator.Data.TypeData data = GetType("class Test { class Parent { class Child { } } }", 2);
-			ITypeData[] containingTypes = data.GetContainingTypes(false).ToArray();
-			Assert.True(containingTypes.Length == 2 && containingTypes.Any(t => t.Symbol.Name == "Parent") && containingTypes.Any(t => t.Symbol.Name == "Test"));
 		}
 
 		[Fact]

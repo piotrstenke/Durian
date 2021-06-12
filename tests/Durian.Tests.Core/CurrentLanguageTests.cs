@@ -1,4 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Durian.Generator.Core;
 using Microsoft.CodeAnalysis;
@@ -10,15 +13,6 @@ namespace Durian.Tests.Core
 {
 	public sealed class CurrentLanguageTests
 	{
-		[Fact]
-		public async Task Success_When_IsCSharp()
-		{
-			CSharpCompilation compilation = CSharpCompilation.Create(RoslynUtilities.DefaultCompilationName, null, RoslynUtilities.GetBaseReferences());
-			IsCSharpCompilationAnalyzer analyzer = new();
-			ImmutableArray<Diagnostic> diagnostics = await analyzer.RunAnalyzer(compilation);
-			Assert.Empty(diagnostics);
-		}
-
 		[Fact]
 		public async Task Error_When_IsVisualBasic()
 		{
@@ -36,6 +30,15 @@ namespace Durian.Tests.Core
 
 			IsCSharpCompilationAnalyzer analyzer = new();
 			Assert.True(await analyzer.ProducesDiagnostic(compilation, DurianDiagnostics.DUR0006_ProjectMustUseCSharp9));
+		}
+
+		[Fact]
+		public async Task Success_When_IsCSharp()
+		{
+			CSharpCompilation compilation = CSharpCompilation.Create(RoslynUtilities.DefaultCompilationName, null, RoslynUtilities.GetBaseReferences());
+			IsCSharpCompilationAnalyzer analyzer = new();
+			ImmutableArray<Diagnostic> diagnostics = await analyzer.RunAnalyzer(compilation);
+			Assert.Empty(diagnostics);
 		}
 	}
 }

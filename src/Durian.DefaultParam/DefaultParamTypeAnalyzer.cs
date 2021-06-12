@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Durian.Configuration;
@@ -13,7 +16,10 @@ namespace Durian.Generator.DefaultParam
 	/// <summary>
 	/// Analyzes types with type parameters marked by the <see cref="DefaultParamAttribute"/>.
 	/// </summary>
+#if !MAIN_PACKAGE
+
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
+#endif
 	public partial class DefaultParamTypeAnalyzer : DefaultParamAnalyzer
 	{
 		/// <inheritdoc/>
@@ -26,38 +32,79 @@ namespace Durian.Generator.DefaultParam
 		{
 		}
 
-		/// <inheritdoc/>
-		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
+		/// <inheritdoc cref="DefaultParamDelegateAnalyzer.AllowsNewModifier(INamedTypeSymbol, DefaultParamCompilationData)"/>
+		public static bool AllowsNewModifier(INamedTypeSymbol symbol, DefaultParamCompilationData compilation)
 		{
-			return new DiagnosticDescriptor[]
-			{
-				DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor,
-				DefaultParamDiagnostics.DUR0122_DoNotUseDefaultParamOnPartialType
-			};
+			return AllowsNewModifier(symbol.GetAttributes(), symbol.GetContainingTypeSymbols().ToArray(), compilation);
 		}
 
-		/// <inheritdoc/>
-		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		/// <inheritdoc cref="DefaultParamDelegateAnalyzer.AllowsNewModifier(IEnumerable{AttributeData}, INamedTypeSymbol[], DefaultParamCompilationData)"/>
+		public static bool AllowsNewModifier(IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
 		{
-			if (symbol is not INamedTypeSymbol t)
-			{
-				return;
-			}
-
-			TypeKind kind = t.TypeKind;
-
-			if (kind is not TypeKind.Class and not TypeKind.Struct and not TypeKind.Interface)
-			{
-				return;
-			}
-
-			WithDiagnostics.Analyze(diagnosticReceiver, t, compilation, cancellationToken);
+			return DefaultParamUtilities.AllowsNewModifier(attributes, containingTypes, compilation);
 		}
 
 		/// <inheritdoc cref="DefaultParamDelegateAnalyzer.Analyze(INamedTypeSymbol, DefaultParamCompilationData, CancellationToken)"/>
 		public static bool Analyze(INamedTypeSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			return DefaultParamDelegateAnalyzer.Analyze(symbol, compilation, cancellationToken);
+		}
+
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeAgainstPartial(IDiagnosticReceiver, INamedTypeSymbol, CancellationToken)"/>
+		public static bool AnalyzeAgainstPartial(INamedTypeSymbol symbol, CancellationToken cancellationToken = default)
+		{
+			TypeDeclarationSyntax[] syntaxes = symbol.DeclaringSyntaxReferences.Select(r => r.GetSyntax(cancellationToken)).OfType<TypeDeclarationSyntax>().ToArray();
+
+			return syntaxes.Length <= 1 && !syntaxes[0].Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+		}
+
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
+		public static bool AnalyzeCollidingMembers(
+			INamedTypeSymbol symbol,
+			in TypeParameterContainer typeParameters,
+			DefaultParamCompilationData compilation,
+			out HashSet<int>? applyNew,
+			CancellationToken cancellationToken = default
+		)
+		{
+			return AnalyzeCollidingMembers(
+				symbol,
+				in typeParameters,
+				compilation,
+				symbol.GetAttributes(),
+				symbol.GetContainingTypeSymbols().ToArray(),
+				out applyNew,
+				cancellationToken
+			);
+		}
+
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
+		public static bool AnalyzeCollidingMembers(
+			INamedTypeSymbol symbol,
+			in TypeParameterContainer typeParameters,
+			DefaultParamCompilationData compilation,
+			IEnumerable<AttributeData> attributes,
+			INamedTypeSymbol[] containingTypes,
+			out HashSet<int>? applyNew,
+			CancellationToken cancellationToken = default
+		)
+		{
+			bool allowsNew = AllowsNewModifier(attributes, containingTypes, compilation);
+
+			return AnalyzeCollidingMembers(symbol, in typeParameters, compilation, allowsNew, out applyNew, cancellationToken);
+		}
+
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, bool, out HashSet{int}?, CancellationToken)"/>
+		public static bool AnalyzeCollidingMembers(
+			INamedTypeSymbol symbol,
+			in TypeParameterContainer typeParameters,
+			DefaultParamCompilationData compilation,
+			bool allowsNewModifier,
+			out HashSet<int>? applyNew,
+			CancellationToken cancellationToken = default
+		)
+		{
+			return DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(symbol, in typeParameters, compilation, allowsNewModifier, out applyNew, cancellationToken);
 		}
 
 		/// <summary>
@@ -132,73 +179,32 @@ namespace Durian.Generator.DefaultParam
 			return HasInheritConvention(attributes, containingTypes, compilation);
 		}
 
-		/// <inheritdoc cref="DefaultParamDelegateAnalyzer.AllowsNewModifier(INamedTypeSymbol, DefaultParamCompilationData)"/>
-		public static bool AllowsNewModifier(INamedTypeSymbol symbol, DefaultParamCompilationData compilation)
+		/// <inheritdoc/>
+		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			return AllowsNewModifier(symbol.GetAttributes(), symbol.GetContainingTypeSymbols().ToArray(), compilation);
+			if (symbol is not INamedTypeSymbol t)
+			{
+				return;
+			}
+
+			TypeKind kind = t.TypeKind;
+
+			if (kind is not TypeKind.Class and not TypeKind.Struct and not TypeKind.Interface)
+			{
+				return;
+			}
+
+			WithDiagnostics.Analyze(diagnosticReceiver, t, compilation, cancellationToken);
 		}
 
-		/// <inheritdoc cref="DefaultParamDelegateAnalyzer.AllowsNewModifier(IEnumerable{AttributeData}, INamedTypeSymbol[], DefaultParamCompilationData)"/>
-		public static bool AllowsNewModifier(IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
+		/// <inheritdoc/>
+		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
 		{
-			return DefaultParamUtilities.AllowsNewModifier(attributes, containingTypes, compilation);
-		}
-
-		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
-		public static bool AnalyzeCollidingMembers(
-			INamedTypeSymbol symbol,
-			in TypeParameterContainer typeParameters,
-			DefaultParamCompilationData compilation,
-			out HashSet<int>? applyNew,
-			CancellationToken cancellationToken = default
-		)
-		{
-			return AnalyzeCollidingMembers(
-				symbol,
-				in typeParameters,
-				compilation,
-				symbol.GetAttributes(),
-				symbol.GetContainingTypeSymbols().ToArray(),
-				out applyNew,
-				cancellationToken
-			);
-		}
-
-		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
-		public static bool AnalyzeCollidingMembers(
-			INamedTypeSymbol symbol,
-			in TypeParameterContainer typeParameters,
-			DefaultParamCompilationData compilation,
-			IEnumerable<AttributeData> attributes,
-			INamedTypeSymbol[] containingTypes,
-			out HashSet<int>? applyNew,
-			CancellationToken cancellationToken = default
-		)
-		{
-			bool allowsNew = AllowsNewModifier(attributes, containingTypes, compilation);
-
-			return AnalyzeCollidingMembers(symbol, in typeParameters, compilation, allowsNew, out applyNew, cancellationToken);
-		}
-
-		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, bool, out HashSet{int}?, CancellationToken)"/>
-		public static bool AnalyzeCollidingMembers(
-			INamedTypeSymbol symbol,
-			in TypeParameterContainer typeParameters,
-			DefaultParamCompilationData compilation,
-			bool allowsNewModifier,
-			out HashSet<int>? applyNew,
-			CancellationToken cancellationToken = default
-		)
-		{
-			return DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(symbol, in typeParameters, compilation, allowsNewModifier, out applyNew, cancellationToken);
-		}
-
-		/// <inheritdoc cref="WithDiagnostics.AnalyzeAgainstPartial(IDiagnosticReceiver, INamedTypeSymbol, CancellationToken)"/>
-		public static bool AnalyzeAgainstPartial(INamedTypeSymbol symbol, CancellationToken cancellationToken = default)
-		{
-			TypeDeclarationSyntax[] syntaxes = symbol.DeclaringSyntaxReferences.Select(r => r.GetSyntax(cancellationToken)).OfType<TypeDeclarationSyntax>().ToArray();
-
-			return syntaxes.Length <= 1 && !syntaxes[0].Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+			return new DiagnosticDescriptor[]
+			{
+				DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor,
+				DefaultParamDiagnostics.DUR0122_DoNotUseDefaultParamOnPartialType
+			};
 		}
 	}
 }

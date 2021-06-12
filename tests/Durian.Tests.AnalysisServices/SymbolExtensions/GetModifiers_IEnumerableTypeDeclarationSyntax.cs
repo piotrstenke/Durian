@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Linq;
 using Durian.Generator.Extensions;
@@ -11,18 +14,19 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class GetModifiers_IEnumerableTypeDeclarationSyntax : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_DeclIsNull()
+		public void CanReturnMultipleModifiers()
 		{
-			INamedTypeSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetModifiers());
-		}
-
-		[Fact]
-		public void ReturnsEmpty_When_DeclHasNoModifiers()
-		{
-			ClassDeclarationSyntax decl = GetNode<ClassDeclarationSyntax>("class Test { }");
+			StructDeclarationSyntax decl = GetNode<StructDeclarationSyntax>("class Parent { protected internal unsafe readonly ref partial struct Test { }}");
 			SyntaxToken[] tokens = new TypeDeclarationSyntax[] { decl }.GetModifiers().ToArray();
-			Assert.True(tokens.Length == 0);
+
+			Assert.True(
+				tokens.Any(t => t.IsKind(SyntaxKind.ProtectedKeyword)) &&
+				tokens.Any(t => t.IsKind(SyntaxKind.InternalKeyword)) &&
+				tokens.Any(t => t.IsKind(SyntaxKind.UnsafeKeyword)) &&
+				tokens.Any(t => t.IsKind(SyntaxKind.ReadOnlyKeyword)) &&
+				tokens.Any(t => t.IsKind(SyntaxKind.RefKeyword)) &&
+				tokens.Any(t => t.IsKind(SyntaxKind.PartialKeyword))
+			);
 		}
 
 		[Fact]
@@ -35,17 +39,16 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void CanReturnMultipleModifiers()
+		public void DoesNotReturnIdenticalModifiers()
 		{
-			StructDeclarationSyntax decl = GetNode<StructDeclarationSyntax>("class Parent { protected internal unsafe readonly ref partial struct Test { }}");
-			SyntaxToken[] tokens = new TypeDeclarationSyntax[] { decl }.GetModifiers().ToArray();
+			ClassDeclarationSyntax decl1 = GetNode<ClassDeclarationSyntax>("public sealed partial class Test { }");
+			ClassDeclarationSyntax decl2 = GetNode<ClassDeclarationSyntax>("public sealed partial class Test { }");
+			SyntaxToken[] tokens = new TypeDeclarationSyntax[] { decl1, decl2 }.GetModifiers().ToArray();
 
 			Assert.True(
-				tokens.Any(t => t.IsKind(SyntaxKind.ProtectedKeyword)) &&
-				tokens.Any(t => t.IsKind(SyntaxKind.InternalKeyword)) &&
-				tokens.Any(t => t.IsKind(SyntaxKind.UnsafeKeyword)) &&
-				tokens.Any(t => t.IsKind(SyntaxKind.ReadOnlyKeyword)) &&
-				tokens.Any(t => t.IsKind(SyntaxKind.RefKeyword)) &&
+				tokens.Length == 3 &&
+				tokens.Any(t => t.IsKind(SyntaxKind.PublicKeyword)) &&
+				tokens.Any(t => t.IsKind(SyntaxKind.SealedKeyword)) &&
 				tokens.Any(t => t.IsKind(SyntaxKind.PartialKeyword))
 			);
 		}
@@ -65,18 +68,18 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void DoesNotReturnIdenticalModifiers()
+		public void ReturnsEmpty_When_DeclHasNoModifiers()
 		{
-			ClassDeclarationSyntax decl1 = GetNode<ClassDeclarationSyntax>("public sealed partial class Test { }");
-			ClassDeclarationSyntax decl2 = GetNode<ClassDeclarationSyntax>("public sealed partial class Test { }");
-			SyntaxToken[] tokens = new TypeDeclarationSyntax[] { decl1, decl2 }.GetModifiers().ToArray();
+			ClassDeclarationSyntax decl = GetNode<ClassDeclarationSyntax>("class Test { }");
+			SyntaxToken[] tokens = new TypeDeclarationSyntax[] { decl }.GetModifiers().ToArray();
+			Assert.True(tokens.Length == 0);
+		}
 
-			Assert.True(
-				tokens.Length == 3 &&
-				tokens.Any(t => t.IsKind(SyntaxKind.PublicKeyword)) &&
-				tokens.Any(t => t.IsKind(SyntaxKind.SealedKeyword)) &&
-				tokens.Any(t => t.IsKind(SyntaxKind.PartialKeyword))
-			);
+		[Fact]
+		public void ThrowsArgumentNullException_When_DeclIsNull()
+		{
+			INamedTypeSymbol symbol = null!;
+			Assert.Throws<ArgumentNullException>(() => symbol.GetModifiers());
 		}
 	}
 }

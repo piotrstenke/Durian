@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Immutable;
 using Durian.Generator.Extensions;
@@ -12,53 +15,13 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class IsValidForTypeParameter_IDynamicTypeSymbol : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_DynamicTypelIsNull()
-		{
-			IDynamicTypeSymbol type = null!;
-			Mock<ITypeParameterSymbol> parameter = new();
-			parameter.SetupGet(p => p.Name).Returns("T");
-			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
-
-			Assert.Throws<ArgumentNullException>(() => type.IsValidForTypeParameter(parameter.Object));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_ParameterIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => GetSymbol().IsValidForTypeParameter(null!));
-		}
-
-		[Fact]
-		public void ReturnsTrue_When_HasNoConstraints()
+		public void ReturnsFalse_When_ConstrainedToAnyType()
 		{
 			IDynamicTypeSymbol type = GetSymbol();
 			Mock<ITypeParameterSymbol> parameter = new();
+
 			parameter.SetupGet(p => p.Name).Returns("T");
-			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
-
-			Assert.True(type.IsValidForTypeParameter(parameter.Object));
-		}
-
-		[Fact]
-		public void ReturnsTrue_When_HasReferenceConstraint()
-		{
-			IDynamicTypeSymbol type = GetSymbol();
-			Mock<ITypeParameterSymbol> parameter = new();
-			parameter.SetupGet(p => p.Name).Returns("T");
-			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
-			parameter.SetupGet(p => p.HasReferenceTypeConstraint).Returns(true);
-
-			Assert.True(type.IsValidForTypeParameter(parameter.Object));
-		}
-
-		[Fact]
-		public void ReturnsFalse_When_HasUnmanagedConstraint()
-		{
-			IDynamicTypeSymbol type = GetSymbol();
-			Mock<ITypeParameterSymbol> parameter = new();
-			parameter.SetupGet(p => p.Name).Returns("T");
-			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
-			parameter.SetupGet(p => p.HasUnmanagedTypeConstraint).Returns(true);
+			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>(Compilation.CurrentCompilation.GetTypeByMetadataName("System.Collections.IList")!));
 
 			Assert.False(type.IsValidForTypeParameter(parameter.Object));
 		}
@@ -76,6 +39,18 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
+		public void ReturnsFalse_When_HasUnmanagedConstraint()
+		{
+			IDynamicTypeSymbol type = GetSymbol();
+			Mock<ITypeParameterSymbol> parameter = new();
+			parameter.SetupGet(p => p.Name).Returns("T");
+			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
+			parameter.SetupGet(p => p.HasUnmanagedTypeConstraint).Returns(true);
+
+			Assert.False(type.IsValidForTypeParameter(parameter.Object));
+		}
+
+		[Fact]
 		public void ReturnsTrue_When_HasNewConstraint()
 		{
 			IDynamicTypeSymbol type = GetSymbol();
@@ -83,6 +58,17 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 			parameter.SetupGet(p => p.Name).Returns("T");
 			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
 			parameter.SetupGet(p => p.HasConstructorConstraint).Returns(true);
+
+			Assert.True(type.IsValidForTypeParameter(parameter.Object));
+		}
+
+		[Fact]
+		public void ReturnsTrue_When_HasNoConstraints()
+		{
+			IDynamicTypeSymbol type = GetSymbol();
+			Mock<ITypeParameterSymbol> parameter = new();
+			parameter.SetupGet(p => p.Name).Returns("T");
+			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
 
 			Assert.True(type.IsValidForTypeParameter(parameter.Object));
 		}
@@ -144,15 +130,32 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void ReturnsFalse_When_ConstrainedToAnyType()
+		public void ReturnsTrue_When_HasReferenceConstraint()
 		{
 			IDynamicTypeSymbol type = GetSymbol();
 			Mock<ITypeParameterSymbol> parameter = new();
-
 			parameter.SetupGet(p => p.Name).Returns("T");
-			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>(Compilation.CurrentCompilation.GetTypeByMetadataName("System.Collections.IList")!));
+			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
+			parameter.SetupGet(p => p.HasReferenceTypeConstraint).Returns(true);
 
-			Assert.False(type.IsValidForTypeParameter(parameter.Object));
+			Assert.True(type.IsValidForTypeParameter(parameter.Object));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_DynamicTypelIsNull()
+		{
+			IDynamicTypeSymbol type = null!;
+			Mock<ITypeParameterSymbol> parameter = new();
+			parameter.SetupGet(p => p.Name).Returns("T");
+			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
+
+			Assert.Throws<ArgumentNullException>(() => type.IsValidForTypeParameter(parameter.Object));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_ParameterIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => GetSymbol().IsValidForTypeParameter(null!));
 		}
 
 		private IDynamicTypeSymbol GetSymbol()

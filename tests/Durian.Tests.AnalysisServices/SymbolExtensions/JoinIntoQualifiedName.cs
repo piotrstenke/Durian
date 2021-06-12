@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
@@ -9,12 +12,6 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 {
 	public sealed class JoinIntoQualifiedName
 	{
-		[Fact]
-		public void ThrowsArgumentNullException_When_NamespacesIsIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((INamespaceSymbol[])null!).JoinIntoQualifiedName());
-		}
-
 		[Fact]
 		public void ReturnsNull_When_ThereWereLessThan2Namespaces()
 		{
@@ -38,6 +35,12 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 
 			QualifiedNameSyntax? syntax = new INamespaceSymbol[] { n1.Object, n2.Object, n3.Object }.JoinIntoQualifiedName();
 			Assert.True(syntax is not null && syntax.ToFullString() == "System.Collections.Generic");
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_NamespacesIsIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => ((INamespaceSymbol[])null!).JoinIntoQualifiedName());
 		}
 	}
 }

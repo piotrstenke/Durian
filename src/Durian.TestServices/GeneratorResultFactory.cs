@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -14,6 +17,46 @@ namespace Durian.Tests
 	/// </summary>
 	public static class GeneratorResultFactory
 	{
+		/// <summary>
+		/// Creates a new instance of the <see cref="GeneratorDriverRunResult"/> class.
+		/// </summary>
+		/// <param name="results">A collection of <see cref="GeneratorRunResult"/>s to be used when creating the <see cref="GeneratorDriverRunResult"/>.</param>
+		public static GeneratorDriverRunResult CreateDriverResult(IEnumerable<GeneratorRunResult>? results)
+		{
+			return (GeneratorDriverRunResult)CreateInstance(typeof(GeneratorDriverRunResult), results?.ToImmutableArray() ?? ImmutableArray<GeneratorRunResult>.Empty)!;
+		}
+
+		/// <summary>
+		/// Creates a new instance of the <see cref="GeneratorRunResult"/> struct.
+		/// </summary>
+		/// <param name="generator">A <see cref="ISourceGenerator"/> to be set to the <see cref="GeneratorRunResult.Generator"/> property.</param>
+		/// <param name="generatedSources">A collection of <see cref="GeneratedSourceResult"/>s to be set to the <see cref="GeneratorRunResult.GeneratedSources"/> property.</param>
+		/// <param name="diagnostics">A collection of <see cref="Diagnostic"/>s to be set to the <see cref="GeneratorRunResult.Diagnostics"/> property.</param>
+		/// <param name="exception">An <see cref="Exception"/> to be set to the <see cref="GeneratorRunResult.Exception"/> property.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+		public static GeneratorRunResult CreateGeneratorResult(ISourceGenerator generator, IEnumerable<GeneratedSourceResult>? generatedSources, IEnumerable<Diagnostic>? diagnostics, Exception? exception)
+		{
+			if (generator is null)
+			{
+				throw new ArgumentNullException(nameof(generator));
+			}
+
+			object? obj = CreateInstance(
+				typeof(GeneratorRunResult),
+				generator,
+				generatedSources?.ToImmutableArray() ?? ImmutableArray<GeneratedSourceResult>.Empty,
+				diagnostics?.ToImmutableArray() ?? ImmutableArray<Diagnostic>.Empty,
+				exception
+			);
+
+			if (obj is null)
+			{
+				return default;
+			}
+
+			return (GeneratorRunResult)obj;
+		}
+
 		/// <inheritdoc cref="CreateSourceResult(string, string)"/>
 		public static GeneratedSourceResult CreateSourceResult(string source)
 		{
@@ -100,44 +143,15 @@ namespace Durian.Tests
 			return CreateSourceResult_Internal(syntaxTree, sourceText, hintName);
 		}
 
-		/// <summary>
-		/// Creates a new instance of the <see cref="GeneratorRunResult"/> struct.
-		/// </summary>
-		/// <param name="generator">A <see cref="ISourceGenerator"/> to be set to the <see cref="GeneratorRunResult.Generator"/> property.</param>
-		/// <param name="generatedSources">A collection of <see cref="GeneratedSourceResult"/>s to be set to the <see cref="GeneratorRunResult.GeneratedSources"/> property.</param>
-		/// <param name="diagnostics">A collection of <see cref="Diagnostic"/>s to be set to the <see cref="GeneratorRunResult.Diagnostics"/> property.</param>
-		/// <param name="exception">An <see cref="Exception"/> to be set to the <see cref="GeneratorRunResult.Exception"/> property.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		public static GeneratorRunResult CreateGeneratorResult(ISourceGenerator generator, IEnumerable<GeneratedSourceResult>? generatedSources, IEnumerable<Diagnostic>? diagnostics, Exception? exception)
+		private static object? CreateInstance(Type type, params object?[] args)
 		{
-			if (generator is null)
-			{
-				throw new ArgumentNullException(nameof(generator));
-			}
-
-			object? obj = CreateInstance(
-				typeof(GeneratorRunResult),
-				generator,
-				generatedSources?.ToImmutableArray() ?? ImmutableArray<GeneratedSourceResult>.Empty,
-				diagnostics?.ToImmutableArray() ?? ImmutableArray<Diagnostic>.Empty,
-				exception
+			return Activator.CreateInstance(
+				type: type,
+				bindingAttr: BindingFlags.CreateInstance | BindingFlags.Instance | BindingFlags.NonPublic,
+				binder: null,
+				args: args,
+				culture: CultureInfo.InvariantCulture
 			);
-
-			if (obj is null)
-			{
-				return default;
-			}
-
-			return (GeneratorRunResult)obj;
-		}
-
-		/// <summary>
-		/// Creates a new instance of the <see cref="GeneratorDriverRunResult"/> class.
-		/// </summary>
-		/// <param name="results">A collection of <see cref="GeneratorRunResult"/>s to be used when creating the <see cref="GeneratorDriverRunResult"/>.</param>
-		public static GeneratorDriverRunResult CreateDriverResult(IEnumerable<GeneratorRunResult>? results)
-		{
-			return (GeneratorDriverRunResult)CreateInstance(typeof(GeneratorDriverRunResult), results?.ToImmutableArray() ?? ImmutableArray<GeneratorRunResult>.Empty)!;
 		}
 
 		private static GeneratedSourceResult CreateSourceResult_Internal(CSharpSyntaxTree syntaxTree, SourceText sourceText, string? hintName)
@@ -150,17 +164,6 @@ namespace Durian.Tests
 			}
 
 			return (GeneratedSourceResult)obj;
-		}
-
-		private static object? CreateInstance(Type type, params object?[] args)
-		{
-			return Activator.CreateInstance(
-				type: type,
-				bindingAttr: BindingFlags.CreateInstance | BindingFlags.Instance | BindingFlags.NonPublic,
-				binder: null,
-				args: args,
-				culture: CultureInfo.InvariantCulture
-			);
 		}
 	}
 }

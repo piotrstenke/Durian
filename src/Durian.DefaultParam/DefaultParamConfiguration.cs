@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using Durian.Configuration;
 
 namespace Durian.Generator.DefaultParam
@@ -12,12 +15,14 @@ namespace Durian.Generator.DefaultParam
 		private string? _targetNamespace;
 
 		/// <summary>
+		/// Returns a new instance of <see cref="DefaultParamConfiguration"/> with all values set to <see langword="default"/>.
+		/// </summary>
+		public static DefaultParamConfiguration Default => new();
+
+		/// <summary>
 		/// Determines whether to apply the <see langword="new"/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword="true"/>.
 		/// </summary>
 		public bool ApplyNewModifierWhenPossible { get; set; } = true;
-
-		/// <inheritdoc cref="DefaultParamConfigurationAttribute.TypeConvention"/>
-		public DPTypeConvention TypeConvention { get; set; } = DPTypeConvention.Default;
 
 		/// <inheritdoc cref="DefaultParamConfigurationAttribute.MethodConvention"/>
 		public DPMethodConvention MethodConvention { get; set; } = DPMethodConvention.Default;
@@ -33,10 +38,8 @@ namespace Durian.Generator.DefaultParam
 			set => _targetNamespace = string.IsNullOrWhiteSpace(value) ? null : value;
 		}
 
-		/// <summary>
-		/// Returns a new instance of <see cref="DefaultParamConfiguration"/> with all values set to <see langword="default"/>.
-		/// </summary>
-		public static DefaultParamConfiguration Default => new();
+		/// <inheritdoc cref="DefaultParamConfigurationAttribute.TypeConvention"/>
+		public DPTypeConvention TypeConvention { get; set; } = DPTypeConvention.Default;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamConfiguration"/> class.
@@ -46,13 +49,19 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public override int GetHashCode()
+		public static bool operator !=(DefaultParamConfiguration a, DefaultParamConfiguration b)
 		{
-			int hashCode = -726504116;
-			hashCode = (hashCode * -1521134295) + ApplyNewModifierWhenPossible.GetHashCode();
-			hashCode = (hashCode * -1521134295) + MethodConvention.GetHashCode();
-			hashCode = (hashCode * -1521134295) + TypeConvention.GetHashCode();
-			return hashCode;
+			return !(a == b);
+		}
+
+		/// <inheritdoc/>
+		public static bool operator ==(DefaultParamConfiguration a, DefaultParamConfiguration b)
+		{
+			return
+				a.ApplyNewModifierWhenPossible == b.ApplyNewModifierWhenPossible &&
+				a.MethodConvention == b.MethodConvention &&
+				a.TypeConvention == b.TypeConvention &&
+				a.TargetNamespace == b.TargetNamespace;
 		}
 
 		/// <inheritdoc/>
@@ -73,19 +82,13 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public static bool operator ==(DefaultParamConfiguration a, DefaultParamConfiguration b)
+		public override int GetHashCode()
 		{
-			return
-				a.ApplyNewModifierWhenPossible == b.ApplyNewModifierWhenPossible &&
-				a.MethodConvention == b.MethodConvention &&
-				a.TypeConvention == b.TypeConvention &&
-				a.TargetNamespace == b.TargetNamespace;
-		}
-
-		/// <inheritdoc/>
-		public static bool operator !=(DefaultParamConfiguration a, DefaultParamConfiguration b)
-		{
-			return !(a == b);
+			int hashCode = -726504116;
+			hashCode = (hashCode * -1521134295) + ApplyNewModifierWhenPossible.GetHashCode();
+			hashCode = (hashCode * -1521134295) + MethodConvention.GetHashCode();
+			hashCode = (hashCode * -1521134295) + TypeConvention.GetHashCode();
+			return hashCode;
 		}
 	}
 }

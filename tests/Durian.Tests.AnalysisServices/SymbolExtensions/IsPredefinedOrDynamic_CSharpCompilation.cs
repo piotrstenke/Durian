@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Data;
 using Durian.Generator.Extensions;
@@ -18,18 +21,11 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 			_compilation = fixture.Compilation;
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		[Theory]
+		[ClassData(typeof(Utilities.NonPredefinedTypeCollection))]
+		public void False(SpecialType type)
 		{
-			INamedTypeSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.IsPredefinedOrDynamic(_compilation));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			INamedTypeSymbol symbol = Mock.Of<INamedTypeSymbol>();
-			Assert.Throws<ArgumentNullException>(() => symbol.IsPredefinedOrDynamic((CSharpCompilation)null!));
+			Assert.False(_compilation.GetSpecialType(type).IsPredefinedOrDynamic(_compilation));
 		}
 
 		[Fact]
@@ -40,10 +36,17 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void True_When_IsDynamic()
+		public void ThrowsArgumentNullException_When_CompilationIsNull()
 		{
-			ITypeSymbol symbol = _compilation.DynamicType;
-			Assert.True(symbol.IsPredefinedOrDynamic(_compilation));
+			INamedTypeSymbol symbol = Mock.Of<INamedTypeSymbol>();
+			Assert.Throws<ArgumentNullException>(() => symbol.IsPredefinedOrDynamic((CSharpCompilation)null!));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		{
+			INamedTypeSymbol symbol = null!;
+			Assert.Throws<ArgumentNullException>(() => symbol.IsPredefinedOrDynamic(_compilation));
 		}
 
 		[Theory]
@@ -53,11 +56,11 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 			Assert.True(_compilation.GetSpecialType(type).IsPredefinedOrDynamic(_compilation));
 		}
 
-		[Theory]
-		[ClassData(typeof(Utilities.NonPredefinedTypeCollection))]
-		public void False(SpecialType type)
+		[Fact]
+		public void True_When_IsDynamic()
 		{
-			Assert.False(_compilation.GetSpecialType(type).IsPredefinedOrDynamic(_compilation));
+			ITypeSymbol symbol = _compilation.DynamicType;
+			Assert.True(symbol.IsPredefinedOrDynamic(_compilation));
 		}
 	}
 }

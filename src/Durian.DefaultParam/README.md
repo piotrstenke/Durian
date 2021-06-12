@@ -60,21 +60,22 @@ Main type in this module is the [Durian.DefaultParamAttribute](../Durian.Core/_a
 ```csharp
 using Durian;
 
-public class Test<T, [DefaultParam(typeof(string))]U>
+public class Test<[DefaultParam(typeof(string))]T>
 {
-    public void Method(U value)
+    public T Value { get; }
+
+    public Test(T value)
     {
-        U second = value;
+        Value = value;
     }
 }
 
 // Generated
 
-public class Test<T>
+public class Test : Test<string>
 {
-    public void Method(string value)
+    public Test(string value) : base(value)
     {
-        string second = value;
     }
 }
 
@@ -82,40 +83,36 @@ public class Test<T>
 
 [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs) can only be placed on the last type parameter or next to another [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs).
 
-If multiple type parameters are marked with the [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs), mutliple members are generated accordingly.
+If multiple type parameters are marked with the [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs), multiple members are generated accordingly.
 
 ```csharp
 using Durian;
 
 public class Test<[DefaultParam(typeof(int))]T, [DefaultParam(typeof(string))]U>
 {
-    public T Method(U value)
+    public U UValue { get; }
+    public T TValue { get; }
+
+    public Test(T t_value, U u_value)
     {
-        U second = value;
-           
-        return default(T);
+        TValue = t_value;
+        UValue = u_value;
     }
 }
 
 // Generated
 
-public class Test<T>
+public class Test<T> : Test<T, string>
 {
-    public T Method(string value)
+    public Test(T t_value, string u_value) : base(t_value, u_value)
     {
-        string second = value;
-
-        return default(T);
     }
 }
 
-public class Test
+public class Test : Test<int, string>
 {
-    public int Method(string value)
+    public Test(int t_value, string u_value) : base(t_value, u_value)
     {
-        string second = valuel
-
-        return default(int);
     }
 }
 
@@ -123,17 +120,17 @@ public class Test
 
 ### Parameter constraints
 
-Default type defined using the [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs) must fulfil all constraints of the target type parameter.
+Default type defined using the [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs) must fulfill all constraints of the target type parameter.
 
 ```csharp
 using Durian;
 
-// 'string' fulfils the constraints of 'T', so it is a valid value.
+// 'string' fulfills the constraints of 'T', so it is a valid value.
 public class Test<[DefaultParam(typeof(string))]T> where T : class
 {
 }
 
-// 'string' does not fulfil the constrains of 'T', so its not a valid value.
+// 'string' does not fulfill the constrains of 'T', so its not a valid value.
 public class Other<[DefaultParam(typeof(string))]T> where T : struct
 {
 }
@@ -142,7 +139,7 @@ public class Other<[DefaultParam(typeof(string))]T> where T : struct
 
 ### Accessibility
 
-*DefaultParam* respects all language restrictions of accessibility. As long as the target type parameter is never used in a context more acessible than the value of [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs), it is not an error.
+*DefaultParam* respects all language restrictions of accessibility. As long as the target type parameter is never used in a context more accessible than the value of [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs), it is not an error.
 
 ```csharp
 using Durian;
@@ -151,7 +148,7 @@ internal class Dummy
 {
 }
 
-// Dummy is valid, because is is the same accessiblity as Test<T>
+// Dummy is valid, because it is the same accessibility as Test<T>
 internal class Test<[DefaultParam(typeof(Dummy))]T>
 {
 }
@@ -175,12 +172,13 @@ Not all types are valid for the [Durian.DefaultParamAttribute](../Durian.Core/_a
  - nullable reference type (language restriction);
  - unbound generic types.
 
-Additionaly, the following types can't be used when there is a type parameter constrained to the target type parameter:
+Additionally, the following types can't be used when there is a type parameter constrained to the target type parameter:
 
 - [System.Object](https://docs.microsoft.com/en-us/dotnet/api/system.object?view=net-5.0);
 -  [System.ValueType](https://docs.microsoft.com/en-us/dotnet/api/system.valuetype?view=net-5.0);
  - [System.Array](https://docs.microsoft.com/en-us/dotnet/api/system.array?view=net-5.0);
- - any array type, either jagged or multidimensional.
+ - any array type, either jagged or multidimensional;
+ - any delegate type.
 
 ### Member limitations
 
@@ -199,7 +197,7 @@ Most generic-compatible members are supported, but there are some notable rules 
 
 ### Local configuration
 
-Local configuration is determined through the [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationATtribute.cs). Is is applied only to the member it is defined on.
+Local configuration is determined through the [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationATtribute.cs). It is applied only to the member it is defined on.
 
 ```csharp
 using Durian;
@@ -230,7 +228,7 @@ public partial class Dummy
 
 ### Scoped configuration
 
-Scoped configuration is determined through the [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs). Is is applied to all members in the current scope.
+Scoped configuration is determined through the [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs). It is applied to all members in the current scope.
 
 ```csharp
 using Durian;
@@ -282,7 +280,7 @@ public partial class Test
 [DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Default]
 public partial class Other
 {
-    // This configuration is applied directly on the member, so it has the biggest prriority.
+    // This configuration is applied directly on the member, so it has the biggest priority.
     [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Call]
     public void Method<[DefaultParam(typeof(string))]T>(T value)
     {
@@ -330,10 +328,38 @@ Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Co
 [Durian.Configuration.DPMethodConvention](../Durian.Core/Configuration/_enum/DPMethodConvention.cs) is an enum with three constants:
 
  - *Default*
- - *Copy*
  - *Call*
+ - *Copy*
 
-*Default* and *Copy* have the same value, and are used when no other method convention is specified.
+*Default* and *Call* have the same value, and are used when no other method convention is specified.
+
+When the *Call* convention is applied, the target method is called by the generated method with the specified default type as generic argument.
+
+```csharp
+using Durian;
+using Durian.Configuration;
+
+public partial class Other
+{
+    [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Call]
+    public T Method<[DefaultParam(typeof(string))]T>(T value)
+    {
+        T other = value;
+        return default(T);
+    }
+}
+
+// Generated
+
+public partial class Other
+{
+    public string Method(string value)
+    {
+        return Method<string>(value);
+    }
+}
+
+```
 
 When the *Copy* convention is applied, the contents of the target method is copied and all the references to the DefaultParam type parameter are replaced with the specified default type.
 
@@ -364,34 +390,6 @@ public partial class Other
 
 ```
 
-When the *Call* convention is applied, instead of copying its contents, the target method is called by the generated method with the specified default type as generic argument.
-
-```csharp
-using Durian;
-using Durian.Configuration;
-
-public partial class Other
-{
-    [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Call]
-    public T Method<[DefaultParam(typeof(string))]T>(T value)
-    {
-        T other = value;
-        return default(T);
-    }
-}
-
-// Generated
-
-public partial class Other
-{
-    public string Method(string value)
-    {
-        return Method<string>(value);
-    }
-}
-
-```
-
 **Note**: *DPMethodConvention.Call* cannot be applied to *abstract* methods.
 
 ### Type convention
@@ -401,10 +399,40 @@ Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Co
 [Durian.Configuration.DPTypeConvention](../Durian.Core/Configuration/_enum/DPTypeConvention.cs) is an enum with three constants:
 
  - *Default*
- - *Copy*
  - *Inherit*
+ - *Copy*
 
-*Default* and *Copy* have the same value, and are used when no other type convention is specified.
+*Default* and *Inherit* have the same value, and are used when no other type convention is specified.
+
+When the *Inherit* convention is applied, the target type is inherited by the generated type with the specified default type as generic argument.
+
+```csharp
+using Durian;
+using Durian.Configuration;
+
+[DefaultParamConfiguration(TypeConvention = DPTypeConvention.Inherit]
+public class Test<[DefaultParam(typeof(string))]T>
+{
+    private readonly T _value;
+
+    protected T Value => _value;
+
+    public Other(T value)
+    {
+        _value = value;
+    }
+}
+
+// Generated
+
+public class Test : Test<int>
+{
+    public Other(string value) : base(value)
+    {
+    }
+}
+
+```
 
 When the *Copy* convention is applied, the contents of the target type is copied and all the references to the DefaultParam type parameter are replaced with the specified default type.
 
@@ -441,36 +469,6 @@ public class Test
 
 ```
 
-When the *Inherit* convention is applied, instead of copying its contents, the target type is inherited by the generated type with the specified default type as generic argument.
-
-```csharp
-using Durian;
-using Durian.Configuration;
-
-[DefaultParamConfiguration(TypeConvention = DPTypeConvention.Inherit]
-public class Test<[DefaultParam(typeof(string))]T>
-{
-    private readonly T _value;
-
-    protected T Value => _value;
-
-    public Other(T value)
-    {
-        _value = value;
-    }
-}
-
-// Generated
-
-public class Test : Test<int>
-{
-    public Other(string value) : base(value)
-    {
-    }
-}
-
-```
-
 **Note**: If the *DPTypeConvetion.Inherit* is applied and the target type has at least one declared constructor, all accessible constructors will be included in the generated type.
 
 However, not all types support the *Inherit* convention. This includes:
@@ -482,7 +480,7 @@ However, not all types support the *Inherit* convention. This includes:
 
 ### 'new' modifier
 
-Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationAttribute.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs) define a *bool* *ApplyNewModifierWhenPossible* property. Thanks to this property, the user can specify whether to apply the *new* modifier whenever it is pleasable. By default, this property is set to *true*.
+Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationAttribute.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs) define a *bool* *ApplyNewModifierWhenPossible* property. Thanks to this property, the user can specify whether to apply the *new* modifier whenever it is placeable. By default, this property is set to *true*.
 
 If the *ApplyNewModifierWhenPossible* property is *true*, upon detecting a member with a colliding name, the *new* modifier will be applied to the generated member.
 
@@ -518,7 +516,7 @@ public partial class Other
 
 **Note**: The *new* modifier cannot be applied if the colliding member is located inside the same scope.
 
-**Note**: This behaviour is never *true* for *virtual* or *abstract* methods (see: [Inheritance](#inheritance)).
+**Note**: This behavior is never *true* for *virtual* or *abstract* methods (see: [Inheritance](#inheritance)).
 
 If the *ApplyNewModifierWhenPossible* property is *false*, upon detecting a member with a colliding name, an error will occur.
 
@@ -544,13 +542,94 @@ public partial class Other : Parent
 
 ```
 
+### Target namespace
+
+Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationAttribute.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs) define a *string* *TargetNamespace* property. Thanks to this property, the user can specify a namespace where the generated member should be placed.
+
+In some cases, it is desirable to place the generated members in a separate namespace to increase overall readability.
+
+```csharp
+using Durian;
+using Durian.Configuration;
+
+namespace Durian
+{
+    [DefaultParamConfiguration(TargetNamespace = "Durian.Extensions")]
+    public class Other<[DefaultParam(typeof(string))]T>
+    {
+    }
+}
+
+// Generated
+
+namespace Durian.Extensions
+{
+    public class Other : Other<string>
+    {
+    }
+}
+
+```
+
+This property also accepts two special values: *null* and *global*.
+
+Setting *TargetNamespace* to *null* is equivalent to not setting this property at all - the namespace of the original member is used.
+
+ ```csharp
+using Durian;
+using Durian.Configuration;
+
+namespace Durian
+{
+    [DefaultParamConfiguration(TargetNamespace = "Durian.Extensions")]
+    public class Other<[DefaultParam(typeof(string))]T>
+    {
+    }
+}
+
+// Generated
+
+namespace Durian
+{
+    public class Other : Other<string>
+    {
+    }
+}
+
+```
+
+The *global* value specifies, that the generated member should be placed in the global namespace.
+
+ ```csharp
+using Durian;
+using Durian.Configuration;
+
+namespace Durian
+{
+    [DefaultParamConfiguration(TargetNamespace = "Durian.Extensions")]
+    public class Other<[DefaultParam(typeof(string))]T>
+    {
+    }
+}
+
+// Generated
+
+public class Other : Other<string>
+{
+}
+
+```
+
+*NOTE*: The *TargetNamespace* property accepts values that are valid namespace identifiers other than *Durian.Generator* (see: [DUR0005](../../docs/Core/DUR0005.md)).
+
+
 ## Inheritance
 
-*DefaultParam* offers support for *virtual* and *abstract* methods, exluding those declared as part of an interface. However, overriding methods must meet some requirements in order to be valid:
+*DefaultParam* offers support for *virtual* and *abstract* methods, excluding those declared as part of an interface. However, overriding methods must meet some requirements in order to be valid:
 
 - Overriding methods cannot add a [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs) on a type parameter that previously didn't have one.
 - Value of [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs) must be exactly the same as for the base method.
-- Methods that were generated by the *DefaultParam* generator cannot be overriden directly; original method should be overriden instead.
+- Methods that were generated by the *DefaultParam* generator cannot be overridden directly; original method should be overridden instead.
 
 **Note**: It is possible for an overriding method to not have a [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs) on a type parameter that in the base method had one. Such situations should be discouraged, however, as it leads to unnecessary confusion. For this reason an appropriate warning will be provided (see: [DUR0110](../../docs/DefaultParam/DUR0110.md)).
 

@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -10,16 +13,6 @@ namespace Durian.Generator.Data
 	/// </summary>
 	public class MethodData : MemberData
 	{
-		/// <summary>
-		/// Target <see cref="MethodDeclarationSyntax"/>.
-		/// </summary>
-		public new MethodDeclarationSyntax Declaration => (base.Declaration as MethodDeclarationSyntax)!;
-
-		/// <summary>
-		/// <see cref="IMethodSymbol"/> associated with the <see cref="Declaration"/>.
-		/// </summary>
-		public new IMethodSymbol Symbol => (base.Symbol as IMethodSymbol)!;
-
 		/// <summary>
 		/// Body of the method.
 		/// </summary>
@@ -42,6 +35,16 @@ namespace Durian.Generator.Data
 		}
 
 		/// <summary>
+		/// Target <see cref="MethodDeclarationSyntax"/>.
+		/// </summary>
+		public new MethodDeclarationSyntax Declaration => (base.Declaration as MethodDeclarationSyntax)!;
+
+		/// <summary>
+		/// <see cref="IMethodSymbol"/> associated with the <see cref="Declaration"/>.
+		/// </summary>
+		public new IMethodSymbol Symbol => (base.Symbol as IMethodSymbol)!;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="MethodData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="MethodDeclarationSyntax"/> this <see cref="MethodData"/> represents.</param>
@@ -50,6 +53,10 @@ namespace Durian.Generator.Data
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
 		public MethodData(MethodDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
+		{
+		}
+
+		internal MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 
@@ -72,10 +79,6 @@ namespace Durian.Generator.Data
 			IEnumerable<INamespaceSymbol>? containingNamespaces,
 			IEnumerable<AttributeData>? attributes
 		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
-		{
-		}
-
-		internal MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 	}

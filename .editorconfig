@@ -15,6 +15,8 @@ insert_final_newline                                                        = fa
 
 #### .NET Coding Conventions ####
 
+file_header_template = Copyright (c) Piotr Stenke. All rights reserved.\nLicensed under the MIT license.
+
 # Organize usings
 dotnet_separate_import_directive_groups                                     = false
 dotnet_sort_system_directives_first                                         = true
@@ -233,3 +235,4 @@ dotnet_diagnostic.IDE0078.severity											= none
 
 # RCS1124: Inline local variable.
 dotnet_diagnostic.RCS1124.severity											= none
+dotnet_diagnostic.IDE0073.severity=warning

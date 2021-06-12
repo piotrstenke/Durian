@@ -1,4 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Durian.Configuration;
@@ -13,22 +16,6 @@ namespace Durian.Tests.DefaultParam
 	public sealed class ScopedConfigurationAnalyzerTests : AnalyzerTest<DefaultParamScopedConfigurationAnalyzer>
 	{
 		[Fact]
-		public async Task Warning_When_HasScopedConfiguration_And_HasNoDefaultParamMembers()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[{nameof(DefaultParamScopedConfigurationAttribute)}]
-public class Test
-{{
-}}
-";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers.Id));
-		}
-
-		[Fact]
 		public async Task NoWarning_When_HasScopedConfiguration_And_HasDefaultParamMembers()
 		{
 			string input =
@@ -37,7 +24,43 @@ using {DurianStrings.ConfigurationNamespace};
 
 [{nameof(DefaultParamScopedConfigurationAttribute)}]
 public partial class Test
-{{	
+{{
+	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	{{
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		[Fact]
+		public async Task NoWarning_When_TargetNamespaceIsNamedLikeKeyword_And_HasAtSign()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""@int"")]
+public partial class Test
+{{
+	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	{{
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		[Fact]
+		public async Task NoWarning_When_TargetNamespaceIsNull()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = null)]
+public partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+{{
 	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 	{{
 	}}
@@ -83,39 +106,19 @@ public partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 		}
 
 		[Fact]
-		public async Task NoWarning_When_TargetNamespaceIsNull()
+		public async Task Warning_When_HasScopedConfiguration_And_HasNoDefaultParamMembers()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = null)]
-public partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{nameof(DefaultParamScopedConfigurationAttribute)}]
+public class Test
 {{
-	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
-	{{
-	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
-		}
-
-		[Fact]
-		public async Task NoWarning_When_TargetNamespaceIsNamedLikeKeyword_And_HasAtSign()
-		{
-			string input =
-@$"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""@int"")]
-public partial class Test
-{{
-	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
-	{{
-	}}
-}}
-";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			Assert.True(diagnostics.Any(d => d.Id == DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers.Id));
 		}
 
 		[Fact]
@@ -138,13 +141,13 @@ public partial class Test
 		}
 
 		[Fact]
-		public async Task Warning_When_TargetNamespaceIsWhitespaceOrEmpty()
+		public async Task Warning_When_TargetNamespaceIsNamedLikeKeyword()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""   "")]
+[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""int"")]
 public partial class Test
 {{
 	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
@@ -176,13 +179,13 @@ public partial class Test
 		}
 
 		[Fact]
-		public async Task Warning_When_TargetNamespaceIsNamedLikeKeyword()
+		public async Task Warning_When_TargetNamespaceIsWhitespaceOrEmpty()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""int"")]
+[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""   "")]
 public partial class Test
 {{
 	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>

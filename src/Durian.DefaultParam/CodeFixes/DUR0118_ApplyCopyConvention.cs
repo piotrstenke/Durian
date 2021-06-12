@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Threading.Tasks;
 using Durian.Configuration;
 using Durian.Generator.CodeFixes;
 using Microsoft.CodeAnalysis;
@@ -16,22 +19,16 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 	public sealed class DUR0118_ApplyCopyConvention : DurianCodeFixBase
 	{
 		/// <inheritdoc/>
-		public override string Title => "Apply DPTypeConvention.Copy";
+		public override string Id => Title + " [DefaultParam]";
 
 		/// <inheritdoc/>
-		public override string Id => Title + " [DefaultParam]";
+		public override string Title => "Apply DPTypeConvention.Copy";
 
 		/// <summary>
 		/// Creates a new instance of the <see cref="DUR0118_ApplyCopyConvention"/> class.
 		/// </summary>
 		public DUR0118_ApplyCopyConvention()
 		{
-		}
-
-		/// <inheritdoc/>
-		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
-		{
-			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor };
 		}
 
 		/// <inheritdoc/>
@@ -61,15 +58,10 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 			context.RegisterCodeFix(action, data.Diagnostic);
 		}
 
-		private CodeAction GetCodeAction(in CodeFixData<TypeDeclarationSyntax> data, INamedTypeSymbol attribute)
+		/// <inheritdoc/>
+		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
 		{
-			Document document = data.Document!;
-			TypeDeclarationSyntax node = data.Node!;
-			CompilationUnitSyntax root = data.Root!;
-			Diagnostic diagnostic = data.Diagnostic!;
-			SemanticModel semanticModel = data.SemanticModel!;
-
-			return CodeAction.Create(Title, cancenllationToken => ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax>.From(diagnostic, document, root, node!, semanticModel, cancenllationToken), attribute), Id);
+			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor };
 		}
 
 		private static Task<Document> ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax> context, INamedTypeSymbol attribute)
@@ -110,6 +102,17 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 
 			context.RegisterChange(context.Node, type);
 			return Task.FromResult(context.Document);
+		}
+
+		private CodeAction GetCodeAction(in CodeFixData<TypeDeclarationSyntax> data, INamedTypeSymbol attribute)
+		{
+			Document document = data.Document!;
+			TypeDeclarationSyntax node = data.Node!;
+			CompilationUnitSyntax root = data.Root!;
+			Diagnostic diagnostic = data.Diagnostic!;
+			SemanticModel semanticModel = data.SemanticModel!;
+
+			return CodeAction.Create(Title, cancenllationToken => ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax>.From(diagnostic, document, root, node!, semanticModel, cancenllationToken), attribute), Id);
 		}
 	}
 }

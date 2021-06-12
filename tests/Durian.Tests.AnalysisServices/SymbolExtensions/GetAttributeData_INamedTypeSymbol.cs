@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
@@ -10,21 +13,6 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	{
 		public GetAttributeData_INamedTypeSymbol() : base(Utilities.TestAttribute)
 		{
-
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
-		{
-			INamedTypeSymbol attr = GetAttr();
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetAttributeData(attr));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SyntaxIsNull()
-		{
-			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Test]class Test { }");
-			Assert.Throws<ArgumentNullException>(() => type.GetAttributeData(syntax: null!));
 		}
 
 		[Fact]
@@ -55,6 +43,20 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 			AttributeData? data = type.GetAttributeData(attr);
 
 			Assert.True(data is null);
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		{
+			INamedTypeSymbol attr = GetAttr();
+			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetAttributeData(attr));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SyntaxIsNull()
+		{
+			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Test]class Test { }");
+			Assert.Throws<ArgumentNullException>(() => type.GetAttributeData(syntax: null!));
 		}
 
 		private INamedTypeSymbol GetAttr()

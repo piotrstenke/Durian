@@ -1,4 +1,7 @@
-﻿using Durian.Generator.CodeFixes;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using Durian.Generator.CodeFixes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -9,7 +12,7 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 	//
 	// For some unknown reason Visual Studio does not register this code fix.
 	//
-	// It's deffinitely not a problem with DurianCodeFix<T> or DurianCodeFIx, as they work as intended when used by other classes.
+	// It's definitely not a problem with DurianCodeFix<T> or DurianCodeFIx, as they work as intended when used by other classes.
 	//
 
 	/// <summary>
@@ -19,13 +22,13 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 	public sealed class DUR0101_MakeContainingTypePartialCodeFix : ApplyModifierCodeFix<TypeDeclarationSyntax>
 	{
 		/// <inheritdoc/>
-		public override string Title => "Make type partial";
-
-		/// <inheritdoc/>
 		public override string Id => Title + " [DefaultParam]";
 
 		/// <inheritdoc/>
 		public override SyntaxKind[] ModifiersToApply => new[] { SyntaxKind.PartialKeyword };
+
+		/// <inheritdoc/>
+		public override string Title => "Make type partial";
 
 		/// <summary>
 		/// Creates a new instance of the <see cref="DUR0101_MakeContainingTypePartialCodeFix"/> class.

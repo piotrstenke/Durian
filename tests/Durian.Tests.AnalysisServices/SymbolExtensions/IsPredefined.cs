@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Data;
 using Durian.Generator.Extensions;
@@ -18,11 +21,18 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 			_compilation = fixture.Compilation;
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		[Theory]
+		[ClassData(typeof(Utilities.NonPredefinedTypeCollection))]
+		public void False(SpecialType type)
 		{
-			INamedTypeSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.IsPredefined());
+			Assert.False(_compilation.GetSpecialType(type).IsPredefined());
+		}
+
+		[Fact]
+		public void False_When_IsDynamic()
+		{
+			ITypeSymbol symbol = _compilation.DynamicType;
+			Assert.False(symbol.IsPredefined());
 		}
 
 		[Fact]
@@ -33,10 +43,10 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void False_When_IsDynamic()
+		public void ThrowsArgumentNullException_When_SymbolIsNull()
 		{
-			ITypeSymbol symbol = _compilation.DynamicType;
-			Assert.False(symbol.IsPredefined());
+			INamedTypeSymbol symbol = null!;
+			Assert.Throws<ArgumentNullException>(() => symbol.IsPredefined());
 		}
 
 		[Theory]
@@ -44,13 +54,6 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		public void True(SpecialType type)
 		{
 			Assert.True(_compilation.GetSpecialType(type).IsPredefined());
-		}
-
-		[Theory]
-		[ClassData(typeof(Utilities.NonPredefinedTypeCollection))]
-		public void False(SpecialType type)
-		{
-			Assert.False(_compilation.GetSpecialType(type).IsPredefined());
 		}
 	}
 }

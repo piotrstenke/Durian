@@ -1,23 +1,48 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    
+
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>This package contains all released modules of the Durian framework.</Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Core</PackageTags>
-    <PackageVersion>1.1.0</PackageVersion>
-    <AssemblyVersion>1.1.0</AssemblyVersion>
-    <Version>1.1.0</Version>
+    <PackageVersion>1.2.0</PackageVersion>
+    <AssemblyVersion>1.2.0</AssemblyVersion>
+    <Version>1.2.0</Version>
     <RootNamespace>Durian</RootNamespace>
+
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
     
   </PropertyGroup>
 
   <ItemGroup>
-    
-    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
-    <ProjectReference Include="..\Durian.Core.Analyzer\Durian.Core.Analyzer.csproj" />
-    <ProjectReference Include="..\Durian.DefaultParam\Durian.DefaultParam.csproj" />
+
+    <Compile Include="..\NullableAttributes.cs" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
     
   </ItemGroup>
 
+  <ItemGroup>
+
+    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj">
+      <Properties>DefineConstants=MAIN_PACKAGE</Properties>
+    </ProjectReference>
+    
+    <ProjectReference Include="..\Durian.Core.Analyzer\Durian.Core.Analyzer.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <Properties>DefineConstants=MAIN_PACKAGE</Properties>
+    </ProjectReference>
+    
+    <ProjectReference Include="..\Durian.DefaultParam\Durian.DefaultParam.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <Properties>DefineConstants=MAIN_PACKAGE</Properties>
+    </ProjectReference>
+    
+    <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <Properties>DefineConstants=MAIN_PACKAGE</Properties>
+    </ProjectReference>
+    
+  </ItemGroup>
+  
 </Project>

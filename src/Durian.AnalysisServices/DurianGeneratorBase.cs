@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -19,7 +22,7 @@ namespace Durian.Generator
 	public abstract class DurianGeneratorBase : LoggableSourceGenerator
 	{
 		private ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? _diagnosticReceiver;
-		private IFileNameProvider _fileNameProvider;
+		private IHintNameProvider _fileNameProvider;
 
 		/// <summary>
 		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
@@ -54,16 +57,34 @@ namespace Durian.Generator
 			}
 		}
 
-		/// <summary>
-		/// A <see cref="IDiagnosticReceiver"/> that is used to create log files outside of this <see cref="ISourceGenerator"/>.
-		/// </summary>
-		public LoggableGeneratorDiagnosticReceiver LogReceiver { get; }
+		/// <inheritdoc/>
+		/// <exception cref="InvalidOperationException"><see cref="EnableDiagnostics"/> cannot be set to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</exception>
+		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
+		public virtual bool EnableDiagnostics
+		{
+			get => LoggingConfiguration.EnableDiagnostics;
+			set => LoggingConfiguration.EnableDiagnostics = value;
+		}
+
+		/// <inheritdoc cref="GeneratorLoggingConfiguration.EnableExceptions"/>
+		public virtual bool EnableExceptions
+		{
+			get => LoggingConfiguration.EnableExceptions;
+			set => LoggingConfiguration.EnableExceptions = value;
+		}
+
+		/// <inheritdoc cref="GeneratorLoggingConfiguration.EnableLogging"/>
+		public virtual bool EnableLogging
+		{
+			get => LoggingConfiguration.EnableLogging;
+			set => LoggingConfiguration.EnableLogging = value;
+		}
 
 		/// <summary>
 		/// Creates names for generated files.
 		/// </summary>
 		/// <exception cref="ArgumentNullException"><see cref="FileNameProvider"/> cannot be <see langword="null"/>.</exception>
-		public IFileNameProvider FileNameProvider
+		public IHintNameProvider FileNameProvider
 		{
 			get => _fileNameProvider;
 			set
@@ -77,39 +98,21 @@ namespace Durian.Generator
 			}
 		}
 
-		/// <inheritdoc/>
-		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
-		public bool SupportsDiagnostics => LoggingConfiguration.SupportsDiagnostics;
+		/// <summary>
+		/// A <see cref="IDiagnosticReceiver"/> that is used to create log files outside of this <see cref="ISourceGenerator"/>.
+		/// </summary>
+		public LoggableGeneratorDiagnosticReceiver LogReceiver { get; }
 
 		/// <inheritdoc/>
-		/// <exception cref="InvalidOperationException"><see cref="EnableDiagnostics"/> cannot be set to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</exception>
 		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
-		public bool EnableDiagnostics
-		{
-			get => LoggingConfiguration.EnableDiagnostics;
-			set => LoggingConfiguration.EnableDiagnostics = value;
-		}
+		public virtual bool SupportsDiagnostics => LoggingConfiguration.SupportsDiagnostics;
 
-		/// <inheritdoc cref="GeneratorLoggingConfiguration.EnableLogging"/>
-		public bool EnableLogging
-		{
-			get => LoggingConfiguration.EnableLogging;
-			set => LoggingConfiguration.EnableLogging = value;
-		}
-
-		/// <inheritdoc cref="GeneratorLoggingConfiguration.EnableExceptions"/>
-		public bool EnableExceptions
-		{
-			get => LoggingConfiguration.EnableExceptions;
-			set => LoggingConfiguration.EnableExceptions = value;
-		}
-
-		/// <inheritdoc cref="DurianGeneratorBase(in LoggableGeneratorConstructionContext, IFileNameProvider)"/>
+		/// <inheritdoc cref="DurianGeneratorBase(in LoggableGeneratorConstructionContext, IHintNameProvider)"/>
 		protected DurianGeneratorBase() : this(GeneratorLoggingConfiguration.Default, null)
 		{
 		}
 
-		/// <inheritdoc cref="DurianGeneratorBase(in LoggableGeneratorConstructionContext, IFileNameProvider)"/>
+		/// <inheritdoc cref="DurianGeneratorBase(in LoggableGeneratorConstructionContext, IHintNameProvider)"/>
 		protected DurianGeneratorBase(in LoggableGeneratorConstructionContext context) : this(in context, null)
 		{
 		}
@@ -119,7 +122,7 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="context">Configures how this <see cref="LoggableSourceGenerator"/> is initialized.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		protected DurianGeneratorBase(in LoggableGeneratorConstructionContext context, IFileNameProvider? fileNameProvider) : base(in context)
+		protected DurianGeneratorBase(in LoggableGeneratorConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context)
 		{
 			if (SupportsDiagnostics)
 			{
@@ -130,7 +133,7 @@ namespace Durian.Generator
 			LogReceiver = new(this);
 		}
 
-		/// <inheritdoc cref="DurianGeneratorBase(GeneratorLoggingConfiguration?, IFileNameProvider?)"/>
+		/// <inheritdoc cref="DurianGeneratorBase(GeneratorLoggingConfiguration?, IHintNameProvider?)"/>
 		protected DurianGeneratorBase(GeneratorLoggingConfiguration? loggingConfiguration) : this(loggingConfiguration, null)
 		{
 		}
@@ -140,7 +143,7 @@ namespace Durian.Generator
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		protected DurianGeneratorBase(GeneratorLoggingConfiguration? loggingConfiguration, IFileNameProvider? fileNameProvider) : base(loggingConfiguration)
+		protected DurianGeneratorBase(GeneratorLoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration)
 		{
 			if (SupportsDiagnostics)
 			{
@@ -152,9 +155,9 @@ namespace Durian.Generator
 		}
 
 		/// <inheritdoc/>
-		public override string ToString()
+		public override void Execute(in GeneratorExecutionContext context)
 		{
-			return $"{GetGeneratorName()} (v. {GetVersion()})";
+			InitializeCompilation(in context, out _);
 		}
 
 		/// <inheritdoc/>
@@ -164,15 +167,45 @@ namespace Durian.Generator
 		}
 
 		/// <inheritdoc/>
-		public override void Execute(in GeneratorExecutionContext context)
+		public override string ToString()
 		{
-			InitializeCompilation(in context, out _);
+			return $"{GetGeneratorName()} (v. {GetVersion()})";
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianModule"/>s representing modules that should be enabled before the current generator pass is executed.
+		/// </summary>
+		protected abstract DurianModule[] GetEnabledModules();
+
+		/// <summary>
+		/// Returns name of this <see cref="IDurianSourceGenerator"/>.
+		/// </summary>
+		protected virtual string GetGeneratorName()
+		{
+			return nameof(DurianGenerator);
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="CSharpSyntaxTree"/>s that are generated statically at the generation's start.
+		/// </summary>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		protected virtual (CSharpSyntaxTree tree, string hintName)[]? GetStaticSyntaxTrees(CancellationToken cancellationToken)
+		{
+			return null;
+		}
+
+		/// <summary>
+		/// Returns version of this <see cref="IDurianSourceGenerator"/>.
+		/// </summary>
+		protected virtual string GetVersion()
+		{
+			return "1.0.0";
 		}
 
 		/// <inheritdoc/>
 		protected bool InitializeCompilation(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
 		{
-			if (context.Compilation is not CSharpCompilation c || !HasReferenceToCoreProject(c))
+			if (context.Compilation is not CSharpCompilation c || c.LanguageVersion < LanguageVersion.CSharp9 || !HasReferenceToCoreProject(c))
 			{
 				compilation = null;
 				return false;
@@ -184,36 +217,6 @@ namespace Durian.Generator
 
 			compilation = c;
 			return true;
-		}
-
-		/// <summary>
-		/// Returns version of this <see cref="IDurianSourceGenerator"/>.
-		/// </summary>
-		protected virtual string GetVersion()
-		{
-			return "1.0.0";
-		}
-
-		/// <summary>
-		/// Returns name of this <see cref="IDurianSourceGenerator"/>.
-		/// </summary>
-		protected virtual string GetGeneratorName()
-		{
-			return nameof(DurianGenerator);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing modules that should be enabled before the current generator pass is executed.
-		/// </summary>
-		protected abstract DurianModule[] GetEnabledModules();
-
-		/// <summary>
-		/// Returns an array of <see cref="CSharpSyntaxTree"/>s that are generated statically at the generation's start.
-		/// </summary>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		protected virtual (CSharpSyntaxTree tree, string hintName)[]? GetStaticSyntaxTrees(CancellationToken cancellationToken)
-		{
-			return null;
 		}
 
 		/// <summary>
@@ -244,11 +247,6 @@ namespace Durian.Generator
 			}
 		}
 
-		private static bool HasReferenceToCoreProject(CSharpCompilation compilation)
-		{
-			return compilation.ReferencedAssemblyNames.Any(r => r.Name == "Durian.Core");
-		}
-
 		private static void EnableModules(ref CSharpCompilation compilation, in GeneratorExecutionContext context, DurianModule[] modules)
 		{
 			foreach (DurianModule module in modules)
@@ -260,6 +258,11 @@ namespace Durian.Generator
 					compilation = compilation.AddSyntaxTrees((CSharpSyntaxTree)CSharpSyntaxTree.ParseText(source, context.ParseOptions as CSharpParseOptions, encoding: Encoding.UTF8, cancellationToken: context.CancellationToken));
 				}
 			}
+		}
+
+		private static bool HasReferenceToCoreProject(CSharpCompilation compilation)
+		{
+			return compilation.ReferencedAssemblyNames.Any(r => r.Name == "Durian.Core");
 		}
 
 		private void InitializeStaticTrees(ref CSharpCompilation compilation, in GeneratorExecutionContext context)

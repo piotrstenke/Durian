@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -7,107 +10,6 @@ namespace Durian.Info
 {
 	public partial class PackageIdentity
 	{
-		/// <summary>
-		/// Checks, if the calling <see cref="Assembly"/> references the specified Durian <paramref name="package"/>.
-		/// </summary>
-		/// <param name="package"><see cref="PackageIdentity"/> of Durian module to check for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="package"/> is <see langword="null"/>.</exception>
-		public static bool HasReference(PackageIdentity package)
-		{
-			if (package is null)
-			{
-				throw new ArgumentNullException(nameof(package));
-			}
-
-			return HasReference_Internal(package.Name, Assembly.GetCallingAssembly());
-		}
-
-		/// <summary>
-		/// Checks, if the specified <paramref name="assembly"/> references the specified Durian <paramref name="package"/>.
-		/// </summary>
-		/// <param name="package"><see cref="PackageIdentity"/> of Durian module to check for.</param>
-		/// <param name="assembly"><see cref="Assembly"/> to check if contains the reference.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="package"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static bool HasReference(PackageIdentity package, Assembly assembly)
-		{
-			if (package is null)
-			{
-				throw new ArgumentNullException(nameof(package));
-			}
-
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			return HasReference_Internal(package.Name, assembly);
-		}
-
-		/// <summary>
-		/// Checks, if the calling <see cref="Assembly"/> references the specified Durian <paramref name="package"/>.
-		/// </summary>
-		/// <param name="package"><see cref="DurianPackage"/> to check for.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
-		public static bool HasReference(DurianPackage package)
-		{
-			CheckIsValidPackageEnum(package);
-			string packageName = EnumToString(package);
-			return HasReference_Internal(packageName, Assembly.GetCallingAssembly());
-		}
-
-		/// <summary>
-		/// Checks, if the specified <paramref name="assembly"/> references the specified Durian <paramref name="package"/>.
-		/// </summary>
-		/// <param name="package"><see cref="DurianPackage"/> to check for.</param>
-		/// <param name="assembly"><see cref="Assembly"/> to check if contains the reference.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
-		public static bool HasReference(DurianPackage package, Assembly assembly)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			CheckIsValidPackageEnum(package);
-			string packageName = EnumToString(package);
-			return HasReference_Internal(packageName, assembly);
-		}
-
-		/// <summary>
-		/// Checks, if the calling <see cref="Assembly"/> references a Durian package with the specified <paramref name="packageName"/>.
-		/// </summary>
-		/// <param name="packageName">Name of the Durian package to check for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian package name: <paramref name="packageName"/>.</exception>
-		public static bool HasReference(string packageName)
-		{
-			return HasReference(packageName, Assembly.GetCallingAssembly());
-		}
-
-		/// <summary>
-		/// Checks, if the specified <paramref name="assembly"/> references a Durian package with the specified <paramref name="packageName"/>.
-		/// </summary>
-		/// <param name="packageName">Name of the Durian package to check for.</param>
-		/// <param name="assembly"><see cref="Assembly"/> to check if contains the reference.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian package name: <paramref name="packageName"/>.</exception>
-		public static bool HasReference(string packageName, Assembly assembly)
-		{
-			if (packageName is null)
-			{
-				throw new ArgumentNullException(nameof(packageName));
-			}
-
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			ParsePackge(packageName);
-			return HasReference_Internal(packageName, assembly);
-		}
-
 		/// <summary>
 		/// Returns an array of <see cref="PackageIdentity"/> of all existing Durian packages.
 		/// </summary>
@@ -136,265 +38,6 @@ namespace Durian.Info
 				DurianPackage.TestServices,
 				DurianPackage.DefaultParam,
 			};
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the calling <see cref="Assembly"/>.
-		/// </summary>
-		public static PackageIdentity[] GetReferencedPackages()
-		{
-			return GetReferencedPackages(Assembly.GetCallingAssembly());
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static PackageIdentity[] GetReferencedPackages(Assembly assembly)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			PackageIdentity[] allPackages = GetAllPackages();
-
-			if (allPackages.Length == 0)
-			{
-				return allPackages;
-			}
-
-			List<PackageIdentity> referenced = new(allPackages.Length);
-
-			foreach (PackageIdentity package in allPackages)
-			{
-				if (HasReference_Internal(package.Name, assembly))
-				{
-					referenced.Add(package);
-				}
-			}
-
-			return referenced.ToArray();
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the calling <see cref="Assembly"/>. Only <see cref="PackageIdentity"/> that are present in the given array of <paramref name="packages"/> are included.
-		/// </summary>
-		/// <param name="packages">Array of <see cref="PackageIdentity"/> to pick the referenced packages from.</param>
-		public static PackageIdentity[] GetReferencedPackages(PackageIdentity[]? packages)
-		{
-			return GetReferencedPackages(Assembly.GetCallingAssembly(), packages);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the specified <paramref name="assembly"/>. Only <see cref="PackageIdentity"/> that are present in the given array of <paramref name="packages"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
-		/// <param name="packages">Array of <see cref="PackageIdentity"/> to pick the referenced packages from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static PackageIdentity[] GetReferencedPackages(Assembly assembly, PackageIdentity[]? packages)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (packages is null || packages.Length == 0)
-			{
-				return Array.Empty<PackageIdentity>();
-			}
-
-			HashSet<PackageIdentity> set = new(PackageEnumEqualityComparer.Instance);
-
-			foreach (PackageIdentity package in packages)
-			{
-				if (HasReference_Internal(package.Name, assembly))
-				{
-					set.Add(package);
-				}
-			}
-
-			PackageIdentity[] array = new PackageIdentity[set.Count];
-			set.CopyTo(array);
-			return array;
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the calling <see cref="Assembly"/>. Only <see cref="DurianPackage"/>s that are present in the given array of <paramref name="packages"/> are included.
-		/// </summary>
-		/// <param name="packages">Array of <see cref="DurianPackage"/>s to pick the referenced packages from.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
-		public static PackageIdentity[] GetReferencedPackages(DurianPackage[]? packages)
-		{
-			return GetReferencedPackages(Assembly.GetCallingAssembly(), packages);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the specified <paramref name="assembly"/>. Only <see cref="DurianPackage"/>s that are present in the given array of <paramref name="packages"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
-		/// <param name="packages">Array of <see cref="DurianPackage"/>s to pick the referenced packages from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
-		public static PackageIdentity[] GetReferencedPackages(Assembly assembly, DurianPackage[]? packages)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (packages is null || packages.Length == 0)
-			{
-				return Array.Empty<PackageIdentity>();
-			}
-
-			HashSet<DurianPackage> set = new();
-			List<PackageIdentity> list = new(packages.Length);
-
-			foreach (DurianPackage package in packages)
-			{
-				CheckIsValidPackageEnum(package);
-				string packageName = EnumToString(package);
-
-				if (HasReference_Internal(packageName, assembly) && set.Add(package))
-				{
-					list.Add(GetPackage(package));
-				}
-			}
-
-			return list.ToArray();
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the calling <see cref="Assembly"/>.
-		/// </summary>
-		public static DurianPackage[] GetReferencedPackagesAsEnums()
-		{
-			return GetReferencedPackagesAsEnums(Assembly.GetCallingAssembly());
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static DurianPackage[] GetReferencedPackagesAsEnums(Assembly assembly)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			DurianPackage[] allPackages = GetAllPackagesAsEnums();
-
-			if (allPackages.Length == 0)
-			{
-				return allPackages;
-			}
-
-			List<DurianPackage> referenced = new(allPackages.Length);
-
-			foreach (DurianPackage package in allPackages)
-			{
-				string packageName = EnumToString(package);
-
-				if (HasReference_Internal(packageName, assembly))
-				{
-					referenced.Add(package);
-				}
-			}
-
-			return referenced.ToArray();
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the calling <see cref="Assembly"/>. Only <see cref="PackageIdentity"/> that are present in the given array of <paramref name="packages"/> are included.
-		/// </summary>
-		/// <param name="packages">Array of <see cref="PackageIdentity"/> to pick the referenced packages from.</param>
-		public static DurianPackage[] GetReferencedPackagesAsEnums(PackageIdentity[]? packages)
-		{
-			return GetReferencedPackagesAsEnums(Assembly.GetCallingAssembly(), packages);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the specified <paramref name="assembly"/>. Only <see cref="PackageIdentity"/> that are present in the given array of <paramref name="packages"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
-		/// <param name="packages">Array of <see cref="PackageIdentity"/> to pick the referenced packages from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static DurianPackage[] GetReferencedPackagesAsEnums(Assembly assembly, PackageIdentity[]? packages)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (packages is null || packages.Length == 0)
-			{
-				return Array.Empty<DurianPackage>();
-			}
-
-			HashSet<DurianPackage> set = new();
-
-			foreach (PackageIdentity package in packages)
-			{
-				if (HasReference_Internal(package.Name, assembly))
-				{
-					set.Add(package.EnumValue);
-				}
-			}
-
-			DurianPackage[] array = new DurianPackage[set.Count];
-			set.CopyTo(array);
-			return array;
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the calling <see cref="Assembly"/>. Only <see cref="DurianPackage"/>s that are present in the given array of <paramref name="packages"/> are included.
-		/// </summary>
-		/// <param name="packages">Array of <see cref="DurianPackage"/>s to pick the referenced packages from.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
-		public static DurianPackage[] GetReferencedPackagesAsEnums(DurianPackage[]? packages)
-		{
-			return GetReferencedPackagesAsEnums(Assembly.GetCallingAssembly(), packages);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the specified <paramref name="assembly"/>. Only <see cref="DurianPackage"/>s that are present in the given array of <paramref name="packages"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
-		/// <param name="packages">Array of <see cref="DurianPackage"/>s to pick the referenced packages from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
-		public static DurianPackage[] GetReferencedPackagesAsEnums(Assembly assembly, DurianPackage[]? packages)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (packages is null || packages.Length == 0)
-			{
-				return Array.Empty<DurianPackage>();
-			}
-
-			HashSet<DurianPackage> set = new();
-
-			foreach (DurianPackage package in packages)
-			{
-				CheckIsValidPackageEnum(package);
-				string packageName = EnumToString(package);
-
-				if (HasReference_Internal(packageName, assembly))
-				{
-					set.Add(package);
-				}
-			}
-
-			DurianPackage[] array = new DurianPackage[set.Count];
-			set.CopyTo(array);
-			return array;
 		}
 
 		/// <summary>
@@ -679,12 +322,381 @@ namespace Durian.Info
 			return GetPackage(package);
 		}
 
+		/// <summary>
+		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the calling <see cref="Assembly"/>.
+		/// </summary>
+		public static PackageIdentity[] GetReferencedPackages()
+		{
+			return GetReferencedPackages(Assembly.GetCallingAssembly());
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		public static PackageIdentity[] GetReferencedPackages(Assembly assembly)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			PackageIdentity[] allPackages = GetAllPackages();
+
+			if (allPackages.Length == 0)
+			{
+				return allPackages;
+			}
+
+			List<PackageIdentity> referenced = new(allPackages.Length);
+
+			foreach (PackageIdentity package in allPackages)
+			{
+				if (HasReference_Internal(package.Name, assembly))
+				{
+					referenced.Add(package);
+				}
+			}
+
+			return referenced.ToArray();
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the calling <see cref="Assembly"/>. Only <see cref="PackageIdentity"/> that are present in the given array of <paramref name="packages"/> are included.
+		/// </summary>
+		/// <param name="packages">Array of <see cref="PackageIdentity"/> to pick the referenced packages from.</param>
+		public static PackageIdentity[] GetReferencedPackages(PackageIdentity[]? packages)
+		{
+			return GetReferencedPackages(Assembly.GetCallingAssembly(), packages);
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the specified <paramref name="assembly"/>. Only <see cref="PackageIdentity"/> that are present in the given array of <paramref name="packages"/> are included.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
+		/// <param name="packages">Array of <see cref="PackageIdentity"/> to pick the referenced packages from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		public static PackageIdentity[] GetReferencedPackages(Assembly assembly, PackageIdentity[]? packages)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (packages is null || packages.Length == 0)
+			{
+				return Array.Empty<PackageIdentity>();
+			}
+
+			HashSet<PackageIdentity> set = new(PackageEnumEqualityComparer.Instance);
+
+			foreach (PackageIdentity package in packages)
+			{
+				if (HasReference_Internal(package.Name, assembly))
+				{
+					set.Add(package);
+				}
+			}
+
+			PackageIdentity[] array = new PackageIdentity[set.Count];
+			set.CopyTo(array);
+			return array;
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the calling <see cref="Assembly"/>. Only <see cref="DurianPackage"/>s that are present in the given array of <paramref name="packages"/> are included.
+		/// </summary>
+		/// <param name="packages">Array of <see cref="DurianPackage"/>s to pick the referenced packages from.</param>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		public static PackageIdentity[] GetReferencedPackages(DurianPackage[]? packages)
+		{
+			return GetReferencedPackages(Assembly.GetCallingAssembly(), packages);
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="PackageIdentity"/> of all Durian packages referenced by the specified <paramref name="assembly"/>. Only <see cref="DurianPackage"/>s that are present in the given array of <paramref name="packages"/> are included.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
+		/// <param name="packages">Array of <see cref="DurianPackage"/>s to pick the referenced packages from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		public static PackageIdentity[] GetReferencedPackages(Assembly assembly, DurianPackage[]? packages)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (packages is null || packages.Length == 0)
+			{
+				return Array.Empty<PackageIdentity>();
+			}
+
+			HashSet<DurianPackage> set = new();
+			List<PackageIdentity> list = new(packages.Length);
+
+			foreach (DurianPackage package in packages)
+			{
+				CheckIsValidPackageEnum(package);
+				string packageName = EnumToString(package);
+
+				if (HasReference_Internal(packageName, assembly) && set.Add(package))
+				{
+					list.Add(GetPackage(package));
+				}
+			}
+
+			return list.ToArray();
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the calling <see cref="Assembly"/>.
+		/// </summary>
+		public static DurianPackage[] GetReferencedPackagesAsEnums()
+		{
+			return GetReferencedPackagesAsEnums(Assembly.GetCallingAssembly());
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		public static DurianPackage[] GetReferencedPackagesAsEnums(Assembly assembly)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			DurianPackage[] allPackages = GetAllPackagesAsEnums();
+
+			if (allPackages.Length == 0)
+			{
+				return allPackages;
+			}
+
+			List<DurianPackage> referenced = new(allPackages.Length);
+
+			foreach (DurianPackage package in allPackages)
+			{
+				string packageName = EnumToString(package);
+
+				if (HasReference_Internal(packageName, assembly))
+				{
+					referenced.Add(package);
+				}
+			}
+
+			return referenced.ToArray();
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the calling <see cref="Assembly"/>. Only <see cref="PackageIdentity"/> that are present in the given array of <paramref name="packages"/> are included.
+		/// </summary>
+		/// <param name="packages">Array of <see cref="PackageIdentity"/> to pick the referenced packages from.</param>
+		public static DurianPackage[] GetReferencedPackagesAsEnums(PackageIdentity[]? packages)
+		{
+			return GetReferencedPackagesAsEnums(Assembly.GetCallingAssembly(), packages);
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the specified <paramref name="assembly"/>. Only <see cref="PackageIdentity"/> that are present in the given array of <paramref name="packages"/> are included.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
+		/// <param name="packages">Array of <see cref="PackageIdentity"/> to pick the referenced packages from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		public static DurianPackage[] GetReferencedPackagesAsEnums(Assembly assembly, PackageIdentity[]? packages)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (packages is null || packages.Length == 0)
+			{
+				return Array.Empty<DurianPackage>();
+			}
+
+			HashSet<DurianPackage> set = new();
+
+			foreach (PackageIdentity package in packages)
+			{
+				if (HasReference_Internal(package.Name, assembly))
+				{
+					set.Add(package.EnumValue);
+				}
+			}
+
+			DurianPackage[] array = new DurianPackage[set.Count];
+			set.CopyTo(array);
+			return array;
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the calling <see cref="Assembly"/>. Only <see cref="DurianPackage"/>s that are present in the given array of <paramref name="packages"/> are included.
+		/// </summary>
+		/// <param name="packages">Array of <see cref="DurianPackage"/>s to pick the referenced packages from.</param>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		public static DurianPackage[] GetReferencedPackagesAsEnums(DurianPackage[]? packages)
+		{
+			return GetReferencedPackagesAsEnums(Assembly.GetCallingAssembly(), packages);
+		}
+
+		/// <summary>
+		/// Returns an array of <see cref="DurianPackage"/>s of all Durian packages referenced by the specified <paramref name="assembly"/>. Only <see cref="DurianPackage"/>s that are present in the given array of <paramref name="packages"/> are included.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to get the references Durian packages of.</param>
+		/// <param name="packages">Array of <see cref="DurianPackage"/>s to pick the referenced packages from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		public static DurianPackage[] GetReferencedPackagesAsEnums(Assembly assembly, DurianPackage[]? packages)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (packages is null || packages.Length == 0)
+			{
+				return Array.Empty<DurianPackage>();
+			}
+
+			HashSet<DurianPackage> set = new();
+
+			foreach (DurianPackage package in packages)
+			{
+				CheckIsValidPackageEnum(package);
+				string packageName = EnumToString(package);
+
+				if (HasReference_Internal(packageName, assembly))
+				{
+					set.Add(package);
+				}
+			}
+
+			DurianPackage[] array = new DurianPackage[set.Count];
+			set.CopyTo(array);
+			return array;
+		}
+
+		/// <summary>
+		/// Checks, if the calling <see cref="Assembly"/> references the specified Durian <paramref name="package"/>.
+		/// </summary>
+		/// <param name="package"><see cref="PackageIdentity"/> of Durian module to check for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="package"/> is <see langword="null"/>.</exception>
+		public static bool HasReference(PackageIdentity package)
+		{
+			if (package is null)
+			{
+				throw new ArgumentNullException(nameof(package));
+			}
+
+			return HasReference_Internal(package.Name, Assembly.GetCallingAssembly());
+		}
+
+		/// <summary>
+		/// Checks, if the specified <paramref name="assembly"/> references the specified Durian <paramref name="package"/>.
+		/// </summary>
+		/// <param name="package"><see cref="PackageIdentity"/> of Durian module to check for.</param>
+		/// <param name="assembly"><see cref="Assembly"/> to check if contains the reference.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="package"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
+		public static bool HasReference(PackageIdentity package, Assembly assembly)
+		{
+			if (package is null)
+			{
+				throw new ArgumentNullException(nameof(package));
+			}
+
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			return HasReference_Internal(package.Name, assembly);
+		}
+
+		/// <summary>
+		/// Checks, if the calling <see cref="Assembly"/> references the specified Durian <paramref name="package"/>.
+		/// </summary>
+		/// <param name="package"><see cref="DurianPackage"/> to check for.</param>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		public static bool HasReference(DurianPackage package)
+		{
+			CheckIsValidPackageEnum(package);
+			string packageName = EnumToString(package);
+			return HasReference_Internal(packageName, Assembly.GetCallingAssembly());
+		}
+
+		/// <summary>
+		/// Checks, if the specified <paramref name="assembly"/> references the specified Durian <paramref name="package"/>.
+		/// </summary>
+		/// <param name="package"><see cref="DurianPackage"/> to check for.</param>
+		/// <param name="assembly"><see cref="Assembly"/> to check if contains the reference.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		public static bool HasReference(DurianPackage package, Assembly assembly)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			CheckIsValidPackageEnum(package);
+			string packageName = EnumToString(package);
+			return HasReference_Internal(packageName, assembly);
+		}
+
+		/// <summary>
+		/// Checks, if the calling <see cref="Assembly"/> references a Durian package with the specified <paramref name="packageName"/>.
+		/// </summary>
+		/// <param name="packageName">Name of the Durian package to check for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Unknown Durian package name: <paramref name="packageName"/>.</exception>
+		public static bool HasReference(string packageName)
+		{
+			return HasReference(packageName, Assembly.GetCallingAssembly());
+		}
+
+		/// <summary>
+		/// Checks, if the specified <paramref name="assembly"/> references a Durian package with the specified <paramref name="packageName"/>.
+		/// </summary>
+		/// <param name="packageName">Name of the Durian package to check for.</param>
+		/// <param name="assembly"><see cref="Assembly"/> to check if contains the reference.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Unknown Durian package name: <paramref name="packageName"/>.</exception>
+		public static bool HasReference(string packageName, Assembly assembly)
+		{
+			if (packageName is null)
+			{
+				throw new ArgumentNullException(nameof(packageName));
+			}
+
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			ParsePackge(packageName);
+			return HasReference_Internal(packageName, assembly);
+		}
+
 		internal static void CheckIsValidPackageEnum(DurianPackage package)
 		{
 			if (package < DurianPackage.Core || package > DurianPackage.DefaultParam)
 			{
 				throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!");
 			}
+		}
+
+		internal static string EnumToString(DurianPackage package)
+		{
+			return package switch
+			{
+				DurianPackage.CoreAnalyzer => "Durian.Core.Analyzer",
+				_ => $"Durian.{package}"
+			};
 		}
 
 		internal static DurianPackage ParsePackge(string packageName)
@@ -702,15 +714,6 @@ namespace Durian.Info
 			}
 
 			throw new ArgumentException($"Unknown Durian package name: {packageName}", nameof(packageName));
-		}
-
-		internal static string EnumToString(DurianPackage package)
-		{
-			return package switch
-			{
-				DurianPackage.CoreAnalyzer => "Durian.Core.Analyzer",
-				_ => $"Durian.{package}"
-			};
 		}
 
 		private static bool HasReference_Internal(string packageName, Assembly assembly)

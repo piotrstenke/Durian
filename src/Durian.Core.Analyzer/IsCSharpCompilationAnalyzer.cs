@@ -1,4 +1,8 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Immutable;
+using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -9,7 +13,10 @@ namespace Durian.Generator.Core
 	/// <summary>
 	/// Analyzes if the current compilation is <see cref="CSharpCompilation"/>.
 	/// </summary>
+#if !MAIN_PACKAGE
+
 	[DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.FSharp, LanguageNames.VisualBasic)]
+#endif
 	public sealed class IsCSharpCompilationAnalyzer : DurianAnalyzer
 	{
 		/// <inheritdoc/>
@@ -25,26 +32,49 @@ namespace Durian.Generator.Core
 		{
 		}
 
-		/// <inheritdoc/>
-		public override void Initialize(AnalysisContext context)
+		/// <summary>
+		/// Analyzes the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+		/// <param name="compilation"><see cref="Compilation"/> to analyze.</param>
+		public static bool Analyze(IDiagnosticReceiver diagnosticReceiver, Compilation compilation)
 		{
-			base.Initialize(context);
+			if (GetDiagnostic(compilation) is DiagnosticDescriptor d)
+			{
+				diagnosticReceiver.ReportDiagnostic(d);
+				return false;
+			}
 
+			return true;
+		}
+
+		/// <inheritdoc/>
+		public override void Register(IDurianAnalysisContext context)
+		{
 			context.RegisterCompilationAction(Analyze);
 		}
 
 		private static void Analyze(CompilationAnalysisContext context)
 		{
-			if (context.Compilation is not CSharpCompilation c)
+			if (GetDiagnostic(context.Compilation) is DiagnosticDescriptor d)
 			{
-				context.ReportDiagnostic(Diagnostic.Create(DUR0004_DurianModulesAreValidOnlyInCSharp, Location.None));
-				return;
+				context.ReportDiagnostic(Diagnostic.Create(d, Location.None));
+			}
+		}
+
+		private static DiagnosticDescriptor? GetDiagnostic(Compilation compilation)
+		{
+			if (compilation is not CSharpCompilation c)
+			{
+				return DUR0004_DurianModulesAreValidOnlyInCSharp;
 			}
 
 			if (c.LanguageVersion < LanguageVersion.CSharp9)
 			{
-				context.ReportDiagnostic(Diagnostic.Create(DUR0006_ProjectMustUseCSharp9, Location.None));
+				return DUR0006_ProjectMustUseCSharp9;
 			}
+
+			return null;
 		}
 	}
 }

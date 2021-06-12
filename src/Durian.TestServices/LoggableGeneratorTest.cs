@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Runtime.CompilerServices;
 using Durian.Generator;
 using Durian.Generator.Logging;
@@ -10,8 +13,8 @@ namespace Durian.Tests
 	/// </summary>
 	public abstract class LoggableGeneratorTest<T> where T : ILoggableSourceGenerator
 	{
-		private readonly bool _enableDiagnostics;
 		private readonly GeneratorLoggingConfiguration _configuration;
+		private readonly bool _enableDiagnostics;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableGeneratorTest{T}"/> class.
@@ -31,13 +34,6 @@ namespace Durian.Tests
 			_configuration.LogDirectory += $"/{typeName}";
 			_enableDiagnostics = enableDiagnostics;
 		}
-
-		/// <summary>
-		/// Creates a new <see cref="ILoggableSourceGenerator"/> based on the specified <paramref name="configuration"/> and <paramref name="testName"/>.
-		/// </summary>
-		/// <param name="configuration">Configuration for the <see cref="ILoggableSourceGenerator"/>.</param>
-		/// <param name="testName">Name of the current test.</param>
-		protected abstract T CreateGenerator(GeneratorLoggingConfiguration configuration, string testName);
 
 		/// <summary>
 		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="ILoggableSourceGenerator"/>.
@@ -61,6 +57,13 @@ namespace Durian.Tests
 		{
 			return GeneratorTest.RunGenerator(input, GetGeneratorAndTryEnableDiagnostics(testName), index);
 		}
+
+		/// <summary>
+		/// Creates a new <see cref="ILoggableSourceGenerator"/> based on the specified <paramref name="configuration"/> and <paramref name="testName"/>.
+		/// </summary>
+		/// <param name="configuration">Configuration for the <see cref="ILoggableSourceGenerator"/>.</param>
+		/// <param name="testName">Name of the current test.</param>
+		protected abstract T CreateGenerator(GeneratorLoggingConfiguration configuration, string testName);
 
 		private ILoggableSourceGenerator GetGeneratorAndTryEnableDiagnostics(string testName)
 		{

@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +16,16 @@ namespace Durian.Generator.Data
 	public class EventData : MemberData
 	{
 		/// <summary>
+		/// Returns the <see cref="MemberData.Declaration"/> as a <see cref="EventFieldDeclarationSyntax"/>.
+		/// </summary>
+		public EventFieldDeclarationSyntax? AsField => Declaration as EventFieldDeclarationSyntax;
+
+		/// <summary>
+		/// Returns the <see cref="MemberData.Declaration"/> as a <see cref="EventDeclarationSyntax"/>.
+		/// </summary>
+		public EventDeclarationSyntax? AsProperty => Declaration as EventDeclarationSyntax;
+
+		/// <summary>
 		/// Index of this field in the <see cref="MemberData.Declaration"/>. Returns <c>0</c> if the event is defined as a property.
 		/// </summary>
 		public int Index { get; }
@@ -21,16 +34,6 @@ namespace Durian.Generator.Data
 		/// <see cref="IEventSymbol"/> associated with the <see cref="EventFieldDeclarationSyntax"/> or <see cref="EventDeclarationSyntax"/>.
 		/// </summary>
 		public new IEventSymbol Symbol => (base.Symbol as IEventSymbol)!;
-
-		/// <summary>
-		/// Returns the <see cref="MemberData.Declaration"/> as a <see cref="EventDeclarationSyntax"/>.
-		/// </summary>
-		public EventDeclarationSyntax? AsProperty => Declaration as EventDeclarationSyntax;
-
-		/// <summary>
-		/// Returns the <see cref="MemberData.Declaration"/> as a <see cref="EventFieldDeclarationSyntax"/>.
-		/// </summary>
-		public EventFieldDeclarationSyntax? AsField => Declaration as EventFieldDeclarationSyntax;
 
 		/// <summary>
 		/// <see cref="VariableDeclaratorSyntax"/> used to declare this event field. Equivalent to using <c>AsField.Declaration.Variables[Index]</c>.
@@ -83,6 +86,18 @@ namespace Durian.Generator.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EventData"/> class.
 		/// </summary>
+		/// <param name="symbol"><see cref="IEventSymbol"/> this <see cref="EventData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
+		internal EventData(IEventSymbol symbol, ICompilationData compilation)
+			: base(GetFieldOrProperty(symbol, compilation, out SemanticModel semanticModel, out VariableDeclaratorSyntax? variable, out int index), compilation, symbol, semanticModel, null, null, null)
+		{
+			Index = index;
+			Variable = variable;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="EventData"/> class.
+		/// </summary>
 		/// <param name="declaration"><see cref="EventFieldDeclarationSyntax"/> this <see cref="EventData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
 		/// <param name="symbol"><see cref="IEventSymbol"/> this <see cref="EventData"/> represents.</param>
@@ -119,18 +134,6 @@ namespace Durian.Generator.Data
 			IEnumerable<AttributeData>? attributes
 		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
 		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="EventData"/> class.
-		/// </summary>
-		/// <param name="symbol"><see cref="IEventSymbol"/> this <see cref="EventData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
-		internal EventData(IEventSymbol symbol, ICompilationData compilation)
-			: base(GetFieldOrProperty(symbol, compilation, out SemanticModel semanticModel, out VariableDeclaratorSyntax? variable, out int index), compilation, symbol, semanticModel, null, null, null)
-		{
-			Index = index;
-			Variable = variable;
 		}
 
 		private EventData(EventFieldDeclarationSyntax declaration, ICompilationData compilation, IEventSymbol symbol, SemanticModel semanticModel, VariableDeclaratorSyntax variable, int index)
@@ -182,31 +185,6 @@ namespace Durian.Generator.Data
 			}
 		}
 
-		private static SemanticModel GetSemanticModel(ICompilationData compilation, EventFieldDeclarationSyntax declaration)
-		{
-			if (declaration is null)
-			{
-				throw new ArgumentNullException(nameof(declaration));
-			}
-
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			return compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
-		}
-
-		private static VariableDeclaratorSyntax GetVariable(EventFieldDeclarationSyntax declaration, int index)
-		{
-			if (index < 0 || index >= declaration.Declaration.Variables.Count)
-			{
-				throw new IndexOutOfRangeException(nameof(index));
-			}
-
-			return declaration.Declaration.Variables[index];
-		}
-
 		private static MemberDeclarationSyntax GetFieldOrProperty(
 			IEventSymbol symbol,
 			ICompilationData compilation,
@@ -249,6 +227,31 @@ namespace Durian.Generator.Data
 			}
 
 			throw Exc_NoSyntaxReference(symbol);
+		}
+
+		private static SemanticModel GetSemanticModel(ICompilationData compilation, EventFieldDeclarationSyntax declaration)
+		{
+			if (declaration is null)
+			{
+				throw new ArgumentNullException(nameof(declaration));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			return compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
+		}
+
+		private static VariableDeclaratorSyntax GetVariable(EventFieldDeclarationSyntax declaration, int index)
+		{
+			if (index < 0 || index >= declaration.Declaration.Variables.Count)
+			{
+				throw new IndexOutOfRangeException(nameof(index));
+			}
+
+			return declaration.Declaration.Variables[index];
 		}
 	}
 }

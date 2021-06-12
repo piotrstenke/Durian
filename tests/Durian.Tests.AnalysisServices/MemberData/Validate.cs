@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using Xunit;
 
 namespace Durian.Tests.AnalysisServices.MemberData

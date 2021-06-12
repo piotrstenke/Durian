@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 
 namespace Durian.Info
 {
@@ -63,64 +66,6 @@ namespace Durian.Info
 			Value = value;
 		}
 
-		/// <summary>
-		/// Converts the <see cref="Value"/> two a tuple of two <see cref="char"/>s.
-		/// </summary>
-		public (char firstChar, char secondChar) AsChars()
-		{
-			if (Value == 0)
-			{
-				return ('0', '0');
-			}
-
-			int first = Value / 10;
-			int last = Value % 10;
-
-			return ((char)(first + 48), (char)(last + 48));
-		}
-
-		/// <inheritdoc/>
-		public override string ToString()
-		{
-			string str = Value.ToString();
-
-			if (Value > 9)
-			{
-				return str;
-			}
-
-			return str + str;
-		}
-
-		/// <inheritdoc/>
-		public override int GetHashCode()
-		{
-			return Value.GetHashCode();
-		}
-
-		/// <inheritdoc/>
-		public override bool Equals(object obj)
-		{
-			if (obj is not IdSection other)
-			{
-				return false;
-			}
-
-			return this == other;
-		}
-
-		/// <inheritdoc/>
-		public bool Equals(IdSection other)
-		{
-			return this == other;
-		}
-
-		/// <inheritdoc/>
-		public int CompareTo(IdSection other)
-		{
-			return Value.CompareTo(other.Value);
-		}
-
 		/// <inheritdoc/>
 		public static explicit operator IdSection(int value)
 		{
@@ -131,12 +76,6 @@ namespace Durian.Info
 		public static implicit operator int(IdSection id)
 		{
 			return id.Value;
-		}
-
-		/// <inheritdoc/>
-		public static bool operator ==(IdSection left, IdSection right)
-		{
-			return left.Value == right.Value;
 		}
 
 		/// <inheritdoc/>
@@ -158,6 +97,12 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
+		public static bool operator ==(IdSection left, IdSection right)
+		{
+			return left.Value == right.Value;
+		}
+
+		/// <inheritdoc/>
 		public static bool operator >(IdSection left, IdSection right)
 		{
 			return left.Value > right.Value;
@@ -167,6 +112,64 @@ namespace Durian.Info
 		public static bool operator >=(IdSection left, IdSection right)
 		{
 			return left.Value >= right.Value;
+		}
+
+		/// <summary>
+		/// Converts the <see cref="Value"/> two a tuple of two <see cref="char"/>s.
+		/// </summary>
+		public readonly (char firstChar, char secondChar) AsChars()
+		{
+			if (Value == 0)
+			{
+				return ('0', '0');
+			}
+
+			int first = Value / 10;
+			int last = Value % 10;
+
+			return ((char)(first + 48), (char)(last + 48));
+		}
+
+		/// <inheritdoc/>
+		public readonly int CompareTo(IdSection other)
+		{
+			return Value.CompareTo(other.Value);
+		}
+
+		/// <inheritdoc/>
+		public override readonly bool Equals(object obj)
+		{
+			if (obj is not IdSection other)
+			{
+				return false;
+			}
+
+			return this == other;
+		}
+
+		/// <inheritdoc/>
+		public readonly bool Equals(IdSection other)
+		{
+			return this == other;
+		}
+
+		/// <inheritdoc/>
+		public override readonly int GetHashCode()
+		{
+			return Value.GetHashCode();
+		}
+
+		/// <inheritdoc/>
+		public override readonly string ToString()
+		{
+			string str = Value.ToString();
+
+			if (Value > 9)
+			{
+				return str;
+			}
+
+			return str + str;
 		}
 	}
 }

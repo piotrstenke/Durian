@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,9 +22,19 @@ namespace Durian.Generator.DefaultParam
 		private readonly TypeParameterData[] _parameters;
 
 		/// <summary>
+		/// Returns an index of the first <see cref="TypeParameterData"/> that has the <see cref="TypeParameterData.IsDefaultParam"/> property set to <see langword="true"/>.
+		/// </summary>
+		public readonly int FirstDefaultParamIndex { get; }
+
+		/// <summary>
 		/// Determines whether this <see cref="TypeParameterContainer"/> contains any <see cref="TypeParameterData"/> that has the <see cref="TypeParameterData.IsDefaultParam"/> property set to <see langword="true"/>.
 		/// </summary>
 		public readonly bool HasDefaultParams { get; }
+
+		/// <summary>
+		/// Returns a number of all <see cref="TypeParameterData"/>s.
+		/// </summary>
+		public readonly int Length => _parameters.Length;
 
 		/// <summary>
 		/// Returns a number of <see cref="TypeParameterData"/>s with a valid <see cref="DefaultParamAttribute"/>.
@@ -34,30 +47,11 @@ namespace Durian.Generator.DefaultParam
 		public readonly int NumNonDefaultParam => _parameters.Length - NumDefaultParam;
 
 		/// <summary>
-		/// Returns a number of all <see cref="TypeParameterData"/>s.
-		/// </summary>
-		public readonly int Length => _parameters.Length;
-
-		/// <summary>
-		/// Returns an index of the first <see cref="TypeParameterData"/> that has the <see cref="TypeParameterData.IsDefaultParam"/> property set to <see langword="true"/>.
-		/// </summary>
-		public readonly int FirstDefaultParamIndex { get; }
-
-		/// <summary>
 		/// Returns a <see cref="TypeParameterData"/> at the specified <paramref name="index"/>.
 		/// </summary>
 		/// <param name="index">Index to get the <see cref="TypeParameterData"/> at.</param>
 		/// <exception cref="IndexOutOfRangeException"><paramref name="index"/> is out of range.</exception>
 		public readonly ref readonly TypeParameterData this[int index] => ref _parameters[index];
-
-		/// <summary>
-		/// Returns a <see cref="TypeParameterData"/> at the specified <paramref name="index"/> relative to the <see cref="FirstDefaultParamIndex"/>.
-		/// </summary>
-		/// <param name="index">Index relative to the <see cref="FirstDefaultParamIndex"/> to get the <see cref="TypeParameterData"/> at.</param>
-		public ref readonly TypeParameterData GetDefaultParamAtIndex(int index)
-		{
-			return ref _parameters[FirstDefaultParamIndex + index];
-		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TypeParameterContainer"/> struct.
@@ -82,122 +76,6 @@ namespace Durian.Generator.DefaultParam
 		}
 
 		/// <summary>
-		/// Combines <see langword="this"/> <see cref="TypeParameterContainer"/> with the specified <paramref name="target"/>.
-		/// </summary>
-		/// <param name="target"><see cref="TypeParameterContainer"/> to combine with <see cref="this"/> <see cref="TypeParameterContainer"/>.</param>
-		public TypeParameterContainer Combine(in TypeParameterContainer target)
-		{
-			if (Length != target.Length)
-			{
-				throw new InvalidOperationException($"Both {nameof(TypeParameterContainer)}s must be the same length!");
-			}
-
-			int length = Length;
-
-			TypeParameterData[] parameters = new TypeParameterData[length];
-
-			for (int i = 0; i < length; i++)
-			{
-				ref readonly TypeParameterData thisData = ref this[i];
-
-				if (thisData.IsDefaultParam)
-				{
-					parameters[i] = thisData;
-				}
-				else if (target[i].IsDefaultParam)
-				{
-					ref readonly TypeParameterData targetData = ref target[i];
-					parameters[i] = new(thisData.Syntax, thisData.Symbol, thisData.SemanticModel, targetData.Attribute, targetData.TargetType);
-				}
-				else
-				{
-					parameters[i] = thisData;
-				}
-			}
-
-			return new TypeParameterContainer(parameters);
-		}
-
-		/// <summary>
-		/// Determines whether <see langword="this"/> <see cref="TypeParameterContainer"/> has equivalent <see cref="TypeParameterData"/>s to the specified <paramref name="target"/>.
-		/// </summary>
-		/// <param name="target"><see cref="TypeParameterContainer"/> to compare to <see langword="this"/> <see cref="TypeParameterContainer"/>,</param>
-		/// <param name="includeNonDefaultParam">Determines whether non-DefaultParam type parameters should be included as well.</param>
-		public bool IsEquivalentTo(in TypeParameterContainer target, bool includeNonDefaultParam = false)
-		{
-			int i;
-			int length = Length;
-
-			if (includeNonDefaultParam)
-			{
-				if (length != target.Length)
-				{
-					return false;
-				}
-
-				i = 0;
-			}
-			else
-			{
-				i = FirstDefaultParamIndex;
-			}
-
-			if (FirstDefaultParamIndex != target.FirstDefaultParamIndex)
-			{
-				return false;
-			}
-
-			for (; i < length; i++)
-			{
-				ref readonly TypeParameterData first = ref _parameters[i];
-				ref readonly TypeParameterData second = ref target._parameters[i];
-
-				if (first != second)
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		bool IEquatable<TypeParameterContainer>.Equals(TypeParameterContainer other)
-		{
-			return IsEquivalentTo(in other);
-		}
-
-		/// <inheritdoc/>
-		public override bool Equals(object obj)
-		{
-			if (obj is TypeParameterContainer p)
-			{
-				return IsEquivalentTo(in p);
-			}
-
-			return false;
-		}
-
-		/// <inheritdoc/>
-		public override int GetHashCode()
-		{
-			int hashCode = -1158322089;
-			hashCode = (hashCode * -1521134295) + EqualityComparer<TypeParameterData[]>.Default.GetHashCode(_parameters);
-			hashCode = (hashCode * -1521134295) + FirstDefaultParamIndex.GetHashCode();
-			return hashCode;
-		}
-
-		/// <inheritdoc/>
-		public IEnumerator<TypeParameterData> GetEnumerator()
-		{
-			return ((IEnumerable<TypeParameterData>)_parameters).GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return _parameters.GetEnumerator();
-		}
-
-		/// <summary>
 		/// Combines two <see cref="TypeParameterContainer"/> into one.
 		/// </summary>
 		/// <param name="first">First <see cref="TypeParameterContainer"/>.</param>
@@ -205,17 +83,6 @@ namespace Durian.Generator.DefaultParam
 		public static TypeParameterContainer Combine(in TypeParameterContainer first, in TypeParameterContainer second)
 		{
 			return first.Combine(in second);
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="first"/> <see cref="TypeParameterContainer"/> has equivalent <see cref="TypeParameterData"/>s to the <paramref name="second"/> <see cref="TypeParameterContainer"/>.
-		/// </summary>
-		/// <param name="first">First <see cref="TypeParameterContainer"/>.</param>
-		/// <param name="second">Second <see cref="TypeParameterContainer"/>.</param>
-		/// <param name="includeNonDefaultParam">Determines whether non-DefaultParam type parameters should be included as well.</param>
-		public static bool IsEquivalentTo(in TypeParameterContainer first, in TypeParameterContainer second, bool includeNonDefaultParam = false)
-		{
-			return first.IsEquivalentTo(in second, includeNonDefaultParam);
 		}
 
 		/// <summary>
@@ -293,6 +160,168 @@ namespace Durian.Generator.DefaultParam
 			return new TypeParameterContainer(typeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
 		}
 
+		/// <inheritdoc/>
+		public static explicit operator TypeParameterContainer(TypeParameterData[] array)
+		{
+			return new TypeParameterContainer(array);
+		}
+
+		/// <inheritdoc/>
+		public static implicit operator TypeParameterData[](in TypeParameterContainer obj)
+		{
+			TypeParameterData[] parameters = new TypeParameterData[obj.Length];
+			Array.Copy(obj._parameters, parameters, obj.Length);
+			return parameters;
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="first"/> <see cref="TypeParameterContainer"/> has equivalent <see cref="TypeParameterData"/>s to the <paramref name="second"/> <see cref="TypeParameterContainer"/>.
+		/// </summary>
+		/// <param name="first">First <see cref="TypeParameterContainer"/>.</param>
+		/// <param name="second">Second <see cref="TypeParameterContainer"/>.</param>
+		/// <param name="includeNonDefaultParam">Determines whether non-DefaultParam type parameters should be included as well.</param>
+		public static bool IsEquivalentTo(in TypeParameterContainer first, in TypeParameterContainer second, bool includeNonDefaultParam = false)
+		{
+			return first.IsEquivalentTo(in second, includeNonDefaultParam);
+		}
+
+		/// <inheritdoc/>
+		public static bool operator !=(in TypeParameterContainer first, in TypeParameterContainer second)
+		{
+			return !(first == second);
+		}
+
+		/// <inheritdoc/>
+		public static bool operator ==(in TypeParameterContainer first, in TypeParameterContainer second)
+		{
+			return first.IsEquivalentTo(second);
+		}
+
+		/// <summary>
+		/// Combines <see langword="this"/> <see cref="TypeParameterContainer"/> with the specified <paramref name="target"/>.
+		/// </summary>
+		/// <param name="target"><see cref="TypeParameterContainer"/> to combine with <see cref="this"/> <see cref="TypeParameterContainer"/>.</param>
+		public readonly TypeParameterContainer Combine(in TypeParameterContainer target)
+		{
+			if (Length != target.Length)
+			{
+				throw new InvalidOperationException($"Both {nameof(TypeParameterContainer)}s must be the same length!");
+			}
+
+			int length = Length;
+
+			TypeParameterData[] parameters = new TypeParameterData[length];
+
+			for (int i = 0; i < length; i++)
+			{
+				ref readonly TypeParameterData thisData = ref this[i];
+
+				if (thisData.IsDefaultParam)
+				{
+					parameters[i] = thisData;
+				}
+				else if (target[i].IsDefaultParam)
+				{
+					ref readonly TypeParameterData targetData = ref target[i];
+					parameters[i] = new(thisData.Syntax, thisData.Symbol, thisData.SemanticModel, targetData.Attribute, targetData.TargetType);
+				}
+				else
+				{
+					parameters[i] = thisData;
+				}
+			}
+
+			return new TypeParameterContainer(parameters);
+		}
+
+		readonly bool IEquatable<TypeParameterContainer>.Equals(TypeParameterContainer other)
+		{
+			return IsEquivalentTo(in other);
+		}
+
+		/// <inheritdoc/>
+		public override readonly bool Equals(object obj)
+		{
+			if (obj is TypeParameterContainer p)
+			{
+				return IsEquivalentTo(in p);
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Returns a <see cref="TypeParameterData"/> at the specified <paramref name="index"/> relative to the <see cref="FirstDefaultParamIndex"/>.
+		/// </summary>
+		/// <param name="index">Index relative to the <see cref="FirstDefaultParamIndex"/> to get the <see cref="TypeParameterData"/> at.</param>
+		public readonly ref readonly TypeParameterData GetDefaultParamAtIndex(int index)
+		{
+			return ref _parameters[FirstDefaultParamIndex + index];
+		}
+
+		/// <inheritdoc/>
+		public readonly IEnumerator<TypeParameterData> GetEnumerator()
+		{
+			return ((IEnumerable<TypeParameterData>)_parameters).GetEnumerator();
+		}
+
+		readonly IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _parameters.GetEnumerator();
+		}
+
+		/// <inheritdoc/>
+		public override readonly int GetHashCode()
+		{
+			int hashCode = -1158322089;
+			hashCode = (hashCode * -1521134295) + EqualityComparer<TypeParameterData[]>.Default.GetHashCode(_parameters);
+			hashCode = (hashCode * -1521134295) + FirstDefaultParamIndex.GetHashCode();
+			return hashCode;
+		}
+
+		/// <summary>
+		/// Determines whether <see langword="this"/> <see cref="TypeParameterContainer"/> has equivalent <see cref="TypeParameterData"/>s to the specified <paramref name="target"/>.
+		/// </summary>
+		/// <param name="target"><see cref="TypeParameterContainer"/> to compare to <see langword="this"/> <see cref="TypeParameterContainer"/>,</param>
+		/// <param name="includeNonDefaultParam">Determines whether non-DefaultParam type parameters should be included as well.</param>
+		public readonly bool IsEquivalentTo(in TypeParameterContainer target, bool includeNonDefaultParam = false)
+		{
+			int i;
+			int length = Length;
+
+			if (includeNonDefaultParam)
+			{
+				if (length != target.Length)
+				{
+					return false;
+				}
+
+				i = 0;
+			}
+			else
+			{
+				i = FirstDefaultParamIndex;
+			}
+
+			if (FirstDefaultParamIndex != target.FirstDefaultParamIndex)
+			{
+				return false;
+			}
+
+			for (; i < length; i++)
+			{
+				ref readonly TypeParameterData first = ref _parameters[i];
+				ref readonly TypeParameterData second = ref target._parameters[i];
+
+				if (first != second)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		private static int FindFirstDefaultParamIndex(TypeParameterData[] parameters)
 		{
 			int length = parameters.Length;
@@ -308,32 +337,6 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return -1;
-		}
-
-		/// <inheritdoc/>
-		public static bool operator ==(in TypeParameterContainer first, in TypeParameterContainer second)
-		{
-			return first.IsEquivalentTo(second);
-		}
-
-		/// <inheritdoc/>
-		public static bool operator !=(in TypeParameterContainer first, in TypeParameterContainer second)
-		{
-			return !(first == second);
-		}
-
-		/// <inheritdoc/>
-		public static implicit operator TypeParameterData[](in TypeParameterContainer obj)
-		{
-			TypeParameterData[] parameters = new TypeParameterData[obj.Length];
-			Array.Copy(obj._parameters, parameters, obj.Length);
-			return parameters;
-		}
-
-		/// <inheritdoc/>
-		public static explicit operator TypeParameterContainer(TypeParameterData[] array)
-		{
-			return new TypeParameterContainer(array);
 		}
 	}
 }

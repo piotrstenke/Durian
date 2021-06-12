@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -23,18 +26,6 @@ namespace Durian.Tests.AnalysisServices.MemberData
 		}
 
 		[Fact]
-		public void ConstructorThrowsArgumentNullException_When_DeclarationIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => new Generator.Data.MemberData(declaration: null!, Mock.Of<ICompilationData>()));
-		}
-
-		[Fact]
-		public void ConstructorThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => new Generator.Data.MemberData(declaration: ClassDeclaration("Test"), null!));
-		}
-
-		[Fact]
 		public void ConstructorThrowsArgumentException_When_DeclarationDoesNotRepresentAnySymbol()
 		{
 			CompilationUnitSyntax unit = CompilationUnit();
@@ -47,34 +38,15 @@ namespace Durian.Tests.AnalysisServices.MemberData
 		}
 
 		[Fact]
-		public void ParentCompilationIsProperlySetAfterConstructor()
+		public void ConstructorThrowsArgumentNullException_When_CompilationIsNull()
 		{
-			MemberDeclarationSyntax member = CreateValidDeclaration();
-			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
-			Generator.Data.MemberData data = new(member, compilation);
-
-			Assert.True(data.ParentCompilation is not null && data.ParentCompilation == compilation);
+			Assert.Throws<ArgumentNullException>(() => new Generator.Data.MemberData(declaration: ClassDeclaration("Test"), null!));
 		}
 
 		[Fact]
-		public void NameReturnsSymbolName()
+		public void ConstructorThrowsArgumentNullException_When_DeclarationIsNull()
 		{
-			MemberDeclarationSyntax member = CreateValidDeclaration();
-			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
-			Generator.Data.MemberData data = new(member, compilation);
-
-			Assert.True(data.Symbol is not null && data.Name == data.Symbol.Name);
-		}
-
-		[Fact]
-		public void LocationReturnsActualNodeLocation()
-		{
-			MemberDeclarationSyntax member = CreateValidDeclaration();
-			Location location = member.GetLocation();
-			Generator.Data.MemberData data = new(member, CreateValidCompilationData(member.SyntaxTree));
-			Location dataLocation = data.Location;
-
-			Assert.True(dataLocation is not null && dataLocation == location);
+			Assert.Throws<ArgumentNullException>(() => new Generator.Data.MemberData(declaration: null!, Mock.Of<ICompilationData>()));
 		}
 
 		[Fact]
@@ -84,29 +56,6 @@ namespace Durian.Tests.AnalysisServices.MemberData
 			Generator.Data.MemberData data = new(member, CreateValidCompilationData(member.SyntaxTree));
 
 			Assert.True(data.Declaration is not null && data.Declaration.IsEquivalentTo(member));
-		}
-
-		[Fact]
-		public void SemanticModelReturnsValidSemanticModel()
-		{
-			MemberDeclarationSyntax member = CreateValidDeclaration();
-			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
-			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(member.SyntaxTree, true);
-			Generator.Data.MemberData data = new(member, compilation);
-
-			Assert.True(data.SemanticModel is not null && data.SemanticModel.SyntaxTree.IsEquivalentTo(semanticModel.SyntaxTree));
-		}
-
-		[Fact]
-		public void SymbolReturnsValidSymbol()
-		{
-			MemberDeclarationSyntax member = CreateValidDeclaration();
-			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
-			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(member.SyntaxTree, true);
-			ISymbol symbol = semanticModel.GetDeclaredSymbol(member)!;
-			Generator.Data.MemberData data = new(member, compilation);
-
-			Assert.True(data.Symbol is not null && SymbolEqualityComparer.Default.Equals(symbol, data.Symbol));
 		}
 
 		[Fact]
@@ -164,13 +113,58 @@ namespace Durian.Tests.AnalysisServices.MemberData
 			);
 		}
 
-		private ICompilationData CreateValidCompilationData(SyntaxTree tree)
+		[Fact]
+		public void LocationReturnsActualNodeLocation()
 		{
-			CSharpCompilation compilation = _compilation.AddSyntaxTrees(tree);
-			Mock<ICompilationData> mock = new();
-			mock.Setup(c => c.Compilation).Returns(compilation);
+			MemberDeclarationSyntax member = CreateValidDeclaration();
+			Location location = member.GetLocation();
+			Generator.Data.MemberData data = new(member, CreateValidCompilationData(member.SyntaxTree));
+			Location dataLocation = data.Location;
 
-			return mock.Object;
+			Assert.True(dataLocation is not null && dataLocation == location);
+		}
+
+		[Fact]
+		public void NameReturnsSymbolName()
+		{
+			MemberDeclarationSyntax member = CreateValidDeclaration();
+			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
+			Generator.Data.MemberData data = new(member, compilation);
+
+			Assert.True(data.Symbol is not null && data.Name == data.Symbol.Name);
+		}
+
+		[Fact]
+		public void ParentCompilationIsProperlySetAfterConstructor()
+		{
+			MemberDeclarationSyntax member = CreateValidDeclaration();
+			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
+			Generator.Data.MemberData data = new(member, compilation);
+
+			Assert.True(data.ParentCompilation is not null && data.ParentCompilation == compilation);
+		}
+
+		[Fact]
+		public void SemanticModelReturnsValidSemanticModel()
+		{
+			MemberDeclarationSyntax member = CreateValidDeclaration();
+			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
+			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(member.SyntaxTree, true);
+			Generator.Data.MemberData data = new(member, compilation);
+
+			Assert.True(data.SemanticModel is not null && data.SemanticModel.SyntaxTree.IsEquivalentTo(semanticModel.SyntaxTree));
+		}
+
+		[Fact]
+		public void SymbolReturnsValidSymbol()
+		{
+			MemberDeclarationSyntax member = CreateValidDeclaration();
+			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
+			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(member.SyntaxTree, true);
+			ISymbol symbol = semanticModel.GetDeclaredSymbol(member)!;
+			Generator.Data.MemberData data = new(member, compilation);
+
+			Assert.True(data.Symbol is not null && SymbolEqualityComparer.Default.Equals(symbol, data.Symbol));
 		}
 
 		private static MemberDeclarationSyntax CreateValidDeclaration()
@@ -179,6 +173,15 @@ namespace Durian.Tests.AnalysisServices.MemberData
 			MemberDeclarationSyntax decl = RoslynUtilities.ParseNode<ClassDeclarationSyntax>(tree)!;
 
 			return decl;
+		}
+
+		private ICompilationData CreateValidCompilationData(SyntaxTree tree)
+		{
+			CSharpCompilation compilation = _compilation.AddSyntaxTrees(tree);
+			Mock<ICompilationData> mock = new();
+			mock.Setup(c => c.Compilation).Returns(compilation);
+
+			return mock.Object;
 		}
 	}
 }

@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Linq;
 using Durian.Generator.Data;
@@ -12,78 +15,29 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class GetMemberData : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
-		{
-			ISymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetMemberData(Compilation));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => symbol.GetMemberData(null!));
-		}
-
-		[Fact]
 		public void ReturnsValidClassData_When_IsClass()
 		{
 			Assert.True(ValidateMember<ClassData, ClassDeclarationSyntax>("class Test { }"));
 		}
 
 		[Fact]
-		public void ReturnsValidInterfaceData_When_IsInterface()
+		public void ReturnsValidDelegateData_When_IsDelegate()
 		{
-			Assert.True(ValidateMember<InterfaceData, InterfaceDeclarationSyntax>("interface Test { }"));
+			Assert.True(ValidateMember<DelegateData, DelegateDeclarationSyntax>("delegate void Test();"));
 		}
 
 		[Fact]
-		public void ReturnsValidStructData_When_IsStruct()
+		public void ReturnsValidEventData_When_HasMultipleEventFieldsInSingleDeclaration()
 		{
-			Assert.True(ValidateMember<StructData, StructDeclarationSyntax>("struct Test { }"));
-		}
+			EventFieldDeclarationSyntax e = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action OnInit, OnExit; }");
+			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(e.SyntaxTree);
+			IEventSymbol symbol1 = (semanticModel.GetDeclaredSymbol(e.Declaration.Variables[0]) as IEventSymbol)!;
+			IEventSymbol symbol2 = (semanticModel.GetDeclaredSymbol(e.Declaration.Variables[1]) as IEventSymbol)!;
 
-		[Fact]
-		public void ReturnsValidRecordData_When_IsRecord()
-		{
-			Assert.True(ValidateMember<RecordData, RecordDeclarationSyntax>("record Test { }"));
-		}
+			Generator.Data.EventData? data = symbol1.GetMemberData(Compilation) as Generator.Data.EventData;
+			Generator.Data.EventData[]? declaredEvents = data?.GetUnderlayingEvents().ToArray();
 
-		[Fact]
-		public void ReturnsValidMethodData_When_IsMethod()
-		{
-			Assert.True(ValidateMember<Generator.Data.MethodData, MethodDeclarationSyntax>("class Test { void Method(int a) { } }"));
-		}
-
-		[Fact]
-		public void ReturnsValidFieldData_When_IsSingleField()
-		{
-			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int Age = 0; }");
-			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(field.SyntaxTree);
-			IFieldSymbol symbol = (semanticModel.GetDeclaredSymbol(field.Declaration.Variables[0]) as IFieldSymbol)!;
-			Generator.Data.FieldData? data = symbol.GetMemberData(Compilation) as Generator.Data.FieldData;
-
-			Assert.True(ValidateMember(data, field, symbol) && data!.GetUnderlayingFields().Count() == 1);
-		}
-
-		[Fact]
-		public void ReturnsValidFieldData_When_HasMultipleFieldsInSingleDeclaration()
-		{
-			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int Age = 0, Index = 2 }");
-			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(field.SyntaxTree);
-			IFieldSymbol symbol1 = (semanticModel.GetDeclaredSymbol(field.Declaration.Variables[0]) as IFieldSymbol)!;
-			IFieldSymbol symbol2 = (semanticModel.GetDeclaredSymbol(field.Declaration.Variables[1]) as IFieldSymbol)!;
-
-			Generator.Data.FieldData? data = symbol1.GetMemberData(Compilation) as Generator.Data.FieldData;
-			Generator.Data.FieldData[]? declaredFields = data?.GetUnderlayingFields().ToArray();
-
-			Assert.True(ValidateMember(data, field, symbol1) && declaredFields!.Length == 2 && ValidateMember(declaredFields[1], field, symbol2));
-		}
-
-		[Fact]
-		public void ReturnsValidPropertyData_When_IsProperty()
-		{
-			Assert.True(ValidateMember<PropertyData, PropertyDeclarationSyntax>("class Test { string Property { get; set; } }"));
+			Assert.True(ValidateMember(data, e, symbol1) && declaredEvents!.Length == 2 && ValidateMember(declaredEvents[1], e, symbol2));
 		}
 
 		[Fact]
@@ -104,29 +58,78 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void ReturnsValidEventData_When_HasMultipleEventFieldsInSingleDeclaration()
+		public void ReturnsValidFieldData_When_HasMultipleFieldsInSingleDeclaration()
 		{
-			EventFieldDeclarationSyntax e = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action OnInit, OnExit; }");
-			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(e.SyntaxTree);
-			IEventSymbol symbol1 = (semanticModel.GetDeclaredSymbol(e.Declaration.Variables[0]) as IEventSymbol)!;
-			IEventSymbol symbol2 = (semanticModel.GetDeclaredSymbol(e.Declaration.Variables[1]) as IEventSymbol)!;
+			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int Age = 0, Index = 2 }");
+			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(field.SyntaxTree);
+			IFieldSymbol symbol1 = (semanticModel.GetDeclaredSymbol(field.Declaration.Variables[0]) as IFieldSymbol)!;
+			IFieldSymbol symbol2 = (semanticModel.GetDeclaredSymbol(field.Declaration.Variables[1]) as IFieldSymbol)!;
 
-			Generator.Data.EventData? data = symbol1.GetMemberData(Compilation) as Generator.Data.EventData;
-			Generator.Data.EventData[]? declaredEvents = data?.GetUnderlayingEvents().ToArray();
+			Generator.Data.FieldData? data = symbol1.GetMemberData(Compilation) as Generator.Data.FieldData;
+			Generator.Data.FieldData[]? declaredFields = data?.GetUnderlayingFields().ToArray();
 
-			Assert.True(ValidateMember(data, e, symbol1) && declaredEvents!.Length == 2 && ValidateMember(declaredEvents[1], e, symbol2));
+			Assert.True(ValidateMember(data, field, symbol1) && declaredFields!.Length == 2 && ValidateMember(declaredFields[1], field, symbol2));
 		}
 
 		[Fact]
-		public void ReturnsValidDelegateData_When_IsDelegate()
+		public void ReturnsValidFieldData_When_IsSingleField()
 		{
-			Assert.True(ValidateMember<DelegateData, DelegateDeclarationSyntax>("delegate void Test();"));
+			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int Age = 0; }");
+			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(field.SyntaxTree);
+			IFieldSymbol symbol = (semanticModel.GetDeclaredSymbol(field.Declaration.Variables[0]) as IFieldSymbol)!;
+			Generator.Data.FieldData? data = symbol.GetMemberData(Compilation) as Generator.Data.FieldData;
+
+			Assert.True(ValidateMember(data, field, symbol) && data!.GetUnderlayingFields().Count() == 1);
+		}
+
+		[Fact]
+		public void ReturnsValidInterfaceData_When_IsInterface()
+		{
+			Assert.True(ValidateMember<InterfaceData, InterfaceDeclarationSyntax>("interface Test { }"));
 		}
 
 		[Fact]
 		public void ReturnsValidMemberData_When_IsUnknownMemberType()
 		{
 			Assert.True(ValidateMember<Generator.Data.MemberData, MemberDeclarationSyntax>("class Test { int this[int index] { get => 0; set { }} }"));
+		}
+
+		[Fact]
+		public void ReturnsValidMethodData_When_IsMethod()
+		{
+			Assert.True(ValidateMember<Generator.Data.MethodData, MethodDeclarationSyntax>("class Test { void Method(int a) { } }"));
+		}
+
+		[Fact]
+		public void ReturnsValidPropertyData_When_IsProperty()
+		{
+			Assert.True(ValidateMember<PropertyData, PropertyDeclarationSyntax>("class Test { string Property { get; set; } }"));
+		}
+
+		[Fact]
+		public void ReturnsValidRecordData_When_IsRecord()
+		{
+			Assert.True(ValidateMember<RecordData, RecordDeclarationSyntax>("record Test { }"));
+		}
+
+		[Fact]
+		public void ReturnsValidStructData_When_IsStruct()
+		{
+			Assert.True(ValidateMember<StructData, StructDeclarationSyntax>("struct Test { }"));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_CompilationIsNull()
+		{
+			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }");
+			Assert.Throws<ArgumentNullException>(() => symbol.GetMemberData(null!));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		{
+			ISymbol symbol = null!;
+			Assert.Throws<ArgumentNullException>(() => symbol.GetMemberData(Compilation));
 		}
 
 		private bool ValidateMember<TData, TDeclaration>(string src)

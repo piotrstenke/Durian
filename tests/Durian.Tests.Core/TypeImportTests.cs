@@ -1,4 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Immutable;
 using System.Text;
 using System.Threading.Tasks;
 using Durian.Generator;
@@ -13,19 +16,6 @@ namespace Durian.Tests.Core
 {
 	public sealed class TypeImportTests
 	{
-		[Fact]
-		public async Task UsingStatementWithGeneratorNamespaceDoesNotProduceError()
-		{
-			string input =
-$@"using {DurianStrings.GeneratorNamespace};
-
-class Test
-{{
-}}
-";
-			Assert.Empty(await RunAnalyzer(new TypeImportAnalyzer(), input));
-		}
-
 		[Fact]
 		public async Task Error_When_AddedCustomTypeToGeneratorNamespace()
 		{
@@ -69,6 +59,18 @@ class Test
 		}
 
 		[Fact]
+		public async Task Error_When_UsesTypeFromGeneratorNamespaceInFullyQualifiedName()
+		{
+			string input =
+$@"[{DurianStrings.GeneratorNamespace}.{nameof(DurianGeneratedAttribute)}]
+class Test
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
+		}
+
+		[Fact]
 		public async Task Error_When_UsesTypeFromGeneratorNamespaceInGenericName()
 		{
 			string input =
@@ -81,18 +83,6 @@ class Test
 	{{
 		List<{nameof(DurianGeneratedAttribute)}> list = new();
 	}}
-}}
-";
-			Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
-		}
-
-		[Fact]
-		public async Task Error_When_UsesTypeFromGeneratorNamespaceInFullyQualifiedName()
-		{
-			string input =
-$@"[{DurianStrings.GeneratorNamespace}.{nameof(DurianGeneratedAttribute)}]
-class Test
-{{
 }}
 ";
 			Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
@@ -124,6 +114,19 @@ class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 ";
 
 			Assert.Empty(await RunAnalyzer(new TypeImportAnalyzer(), input, nameof(DurianModule.DefaultParam)));
+		}
+
+		[Fact]
+		public async Task UsingStatementWithGeneratorNamespaceDoesNotProduceError()
+		{
+			string input =
+$@"using {DurianStrings.GeneratorNamespace};
+
+class Test
+{{
+}}
+";
+			Assert.Empty(await RunAnalyzer(new TypeImportAnalyzer(), input));
 		}
 
 		private static Task<ImmutableArray<Diagnostic>> RunAnalyzer(DiagnosticAnalyzer analyzer, string input)

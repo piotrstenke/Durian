@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -34,85 +37,6 @@ namespace Durian.Generator.DefaultParam
 				}
 
 				return AnalyzeCore(diagnosticReceiver, symbol, compilation, ref typeParameters, cancellationToken);
-			}
-
-			/// <summary>
-			/// Determines, whether the specified <paramref name="symbol"/> should be analyzed.
-			/// </summary>
-			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-			/// <param name="symbol"><see cref="IMethodSymbol"/> to check if should be analyzed.</param>
-			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters to be analyzed.</param>
-			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-			/// <param name="combinedTypeParameters">Combined <see cref="TypeParameterContainer"/>s of the <paramref name="symbol"/>'s base methods.</param>
-			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-			/// <returns><see langword="true"/> if the <paramref name="symbol"/> should be analyzer, <see langword="false"/> otherwise.</returns>
-			public static bool ShouldBeAnalyzed(
-				IDiagnosticReceiver diagnosticReceiver,
-				IMethodSymbol symbol,
-				in TypeParameterContainer typeParameters,
-				DefaultParamCompilationData compilation,
-				out TypeParameterContainer combinedTypeParameters,
-				CancellationToken cancellationToken = default
-			)
-			{
-				if (!symbol.IsOverride)
-				{
-					combinedTypeParameters = typeParameters;
-					return true;
-				}
-
-				if (symbol.OverriddenMethod is not IMethodSymbol baseMethod)
-				{
-					combinedTypeParameters = default;
-					return false;
-				}
-
-				if (IsDefaultParamGenerated(baseMethod, compilation))
-				{
-					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods, symbol);
-					combinedTypeParameters = default;
-					return false;
-				}
-
-				TypeParameterContainer combined = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
-
-				if (typeParameters.HasDefaultParams || combined.HasDefaultParams)
-				{
-					combinedTypeParameters = combined;
-					return true;
-				}
-
-				combinedTypeParameters = default;
-				return false;
-			}
-
-			/// <summary>
-			/// Analyzes, if the <paramref name="symbol"/> has valid <paramref name="typeParameters"/> when compared to the <paramref name="symbol"/>'s base method.
-			/// </summary>
-			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-			/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
-			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters to be analyzed.</param>
-			/// <param name="combinedTypeParameters">Combined <see cref="TypeParameterContainer"/>s of the <paramref name="symbol"/>'s base methods.</param>
-			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-			public static bool AnalyzeBaseMethodAndTypeParameters(
-				IDiagnosticReceiver diagnosticReceiver,
-				IMethodSymbol symbol,
-				ref TypeParameterContainer typeParameters,
-				in TypeParameterContainer combinedTypeParameters
-			)
-			{
-				if (!symbol.IsOverride)
-				{
-					return AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
-				}
-
-				if (DefaultParamAnalyzer.AnalyzeTypeParameters(symbol, in combinedTypeParameters) && AnalyzeBaseMethodParameters(diagnosticReceiver, in typeParameters, in combinedTypeParameters))
-				{
-					typeParameters = TypeParameterContainer.Combine(in typeParameters, in combinedTypeParameters);
-					return true;
-				}
-
-				return false;
 			}
 
 			/// <summary>
@@ -169,6 +93,68 @@ namespace Durian.Generator.DefaultParam
 				}
 
 				return true;
+			}
+
+			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData)"/>
+			public static bool AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compialation)
+			{
+				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compialation);
+			}
+
+			//public static bool DefaultAnalyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters, CancellationToken cancellationToken = default)
+			//{
+			//	return DefaultParamAnalyzer.WithDiagnostics.DefaultAnalyze(diagnosticReceiver, symbol, compilation, in typeParameters, cancellationToken);
+			//}
+			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, out AttributeData[])"/>
+			public static bool AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out AttributeData[]? attributes)
+			{
+				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation, out attributes);
+			}
+
+			/// <summary>
+			/// Analyzes, if the <paramref name="symbol"/> has valid <paramref name="typeParameters"/> when compared to the <paramref name="symbol"/>'s base method.
+			/// </summary>
+			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+			/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
+			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters to be analyzed.</param>
+			/// <param name="combinedTypeParameters">Combined <see cref="TypeParameterContainer"/>s of the <paramref name="symbol"/>'s base methods.</param>
+			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
+			public static bool AnalyzeBaseMethodAndTypeParameters(
+				IDiagnosticReceiver diagnosticReceiver,
+				IMethodSymbol symbol,
+				ref TypeParameterContainer typeParameters,
+				in TypeParameterContainer combinedTypeParameters
+			)
+			{
+				if (!symbol.IsOverride)
+				{
+					return AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
+				}
+
+				if (DefaultParamAnalyzer.AnalyzeTypeParameters(symbol, in combinedTypeParameters) && AnalyzeBaseMethodParameters(diagnosticReceiver, in typeParameters, in combinedTypeParameters))
+				{
+					typeParameters = TypeParameterContainer.Combine(in typeParameters, in combinedTypeParameters);
+					return true;
+				}
+
+				return false;
+			}
+
+			//public static bool DefaultAnalyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+			//{
+			//	return DefaultParamAnalyzer.WithDiagnostics.DefaultAnalyze(diagnosticReceiver, symbol, compilation, cancellationToken);
+			//}
+			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, CancellationToken)"/>
+			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+			{
+				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, cancellationToken);
+			}
+
+			// These two method shouldn't be accessible from method analyzer
+			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, out ITypeData[])"/>
+			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out ITypeData[]? containingTypes)
+			{
+				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out containingTypes);
 			}
 
 			/// <summary>
@@ -235,6 +221,12 @@ namespace Durian.Generator.DefaultParam
 				);
 			}
 
+			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(IDiagnosticReceiver, ISymbol, in TypeParameterContainer)"/>
+			public static bool AnalyzeTypeParameters(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters)
+			{
+				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
+			}
+
 			/// <summary>
 			/// Reports <see cref="Diagnostic"/>s for the specified <paramref name="method"/>.
 			/// </summary>
@@ -245,74 +237,75 @@ namespace Durian.Generator.DefaultParam
 				diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod, method);
 			}
 
-			// These two method shouldn't be accessible from method analyzer
-
-			//public static bool DefaultAnalyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-			//{
-			//	return DefaultParamAnalyzer.WithDiagnostics.DefaultAnalyze(diagnosticReceiver, symbol, compilation, cancellationToken);
-			//}
-
-			//public static bool DefaultAnalyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters, CancellationToken cancellationToken = default)
-			//{
-			//	return DefaultParamAnalyzer.WithDiagnostics.DefaultAnalyze(diagnosticReceiver, symbol, compilation, in typeParameters, cancellationToken);
-			//}
-
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData)"/>
-			public static bool AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compialation)
+			/// <summary>
+			/// Determines, whether the specified <paramref name="symbol"/> should be analyzed.
+			/// </summary>
+			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+			/// <param name="symbol"><see cref="IMethodSymbol"/> to check if should be analyzed.</param>
+			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters to be analyzed.</param>
+			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+			/// <param name="combinedTypeParameters">Combined <see cref="TypeParameterContainer"/>s of the <paramref name="symbol"/>'s base methods.</param>
+			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+			/// <returns><see langword="true"/> if the <paramref name="symbol"/> should be analyzer, <see langword="false"/> otherwise.</returns>
+			public static bool ShouldBeAnalyzed(
+				IDiagnosticReceiver diagnosticReceiver,
+				IMethodSymbol symbol,
+				in TypeParameterContainer typeParameters,
+				DefaultParamCompilationData compilation,
+				out TypeParameterContainer combinedTypeParameters,
+				CancellationToken cancellationToken = default
+			)
 			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compialation);
-			}
-
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, out AttributeData[])"/>
-			public static bool AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out AttributeData[]? attributes)
-			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation, out attributes);
-			}
-
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, CancellationToken)"/>
-			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, cancellationToken);
-			}
-
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, out ITypeData[])"/>
-			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out ITypeData[]? containingTypes)
-			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out containingTypes);
-			}
-
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(IDiagnosticReceiver, ISymbol, in TypeParameterContainer)"/>
-			public static bool AnalyzeTypeParameters(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, in TypeParameterContainer typeParameters)
-			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
-			}
-
-			private static bool AnalyzeCore(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
-			{
-				if (!ShouldBeAnalyzed(
-					diagnosticReceiver,
-					symbol,
-					in typeParameters,
-					compilation,
-					out TypeParameterContainer combinedTypeParameters,
-					cancellationToken)
-				)
+				if (!symbol.IsOverride)
 				{
+					combinedTypeParameters = typeParameters;
+					return true;
+				}
+
+				if (symbol.OverriddenMethod is not IMethodSymbol baseMethod)
+				{
+					combinedTypeParameters = default;
 					return false;
 				}
 
-				bool isValid = AnalyzeAgainstInvalidMethodType(diagnosticReceiver, symbol);
-				isValid &= AnalyzeAgainstPartialOrExtern(diagnosticReceiver, symbol, cancellationToken);
-				isValid &= AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation);
-				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, cancellationToken);
-				isValid &= AnalyzeBaseMethodAndTypeParameters(diagnosticReceiver, symbol, ref typeParameters, in combinedTypeParameters);
-
-				if (!isValid)
+				if (IsDefaultParamGenerated(baseMethod, compilation))
 				{
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods, symbol);
+					combinedTypeParameters = default;
 					return false;
 				}
 
-				return AnalyzeMethodSignature(diagnosticReceiver, symbol, in typeParameters, compilation, cancellationToken);
+				TypeParameterContainer combined = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
+
+				if (typeParameters.HasDefaultParams || combined.HasDefaultParams)
+				{
+					combinedTypeParameters = combined;
+					return true;
+				}
+
+				combinedTypeParameters = default;
+				return false;
+			}
+
+			private static bool AnalyzeBaseMethodParameters(IDiagnosticReceiver diagnosticReceiver, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
+			{
+				int length = baseTypeParameters.Length;
+				bool isValid = true;
+
+				int firstIndex = GetFirstDefaultParamIndex(in typeParameters, in baseTypeParameters);
+
+				for (int i = firstIndex; i < length; i++)
+				{
+					ref readonly TypeParameterData baseData = ref baseTypeParameters[i];
+					ref readonly TypeParameterData thisData = ref typeParameters[i];
+
+					if (!AnalyzeParameterInBaseMethod(diagnosticReceiver, in thisData, in baseData))
+					{
+						isValid = false;
+					}
+				}
+
+				return isValid;
 			}
 
 			private static bool AnalyzeCollidingMembers(
@@ -450,25 +443,32 @@ namespace Durian.Generator.DefaultParam
 				return true;
 			}
 
-			private static bool AnalyzeBaseMethodParameters(IDiagnosticReceiver diagnosticReceiver, in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
+			private static bool AnalyzeCore(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
 			{
-				int length = baseTypeParameters.Length;
-				bool isValid = true;
-
-				int firstIndex = GetFirstDefaultParamIndex(in typeParameters, in baseTypeParameters);
-
-				for (int i = firstIndex; i < length; i++)
+				if (!ShouldBeAnalyzed(
+					diagnosticReceiver,
+					symbol,
+					in typeParameters,
+					compilation,
+					out TypeParameterContainer combinedTypeParameters,
+					cancellationToken)
+				)
 				{
-					ref readonly TypeParameterData baseData = ref baseTypeParameters[i];
-					ref readonly TypeParameterData thisData = ref typeParameters[i];
-
-					if (!AnalyzeParameterInBaseMethod(diagnosticReceiver, in thisData, in baseData))
-					{
-						isValid = false;
-					}
+					return false;
 				}
 
-				return isValid;
+				bool isValid = AnalyzeAgainstInvalidMethodType(diagnosticReceiver, symbol);
+				isValid &= AnalyzeAgainstPartialOrExtern(diagnosticReceiver, symbol, cancellationToken);
+				isValid &= AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation);
+				isValid &= AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, cancellationToken);
+				isValid &= AnalyzeBaseMethodAndTypeParameters(diagnosticReceiver, symbol, ref typeParameters, in combinedTypeParameters);
+
+				if (!isValid)
+				{
+					return false;
+				}
+
+				return AnalyzeMethodSignature(diagnosticReceiver, symbol, in typeParameters, compilation, cancellationToken);
 			}
 
 			private static bool AnalyzeParameterInBaseMethod(IDiagnosticReceiver diagnosticReceiver, in TypeParameterData thisData, in TypeParameterData baseData)

@@ -1,17 +1,20 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Generator.Logging
 {
 	/// <summary>
-	/// A <see cref="IFileNameProvider"/> that returns the name of the specified <see cref="ISymbol"/>.
+	/// A <see cref="IHintNameProvider"/> that returns the name of the specified <see cref="ISymbol"/>.
 	/// </summary>
-	public sealed class SymbolNameToFile : IFileNameProvider
+	public sealed class SymbolNameToFile : IHintNameProvider
 	{
 		private readonly StringBuilder _builder;
-		private ISymbol? _previousSymbol;
 		private bool _isCleared;
+		private ISymbol? _previousSymbol;
 
 		/// <inheritdoc cref="SymbolNameToFile(StringBuilder)"/>
 		public SymbolNameToFile()
@@ -65,14 +68,14 @@ namespace Durian.Generator.Logging
 		}
 
 		/// <inheritdoc/>
-		public void Success()
+		public void Reset()
 		{
 			_builder.Clear();
 			_isCleared = true;
 		}
 
 		/// <inheritdoc/>
-		public void Reset()
+		public void Success()
 		{
 			_builder.Clear();
 			_isCleared = true;

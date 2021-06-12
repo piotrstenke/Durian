@@ -1,15 +1,17 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 
 internal class ReleaseReader : IDisposable
 {
-	private StreamReader _reader;
-	private bool _disposedValue;
-	private int _currentLine;
-	private HashSet<string> _members;
 	private string? _cachedLine;
-
+	private int _currentLine;
+	private bool _disposedValue;
+	private HashSet<string> _members;
+	private StreamReader _reader;
 	public bool IsEnd => _reader.EndOfStream;
 
 	public ReleaseReader(string filePath)
@@ -21,53 +23,6 @@ internal class ReleaseReader : IDisposable
 	~ReleaseReader()
 	{
 		Dispose(false);
-	}
-
-	protected virtual void Dispose(bool disposing)
-	{
-		if (!_disposedValue)
-		{
-			_reader.Dispose();
-			_disposedValue = true;
-
-			if (disposing)
-			{
-				_currentLine = default;
-				_members = null!;
-				_reader = null!;
-			}
-		}
-	}
-
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	public HashSet<string> ReadEntries()
-	{
-		while (!IsEnd)
-		{
-			MemberAction action = GetCurrentAction();
-
-			switch (action)
-			{
-				case MemberAction.Add:
-					AddMembers();
-					break;
-				case MemberAction.Move:
-					MoveMembers();
-					break;
-				case MemberAction.Remove:
-					RemoveMembers();
-					break;
-				default:
-					break;
-			}
-		}
-
-		return _members;
 	}
 
 	public void AddMembers()
@@ -89,6 +44,47 @@ internal class ReleaseReader : IDisposable
 				Console.WriteLine($"Member '{member}' already added! At line: {_currentLine}");
 			}
 		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	public MemberAction GetCurrentAction()
+	{
+		string? line;
+
+		while ((line = ReadLine()) is not null)
+		{
+			_currentLine++;
+
+			if (!line.StartsWith("###"))
+			{
+				continue;
+			}
+
+			if (line.Contains("Added"))
+			{
+				return MemberAction.Add;
+			}
+
+			if (line.Contains("Moved"))
+			{
+				return MemberAction.Move;
+			}
+
+			if (line.Contains("Removed"))
+			{
+				return MemberAction.Remove;
+			}
+
+			Console.WriteLine($"Unknown action specified at line {_currentLine}: {line}");
+			break;
+		}
+
+		return MemberAction.None;
 	}
 
 	public void MoveMembers()
@@ -134,6 +130,34 @@ internal class ReleaseReader : IDisposable
 		}
 	}
 
+	public HashSet<string> ReadEntries()
+	{
+		while (!IsEnd)
+		{
+			MemberAction action = GetCurrentAction();
+
+			switch (action)
+			{
+				case MemberAction.Add:
+					AddMembers();
+					break;
+
+				case MemberAction.Move:
+					MoveMembers();
+					break;
+
+				case MemberAction.Remove:
+					RemoveMembers();
+					break;
+
+				default:
+					break;
+			}
+		}
+
+		return _members;
+	}
+
 	public void RemoveMembers()
 	{
 		string? line;
@@ -152,61 +176,32 @@ internal class ReleaseReader : IDisposable
 		}
 	}
 
-	public MemberAction GetCurrentAction()
+	protected virtual void Dispose(bool disposing)
 	{
-		string? line;
-
-		while ((line = ReadLine()) is not null)
+		if (!_disposedValue)
 		{
-			_currentLine++;
+			_reader.Dispose();
+			_disposedValue = true;
 
-			if (!line.StartsWith("###"))
+			if (disposing)
 			{
-				continue;
+				_currentLine = default;
+				_members = null!;
+				_reader = null!;
 			}
-
-			if (line.Contains("Added"))
-			{
-				return MemberAction.Add;
-			}
-
-			if (line.Contains("Moved"))
-			{
-				return MemberAction.Move;
-			}
-
-			if (line.Contains("Removed"))
-			{
-				return MemberAction.Remove;
-			}
-
-			Console.WriteLine($"Unknown action specified at line {_currentLine}: {line}");
-			break;
 		}
-
-		return MemberAction.None;
 	}
 
-	private bool ValidateEntry(string line)
+	private string? ReadLine()
 	{
-		if (!line.StartsWith('-'))
+		if (_cachedLine is not null)
 		{
-			Console.WriteLine($"Entry must start with an '-'! At line: {_currentLine}");
-			return false;
+			string temp = _cachedLine;
+			_cachedLine = null;
+			return temp;
 		}
 
-		return true;
-	}
-
-	private bool ShouldStop(string line)
-	{
-		if (line.StartsWith("#"))
-		{
-			_cachedLine = line;
-			return true;
-		}
-
-		return false;
+		return _reader.ReadLine()?.Trim();
 	}
 
 	private bool ShouldSkip(string line)
@@ -221,15 +216,25 @@ internal class ReleaseReader : IDisposable
 		return false;
 	}
 
-	private string? ReadLine()
+	private bool ShouldStop(string line)
 	{
-		if (_cachedLine is not null)
+		if (line.StartsWith("#"))
 		{
-			string temp = _cachedLine;
-			_cachedLine = null;
-			return temp;
+			_cachedLine = line;
+			return true;
 		}
 
-		return _reader.ReadLine()?.Trim();
+		return false;
+	}
+
+	private bool ValidateEntry(string line)
+	{
+		if (!line.StartsWith('-'))
+		{
+			Console.WriteLine($"Entry must start with an '-'! At line: {_currentLine}");
+			return false;
+		}
+
+		return true;
 	}
 }

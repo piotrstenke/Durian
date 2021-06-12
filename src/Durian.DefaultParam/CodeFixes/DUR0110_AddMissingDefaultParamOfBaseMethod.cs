@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Threading.Tasks;
 using Durian.Generator.CodeFixes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -15,22 +18,16 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 	public sealed class DUR0110_AddMissingDefaultParamOfBaseMethod : DurianCodeFixBase
 	{
 		/// <inheritdoc/>
-		public override string Title => "Add missing DefaultParamAttribute";
+		public override string Id => Title + " [DefaultParam]";
 
 		/// <inheritdoc/>
-		public override string Id => Title + " [DefaultParam]";
+		public override string Title => "Add missing DefaultParamAttribute";
 
 		/// <summary>
 		/// Creates a new instance of the <see cref="DUR0110_AddMissingDefaultParamOfBaseMethod"/> class.
 		/// </summary>
 		public DUR0110_AddMissingDefaultParamOfBaseMethod()
 		{
-		}
-
-		/// <inheritdoc/>
-		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
-		{
-			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity };
 		}
 
 		/// <inheritdoc/>
@@ -59,6 +56,27 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 			context.RegisterCodeFix(action, data.Diagnostic);
 		}
 
+		/// <inheritdoc/>
+		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
+		{
+			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity };
+		}
+
+		private static Task<Document> ExecuteAsync(CodeFixExecutionContext<TypeParameterSyntax> context, ITypeSymbol targetType, INamedTypeSymbol attribute)
+		{
+			INamespaceSymbol? @namespace = (context.SemanticModel.GetDeclaredSymbol(context.Node)?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
+
+			NameSyntax attributeName = CodeFixUtility.GetNameSyntaxForAttribute(context.SemanticModel, context.Root.Usings, @namespace, attribute, context.CancellationToken);
+
+			TypeParameterSyntax parameter = context.Node.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Attribute(attributeName))));
+
+			context.RegisterChange(parameter);
+
+			AttributeSyntax attr = context.Node.AttributeLists.Last().Attributes[0];
+
+			return Task.FromResult(DUR0108_MakeValueTheSameAsBaseMethod.Execute(context.WithNode(attr), targetType));
+		}
+
 		private CodeAction? GetCodeAction(in CodeFixData<TypeParameterSyntax> data, ITypeSymbol targetType)
 		{
 			if (!data.HasSemanticModel)
@@ -80,21 +98,6 @@ namespace Durian.Generator.DefaultParam.CodeFixes
 			Diagnostic diagnostic = data.Diagnostic!;
 
 			return CodeAction.Create(Title, cancenllationToken => ExecuteAsync(CodeFixExecutionContext<TypeParameterSyntax>.From(diagnostic, document, root, node, semanticModel, cancenllationToken), targetType, attribute), Id);
-		}
-
-		private static Task<Document> ExecuteAsync(CodeFixExecutionContext<TypeParameterSyntax> context, ITypeSymbol targetType, INamedTypeSymbol attribute)
-		{
-			INamespaceSymbol? @namespace = (context.SemanticModel.GetDeclaredSymbol(context.Node)?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
-
-			NameSyntax attributeName = CodeFixUtility.GetNameSyntaxForAttribute(context.SemanticModel, context.Root.Usings, @namespace, attribute, context.CancellationToken);
-
-			TypeParameterSyntax parameter = context.Node.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Attribute(attributeName))));
-
-			context.RegisterChange(parameter);
-
-			AttributeSyntax attr = context.Node.AttributeLists.Last().Attributes[0];
-
-			return Task.FromResult(DUR0108_MakeValueTheSameAsBaseMethod.Execute(context.WithNode(attr), targetType));
 		}
 	}
 }

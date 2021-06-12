@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Extensions;
 using Xunit;
@@ -7,27 +10,9 @@ namespace Durian.Tests.AnalysisServices.MemberDataExtensions
 	public sealed class GetGenericName_IMemberData : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_MemberIsNull()
+		public void IsSuccess_When_GenericParameterIsArgument_and_IncludeParametersIsTrue()
 		{
-			Assert.Throws<ArgumentNullException>(() => GetClass(null).GetGenericName());
-		}
-
-		[Fact]
-		public void ReturnsMemberName_When_MemberIsNotTypeOrDelegateOrMethod()
-		{
-			Assert.True(GetField("class Test { int Field; }").GetGenericName() == "Field");
-		}
-
-		[Fact]
-		public void ReturnsMemberName_When_MemberIsNotGeneric()
-		{
-			Assert.True(GetMethod("class Test { void Method() { } }").GetGenericName() == "Method");
-		}
-
-		[Fact]
-		public void IsSuccess_When_HasOneTypeParameter()
-		{
-			Assert.True(GetMethod("class Test { void Method<T>() { } }").GetGenericName() == "Method<T>");
+			Assert.True(GetMethod("class Test { void Method<T>(T a) { } }").GetGenericName(true) == "Method<T>(T)");
 		}
 
 		[Fact]
@@ -37,9 +22,21 @@ namespace Durian.Tests.AnalysisServices.MemberDataExtensions
 		}
 
 		[Fact]
-		public void ReturnsNameWithParameters_When_MemberIsMethod_And_IncludeParametersIsTrue_When_HasSingleTypeParameter()
+		public void IsSuccess_When_HasOneTypeParameter()
 		{
-			Assert.True(GetMethod("class Test { void Method<T>(int a, int b) { } }").GetGenericName(true) == "Method<T>(int, int)");
+			Assert.True(GetMethod("class Test { void Method<T>() { } }").GetGenericName() == "Method<T>");
+		}
+
+		[Fact]
+		public void ReturnsMemberName_When_MemberIsNotGeneric()
+		{
+			Assert.True(GetMethod("class Test { void Method() { } }").GetGenericName() == "Method");
+		}
+
+		[Fact]
+		public void ReturnsMemberName_When_MemberIsNotTypeOrDelegateOrMethod()
+		{
+			Assert.True(GetField("class Test { int Field; }").GetGenericName() == "Field");
 		}
 
 		[Fact]
@@ -49,9 +46,15 @@ namespace Durian.Tests.AnalysisServices.MemberDataExtensions
 		}
 
 		[Fact]
-		public void IsSuccess_When_GenericParameterIsArgument_and_IncludeParametersIsTrue()
+		public void ReturnsNameWithParameters_When_MemberIsMethod_And_IncludeParametersIsTrue_When_HasSingleTypeParameter()
 		{
-			Assert.True(GetMethod("class Test { void Method<T>(T a) { } }").GetGenericName(true) == "Method<T>(T)");
+			Assert.True(GetMethod("class Test { void Method<T>(int a, int b) { } }").GetGenericName(true) == "Method<T>(int, int)");
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_MemberIsNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => GetClass(null).GetGenericName());
 		}
 	}
 }

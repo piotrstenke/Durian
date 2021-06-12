@@ -1,20 +1,30 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using Durian.Configuration;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+#if !MAIN_PACKAGE
+
 using Microsoft.CodeAnalysis.Diagnostics;
+
+#endif
 
 namespace Durian.Generator.DefaultParam
 {
 	/// <summary>
 	/// Analyzes methods with type parameters marked by the <see cref="DefaultParamAttribute"/>.
 	/// </summary>
+#if !MAIN_PACKAGE
+
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
+#endif
 	public partial class DefaultParamMethodAnalyzer : DefaultParamAnalyzer
 	{
 		/// <inheritdoc/>
@@ -27,37 +37,25 @@ namespace Durian.Generator.DefaultParam
 		{
 		}
 
-		/// <inheritdoc/>
-		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
+		/// <summary>
+		/// Determines whether the 'new' modifier is allowed to be applied to the target <see cref="IMethodSymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		public static bool AllowsNewModifier(IMethodSymbol method, DefaultParamCompilationData compilation)
 		{
-			return new[]
-			{
-				DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern,
-				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod,
-				DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods,
-				DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase,
-				DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters,
-				DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity,
-				DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists,
-			};
+			return AllowsNewModifier(method.GetAttributes(), method.GetContainingTypeSymbols().ToArray(), compilation);
 		}
 
-		/// <inheritdoc/>
-		protected override void Register(CompilationStartAnalysisContext context, DefaultParamCompilationData compilation)
+		/// <summary>
+		/// Determines whether the 'new' modifier is allowed to the target <see cref="IMethodSymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
+		/// </summary>
+		/// <param name="attributes">A collection of the target <see cref="IMethodSymbol"/>'s attributes.</param>
+		/// <param name="containingTypes"><see cref="INamedTypeSymbol"/>s that contain this <see cref="IMethodSymbol"/>.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		public static bool AllowsNewModifier(IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
 		{
-			base.Register(context, compilation);
-			context.RegisterSyntaxNodeAction(c => FindAndAnalyzeLocalFunction(c, compilation), SyntaxKind.LocalFunctionStatement);
-		}
-
-		/// <inheritdoc/>
-		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-		{
-			if (symbol is not IMethodSymbol m)
-			{
-				return;
-			}
-
-			WithDiagnostics.Analyze(diagnosticReceiver, m, compilation, cancellationToken);
+			return DefaultParamUtilities.AllowsNewModifier(attributes, containingTypes, compilation);
 		}
 
 		/// <summary>
@@ -77,69 +75,6 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return AnalyzeCore(symbol, compilation, ref typeParameters, cancellationToken);
-		}
-
-		/// <inheritdoc cref="WithDiagnostics.ShouldBeAnalyzed(IDiagnosticReceiver, IMethodSymbol, in TypeParameterContainer, DefaultParamCompilationData, out TypeParameterContainer, CancellationToken)"/>
-		public static bool ShouldBeAnalyzed(
-			IMethodSymbol symbol,
-			in TypeParameterContainer typeParameters,
-			DefaultParamCompilationData compilation,
-			out TypeParameterContainer combinedTypeParameters,
-			CancellationToken cancellationToken = default
-		)
-		{
-			if (!symbol.IsOverride)
-			{
-				combinedTypeParameters = typeParameters;
-				return true;
-			}
-
-			if (symbol.OverriddenMethod is not IMethodSymbol baseMethod)
-			{
-				combinedTypeParameters = default;
-				return false;
-			}
-
-			if (IsDefaultParamGenerated(baseMethod, compilation))
-			{
-				combinedTypeParameters = default;
-				return false;
-			}
-
-			TypeParameterContainer combined = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
-
-			if (typeParameters.HasDefaultParams || combined.HasDefaultParams)
-			{
-				combinedTypeParameters = combined;
-				return true;
-			}
-
-			combinedTypeParameters = default;
-			return false;
-		}
-
-		/// <inheritdoc cref="WithDiagnostics.AnalyzeBaseMethodAndTypeParameters(IDiagnosticReceiver, IMethodSymbol, ref TypeParameterContainer, in TypeParameterContainer)"/>
-		public static bool AnalyzeBaseMethodAndTypeParameters(
-			IMethodSymbol symbol,
-			ref TypeParameterContainer typeParameters,
-			in TypeParameterContainer combinedTypeParameters
-		)
-		{
-			if (!symbol.IsOverride)
-			{
-				return AnalyzeTypeParameters(symbol, in typeParameters);
-			}
-
-			if (HasAddedDefaultParamAttributes(in typeParameters, in combinedTypeParameters) ||
-				!AnalyzeTypeParameters(symbol, in combinedTypeParameters) ||
-				!AnalyzeBaseMethodParameters(in typeParameters, in combinedTypeParameters))
-
-			{
-				return false;
-			}
-
-			typeParameters = TypeParameterContainer.Combine(in typeParameters, in combinedTypeParameters);
-			return true;
 		}
 
 		/// <summary>
@@ -187,6 +122,30 @@ namespace Durian.Generator.DefaultParam
 		public static bool AnalyzeAgainstPartialOrExtern(IMethodSymbol symbol, MethodDeclarationSyntax declaration)
 		{
 			return !symbol.IsExtern && !symbol.IsPartial(declaration);
+		}
+
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeBaseMethodAndTypeParameters(IDiagnosticReceiver, IMethodSymbol, ref TypeParameterContainer, in TypeParameterContainer)"/>
+		public static bool AnalyzeBaseMethodAndTypeParameters(
+			IMethodSymbol symbol,
+			ref TypeParameterContainer typeParameters,
+			in TypeParameterContainer combinedTypeParameters
+		)
+		{
+			if (!symbol.IsOverride)
+			{
+				return AnalyzeTypeParameters(symbol, in typeParameters);
+			}
+
+			if (HasAddedDefaultParamAttributes(in typeParameters, in combinedTypeParameters) ||
+				!AnalyzeTypeParameters(symbol, in combinedTypeParameters) ||
+				!AnalyzeBaseMethodParameters(in typeParameters, in combinedTypeParameters))
+
+			{
+				return false;
+			}
+
+			typeParameters = TypeParameterContainer.Combine(in typeParameters, in combinedTypeParameters);
+			return true;
 		}
 
 		/// <summary>
@@ -249,25 +208,43 @@ namespace Durian.Generator.DefaultParam
 			);
 		}
 
-		/// <summary>
-		/// Determines whether the 'new' modifier is allowed to be applied to the target <see cref="IMethodSymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool AllowsNewModifier(IMethodSymbol method, DefaultParamCompilationData compilation)
+		/// <inheritdoc cref="WithDiagnostics.ShouldBeAnalyzed(IDiagnosticReceiver, IMethodSymbol, in TypeParameterContainer, DefaultParamCompilationData, out TypeParameterContainer, CancellationToken)"/>
+		public static bool ShouldBeAnalyzed(
+			IMethodSymbol symbol,
+			in TypeParameterContainer typeParameters,
+			DefaultParamCompilationData compilation,
+			out TypeParameterContainer combinedTypeParameters,
+			CancellationToken cancellationToken = default
+		)
 		{
-			return AllowsNewModifier(method.GetAttributes(), method.GetContainingTypeSymbols().ToArray(), compilation);
-		}
+			if (!symbol.IsOverride)
+			{
+				combinedTypeParameters = typeParameters;
+				return true;
+			}
 
-		/// <summary>
-		/// Determines whether the 'new' modifier is allowed to the target <see cref="IMethodSymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
-		/// </summary>
-		/// <param name="attributes">A collection of the target <see cref="IMethodSymbol"/>'s attributes.</param>
-		/// <param name="containingTypes"><see cref="INamedTypeSymbol"/>s that contain this <see cref="IMethodSymbol"/>.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool AllowsNewModifier(IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
-		{
-			return DefaultParamUtilities.AllowsNewModifier(attributes, containingTypes, compilation);
+			if (symbol.OverriddenMethod is not IMethodSymbol baseMethod)
+			{
+				combinedTypeParameters = default;
+				return false;
+			}
+
+			if (IsDefaultParamGenerated(baseMethod, compilation))
+			{
+				combinedTypeParameters = default;
+				return false;
+			}
+
+			TypeParameterContainer combined = GetBaseMethodTypeParameters(baseMethod, compilation, cancellationToken);
+
+			if (typeParameters.HasDefaultParams || combined.HasDefaultParams)
+			{
+				combinedTypeParameters = combined;
+				return true;
+			}
+
+			combinedTypeParameters = default;
+			return false;
 		}
 
 		/// <summary>
@@ -297,39 +274,30 @@ namespace Durian.Generator.DefaultParam
 			return DefaultParamUtilities.GetConfigurationEnumValue(nameof(DefaultParamConfigurationAttribute.MethodConvention), attributes, containingTypes, compilation, (int)compilation.Configuration.MethodConvention) == (int)DPMethodConvention.Call;
 		}
 
-		private static bool AnalyzeCore(IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
+		/// <inheritdoc/>
+		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			return
-				ShouldBeAnalyzed(symbol, in typeParameters, compilation, out TypeParameterContainer combinedTypeParameters, cancellationToken) &&
-				AnalyzeAgainstInvalidMethodType(symbol) &&
-				AnalyzeAgainstPartialOrExtern(symbol, cancellationToken) &&
-				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
-				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
-				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, combinedTypeParameters) &&
-				AnalyzeMethodSignature(symbol, typeParameters, compilation, cancellationToken);
-		}
-
-		private static void FindAndAnalyzeLocalFunction(SyntaxNodeAnalysisContext context, DefaultParamCompilationData compilation)
-		{
-			if (context.Node is not LocalFunctionStatementSyntax l)
-			{
-				return;
-			}
-
-			ISymbol? symbol = context.SemanticModel.GetDeclaredSymbol(l);
-
 			if (symbol is not IMethodSymbol m)
 			{
 				return;
 			}
 
-			ITypeParameterSymbol[] typeParameters = m.TypeParameters.ToArray();
+			WithDiagnostics.Analyze(diagnosticReceiver, m, compilation, cancellationToken);
+		}
 
-			if (typeParameters.Any(t => t.HasAttribute(compilation.MainAttribute!)))
+		/// <inheritdoc/>
+		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
+		{
+			return new[]
 			{
-				DiagnosticDescriptor d = DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod;
-				context.ReportDiagnostic(Diagnostic.Create(d, l.GetLocation(), m));
-			}
+				DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern,
+				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod,
+				DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods,
+				DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase,
+				DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters,
+				DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity,
+				DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists,
+			};
 		}
 
 		private static bool AnalyzeBaseMethodParameters(in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
@@ -346,23 +314,6 @@ namespace Durian.Generator.DefaultParam
 				{
 					return false;
 				}
-			}
-
-			return true;
-		}
-
-		private static bool AnalyzeParameterInBaseMethod(in TypeParameterData thisData, in TypeParameterData baseData)
-		{
-			if (baseData.IsDefaultParam)
-			{
-				if (thisData.IsDefaultParam && !SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
-				{
-					return false;
-				}
-			}
-			else if (thisData.IsDefaultParam)
-			{
-				return false;
 			}
 
 			return true;
@@ -436,6 +387,35 @@ namespace Durian.Generator.DefaultParam
 			return true;
 		}
 
+		private static bool AnalyzeCore(IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
+		{
+			return
+				ShouldBeAnalyzed(symbol, in typeParameters, compilation, out TypeParameterContainer combinedTypeParameters, cancellationToken) &&
+				AnalyzeAgainstInvalidMethodType(symbol) &&
+				AnalyzeAgainstPartialOrExtern(symbol, cancellationToken) &&
+				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
+				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
+				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, combinedTypeParameters) &&
+				AnalyzeMethodSignature(symbol, typeParameters, compilation, cancellationToken);
+		}
+
+		private static bool AnalyzeParameterInBaseMethod(in TypeParameterData thisData, in TypeParameterData baseData)
+		{
+			if (baseData.IsDefaultParam)
+			{
+				if (thisData.IsDefaultParam && !SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
+				{
+					return false;
+				}
+			}
+			else if (thisData.IsDefaultParam)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
 		private static TypeParameterContainer GetBaseMethodTypeParameters(IMethodSymbol baseMethod, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
 		{
 			TypeParameterContainer parameters = TypeParameterContainer.CreateFrom(baseMethod, compilation, cancellationToken);
@@ -468,16 +448,6 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return baseTypeParameters.FirstDefaultParamIndex;
-		}
-
-		private static bool HasAddedDefaultParamAttributes(in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
-		{
-			if (typeParameters.FirstDefaultParamIndex == -1)
-			{
-				return false;
-			}
-
-			return typeParameters.FirstDefaultParamIndex < baseTypeParameters.FirstDefaultParamIndex;
 		}
 
 		private static string GetMethodSignatureString(string name, in TypeParameterContainer typeParameters, int numTypeParameters, ParameterGeneration[] parameters)
@@ -529,6 +499,16 @@ namespace Durian.Generator.DefaultParam
 
 				sb.Append(param.Type);
 			}
+		}
+
+		private static bool HasAddedDefaultParamAttributes(in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
+		{
+			if (typeParameters.FirstDefaultParamIndex == -1)
+			{
+				return false;
+			}
+
+			return typeParameters.FirstDefaultParamIndex < baseTypeParameters.FirstDefaultParamIndex;
 		}
 	}
 }

@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
@@ -10,48 +13,6 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class GetGenericName_ISymbol : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
-		{
-			ISymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetGenericName(true));
-		}
-
-		[Fact]
-		public void ReturnsSymbolName_When_SymbolIsNotMethodOrNamedType()
-		{
-			ISymbol symbol = GetSymbol<IPropertySymbol, PropertyDeclarationSyntax>("class Test { string Name { get; } }");
-			Assert.True(symbol.GetGenericName(true) == "Name");
-		}
-
-		[Fact]
-		public void ReturnsOnlyName_When_IsNamedTypeSymbol_And_HasNoTypeParameters()
-		{
-			INamedTypeSymbol symbol = GetTypeSymbolForParameter("class Test { }");
-			Assert.True(symbol.GetGenericName(true) == "Test");
-		}
-
-		[Fact]
-		public void CanReturnNameWithSingleTypeParameter_When_IsNamedTypeSymbol()
-		{
-			INamedTypeSymbol symbol = GetTypeSymbolForParameter("class Test<T> { }");
-			Assert.True(symbol.GetGenericName(true) == "Test<T>");
-		}
-
-		[Fact]
-		public void CanReturnNameWithSingleTypeArgument_When_IsNamedTypeSymbol()
-		{
-			INamedTypeSymbol symbol = GetTypeSymbolForArgument("class Test<T> { } class New : Test<int> { }");
-			Assert.True(symbol.GetGenericName(false) == "Test<int>");
-		}
-
-		[Fact]
-		public void CanReturnNameWithMultipleTypeParameters_When_IsNamedTypeSymbol()
-		{
-			INamedTypeSymbol symbol = GetTypeSymbolForParameter("class Test<T, U> { }");
-			Assert.True(symbol.GetGenericName(true) == "Test<T, U>");
-		}
-
-		[Fact]
 		public void CanReturnNameWithMultipleTypeArguments_When_IsNamedTypeSymbol()
 		{
 			INamedTypeSymbol symbol = GetTypeSymbolForArgument("class Test<T, U> { } class New : Test<int, string> { }");
@@ -59,52 +20,10 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void ReturnsOnlyName_When_IsMethodSymbol_And_HasNoTypeParameters()
+		public void CanReturnNameWithmultipleTypeArgumentsAndParameters_When_IsMethodSymbol_And_IncludeParametersIsTrue()
 		{
-			IMethodSymbol symbol = GetMethodSymbolForParameter("class Test { void Method() { } }");
-			Assert.True(symbol.GetGenericName(true) == "Method");
-		}
-
-		[Fact]
-		public void ReturnsNameWithParameters_When_IsMethodSymbol_And_HasNoTypeParameters_And_IncludeParametersIsTrue()
-		{
-			IMethodSymbol symbol = GetMethodSymbolForParameter("class Test { void Method(int a) { } }");
-			Assert.True(symbol.GetGenericName(true, true) == "Method(int)");
-		}
-
-		[Fact]
-		public void CanReturnNameWithSingleTypeParameter_When_IsMethodSymbol()
-		{
-			IMethodSymbol symbol = GetMethodSymbolForParameter("class Test { void Method<T>() { } }");
-			Assert.True(symbol.GetGenericName(true) == "Method<T>");
-		}
-
-		[Fact]
-		public void CanReturnNameWithSingleTypeArgument_When_IsMethodSymbol()
-		{
-			IMethodSymbol symbol = GetMethodSymbolForArgument("class Test { void Method<T>() { } void Caller() { Method<int>(); } }");
-			Assert.True(symbol.GetGenericName(false) == "Method<int>");
-		}
-
-		[Fact]
-		public void CanReturnNameWithSingleTypeParameterAndParameters_When_IsMethodSymbol_And_IncludeParametersIsTrue()
-		{
-			IMethodSymbol symbol = GetMethodSymbolForParameter("class Test { void Method<T>(int a) { } }");
-			Assert.True(symbol.GetGenericName(true, true) == "Method<T>(int)");
-		}
-
-		[Fact]
-		public void CanReturnNameWithSingleTypeArgumentAndParameters_When_IsMethodSymbol_And_IncludeParametersIsTrue()
-		{
-			IMethodSymbol symbol = GetMethodSymbolForArgument("class Test { void Method<T>(int a) { } void Caller() { Method<int>(2); } }");
-			Assert.True(symbol.GetGenericName(false, true) == "Method<int>(int)");
-		}
-
-		[Fact]
-		public void CanReturnNameWithMultipleTypeParametersIsMethodSymbol()
-		{
-			IMethodSymbol symbol = GetMethodSymbolForParameter("class Test { void Method<T, U>() { } }");
-			Assert.True(symbol.GetGenericName(true) == "Method<T, U>");
+			IMethodSymbol symbol = GetMethodSymbolForArgument("class Test { void Method<T, U>(int a) { } void Caller() { Method<int, string>(2); } }");
+			Assert.True(symbol.GetGenericName(false, true) == "Method<int, string>(int)");
 		}
 
 		[Fact]
@@ -115,6 +34,13 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
+		public void CanReturnNameWithMultipleTypeParameters_When_IsNamedTypeSymbol()
+		{
+			INamedTypeSymbol symbol = GetTypeSymbolForParameter("class Test<T, U> { }");
+			Assert.True(symbol.GetGenericName(true) == "Test<T, U>");
+		}
+
+		[Fact]
 		public void CanReturnNameWithmultipleTypeParametersAndParameters_When_IsMethodSymbol_And_IncludeParametersIsTrue()
 		{
 			IMethodSymbol symbol = GetMethodSymbolForParameter("class Test { void Method<T, U>(int a) { } }");
@@ -122,15 +48,100 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void CanReturnNameWithmultipleTypeArgumentsAndParameters_When_IsMethodSymbol_And_IncludeParametersIsTrue()
+		public void CanReturnNameWithMultipleTypeParametersIsMethodSymbol()
 		{
-			IMethodSymbol symbol = GetMethodSymbolForArgument("class Test { void Method<T, U>(int a) { } void Caller() { Method<int, string>(2); } }");
-			Assert.True(symbol.GetGenericName(false, true) == "Method<int, string>(int)");
+			IMethodSymbol symbol = GetMethodSymbolForParameter("class Test { void Method<T, U>() { } }");
+			Assert.True(symbol.GetGenericName(true) == "Method<T, U>");
 		}
 
-		private INamedTypeSymbol GetTypeSymbolForParameter(string source)
+		[Fact]
+		public void CanReturnNameWithSingleTypeArgument_When_IsMethodSymbol()
 		{
-			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source);
+			IMethodSymbol symbol = GetMethodSymbolForArgument("class Test { void Method<T>() { } void Caller() { Method<int>(); } }");
+			Assert.True(symbol.GetGenericName(false) == "Method<int>");
+		}
+
+		[Fact]
+		public void CanReturnNameWithSingleTypeArgument_When_IsNamedTypeSymbol()
+		{
+			INamedTypeSymbol symbol = GetTypeSymbolForArgument("class Test<T> { } class New : Test<int> { }");
+			Assert.True(symbol.GetGenericName(false) == "Test<int>");
+		}
+
+		[Fact]
+		public void CanReturnNameWithSingleTypeArgumentAndParameters_When_IsMethodSymbol_And_IncludeParametersIsTrue()
+		{
+			IMethodSymbol symbol = GetMethodSymbolForArgument("class Test { void Method<T>(int a) { } void Caller() { Method<int>(2); } }");
+			Assert.True(symbol.GetGenericName(false, true) == "Method<int>(int)");
+		}
+
+		[Fact]
+		public void CanReturnNameWithSingleTypeParameter_When_IsMethodSymbol()
+		{
+			IMethodSymbol symbol = GetMethodSymbolForParameter("class Test { void Method<T>() { } }");
+			Assert.True(symbol.GetGenericName(true) == "Method<T>");
+		}
+
+		[Fact]
+		public void CanReturnNameWithSingleTypeParameter_When_IsNamedTypeSymbol()
+		{
+			INamedTypeSymbol symbol = GetTypeSymbolForParameter("class Test<T> { }");
+			Assert.True(symbol.GetGenericName(true) == "Test<T>");
+		}
+
+		[Fact]
+		public void CanReturnNameWithSingleTypeParameterAndParameters_When_IsMethodSymbol_And_IncludeParametersIsTrue()
+		{
+			IMethodSymbol symbol = GetMethodSymbolForParameter("class Test { void Method<T>(int a) { } }");
+			Assert.True(symbol.GetGenericName(true, true) == "Method<T>(int)");
+		}
+
+		[Fact]
+		public void ReturnsNameWithParameters_When_IsMethodSymbol_And_HasNoTypeParameters_And_IncludeParametersIsTrue()
+		{
+			IMethodSymbol symbol = GetMethodSymbolForParameter("class Test { void Method(int a) { } }");
+			Assert.True(symbol.GetGenericName(true, true) == "Method(int)");
+		}
+
+		[Fact]
+		public void ReturnsOnlyName_When_IsMethodSymbol_And_HasNoTypeParameters()
+		{
+			IMethodSymbol symbol = GetMethodSymbolForParameter("class Test { void Method() { } }");
+			Assert.True(symbol.GetGenericName(true) == "Method");
+		}
+
+		[Fact]
+		public void ReturnsOnlyName_When_IsNamedTypeSymbol_And_HasNoTypeParameters()
+		{
+			INamedTypeSymbol symbol = GetTypeSymbolForParameter("class Test { }");
+			Assert.True(symbol.GetGenericName(true) == "Test");
+		}
+
+		[Fact]
+		public void ReturnsSymbolName_When_SymbolIsNotMethodOrNamedType()
+		{
+			ISymbol symbol = GetSymbol<IPropertySymbol, PropertyDeclarationSyntax>("class Test { string Name { get; } }");
+			Assert.True(symbol.GetGenericName(true) == "Name");
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_SymbolIsNull()
+		{
+			ISymbol symbol = null!;
+			Assert.Throws<ArgumentNullException>(() => symbol.GetGenericName(true));
+		}
+
+		private IMethodSymbol GetMethodSymbolForArgument(string source)
+		{
+			InvocationExpressionSyntax inv = GetNode<InvocationExpressionSyntax>(source);
+			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(inv.SyntaxTree);
+			SymbolInfo info = semanticModel.GetSymbolInfo(inv);
+			return (info.Symbol as IMethodSymbol)!;
+		}
+
+		private IMethodSymbol GetMethodSymbolForParameter(string source)
+		{
+			return GetSymbol<IMethodSymbol, MethodDeclarationSyntax>(source);
 		}
 
 		private INamedTypeSymbol GetTypeSymbolForArgument(string source)
@@ -141,17 +152,9 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 			return (info.Type as INamedTypeSymbol)!;
 		}
 
-		private IMethodSymbol GetMethodSymbolForParameter(string source)
+		private INamedTypeSymbol GetTypeSymbolForParameter(string source)
 		{
-			return GetSymbol<IMethodSymbol, MethodDeclarationSyntax>(source);
-		}
-
-		private IMethodSymbol GetMethodSymbolForArgument(string source)
-		{
-			InvocationExpressionSyntax inv = GetNode<InvocationExpressionSyntax>(source);
-			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(inv.SyntaxTree);
-			SymbolInfo info = semanticModel.GetSymbolInfo(inv);
-			return (info.Symbol as IMethodSymbol)!;
+			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source);
 		}
 	}
 }

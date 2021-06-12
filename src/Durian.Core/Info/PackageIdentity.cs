@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 
@@ -14,14 +17,9 @@ namespace Durian.Info
 		private ImmutableArray<ModuleReference> _modules;
 
 		/// <summary>
-		/// Name of the package.
+		/// Enum value of <see cref="DurianPackage"/> that corresponds with this <see cref="PackageIdentity"/>.
 		/// </summary>
-		public string Name { get; }
-
-		/// <summary>
-		/// Version of the package.
-		/// </summary>
-		public string Version { get; }
+		public DurianPackage EnumValue { get; }
 
 		/// <summary>
 		/// Determines whether this package is a part of any Durian module.
@@ -35,14 +33,19 @@ namespace Durian.Info
 		public ImmutableArray<ModuleReference> Modules => _modules;
 
 		/// <summary>
+		/// Name of the package.
+		/// </summary>
+		public string Name { get; }
+
+		/// <summary>
 		/// Type of this package.
 		/// </summary>
 		public PackageType Type { get; }
 
 		/// <summary>
-		/// Enum value of <see cref="DurianPackage"/> that corresponds with this <see cref="PackageIdentity"/>.
+		/// Version of the package.
 		/// </summary>
-		public DurianPackage EnumValue { get; }
+		public string Version { get; }
 
 		internal PackageIdentity(DurianPackage enumValue, string version, PackageType type)
 		{
@@ -52,41 +55,21 @@ namespace Durian.Info
 			Type = type;
 		}
 
-		internal void Initialize(DurianModule[]? modules)
+		/// <inheritdoc/>
+		public static bool operator !=(PackageIdentity a, PackageIdentity b)
 		{
-			if (modules is null)
-			{
-				_modules = ImmutableArray.Create<ModuleReference>();
-				return;
-			}
-
-			int length = modules.Length;
-			ImmutableArray<ModuleReference>.Builder b = ImmutableArray.CreateBuilder<ModuleReference>(length);
-
-			for (int i = 0; i < length; i++)
-			{
-				b.Add(new ModuleReference(modules[i]));
-			}
-
-			_modules = b.ToImmutable();
+			return !(a == b);
 		}
 
 		/// <inheritdoc/>
-		public override string ToString()
+		public static bool operator ==(PackageIdentity a, PackageIdentity b)
 		{
-			return $"{Name}, {Version}";
-		}
-
-		/// <inheritdoc/>
-		public override int GetHashCode()
-		{
-			int hashCode = -726504116;
-			hashCode = (hashCode * -1521134295) + EnumValue.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Version.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Type.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _modules);
-
-			return hashCode;
+			return
+				a.EnumValue == b.EnumValue &&
+				a.Version == b.Version &&
+				a.Name == b.Name &&
+				a.Type == b.Type &&
+				Utilities.CompareImmutableArrays(ref a._modules, ref b._modules);
 		}
 
 		/// <inheritdoc/>
@@ -107,20 +90,40 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public static bool operator ==(PackageIdentity a, PackageIdentity b)
+		public override int GetHashCode()
 		{
-			return
-				a.EnumValue == b.EnumValue &&
-				a.Version == b.Version &&
-				a.Name == b.Name &&
-				a.Type == b.Type &&
-				Utilities.CompareImmutableArrays(ref a._modules, ref b._modules);
+			int hashCode = -726504116;
+			hashCode = (hashCode * -1521134295) + EnumValue.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Version.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Type.GetHashCode();
+			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _modules);
+
+			return hashCode;
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(PackageIdentity a, PackageIdentity b)
+		public override string ToString()
 		{
-			return !(a == b);
+			return $"{Name}, {Version}";
+		}
+
+		internal void Initialize(DurianModule[]? modules)
+		{
+			if (modules is null)
+			{
+				_modules = ImmutableArray.Create<ModuleReference>();
+				return;
+			}
+
+			int length = modules.Length;
+			ImmutableArray<ModuleReference>.Builder b = ImmutableArray.CreateBuilder<ModuleReference>(length);
+
+			for (int i = 0; i < length; i++)
+			{
+				b.Add(new ModuleReference(modules[i]));
+			}
+
+			_modules = b.ToImmutable();
 		}
 	}
 }

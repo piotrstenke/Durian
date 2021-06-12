@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
 using System.IO;
 using System.Text;
 using Durian.Configuration;
@@ -20,14 +23,14 @@ namespace Durian.Samples.DefaultParam
 			_builder = builder;
 		}
 
+		public void Clear()
+		{
+			_builder.Clear();
+		}
+
 		public void Error(T message)
 		{
 			_builder.Append("Error: ").AppendLine(message.ToString());
-		}
-
-		public void Warning(T message)
-		{
-			_builder.Append("Warning: ").AppendLine(message.ToString());
 		}
 
 		public void Info(T message)
@@ -35,19 +38,19 @@ namespace Durian.Samples.DefaultParam
 			_builder.Append("Info: ").AppendLine(message.ToString());
 		}
 
-		public override string ToString()
-		{
-			return _builder.ToString();
-		}
-
 		public void Save(string path)
 		{
 			File.WriteAllText(path, _builder.ToString());
 		}
 
-		public void Clear()
+		public override string ToString()
 		{
-			_builder.Clear();
+			return _builder.ToString();
+		}
+
+		public void Warning(T message)
+		{
+			_builder.Append("Warning: ").AppendLine(message.ToString());
 		}
 	}
 }

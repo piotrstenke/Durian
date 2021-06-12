@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Configuration;
@@ -13,26 +16,21 @@ namespace Durian.Generator.DefaultParam
 	/// </summary>
 	public sealed class DefaultParamCompilationData : CompilationDataWithSymbols
 	{
-		private readonly string _dpMethodConvention = typeof(DPMethodConvention).ToString();
-		private readonly string _dpTypeConvention = typeof(DPTypeConvention).ToString();
 		private readonly string _defaultParamAttribute = typeof(DefaultParamAttribute).ToString();
 		private readonly string _defaultParamConfigurationAttribute = typeof(DefaultParamConfigurationAttribute).ToString();
 		private readonly string _defaultParamScopedConfigurationAttribute = typeof(DefaultParamScopedConfigurationAttribute).ToString();
+		private readonly string _dpMethodConvention = typeof(DPMethodConvention).ToString();
+		private readonly string _dpTypeConvention = typeof(DPTypeConvention).ToString();
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the <see cref="DefaultParamAttribute"/>.
+		/// <see cref="DefaultParamConfiguration"/> created from the <see cref="DefaultParamScopedConfigurationAttribute"/> defined on the <see cref="CompilationData.Compilation"/>'s main assembly. -or- <see cref="DefaultParamConfiguration.Default"/> if no <see cref="DefaultParamScopedConfigurationAttribute"/> was found.
 		/// </summary>
-		public INamedTypeSymbol? MainAttribute { get; private set; }
+		public DefaultParamConfiguration Configuration { get; }
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <see cref="DefaultParamConfigurationAttribute"/>.
 		/// </summary>
 		public INamedTypeSymbol? ConfigurationAttribute { get; private set; }
-
-		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the <see cref="DefaultParamScopedConfigurationAttribute"/>.
-		/// </summary>
-		public INamedTypeSymbol? ScopedConfigurationAttribute { get; private set; }
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <see cref="Configuration.DPMethodConvention"/>.
@@ -49,9 +47,14 @@ namespace Durian.Generator.DefaultParam
 		public override bool HasErrors { get; protected set; }
 
 		/// <summary>
-		/// <see cref="DefaultParamConfiguration"/> created from the <see cref="DefaultParamScopedConfigurationAttribute"/> defined on the <see cref="CompilationData.Compilation"/>'s main assembly. -or- <see cref="DefaultParamConfiguration.Default"/> if no <see cref="DefaultParamScopedConfigurationAttribute"/> was found.
+		/// <see cref="INamedTypeSymbol"/> of the <see cref="DefaultParamAttribute"/>.
 		/// </summary>
-		public DefaultParamConfiguration Configuration { get; }
+		public INamedTypeSymbol? MainAttribute { get; private set; }
+
+		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> of the <see cref="DefaultParamScopedConfigurationAttribute"/>.
+		/// </summary>
+		public INamedTypeSymbol? ScopedConfigurationAttribute { get; private set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamCompilationData"/> class.
@@ -61,6 +64,21 @@ namespace Durian.Generator.DefaultParam
 		public DefaultParamCompilationData(CSharpCompilation compilation) : base(compilation)
 		{
 			Configuration = GetConfiguration(compilation, ScopedConfigurationAttribute);
+		}
+
+		/// <summary>
+		/// Creates a new instance of <see cref="DefaultParamConfiguration"/> based on the <see cref="DefaultParamScopedConfigurationAttribute"/> defined on the <paramref name="compilation"/>'s main assembly or <see cref="DefaultParamConfiguration.Default"/> if no <see cref="DefaultParamScopedConfigurationAttribute"/> was found.
+		/// </summary>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="DefaultParamConfiguration"/> of.</param>
+		public static DefaultParamConfiguration GetConfiguration(CSharpCompilation? compilation)
+		{
+			if (compilation is null)
+			{
+				return DefaultParamConfiguration.Default;
+			}
+
+			INamedTypeSymbol? configurationAttribute = compilation.GetTypeByMetadataName(typeof(DefaultParamScopedConfigurationAttribute).ToString());
+			return GetConfiguration(compilation, configurationAttribute);
 		}
 
 		/// <inheritdoc/>
@@ -81,21 +99,6 @@ namespace Durian.Generator.DefaultParam
 				ScopedConfigurationAttribute is null ||
 				DPTypeConvention is null ||
 				DPMethodConvention is null;
-		}
-
-		/// <summary>
-		/// Creates a new instance of <see cref="DefaultParamConfiguration"/> based on the <see cref="DefaultParamScopedConfigurationAttribute"/> defined on the <paramref name="compilation"/>'s main assembly or <see cref="DefaultParamConfiguration.Default"/> if no <see cref="DefaultParamScopedConfigurationAttribute"/> was found.
-		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="DefaultParamConfiguration"/> of.</param>
-		public static DefaultParamConfiguration GetConfiguration(CSharpCompilation? compilation)
-		{
-			if (compilation is null)
-			{
-				return DefaultParamConfiguration.Default;
-			}
-
-			INamedTypeSymbol? configurationAttribute = compilation.GetTypeByMetadataName(typeof(DefaultParamScopedConfigurationAttribute).ToString());
-			return GetConfiguration(compilation, configurationAttribute);
 		}
 
 		private static DefaultParamConfiguration GetConfiguration(CSharpCompilation compilation, INamedTypeSymbol? configurationAttribute)

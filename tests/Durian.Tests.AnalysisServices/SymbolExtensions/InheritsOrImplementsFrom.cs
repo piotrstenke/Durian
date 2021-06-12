@@ -1,3 +1,6 @@
+// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
 using System;
 using System.Collections.Immutable;
 using Durian.Generator.Extensions;
@@ -11,26 +14,12 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 	public sealed class InheritsOrImplementsFrom : CompilationTest
 	{
 		[Fact]
-		public void ThrowsArgumentNullException_When_TypeIsNull()
+		public void ReturnsFalse_When_DoesNotInheritFromParent()
 		{
-			INamedTypeSymbol child = GetClass("class Test { }");
-			INamedTypeSymbol parent = null!;
-			Assert.Throws<ArgumentNullException>(() => child.InheritsOrImplementsFrom(parent));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_BaseTypeIsNull()
-		{
-			INamedTypeSymbol child = null!;
 			INamedTypeSymbol parent = GetClass("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => child.InheritsOrImplementsFrom(parent));
-		}
+			INamedTypeSymbol child = GetClass("class Child { }");
 
-		[Fact]
-		public void ReturnsTrue_When_ParentAndChildAreTheSameSymbol()
-		{
-			INamedTypeSymbol type = GetClass("class Test { }");
-			Assert.True(type.InheritsOrImplementsFrom(type));
+			Assert.False(child.InheritsOrImplementsFrom(parent));
 		}
 
 		[Fact]
@@ -72,12 +61,10 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 		}
 
 		[Fact]
-		public void ReturnsFalse_When_DoesNotInheritFromParent()
+		public void ReturnsTrue_When_ParentAndChildAreTheSameSymbol()
 		{
-			INamedTypeSymbol parent = GetClass("class Test { }");
-			INamedTypeSymbol child = GetClass("class Child { }");
-
-			Assert.False(child.InheritsOrImplementsFrom(parent));
+			INamedTypeSymbol type = GetClass("class Test { }");
+			Assert.True(type.InheritsOrImplementsFrom(type));
 		}
 
 		[Fact]
@@ -107,6 +94,22 @@ namespace Durian.Tests.AnalysisServices.SymbolExtensions
 			child.SetupGet(t => t.BaseType).Returns(parent.Object);
 
 			Assert.True(child.Object.InheritsOrImplementsFrom(intf));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_BaseTypeIsNull()
+		{
+			INamedTypeSymbol child = null!;
+			INamedTypeSymbol parent = GetClass("class Test { }");
+			Assert.Throws<ArgumentNullException>(() => child.InheritsOrImplementsFrom(parent));
+		}
+
+		[Fact]
+		public void ThrowsArgumentNullException_When_TypeIsNull()
+		{
+			INamedTypeSymbol child = GetClass("class Test { }");
+			INamedTypeSymbol parent = null!;
+			Assert.Throws<ArgumentNullException>(() => child.InheritsOrImplementsFrom(parent));
 		}
 
 		private INamedTypeSymbol GetClass(string source)

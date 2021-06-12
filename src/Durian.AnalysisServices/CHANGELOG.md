@@ -1,4 +1,4 @@
-﻿## Realease 1.0.0
+﻿## Release 1.0.0
 
 ### Added
 
@@ -926,7 +926,7 @@
  - Durian.Generator.DurianGenerator'3+WithBuilder(Durian.Generator.Logging.GeneratorLoggingConfiguration loggingConfiguration, Durian.Generator.Logging.IFileNameProvider fileNameProvider)
  - Durian.Generator.DurianGenerator'3+WithBuilder.get_CodeBuilder
 
-## Realease 1.1.0
+## Release 1.1.0
 
 ### Added
 
