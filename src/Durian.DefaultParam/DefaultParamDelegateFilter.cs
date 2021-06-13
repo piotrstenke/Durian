@@ -25,8 +25,6 @@ namespace Durian.Generator.DefaultParam
 		/// <inheritdoc/>
 		public DefaultParamGenerator Generator { get; }
 
-		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
-
 		/// <inheritdoc/>
 		public IHintNameProvider HintNameProvider { get; }
 
@@ -37,6 +35,8 @@ namespace Durian.Generator.DefaultParam
 		/// <see cref="FilterMode"/> of this <see cref="DefaultParamDelegateFilter"/>.
 		/// </summary>
 		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
+
+		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
 		/// <inheritdoc cref="DefaultParamDelegateFilter(DefaultParamGenerator, IHintNameProvider)"/>
 		public DefaultParamDelegateFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())
@@ -257,11 +257,10 @@ namespace Durian.Generator.DefaultParam
 				AnalyzeTypeParameters(symbol, in typeParameters))
 			{
 				INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
+				string targetNamespace = GetTargetNamespace(symbol, attributes, symbols, compilation);
 
-				if (AnalyzeCollidingMembers(symbol, in typeParameters, compilation, attributes, symbols, out HashSet<int>? newModifiers, cancellationToken))
+				if (AnalyzeCollidingMembers(symbol, in typeParameters, compilation, targetNamespace, attributes, symbols, out HashSet<int>? newModifiers, cancellationToken))
 				{
-					string targetNamespace = GetTargetNamespace(symbol, attributes, symbols, compilation);
-
 					data = new DefaultParamDelegateData(
 						declaration,
 						compilation,

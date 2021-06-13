@@ -232,12 +232,13 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the colliding members of.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="targetNamespace">Namespace where the generated members are located.</param>
 		/// <param name="numTypeParameters">Number of type parameters of this <paramref name="symbol"/>.</param>
 		/// <param name="numNonDefaultParam">Number of type parameters of this <paramref name="symbol"/> that don't have the <see cref="DefaultParamAttribute"/>.</param>
 		/// <param name="numParameters">Number of parameters of this <paramref name="symbol"/>. Always use <c>0</c> for members other than methods.</param>
-		public static CollidingMember[] GetPotentiallyCollidingMembers(ISymbol symbol, DefaultParamCompilationData compilation, int numTypeParameters, int numNonDefaultParam, int numParameters = 0)
+		public static CollidingMember[] GetPotentiallyCollidingMembers(ISymbol symbol, DefaultParamCompilationData compilation, string? targetNamespace, int numTypeParameters, int numNonDefaultParam, int numParameters = 0)
 		{
-			return GetPotentiallyCollidingMembers_Internal(symbol, compilation, numTypeParameters, numNonDefaultParam, numParameters)
+			return GetPotentiallyCollidingMembers_Internal(symbol, compilation, targetNamespace, numTypeParameters, numNonDefaultParam, numParameters)
 				.Select(s =>
 				{
 					if (s is IMethodSymbol m)
@@ -462,13 +463,12 @@ namespace Durian.Generator.DefaultParam
 			});
 		}
 
-		private static INamedTypeSymbol[] GetCollidingNotNestedTypes(ISymbol symbol, DefaultParamCompilationData compilation, int numTypeParameters, int numNonDefaultParam)
+		private static INamedTypeSymbol[] GetCollidingNotNestedTypes(ISymbol symbol, DefaultParamCompilationData compilation, string? targetNamespace, int numTypeParameters, int numNonDefaultParam)
 		{
 			INamedTypeSymbol generatedFromAttribute = compilation.DurianGeneratedAttribute!;
 			int numDefaultParam = numTypeParameters - numNonDefaultParam;
 			string name = symbol.Name;
-			string namespaces = symbol.JoinNamespaces();
-			string metadata = string.IsNullOrWhiteSpace(namespaces) ? name : $"{namespaces}.{name}";
+			string metadata = string.IsNullOrWhiteSpace(targetNamespace) || targetNamespace == "global" ? name : $"{targetNamespace}.{name}";
 			string fullName = symbol.ToString();
 
 			List<INamedTypeSymbol> symbols = new(numDefaultParam);
@@ -511,13 +511,13 @@ namespace Durian.Generator.DefaultParam
 			throw new InvalidOperationException($"Unknown parameter: {parameter}");
 		}
 
-		private static IEnumerable<ISymbol> GetPotentiallyCollidingMembers_Internal(ISymbol symbol, DefaultParamCompilationData compilation, int numTypeParameters, int numNonDefaultParam, int numParameters)
+		private static IEnumerable<ISymbol> GetPotentiallyCollidingMembers_Internal(ISymbol symbol, DefaultParamCompilationData compilation, string? targetNamespace, int numTypeParameters, int numNonDefaultParam, int numParameters)
 		{
 			INamedTypeSymbol? containingType = symbol.ContainingType;
 
 			if (containingType is null)
 			{
-				return GetCollidingNotNestedTypes(symbol, compilation, numTypeParameters, numNonDefaultParam);
+				return GetCollidingNotNestedTypes(symbol, compilation, targetNamespace, numTypeParameters, numNonDefaultParam);
 			}
 
 			string name = symbol.Name;

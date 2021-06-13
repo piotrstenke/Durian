@@ -30,7 +30,8 @@
    3. [Configuration priority](#configuration-priority)
    4. [Method convention](#method-convention)
    5. [Type convention](#type-convention)
-   6. ['new' modifier](#new-modifier)
+   6. [Target namespace](#target-namespace)
+   7. ['new' modifier](#new-modifier)
 5. [Inheritance](#inheritance) 
 
 ## Structure

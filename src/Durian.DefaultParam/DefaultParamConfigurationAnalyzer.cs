@@ -34,8 +34,7 @@ namespace Durian.Generator.DefaultParam
 			DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor,
 			DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType,
 			DUR0127_InvalidTargetNamespace,
-			DUR0128_DoNotSpecifyTargetNamespaceForNestedMembers,
-			DUR0129_TargetNamespaceAlreadyContainsMemberWithName
+			DUR0128_DoNotSpecifyTargetNamespaceForNestedMembers
 		);
 
 		/// <summary>

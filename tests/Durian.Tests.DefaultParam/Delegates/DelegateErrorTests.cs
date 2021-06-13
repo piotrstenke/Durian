@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using Durian.Configuration;
 using Durian.Generator;
 using Durian.Generator.DefaultParam;
 using Xunit;
@@ -94,6 +95,70 @@ partial class Test
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
+		}
+
+		[Fact]
+		public void Error_When_MemberExistsInTargetNamespace()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+namespace N2
+{{
+	delegate void Del();
+}}
+
+namespace N1
+{{
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""N2"")]
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+}}
+";
+
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
+		}
+
+		[Fact]
+		public void Error_When_MemberExistsInTargetNamespace_And_TargetsGlobalNamespace()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+struct Del
+{{
+}}
+
+namespace N1
+{{
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""global"")]
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+}}
+";
+
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
+		}
+
+		[Fact]
+		public void Error_When_MemberExistsInTargetNamespace_And_TargetsParentNamespace()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+namespace N1
+{{
+	class Del
+	{{
+	}}
+
+	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""N1"")]
+	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+}}
+";
+
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
 		}
 
 		[Fact]

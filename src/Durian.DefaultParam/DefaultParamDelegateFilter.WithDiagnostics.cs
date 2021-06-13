@@ -207,11 +207,10 @@ namespace Durian.Generator.DefaultParam
 				if (isValid)
 				{
 					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes!);
+					string targetNamespace = DefaultParamAnalyzer.GetTargetNamespace(symbol, attributes!, symbols, compilation);
 
-					if (AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, attributes!, symbols, out HashSet<int>? applyNewModifiers, cancellationToken))
+					if (AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, attributes!, symbols, out HashSet<int>? applyNewModifiers, cancellationToken))
 					{
-						string targetNamespace = DefaultParamAnalyzer.GetTargetNamespace(symbol, attributes!, symbols, compilation);
-
 						data = new DefaultParamDelegateData(
 							declaration,
 							compilation,

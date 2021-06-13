@@ -20,7 +20,7 @@ namespace Durian.Generator.DefaultParam
 
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
-	public partial class DefaultParamTypeAnalyzer : DefaultParamAnalyzer
+	public sealed partial class DefaultParamTypeAnalyzer : DefaultParamAnalyzer
 	{
 		/// <inheritdoc/>
 		public override SymbolKind SupportedSymbolKind => SymbolKind.NamedType;
@@ -58,11 +58,12 @@ namespace Durian.Generator.DefaultParam
 			return syntaxes.Length <= 1 && !syntaxes[0].Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
 		}
 
-		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
 		public static bool AnalyzeCollidingMembers(
 			INamedTypeSymbol symbol,
 			in TypeParameterContainer typeParameters,
 			DefaultParamCompilationData compilation,
+			string targetNamespace,
 			out HashSet<int>? applyNew,
 			CancellationToken cancellationToken = default
 		)
@@ -71,6 +72,7 @@ namespace Durian.Generator.DefaultParam
 				symbol,
 				in typeParameters,
 				compilation,
+				targetNamespace,
 				symbol.GetAttributes(),
 				symbol.GetContainingTypeSymbols().ToArray(),
 				out applyNew,
@@ -78,11 +80,12 @@ namespace Durian.Generator.DefaultParam
 			);
 		}
 
-		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
 		public static bool AnalyzeCollidingMembers(
 			INamedTypeSymbol symbol,
 			in TypeParameterContainer typeParameters,
 			DefaultParamCompilationData compilation,
+			string targetNamespace,
 			IEnumerable<AttributeData> attributes,
 			INamedTypeSymbol[] containingTypes,
 			out HashSet<int>? applyNew,
@@ -91,20 +94,21 @@ namespace Durian.Generator.DefaultParam
 		{
 			bool allowsNew = AllowsNewModifier(attributes, containingTypes, compilation);
 
-			return AnalyzeCollidingMembers(symbol, in typeParameters, compilation, allowsNew, out applyNew, cancellationToken);
+			return AnalyzeCollidingMembers(symbol, in typeParameters, compilation, targetNamespace, allowsNew, out applyNew, cancellationToken);
 		}
 
-		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, bool, out HashSet{int}?, CancellationToken)"/>
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, bool, out HashSet{int}?, CancellationToken)"/>
 		public static bool AnalyzeCollidingMembers(
 			INamedTypeSymbol symbol,
 			in TypeParameterContainer typeParameters,
 			DefaultParamCompilationData compilation,
+			string targetNamespace,
 			bool allowsNewModifier,
 			out HashSet<int>? applyNew,
 			CancellationToken cancellationToken = default
 		)
 		{
-			return DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(symbol, in typeParameters, compilation, allowsNewModifier, out applyNew, cancellationToken);
+			return DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(symbol, in typeParameters, compilation, targetNamespace, allowsNewModifier, out applyNew, cancellationToken);
 		}
 
 		/// <summary>
@@ -203,7 +207,8 @@ namespace Durian.Generator.DefaultParam
 			return new DiagnosticDescriptor[]
 			{
 				DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor,
-				DefaultParamDiagnostics.DUR0122_DoNotUseDefaultParamOnPartialType
+				DefaultParamDiagnostics.DUR0122_DoNotUseDefaultParamOnPartialType,
+				DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName
 			};
 		}
 	}

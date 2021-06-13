@@ -42,7 +42,9 @@ namespace Durian.Generator.DefaultParam
 
 				if (isValid)
 				{
-					isValid &= AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, attributes, containingTypes, out _, cancellationToken);
+					string targetNamespace = GetTargetNamespace(symbol, attributes, containingTypes, compilation);
+
+					isValid &= AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, attributes, containingTypes, out _, cancellationToken);
 				}
 
 				ShouldInheritInsteadOfCopying(diagnosticReceiver, symbol, compilation, attributes, containingTypes);
@@ -82,12 +84,13 @@ namespace Durian.Generator.DefaultParam
 				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation, out attributes);
 			}
 
-			/// <inheritdoc cref="DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, out HashSet{int}?, CancellationToken)"/>
+			/// <inheritdoc cref="DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, out HashSet{int}?, CancellationToken)"/>
 			public static bool AnalyzeCollidingMembers(
 				IDiagnosticReceiver diagnosticReceiver,
 				INamedTypeSymbol symbol,
 				in TypeParameterContainer typeParameters,
 				DefaultParamCompilationData compilation,
+				string targetNamespace,
 				out HashSet<int>? applyNew,
 				CancellationToken cancellationToken = default
 			)
@@ -97,6 +100,7 @@ namespace Durian.Generator.DefaultParam
 					symbol,
 					in typeParameters,
 					compilation,
+					targetNamespace,
 					symbol.GetAttributes(),
 					symbol.GetContainingTypeSymbols().ToArray(),
 					out applyNew,
@@ -104,12 +108,13 @@ namespace Durian.Generator.DefaultParam
 				);
 			}
 
-			/// <inheritdoc cref="DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
+			/// <inheritdoc cref="DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
 			public static bool AnalyzeCollidingMembers(
 				IDiagnosticReceiver diagnosticReceiver,
 				INamedTypeSymbol symbol,
 				in TypeParameterContainer typeParameters,
 				DefaultParamCompilationData compilation,
+				string targetNamespace,
 				IEnumerable<AttributeData> attributes,
 				INamedTypeSymbol[] containingTypes,
 				out HashSet<int>? applyNew,
@@ -118,21 +123,22 @@ namespace Durian.Generator.DefaultParam
 			{
 				bool allowsNew = AllowsNewModifier(attributes, containingTypes, compilation);
 
-				return AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, allowsNew, out applyNew, cancellationToken);
+				return AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, allowsNew, out applyNew, cancellationToken);
 			}
 
-			/// <inheritdoc cref="DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, bool, out HashSet{int}?, CancellationToken)"/>
+			/// <inheritdoc cref="DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, bool, out HashSet{int}?, CancellationToken)"/>
 			public static bool AnalyzeCollidingMembers(
 				IDiagnosticReceiver diagnosticReceiver,
 				INamedTypeSymbol symbol,
 				in TypeParameterContainer typeParameters,
 				DefaultParamCompilationData compilation,
+				string targetNamespace,
 				bool allowsNewModifier,
 				out HashSet<int>? applyNew,
 				CancellationToken cancellationToken = default
 			)
 			{
-				return DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, allowsNewModifier, out applyNew, cancellationToken);
+				return DefaultParamDelegateAnalyzer.WithDiagnostics.AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, allowsNewModifier, out applyNew, cancellationToken);
 			}
 
 			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, CancellationToken)"/>

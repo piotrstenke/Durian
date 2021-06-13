@@ -539,7 +539,7 @@ class Test<[{nameof(DefaultParamAttribute)}(typeof(string)]T>
 {{
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
 		}
 
 		[Fact]

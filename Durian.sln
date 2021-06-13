@@ -110,6 +110,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.DefaultParam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian", "src\Durian\Durian.csproj", "{60E72AB1-5C5F-42F9-BB97-6DB3B74BBF83}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{2C1EE0FE-BA67-4CD0-88B8-6DCAFC9806F1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{508BEDA0-0AE7-455C-A432-37575FEBA0F3}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -284,6 +291,7 @@ Global
 		{1321229E-C3C2-4B4B-AD81-88B76CB4A938} = {180C285B-7C46-4E5B-9DC9-88439B518746}
 		{3B778CDC-7A0E-4D5B-A76E-704E0F854EE9} = {D98DD137-AADE-4474-86EF-9F0874607687}
 		{60E72AB1-5C5F-42F9-BB97-6DB3B74BBF83} = {74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}
+		{508BEDA0-0AE7-455C-A432-37575FEBA0F3} = {2C1EE0FE-BA67-4CD0-88B8-6DCAFC9806F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {09524C45-0D6D-4456-B89D-9673853B9FA0}

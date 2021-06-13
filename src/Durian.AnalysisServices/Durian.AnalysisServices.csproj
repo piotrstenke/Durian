@@ -17,8 +17,10 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>Durian.Tests.AnalysisServices</_Parameter1>
     </AssemblyAttribute>
+    
     <Compile Include="..\NullableAttributes.cs" />
     <Compile Include="..\IsExternalInit.cs" />
+    
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
     
   </ItemGroup>

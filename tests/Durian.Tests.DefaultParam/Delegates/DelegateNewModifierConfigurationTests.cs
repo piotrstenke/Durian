@@ -432,7 +432,7 @@ class Del
 
 delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value);
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
 		}
 
 		[Fact]

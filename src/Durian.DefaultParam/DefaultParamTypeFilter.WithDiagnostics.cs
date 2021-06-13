@@ -208,11 +208,11 @@ namespace Durian.Generator.DefaultParam
 				if (isValid)
 				{
 					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
+					string targetNamespace = DefaultParamAnalyzer.GetTargetNamespace(symbol, attributes!, symbols, compilation);
 
-					if (AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, attributes!, symbols, out HashSet<int>? applyNewModifiers, cancellationToken))
+					if (AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, attributes!, symbols, out HashSet<int>? applyNewModifiers, cancellationToken))
 					{
 						bool inherit = ShouldInheritInsteadOfCopying(diagnosticReceiver, symbol, compilation, attributes!, symbols);
-						string targetNamespace = DefaultParamAnalyzer.GetTargetNamespace(symbol, attributes!, symbols, compilation);
 
 						data = new DefaultParamTypeData(
 							declaration,

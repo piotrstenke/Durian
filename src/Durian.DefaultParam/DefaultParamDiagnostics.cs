@@ -382,7 +382,7 @@ namespace Durian.Generator.DefaultParam
 		public static readonly DiagnosticDescriptor DUR0129_TargetNamespaceAlreadyContainsMemberWithName = new(
 			id: "DUR0129",
 			title: "Target namespace already contains member with the generated name",
-			messageFormat: "'{0}': Namespace '{1]' already contains member with name '{2}'",
+			messageFormat: "'{0}': Namespace '{1}' already contains member with name '{2}'",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + @"\DUR0129.md",

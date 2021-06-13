@@ -189,6 +189,7 @@ namespace Durian.Generator.DefaultParam
 				CollidingMember[] collidingMethods = GetPotentiallyCollidingMembers(
 					symbol,
 					compilation,
+					null,
 					typeParameters.Length,
 					typeParameters.NumNonDefaultParam,
 					symbolParameters.Length

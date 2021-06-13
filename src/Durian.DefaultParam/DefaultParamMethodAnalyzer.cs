@@ -25,7 +25,7 @@ namespace Durian.Generator.DefaultParam
 
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
-	public partial class DefaultParamMethodAnalyzer : DefaultParamAnalyzer
+	public sealed partial class DefaultParamMethodAnalyzer : DefaultParamAnalyzer
 	{
 		/// <inheritdoc/>
 		public override SymbolKind SupportedSymbolKind => SymbolKind.Method;
@@ -186,6 +186,7 @@ namespace Durian.Generator.DefaultParam
 			CollidingMember[] collidingMethods = GetPotentiallyCollidingMembers(
 				symbol,
 				compilation,
+				null,
 				typeParameters.Length,
 				typeParameters.NumNonDefaultParam,
 				symbolParameters.Length

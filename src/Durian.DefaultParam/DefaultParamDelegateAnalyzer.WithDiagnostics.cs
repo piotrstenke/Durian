@@ -48,7 +48,12 @@ namespace Durian.Generator.DefaultParam
 
 				if (isValid)
 				{
-					return AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, out _, cancellationToken);
+					IEnumerable<AttributeData> attributes = symbol.GetAttributes();
+					INamedTypeSymbol[] containingTypes = symbol.GetContainingTypeSymbols().ToArray();
+
+					string targetNamespace = GetTargetNamespace(symbol, attributes, containingTypes, compilation);
+
+					return AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, attributes, containingTypes, out _, cancellationToken);
 				}
 
 				return false;
@@ -66,12 +71,13 @@ namespace Durian.Generator.DefaultParam
 				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation, out attributes);
 			}
 
-			/// <inheritdoc cref="AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
+			/// <inheritdoc cref="AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
 			public static bool AnalyzeCollidingMembers(
 				IDiagnosticReceiver diagnosticReceiver,
 				INamedTypeSymbol symbol,
 				in TypeParameterContainer typeParameters,
 				DefaultParamCompilationData compilation,
+				string targetNamespace,
 				out HashSet<int>? applyNew,
 				CancellationToken cancellationToken = default
 			)
@@ -81,6 +87,7 @@ namespace Durian.Generator.DefaultParam
 					symbol,
 					in typeParameters,
 					compilation,
+					targetNamespace,
 					symbol.GetAttributes(),
 					symbol.GetContainingTypeSymbols().ToArray(),
 					out applyNew,
@@ -101,6 +108,7 @@ namespace Durian.Generator.DefaultParam
 			/// <see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.
 			/// </param>
 			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+			/// <param name="targetNamespace">Namespace where the generated members are located.</param>
 			/// <param name="attributes">
 			/// A collection of <see cref="AttributeData"/> a of the target <paramref name="symbol"/>.
 			/// </param>
@@ -126,6 +134,7 @@ namespace Durian.Generator.DefaultParam
 				INamedTypeSymbol symbol,
 				in TypeParameterContainer typeParameters,
 				DefaultParamCompilationData compilation,
+				string targetNamespace,
 				IEnumerable<AttributeData> attributes,
 				INamedTypeSymbol[] containingTypes,
 				out HashSet<int>? applyNew,
@@ -139,6 +148,7 @@ namespace Durian.Generator.DefaultParam
 					symbol,
 					in typeParameters,
 					compilation,
+					targetNamespace,
 					allowsNewModifier,
 					out applyNew,
 					cancellationToken
@@ -152,6 +162,7 @@ namespace Durian.Generator.DefaultParam
 			/// <param name="symbol"><see cref="INamedTypeSymbol"/> to analyze the colliding members of.</param>
 			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
 			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+			/// <param name="targetNamespace">Namespace where the generated members are located.</param>
 			/// <param name="allowsNewModifier">Determines whether to allows applying the <see langword="new"/> modifier.</param>
 			/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
 			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
@@ -161,6 +172,7 @@ namespace Durian.Generator.DefaultParam
 				INamedTypeSymbol symbol,
 				in TypeParameterContainer typeParameters,
 				DefaultParamCompilationData compilation,
+				string targetNamespace,
 				bool allowsNewModifier,
 				out HashSet<int>? applyNew,
 				CancellationToken cancellationToken = default
@@ -169,6 +181,7 @@ namespace Durian.Generator.DefaultParam
 				CollidingMember[] collidingMethods = GetPotentiallyCollidingMembers(
 					symbol,
 					compilation,
+					targetNamespace,
 					typeParameters.Length,
 					typeParameters.NumNonDefaultParam
 				);
@@ -183,6 +196,7 @@ namespace Durian.Generator.DefaultParam
 					diagnosticReceiver,
 					symbol,
 					in typeParameters,
+					targetNamespace,
 					collidingMethods,
 					allowsNewModifier,
 					cancellationToken,
@@ -212,6 +226,7 @@ namespace Durian.Generator.DefaultParam
 				IDiagnosticReceiver diagnosticReceiver,
 				INamedTypeSymbol symbol,
 				in TypeParameterContainer typeParameters,
+				string targetNamespace,
 				CollidingMember[] collidingMembers,
 				bool applyNewModifierIsPossible,
 				CancellationToken cancellationToken,
@@ -238,7 +253,15 @@ namespace Durian.Generator.DefaultParam
 						}
 						else
 						{
-							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists, symbol, symbol.Name);
+							if (member.IsChild)
+							{
+								diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists, symbol, symbol.Name);
+							}
+							else
+							{
+								diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName, symbol, targetNamespace, symbol.Name);
+							}
+
 							isValid = false;
 
 							if (diagnosed.Add(index) && diagnosed.Count == typeParameters.NumDefaultParam)
@@ -263,7 +286,15 @@ namespace Durian.Generator.DefaultParam
 						continue;
 					}
 
-					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists, symbol, member.Symbol.GetGenericName(false));
+					if (member.IsChild)
+					{
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists, symbol, member.Symbol.MetadataName);
+					}
+					else
+					{
+						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName, symbol, targetNamespace, member.Symbol.MetadataName);
+					}
+
 					isValid = false;
 
 					if (diagnosed.Add(targetIndex) && diagnosed.Count == typeParameters.NumDefaultParam)
