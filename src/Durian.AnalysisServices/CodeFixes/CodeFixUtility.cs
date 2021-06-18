@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.CodeFixes
+namespace Durian.Analysis.CodeFixes
 {
 	/// <summary>
 	/// Contains some utility methods for dealing with code fixes.
@@ -27,8 +27,7 @@ namespace Durian.Generator.CodeFixes
 		public static NameSyntax GetNameSyntax(SemanticModel semanticModel, IEnumerable<UsingDirectiveSyntax> usings, INamespaceSymbol currentNamespace, ITypeSymbol targetType, CancellationToken cancellationToken = default)
 		{
 			if (targetType.ContainingNamespace is null ||
-				targetType.ContainingNamespace.IsGlobalNamespace ||
-				currentNamespace.IsGlobalNamespace
+				targetType.ContainingNamespace.IsGlobalNamespace
 			)
 			{
 				return SyntaxFactory.ParseName(targetType.GetGenericName(false));
@@ -77,7 +76,6 @@ namespace Durian.Generator.CodeFixes
 		{
 			if (targetType.ContainingNamespace is null ||
 				targetType.ContainingNamespace.IsGlobalNamespace ||
-				currentNamespace.IsGlobalNamespace ||
 				targetType.IsPredefinedOrDynamic((CSharpCompilation)semanticModel.Compilation)
 			)
 			{
@@ -134,7 +132,6 @@ namespace Durian.Generator.CodeFixes
 		{
 			if (targetType.ContainingNamespace is null ||
 				targetType.ContainingNamespace.IsGlobalNamespace ||
-				currentNamespace.IsGlobalNamespace ||
 				targetType.IsPredefinedOrDynamic((CSharpCompilation)semanticModel.Compilation)
 			)
 			{

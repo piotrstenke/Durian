@@ -1,6 +1,7 @@
 v.1.2.0
 
-- Added support for caching already analyzed members (see: the Durian.Generator.Cache namespace).
+- Changed the name of the main namespace to Durian.Analysis
+- Added support for caching already analyzed members (see: the Durian.Analysis.Cache namespace).
 - Added new IDiagnosticReceiver implementations.
 - Added new *Filter structs that can enumerate syntax nodes.
 - Added new source generator types.

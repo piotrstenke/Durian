@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Provides a method that returns an array of <see cref="CSharpSyntaxNode"/>s of type <typeparamref name="T"/>.

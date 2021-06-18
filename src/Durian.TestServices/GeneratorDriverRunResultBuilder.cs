@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// A builder of the <see cref="GeneratorDriverRunResult"/> class.

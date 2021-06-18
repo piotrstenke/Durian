@@ -7,12 +7,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.Extensions
+namespace Durian.Analysis.Extensions
 {
 	/// <summary>
 	/// Contains various extension methods for the <see cref="ISymbol"/>-derived interfaces.

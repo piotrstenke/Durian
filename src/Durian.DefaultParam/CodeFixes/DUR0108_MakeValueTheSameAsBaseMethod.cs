@@ -3,15 +3,15 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Durian.Generator.CodeFixes;
-using Durian.Generator.Extensions;
+using Durian.Analysis.CodeFixes;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam.CodeFixes
+namespace Durian.Analysis.DefaultParam.CodeFixes
 {
 	/// <summary>
 	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase"/> diagnostic.

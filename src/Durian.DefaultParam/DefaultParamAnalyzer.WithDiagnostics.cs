@@ -5,12 +5,13 @@ using System.CodeDom.Compiler;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
-using Durian.Generator.Data;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
+using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	public abstract partial class DefaultParamAnalyzer
 	{

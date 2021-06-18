@@ -4,7 +4,7 @@
 using System;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// A <see cref="IDirectDiagnosticReceiver"/> that accepts see <see cref="ReadonlyContextualReportAction{T}"/> instead of <see cref="ContextualReportAction{T}"/>.

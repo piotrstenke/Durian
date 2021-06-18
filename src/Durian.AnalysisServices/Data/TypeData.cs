@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.Data
+namespace Durian.Analysis.Data
 {
 	/// <inheritdoc cref="ITypeData"/>
 	public class TypeData : MemberData, ITypeData
@@ -16,13 +16,13 @@ namespace Durian.Generator.Data
 		private SyntaxToken[]? _modifiers;
 		private TypeDeclarationSyntax[]? _partialDeclarations;
 
+		/// <inheritdoc/>
+		public SyntaxToken[] Modifiers => _modifiers ??= GetPartialDeclarations().GetModifiers().ToArray();
+
 		/// <summary>
 		/// Target <see cref="TypeDeclarationSyntax"/>.
 		/// </summary>
 		public new TypeDeclarationSyntax Declaration => (base.Declaration as TypeDeclarationSyntax)!;
-
-		/// <inheritdoc/>
-		public SyntaxToken[] Modifiers => _modifiers ??= GetPartialDeclarations().GetModifiers().ToArray();
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.

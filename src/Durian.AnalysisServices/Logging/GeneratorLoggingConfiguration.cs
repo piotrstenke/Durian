@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	/// <summary>
 	/// Determines the behavior of the target <see cref="ISourceGenerator"/> when creating log files.

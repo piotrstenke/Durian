@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Durian.Generator.Data;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// A <see cref="ICompilationData"/> that is unit-test friendly and can be used without worries of encountering an exception.
@@ -20,7 +20,6 @@ namespace Durian.Tests
 	{
 		private CSharpCompilation? _currentCompilation;
 		private CSharpCompilation? _originalCompilation;
-		CSharpCompilation ICompilationData.Compilation => _currentCompilation!;
 
 		/// <summary>
 		/// A <see cref="CSharpCompilation"/> that is affected by the <see cref="UpdateCompilation(CSharpSyntaxTree)"/> method or its overloads.
@@ -45,6 +44,8 @@ namespace Durian.Tests
 				}
 			}
 		}
+
+		CSharpCompilation ICompilationData.Compilation => _currentCompilation!;
 
 		private TestableCompilationData(CSharpCompilation? compilation)
 		{

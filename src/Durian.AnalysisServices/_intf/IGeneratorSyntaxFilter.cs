@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// <see cref="ISyntaxFilter"/> that filtrates <see cref="CSharpSyntaxNode"/>s for the specified <see cref="IDurianSourceGenerator"/>.

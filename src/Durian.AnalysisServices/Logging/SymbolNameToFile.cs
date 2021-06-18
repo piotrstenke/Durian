@@ -5,7 +5,7 @@ using System;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	/// <summary>
 	/// A <see cref="IHintNameProvider"/> that returns the name of the specified <see cref="ISymbol"/>.

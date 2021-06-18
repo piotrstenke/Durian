@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	/// <summary>
 	/// An <see cref="ISourceGenerator"/> that can create log files.

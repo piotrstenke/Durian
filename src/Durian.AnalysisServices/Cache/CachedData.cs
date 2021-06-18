@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Cache
+namespace Durian.Analysis.Cache
 {
 	/// <summary>
 	/// A read-only container of cached data of type <typeparamref name="T"/> associated with a <see cref="FileLinePositionSpan"/>.

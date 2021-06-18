@@ -4,7 +4,7 @@
 using System;
 using Durian.Configuration;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Configures optional features of the <see cref="DefaultParamGenerator"/>.

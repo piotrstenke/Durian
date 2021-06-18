@@ -3,10 +3,10 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using Durian.Generator;
-using Durian.Generator.Logging;
+using Durian.Analysis;
+using Durian.Analysis.Logging;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// An abstract class that provides methods to test <see cref="ILoggableSourceGenerator"/>s and log information about the generator test.

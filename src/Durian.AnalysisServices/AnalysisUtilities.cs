@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Durian.Generator.Data;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Contains some utility methods for code analysis.

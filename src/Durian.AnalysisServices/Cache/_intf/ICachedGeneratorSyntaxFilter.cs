@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.Cache
+namespace Durian.Analysis.Cache
 {
 	/// <summary>
 	/// <see cref="ISyntaxFilter"/> that filtrates <see cref="CSharpSyntaxNode"/>s for the specified <see cref="IDurianSourceGenerator"/>. If the value associated with a <see cref="CSharpSyntaxNode"/> is present in the <see cref="CachedGeneratorExecutionContext{T}"/>, it is re-used instead of creating a new one.

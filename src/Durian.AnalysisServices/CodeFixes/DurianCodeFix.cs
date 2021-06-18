@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.CodeFixes
+namespace Durian.Analysis.CodeFixes
 {
 	/// <summary>
 	/// Base class for all Durian code fixes that provides methods for straight-up registration and exuection of <see cref="CodeAction"/>s.

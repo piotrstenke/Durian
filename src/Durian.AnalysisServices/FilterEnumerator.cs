@@ -7,10 +7,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="INodeValidator{T}"/>.
@@ -37,14 +37,14 @@ namespace Durian.Generator
 		/// </summary>
 		public T? Current { readonly get; private set; }
 
-		readonly T IEnumerator<T>.Current => Current!;
-
-		readonly object IEnumerator.Current => Current!;
-
 		/// <summary>
 		/// <see cref="INodeValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.
 		/// </summary>
 		public readonly INodeValidator<T> Validator { get; }
+
+		readonly T IEnumerator<T>.Current => Current!;
+
+		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FilterEnumerator{T}"/> struct.
@@ -73,11 +73,6 @@ namespace Durian.Generator
 			_nodes = nodes;
 			_index = index;
 			Current = default;
-		}
-
-		readonly void IDisposable.Dispose()
-		{
-			// Do nothing.
 		}
 
 		/// <summary>
@@ -117,6 +112,11 @@ namespace Durian.Generator
 		{
 			_index = 0;
 			Current = default;
+		}
+
+		readonly void IDisposable.Dispose()
+		{
+			// Do nothing.
 		}
 	}
 }

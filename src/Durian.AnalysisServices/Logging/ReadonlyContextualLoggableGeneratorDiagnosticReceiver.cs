@@ -4,7 +4,7 @@
 using System;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	/// <summary>
 	/// A <see cref="INodeDiagnosticReceiver"/> that reports <see cref="Diagnostic"/> to both <see cref="LoggableSourceGenerator"/> and <see cref="ReadonlyContextualDiagnosticReceiver{T}"/>.

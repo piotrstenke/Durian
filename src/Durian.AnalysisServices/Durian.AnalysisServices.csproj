@@ -9,17 +9,18 @@
     <AssemblyVersion>1.2.0</AssemblyVersion>
     <Version>1.2.0</Version>
     <RootNamespace>Durian.Generator</RootNamespace>
+    <Configurations>Debug;Release;Main Package</Configurations>
 
   </PropertyGroup>
 
   <ItemGroup>
     
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>Durian.Tests.AnalysisServices</_Parameter1>
-    </AssemblyAttribute>
-    
     <Compile Include="..\NullableAttributes.cs" />
     <Compile Include="..\IsExternalInit.cs" />
+        
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>Durian.AnalysisServices.Tests</_Parameter1>
+    </AssemblyAttribute>
     
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
     
@@ -27,8 +28,8 @@
 
   <ItemGroup>
     
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.9.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.10.0" />
     
   </ItemGroup>
 

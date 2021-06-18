@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// Contains various factory methods for creating various generator run results.

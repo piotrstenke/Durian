@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// A delegate that reports a <see cref="Diagnostic"/>.

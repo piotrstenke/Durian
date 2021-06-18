@@ -17,6 +17,19 @@ namespace Durian.Info
 	public static class PackageRepository
 	{
 		/// <summary>
+		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.Main"/> package.
+		/// </summary>
+		public static PackageIdentity Main => Initialize(
+			package: DurianPackage.Main,
+			version: "1.2.0",
+			type: PackageType.Unspecified,
+			modules: new DurianModule[]
+			{
+				DurianModule.None,
+			}
+		);
+
+		/// <summary>
 		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.AnalysisServices"/> package.
 		/// </summary>
 		public static PackageIdentity AnalysisServices => Initialize(

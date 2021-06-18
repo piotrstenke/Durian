@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// <see cref="ISyntaxReceiver"/> that provides an additional method for checking if any <see cref="CSharpSyntaxNode"/>s were collected.

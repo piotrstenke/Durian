@@ -8,15 +8,16 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Durian.Configuration;
-using Durian.Generator.Data;
-using Durian.Generator.Extensions;
+using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Base class for all DefaultParam analyzers. Contains <see langword="static"/> methods that perform the most basic DefaultParam-related analysis.
@@ -390,18 +391,7 @@ namespace Durian.Generator.DefaultParam
 			return applyNew;
 		}
 
-		/// <inheritdoc/>
-		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
-		{
-			return new DefaultParamCompilationData(compilation);
-		}
-
-		/// <summary>
-		/// Returns a collection of <see cref="DiagnosticDescriptor"/>s that are used by this analyzer specifically.
-		/// </summary>
-		protected abstract IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics();
-
-		private static IEnumerable<DiagnosticDescriptor> GetBaseDiagnostics()
+		private protected static IEnumerable<DiagnosticDescriptor> GetBaseDiagnostics()
 		{
 			return new[]
 			{
@@ -416,6 +406,17 @@ namespace Durian.Generator.DefaultParam
 				DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested
 			};
 		}
+
+		/// <inheritdoc/>
+		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
+		{
+			return new DefaultParamCompilationData(compilation);
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="DiagnosticDescriptor"/>s that are used by this analyzer specifically.
+		/// </summary>
+		protected abstract IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics();
 
 		private static IEnumerable<ISymbol> GetCollidingMembersForMethodSymbol(IMethodSymbol method, string fullName, IEnumerable<ISymbol> symbols, INamedTypeSymbol generatedFromAttribute, int numParameters)
 		{

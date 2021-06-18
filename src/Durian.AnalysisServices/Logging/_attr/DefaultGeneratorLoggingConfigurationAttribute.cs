@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	/// <summary>
 	/// Determines the default behavior of <see cref="ISourceGenerator"/>s in the current assembly when creating log files.
@@ -18,27 +18,27 @@ namespace Durian.Generator.Logging
 		/// <summary>
 		/// Determines whether to enable the <see cref="ISourceGenerator"/> can throw <see cref="Exception"/>s. Defaults to <see langword="false"/>
 		/// </summary>
-		public bool EnableExceptions { get; init; }
+		public bool EnableExceptions { get; set; }
 
 		/// <summary>
 		/// Default directory where the generator log files are to be found.
 		/// </summary>
-		public string? LogDirectory { get; init; }
+		public string? LogDirectory { get; set; }
 
 		/// <summary>
 		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="GeneratorLoggingConfiguration.DefaultLogDirectory"/>. Defaults to <see langword="true"/>.
 		/// </summary>
-		public bool RelativeToDefault { get; init; }
+		public bool RelativeToDefault { get; set; }
 
 		/// <summary>
 		/// Defaults types of logs for this assembly.
 		/// </summary>
-		public GeneratorLogs SupportedLogs { get; init; }
+		public GeneratorLogs SupportedLogs { get; set; }
 
 		/// <summary>
 		/// Determines whether the <see cref="ISourceGenerator"/> supports reporting <see cref="Diagnostic"/>s. Defaults to <see langword="false"/>
 		/// </summary>
-		public bool SupportsDiagnostics { get; init; }
+		public bool SupportsDiagnostics { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultGeneratorLoggingConfigurationAttribute"/> class.

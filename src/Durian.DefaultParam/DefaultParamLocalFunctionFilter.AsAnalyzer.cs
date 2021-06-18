@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	public partial class DefaultParamLocalFunctionFilter
 	{
@@ -19,6 +21,12 @@ namespace Durian.Generator.DefaultParam
 			/// </summary>
 			public AsAnalyzer()
 			{
+			}
+
+			/// <inheritdoc/>
+			public override IEnumerable<DiagnosticDescriptor> GetSupportedDiagnostics()
+			{
+				return DefaultParamLocalFunctionAnalyzer.GetSupportedDiagnostics();
 			}
 
 			/// <inheritdoc/>

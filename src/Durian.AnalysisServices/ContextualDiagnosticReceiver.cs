@@ -4,7 +4,7 @@
 using System;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <inheritdoc cref="IContextualDiagnosticReceiver{T}"/>
 	public sealed class ContextualDiagnosticReceiver<T> : IContextualDiagnosticReceiver<T> where T : struct

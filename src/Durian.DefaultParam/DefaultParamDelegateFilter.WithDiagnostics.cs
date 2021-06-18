@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Durian.Generator.Cache;
-using Durian.Generator.Data;
+using Durian.Analysis.Cache;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Durian.Generator.DefaultParam.DefaultParamDelegateAnalyzer.WithDiagnostics;
+using static Durian.Analysis.DefaultParam.DefaultParamDelegateAnalyzer.WithDiagnostics;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	public partial class DefaultParamDelegateFilter
 	{

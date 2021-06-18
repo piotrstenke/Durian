@@ -6,7 +6,7 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// Represents a result of a <see cref="ISourceGenerator"/> test.

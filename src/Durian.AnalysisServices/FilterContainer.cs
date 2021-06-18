@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// A collection of <see cref="ISyntaxFilter"/>s that binds its elements into separate <see cref="FilterGroup{TFilter}"/>s.
@@ -37,8 +37,6 @@ namespace Durian.Generator
 			}
 		}
 
-		bool ICollection<FilterGroup<TFilter>>.IsReadOnly => IsSealed;
-
 		/// <summary>
 		/// Determines whether this <see cref="FilterContainer{TFilter}"/> is sealed by calling the <see cref="Seal"/> method.
 		/// </summary>
@@ -48,6 +46,8 @@ namespace Durian.Generator
 		/// Number of filter groups in this list.
 		/// </summary>
 		public int NumGroups => _filterGroups.Count;
+
+		bool ICollection<FilterGroup<TFilter>>.IsReadOnly => IsSealed;
 
 		/// <inheritdoc cref="GetFilterGroup(int)"/>
 		public FilterGroup<TFilter> this[int index] => _filterGroups[index];
@@ -119,11 +119,6 @@ namespace Durian.Generator
 
 			_filterGroups = new();
 			RegisterFilterGroups(groups);
-		}
-
-		void ICollection<FilterGroup<TFilter>>.Add(FilterGroup<TFilter> item)
-		{
-			RegisterFilterGroup(item);
 		}
 
 		/// <summary>
@@ -201,11 +196,6 @@ namespace Durian.Generator
 			_filterGroups.Clear();
 		}
 
-		bool ICollection<FilterGroup<TFilter>>.Contains(FilterGroup<TFilter> item)
-		{
-			return ContainsFilterGroup(item);
-		}
-
 		/// <summary>
 		/// Determines whether any <see cref="FilterGroup{TFilter}"/> has the specified <paramref name="name"/>.
 		/// </summary>
@@ -233,20 +223,10 @@ namespace Durian.Generator
 			return _filterGroups.Contains(group);
 		}
 
-		void ICollection<FilterGroup<TFilter>>.CopyTo(FilterGroup<TFilter>[] array, int arrayIndex)
-		{
-			_filterGroups.CopyTo(array, arrayIndex);
-		}
-
 		/// <inheritdoc/>
 		public IEnumerator<FilterGroup<TFilter>> GetEnumerator()
 		{
 			return _filterGroups.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
 		}
 
 		/// <summary>
@@ -507,12 +487,6 @@ namespace Durian.Generator
 			}
 		}
 
-		bool ICollection<FilterGroup<TFilter>>.Remove(FilterGroup<TFilter> item)
-		{
-			UnregisterFilterGroup(item);
-			return true;
-		}
-
 		/// <summary>
 		/// Removes a <typeparamref name="TFilter"/> at the given <paramref name="index"/> in the specified <paramref name="group"/>.
 		/// </summary>
@@ -721,6 +695,32 @@ namespace Durian.Generator
 		public void Unseal()
 		{
 			IsSealed = false;
+		}
+
+		void ICollection<FilterGroup<TFilter>>.Add(FilterGroup<TFilter> item)
+		{
+			RegisterFilterGroup(item);
+		}
+
+		bool ICollection<FilterGroup<TFilter>>.Contains(FilterGroup<TFilter> item)
+		{
+			return ContainsFilterGroup(item);
+		}
+
+		void ICollection<FilterGroup<TFilter>>.CopyTo(FilterGroup<TFilter>[] array, int arrayIndex)
+		{
+			_filterGroups.CopyTo(array, arrayIndex);
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		bool ICollection<FilterGroup<TFilter>>.Remove(FilterGroup<TFilter> item)
+		{
+			UnregisterFilterGroup(item);
+			return true;
 		}
 
 		private static ArgumentException Exc_GroupWithNameAlreadyDefined(string name)

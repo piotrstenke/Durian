@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.Cache
+namespace Durian.Analysis.Cache
 {
 	/// <summary>
 	/// <see cref="IAnalyzerInfo"/> that caches the result of analysis.

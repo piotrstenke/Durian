@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Durian.Generator.Data;
-using Durian.Generator.Logging;
+using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.Cache
+namespace Durian.Analysis.Cache
 {
 	/// <summary>
 	/// <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> that retrieves cached data from a <see cref="ConcurrentDictionary{TKey, TValue}"/>

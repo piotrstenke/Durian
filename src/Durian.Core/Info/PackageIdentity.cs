@@ -50,7 +50,7 @@ namespace Durian.Info
 		internal PackageIdentity(DurianPackage enumValue, string version, PackageType type)
 		{
 			EnumValue = enumValue;
-			Name = EnumToString(enumValue);
+			Name = PackageToString(enumValue);
 			Version = version;
 			Type = type;
 		}

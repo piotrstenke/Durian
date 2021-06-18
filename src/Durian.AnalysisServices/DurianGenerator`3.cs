@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using Durian.Generator.Data;
-using Durian.Generator.Logging;
+using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Abstract implementation of the <see cref="IDurianSourceGenerator"/> interface that performs early validation of the input <see cref="GeneratorExecutionContext"/>.
@@ -29,8 +29,6 @@ namespace Durian.Generator
 		/// <inheritdoc/>
 		public CancellationToken CancellationToken { get; private set; }
 
-		string IDurianSourceGenerator.GeneratorName => GetGeneratorName();
-
 		/// <summary>
 		/// Determines whether data of this <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> was successfully initialized by the last call to the <see cref="Execute(in GeneratorExecutionContext)"/> method.
 		/// </summary>
@@ -46,15 +44,17 @@ namespace Durian.Generator
 		/// <inheritdoc cref="IDurianSourceGenerator.ParseOptions"/>
 		public CSharpParseOptions? ParseOptions { get; private set; }
 
-		CSharpParseOptions IDurianSourceGenerator.ParseOptions => ParseOptions!;
-
 		/// <inheritdoc cref="IDurianSourceGenerator.SyntaxReceiver"/>
 		public TSyntaxReceiver? SyntaxReceiver { get; private set; }
 
-		IDurianSyntaxReceiver IDurianSourceGenerator.SyntaxReceiver => SyntaxReceiver!;
-
 		/// <inheritdoc cref="IDurianSourceGenerator.TargetCompilation"/>
 		public TCompilationData? TargetCompilation { get; private set; }
+
+		string IDurianSourceGenerator.GeneratorName => GetGeneratorName();
+
+		CSharpParseOptions IDurianSourceGenerator.ParseOptions => ParseOptions!;
+
+		IDurianSyntaxReceiver IDurianSourceGenerator.SyntaxReceiver => SyntaxReceiver!;
 
 		ICompilationData IDurianSourceGenerator.TargetCompilation => TargetCompilation!;
 
@@ -97,11 +97,6 @@ namespace Durian.Generator
 		/// Creates a new <typeparamref name="TSyntaxReceiver"/> to be used during the current generation pass.
 		/// </summary>
 		public abstract TSyntaxReceiver CreateSyntaxReceiver();
-
-		IDurianSyntaxReceiver IDurianSourceGenerator.CreateSyntaxReceiver()
-		{
-			return CreateSyntaxReceiver();
-		}
 
 		/// <summary>
 		/// Begins the generation.
@@ -156,6 +151,11 @@ namespace Durian.Generator
 		public override void Initialize(GeneratorInitializationContext context)
 		{
 			context.RegisterForSyntaxNotifications(CreateSyntaxReceiver);
+		}
+
+		IDurianSyntaxReceiver IDurianSourceGenerator.CreateSyntaxReceiver()
+		{
+			return CreateSyntaxReceiver();
 		}
 
 		/// <summary>

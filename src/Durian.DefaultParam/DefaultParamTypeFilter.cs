@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Durian.Generator.Cache;
-using Durian.Generator.Data;
-using Durian.Generator.Logging;
+using Durian.Analysis.Cache;
+using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Durian.Generator.DefaultParam.DefaultParamAnalyzer;
-using static Durian.Generator.DefaultParam.DefaultParamTypeAnalyzer;
+using static Durian.Analysis.DefaultParam.DefaultParamAnalyzer;
+using static Durian.Analysis.DefaultParam.DefaultParamTypeAnalyzer;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Filtrates and validates <see cref="TypeDeclarationSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.

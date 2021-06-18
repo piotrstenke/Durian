@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Defines basic information about an analyzer.
@@ -19,6 +21,11 @@ namespace Durian.Generator
 		/// Determines whether this analyzer can be run concurrently.
 		/// </summary>
 		bool Concurrent { get; }
+
+		/// <summary>
+		/// Returns a collection of <see cref="DiagnosticDescriptor"/>s this analyzer supports.
+		/// </summary>
+		IEnumerable<DiagnosticDescriptor> GetSupportedDiagnostics();
 
 		/// <summary>
 		/// Registers actions to be performed by the analyzer.

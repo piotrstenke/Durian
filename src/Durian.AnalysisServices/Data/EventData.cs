@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.Data
+namespace Durian.Analysis.Data
 {
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="EventFieldDeclarationSyntax"/> or <see cref="EventDeclarationSyntax"/>.
@@ -31,14 +31,14 @@ namespace Durian.Generator.Data
 		public int Index { get; }
 
 		/// <summary>
-		/// <see cref="IEventSymbol"/> associated with the <see cref="EventFieldDeclarationSyntax"/> or <see cref="EventDeclarationSyntax"/>.
-		/// </summary>
-		public new IEventSymbol Symbol => (base.Symbol as IEventSymbol)!;
-
-		/// <summary>
 		/// <see cref="VariableDeclaratorSyntax"/> used to declare this event field. Equivalent to using <c>AsField.Declaration.Variables[Index]</c>.
 		/// </summary>
 		public VariableDeclaratorSyntax? Variable { get; }
+
+		/// <summary>
+		/// <see cref="IEventSymbol"/> associated with the <see cref="EventFieldDeclarationSyntax"/> or <see cref="EventDeclarationSyntax"/>.
+		/// </summary>
+		public new IEventSymbol Symbol => (base.Symbol as IEventSymbol)!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EventData"/> class.

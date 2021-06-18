@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Contains information about all type parameters of a member.
@@ -32,11 +32,6 @@ namespace Durian.Generator.DefaultParam
 		public readonly bool HasDefaultParams { get; }
 
 		/// <summary>
-		/// Returns a number of all <see cref="TypeParameterData"/>s.
-		/// </summary>
-		public readonly int Length => _parameters.Length;
-
-		/// <summary>
 		/// Returns a number of <see cref="TypeParameterData"/>s with a valid <see cref="DefaultParamAttribute"/>.
 		/// </summary>
 		public readonly int NumDefaultParam { get; }
@@ -45,6 +40,11 @@ namespace Durian.Generator.DefaultParam
 		/// Returns a number of <see cref="TypeParameterData"/>s that aren't DefaultParam.
 		/// </summary>
 		public readonly int NumNonDefaultParam => _parameters.Length - NumDefaultParam;
+
+		/// <summary>
+		/// Returns a number of all <see cref="TypeParameterData"/>s.
+		/// </summary>
+		public readonly int Length => _parameters.Length;
 
 		/// <summary>
 		/// Returns a <see cref="TypeParameterData"/> at the specified <paramref name="index"/>.
@@ -234,11 +234,6 @@ namespace Durian.Generator.DefaultParam
 			return new TypeParameterContainer(parameters);
 		}
 
-		readonly bool IEquatable<TypeParameterContainer>.Equals(TypeParameterContainer other)
-		{
-			return IsEquivalentTo(in other);
-		}
-
 		/// <inheritdoc/>
 		public override readonly bool Equals(object obj)
 		{
@@ -263,11 +258,6 @@ namespace Durian.Generator.DefaultParam
 		public readonly IEnumerator<TypeParameterData> GetEnumerator()
 		{
 			return ((IEnumerable<TypeParameterData>)_parameters).GetEnumerator();
-		}
-
-		readonly IEnumerator IEnumerable.GetEnumerator()
-		{
-			return _parameters.GetEnumerator();
 		}
 
 		/// <inheritdoc/>
@@ -320,6 +310,16 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return true;
+		}
+
+		readonly bool IEquatable<TypeParameterContainer>.Equals(TypeParameterContainer other)
+		{
+			return IsEquivalentTo(in other);
+		}
+
+		readonly IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _parameters.GetEnumerator();
 		}
 
 		private static int FindFirstDefaultParamIndex(TypeParameterData[] parameters)

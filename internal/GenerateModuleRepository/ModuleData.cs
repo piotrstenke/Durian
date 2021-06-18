@@ -24,7 +24,7 @@ internal class ModuleData
 		ExternalDiagnostics = new(8);
 		IncludedTypes = new(8);
 		Packages = new(4);
-		Documentation = $@"tree\master\docs\{moduleName}";
+		Documentation = $"tree/master/docs/{moduleName}";
 	}
 
 	public string GetId()

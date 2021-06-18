@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
+using Durian.Generator;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// A <see cref="CompilationData"/> with <see cref="INamedTypeSymbol"/>s for all types in the Durian.Generator namespace.

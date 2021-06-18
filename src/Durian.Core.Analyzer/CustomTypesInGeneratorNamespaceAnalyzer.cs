@@ -6,18 +6,22 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using static Durian.Generator.Core.DurianDiagnostics;
+using static Durian.Analysis.DurianDiagnostics;
 
-namespace Durian.Generator.Core
+namespace Durian.Analysis
 {
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
+
 	/// <summary>
-	/// Analyzes if the user added custom types to the <c>Durian.Generator.Core</c> namespace.
+	/// Analyzes if the user added custom types to the <c>Durian.Analysis</c> namespace.
 	/// </summary>
 #if !MAIN_PACKAGE
 
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
+
 	public sealed class CustomTypesInGeneratorNamespaceAnalyzer : DurianAnalyzer
+#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(

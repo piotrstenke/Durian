@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Cache
+namespace Durian.Analysis.Cache
 {
 	/// <summary>
 	/// <see cref="IDurianSourceGenerator"/> that can retrieve data defined in a <see cref="CachedGeneratorExecutionContext{T}"/>.

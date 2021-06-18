@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.Data
+namespace Durian.Analysis.Data
 {
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="ClassDeclarationSyntax"/>.

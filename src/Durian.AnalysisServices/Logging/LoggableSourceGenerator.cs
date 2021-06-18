@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	/// <inheritdoc cref="ILoggableSourceGenerator"/>
 	public abstract class LoggableSourceGenerator : ILoggableSourceGenerator
@@ -90,11 +90,6 @@ namespace Durian.Generator.Logging
 		/// <inheritdoc/>
 		public abstract void Execute(in GeneratorExecutionContext context);
 
-		void ISourceGenerator.Execute(GeneratorExecutionContext context)
-		{
-			Execute(in context);
-		}
-
 		/// <inheritdoc/>
 		public abstract void Initialize(GeneratorInitializationContext context);
 
@@ -137,6 +132,11 @@ namespace Durian.Generator.Logging
 			{
 				LogNode_Internal(node, hintName);
 			}
+		}
+
+		void ISourceGenerator.Execute(GeneratorExecutionContext context)
+		{
+			Execute(in context);
 		}
 
 		internal void LogDiagnostics_Internal(SyntaxNode node, string hintName, Diagnostic[] diagnostics)

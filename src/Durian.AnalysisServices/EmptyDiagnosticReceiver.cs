@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// A <see cref="IDirectDiagnosticReceiver"/> that does not actually report any diagnostics.

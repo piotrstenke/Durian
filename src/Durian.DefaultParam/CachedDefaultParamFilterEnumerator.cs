@@ -7,13 +7,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Durian.Generator.Cache;
-using Durian.Generator.Data;
-using Durian.Generator.Logging;
+using Durian.Analysis.Cache;
+using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Enumerates through <see cref="IDefaultParamTarget"/>s returned by a <see cref="IDefaultParamFilter"/> or retrieved from a <see cref="CachedData{T}"/>.
@@ -41,10 +41,6 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public T? Current { readonly get; private set; }
 
-		readonly T IEnumerator<T>.Current => Current!;
-
-		readonly object IEnumerator.Current => Current!;
-
 		/// <summary>
 		/// <see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.
 		/// </summary>
@@ -54,6 +50,10 @@ namespace Durian.Generator.DefaultParam
 		/// <see cref="IDefaultParamFilter{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.
 		/// </summary>
 		public readonly IDefaultParamFilter<T> Filter { get; }
+
+		readonly T IEnumerator<T>.Current => Current!;
+
+		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>
 		/// <see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s.
@@ -95,11 +95,6 @@ namespace Durian.Generator.DefaultParam
 		public static explicit operator DefaultParamFilterEnumerator<T>(CachedDefaultParamFilterEnumerator<T> a)
 		{
 			return new DefaultParamFilterEnumerator<T>(a.Filter, a.DiagnosticReceiver, a._index);
-		}
-
-		readonly void IDisposable.Dispose()
-		{
-			// Do nothing.
 		}
 
 		/// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>
@@ -155,6 +150,11 @@ namespace Durian.Generator.DefaultParam
 		{
 			_index = 0;
 			Current = null;
+		}
+
+		readonly void IDisposable.Dispose()
+		{
+			// Do nothing.
 		}
 	}
 }

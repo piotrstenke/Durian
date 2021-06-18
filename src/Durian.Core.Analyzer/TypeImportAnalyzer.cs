@@ -9,10 +9,12 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using static Durian.Generator.Core.DurianDiagnostics;
+using static Durian.Analysis.DurianDiagnostics;
 
-namespace Durian.Generator.Core
+namespace Durian.Analysis
 {
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
+
 	/// <summary>
 	/// Analyzes if the Durian types used by the user are properly imported.
 	/// </summary>
@@ -20,7 +22,9 @@ namespace Durian.Generator.Core
 
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
+
 	public sealed class TypeImportAnalyzer : DurianAnalyzer<CompilationWithImportedTypes>
+#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(

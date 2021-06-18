@@ -7,7 +7,7 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// Contains various extensions methods for the <see cref="CSharpGeneratorDriver"/> class.

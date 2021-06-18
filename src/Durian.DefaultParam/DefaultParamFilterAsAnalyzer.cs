@@ -2,13 +2,14 @@
 // Licensed under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Durian.Generator.Cache;
+using Durian.Analysis.Cache;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Base class for all DefaultParam <see cref="ISyntaxFilter"/>s that want to act as an Roslyn analyzer.
@@ -28,6 +29,9 @@ namespace Durian.Generator.DefaultParam
 		protected DefaultParamFilterAsAnalyzer()
 		{
 		}
+
+		/// <inheritdoc/>
+		public abstract IEnumerable<DiagnosticDescriptor> GetSupportedDiagnostics();
 
 		/// <inheritdoc/>
 		public void Register(IDurianAnalysisContext context, CSharpCompilation compilation, ConcurrentDictionary<FileLinePositionSpan, T> cached)

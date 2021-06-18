@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="INodeValidatorWithDiagnostics{T}"/> with an option to report diagnostics using a <see cref="IDiagnosticReceiver"/>.
@@ -38,10 +38,6 @@ namespace Durian.Generator
 		/// </summary>
 		public T? Current { readonly get; private set; }
 
-		readonly T IEnumerator<T>.Current => Current!;
-
-		readonly object IEnumerator.Current => Current!;
-
 		/// <summary>
 		/// <see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.
 		/// </summary>
@@ -51,6 +47,10 @@ namespace Durian.Generator
 		/// <see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.
 		/// </summary>
 		public readonly INodeValidatorWithDiagnostics<T> Validator { get; }
+
+		readonly T IEnumerator<T>.Current => Current!;
+
+		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FilterEnumeratorWithDiagnostics{T}"/> struct.
@@ -82,11 +82,6 @@ namespace Durian.Generator
 			_index = index;
 			DiagnosticReceiver = diagnosticReceiver;
 			Current = default;
-		}
-
-		void IDisposable.Dispose()
-		{
-			// Do nothing.
 		}
 
 		/// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>
@@ -129,6 +124,11 @@ namespace Durian.Generator
 		public readonly FilterEnumerator<T> ToBasicEnumerator()
 		{
 			return new FilterEnumerator<T>(_nodes, Compilation, Validator, _index);
+		}
+
+		void IDisposable.Dispose()
+		{
+			// Do nothing.
 		}
 	}
 }

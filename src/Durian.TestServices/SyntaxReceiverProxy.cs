@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Durian.Generator;
+using Durian.Analysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// A simple proxy class that implements the <see cref="IDurianSyntaxReceiver"/> interface.

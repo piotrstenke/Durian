@@ -4,7 +4,7 @@
 using System.Collections.Concurrent;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Cache
+namespace Durian.Analysis.Cache
 {
 	/// <summary>
 	/// Offers functionality equivalent to the <see cref="GeneratorExecutionContext"/> with additional methods that can retrieve cached data.

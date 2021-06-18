@@ -5,16 +5,18 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Durian.Analysis.Extensions;
 using Durian.Configuration;
-using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using static Durian.Generator.DefaultParam.DefaultParamDiagnostics;
+using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
+
 	/// <summary>
 	/// Analyzes the usage of the <see cref="DefaultParamConfigurationAttribute"/>
 	/// </summary>
@@ -22,7 +24,9 @@ namespace Durian.Generator.DefaultParam
 
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
+
 	public sealed class DefaultParamConfigurationAnalyzer : DurianAnalyzer<DefaultParamCompilationData>
+#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(

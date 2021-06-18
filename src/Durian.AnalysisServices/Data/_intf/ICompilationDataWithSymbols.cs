@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Data
+namespace Durian.Analysis.Data
 {
 	/// <summary>
 	/// <see cref="ICompilationData"/> that collects <see cref="ISymbol"/>s..

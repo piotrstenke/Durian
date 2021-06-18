@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Generator.Logging;
+using Durian.Analysis.Logging;
 using Durian.Info;
 
 #if !MAIN_PACKAGE
@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis;
 
 #endif
 
-namespace Durian.Generator.Core
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Enables the <see cref="DurianModule.Core"/> module.
@@ -19,18 +19,23 @@ namespace Durian.Generator.Core
 
 	[Generator(LanguageNames.CSharp)]
 #endif
+
 	public sealed class EnableCoreGenerator : DurianGeneratorBase
 	{
 		/// <summary>
 		/// Number of trees generated statically by this generator.
 		/// </summary>
+#if MAIN_PACKAGE
+		public const int NumStaticTrees = 0;
+#else
 		public const int NumStaticTrees = 1;
+#endif
 
 		/// <inheritdoc cref="DurianGeneratorBase.GetGeneratorName"/>
 		public static string GeneratorName => nameof(EnableCoreGenerator);
 
 		/// <inheritdoc cref="DurianGeneratorBase.GetVersion"/>
-		public static string Version => "1.0.0";
+		public static string Version => "1.1.0";
 
 		/// <inheritdoc cref="EnableCoreGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
 		public EnableCoreGenerator()

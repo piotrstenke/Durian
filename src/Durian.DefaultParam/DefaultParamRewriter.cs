@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Creates new <see cref="CSharpSyntaxNode"/>s based on the specified DefualtParam <see cref="CSharpSyntaxNode"/>s.
@@ -21,19 +21,9 @@ namespace Durian.Generator.DefaultParam
 		private int _numParameters;
 
 		/// <summary>
-		/// <see cref="OriginalNode"/> after modification.
-		/// </summary>
-		public CSharpSyntaxNode CurrentNode => DeclarationBuilder.CurrentNode;
-
-		/// <summary>
 		/// <see cref="IDefaultParamDeclarationBuilder"/> that is used to generate new <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
 		public IDefaultParamDeclarationBuilder DeclarationBuilder { get; private set; }
-
-		/// <summary>
-		/// Original <see cref="CSharpSyntaxNode"/>.
-		/// </summary>
-		public CSharpSyntaxNode OriginalNode => DeclarationBuilder.OriginalNode;
 
 		/// <summary>
 		/// <see cref="DefaultParamCompilationData"/> the <see cref="OriginalNode"/> is to be found in.
@@ -43,6 +33,16 @@ namespace Durian.Generator.DefaultParam
 			get => _collector.ParentCompilation;
 			set => _collector.ParentCompilation = value;
 		}
+
+		/// <summary>
+		/// <see cref="OriginalNode"/> after modification.
+		/// </summary>
+		public CSharpSyntaxNode CurrentNode => DeclarationBuilder.CurrentNode;
+
+		/// <summary>
+		/// Original <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
+		public CSharpSyntaxNode OriginalNode => DeclarationBuilder.OriginalNode;
 
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="OriginalNode"/>.
@@ -190,6 +190,7 @@ namespace Durian.Generator.DefaultParam
 			_includedConstraintSymbols.Clear();
 			_numConstraints = 0;
 			_replacer.Reset();
+
 			// The collector.Reset() method only clears the list of symbols, and replacer.Reset() already does that
 			//_collector.Reset();
 		}

@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Builds a new <see cref="MethodDeclarationSyntax"/> based on the value specified in the <see cref="DefaultParamAttribute"/>.
@@ -32,19 +32,19 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public MethodDeclarationSyntax CurrentDeclaration { get; private set; }
 
-		CSharpSyntaxNode IDefaultParamDeclarationBuilder.CurrentNode => CurrentDeclaration;
-
 		/// <summary>
 		/// Original <see cref="MethodDeclarationSyntax"/>.
 		/// </summary>
 		public MethodDeclarationSyntax OriginalDeclaration { get; private set; }
 
-		CSharpSyntaxNode IDefaultParamDeclarationBuilder.OriginalNode => OriginalDeclaration;
-
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="OriginalDeclaration"/>.
 		/// </summary>
 		public SemanticModel SemanticModel { get; private set; }
+
+		CSharpSyntaxNode IDefaultParamDeclarationBuilder.CurrentNode => CurrentDeclaration;
+
+		CSharpSyntaxNode IDefaultParamDeclarationBuilder.OriginalNode => OriginalDeclaration;
 
 		bool IDefaultParamDeclarationBuilder.VisitDeclarationBody => _callMethodSyntax is null;
 
@@ -89,11 +89,6 @@ namespace Durian.Generator.DefaultParam
 		public void Emplace(MethodDeclarationSyntax declaration)
 		{
 			CurrentDeclaration = declaration;
-		}
-
-		void IDefaultParamDeclarationBuilder.Emplace(CSharpSyntaxNode node)
-		{
-			CurrentDeclaration = (MethodDeclarationSyntax)node;
 		}
 
 		/// <summary>
@@ -209,6 +204,11 @@ namespace Durian.Generator.DefaultParam
 			{
 				CurrentDeclaration = CurrentDeclaration.WithModifiers(modifiers);
 			}
+		}
+
+		void IDefaultParamDeclarationBuilder.Emplace(CSharpSyntaxNode node)
+		{
+			CurrentDeclaration = (MethodDeclarationSyntax)node;
 		}
 
 		private void CheckDirectCall(int count)

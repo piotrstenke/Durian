@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.SyntaxVisitors
+namespace Durian.Analysis.SyntaxVisitors
 {
 	/// <summary>
 	/// Replaces node of the specified type with the provided <see cref="SyntaxNodeOrToken"/>.

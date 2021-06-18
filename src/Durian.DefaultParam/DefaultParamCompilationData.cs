@@ -3,13 +3,13 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Durian.Configuration;
-using Durian.Generator.Data;
-using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// <see cref="CompilationData"/> that contains all <see cref="ISymbol"/>s needed to generate source code using the <see cref="DefaultParamGenerator"/>.

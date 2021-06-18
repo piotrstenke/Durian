@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Generator.Data;
-using Durian.Generator.Logging;
+using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
 
-namespace Durian.Generator.Cache
+namespace Durian.Analysis.Cache
 {
 	/// <inheritdoc cref="CachedDurianGenerator{TCompilationData, TSyntaxReceiver, TFilter, TData}"/>
 	public abstract class CachedDurianGenerator<TData> : CachedDurianGenerator<ICompilationDataWithSymbols, IDurianSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>, TData>

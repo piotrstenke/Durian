@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	/// <summary>
 	/// Specifies whether a <see cref="IDiagnosticReceiver"/> should log the <see cref="Diagnostic"/>s, report them or both or neither.

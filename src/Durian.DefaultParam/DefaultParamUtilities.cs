@@ -5,16 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Durian.Analysis.Cache;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
+using Durian.Analysis.Logging;
 using Durian.Configuration;
-using Durian.Generator.Cache;
-using Durian.Generator.Data;
-using Durian.Generator.Extensions;
-using Durian.Generator.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Contains various utility methods related to the 'DefaultParam' module.

@@ -50,14 +50,14 @@ namespace Durian.Info
 			DurianModule module,
 			int id,
 			PackageIdentity[]? packages,
-			string? docPath,
+			string? docsPath,
 			DiagnosticData[]? diagnostics,
 			TypeIdentity[]? types
 		)
 		{
 			Module = module;
 			AnalysisId = (IdSection)id;
-			Documentation = docPath is not null ? @$"{DurianInfo.Repository}\{docPath}" : string.Empty;
+			Documentation = docsPath is not null ? @$"{DurianInfo.Repository}\{docsPath}" : string.Empty;
 
 			_packages = packages is null ? ImmutableArray.Create<PackageIdentity>() : ImmutableArray.Create(packages);
 

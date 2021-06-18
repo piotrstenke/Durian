@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	/// <summary>
 	/// Disables generator logging for the entire assembly and all its references.

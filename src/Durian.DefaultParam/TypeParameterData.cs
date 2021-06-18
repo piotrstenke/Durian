@@ -7,12 +7,12 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Contains data of a single type parameter required by the <see cref="DefaultParamGenerator"/>.
@@ -34,11 +34,6 @@ namespace Durian.Generator.DefaultParam
 		/// <see cref="Location"/> of the <see cref="Syntax"/>.
 		/// </summary>
 		public readonly Location Location => Attribute?.GetLocation() ?? Syntax.GetLocation();
-
-		/// <summary>
-		/// Name of the <see cref="Symbol"/>.
-		/// </summary>
-		public readonly string Name => Symbol.Name;
 
 		/// <summary>
 		/// Parent <see cref="MemberDeclarationSyntax"/> of the <see cref="Syntax"/>.
@@ -64,6 +59,11 @@ namespace Durian.Generator.DefaultParam
 		/// The <see cref="ITypeSymbol"/> that was specified using the <see cref="Attribute"/>. -or- <see langword="null"/> if <see cref="Attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.
 		/// </summary>
 		public readonly ITypeSymbol? TargetType { get; }
+
+		/// <summary>
+		/// Name of the <see cref="Symbol"/>.
+		/// </summary>
+		public readonly string Name => Symbol.Name;
 
 		/// <inheritdoc cref="TypeParameterData(TypeParameterSyntax, ITypeParameterSymbol, SemanticModel, AttributeSyntax, ITypeSymbol)"/>
 		public TypeParameterData(TypeParameterSyntax syntax, ITypeParameterSymbol symbol, SemanticModel semanticModel) : this(syntax, symbol, semanticModel, null, null)

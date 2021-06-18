@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// A collection of <see cref="ISyntaxFilter"/>s.
@@ -22,17 +22,10 @@ namespace Durian.Generator
 		private string? _name;
 
 		/// <summary>
-		/// Number of <typeparamref name="TFilter"/>s in this <see cref="FilterGroup{TFilter}"/>.
-		/// </summary>
-		public int Count => _filters.Count;
-
-		/// <summary>
 		/// Determines whether this <see cref="FilterGroup{TFilter}"/> has a name.
 		/// </summary>
 		[MemberNotNullWhen(true, nameof(Name))]
 		public bool HasName => Name is not null;
-
-		bool ICollection<TFilter>.IsReadOnly => IsSealed;
 
 		/// <summary>
 		/// Determines whether this <see cref="FilterGroup{TFilter}"/> is sealed by calling the <see cref="Seal"/> method.
@@ -65,6 +58,13 @@ namespace Durian.Generator
 				_name = value;
 			}
 		}
+
+		/// <summary>
+		/// Number of <typeparamref name="TFilter"/>s in this <see cref="FilterGroup{TFilter}"/>.
+		/// </summary>
+		public int Count => _filters.Count;
+
+		bool ICollection<TFilter>.IsReadOnly => IsSealed;
 
 		/// <inheritdoc cref="GetFilter(int)"/>
 		public TFilter this[int index] => GetFilter(index);
@@ -118,11 +118,6 @@ namespace Durian.Generator
 			Name = name;
 		}
 
-		void ICollection<TFilter>.Add(TFilter item)
-		{
-			AddFilter(item);
-		}
-
 		/// <summary>
 		/// Adds the specified <paramref name="filter"/> to this <see cref="FilterGroup{TFilter}"/>.
 		/// </summary>
@@ -169,11 +164,6 @@ namespace Durian.Generator
 			_filters.Clear();
 		}
 
-		bool ICollection<TFilter>.Contains(TFilter item)
-		{
-			return ContainsFilter(item);
-		}
-
 		/// <summary>
 		/// Checks if the <see cref="FilterGroup{TFilter}"/> contains the specified <paramref name="filter"/>.
 		/// </summary>
@@ -183,20 +173,10 @@ namespace Durian.Generator
 			return _filters.Contains(filter);
 		}
 
-		void ICollection<TFilter>.CopyTo(TFilter[] array, int arrayIndex)
-		{
-			_filters.CopyTo(array, arrayIndex);
-		}
-
 		/// <inheritdoc/>
 		public IEnumerator<TFilter> GetEnumerator()
 		{
 			return _filters.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
 		}
 
 		/// <summary>
@@ -217,11 +197,6 @@ namespace Durian.Generator
 		public TFilter[] GetFilters(int index, int count)
 		{
 			return _filters.GetRange(index, count).ToArray();
-		}
-
-		bool ICollection<TFilter>.Remove(TFilter item)
-		{
-			return RemoveFilter(item);
 		}
 
 		/// <summary>
@@ -284,6 +259,31 @@ namespace Durian.Generator
 		public void Unseal()
 		{
 			IsSealed = false;
+		}
+
+		void ICollection<TFilter>.Add(TFilter item)
+		{
+			AddFilter(item);
+		}
+
+		bool ICollection<TFilter>.Contains(TFilter item)
+		{
+			return ContainsFilter(item);
+		}
+
+		void ICollection<TFilter>.CopyTo(TFilter[] array, int arrayIndex)
+		{
+			_filters.CopyTo(array, arrayIndex);
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		bool ICollection<TFilter>.Remove(TFilter item)
+		{
+			return RemoveFilter(item);
 		}
 
 		private void ThrowIfSealed()

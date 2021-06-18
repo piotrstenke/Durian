@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Specifies that the target <see cref="DiagnosticDescriptor"/> does not have a specific location.

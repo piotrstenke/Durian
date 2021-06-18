@@ -8,10 +8,13 @@
     <PackageVersion>1.1.0</PackageVersion>
     <AssemblyVersion>1.1.0</AssemblyVersion>
     <Version>1.1.0</Version>
-    <RootNamespace>Durian.Generator.Core</RootNamespace>
+    <RootNamespace>Durian.Analysis</RootNamespace>
+    <Configurations>Debug;Release;Main Package</Configurations>
+    <IsRoslynComponent>true</IsRoslynComponent>
 
     <DevelopmentDependency>true</DevelopmentDependency>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     
   </PropertyGroup>
 
@@ -30,8 +33,8 @@
 
   <ItemGroup>
 
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.9.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.10.0" PrivateAssets="all" />
     
   </ItemGroup>
 

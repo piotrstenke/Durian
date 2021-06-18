@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// Specifies that the marked <c>static readonly</c> or <c>const</c> <see cref="string"/> field will be automatically added to the provided <see cref="CSharpCompilation"/>.

@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Generator.Data;
-using Durian.Generator.Logging;
+using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <inheritdoc cref="DurianGeneratorWithBuilder{TCompilationData, TSyntaxReceiver, TFilter}"/>
 	public abstract class DurianGeneratorWithBuilder<TCompilationData> : DurianGeneratorWithBuilder<TCompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>

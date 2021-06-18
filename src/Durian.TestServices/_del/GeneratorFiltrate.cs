@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Generator;
+using Durian.Analysis;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// A delegate that accepts a <see cref="FilterGroup{TFilter}"/> and <see cref="GeneratorExecutionContext"/>.

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	public sealed partial class GeneratorLoggingConfiguration
 	{

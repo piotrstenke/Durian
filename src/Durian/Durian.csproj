@@ -3,46 +3,27 @@
   <PropertyGroup>
 
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>This package contains all released modules of the Durian framework.</Description>
-    <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Core</PackageTags>
+    <Description>This is the main package of the Durian framework. Here you can access all the existing Durian modules.</Description>
+    <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Core;Module</PackageTags>
     <PackageVersion>1.2.0</PackageVersion>
     <AssemblyVersion>1.2.0</AssemblyVersion>
     <Version>1.2.0</Version>
     <RootNamespace>Durian</RootNamespace>
-
-    <DevelopmentDependency>true</DevelopmentDependency>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-
+    <Configurations>Debug;Release;Main Package</Configurations>
+    
   </PropertyGroup>
 
   <ItemGroup>
 
-    <Compile Include="..\NullableAttributes.cs" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
-    
-  </ItemGroup>
+    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj"/>
+    <ProjectReference Include="..\Durian.Manager\Durian.Manager.csproj" PrivateAssets="all" />
 
-  <ItemGroup>
+    <None Include="$(OutputPath)\Durian.Manager.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\Durian.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\Durian.Core.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\Durian.AnalysisServices.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\Durian.DefaultParam.Dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
-    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj">
-      <Properties>DefineConstants=MAIN_PACKAGE</Properties>
-    </ProjectReference>
-    
-    <ProjectReference Include="..\Durian.Core.Analyzer\Durian.Core.Analyzer.csproj">
-      <PrivateAssets>all</PrivateAssets>
-      <Properties>DefineConstants=MAIN_PACKAGE</Properties>
-    </ProjectReference>
-    
-    <ProjectReference Include="..\Durian.DefaultParam\Durian.DefaultParam.csproj">
-      <PrivateAssets>all</PrivateAssets>
-      <Properties>DefineConstants=MAIN_PACKAGE</Properties>
-    </ProjectReference>
-    
-    <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj">
-      <PrivateAssets>all</PrivateAssets>
-      <Properties>DefineConstants=MAIN_PACKAGE</Properties>
-    </ProjectReference>
-    
   </ItemGroup>
   
 </Project>

@@ -3,10 +3,10 @@
 
 using System;
 using System.Text;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Extensions
+namespace Durian.Analysis.Extensions
 {
 	/// <summary>
 	/// Contains various extension methods for the <see cref="IMemberData"/> interface.

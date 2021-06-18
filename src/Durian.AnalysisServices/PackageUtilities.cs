@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using static Durian.Info.PackageIdentity;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Utility class that contains static methods similar to those <see cref="PackageIdentity"/>, but with <see cref="CSharpCompilation"/> as arguments instead of <see cref="Assembly"/>.
@@ -270,7 +270,7 @@ namespace Durian.Generator
 
 			foreach (DurianPackage package in allPackages)
 			{
-				string packageName = EnumToString(package);
+				string packageName = PackageToString(package);
 
 				if (HasReference_Internal(packageName, compilation))
 				{
@@ -338,7 +338,7 @@ namespace Durian.Generator
 			foreach (DurianPackage package in packages)
 			{
 				CheckIsValidPackageEnum(package);
-				string packageName = EnumToString(package);
+				string packageName = PackageToString(package);
 
 				if (HasReference_Internal(packageName, compilation))
 				{
@@ -409,7 +409,7 @@ namespace Durian.Generator
 			foreach (DurianPackage package in packages)
 			{
 				CheckIsValidPackageEnum(package);
-				string packageName = EnumToString(package);
+				string packageName = PackageToString(package);
 
 				if (HasReference_Internal(packageName, compilation) && set.Add(package))
 				{
@@ -435,7 +435,7 @@ namespace Durian.Generator
 			}
 
 			CheckIsValidPackageEnum(package);
-			string packageName = EnumToString(package);
+			string packageName = PackageToString(package);
 			return HasReference_Internal(packageName, compilation);
 		}
 

@@ -17,6 +17,7 @@ namespace Durian.Info
 		{
 			return new PackageIdentity[]
 			{
+				PackageRepository.Main,
 				PackageRepository.Core,
 				PackageRepository.CoreAnalyzer,
 				PackageRepository.AnalysisServices,
@@ -32,6 +33,7 @@ namespace Durian.Info
 		{
 			return new DurianPackage[]
 			{
+				DurianPackage.Main,
 				DurianPackage.Core,
 				DurianPackage.CoreAnalyzer,
 				DurianPackage.AnalysisServices,
@@ -301,6 +303,7 @@ namespace Durian.Info
 		{
 			return package switch
 			{
+				DurianPackage.Main => PackageRepository.Main,
 				DurianPackage.AnalysisServices => PackageRepository.AnalysisServices,
 				DurianPackage.Core => PackageRepository.Core,
 				DurianPackage.CoreAnalyzer => PackageRepository.CoreAnalyzer,
@@ -439,7 +442,7 @@ namespace Durian.Info
 			foreach (DurianPackage package in packages)
 			{
 				CheckIsValidPackageEnum(package);
-				string packageName = EnumToString(package);
+				string packageName = PackageToString(package);
 
 				if (HasReference_Internal(packageName, assembly) && set.Add(package))
 				{
@@ -481,7 +484,7 @@ namespace Durian.Info
 
 			foreach (DurianPackage package in allPackages)
 			{
-				string packageName = EnumToString(package);
+				string packageName = PackageToString(package);
 
 				if (HasReference_Internal(packageName, assembly))
 				{
@@ -568,7 +571,7 @@ namespace Durian.Info
 			foreach (DurianPackage package in packages)
 			{
 				CheckIsValidPackageEnum(package);
-				string packageName = EnumToString(package);
+				string packageName = PackageToString(package);
 
 				if (HasReference_Internal(packageName, assembly))
 				{
@@ -625,7 +628,7 @@ namespace Durian.Info
 		public static bool HasReference(DurianPackage package)
 		{
 			CheckIsValidPackageEnum(package);
-			string packageName = EnumToString(package);
+			string packageName = PackageToString(package);
 			return HasReference_Internal(packageName, Assembly.GetCallingAssembly());
 		}
 
@@ -644,7 +647,7 @@ namespace Durian.Info
 			}
 
 			CheckIsValidPackageEnum(package);
-			string packageName = EnumToString(package);
+			string packageName = PackageToString(package);
 			return HasReference_Internal(packageName, assembly);
 		}
 
@@ -682,16 +685,51 @@ namespace Durian.Info
 			return HasReference_Internal(packageName, assembly);
 		}
 
-		internal static void CheckIsValidPackageEnum(DurianPackage package)
+		/// <summary>
+		/// Determines whether the specified <paramref name="package"/> is a Roslyn-based analyzer package.
+		/// </summary>
+		/// <param name="package"><see cref="DurianPackage"/> to check.</param>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		public static bool IsAnalyzerPackage(DurianPackage package)
 		{
-			if (package < DurianPackage.Core || package > DurianPackage.DefaultParam)
-			{
-				throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!");
-			}
+			PackageIdentity identity = GetPackage(package);
+			return IsAnalyzerPackage(identity.Type);
 		}
 
-		internal static string EnumToString(DurianPackage package)
+		/// <summary>
+		/// Determines whether <see cref="DurianPackage"/> with the specified <paramref name="packageName"/> is a Roslyn-based analyzer package.
+		/// </summary>
+		/// <param name="packageName">Name of the Durian package to check.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Unknown Durian package name: <paramref name="packageName"/>.</exception>
+		public static bool IsAnalyzerPackage(string packageName)
 		{
+			PackageIdentity identity = GetPackage(packageName);
+			return IsAnalyzerPackage(identity.Type);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> represents a Roslyn-based analyzer package (either <see cref="PackageType.Analyzer"/>, <see cref="PackageType.StaticGenerator"/>, <see cref="PackageType.SyntaxBasedGenerator"/> or <see cref="PackageType.FileBasedGenerator"/>).
+		/// </summary>
+		/// <param name="type"><see cref="PackageType"/> to check.</param>
+		public static bool IsAnalyzerPackage(PackageType type)
+		{
+			return
+				type.HasFlag(PackageType.Analyzer) ||
+				type.HasFlag(PackageType.StaticGenerator) ||
+				type.HasFlag(PackageType.SyntaxBasedGenerator) ||
+				type.HasFlag(PackageType.FileBasedGenerator);
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="package"/> value into a <see cref="string"/> value.
+		/// </summary>
+		/// <param name="package"><see cref="DurianPackage"/> to convert into a <see cref="string"/>.</param>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianPackage"/> value: <paramref name="package"/>.</exception>
+		public static string PackageToString(DurianPackage package)
+		{
+			CheckIsValidPackageEnum(package);
+
 			return package switch
 			{
 				DurianPackage.CoreAnalyzer => "Durian.Core.Analyzer",
@@ -699,7 +737,13 @@ namespace Durian.Info
 			};
 		}
 
-		internal static DurianPackage ParsePackge(string packageName)
+		/// <summary>
+		/// Converts the specified <paramref name="packageName"/> into a value of the <see cref="DurianPackage"/> enum.
+		/// </summary>
+		/// <param name="packageName"><see cref="string"/> to convert to a value of the <see cref="DurianPackage"/> enum.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"> Unknown Durian package name: <paramref name="packageName"/>.</exception>
+		public static DurianPackage ParsePackge(string packageName)
 		{
 			if (packageName is null)
 			{
@@ -714,6 +758,14 @@ namespace Durian.Info
 			}
 
 			throw new ArgumentException($"Unknown Durian package name: {packageName}", nameof(packageName));
+		}
+
+		internal static void CheckIsValidPackageEnum(DurianPackage package)
+		{
+			if (!DurianInfo.IsValidPackageValue(package))
+			{
+				throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!");
+			}
 		}
 
 		private static bool HasReference_Internal(string packageName, Assembly assembly)

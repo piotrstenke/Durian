@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.Data
+namespace Durian.Analysis.Data
 {
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="FieldDeclarationSyntax"/>.
@@ -16,24 +16,24 @@ namespace Durian.Generator.Data
 	public class FieldData : MemberData
 	{
 		/// <summary>
-		/// Target <see cref="FieldDeclarationSyntax"/>.
-		/// </summary>
-		public new FieldDeclarationSyntax Declaration => (base.Declaration as FieldDeclarationSyntax)!;
-
-		/// <summary>
 		/// Index of this field in the <see cref="Declaration"/>.
 		/// </summary>
 		public int Index { get; }
 
 		/// <summary>
-		/// <see cref="IFieldSymbol"/> associated with the <see cref="Declaration"/>.
-		/// </summary>
-		public new IFieldSymbol Symbol => (base.Symbol as IFieldSymbol)!;
-
-		/// <summary>
 		/// <see cref="VariableDeclaratorSyntax"/> used to declare this field. Equivalent to using <c>Declaration.Declaration.Variables[Index]</c>.
 		/// </summary>
 		public VariableDeclaratorSyntax Variable { get; }
+
+		/// <summary>
+		/// Target <see cref="FieldDeclarationSyntax"/>.
+		/// </summary>
+		public new FieldDeclarationSyntax Declaration => (base.Declaration as FieldDeclarationSyntax)!;
+
+		/// <summary>
+		/// <see cref="IFieldSymbol"/> associated with the <see cref="Declaration"/>.
+		/// </summary>
+		public new IFieldSymbol Symbol => (base.Symbol as IFieldSymbol)!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FieldData"/> class.

@@ -6,14 +6,14 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Durian.Generator.Cache;
-using Durian.Generator.Data;
-using Durian.Generator.Logging;
+using Durian.Analysis.Cache;
+using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Reports <see cref="Diagnostic"/> s for <see cref="LocalFunctionStatementSyntax"/> with the
@@ -23,8 +23,6 @@ namespace Durian.Generator.DefaultParam
 	{
 		/// <inheritdoc/>
 		public DefaultParamGenerator Generator { get; }
-
-		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
 		/// <inheritdoc/>
 		public IHintNameProvider HintNameProvider { get; }
@@ -36,6 +34,8 @@ namespace Durian.Generator.DefaultParam
 		/// <see cref="FilterMode"/> of this <see cref="DefaultParamDelegateFilter"/>.
 		/// </summary>
 		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
+
+		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
 		/// <inheritdoc cref="DefaultParamLocalFunctionFilter(DefaultParamGenerator, IHintNameProvider)"/>
 		public DefaultParamLocalFunctionFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())

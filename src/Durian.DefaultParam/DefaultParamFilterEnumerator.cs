@@ -7,12 +7,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Durian.Generator.Data;
-using Durian.Generator.Logging;
+using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Enumerates through <see cref="IDefaultParamTarget"/> s returned by a <see cref="IDefaultParamFilter{T}"/>.
@@ -41,10 +41,6 @@ namespace Durian.Generator.DefaultParam
 		/// </summary>
 		public T? Current { readonly get; private set; }
 
-		readonly T IEnumerator<T>.Current => Current!;
-
-		readonly object IEnumerator.Current => Current!;
-
 		/// <summary>
 		/// <see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>
 		/// s into a log file or buffer.
@@ -56,6 +52,10 @@ namespace Durian.Generator.DefaultParam
 		/// cref="IMemberData"/> s to enumerate through.
 		/// </summary>
 		public readonly IDefaultParamFilter<T> Filter { get; }
+
+		readonly T IEnumerator<T>.Current => Current!;
+
+		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>
 		/// <see cref="IHintNameProvider"/> that creates hint names for the <see
@@ -89,11 +89,6 @@ namespace Durian.Generator.DefaultParam
 			_nodes = filter.GetNodes().ToArray();
 			_index = index;
 			Current = default;
-		}
-
-		readonly void IDisposable.Dispose()
-		{
-			// Do nothing.
 		}
 
 		/// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>
@@ -143,6 +138,11 @@ namespace Durian.Generator.DefaultParam
 		{
 			_index = 0;
 			Current = default;
+		}
+
+		readonly void IDisposable.Dispose()
+		{
+			// Do nothing.
 		}
 	}
 }

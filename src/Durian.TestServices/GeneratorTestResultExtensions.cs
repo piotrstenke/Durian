@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// Contains various extension methods for the <see cref="IGeneratorTestResult"/> interface.

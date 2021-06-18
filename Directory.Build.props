@@ -45,7 +45,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/RELEASE_NOTES.txt"))</PackageReleaseNotes>
-    
+
   </PropertyGroup>
 
   <PropertyGroup Condition="$(MSBuildProjectDirectoryNoRoot.Contains('tests'))">
@@ -60,11 +60,5 @@
     <None Include="..\..\img\icons\Durian-pkg-icon-128.png" Pack="true" Visible="false" PackagePath="" />
   
   </ItemGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    
-    <DefineConstants>DEBUG</DefineConstants>
-  
-  </PropertyGroup>
 
 </Project>

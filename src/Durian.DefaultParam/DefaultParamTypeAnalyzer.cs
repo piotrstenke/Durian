@@ -4,15 +4,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Durian.Analysis.Extensions;
 using Durian.Configuration;
-using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+#if !MAIN_PACKAGE
+
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Durian.Generator.DefaultParam
+#endif
+
+namespace Durian.Analysis.DefaultParam
 {
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
+
 	/// <summary>
 	/// Analyzes types with type parameters marked by the <see cref="DefaultParamAttribute"/>.
 	/// </summary>
@@ -20,7 +27,9 @@ namespace Durian.Generator.DefaultParam
 
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
+
 	public sealed partial class DefaultParamTypeAnalyzer : DefaultParamAnalyzer
+#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override SymbolKind SupportedSymbolKind => SymbolKind.NamedType;
@@ -109,6 +118,14 @@ namespace Durian.Generator.DefaultParam
 		)
 		{
 			return DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(symbol, in typeParameters, compilation, targetNamespace, allowsNewModifier, out applyNew, cancellationToken);
+		}
+
+		/// <summary>
+		/// Returns a collection of all supported diagnostics of <see cref="DefaultParamDelegateAnalyzer"/>.
+		/// </summary>
+		public static IEnumerable<DiagnosticDescriptor> GetSupportedDiagnostics()
+		{
+			return GetBaseDiagnostics().Concat(GetAnalyzerSpecificDiagnosticsAsArray());
 		}
 
 		/// <summary>
@@ -203,6 +220,11 @@ namespace Durian.Generator.DefaultParam
 
 		/// <inheritdoc/>
 		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
+		{
+			return GetAnalyzerSpecificDiagnosticsAsArray();
+		}
+
+		private static DiagnosticDescriptor[] GetAnalyzerSpecificDiagnosticsAsArray()
 		{
 			return new DiagnosticDescriptor[]
 			{

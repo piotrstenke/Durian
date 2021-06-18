@@ -3,11 +3,11 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Provides methods for validating a <see cref="CSharpSyntaxNode"/>.

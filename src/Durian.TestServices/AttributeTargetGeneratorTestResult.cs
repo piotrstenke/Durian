@@ -7,7 +7,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// A <see cref="IGeneratorTestResult"/> that represents two <see cref="CSharpSyntaxTree"/>s - one for a generated <see cref="System.Attribute"/>
@@ -23,15 +23,6 @@ namespace Durian.Tests
 		public readonly GeneratedSourceResult Attribute { get; }
 
 		/// <inheritdoc/>
-		public readonly ImmutableArray<Diagnostic> Diagnostics => _runResult.Diagnostics;
-
-		/// <inheritdoc/>
-		public readonly Exception? Exception => _runResult.Exception;
-
-		/// <inheritdoc/>
-		public readonly ISourceGenerator Generator => _runResult.Generator;
-
-		/// <inheritdoc/>
 		public readonly CSharpCompilation InputCompilation { get; }
 
 		/// <inheritdoc/>
@@ -44,6 +35,15 @@ namespace Durian.Tests
 		/// A <see cref="GeneratedSourceResult"/> that represents the generated <see cref="CSharpSyntaxTree"/> that uses the generated <see cref="Attribute"/>.
 		/// </summary>
 		public readonly GeneratedSourceResult Source { get; }
+
+		/// <inheritdoc/>
+		public readonly ImmutableArray<Diagnostic> Diagnostics => _runResult.Diagnostics;
+
+		/// <inheritdoc/>
+		public readonly Exception? Exception => _runResult.Exception;
+
+		/// <inheritdoc/>
+		public readonly ISourceGenerator Generator => _runResult.Generator;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AttributeTargetGeneratorTestResult"/> struct.
@@ -76,14 +76,6 @@ namespace Durian.Tests
 		public static AttributeTargetGeneratorTestResult Create(GeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
 		{
 			return new AttributeTargetGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation);
-		}
-
-		readonly bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result)
-		{
-			return
-				result.GeneratedTrees.Length > 2 &&
-				result.GeneratedTrees[0].IsEquivalentTo(Attribute.SyntaxTree) &&
-				result.GeneratedTrees[1].IsEquivalentTo(Source.SyntaxTree);
 		}
 
 		/// <summary>
@@ -120,6 +112,14 @@ namespace Durian.Tests
 		public readonly bool CompareSource(string? expected)
 		{
 			return Compare((CSharpSyntaxTree)Source.SyntaxTree, expected);
+		}
+
+		readonly bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result)
+		{
+			return
+				result.GeneratedTrees.Length > 2 &&
+				result.GeneratedTrees[0].IsEquivalentTo(Attribute.SyntaxTree) &&
+				result.GeneratedTrees[1].IsEquivalentTo(Source.SyntaxTree);
 		}
 
 		private static bool Compare(CSharpSyntaxTree first, string? second)

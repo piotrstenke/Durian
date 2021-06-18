@@ -7,10 +7,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.Cache
+namespace Durian.Analysis.Cache
 {
 	/// <summary>
 	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="INodeValidator{T}"/> or retrieved from a <see cref="CachedData{T}"/>.
@@ -34,12 +34,12 @@ namespace Durian.Generator.Cache
 		/// <inheritdoc cref="FilterEnumerator{T}.Current"/>
 		public T? Current { readonly get; private set; }
 
+		/// <inheritdoc cref="FilterEnumerator{T}.Validator"/>
+		public readonly INodeValidator<T> Validator { get; }
+
 		readonly T IEnumerator<T>.Current => Current!;
 
 		readonly object IEnumerator.Current => Current!;
-
-		/// <inheritdoc cref="FilterEnumerator{T}.Validator"/>
-		public readonly INodeValidator<T> Validator { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FilterEnumerator{T}"/> struct.
@@ -89,11 +89,6 @@ namespace Durian.Generator.Cache
 
 #pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 
-		readonly void IDisposable.Dispose()
-		{
-			// Do nothing.
-		}
-
 		/// <summary>
 		/// Creates and validates the next <see cref="IMemberData"/>.
 		/// </summary>
@@ -131,6 +126,11 @@ namespace Durian.Generator.Cache
 		{
 			_index = 0;
 			Current = default;
+		}
+
+		readonly void IDisposable.Dispose()
+		{
+			// Do nothing.
 		}
 	}
 }

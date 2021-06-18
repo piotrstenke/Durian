@@ -3,9 +3,9 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Durian;
+using Durian.Analysis.DefaultParam;
 using Durian.Configuration;
 using Durian.Generator;
-using Durian.Generator.DefaultParam;
 using Durian.Info;
 
 [assembly: PackageDefinition(DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary, "1.2.0", DurianModule.DefaultParam)]

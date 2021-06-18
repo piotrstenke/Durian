@@ -5,7 +5,7 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Contains factory methods for creating <see cref="IDiagnosticReceiver"/>s of specific type.

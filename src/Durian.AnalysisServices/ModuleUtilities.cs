@@ -6,13 +6,14 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Extensions;
+using Durian.Generator;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using static Durian.Info.ModuleIdentity;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Utility class that contains static methods similar to those <see cref="ModuleIdentity"/>, but with <see cref="CSharpCompilation"/> or <see cref="IAssemblySymbol"/> as arguments instead of <see cref="Assembly"/>.

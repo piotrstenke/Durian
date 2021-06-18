@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.Cache
+namespace Durian.Analysis.Cache
 {
 	/// <summary>
 	/// <see cref="ICachedGeneratorSyntaxFilter{T}"/> that reports diagnostics about the received <see cref="CSharpSyntaxNode"/>s.

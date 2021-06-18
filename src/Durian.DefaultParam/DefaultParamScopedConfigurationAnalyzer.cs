@@ -3,15 +3,17 @@
 
 using System.Collections.Immutable;
 using System.Linq;
+using Durian.Analysis.Extensions;
 using Durian.Configuration;
-using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
+
 	/// <summary>
 	/// Analyzes the usage of the <see cref="DefaultParamScopedConfigurationAnalyzer"/>
 	/// </summary>
@@ -19,7 +21,9 @@ namespace Durian.Generator.DefaultParam
 
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
+
 	public sealed class DefaultParamScopedConfigurationAnalyzer : DurianAnalyzer<DefaultParamCompilationData>
+#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(

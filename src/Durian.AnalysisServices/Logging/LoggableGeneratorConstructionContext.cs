@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	/// <summary>
 	/// Contains data passed to a <see cref="LoggableSourceGenerator"/>'s constructor.
@@ -14,6 +14,10 @@ namespace Durian.Generator.Logging
 		public static LoggableGeneratorConstructionContext CurrentConfig =>
 #if DEBUG
 			Debug;
+#else
+			Runtime;
+
+#endif
 
 		/// <summary>
 		/// Returns a new <see cref="LoggableGeneratorConstructionContext"/> with all properties set to <see langword="true"/>.
@@ -51,9 +55,5 @@ namespace Durian.Generator.Logging
 		/// Determines whether to enable logging for this <see cref="LoggableSourceGenerator"/> instance if logging is supported.
 		/// </summary>
 		public readonly bool EnableLoggingIfSupported { get; init; }
-
-#else
-			Runtime;
-#endif
 	}
 }

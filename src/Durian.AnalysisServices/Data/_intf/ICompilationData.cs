@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.Data
+namespace Durian.Analysis.Data
 {
 	/// <summary>
 	/// Base interface for all classes that encapsulate the data needed during a single generator pass.

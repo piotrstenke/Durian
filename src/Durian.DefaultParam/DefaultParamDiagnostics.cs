@@ -2,9 +2,11 @@
 // Licensed under the MIT license.
 
 using Durian.Configuration;
+using Durian.Generator;
+using Durian.Info;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Contains <see cref="DiagnosticDescriptor"/>s of all the <see cref="Diagnostic"/>s that can be reported by the <see cref="DefaultParamGenerator"/> or one of the analyzers.
@@ -20,7 +22,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Containing type of a member with the DefaultParamAttribute must be partial",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0101.md",
+			helpLinkUri: DocsPath + "/DUR0101.md",
 			isEnabledByDefault: true
 		);
 
@@ -33,7 +35,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Method with the DefaultParamAttribute cannot be partial or extern",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0102.md",
+			helpLinkUri: DocsPath + "/DUR0102.md",
 			isEnabledByDefault: true
 		);
 
@@ -46,7 +48,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': DefaultParamAttribute is not valid on this type of method",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0103.md",
+			helpLinkUri: DocsPath + "/DUR0103.md",
 			isEnabledByDefault: true
 		);
 
@@ -59,7 +61,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': DefaultParamAttribute cannot be applied to members with the GeneratedCodeAttribute or DurianGeneratedAttribute",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0104.md",
+			helpLinkUri: DocsPath + "/DUR0104.md",
 			isEnabledByDefault: true
 		);
 
@@ -72,7 +74,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': DefaultParamAttribute must be placed on the right-most type parameter or right to the left-most DefaultParam type parameter",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0105.md",
+			helpLinkUri: DocsPath + "/DUR0105.md",
 			isEnabledByDefault: true
 		);
 
@@ -85,7 +87,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Type '{1}' does not satisfy the type constraint",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0106.md",
+			helpLinkUri: DocsPath + "/DUR0106.md",
 			isEnabledByDefault: true
 		);
 
@@ -98,7 +100,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Do not override methods generated using the DefaultParamAttribute",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0107.md",
+			helpLinkUri: DocsPath + "/DUR0107.md",
 			isEnabledByDefault: true
 		);
 
@@ -111,7 +113,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Value of DefaultParamAttribute of overriding method must match the base method",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0108.md",
+			helpLinkUri: DocsPath + "/DUR0108.md",
 			isEnabledByDefault: true
 		);
 
@@ -124,7 +126,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Do not add the DefaultParamAttribute on overridden type parameters that are not DefaultParam",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0109.md",
+			helpLinkUri: DocsPath + "/DUR0109.md",
 			isEnabledByDefault: true
 		);
 
@@ -137,7 +139,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': DefaultParamAttribute of overridden type parameter should be added for clarity",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Warning,
-			helpLinkUri: DocsPath + @"\DUR0110.md",
+			helpLinkUri: DocsPath + "/DUR0110.md",
 			isEnabledByDefault: true
 		);
 
@@ -150,7 +152,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': DefaultParamConfigurationAttribute is not valid on members without the DefaultParamAttribute",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0111.md",
+			helpLinkUri: DocsPath + "/DUR0111.md",
 			isEnabledByDefault: true
 		);
 
@@ -163,7 +165,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': TypeConvention property should not be used on members other than types",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Warning,
-			helpLinkUri: DocsPath + @"\DUR0112.md",
+			helpLinkUri: DocsPath + "/DUR0112.md",
 			isEnabledByDefault: true
 		);
 
@@ -176,7 +178,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': MethodConvention property should not be used on members other than methods",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Warning,
-			helpLinkUri: DocsPath + @"\DUR0113.md",
+			helpLinkUri: DocsPath + "/DUR0113.md",
 			isEnabledByDefault: true
 		);
 
@@ -189,7 +191,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Method with generated signature '{1}' already exists",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0114.md",
+			helpLinkUri: DocsPath + "/DUR0114.md",
 			isEnabledByDefault: true
 		);
 
@@ -202,7 +204,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': DefaultParamConfigurationAttribute is not valid on this type of method",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0115.md",
+			helpLinkUri: DocsPath + "/DUR0115.md",
 			isEnabledByDefault: true
 		);
 
@@ -215,7 +217,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Member with generated name '{1}' already exists",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0116.md",
+			helpLinkUri: DocsPath + "/DUR0116.md",
 			isEnabledByDefault: true
 		);
 
@@ -228,7 +230,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': DPTypeConvention.Inherit cannot be used on a struct or sealed type",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0117.md",
+			helpLinkUri: DocsPath + "/DUR0117.md",
 			isEnabledByDefault: true
 		);
 
@@ -242,7 +244,7 @@ namespace Durian.Generator.DefaultParam
 			description: "DPTypeConvention.Inherit is applied to the enclosing scope, but it is ignored for structs and classes marked as static or sealed with no accessible constructors. Explicitly apply DPTypeConvention.Copy or DPTypeConvention.Default to avoid confusion.",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Warning,
-			helpLinkUri: DocsPath + @"\DUR0118.md",
+			helpLinkUri: DocsPath + "/DUR0118.md",
 			isEnabledByDefault: true
 		);
 
@@ -255,7 +257,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': DefaultParam value '{1}' cannot be less accessible than the target member",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0119.md",
+			helpLinkUri: DocsPath + "/DUR0119.md",
 			isEnabledByDefault: true
 		);
 
@@ -268,7 +270,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Type '{1}' is not valid DefaultParam value when there is a type parameter constrained to this type parameter",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0120.md",
+			helpLinkUri: DocsPath + "/DUR0120.md",
 			isEnabledByDefault: true
 		);
 
@@ -281,7 +283,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Type '{1}' is not valid DefaultParam value",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0121.md",
+			helpLinkUri: DocsPath + "/DUR0121.md",
 			isEnabledByDefault: true
 		);
 
@@ -294,7 +296,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': DefaultParamAttribute cannot be used on a partial type",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0122.md",
+			helpLinkUri: DocsPath + "/DUR0122.md",
 			isEnabledByDefault: true
 		);
 
@@ -307,7 +309,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': TypeConvention.Inherit cannot be used on a type without accessible constructor",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0123.md",
+			helpLinkUri: DocsPath + "/DUR0123.md",
 			isEnabledByDefault: true
 		);
 
@@ -320,7 +322,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': ApplyNewModifierWhenPossible should not be used when target is not a child type",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Warning,
-			helpLinkUri: DocsPath + @"\DUR0124.md",
+			helpLinkUri: DocsPath + "/DUR0124.md",
 			isEnabledByDefault: true
 		);
 
@@ -333,7 +335,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': DefaultParamScopedConfigurationAttribute should not be used on types with no DefaultParam members",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Warning,
-			helpLinkUri: DocsPath + @"\DUR0125.md",
+			helpLinkUri: DocsPath + "/DUR0125.md",
 			isEnabledByDefault: true
 		);
 
@@ -346,7 +348,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Members with the DefaultParamAttribute cannot be nested within other DefaultParam members",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0126.md",
+			helpLinkUri: DocsPath + "/DUR0126.md",
 			isEnabledByDefault: true
 		);
 
@@ -359,7 +361,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Target namespace '{1}' is not a valid identifier; parent namespace will be used instead",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Warning,
-			helpLinkUri: DocsPath + @"\DUR0127.md",
+			helpLinkUri: DocsPath + "/DUR0127.md",
 			isEnabledByDefault: true
 		);
 
@@ -372,7 +374,7 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Do not specify target namespace for a nested member",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Warning,
-			helpLinkUri: DocsPath + @"\DUR0128.md",
+			helpLinkUri: DocsPath + "/DUR0128.md",
 			isEnabledByDefault: true
 		);
 
@@ -385,13 +387,13 @@ namespace Durian.Generator.DefaultParam
 			messageFormat: "'{0}': Namespace '{1}' already contains member with name '{2}'",
 			category: "Durian.DefaultParam",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0129.md",
+			helpLinkUri: DocsPath + "/DUR0129.md",
 			isEnabledByDefault: true
 		);
 
 		/// <summary>
 		/// Documentation directory of the <c>DefaultParam</c> module.
 		/// </summary>
-		public static string DocsPath => @"tree\master\docs\DefaultParam";
+		public static string DocsPath => DurianInfo.Repository + "/tree/master/docs/DefaultParam";
 	}
 }

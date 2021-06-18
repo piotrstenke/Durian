@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Durian.Analysis.Extensions;
 using Durian.Configuration;
-using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 
 #if !MAIN_PACKAGE
@@ -15,8 +14,10 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 #endif
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
+
 	/// <summary>
 	/// Analyzes delegates with type parameters marked by the <see cref="DefaultParamAttribute"/>.
 	/// </summary>
@@ -24,7 +25,9 @@ namespace Durian.Generator.DefaultParam
 
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
+
 	public sealed partial class DefaultParamDelegateAnalyzer : DefaultParamAnalyzer
+#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override SymbolKind SupportedSymbolKind => SymbolKind.NamedType;
@@ -184,6 +187,14 @@ namespace Durian.Generator.DefaultParam
 			);
 		}
 
+		/// <summary>
+		/// Returns a collection of all supported diagnostics of <see cref="DefaultParamDelegateAnalyzer"/>.
+		/// </summary>
+		public static IEnumerable<DiagnosticDescriptor> GetSupportedDiagnostics()
+		{
+			return GetBaseDiagnostics().Concat(GetAnalyzerSpecificDiagnosticsAsArray());
+		}
+
 		/// <inheritdoc/>
 		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
@@ -198,10 +209,7 @@ namespace Durian.Generator.DefaultParam
 		/// <inheritdoc/>
 		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
 		{
-			return new DiagnosticDescriptor[]
-			{
-				DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName
-			};
+			return GetAnalyzerSpecificDiagnosticsAsArray();
 		}
 
 		private static bool AnalyzeCollidingMembers_Internal(
@@ -249,6 +257,14 @@ namespace Durian.Generator.DefaultParam
 
 			applyNew = GetApplyNewOrNull(applyNewLocal);
 			return true;
+		}
+
+		private static DiagnosticDescriptor[] GetAnalyzerSpecificDiagnosticsAsArray()
+		{
+			return new DiagnosticDescriptor[]
+			{
+				DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName
+			};
 		}
 	}
 }

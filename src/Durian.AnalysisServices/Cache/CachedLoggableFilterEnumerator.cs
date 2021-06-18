@@ -7,12 +7,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Durian.Generator.Data;
-using Durian.Generator.Logging;
+using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.Cache
+namespace Durian.Analysis.Cache
 {
 	/// <summary>
 	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="INodeValidatorWithDiagnostics{T}"/> or retrieved from a <see cref="CachedData{T}"/> with an option to log diagnostics using a <see cref="INodeDiagnosticReceiver"/>.
@@ -40,10 +40,6 @@ namespace Durian.Generator.Cache
 		/// </summary>
 		public T? Current { readonly get; private set; }
 
-		readonly T IEnumerator<T>.Current => Current!;
-
-		readonly object IEnumerator.Current => Current!;
-
 		/// <summary>
 		/// <see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
@@ -58,6 +54,10 @@ namespace Durian.Generator.Cache
 		/// <see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.
 		/// </summary>
 		public readonly INodeValidatorWithDiagnostics<T> Validator { get; }
+
+		readonly T IEnumerator<T>.Current => Current!;
+
+		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{T}"/> struct.
@@ -112,11 +112,6 @@ namespace Durian.Generator.Cache
 		}
 
 #pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
-
-		readonly void IDisposable.Dispose()
-		{
-			// Do nothing.
-		}
 
 		/// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>
 		[MemberNotNullWhen(true, nameof(Current))]
@@ -187,6 +182,11 @@ namespace Durian.Generator.Cache
 		public readonly FilterEnumerator<T> ToBasicEnumerator()
 		{
 			return new FilterEnumerator<T>(_nodes, Compilation, Validator, _index);
+		}
+
+		readonly void IDisposable.Dispose()
+		{
+			// Do nothing.
 		}
 	}
 }

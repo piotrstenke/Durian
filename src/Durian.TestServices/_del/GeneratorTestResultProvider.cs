@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// Creates a new <see cref="IGeneratorTestResult"/> using the specified <paramref name="driver"/> and <paramref name="input"/> and <paramref name="output"/> <see cref="CSharpCompilation"/>s.

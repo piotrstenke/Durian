@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Base class for all Durian analyzers.
@@ -42,6 +44,11 @@ namespace Durian.Generator
 
 		/// <inheritdoc cref="IAnalyzerInfo.Register(IDurianAnalysisContext, CSharpCompilation)"/>
 		public abstract void Register(IDurianAnalysisContext context);
+
+		IEnumerable<DiagnosticDescriptor> IAnalyzerInfo.GetSupportedDiagnostics()
+		{
+			return SupportedDiagnostics;
+		}
 
 		void IAnalyzerInfo.Register(IDurianAnalysisContext context, CSharpCompilation compilation)
 		{

@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Tests.Fixtures
+namespace Durian.TestServices.Fixtures
 {
 	/// <summary>
 	/// A simple class that contains a single <see cref="TestableCompilationData"/> property. Useful when using the <c>Xunit.IClassFixture{T}</c> interface.

@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// <see cref="IDiagnosticReceiver"/> that reports <see cref="Diagnostic"/>s for a specified <see cref="CSharpSyntaxNode"/>.

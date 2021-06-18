@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Collects <see cref="CSharpSyntaxNode"/>s that are potential targets for the <see cref="DefaultParamGenerator"/>.
@@ -74,32 +74,6 @@ namespace Durian.Generator.DefaultParam
 			AllowsCollectingLocalFunctions = collectLocalFunctions;
 		}
 
-		IEnumerable<CSharpSyntaxNode> INodeProvider.GetNodes()
-		{
-			foreach (MethodDeclarationSyntax m in CandidateMethods)
-			{
-				yield return m;
-			}
-
-			foreach (DelegateDeclarationSyntax d in CandidateDelegates)
-			{
-				yield return d;
-			}
-
-			foreach (TypeDeclarationSyntax t in CandidateTypes)
-			{
-				yield return t;
-			}
-
-			if (CandidateLocalFunctions is not null)
-			{
-				foreach (LocalFunctionStatementSyntax fn in CandidateLocalFunctions)
-				{
-					yield return fn;
-				}
-			}
-		}
-
 		/// <inheritdoc/>
 		public bool IsEmpty()
 		{
@@ -128,6 +102,32 @@ namespace Durian.Generator.DefaultParam
 			else if (AllowsCollectingLocalFunctions && syntaxNode is LocalFunctionStatementSyntax f)
 			{
 				CollectLocalFunction(f);
+			}
+		}
+
+		IEnumerable<CSharpSyntaxNode> INodeProvider.GetNodes()
+		{
+			foreach (MethodDeclarationSyntax m in CandidateMethods)
+			{
+				yield return m;
+			}
+
+			foreach (DelegateDeclarationSyntax d in CandidateDelegates)
+			{
+				yield return d;
+			}
+
+			foreach (TypeDeclarationSyntax t in CandidateTypes)
+			{
+				yield return t;
+			}
+
+			if (CandidateLocalFunctions is not null)
+			{
+				foreach (LocalFunctionStatementSyntax fn in CandidateLocalFunctions)
+				{
+					yield return fn;
+				}
 			}
 		}
 

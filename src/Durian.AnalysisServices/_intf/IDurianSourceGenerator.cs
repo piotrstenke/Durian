@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 using System.Threading;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// <see cref="ISourceGenerator"/> that provides additional information about the current generator pass.

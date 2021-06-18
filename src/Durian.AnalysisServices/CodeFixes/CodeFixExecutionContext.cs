@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.CodeFixes
+namespace Durian.Analysis.CodeFixes
 {
 	/// <summary>
 	/// Contains data needed to execute a code fix.

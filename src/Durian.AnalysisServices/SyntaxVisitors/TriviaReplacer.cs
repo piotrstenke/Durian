@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.SyntaxVisitors
+namespace Durian.Analysis.SyntaxVisitors
 {
 	/// <summary>
 	/// Replaces <see cref="SyntaxTrivia"/>s of the specified type with the provided <see cref="Replacement"/>.

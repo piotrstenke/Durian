@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Extensions
+namespace Durian.Analysis.Extensions
 {
 	/// <summary>
 	/// Contains various extension methods for the <see cref="AttributeData"/> class.

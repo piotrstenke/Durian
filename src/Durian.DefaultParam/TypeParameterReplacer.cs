@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Replaces <see cref="CSharpSyntaxNode"/>s representing a specified <see cref="ITypeParameterSymbol"/>.
@@ -22,11 +22,6 @@ namespace Durian.Generator.DefaultParam
 		/// A <see cref="List{T}"/> that contains the indexes of <see cref="TypeParameterConstraintClauseSyntax"/> that were modified during last visit.
 		/// </summary>
 		public List<int> ChangedConstraintIndices { get; }
-
-		/// <summary>
-		/// Number of <see cref="ISymbol"/> in the <see cref="List{T}"/> of <see cref="InputSymbols"/>.
-		/// </summary>
-		public int Count => InputSymbols.Count;
 
 		/// <summary>
 		/// Determines whether any <see cref="TypeParameterConstraintClauseSyntax"/> was modified during last visit.
@@ -58,6 +53,11 @@ namespace Durian.Generator.DefaultParam
 		/// Determines whether to visit the declaration body of a <see cref="MethodDeclarationSyntax"/>. Defaults to <see langword="true"/>.
 		/// </summary>
 		public bool VisitDeclarationBody { get; set; } = true;
+
+		/// <summary>
+		/// Number of <see cref="ISymbol"/> in the <see cref="List{T}"/> of <see cref="InputSymbols"/>.
+		/// </summary>
+		public int Count => InputSymbols.Count;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TypeParameterReplacer"/> class.

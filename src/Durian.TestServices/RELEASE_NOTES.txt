@@ -1,5 +1,6 @@
 v1.1.0
 
+- Changed the name of the main namespace to Durian.TestServices.
 - Removed the DurianSourceGeneratorProxy class.
 - Minor bug-fixes.
 

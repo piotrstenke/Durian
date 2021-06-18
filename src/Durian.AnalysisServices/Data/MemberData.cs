@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.Data
+namespace Durian.Analysis.Data
 {
 	/// <inheritdoc cref="IMemberData"/>
 	[DebuggerDisplay("{Symbol}")]
@@ -33,11 +33,6 @@ namespace Durian.Generator.Data
 		/// </summary>
 		public Location Location => _location ??= Declaration.GetLocation();
 
-		/// <summary>
-		/// Name of the member.
-		/// </summary>
-		public string Name => Symbol.Name;
-
 		/// <inheritdoc/>
 		public ICompilationData ParentCompilation { get; }
 
@@ -46,6 +41,11 @@ namespace Durian.Generator.Data
 
 		/// <inheritdoc/>
 		public ISymbol Symbol { get; }
+
+		/// <summary>
+		/// Name of the member.
+		/// </summary>
+		public string Name => Symbol.Name;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemberData"/> class.

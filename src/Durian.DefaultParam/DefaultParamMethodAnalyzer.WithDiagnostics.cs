@@ -5,14 +5,17 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Durian.Generator.Data;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
+
 	public partial class DefaultParamMethodAnalyzer
+#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <summary>
 		/// Contains static methods that analyze methods with type parameters marked using the <see cref="DefaultParamAttribute"/> and report <see cref="Diagnostic"/>s for the invalid ones.

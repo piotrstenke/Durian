@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Generator.CodeFixes;
+using Durian.Analysis.CodeFixes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam.CodeFixes
+namespace Durian.Analysis.DefaultParam.CodeFixes
 {
 	//
 	// For some unknown reason Visual Studio does not register this code fix.

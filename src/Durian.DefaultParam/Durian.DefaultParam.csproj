@@ -8,17 +8,20 @@
     <PackageVersion>1.2.0</PackageVersion>
     <AssemblyVersion>1.2.0</AssemblyVersion>
     <Version>1.2.0</Version>
-    <RootNamespace>Durian.Generator.DefaultParam</RootNamespace>
+    <RootNamespace>Durian.DefaultParam</RootNamespace>
+    <Configurations>Debug;Release;Main Package</Configurations>
+    <IsRoslynComponent>true</IsRoslynComponent>
 
     <DevelopmentDependency>true</DevelopmentDependency>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     
   </PropertyGroup>
 
   <ItemGroup>
     
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" PrivateAssets="all" />
-    <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
     <Compile Include="..\NullableAttributes.cs" />
     
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
@@ -32,7 +35,7 @@
 
   <ItemGroup>
     
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" PrivateAssets="all" />
     
   </ItemGroup>
 

@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Durian.Analysis.Extensions;
 using Durian.Configuration;
-using Durian.Generator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -16,8 +16,10 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 #endif
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
+
 	/// <summary>
 	/// Analyzes methods with type parameters marked by the <see cref="DefaultParamAttribute"/>.
 	/// </summary>
@@ -25,7 +27,9 @@ namespace Durian.Generator.DefaultParam
 
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
+
 	public sealed partial class DefaultParamMethodAnalyzer : DefaultParamAnalyzer
+#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override SymbolKind SupportedSymbolKind => SymbolKind.Method;
@@ -209,6 +213,14 @@ namespace Durian.Generator.DefaultParam
 			);
 		}
 
+		/// <summary>
+		/// Returns a collection of all supported diagnostics of <see cref="DefaultParamMethodAnalyzer"/>.
+		/// </summary>
+		public static IEnumerable<DiagnosticDescriptor> GetSupportedDiagnostics()
+		{
+			return GetBaseDiagnostics().Concat(GetAnalyzerSpecificDiagnosticsAsArray());
+		}
+
 		/// <inheritdoc cref="WithDiagnostics.ShouldBeAnalyzed(IDiagnosticReceiver, IMethodSymbol, in TypeParameterContainer, DefaultParamCompilationData, out TypeParameterContainer, CancellationToken)"/>
 		public static bool ShouldBeAnalyzed(
 			IMethodSymbol symbol,
@@ -289,16 +301,7 @@ namespace Durian.Generator.DefaultParam
 		/// <inheritdoc/>
 		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
 		{
-			return new[]
-			{
-				DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern,
-				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod,
-				DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods,
-				DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase,
-				DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters,
-				DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity,
-				DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists,
-			};
+			return GetAnalyzerSpecificDiagnosticsAsArray();
 		}
 
 		private static bool AnalyzeBaseMethodParameters(in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)
@@ -415,6 +418,20 @@ namespace Durian.Generator.DefaultParam
 			}
 
 			return true;
+		}
+
+		private static DiagnosticDescriptor[] GetAnalyzerSpecificDiagnosticsAsArray()
+		{
+			return new[]
+			{
+				DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern,
+				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod,
+				DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods,
+				DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase,
+				DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters,
+				DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity,
+				DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists,
+			};
 		}
 
 		private static TypeParameterContainer GetBaseMethodTypeParameters(IMethodSymbol baseMethod, DefaultParamCompilationData compilation, CancellationToken cancellationToken)

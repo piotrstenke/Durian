@@ -649,7 +649,7 @@ $@"new PackageIdentity[]
 			builder.AppendLine("\t\t\t},");
 		}
 
-		builder.Append("\t\t\tdocPath: ");
+		builder.Append("\t\t\tdocsPath: ");
 
 		if (module.Diagnostics.Count == 0 && module.ExternalDiagnostics.Count == 0)
 		{
@@ -658,7 +658,7 @@ $@"new PackageIdentity[]
 		}
 		else
 		{
-			builder.AppendLine($"@\"{module.Documentation}\",");
+			builder.AppendLine($"\"{module.Documentation}\",");
 			builder.AppendLine("\t\t\tdiagnostics: new DiagnosticData[]");
 			builder.Append("\t\t\t{");
 
@@ -744,7 +744,7 @@ $@"				//
 $@"				new DiagnosticData(
 					title: ""{diag.Title}"",
 					id: {diag.Id.Substring(5, 2)},
-					docsPath: @""{module.Documentation}\{diag.Id}.md"",
+					docsPath: ""{module.Documentation}/{diag.Id}.md"",
 					fatal: {diag.Fatal.ToString().ToLower()},
 					hasLocation: {diag.HasLocation.ToString().ToLower()}");
 	}

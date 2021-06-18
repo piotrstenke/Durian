@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Durian.Analysis;
 using Durian.Generator;
-using Durian.Generator.Core;
 using Durian.Info;
 
 [assembly: PackageDefinition(DurianPackage.CoreAnalyzer, PackageType.Analyzer, "1.1.0", DurianModule.Core)]

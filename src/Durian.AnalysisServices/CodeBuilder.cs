@@ -7,13 +7,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Durian.Generator.Data;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// A wrapper for the <see cref="StringBuilder"/> class that helps generating C# code.

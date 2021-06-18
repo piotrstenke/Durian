@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using Durian.Info;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Core
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Contains <see cref="DiagnosticDescriptor"/> s of the most common Durian errors.
@@ -21,7 +22,7 @@ namespace Durian.Generator.Core
 			messageFormat: "Projects with any Durian analyzer must reference the Durian.Core package",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0001.md",
+			helpLinkUri: DocsPath + "/DUR0001.md",
 			isEnabledByDefault: true
 		);
 
@@ -35,7 +36,7 @@ namespace Durian.Generator.Core
 			messageFormat: "Type '{0}' cannot be accessed, because the '{1}' module is not imported",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0002.md",
+			helpLinkUri: DocsPath + "/DUR0002.md",
 			isEnabledByDefault: true
 		);
 
@@ -49,7 +50,7 @@ namespace Durian.Generator.Core
 			messageFormat: "Do not use types from the Durian.Generator namespace",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0003.md",
+			helpLinkUri: DocsPath + "/DUR0003.md",
 			isEnabledByDefault: true
 		);
 
@@ -63,7 +64,7 @@ namespace Durian.Generator.Core
 			messageFormat: "Durian modules can be used only in C#",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0004.md",
+			helpLinkUri: DocsPath + "/DUR0004.md",
 			isEnabledByDefault: true
 		);
 
@@ -76,7 +77,7 @@ namespace Durian.Generator.Core
 			messageFormat: "Do not add custom types to the Durian.Generator namespace",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0005.md",
+			helpLinkUri: DocsPath + "/DUR0005.md",
 			isEnabledByDefault: true
 		);
 
@@ -90,13 +91,27 @@ namespace Durian.Generator.Core
 			messageFormat: "Target project must use C# 9 or newer",
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + @"\DUR0006.md",
+			helpLinkUri: DocsPath + "/DUR0006.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating the target project must use C# 9 or greater.
+		/// </summary>
+		[WithoutLocation]
+		public static readonly DiagnosticDescriptor DUR0007_DoNotReferencePackageIfManagerIsPresent = new(
+			id: "DUR0007",
+			title: "Do not reference Durian analyzer package if the main Durian package is already included",
+			messageFormat: "Do not reference the '{0}' package if the main Durian package is already included",
+			category: "Durian",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + "/DUR0007.md",
 			isEnabledByDefault: true
 		);
 
 		/// <summary>
 		/// Documentation directory of the <c>AnalysisCore</c> module.
 		/// </summary>
-		public static string DocsPath => @"tree\master\docs\Core";
+		public static string DocsPath => DurianInfo.Repository + "/tree/master/docs/Core";
 	}
 }

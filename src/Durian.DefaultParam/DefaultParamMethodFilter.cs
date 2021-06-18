@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Durian.Generator.Cache;
-using Durian.Generator.Data;
-using Durian.Generator.Logging;
+using Durian.Analysis.Cache;
+using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Durian.Generator.DefaultParam.DefaultParamAnalyzer;
-using static Durian.Generator.DefaultParam.DefaultParamMethodAnalyzer;
+using static Durian.Analysis.DefaultParam.DefaultParamAnalyzer;
+using static Durian.Analysis.DefaultParam.DefaultParamMethodAnalyzer;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Filtrates and validates <see cref="MethodDeclarationBuilder"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
@@ -24,8 +24,6 @@ namespace Durian.Generator.DefaultParam
 	{
 		/// <inheritdoc/>
 		public DefaultParamGenerator Generator { get; }
-
-		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
 		/// <inheritdoc/>
 		public IHintNameProvider HintNameProvider { get; }
@@ -37,6 +35,8 @@ namespace Durian.Generator.DefaultParam
 		/// <see cref="FilterMode"/> of this <see cref="DefaultParamMethodFilter"/>.
 		/// </summary>
 		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
+
+		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
 		/// <inheritdoc cref="DefaultParamMethodFilter(DefaultParamGenerator, IHintNameProvider)"/>
 		public DefaultParamMethodFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())

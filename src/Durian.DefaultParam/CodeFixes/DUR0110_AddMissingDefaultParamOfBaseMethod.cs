@@ -2,14 +2,14 @@
 // Licensed under the MIT license.
 
 using System.Threading.Tasks;
-using Durian.Generator.CodeFixes;
+using Durian.Analysis.CodeFixes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam.CodeFixes
+namespace Durian.Analysis.DefaultParam.CodeFixes
 {
 	/// <summary>
 	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity"/> diagnostic.

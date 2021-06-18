@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Durian.Generator.Data;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// <see cref="DelegateData"/> that contains additional information needed by the <see cref="DefaultParamGenerator"/>.

@@ -3,13 +3,13 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Durian.Generator.Extensions;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Durian.Generator.SyntaxVisitors
+namespace Durian.Analysis.SyntaxVisitors
 {
 	/// <summary>
 	/// Replaces <see cref="IdentifierNameSyntax"/> with <see cref="QualifiedNameSyntax"/>.

@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	/// <inheritdoc cref="GeneratorLoggingConfiguration"/>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
@@ -16,31 +16,31 @@ namespace Durian.Generator.Logging
 		/// <summary>
 		/// Determines whether to enable the <see cref="ISourceGenerator"/> can throw <see cref="Exception"/>s. Defaults to <see langword="false"/>
 		/// </summary>
-		public bool EnableExceptions { get; init; }
+		public bool EnableExceptions { get; set; }
 
 		/// <summary>
 		/// The directory the source generator logs will be written to. If not specified, <see cref="GeneratorLoggingConfiguration.DefaultLogDirectory"/> is used instead.
 		/// </summary>
-		public string? LogDirectory { get; init; }
+		public string? LogDirectory { get; set; }
 
 		/// <summary>
 		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="GeneratorLoggingConfiguration.DefaultLogDirectory"/>. Defaults to <see langword="false"/>.
 		/// </summary>
 		/// <remarks>If <see cref="RelativeToDefault"/> is set to <see langword="true"/>, value of <see cref="RelativeToGlobal"/> is irrelevant.</remarks>
-		public bool RelativeToDefault { get; init; }
+		public bool RelativeToDefault { get; set; }
 
 		/// <summary>
 		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="DefaultGeneratorLoggingConfigurationAttribute.LogDirectory"/>. Defaults to <see langword="true"/>.
 		/// </summary>
-		public bool RelativeToGlobal { get; init; } = true;
+		public bool RelativeToGlobal { get; set; } = true;
 
 		/// <inheritdoc cref="GeneratorLoggingConfiguration.SupportedLogs"/>
-		public GeneratorLogs SupportedLogs { get; init; }
+		public GeneratorLogs SupportedLogs { get; set; }
 
 		/// <summary>
 		/// Determines whether the <see cref="ISourceGenerator"/> supports reporting <see cref="Diagnostic"/>s. Defaults to <see langword="false"/>
 		/// </summary>
-		public bool SupportsDiagnostics { get; init; }
+		public bool SupportsDiagnostics { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLoggingConfigurationAttribute"/> class.

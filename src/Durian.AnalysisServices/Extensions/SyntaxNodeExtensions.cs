@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.Extensions
+namespace Durian.Analysis.Extensions
 {
 	/// <summary>
 	/// Contains various extension methods for <see cref="SyntaxNode"/>-derived classes.

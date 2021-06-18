@@ -9,28 +9,33 @@ namespace Durian.Info
 	public enum DurianPackage
 	{
 		/// <summary>
+		/// Represents the <c>Durian</c> package.
+		/// </summary>
+		Main = 1,
+
+		/// <summary>
 		/// Represents the <c>Durian.Core</c> package.
 		/// </summary>
-		Core = 1,
+		Core = 2,
 
 		/// <summary>
 		/// Represents the <c>Durian.Core.Analyzer</c> package.
 		/// </summary>
-		CoreAnalyzer = 2,
+		CoreAnalyzer = 3,
 
 		/// <summary>
 		/// Represents the <c>Durian.AnalysisServices</c> package.
 		/// </summary>
-		AnalysisServices = 3,
+		AnalysisServices = 4,
 
 		/// <summary>
 		/// Represents the <c>Durian.TestServices</c> package.
 		/// </summary>
-		TestServices = 4,
+		TestServices = 5,
 
 		/// <summary>
 		/// Represents the <c>Durian.DefaultParam</c> package.
 		/// </summary>
-		DefaultParam = 5,
+		DefaultParam = 6,
 	}
 }

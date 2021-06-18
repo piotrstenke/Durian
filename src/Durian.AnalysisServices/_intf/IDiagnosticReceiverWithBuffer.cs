@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// <see cref="IDiagnosticReceiver"/> that writes the <see cref="Diagnostic"/>s into an internal buffer.

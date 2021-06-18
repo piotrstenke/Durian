@@ -5,7 +5,7 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.Logging
+namespace Durian.Analysis.Logging
 {
 	/// <summary>
 	/// A <see cref="INodeDiagnosticReceiver"/> that uses a <see cref="LoggableSourceGenerator"/> to log the received <see cref="Diagnostic"/>s.
@@ -13,9 +13,6 @@ namespace Durian.Generator.Logging
 	public class LoggableGeneratorDiagnosticReceiver : INodeDiagnosticReceiver
 	{
 		private readonly DiagnosticBag _bag;
-
-		/// <inheritdoc/>
-		public int Count => _bag.Count;
 
 		/// <summary>
 		/// <see cref="LoggableSourceGenerator"/> this <see cref="LoggableGeneratorDiagnosticReceiver"/> reports the diagnostics to.
@@ -31,6 +28,9 @@ namespace Durian.Generator.Logging
 		/// Target <see cref="CSharpSyntaxNode"/>.
 		/// </summary>
 		public CSharpSyntaxNode? Node { get; private set; }
+
+		/// <inheritdoc/>
+		public int Count => _bag.Count;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableSourceGenerator"/> class.

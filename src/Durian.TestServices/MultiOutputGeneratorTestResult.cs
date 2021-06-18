@@ -7,7 +7,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// A <see cref="IGeneratorTestResult"/> that represents multiple sources that were created during the generator pass.
@@ -15,6 +15,15 @@ namespace Durian.Tests
 	public readonly struct MultiOutputGeneratorTestResult : IGeneratorTestResult
 	{
 		private readonly GeneratorRunResult _runResult;
+
+		/// <inheritdoc/>
+		public readonly CSharpCompilation InputCompilation { get; }
+
+		/// <inheritdoc/>
+		public readonly bool IsGenerated => Exception is null && GeneratedSources.Length > 0;
+
+		/// <inheritdoc/>
+		public readonly CSharpCompilation OutputCompilation { get; }
 
 		/// <inheritdoc/>
 		public readonly ImmutableArray<Diagnostic> Diagnostics => _runResult.Diagnostics;
@@ -30,19 +39,10 @@ namespace Durian.Tests
 		/// <inheritdoc/>
 		public readonly ISourceGenerator Generator => _runResult.Generator;
 
-		/// <inheritdoc/>
-		public readonly CSharpCompilation InputCompilation { get; }
-
-		/// <inheritdoc/>
-		public readonly bool IsGenerated => Exception is null && GeneratedSources.Length > 0;
-
 		/// <summary>
 		/// Number of <see cref="GeneratedSourceResult"/> that were created by the <see cref="Generator"/>.
 		/// </summary>
 		public readonly int Length => GeneratedSources.Length;
-
-		/// <inheritdoc/>
-		public readonly CSharpCompilation OutputCompilation { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MultiOutputGeneratorTestResult"/> struct.

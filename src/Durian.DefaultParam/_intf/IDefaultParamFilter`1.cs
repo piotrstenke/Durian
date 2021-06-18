@@ -3,12 +3,12 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using Durian.Generator.Cache;
-using Durian.Generator.Logging;
+using Durian.Analysis.Cache;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Filtrates and validates nodes collected by a <see cref="DefaultParamSyntaxReceiver"/>.

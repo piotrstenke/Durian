@@ -2,15 +2,15 @@
 // Licensed under the MIT license.
 
 using System.Linq;
-using Durian.Generator.Cache;
-using Durian.Generator.Data;
-using Durian.Generator.Extensions;
-using Durian.Generator.Logging;
+using Durian.Analysis.Cache;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
+using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator.DefaultParam
+namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Main class of the <c>DefaultParam</c> module. Generates the source code of the members marked with the <see cref="DefaultParamAttribute"/>.
@@ -19,13 +19,18 @@ namespace Durian.Generator.DefaultParam
 
 	[Generator(LanguageNames.CSharp)]
 #endif
+
 	[GeneratorLoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "DefaultParam", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
 	public class DefaultParamGenerator : CachedDurianGenerator<DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter, IDefaultParamTarget>
 	{
 		/// <summary>
 		/// Number of trees generated statically by this generator.
 		/// </summary>
+#if MAIN_PACKAGE
+		public const int NumStaticTrees = 0;
+#else
 		public const int NumStaticTrees = 1;
+#endif
 
 		private readonly DefaultParamRewriter _rewriter = new();
 
@@ -39,7 +44,7 @@ namespace Durian.Generator.DefaultParam
 		/// <summary>
 		/// Version of this source generator.
 		/// </summary>
-		public static string Version => "1.1.0";
+		public static string Version => "1.2.0";
 
 		/// <inheritdoc/>
 		public override bool EnableDiagnostics

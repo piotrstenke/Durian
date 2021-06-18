@@ -6,7 +6,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 
-namespace Durian.Generator.CodeFixes
+namespace Durian.Analysis.CodeFixes
 {
 	/// <summary>
 	/// Base class for all Durian code fixes.

@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Generator.Extensions
+namespace Durian.Analysis.Extensions
 {
 	/// <summary>
 	/// Contains extension methods for the <see cref="IDiagnosticReceiver"/> interface.

@@ -10,11 +10,10 @@ using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// Contains various utility methods that help with unit testing Roslyn-based projects.
@@ -240,7 +239,7 @@ namespace Durian.Tests
 				MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
 				MetadataReference.CreateFromFile(Path.Combine(directory, "System.Runtime.dll")),
 				MetadataReference.CreateFromFile(Path.Combine(directory, "netstandard.dll")),
-				MetadataReference.CreateFromFile(typeof(DurianGeneratedAttribute).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(Generator.DurianGeneratedAttribute).Assembly.Location),
 			};
 		}
 

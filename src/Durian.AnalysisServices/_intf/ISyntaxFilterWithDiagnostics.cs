@@ -3,10 +3,10 @@
 
 using System.Collections.Generic;
 using System.Threading;
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Generator
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// A <see cref="ISyntaxFilter"/> that reports diagnostics about the received <see cref="CSharpSyntaxNode"/>s.

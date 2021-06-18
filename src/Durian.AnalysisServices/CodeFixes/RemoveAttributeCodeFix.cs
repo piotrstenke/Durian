@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Generator.CodeFixes
+namespace Durian.Analysis.CodeFixes
 {
 	/// <summary>
 	/// A code fix that removes specific attributes.

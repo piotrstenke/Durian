@@ -3,10 +3,10 @@
 
 using System;
 using System.Diagnostics;
-using Durian.Generator.Logging;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// A <see cref="IHintNameProvider"/> that returns name of the current test.
@@ -88,11 +88,6 @@ namespace Durian.Tests
 			return _current;
 		}
 
-		string IHintNameProvider.GetFileName(ISymbol symbol)
-		{
-			return GetFileName();
-		}
-
 		/// <summary>
 		/// Resets the provider to the original state when the <see cref="TestName"/> was set.
 		/// </summary>
@@ -107,6 +102,11 @@ namespace Durian.Tests
 		{
 			_counter++;
 			_current = $"{_testName}_{_counter}";
+		}
+
+		string IHintNameProvider.GetFileName(ISymbol symbol)
+		{
+			return GetFileName();
 		}
 	}
 }

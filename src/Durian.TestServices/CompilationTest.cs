@@ -1,12 +1,12 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Generator.Data;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// An abstract class that provides methods that retrieve <see cref="IMemberData"/>of various types, <see cref="ISymbol"/>s or <see cref="CSharpSyntaxNode"/>s directly from an input <see cref="string"/>. Useful when unit testing a <see cref="ISourceGenerator"/>.

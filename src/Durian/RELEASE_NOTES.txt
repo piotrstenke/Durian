@@ -2,6 +2,7 @@ v1.2.0
 
 - Fixed issue when some packages were referenced multiple times.
 - Performance boost.
+- Added reference to Durian.Manager.
 
 v1.1.0
 

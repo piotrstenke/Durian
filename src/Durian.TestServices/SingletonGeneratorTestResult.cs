@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Durian.Tests
+namespace Durian.TestServices
 {
 	/// <summary>
 	/// A <see cref="IGeneratorTestResult"/> that represents a single <see cref="CSharpSyntaxTree"/> retrieved from a tested <see cref="ISourceGenerator"/>.
@@ -19,6 +19,18 @@ namespace Durian.Tests
 		private readonly GeneratorRunResult _runResult;
 		private readonly GeneratedSourceResult _sourceResult;
 		private readonly CSharpSyntaxTree? _tree;
+
+		/// <inheritdoc/>
+		public readonly CSharpCompilation InputCompilation { get; }
+
+		/// <summary>
+		/// Determines whether the <see cref="ISourceGenerator"/> actually generated any <see cref="CSharpSyntaxTree"/>.
+		/// </summary>
+		[MemberNotNullWhen(true, "SourceText", "SyntaxTree", "HintName")]
+		public readonly bool IsGenerated { get; }
+
+		/// <inheritdoc/>
+		public readonly CSharpCompilation OutputCompilation { get; }
 
 		/// <summary>
 		/// A collection of <see cref="Diagnostic"/>s that were reported during the generator pass.
@@ -35,18 +47,6 @@ namespace Durian.Tests
 		/// An identifier provided by the generator that identifies the added <see cref="SourceText"/>
 		/// </summary>
 		public readonly string? HintName => _sourceResult.HintName;
-
-		/// <inheritdoc/>
-		public readonly CSharpCompilation InputCompilation { get; }
-
-		/// <summary>
-		/// Determines whether the <see cref="ISourceGenerator"/> actually generated any <see cref="CSharpSyntaxTree"/>.
-		/// </summary>
-		[MemberNotNullWhen(true, "SourceText", "SyntaxTree", "HintName")]
-		public readonly bool IsGenerated { get; }
-
-		/// <inheritdoc/>
-		public readonly CSharpCompilation OutputCompilation { get; }
 
 		/// <summary>
 		/// The <see cref="Microsoft.CodeAnalysis.Text.SourceText"/> that was added by the generator.
