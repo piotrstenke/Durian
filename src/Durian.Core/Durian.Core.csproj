@@ -5,9 +5,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Durian.Core is the main package of the Durian framework. It contains all the essential types needed by every given Durian-based generator. In order to use a Durian-based generator, the user's project must reference this package.</Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Core</PackageTags>
-    <PackageVersion>1.2.0</PackageVersion>
-    <AssemblyVersion>1.2.0</AssemblyVersion>
-    <Version>1.2.0</Version>
+    <PackageVersion>1.2.2</PackageVersion>
+    <AssemblyVersion>1.2.2</AssemblyVersion>
+    <Version>1.2.2</Version>
     <RootNamespace>Durian</RootNamespace>
     <Configurations>Debug;Release;Main Package</Configurations>
     

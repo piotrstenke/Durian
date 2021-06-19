@@ -11,11 +11,8 @@ namespace Durian.Manager
 	/// <summary>
 	/// Manages the analyzers from the <c>Durian.Core.Analyzer</c> package.
 	/// </summary>
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	public sealed class CoreDurianManager : AnalysisManager, IDurianModuleManager
-#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public DurianModule Module => DurianModule.Core;
@@ -30,10 +27,7 @@ namespace Durian.Manager
 		/// <inheritdoc/>
 		public override bool ShouldAnalyze(Compilation compilation)
 		{
-			return
-				IsCSharpCompilationAnalyzer.Analyze(compilation) &&
-				DisabledModuleAnalyzer.IsEnabled(Module) &&
-				DependenciesAnalyzer.Analyze(compilation);
+			return DurianManagerUtilities.ShouldAnalyze(compilation, Module);
 		}
 
 		/// <inheritdoc/>

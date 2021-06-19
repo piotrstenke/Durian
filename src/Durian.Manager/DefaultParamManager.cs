@@ -13,12 +13,9 @@ namespace Durian.Manager
 	/// <summary>
 	/// Manages the analyzers and source generators from the <c>Durian.DefaultParam</c> package.
 	/// </summary>
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	[Generator(LanguageNames.CSharp)]
 	public sealed class DefaultParamManager : AnalysisManagerWithGenerators<IDefaultParamTarget>, IDurianModuleManager
-#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public DurianModule Module => DurianModule.DefaultParam;
@@ -39,10 +36,7 @@ namespace Durian.Manager
 		/// <inheritdoc/>
 		public override bool ShouldAnalyze(Compilation compilation)
 		{
-			return
-				IsCSharpCompilationAnalyzer.Analyze(compilation) &&
-				DisabledModuleAnalyzer.IsEnabled(Module) &&
-				DependenciesAnalyzer.Analyze(compilation);
+			return DurianManagerUtilities.ShouldAnalyze(compilation, Module);
 		}
 
 		/// <inheritdoc/>

@@ -1,63 +1,63 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-[assembly: Durian.DisableModule(Durian.Info.DurianModule.DefaultParam)]
+using System;
 
 namespace Durian.Samples.DefaultParam
 {
 	internal partial class Program
 	{
-		//#pragma warning disable CS0184 // 'is' expression's given expression is never of the provided type
+#pragma warning disable CS0184 // 'is' expression's given expression is never of the provided type
 
-		//		private static void BasicExample()
-		//		{
-		//			// This is a new instance of the Logger<T> class written by the user.
-		//			Logger<string> logger = new();
+		private static void BasicExample()
+		{
+			// This is a new instance of the Logger<T> class written by the user.
+			Logger<string> logger = new();
 
-		//			// This is a new instance of the generated, Logger<T>-based Logger class.
-		//			// Logger has the TypeConvention.Copy applied.
-		//			Logger generatedLogger = new();
+			// This is a new instance of the generated, Logger<T>-based Logger class.
+			// Logger has the TypeConvention.Copy applied.
+			Logger generatedLogger = new();
 
-		//			// The usage of 'string' is identical to Logger<string>.
-		//			logger.Info("Logger Test");
-		//			generatedLogger.Info("Logger Test");
+			// The usage of 'string' is identical to Logger<string>.
+			logger.Info("Logger Test");
+			generatedLogger.Info("Logger Test");
 
-		//			// The generated class does not inherit Logger<string>...
-		//			Console.WriteLine(generatedLogger is Logger<string>);
+			// The generated class does not inherit Logger<string>...
+			Console.WriteLine(generatedLogger is Logger<string>);
 
-		//			// ...but it does implement the interfaces of Logger<string>.
-		//			Console.WriteLine(generatedLogger is ILogger<string>);
-		//		}
+			// ...but it does implement the interfaces of Logger<string>.
+			Console.WriteLine(generatedLogger is ILogger<string>);
+		}
 
-		//		private static void InheritanceExample()
-		//		{
-		//			// InheritedLogger<T> has the TypeConvention.Inherit applied.
-		//			InheritedLogger<string> logger = new();
-		//			InheritedLogger generatedLogger = new();
+		private static void InheritanceExample()
+		{
+			// InheritedLogger<T> has the TypeConvention.Inherit applied.
+			InheritedLogger<string> logger = new();
+			InheritedLogger generatedLogger = new();
 
-		//			// Like previously, experience is exactly the same.
-		//			logger.Info("Logger Test");
-		//			generatedLogger.Info("Logger Test");
+			// Like previously, experience is exactly the same.
+			logger.Info("Logger Test");
+			generatedLogger.Info("Logger Test");
 
-		//			// The generated class does inherit InheritedLogger<string>...
-		//			Console.WriteLine(generatedLogger is InheritedLogger<string>);
+			// The generated class does inherit InheritedLogger<string>...
+			Console.WriteLine(generatedLogger is InheritedLogger<string>);
 
-		//			// ...and all of its base classes, like Logger<string>...
-		//			Console.WriteLine(generatedLogger is Logger<string>);
+			// ...and all of its base classes, like Logger<string>...
+			Console.WriteLine(generatedLogger is Logger<string>);
 
-		//			// ...as well ass all interfaces...
-		//			Console.WriteLine(generatedLogger is ILogger<string>);
+			// ...as well ass all interfaces...
+			Console.WriteLine(generatedLogger is ILogger<string>);
 
-		//			// ...but not the generated Logger.
-		//			Console.WriteLine(generatedLogger is Logger);
-		//		}
+			// ...but not the generated Logger.
+			Console.WriteLine(generatedLogger is Logger);
+		}
 
-		//#pragma warning restore CS0184 // 'is' expression's given expression is never of the provided type
+#pragma warning restore CS0184 // 'is' expression's given expression is never of the provided type
 
 		private static void Main()
 		{
-			//BasicExample();
-			//InheritanceExample();
+			BasicExample();
+			InheritanceExample();
 		}
 	}
 }

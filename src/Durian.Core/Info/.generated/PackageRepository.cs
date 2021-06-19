@@ -47,7 +47,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity Core => Initialize(
 			package: DurianPackage.Core,
-			version: "1.2.0",
+			version: "1.2.2",
 			type: PackageType.Library,
 			modules: new DurianModule[]
 			{
