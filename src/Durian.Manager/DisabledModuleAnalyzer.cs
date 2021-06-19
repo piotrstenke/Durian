@@ -225,6 +225,7 @@ namespace Durian.Manager
 			lock (_lockObject)
 			{
 				_disabledModules = modules;
+				_previousNumOfDisabledModules = _disabledModules.Length;
 			}
 		}
 

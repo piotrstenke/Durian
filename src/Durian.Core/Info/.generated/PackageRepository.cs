@@ -21,7 +21,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity Main => Initialize(
 			package: DurianPackage.Main,
-			version: "1.2.0",
+			version: "1.2.1",
 			type: PackageType.Unspecified,
 			modules: new DurianModule[]
 			{
@@ -47,7 +47,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity Core => Initialize(
 			package: DurianPackage.Core,
-			version: "1.2.2",
+			version: "1.2.3",
 			type: PackageType.Library,
 			modules: new DurianModule[]
 			{
