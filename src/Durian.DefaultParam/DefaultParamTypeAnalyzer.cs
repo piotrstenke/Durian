@@ -203,25 +203,24 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc/>
 		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			if (symbol is not INamedTypeSymbol t)
-			{
-				return;
-			}
-
-			TypeKind kind = t.TypeKind;
-
-			if (kind is not TypeKind.Class and not TypeKind.Struct and not TypeKind.Interface)
-			{
-				return;
-			}
-
-			WithDiagnostics.Analyze(diagnosticReceiver, t, compilation, cancellationToken);
+			WithDiagnostics.Analyze(diagnosticReceiver, (INamedTypeSymbol)symbol, compilation, cancellationToken);
 		}
 
 		/// <inheritdoc/>
 		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
 		{
 			return GetAnalyzerSpecificDiagnosticsAsArray();
+		}
+
+		/// <inheritdoc/>
+		protected override bool ShouldAnalyze(ISymbol symbol, DefaultParamCompilationData compilation)
+		{
+			if (symbol is not INamedTypeSymbol t)
+			{
+				return false;
+			}
+
+			return t.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Interface;
 		}
 
 		private static DiagnosticDescriptor[] GetAnalyzerSpecificDiagnosticsAsArray()

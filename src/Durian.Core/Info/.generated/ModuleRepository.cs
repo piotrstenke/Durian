@@ -418,5 +418,38 @@ namespace Durian.Info
 				),
 			}
 		);
+
+		/// <summary>
+		/// Creates a new instance of <see cref="ModuleIdentity"/> for the <see cref="DurianModule.GenericSpecialization"/> module.
+		/// </summary>
+		public static ModuleIdentity GenericSpecialization => new(
+			module: DurianModule.GenericSpecialization,
+			id: default,
+			packages: new PackageIdentity[]
+			{
+				PackageRepository.GenericSpecialization,
+			},
+			docsPath: null,
+			diagnostics: null,
+			types: new TypeIdentity[]
+			{
+				new TypeIdentity(
+					name: "AllowSpecializationAttribute",
+					@namespace: "Durian",
+					modules: new DurianModule[]
+					{
+						DurianModule.GenericSpecialization,
+					}
+				),
+				new TypeIdentity(
+					name: "GenericSpecializationConfigurationAttribute",
+					@namespace: "Durian.Configuration",
+					modules: new DurianModule[]
+					{
+						DurianModule.GenericSpecialization,
+					}
+				),
+			}
+		);
 	}
 }

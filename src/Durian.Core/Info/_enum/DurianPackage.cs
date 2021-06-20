@@ -37,5 +37,10 @@ namespace Durian.Info
 		/// Represents the <c>Durian.DefaultParam</c> package.
 		/// </summary>
 		DefaultParam = 6,
+
+		/// <summary>
+		/// Represents the <c>Durian.GenericSpecialization</c> package.
+		/// </summary>
+		GenericSpecialization = 7,
 	}
 }

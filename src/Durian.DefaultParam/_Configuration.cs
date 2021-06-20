@@ -8,7 +8,7 @@ using Durian.Configuration;
 using Durian.Generator;
 using Durian.Info;
 
-[assembly: PackageDefinition(DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary, "1.2.0", DurianModule.DefaultParam)]
+[assembly: PackageDefinition(DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary, "1.2.1", DurianModule.DefaultParam)]
 [assembly: DiagnosticFiles(nameof(DefaultParamDiagnostics))]
 [assembly: IncludeTypes(
 	nameof(DefaultParamAttribute),

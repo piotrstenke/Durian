@@ -26,7 +26,11 @@ namespace Durian.Analysis.Data
 
 		/// <inheritdoc/>
 		[MemberNotNullWhen(false, nameof(GeneratedCodeAttribute), nameof(DurianGeneratedAttribute), nameof(EnableModuleAttribute))]
-		public override bool HasErrors { get; protected set; }
+		public override bool HasErrors
+		{
+			get => base.HasErrors;
+			protected set => base.HasErrors = value;
+		}
 
 		INamedTypeSymbol ICompilationDataWithSymbols.DurianGeneratedAttribute => DurianGeneratedAttribute!;
 

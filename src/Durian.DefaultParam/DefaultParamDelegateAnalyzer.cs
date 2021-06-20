@@ -16,8 +16,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.Analysis.DefaultParam
 {
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-
 	/// <summary>
 	/// Analyzes delegates with type parameters marked by the <see cref="DefaultParamAttribute"/>.
 	/// </summary>
@@ -26,6 +24,7 @@ namespace Durian.Analysis.DefaultParam
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
 
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 	public sealed partial class DefaultParamDelegateAnalyzer : DefaultParamAnalyzer
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
@@ -198,18 +197,19 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc/>
 		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			if (symbol is not INamedTypeSymbol t || t.TypeKind != TypeKind.Delegate)
-			{
-				return;
-			}
-
-			WithDiagnostics.Analyze(diagnosticReceiver, t, compilation, cancellationToken);
+			WithDiagnostics.Analyze(diagnosticReceiver, (INamedTypeSymbol)symbol, compilation, cancellationToken);
 		}
 
 		/// <inheritdoc/>
 		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
 		{
 			return GetAnalyzerSpecificDiagnosticsAsArray();
+		}
+
+		/// <inheritdoc/>
+		protected override bool ShouldAnalyze(ISymbol symbol, DefaultParamCompilationData compilation)
+		{
+			return symbol is INamedTypeSymbol t && t.TypeKind == TypeKind.Delegate;
 		}
 
 		private static bool AnalyzeCollidingMembers_Internal(

@@ -54,6 +54,12 @@ namespace Durian.Analysis.DefaultParam
 			return GetAnalyzerSpecificDiagnosticsAsArray();
 		}
 
+		/// <inheritdoc/>
+		protected override bool ShouldAnalyze(ISymbol symbol, DefaultParamCompilationData compilation)
+		{
+			return symbol is IMethodSymbol m && m.MethodKind == MethodKind.LocalFunction;
+		}
+
 		private static void FindAndAnalyzeLocalFunction(SyntaxNodeAnalysisContext context, DefaultParamCompilationData compilation)
 		{
 			if (context.Node is not LocalFunctionStatementSyntax l)

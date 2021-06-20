@@ -3,40 +3,45 @@
   <PropertyGroup>
 
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>DefaultParam, based on a similar feature in C++, allows to specify a default type for a generic parameter.</Description>
-    <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Default;Param;Parameter;Type;Generic;Argument</PackageTags>
-    <PackageVersion>1.2.1</PackageVersion>
-    <AssemblyVersion>1.2.1</AssemblyVersion>
-    <Version>1.2.1</Version>
-    <RootNamespace>Durian.Analysis.DefaultParam</RootNamespace>
+    <Description>Designed with a similar feature of C++ in mind, this package allows to customize code of a generic class for a given set of type arguments.</Description>
+    <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Generic;Specialize;Specialization;Template;</PackageTags>
+    <PackageVersion>1.0.0</PackageVersion>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <Version>1.0.0</Version>
+    <RootNamespace>Durian.Analysis.GenericSpecialization</RootNamespace>
     <Configurations>Debug;Release;Main Package</Configurations>
     <IsRoslynComponent>true</IsRoslynComponent>
 
     <DevelopmentDependency>true</DevelopmentDependency>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-    
+
   </PropertyGroup>
 
   <ItemGroup>
-    
+    <None Remove="AnalyzerReleases.Shipped.md" />
+    <None Remove="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
     <Compile Include="..\NullableAttributes.cs" />
-    
+
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.AnalysisServices.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
     <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
     <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
-    
+
   </ItemGroup>
 
   <ItemGroup>
-    
+
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" PrivateAssets="all" />
-    
+
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Debug'">

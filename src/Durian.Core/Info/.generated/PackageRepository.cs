@@ -34,7 +34,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity AnalysisServices => Initialize(
 			package: DurianPackage.AnalysisServices,
-			version: "1.2.0",
+			version: "1.2.1",
 			type: PackageType.Library,
 			modules: new DurianModule[]
 			{
@@ -47,7 +47,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity Core => Initialize(
 			package: DurianPackage.Core,
-			version: "1.2.3",
+			version: "1.3.0",
 			type: PackageType.Library,
 			modules: new DurianModule[]
 			{
@@ -73,11 +73,24 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity DefaultParam => Initialize(
 			package: DurianPackage.DefaultParam,
-			version: "1.2.0",
+			version: "1.2.1",
 			type: PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary,
 			modules: new DurianModule[]
 			{
 				DurianModule.DefaultParam,
+			}
+		);
+
+		/// <summary>
+		/// Creates a new instance of <see cref="PackageIdentity"/> for the <see cref="DurianPackage.GenericSpecialization"/> package.
+		/// </summary>
+		public static PackageIdentity GenericSpecialization => Initialize(
+			package: DurianPackage.GenericSpecialization,
+			version: "1.0.0",
+			type: PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary,
+			modules: new DurianModule[]
+			{
+				DurianModule.GenericSpecialization,
 			}
 		);
 

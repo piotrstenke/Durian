@@ -22,5 +22,10 @@ namespace Durian.Info
 		/// Represents the <c>Durian.DefaultParam</c> module.
 		/// </summary>
 		DefaultParam = 2,
+
+		/// <summary>
+		/// Represents the <c>Durian.GenericSpecialization</c> module.
+		/// </summary>
+		GenericSpecialization = 3,
 	}
 }

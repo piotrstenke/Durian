@@ -20,6 +20,7 @@ namespace Durian.Info
 			{
 				ModuleRepository.Core,
 				ModuleRepository.DefaultParam,
+				ModuleRepository.GenericSpecialization
 			};
 		}
 
@@ -32,6 +33,7 @@ namespace Durian.Info
 			{
 				DurianModule.Core,
 				DurianModule.DefaultParam,
+				DurianModule.GenericSpecialization,
 			};
 		}
 
@@ -529,6 +531,7 @@ namespace Durian.Info
 			{
 				DurianModule.Core => ModuleRepository.Core,
 				DurianModule.DefaultParam => ModuleRepository.DefaultParam,
+				DurianModule.GenericSpecialization => ModuleRepository.GenericSpecialization,
 				DurianModule.None => throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!"),
 				_ => throw new InvalidOperationException($"Unknown {nameof(DurianModule)} value: {module}!")
 			};

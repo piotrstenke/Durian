@@ -418,6 +418,13 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		protected abstract IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics();
 
+		/// <summary>
+		/// Determines whether analysis should be performed for the specified <paramref name="symbol"/> and <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check if should be analyzed.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		protected abstract bool ShouldAnalyze(ISymbol symbol, DefaultParamCompilationData compilation);
+
 		private static IEnumerable<ISymbol> GetCollidingMembersForMethodSymbol(IMethodSymbol method, string fullName, IEnumerable<ISymbol> symbols, INamedTypeSymbol generatedFromAttribute, int numParameters)
 		{
 			IEnumerable<ISymbol> members = symbols.Where(s =>
@@ -807,6 +814,11 @@ namespace Durian.Analysis.DefaultParam
 
 		private void AnalyzeSymbol(SymbolAnalysisContext context, DefaultParamCompilationData compilation)
 		{
+			if (!ShouldAnalyze(context.Symbol, compilation))
+			{
+				return;
+			}
+
 			ContextualDiagnosticReceiver<SymbolAnalysisContext> diagnosticReceiver = DiagnosticReceiverFactory.Symbol(context);
 			Analyze(diagnosticReceiver, context.Symbol, compilation, context.CancellationToken);
 		}

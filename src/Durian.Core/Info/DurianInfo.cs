@@ -11,7 +11,7 @@ namespace Durian.Info
 		/// <summary>
 		/// Specifies the maximal valid value of the <see cref="DurianModule"/> enum.
 		/// </summary>
-		public const DurianModule ModuleMax = DurianModule.DefaultParam;
+		public const DurianModule ModuleMax = DurianModule.GenericSpecialization;
 
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianModule"/> enum.
@@ -36,7 +36,7 @@ namespace Durian.Info
 		/// <summary>
 		/// Specifies the maximal valid value of the <see cref="DurianPackage"/> enum.
 		/// </summary>
-		public const DurianPackage PackageMax = DurianPackage.DefaultParam;
+		public const DurianPackage PackageMax = DurianPackage.GenericSpecialization;
 
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianPackage"/> enum.

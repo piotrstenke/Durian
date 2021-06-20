@@ -46,13 +46,13 @@ namespace Durian.Analysis.DefaultParam
 		/// Initializes a new instance of the <see cref="DefaultParamLocalFunctionFilter"/> class.
 		/// </summary>
 		/// <param name="generator"><see cref="DefaultParamGenerator"/> that created this filter.</param>
-		/// <param name="fileNameProvider">
+		/// <param name="hintNameProvider">
 		/// <see cref="IHintNameProvider"/> that is used to create a hint name for the generated source.
 		/// </param>
-		public DefaultParamLocalFunctionFilter(DefaultParamGenerator generator, IHintNameProvider fileNameProvider)
+		public DefaultParamLocalFunctionFilter(DefaultParamGenerator generator, IHintNameProvider hintNameProvider)
 		{
 			Generator = generator;
-			HintNameProvider = fileNameProvider;
+			HintNameProvider = hintNameProvider;
 		}
 
 		/// <summary>

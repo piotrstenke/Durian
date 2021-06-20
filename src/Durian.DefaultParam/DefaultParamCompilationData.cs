@@ -44,7 +44,11 @@ namespace Durian.Analysis.DefaultParam
 
 		/// <inheritdoc/>
 		[MemberNotNullWhen(false, nameof(MainAttribute), nameof(ConfigurationAttribute), nameof(ScopedConfigurationAttribute), nameof(DPMethodConvention), nameof(DPTypeConvention))]
-		public override bool HasErrors { get; protected set; }
+		public override bool HasErrors
+		{
+			get => base.HasErrors;
+			protected set => base.HasErrors = value;
+		}
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <see cref="DefaultParamAttribute"/>.
@@ -69,12 +73,13 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Creates a new instance of <see cref="DefaultParamConfiguration"/> based on the <see cref="DefaultParamScopedConfigurationAttribute"/> defined on the <paramref name="compilation"/>'s main assembly or <see cref="DefaultParamConfiguration.Default"/> if no <see cref="DefaultParamScopedConfigurationAttribute"/> was found.
 		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="DefaultParamConfiguration"/> of.</param>
-		public static DefaultParamConfiguration GetConfiguration(CSharpCompilation? compilation)
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="DefaultParamConfiguration"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
+		public static DefaultParamConfiguration GetConfiguration(CSharpCompilation compilation)
 		{
 			if (compilation is null)
 			{
-				return DefaultParamConfiguration.Default;
+				throw new ArgumentNullException(nameof(compilation));
 			}
 
 			INamedTypeSymbol? configurationAttribute = compilation.GetTypeByMetadataName(typeof(DefaultParamScopedConfigurationAttribute).ToString());

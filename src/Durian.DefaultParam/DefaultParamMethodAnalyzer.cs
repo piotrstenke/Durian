@@ -290,18 +290,19 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc/>
 		public override void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			if (symbol is not IMethodSymbol m)
-			{
-				return;
-			}
-
-			WithDiagnostics.Analyze(diagnosticReceiver, m, compilation, cancellationToken);
+			WithDiagnostics.Analyze(diagnosticReceiver, (IMethodSymbol)symbol, compilation, cancellationToken);
 		}
 
 		/// <inheritdoc/>
 		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
 		{
 			return GetAnalyzerSpecificDiagnosticsAsArray();
+		}
+
+		/// <inheritdoc/>
+		protected override bool ShouldAnalyze(ISymbol symbol, DefaultParamCompilationData compilation)
+		{
+			return symbol is IMethodSymbol;
 		}
 
 		private static bool AnalyzeBaseMethodParameters(in TypeParameterContainer typeParameters, in TypeParameterContainer baseTypeParameters)

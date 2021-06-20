@@ -23,6 +23,7 @@ namespace Durian.Info
 				PackageRepository.AnalysisServices,
 				PackageRepository.TestServices,
 				PackageRepository.DefaultParam,
+				PackageRepository.GenericSpecialization,
 			};
 		}
 
@@ -39,6 +40,7 @@ namespace Durian.Info
 				DurianPackage.AnalysisServices,
 				DurianPackage.TestServices,
 				DurianPackage.DefaultParam,
+				DurianPackage.GenericSpecialization,
 			};
 		}
 
@@ -309,6 +311,7 @@ namespace Durian.Info
 				DurianPackage.CoreAnalyzer => PackageRepository.CoreAnalyzer,
 				DurianPackage.DefaultParam => PackageRepository.DefaultParam,
 				DurianPackage.TestServices => PackageRepository.TestServices,
+				DurianPackage.GenericSpecialization => PackageRepository.GenericSpecialization,
 				_ => throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!")
 			};
 		}

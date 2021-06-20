@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
-	/// Main class of the <c>DefaultParam</c> module. Generates the source code of the members marked with the <see cref="DefaultParamAttribute"/>.
+	/// Main class of the <c>DefaultParam</c> module. Generates source code of members marked with the <see cref="DefaultParamAttribute"/>.
 	/// </summary>
 #if !MAIN_PACKAGE
 
@@ -44,7 +44,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Version of this source generator.
 		/// </summary>
-		public static string Version => "1.2.0";
+		public static string Version => "1.2.1";
 
 		/// <inheritdoc/>
 		public override bool EnableDiagnostics

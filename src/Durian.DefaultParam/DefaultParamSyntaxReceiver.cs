@@ -12,7 +12,7 @@ namespace Durian.Analysis.DefaultParam
 	/// <summary>
 	/// Collects <see cref="CSharpSyntaxNode"/>s that are potential targets for the <see cref="DefaultParamGenerator"/>.
 	/// </summary>
-	public class DefaultParamSyntaxReceiver : IDurianSyntaxReceiver
+	public sealed class DefaultParamSyntaxReceiver : IDurianSyntaxReceiver
 	{
 		private bool _allowsCollectingLocalFunctions;
 
@@ -59,10 +59,12 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		public DefaultParamSyntaxReceiver()
 		{
-			CandidateTypes = new List<TypeDeclarationSyntax>();
-			CandidateDelegates = new List<DelegateDeclarationSyntax>();
-			CandidateMethods = new List<MethodDeclarationSyntax>();
-			CandidateLocalFunctions = new();
+			const int initialCapacity = 64;
+
+			CandidateTypes = new(initialCapacity);
+			CandidateDelegates = new(initialCapacity);
+			CandidateMethods = new(initialCapacity);
+			CandidateLocalFunctions = new(initialCapacity);
 		}
 
 		/// <summary>
