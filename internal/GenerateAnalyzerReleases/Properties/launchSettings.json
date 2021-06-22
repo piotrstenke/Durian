@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GenerateAnalyzerReleases": {
+      "commandName": "Project",
+      "commandLineArgs": "\"$(SolutionDir)src/Durian.GenericSpecialization/_Configuration.cs\""
+    }
+  }
+}

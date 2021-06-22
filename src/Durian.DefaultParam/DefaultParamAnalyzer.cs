@@ -40,7 +40,27 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Analyzes, if the <paramref name="symbol"/> has <see cref="DurianGeneratedAttribute"/> or <see cref="GeneratedCodeAttribute"/>.
+		/// Analyzes if the provided collection of <see cref="AttributeData"/>s contains <see cref="DurianGeneratedAttribute"/> or <see cref="GeneratedCodeAttribute"/>.
+		/// </summary>
+		/// <param name="attributes">A collection of <see cref="AttributeData"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <returns><see langword="true"/> if all the <paramref name="attributes"/> are valid (neither of them is prohibited), otherwise <see langword="false"/>.</returns>
+		public static bool AnalyzeAgainstProhibitedAttributes(IEnumerable<AttributeData> attributes, DefaultParamCompilationData compilation)
+		{
+			foreach (AttributeData attr in attributes)
+			{
+				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.GeneratedCodeAttribute) ||
+					SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DurianGeneratedAttribute))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Analyzes if the <paramref name="symbol"/> has <see cref="DurianGeneratedAttribute"/> or <see cref="GeneratedCodeAttribute"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
@@ -51,7 +71,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Analyzes, if the <paramref name="symbol"/> has <see cref="DurianGeneratedAttribute"/> or <see cref="GeneratedCodeAttribute"/>. If the <paramref name="symbol"/> is valid, returns an array of <paramref name="attributes"/> of that <paramref name="symbol"/>.
+		/// Analyzes if the <paramref name="symbol"/> has <see cref="DurianGeneratedAttribute"/> or <see cref="GeneratedCodeAttribute"/>. If the <paramref name="symbol"/> is valid, returns an array of <paramref name="attributes"/> of that <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
@@ -60,48 +80,39 @@ namespace Durian.Analysis.DefaultParam
 		public static bool AnalyzeAgainstProhibitedAttributes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out AttributeData[]? attributes)
 		{
 			AttributeData[] attrs = symbol.GetAttributes().ToArray();
-			bool hasDurianGenerated = false;
-			bool hasGeneratedCode = false;
-
-			foreach (AttributeData attr in attrs)
-			{
-				if (!hasGeneratedCode && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.GeneratedCodeAttribute))
-				{
-					hasGeneratedCode = true;
-					attributes = null;
-					return false;
-				}
-				else if (!hasDurianGenerated && SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DurianGeneratedAttribute))
-				{
-					hasDurianGenerated = true;
-					attributes = null;
-					return false;
-				}
-
-				if (hasGeneratedCode && hasDurianGenerated)
-				{
-					break;
-				}
-			}
-
-			attributes = attrs;
-			return true;
+			bool isValid = AnalyzeAgainstProhibitedAttributes(attrs, compilation);
+			attributes = isValid ? attrs : null;
+			return isValid;
 		}
 
 		/// <summary>
-		/// Analyzes, if the <paramref name="symbol"/> and its containing types are see <see langword="partial"/>.
+		/// Analyzes if the containing types of the <paramref name="symbol"/> are valid.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		/// <param name="containingTypes">An array of the <paramref name="symbol"/>'s containing types' <see cref="INamedTypeSymbol"/>s. Returned if the method itself returns <see langword="true"/>.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns><see langword="true"/> if the containing types of the <paramref name="symbol"/> are valid, otherwise <see langword="false"/>.</returns>
+		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out INamedTypeSymbol[]? containingTypes, CancellationToken cancellationToken = default)
 		{
-			INamedTypeSymbol[] types = symbol.GetContainingTypeSymbols().ToArray();
+			INamedTypeSymbol[] containing = symbol.GetContainingTypeSymbols().ToArray();
+			bool isValid = AnalyzeContainingTypes(containing, compilation, cancellationToken);
+			containingTypes = isValid ? containing : null;
+			return isValid;
+		}
 
-			if (types.Length > 0)
+		/// <summary>
+		/// Analyzes if the <paramref name="containingTypes"/> of the target <see cref="ISymbol"/> are valid.
+		/// </summary>
+		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="containingTypes"/> of the target <see cref="ISymbol"/> are valid, otherwise <see langword="false"/>.</returns>
+		public static bool AnalyzeContainingTypes(INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			if (containingTypes.Length > 0)
 			{
-				foreach (INamedTypeSymbol parent in types)
+				foreach (INamedTypeSymbol parent in containingTypes)
 				{
 					if (!HasPartialKeyword(parent, cancellationToken))
 					{
@@ -121,12 +132,26 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Analyzes, if the <paramref name="symbol"/> and its containing types are see <see langword="partial"/>. If the <paramref name="symbol"/> is valid, returns an array of <see cref="ITypeData"/>s of its containing types.
+		/// Analyzes if the containing types of the <paramref name="symbol"/> are valid.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="containingTypes">An array of this <paramref name="symbol"/>'s containing types' <see cref="ITypeData"/>s. Returned if the method itself returns <see langword="true"/>.</param>
-		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the containing types of the <paramref name="symbol"/> are valid, otherwise <see langword="false"/>.</returns>
+		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			INamedTypeSymbol[] types = symbol.GetContainingTypeSymbols().ToArray();
+
+			return AnalyzeContainingTypes(types, compilation, cancellationToken);
+		}
+
+		/// <summary>
+		/// Analyzes if the <paramref name="symbol"/> and its containing types are valid.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="containingTypes">An array of the <paramref name="symbol"/>'s containing types' <see cref="ITypeData"/>s. Returned if the method itself returns <see langword="true"/>.</param>
+		/// <returns><see langword="true"/> if the containing types of the <paramref name="symbol"/> are valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out ITypeData[]? containingTypes)
 		{
 			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();

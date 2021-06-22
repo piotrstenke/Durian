@@ -11,5 +11,7 @@ using Durian.Generator;
 [assembly: DiagnosticFiles(nameof(GenSpecDiagnostics))]
 [assembly: IncludeTypes(
 	nameof(AllowSpecializationAttribute),
-	nameof(GenericSpecializationConfigurationAttribute)
+	nameof(GenericSpecializationAttribute),
+	nameof(GenericSpecializationConfigurationAttribute),
+	nameof(GenSpecImport)
 )]

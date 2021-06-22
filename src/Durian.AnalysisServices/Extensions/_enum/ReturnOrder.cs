@@ -11,11 +11,11 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Root is returned first.
 		/// </summary>
-		Root = 1,
+		Root = 0,
 
 		/// <summary>
 		/// Root is returned last.
 		/// </summary>
-		Parent = 2
+		Parent = 1
 	}
 }

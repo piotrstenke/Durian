@@ -60,7 +60,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity CoreAnalyzer => Initialize(
 			package: DurianPackage.CoreAnalyzer,
-			version: "1.1.0",
+			version: "1.1.1",
 			type: PackageType.Analyzer,
 			modules: new DurianModule[]
 			{
@@ -73,7 +73,7 @@ namespace Durian.Info
 		/// </summary>
 		public static PackageIdentity DefaultParam => Initialize(
 			package: DurianPackage.DefaultParam,
-			version: "1.2.1",
+			version: "1.3.0",
 			type: PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary,
 			modules: new DurianModule[]
 			{

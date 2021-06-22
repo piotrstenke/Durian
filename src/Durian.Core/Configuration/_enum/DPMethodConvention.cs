@@ -16,11 +16,11 @@ namespace Durian.Configuration
 		/// <summary>
 		/// Copies contents of the method.
 		/// </summary>
-		Call = 1,
+		Call = 0,
 
 		/// <summary>
 		/// Call the method.
 		/// </summary>
-		Copy = 2
+		Copy = 1
 	}
 }

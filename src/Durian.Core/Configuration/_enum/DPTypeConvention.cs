@@ -16,11 +16,11 @@ namespace Durian.Configuration
 		/// <summary>
 		/// Copies contents of the type.
 		/// </summary>
-		Inherit = 1,
+		Inherit = 0,
 
 		/// <summary>
 		/// Inherits the type.
 		/// </summary>
-		Copy = 2
+		Copy = 1
 	}
 }

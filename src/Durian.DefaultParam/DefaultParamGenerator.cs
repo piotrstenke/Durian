@@ -44,7 +44,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Version of this source generator.
 		/// </summary>
-		public static string Version => "1.2.1";
+		public static string Version => "1.3.0";
 
 		/// <inheritdoc/>
 		public override bool EnableDiagnostics

@@ -12,6 +12,14 @@ namespace Durian.Configuration
 	public sealed class GenericSpecializationConfigurationAttribute : Attribute
 	{
 		/// <summary>
+		/// Determines whether to force the specialization class to inherit the main implementation class. Defaults to <see langword="false"/>.
+		/// </summary>
+		public bool ForceInherit { get; set; }
+
+		/// <inheritdoc cref="GenSpecImport"/>
+		public GenSpecImport ImportOptions { get; }
+
+		/// <summary>
 		/// Name of the generated specialization interface. Defaults to '<c>ISpecialize</c>'.
 		/// </summary>
 		public string? InterfaceName { get; set; }

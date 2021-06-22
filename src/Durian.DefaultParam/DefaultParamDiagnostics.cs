@@ -14,7 +14,7 @@ namespace Durian.Analysis.DefaultParam
 	public static class DefaultParamDiagnostics
 	{
 		/// <summary>
-		/// Provides diagnostic message indicating that a containing type of a member with the <see cref="DefaultParamAttribute"/> must be <see langword="partial"/>.
+		/// Provides diagnostic message indicating that a containing type of a member marked with the <see cref="DefaultParamAttribute"/> must be <see langword="partial"/>.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0101_ContainingTypeMustBePartial = new(
 			id: "DUR0101",

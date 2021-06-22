@@ -17,7 +17,7 @@ namespace Durian.Analysis.Data
 		public CSharpCompilation Compilation { get; private set; }
 
 		/// <inheritdoc/>
-		public virtual bool HasErrors { get; protected set; } = false;
+		public virtual bool HasErrors { get; protected set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CompilationData"/> class.

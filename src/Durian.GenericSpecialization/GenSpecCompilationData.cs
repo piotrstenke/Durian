@@ -14,10 +14,16 @@ namespace Durian.Analysis.GenericSpecialization
 	/// <summary>
 	/// <see cref="CompilationData"/> that contains all <see cref="ISymbol"/>s needed to generate source code using the <see cref="GenericSpecializationGenerator"/>.
 	/// </summary>
-	public sealed class GenSpecCompilationData : CompilationDataWithSymbols
+	public sealed class GenSpecCompilationData : CompilationData
 	{
 		private readonly string _allowSpecializationAttribute = typeof(DefaultParamAttribute).ToString();
-		private readonly string _genericSpecializationAttribute = typeof(DefaultParamConfigurationAttribute).ToString();
+		private readonly string _genericSpecializationAttribute = typeof(GenericSpecializationAttribute).ToString();
+		private readonly string _genericSpecializationConfigurationAttribute = typeof(DefaultParamConfigurationAttribute).ToString();
+
+		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> of the <see cref="Durian.AllowSpecializationAttribute"/>.
+		/// </summary>
+		public INamedTypeSymbol? AllowSpecializationAttribute { get; private set; }
 
 		/// <summary>
 		/// <see cref="GenSpecConfiguration"/> created from the <see cref="GenericSpecializationConfigurationAttribute"/> defined on the <see cref="CompilationData.Compilation"/>'s main assembly. -or- <see cref="GenSpecConfiguration.Default"/> if no <see cref="GenericSpecializationConfigurationAttribute"/> was found.
@@ -29,18 +35,18 @@ namespace Durian.Analysis.GenericSpecialization
 		/// </summary>
 		public INamedTypeSymbol? ConfigurationAttribute { get; private set; }
 
+		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> of the <see cref="GenericSpecializationAttribute"/>.
+		/// </summary>
+		public INamedTypeSymbol? GenericSpecializationAttribute { get; private set; }
+
 		/// <inheritdoc/>
-		[MemberNotNullWhen(true, nameof(ConfigurationAttribute), nameof(SpecializationAttribute))]
+		[MemberNotNullWhen(true, nameof(ConfigurationAttribute), nameof(AllowSpecializationAttribute), nameof(GenericSpecializationAttribute))]
 		public override bool HasErrors
 		{
 			get => base.HasErrors;
 			protected set => base.HasErrors = value;
 		}
-
-		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the <see cref="AllowSpecializationAttribute"/>.
-		/// </summary>
-		public INamedTypeSymbol? SpecializationAttribute { get; private set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GenSpecCompilationData"/> class.
@@ -49,6 +55,7 @@ namespace Durian.Analysis.GenericSpecialization
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public GenSpecCompilationData(CSharpCompilation compilation) : base(compilation)
 		{
+			Reset();
 			Configuration = GetConfiguration(compilation, ConfigurationAttribute);
 		}
 
@@ -68,18 +75,47 @@ namespace Durian.Analysis.GenericSpecialization
 			return GetConfiguration(compilation, configurationAttribute);
 		}
 
-		/// <inheritdoc/>
-		public override void Reset()
+		/// <summary>
+		/// Creates a new instance of <see cref="GenSpecConfiguration"/> based on data contained within the specified <paramref name="attribute"/>.
+		/// </summary>
+		/// <param name="attribute"><see cref="AttributeData"/> to create the <see cref="GenSpecConfiguration"/> from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
+		public static GenSpecConfiguration GetConfiguration(AttributeData attribute)
 		{
-			base.Reset();
+			if (attribute is null)
+			{
+				throw new ArgumentNullException(nameof(attribute));
+			}
 
-			SpecializationAttribute = Compilation.GetTypeByMetadataName(_genericSpecializationAttribute);
-			ConfigurationAttribute = Compilation.GetTypeByMetadataName(_allowSpecializationAttribute);
+			string templateName = GetStringValue(attribute, nameof(GenericSpecializationConfigurationAttribute.TemplateName)) ?? GenSpecConfiguration.DefaultTemplateName;
+			string interfaceName = GetStringValue(attribute, nameof(GenericSpecializationConfigurationAttribute.InterfaceName)) ?? GenSpecConfiguration.DefaultInterfaceName;
+			GenSpecImport importOptions = (GenSpecImport)attribute.GetNamedArgumentValue<int>(nameof(GenericSpecializationConfigurationAttribute.ImportOptions));
+			bool forceInherit = attribute.GetNamedArgumentValue<bool>(nameof(GenericSpecializationConfigurationAttribute.ForceInherit));
+
+			return new(templateName, interfaceName)
+			{
+				ImportOptions = importOptions,
+				ForceInherit = forceInherit
+			};
+		}
+
+		/// <inheritdoc/>
+		public void Reset()
+		{
+			AllowSpecializationAttribute = Compilation.GetTypeByMetadataName(_allowSpecializationAttribute);
+			ConfigurationAttribute = Compilation.GetTypeByMetadataName(_genericSpecializationConfigurationAttribute);
+			GenericSpecializationAttribute = Compilation.GetTypeByMetadataName(_genericSpecializationAttribute);
 
 			HasErrors =
-				base.HasErrors ||
-				SpecializationAttribute is null ||
-				ConfigurationAttribute is null;
+				AllowSpecializationAttribute is null ||
+				ConfigurationAttribute is null ||
+				GenericSpecializationAttribute is null;
+		}
+
+		/// <inheritdoc/>
+		protected override void OnUpdate(CSharpCompilation oldCompilation)
+		{
+			Reset();
 		}
 
 		private static GenSpecConfiguration GetConfiguration(CSharpCompilation compilation, INamedTypeSymbol? configurationAttribute)
@@ -93,10 +129,7 @@ namespace Durian.Analysis.GenericSpecialization
 			{
 				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, configurationAttribute))
 				{
-					string? templateName = GetStringValue(attr, nameof(GenericSpecializationConfigurationAttribute.TemplateName)) ?? GenSpecConfiguration.DefaultTemplateName;
-					string? interfaceName = GetStringValue(attr, nameof(GenericSpecializationConfigurationAttribute.InterfaceName)) ?? GenSpecConfiguration.DefaultInterfaceName;
-
-					return new(templateName, interfaceName);
+					return GetConfiguration(attr);
 				}
 			}
 

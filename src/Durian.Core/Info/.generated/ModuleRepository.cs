@@ -424,13 +424,174 @@ namespace Durian.Info
 		/// </summary>
 		public static ModuleIdentity GenericSpecialization => new(
 			module: DurianModule.GenericSpecialization,
-			id: default,
+			id: 02,
 			packages: new PackageIdentity[]
 			{
 				PackageRepository.GenericSpecialization,
 			},
-			docsPath: null,
-			diagnostics: null,
+			docsPath: "tree/master/docs/GenericSpecialization",
+			diagnostics: new DiagnosticData[]
+			{
+				new DiagnosticData(
+					title: "Non-generic types cannot use the AllowSpecializationAttribute",
+					id: 01,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0201.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Target class must be marked with the AllowSpecializationAttribute",
+					id: 02,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0202.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Specified name is not a valid identifier",
+					id: 03,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0203.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Do not specify the GenericSpecializationConfigurationAttribute on members that do not contain any generic child classes or are not generic themselves",
+					id: 04,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0204.md",
+					fatal: false,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Generic specialization must inherit the default implementation class",
+					id: 05,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0205.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Generic specialization must implement the specialization interface",
+					id: 06,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0206.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Class marked with the GenericSpecializationAttribute cannot be abstract or static",
+					id: 07,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0207.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Provide default implementation of the target generic class",
+					id: 08,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0208.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Class marked with the AllowSpecializationAttribute must be partial",
+					id: 09,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0209.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Containing type of a member marked with the AllowSpecializationAttribute must be partial",
+					id: 10,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0210.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Class marked with the AllowSpecializationAttribute cannot be abstract or static",
+					id: 11,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0211.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Do not provide a specialization for a generic class that is not marked with the AllowSpecializationAttribute",
+					id: 12,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0212.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Do not provide a specialization for a generic class that is not part of the current assembly",
+					id: 13,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0213.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Do not provide a specialization for a generic class from the System namespace or any of its child namespaces",
+					id: 14,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0214.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Type specified in the GenericSpecializationAttribute must be an unbound generic type",
+					id: 15,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0215.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Duplicate GenericSpecializationAttribute type",
+					id: 16,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0216.md",
+					fatal: false,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Do not declare members in a class marked with the AllowSpecializationAttribute",
+					id: 17,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0217.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Do not specify base types or implemented interfaces for a class marked with the AllowSpecializationAttribute",
+					id: 18,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0218.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Do not specify attributes on a class marked with the AllowSpecializationAttribute",
+					id: 19,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0219.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Do not force inherit a sealed class",
+					id: 20,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0220.md",
+					fatal: false,
+					hasLocation: true
+				),
+			},
 			types: new TypeIdentity[]
 			{
 				new TypeIdentity(
@@ -442,7 +603,23 @@ namespace Durian.Info
 					}
 				),
 				new TypeIdentity(
+					name: "GenericSpecializationAttribute",
+					@namespace: "Durian",
+					modules: new DurianModule[]
+					{
+						DurianModule.GenericSpecialization,
+					}
+				),
+				new TypeIdentity(
 					name: "GenericSpecializationConfigurationAttribute",
+					@namespace: "Durian.Configuration",
+					modules: new DurianModule[]
+					{
+						DurianModule.GenericSpecialization,
+					}
+				),
+				new TypeIdentity(
+					name: "GenSpecImport",
 					@namespace: "Durian.Configuration",
 					modules: new DurianModule[]
 					{

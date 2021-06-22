@@ -18,7 +18,7 @@ namespace Durian.Analysis.DefaultParam
 #pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 
 	/// <summary>
-	/// Analyzes the usage of the <see cref="DefaultParamConfigurationAttribute"/>
+	/// Analyzes the usage of the <see cref="DefaultParamConfigurationAttribute"/>.
 	/// </summary>
 #if !MAIN_PACKAGE
 

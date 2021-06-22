@@ -6,7 +6,7 @@ using Durian.Analysis;
 using Durian.Generator;
 using Durian.Info;
 
-[assembly: PackageDefinition(DurianPackage.CoreAnalyzer, PackageType.Analyzer, "1.1.0", DurianModule.Core)]
+[assembly: PackageDefinition(DurianPackage.CoreAnalyzer, PackageType.Analyzer, "1.1.1", DurianModule.Core)]
 [assembly: DiagnosticFiles(nameof(DurianDiagnostics))]
 [assembly: IncludeTypes(
 	nameof(DurianGeneratedAttribute),

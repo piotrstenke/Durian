@@ -5,9 +5,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>DefaultParam, based on a similar feature in C++, allows to specify a default type for a generic parameter.</Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Default;Param;Parameter;Type;Generic;Argument</PackageTags>
-    <PackageVersion>1.2.1</PackageVersion>
-    <AssemblyVersion>1.2.1</AssemblyVersion>
-    <Version>1.2.1</Version>
+    <PackageVersion>1.3.0</PackageVersion>
+    <AssemblyVersion>1.3.0</AssemblyVersion>
+    <Version>1.3.0</Version>
     <RootNamespace>Durian.Analysis.DefaultParam</RootNamespace>
     <Configurations>Debug;Release;Main Package</Configurations>
     <IsRoslynComponent>true</IsRoslynComponent>

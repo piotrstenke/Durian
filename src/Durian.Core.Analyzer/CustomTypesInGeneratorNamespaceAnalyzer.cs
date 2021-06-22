@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Immutable;
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -43,20 +44,15 @@ namespace Durian.Analysis
 
 		private static void Analyze(SyntaxNodeAnalysisContext context)
 		{
-			if (!Analyze(context.Node))
+			if (context.Node is not NamespaceDeclarationSyntax n)
 			{
-				context.ReportDiagnostic(Diagnostic.Create(DUR0005_DoNotAddTypesToGeneratorNamespace, context.Node.GetLocation()));
-			}
-		}
-
-		private static bool Analyze(SyntaxNode node)
-		{
-			if (node is not NamespaceDeclarationSyntax n)
-			{
-				return true;
+				return;
 			}
 
-			return n.Name.ToString() != DurianStrings.GeneratorNamespace;
+			if (n.Name.ToString() == DurianStrings.GeneratorNamespace)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(DUR0005_DoNotAddTypesToGeneratorNamespace, n.Name.GetLocation()));
+			}
 		}
 	}
 }

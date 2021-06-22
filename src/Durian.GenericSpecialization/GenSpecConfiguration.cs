@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
+using Durian.Configuration;
 
 namespace Durian.Analysis.GenericSpecialization
 {
@@ -21,6 +22,7 @@ namespace Durian.Analysis.GenericSpecialization
 		/// </summary>
 		public const string DefaultTemplateName = "Spec";
 
+		private GenSpecImport _importOptions;
 		private string _interfaceName;
 		private string _templateName;
 
@@ -28,6 +30,28 @@ namespace Durian.Analysis.GenericSpecialization
 		/// Returns a new instance of <see cref="GenSpecConfiguration"/> with all values set to default.
 		/// </summary>
 		public static GenSpecConfiguration Default => new(DefaultTemplateName, DefaultInterfaceName);
+
+		/// <summary>
+		/// Determines whether to force the specialization class to inherit the main implementation class.
+		/// </summary>
+		public bool ForceInherit { get; set; }
+
+		/// <inheritdoc cref="GenSpecImport"/>
+		public GenSpecImport ImportOptions
+		{
+			get => _importOptions;
+			set
+			{
+				if (value < GenSpecImport.Default || value > GenSpecImport.OverrideAny)
+				{
+					_importOptions = GenSpecImport.Default;
+				}
+				else
+				{
+					_importOptions = value;
+				}
+			}
+		}
 
 		/// <summary>
 		/// Name of the generated specialization interface
@@ -81,7 +105,9 @@ namespace Durian.Analysis.GenericSpecialization
 		{
 			return
 				left._interfaceName == right._interfaceName &&
-				left._templateName == right._templateName;
+				left._templateName == right._templateName &&
+				left.ForceInherit == right.ForceInherit &&
+				left._importOptions == right._importOptions;
 		}
 
 		/// <inheritdoc/>

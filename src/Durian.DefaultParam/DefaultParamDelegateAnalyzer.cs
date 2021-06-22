@@ -75,21 +75,16 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			bool isValid =
-				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
-				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
-				AnalyzeTypeParameters(symbol, in typeParameters);
-
-			if (isValid)
+			if (AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
+				AnalyzeContainingTypes(symbol, compilation, out INamedTypeSymbol[]? containingTypes, cancellationToken) &&
+				AnalyzeTypeParameters(symbol, in typeParameters))
 			{
-				IEnumerable<AttributeData> attributes = symbol.GetAttributes();
-				INamedTypeSymbol[] containingTypes = symbol.GetContainingTypeSymbols().ToArray();
 				string targetNamespace = GetTargetNamespace(symbol, attributes, containingTypes, compilation);
 
-				isValid = AnalyzeCollidingMembers(symbol, in typeParameters, compilation, targetNamespace, attributes, containingTypes, out _, cancellationToken);
+				return AnalyzeCollidingMembers(symbol, in typeParameters, compilation, targetNamespace, attributes, containingTypes, out _, cancellationToken);
 			}
 
-			return isValid;
+			return false;
 		}
 
 		/// <inheritdoc cref="AnalyzeCollidingMembers(INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, bool, out HashSet{int}?, CancellationToken)"/>

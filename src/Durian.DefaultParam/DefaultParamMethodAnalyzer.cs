@@ -82,7 +82,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Analyzes, if the <paramref name="symbol"/> is of an invalid type.
+		/// Analyzes if the <paramref name="symbol"/> is of an invalid type.
 		/// </summary>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
@@ -102,7 +102,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Analyzes, if the <paramref name="symbol"/> or either <see langword="partial"/> or <see langword="extern"/>.
+		/// Analyzes if the <paramref name="symbol"/> or either <see langword="partial"/> or <see langword="extern"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
@@ -118,7 +118,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Analyzes, if the <paramref name="symbol"/> or either <see langword="partial"/> or <see langword="extern"/>.
+		/// Analyzes if the <paramref name="symbol"/> or either <see langword="partial"/> or <see langword="extern"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
 		/// <param name="declaration">Main <see cref="MethodDeclarationSyntax"/> of the <paramref name="symbol"/>.</param>
@@ -153,7 +153,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Analyzes, if the signature of the <paramref name="symbol"/> is valid.
+		/// Analyzes if the signature of the <paramref name="symbol"/> is valid.
 		/// </summary>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze the signature of.</param>
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
@@ -166,7 +166,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Analyzes, if the signature of the <paramref name="symbol"/> is valid. If so, returns a <see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied.
+		/// Analyzes if the signature of the <paramref name="symbol"/> is valid. If so, returns a <see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied.
 		/// </summary>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze the signature of.</param>
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
@@ -398,10 +398,10 @@ namespace Durian.Analysis.DefaultParam
 				ShouldBeAnalyzed(symbol, in typeParameters, compilation, out TypeParameterContainer combinedTypeParameters, cancellationToken) &&
 				AnalyzeAgainstInvalidMethodType(symbol) &&
 				AnalyzeAgainstPartialOrExtern(symbol, cancellationToken) &&
-				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
-				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
+				AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
+				AnalyzeContainingTypes(symbol, compilation, out INamedTypeSymbol[]? containingTypes, cancellationToken) &&
 				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, combinedTypeParameters) &&
-				AnalyzeMethodSignature(symbol, typeParameters, compilation, cancellationToken);
+				AnalyzeMethodSignature(symbol, in typeParameters, compilation, attributes, containingTypes, out _, cancellationToken);
 		}
 
 		private static bool AnalyzeParameterInBaseMethod(in TypeParameterData thisData, in TypeParameterData baseData)

@@ -11,36 +11,36 @@ namespace Durian.Info
 		/// <summary>
 		/// Represents the <c>Durian</c> package.
 		/// </summary>
-		Main = 1,
+		Main = 0,
 
 		/// <summary>
 		/// Represents the <c>Durian.Core</c> package.
 		/// </summary>
-		Core = 2,
+		Core = 1,
 
 		/// <summary>
 		/// Represents the <c>Durian.Core.Analyzer</c> package.
 		/// </summary>
-		CoreAnalyzer = 3,
+		CoreAnalyzer = 2,
 
 		/// <summary>
 		/// Represents the <c>Durian.AnalysisServices</c> package.
 		/// </summary>
-		AnalysisServices = 4,
+		AnalysisServices = 3,
 
 		/// <summary>
 		/// Represents the <c>Durian.TestServices</c> package.
 		/// </summary>
-		TestServices = 5,
+		TestServices = 4,
 
 		/// <summary>
 		/// Represents the <c>Durian.DefaultParam</c> package.
 		/// </summary>
-		DefaultParam = 6,
+		DefaultParam = 5,
 
 		/// <summary>
 		/// Represents the <c>Durian.GenericSpecialization</c> package.
 		/// </summary>
-		GenericSpecialization = 7,
+		GenericSpecialization = 6,
 	}
 }
