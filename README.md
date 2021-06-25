@@ -23,10 +23,9 @@
 
 ## Features
 
-**To see more about a specific feature, go to the corresponding directory in the _/src/_ folder.**
+**To see more about a specific feature, click on its name.**
 
-### DefaultParam
-
+### [DefaultParam](src/Durian.DefaultParam/README.md)
 DefaultParam allows to specify a default type for a generic parameter.
 
 ```csharp
