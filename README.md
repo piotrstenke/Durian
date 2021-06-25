@@ -23,6 +23,8 @@
 
 ## Features
 
+**To see more about a specific feature, go to the corresponding directory in the _/src/_ folder.**
+
 ### DefaultParam
 
 DefaultParam allows to specify a default type for a generic parameter.
@@ -63,7 +65,7 @@ At the moment, two modules are in experimental stage - *StructInherit* and *Gene
 
 ## History
 
-Durian started as a personal project of a high school student from Gdañsk, Poland - Piotr Stenke, amateur C# programmer and Unity Engine enthusiast. Though the sole idea for a Roslyn-based platform emerged in late 2020, any actual work didn't take place until February 2021. First months of development were especially challenging, with final exams in school, deadly virus roaming all around the globe and adult life slowly, but steadily, approaching. And all of that without even mentioning the worst part - learning from scratch this awful, unintuitive, badly-documented mess of an API that is Roslyn.
+Durian started as a personal project of a high school student from GdaÃ±sk, Poland - Piotr Stenke, amateur C# programmer and Unity Engine enthusiast. Though the sole idea for a Roslyn-based platform emerged in late 2020, any actual work didn't take place until February 2021. First months of development were especially challenging, with final exams in school, deadly virus roaming all around the globe and adult life slowly, but steadily, approaching. And all of that without even mentioning the worst part - learning from scratch this awful, unintuitive, badly-documented mess of an API that is Roslyn.
 
 At its initial release on the 2nd of June 2021, Durian was meant to be a major card that would get its author into the IT industry. 
 
