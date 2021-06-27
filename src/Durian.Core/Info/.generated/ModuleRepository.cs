@@ -489,7 +489,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Provide default implementation of the target generic class",
+					title: "Generic class lacks default implementation",
 					id: 08,
 					docsPath: "tree/master/docs/GenericSpecialization/DUR0208.md",
 					fatal: true,
@@ -545,7 +545,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Type specified in the GenericSpecializationAttribute must be an unbound generic type",
+					title: "Type specified in the GenericSpecializationAttribute must be an unbound generic class",
 					id: 15,
 					docsPath: "tree/master/docs/GenericSpecialization/DUR0215.md",
 					fatal: true,
@@ -561,7 +561,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Do not declare members in a class marked with the AllowSpecializationAttribute",
+					title: "Do not declare members that are not specializations in a class marked with the AllowSpecializationAttribute",
 					id: 17,
 					docsPath: "tree/master/docs/GenericSpecialization/DUR0217.md",
 					fatal: true,
@@ -589,6 +589,38 @@ namespace Durian.Info
 					id: 20,
 					docsPath: "tree/master/docs/GenericSpecialization/DUR0220.md",
 					fatal: false,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Default generic implementation cannot be abstract or static",
+					id: 21,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0221.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Interface or template name cannot be the same as containing class",
+					id: 22,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0222.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Default generic implementation cannot be generic",
+					id: 23,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0223.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Specialization class cannot inherit the type it is a specialization of",
+					id: 24,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0224.md",
+					fatal: true,
 					hasLocation: true
 				),
 			},
@@ -619,7 +651,7 @@ namespace Durian.Info
 					}
 				),
 				new TypeIdentity(
-					name: "GenSpecImport",
+					name: "GenSpecImportOptions",
 					@namespace: "Durian.Configuration",
 					modules: new DurianModule[]
 					{

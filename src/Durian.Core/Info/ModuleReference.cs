@@ -12,7 +12,7 @@ namespace Durian.Info
 	/// Creating a new instance of <see cref="ModuleIdentity"/> is very costly performance-wise because of array allocations.
 	/// This class should be used in cases when there is no need for direct reference to a <see cref="ModuleIdentity"/>
 	/// <para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
-	public sealed class ModuleReference : IEquatable<ModuleReference>
+	public sealed class ModuleReference : IEquatable<ModuleReference>, ICloneable
 	{
 		private ModuleIdentity? _module;
 
@@ -60,6 +60,20 @@ namespace Durian.Info
 			return a.EnumValue == b.EnumValue;
 		}
 
+		/// <summary>
+		/// Creates a new object that is a copy of the current instance.
+		/// </summary>
+		/// <returns>A new object that is a copy of this instance.</returns>
+		public ModuleReference Clone()
+		{
+			if (_module is null)
+			{
+				return new(EnumValue);
+			}
+
+			return new ModuleReference(_module);
+		}
+
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
@@ -96,6 +110,11 @@ namespace Durian.Info
 		public override string ToString()
 		{
 			return EnumValue.ToString();
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 	}
 }

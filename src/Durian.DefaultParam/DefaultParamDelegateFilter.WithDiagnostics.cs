@@ -207,9 +207,9 @@ namespace Durian.Analysis.DefaultParam
 				if (isValid)
 				{
 					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes!);
-					string targetNamespace = DefaultParamAnalyzer.GetTargetNamespace(symbol, attributes!, symbols, compilation);
+					string targetNamespace = DefaultParamAnalyzer.GetTargetNamespace(symbol, compilation, attributes!, symbols);
 
-					if (AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, attributes!, symbols, out HashSet<int>? applyNewModifiers, cancellationToken))
+					if (AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, out HashSet<int>? applyNewModifiers, attributes!, symbols, cancellationToken))
 					{
 						data = new DefaultParamDelegateData(
 							declaration,

@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
@@ -36,7 +35,12 @@ namespace Durian.Analysis.DefaultParam
 			/// <returns>
 			/// <see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.
 			/// </returns>
-			public static bool Analyze(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+			public static bool Analyze(
+				IDiagnosticReceiver diagnosticReceiver,
+				INamedTypeSymbol symbol,
+				DefaultParamCompilationData compilation,
+				CancellationToken cancellationToken = default
+			)
 			{
 				TypeParameterContainer typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
 
@@ -51,54 +55,24 @@ namespace Durian.Analysis.DefaultParam
 
 				if (isValid)
 				{
-					string targetNamespace = GetTargetNamespace(symbol, attributes!, containingTypes!, compilation);
+					string targetNamespace = GetTargetNamespace(symbol, compilation, attributes!, containingTypes!);
 
-					return AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, attributes!, containingTypes!, out _, cancellationToken);
+					return AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, out _, attributes!, containingTypes!, cancellationToken);
 				}
 
 				return false;
 			}
 
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData)"/>
-			public static bool AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, DefaultParamCompilationData compilation)
+			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, IEnumerable{AttributeData}?)"/>
+			public static bool AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, DefaultParamCompilationData compilation, IEnumerable<AttributeData>? attributes = null)
 			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation);
+				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation, attributes);
 			}
 
 			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, out AttributeData[])"/>
 			public static bool AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out AttributeData[]? attributes)
 			{
 				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, compilation, out attributes);
-			}
-
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver, ISymbol, IEnumerable{AttributeData}, DefaultParamCompilationData)"/>
-			public static bool AnalyzeAgainstProhibitedAttributes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, IEnumerable<AttributeData> attributes, DefaultParamCompilationData compilation)
-			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeAgainstProhibitedAttributes(diagnosticReceiver, symbol, attributes, compilation);
-			}
-
-			/// <inheritdoc cref="AnalyzeCollidingMembers(IDiagnosticReceiver, INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, IEnumerable{AttributeData}, INamedTypeSymbol[], out HashSet{int}?, CancellationToken)"/>
-			public static bool AnalyzeCollidingMembers(
-				IDiagnosticReceiver diagnosticReceiver,
-				INamedTypeSymbol symbol,
-				in TypeParameterContainer typeParameters,
-				DefaultParamCompilationData compilation,
-				string targetNamespace,
-				out HashSet<int>? applyNew,
-				CancellationToken cancellationToken = default
-			)
-			{
-				return AnalyzeCollidingMembers(
-					diagnosticReceiver,
-					symbol,
-					in typeParameters,
-					compilation,
-					targetNamespace,
-					symbol.GetAttributes(),
-					symbol.GetContainingTypeSymbols().ToArray(),
-					out applyNew,
-					cancellationToken
-				);
 			}
 
 			/// <summary>
@@ -115,18 +89,18 @@ namespace Durian.Analysis.DefaultParam
 			/// </param>
 			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 			/// <param name="targetNamespace">Namespace where the generated members are located.</param>
+			/// <param name="applyNew">
+			/// <see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters
+			/// with the <see cref="DefaultParamAttribute"/> applied for whom the <see
+			/// langword="new"/> modifier should be applied. -or- <see langword="null"/> if the
+			/// <paramref name="symbol"/> is not valid.
+			/// </param>
 			/// <param name="attributes">
 			/// A collection of <see cref="AttributeData"/> a of the target <paramref name="symbol"/>.
 			/// </param>
 			/// <param name="containingTypes">
 			/// An array of <see cref="INamedTypeSymbol"/> s of the <paramref name="symbol"/>'s
 			/// containing types.
-			/// </param>
-			/// <param name="applyNew">
-			/// <see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters
-			/// with the <see cref="DefaultParamAttribute"/> applied for whom the <see
-			/// langword="new"/> modifier should be applied. -or- <see langword="null"/> if the
-			/// <paramref name="symbol"/> is not valid.
 			/// </param>
 			/// <param name="cancellationToken">
 			/// <see cref="CancellationToken"/> that specifies if the operation should be canceled.
@@ -141,13 +115,16 @@ namespace Durian.Analysis.DefaultParam
 				in TypeParameterContainer typeParameters,
 				DefaultParamCompilationData compilation,
 				string targetNamespace,
-				IEnumerable<AttributeData> attributes,
-				INamedTypeSymbol[] containingTypes,
 				out HashSet<int>? applyNew,
+				IEnumerable<AttributeData>? attributes = null,
+				INamedTypeSymbol[]? containingTypes = null,
 				CancellationToken cancellationToken = default
 			)
 			{
-				bool allowsNewModifier = AllowsNewModifier(attributes, containingTypes, compilation);
+				InitializeAttributes(ref attributes, symbol);
+				InitializeContainingTypes(ref containingTypes, symbol);
+
+				bool allowsNewModifier = AllowsNewModifier(symbol, compilation, attributes, containingTypes);
 
 				return AnalyzeCollidingMembers(
 					diagnosticReceiver,
@@ -155,8 +132,8 @@ namespace Durian.Analysis.DefaultParam
 					in typeParameters,
 					compilation,
 					targetNamespace,
-					allowsNewModifier,
 					out applyNew,
+					allowsNewModifier,
 					cancellationToken
 				);
 			}
@@ -169,8 +146,8 @@ namespace Durian.Analysis.DefaultParam
 			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
 			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 			/// <param name="targetNamespace">Namespace where the generated members are located.</param>
-			/// <param name="allowsNewModifier">Determines whether to allows applying the <see langword="new"/> modifier.</param>
 			/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
+			/// <param name="allowsNewModifier">Determines whether to allows applying the <see langword="new"/> modifier.</param>
 			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 			/// <returns><see langword="true"/> if there aren't any collisions with the <paramref name="symbol"/>, otherwise <see langword="false"/>.</returns>
 			public static bool AnalyzeCollidingMembers(
@@ -179,8 +156,8 @@ namespace Durian.Analysis.DefaultParam
 				in TypeParameterContainer typeParameters,
 				DefaultParamCompilationData compilation,
 				string targetNamespace,
-				bool allowsNewModifier,
 				out HashSet<int>? applyNew,
+				bool allowsNewModifier,
 				CancellationToken cancellationToken = default
 			)
 			{
@@ -210,32 +187,47 @@ namespace Durian.Analysis.DefaultParam
 				);
 			}
 
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, CancellationToken)"/>
-			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, cancellationToken);
-			}
-
 			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, out ITypeData[])"/>
-			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out ITypeData[]? containingTypes)
+			public static bool AnalyzeContainingTypes(
+				IDiagnosticReceiver diagnosticReceiver,
+				INamedTypeSymbol symbol,
+				DefaultParamCompilationData compilation,
+				[NotNullWhen(true)] out ITypeData[]? containingTypes
+			)
 			{
 				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out containingTypes);
 			}
 
 			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, out INamedTypeSymbol[], CancellationToken)"/>
-			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out INamedTypeSymbol[]? containingTypes, CancellationToken cancellationToken = default)
+			public static bool AnalyzeContainingTypes(
+				IDiagnosticReceiver diagnosticReceiver,
+				INamedTypeSymbol symbol,
+				DefaultParamCompilationData compilation,
+				[NotNullWhen(true)] out INamedTypeSymbol[]? containingTypes,
+				CancellationToken cancellationToken = default
+			)
 			{
 				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, out containingTypes, cancellationToken);
 			}
 
-			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, INamedTypeSymbol[], DefaultParamCompilationData, CancellationToken)"/>
-			public static bool AnalyzeContainingTypes(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, ISymbol, DefaultParamCompilationData, INamedTypeSymbol[], CancellationToken)"/>
+			public static bool AnalyzeContainingTypes(
+				IDiagnosticReceiver diagnosticReceiver,
+				INamedTypeSymbol symbol,
+				DefaultParamCompilationData compilation,
+				INamedTypeSymbol[]? containingTypes = null,
+				CancellationToken cancellationToken = default
+			)
 			{
-				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, containingTypes, compilation, cancellationToken);
+				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeContainingTypes(diagnosticReceiver, symbol, compilation, containingTypes, cancellationToken);
 			}
 
 			/// <inheritdoc cref="DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(IDiagnosticReceiver, ISymbol,in TypeParameterContainer)"/>
-			public static bool AnalyzeTypeParameters(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, in TypeParameterContainer typeParameters)
+			public static bool AnalyzeTypeParameters(
+				IDiagnosticReceiver diagnosticReceiver,
+				INamedTypeSymbol symbol,
+				in TypeParameterContainer typeParameters
+			)
 			{
 				return DefaultParamAnalyzer.WithDiagnostics.AnalyzeTypeParameters(diagnosticReceiver, symbol, in typeParameters);
 			}

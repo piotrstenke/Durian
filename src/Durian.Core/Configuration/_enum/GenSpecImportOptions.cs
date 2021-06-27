@@ -6,7 +6,7 @@ namespace Durian.Configuration
 	/// <summary>
 	/// Configures how the generator should behave when creating a generic specialization for a class outside of the current assembly.
 	/// </summary>
-	public enum GenSpecImport
+	public enum GenSpecImportOptions
 	{
 		/// <summary>
 		/// Prevent creating generic specializations for imported classes.
@@ -32,10 +32,5 @@ namespace Durian.Configuration
 		/// Allows to create generic specialization for any imported class, regardless of its origin assembly or namespace.
 		/// </summary>
 		OverrideAny = 4,
-
-		/// <summary>
-		/// Default import configuration, which is <see cref="Prevent"/>.
-		/// </summary>
-		Default = Prevent
 	}
 }

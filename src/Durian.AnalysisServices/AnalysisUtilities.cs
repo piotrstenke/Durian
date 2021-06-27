@@ -56,6 +56,34 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Returns a <see cref="string"/> representing a dot-separated name.
+		/// </summary>
+		/// <param name="parts">Parts of the name. Each part will be separated by a dot.</param>
+		/// <returns>A <see cref="string"/> representing a dot-separated name. -or-. <see cref="string.Empty"/> if the <paramref name="parts"/> were null or empty or white-space only.</returns>
+		public static string CreateName(params string[]? parts)
+		{
+			if (parts is null || parts.Length == 0)
+			{
+				return string.Empty;
+			}
+
+			StringBuilder builder = new();
+
+			foreach (string part in parts)
+			{
+				if (string.IsNullOrWhiteSpace(part))
+				{
+					continue;
+				}
+
+				builder.Append(part).Append('.');
+			}
+
+			builder.Remove(builder.Length - 2, 1);
+			return builder.ToString();
+		}
+
+		/// <summary>
 		/// Returns a <see cref="string"/> containing generic identifier combined of the specified <paramref name="name"/> and the collection of <paramref name="typeParameters"/>.
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>

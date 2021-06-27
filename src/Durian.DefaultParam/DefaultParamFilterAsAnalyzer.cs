@@ -59,7 +59,11 @@ namespace Durian.Analysis.DefaultParam
 			context.RegisterSyntaxNodeAction(context => Analyze(data, context, out _), SyntaxKind.TypeParameterList);
 		}
 
-		void ICachedAnalyzerInfo<IDefaultParamTarget>.Register(IDurianAnalysisContext context, CSharpCompilation compilation, ConcurrentDictionary<FileLinePositionSpan, IDefaultParamTarget> cached)
+		void ICachedAnalyzerInfo<IDefaultParamTarget>.Register(
+			IDurianAnalysisContext context,
+			CSharpCompilation compilation,
+			ConcurrentDictionary<FileLinePositionSpan, IDefaultParamTarget> cached
+		)
 		{
 			DefaultParamCompilationData data = new(compilation);
 
@@ -77,9 +81,17 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="context"><see cref="SyntaxNodeAnalysisContext"/> to analyze.</param>
 		/// <param name="data"><see cref="IDefaultParamTarget"/> that is returned if the analysis is a success.</param>
-		protected abstract bool Analyze(DefaultParamCompilationData compilation, SyntaxNodeAnalysisContext context, [NotNullWhen(true)] out T? data);
+		protected abstract bool Analyze(
+			DefaultParamCompilationData compilation,
+			SyntaxNodeAnalysisContext context,
+			[NotNullWhen(true)] out T? data
+		);
 
-		private void Analyze(DefaultParamCompilationData compilation, SyntaxNodeAnalysisContext context, ConcurrentDictionary<FileLinePositionSpan, T> dict)
+		private void Analyze(
+			DefaultParamCompilationData compilation,
+			SyntaxNodeAnalysisContext context,
+			ConcurrentDictionary<FileLinePositionSpan, T> dict
+		)
 		{
 			Analyze(compilation, context, out T? data);
 
@@ -89,7 +101,11 @@ namespace Durian.Analysis.DefaultParam
 			}
 		}
 
-		private void Analyze(DefaultParamCompilationData compilation, SyntaxNodeAnalysisContext context, ConcurrentDictionary<FileLinePositionSpan, IDefaultParamTarget> dict)
+		private void Analyze(
+			DefaultParamCompilationData compilation,
+			SyntaxNodeAnalysisContext context,
+			ConcurrentDictionary<FileLinePositionSpan, IDefaultParamTarget> dict
+		)
 		{
 			Analyze(compilation, context, out T? data);
 

@@ -208,9 +208,9 @@ namespace Durian.Analysis.DefaultParam
 				if (isValid)
 				{
 					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
-					string targetNamespace = DefaultParamAnalyzer.GetTargetNamespace(symbol, attributes!, symbols, compilation);
+					string targetNamespace = DefaultParamAnalyzer.GetTargetNamespace(symbol, compilation, attributes!, symbols);
 
-					if (AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, attributes!, symbols, out HashSet<int>? applyNewModifiers, cancellationToken))
+					if (AnalyzeCollidingMembers(diagnosticReceiver, symbol, in typeParameters, compilation, targetNamespace, out HashSet<int>? applyNewModifiers, attributes!, symbols, cancellationToken))
 					{
 						bool inherit = ShouldInheritInsteadOfCopying(diagnosticReceiver, symbol, compilation, attributes!, symbols);
 
@@ -271,7 +271,16 @@ namespace Durian.Analysis.DefaultParam
 					return true;
 				}
 
-				return ValidateAndCreate(diagnosticReceiver, compilation, declaration, semanticModel, symbol, in typeParameters, out data, cancellationToken);
+				return ValidateAndCreate(
+					diagnosticReceiver,
+					compilation,
+					declaration,
+					semanticModel,
+					symbol,
+					in typeParameters,
+					out data,
+					cancellationToken
+				);
 			}
 
 			private static DefaultParamTypeData[] GetValidTypes_Internal(

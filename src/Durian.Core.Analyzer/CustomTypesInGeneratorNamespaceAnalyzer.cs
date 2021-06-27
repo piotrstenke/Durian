@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using System.Collections.Immutable;
-using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

@@ -1,13 +1,8 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Text;
-using Durian.Analysis.Cache;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Durian.Analysis.Logging;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.GenericSpecialization
 {

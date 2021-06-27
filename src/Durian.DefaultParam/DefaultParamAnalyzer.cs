@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
@@ -37,6 +38,51 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		protected DefaultParamAnalyzer()
 		{
+		}
+
+		/// <summary>
+		/// Determines whether the 'new' modifier is allowed to be applied to the target <see cref="ISymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="attributes">A collection of the target <see cref="ISymbol"/>'s attributes.</param>
+		/// <param name="containingTypes"><see cref="INamedTypeSymbol"/>s that contain this <see cref="IMethodSymbol"/>.</param>
+		public static bool AllowsNewModifier(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			IEnumerable<AttributeData>? attributes = null,
+			INamedTypeSymbol[]? containingTypes = null
+		)
+		{
+			InitializeAttributes(ref attributes, symbol);
+			InitializeContainingTypes(ref containingTypes, symbol);
+
+			const string configPropertyName = nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible);
+			const string scopedPropertyName = nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible);
+
+			if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.ConfigurationAttribute!, configPropertyName, out bool value))
+			{
+				return value;
+			}
+			else
+			{
+				int length = containingTypes.Length;
+
+				if (length > 0)
+				{
+					INamedTypeSymbol scopedAttribute = compilation.ScopedConfigurationAttribute!;
+
+					foreach (INamedTypeSymbol type in containingTypes.Reverse())
+					{
+						if (DefaultParamUtilities.TryGetConfigurationPropertyValue(type.GetAttributes(), scopedAttribute, scopedPropertyName, out value))
+						{
+							return value;
+						}
+					}
+				}
+
+				return compilation.Configuration.ApplyNewModifierWhenPossible;
+			}
 		}
 
 		/// <summary>
@@ -77,7 +123,11 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="attributes">An array of <see cref="AttributeData"/>s of the <paramref name="symbol"/>. Returned if the method itself returns <see langword="true"/>.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid (does not have the prohibited attributes), otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeAgainstProhibitedAttributes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out AttributeData[]? attributes)
+		public static bool AnalyzeAgainstProhibitedAttributes(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			[NotNullWhen(true)] out AttributeData[]? attributes
+		)
 		{
 			AttributeData[] attrs = symbol.GetAttributes().ToArray();
 			bool isValid = AnalyzeAgainstProhibitedAttributes(attrs, compilation);
@@ -93,7 +143,12 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="containingTypes">An array of the <paramref name="symbol"/>'s containing types' <see cref="INamedTypeSymbol"/>s. Returned if the method itself returns <see langword="true"/>.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns><see langword="true"/> if the containing types of the <paramref name="symbol"/> are valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out INamedTypeSymbol[]? containingTypes, CancellationToken cancellationToken = default)
+		public static bool AnalyzeContainingTypes(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			[NotNullWhen(true)] out INamedTypeSymbol[]? containingTypes,
+			CancellationToken cancellationToken = default
+		)
 		{
 			INamedTypeSymbol[] containing = symbol.GetContainingTypeSymbols().ToArray();
 			bool isValid = AnalyzeContainingTypes(containing, compilation, cancellationToken);
@@ -108,7 +163,11 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the <paramref name="containingTypes"/> of the target <see cref="ISymbol"/> are valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeContainingTypes(INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		public static bool AnalyzeContainingTypes(
+			INamedTypeSymbol[] containingTypes,
+			DefaultParamCompilationData compilation,
+			CancellationToken cancellationToken = default
+		)
 		{
 			if (containingTypes.Length > 0)
 			{
@@ -138,7 +197,11 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the containing types of the <paramref name="symbol"/> are valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		public static bool AnalyzeContainingTypes(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			CancellationToken cancellationToken = default
+		)
 		{
 			INamedTypeSymbol[] types = symbol.GetContainingTypeSymbols().ToArray();
 
@@ -152,7 +215,11 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="containingTypes">An array of the <paramref name="symbol"/>'s containing types' <see cref="ITypeData"/>s. Returned if the method itself returns <see langword="true"/>.</param>
 		/// <returns><see langword="true"/> if the containing types of the <paramref name="symbol"/> are valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation, [NotNullWhen(true)] out ITypeData[]? containingTypes)
+		public static bool AnalyzeContainingTypes(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			[NotNullWhen(true)] out ITypeData[]? containingTypes
+		)
 		{
 			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
 
@@ -240,7 +307,12 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="symbol"/>'s type parameters.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool DefaultAnalyze(ISymbol symbol, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters, CancellationToken cancellationToken = default)
+		public static bool DefaultAnalyze(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			in TypeParameterContainer typeParameters,
+			CancellationToken cancellationToken = default
+		)
 		{
 			if (!typeParameters.HasDefaultParams)
 			{
@@ -259,10 +331,36 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="symbol"><see cref="ISymbol"/> to get the colliding members of.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="targetNamespace">Namespace where the generated members are located.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="symbol"/>'s type parameters.</param>
+		/// <param name="numParameters">Number of parameters of this <paramref name="symbol"/>. Always use <c>0</c> for members other than methods.</param>
+		public static CollidingMember[] GetPotentiallyCollidingMembers(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			string? targetNamespace,
+			in TypeParameterContainer typeParameters,
+			int numParameters = 0
+		)
+		{
+			return GetPotentiallyCollidingMembers(symbol, compilation, targetNamespace, typeParameters.Length, typeParameters.NumNonDefaultParam, numParameters);
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="CollidingMember"/>s representing <see cref="ISymbol"/>s that can potentially collide with members generated from the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the colliding members of.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="targetNamespace">Namespace where the generated members are located.</param>
 		/// <param name="numTypeParameters">Number of type parameters of this <paramref name="symbol"/>.</param>
 		/// <param name="numNonDefaultParam">Number of type parameters of this <paramref name="symbol"/> that don't have the <see cref="DefaultParamAttribute"/>.</param>
 		/// <param name="numParameters">Number of parameters of this <paramref name="symbol"/>. Always use <c>0</c> for members other than methods.</param>
-		public static CollidingMember[] GetPotentiallyCollidingMembers(ISymbol symbol, DefaultParamCompilationData compilation, string? targetNamespace, int numTypeParameters, int numNonDefaultParam, int numParameters = 0)
+		public static CollidingMember[] GetPotentiallyCollidingMembers(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			string? targetNamespace,
+			int numTypeParameters,
+			int numNonDefaultParam,
+			int numParameters = 0
+		)
 		{
 			return GetPotentiallyCollidingMembers_Internal(symbol, compilation, targetNamespace, numTypeParameters, numNonDefaultParam, numParameters)
 				.Select(s =>
@@ -281,22 +379,24 @@ namespace Durian.Analysis.DefaultParam
 				.ToArray();
 		}
 
-		/// <inheritdoc cref="GetTargetNamespace(ISymbol, IEnumerable{AttributeData}, INamedTypeSymbol[], DefaultParamCompilationData)"/>
-		public static string GetTargetNamespace(ISymbol symbol, DefaultParamCompilationData compilation)
-		{
-			return GetTargetNamespace(symbol, symbol.GetAttributes(), symbol.GetContainingTypeSymbols().ToArray(), compilation);
-		}
-
 		/// <summary>
 		/// Returns a <see cref="string"/> representing a namespace the target member should be generated in.
 		/// </summary>
 		/// <param name="symbol">Original <see cref="ISymbol"/> the generated member is based on.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>a of the target <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the <paramref name="symbol"/>'s containing types.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static string GetTargetNamespace(ISymbol symbol, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
+		/// <param name="attributes">A collection of <see cref="AttributeData"/>a of the target <paramref name="symbol"/>.</param>
+		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the <paramref name="symbol"/>'s containing types in root-first order.</param>
+		public static string GetTargetNamespace(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			IEnumerable<AttributeData>? attributes = null,
+			INamedTypeSymbol[]? containingTypes = null
+		)
 		{
 			const string propertyName = nameof(DefaultParamConfigurationAttribute.TargetNamespace);
+
+			InitializeAttributes(ref attributes, symbol);
+			InitializeContainingTypes(ref containingTypes, symbol);
 
 			if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.ConfigurationAttribute!, propertyName, out string? value))
 			{
@@ -395,7 +495,12 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public virtual void Analyze(IDiagnosticReceiver diagnosticReceiver, ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		public virtual void Analyze(
+			IDiagnosticReceiver diagnosticReceiver,
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			CancellationToken cancellationToken = default
+		)
 		{
 			WithDiagnostics.DefaultAnalyze(diagnosticReceiver, symbol, compilation, cancellationToken);
 		}
@@ -430,6 +535,24 @@ namespace Durian.Analysis.DefaultParam
 				DefaultParamDiagnostics.DUR0121_TypeIsNotValidDefaultParamValue,
 				DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested
 			};
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private protected static void InitializeAttributes([NotNull] ref IEnumerable<AttributeData>? attributes, ISymbol symbol)
+		{
+			if (attributes is null)
+			{
+				attributes = symbol.GetAttributes();
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private protected static void InitializeContainingTypes([NotNull] ref INamedTypeSymbol[]? containingTypes, ISymbol symbol)
+		{
+			if (containingTypes is null)
+			{
+				containingTypes = symbol.GetContainingTypeSymbols().ToArray();
+			}
 		}
 
 		/// <inheritdoc/>
@@ -496,7 +619,13 @@ namespace Durian.Analysis.DefaultParam
 			});
 		}
 
-		private static INamedTypeSymbol[] GetCollidingNotNestedTypes(ISymbol symbol, DefaultParamCompilationData compilation, string? targetNamespace, int numTypeParameters, int numNonDefaultParam)
+		private static INamedTypeSymbol[] GetCollidingNotNestedTypes(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			string? targetNamespace,
+			int numTypeParameters,
+			int numNonDefaultParam
+		)
 		{
 			INamedTypeSymbol generatedFromAttribute = compilation.DurianGeneratedAttribute!;
 			int numDefaultParam = numTypeParameters - numNonDefaultParam;
@@ -544,7 +673,14 @@ namespace Durian.Analysis.DefaultParam
 			throw new InvalidOperationException($"Unknown parameter: {parameter}");
 		}
 
-		private static IEnumerable<ISymbol> GetPotentiallyCollidingMembers_Internal(ISymbol symbol, DefaultParamCompilationData compilation, string? targetNamespace, int numTypeParameters, int numNonDefaultParam, int numParameters)
+		private static IEnumerable<ISymbol> GetPotentiallyCollidingMembers_Internal(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			string? targetNamespace,
+			int numTypeParameters,
+			int numNonDefaultParam,
+			int numParameters
+		)
 		{
 			INamedTypeSymbol? containingType = symbol.ContainingType;
 
@@ -643,7 +779,12 @@ namespace Durian.Analysis.DefaultParam
 			return false;
 		}
 
-		private static bool HasValidParameterAccessibility(ISymbol symbol, ITypeSymbol targetType, ITypeParameterSymbol currentTypeParameter, in TypeParameterContainer typeParameters)
+		private static bool HasValidParameterAccessibility(
+			ISymbol symbol,
+			ITypeSymbol targetType,
+			ITypeParameterSymbol currentTypeParameter,
+			in TypeParameterContainer typeParameters
+		)
 		{
 			if (targetType.GetEffectiveAccessibility() < symbol.GetEffectiveAccessibility())
 			{
@@ -778,7 +919,12 @@ namespace Durian.Analysis.DefaultParam
 			return true;
 		}
 
-		private static bool TryGetTypeParameters(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken, out TypeParameterContainer typeParameters)
+		private static bool TryGetTypeParameters(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			CancellationToken cancellationToken,
+			out TypeParameterContainer typeParameters
+		)
 		{
 			if (symbol is IMethodSymbol m)
 			{
@@ -795,7 +941,11 @@ namespace Durian.Analysis.DefaultParam
 			return false;
 		}
 
-		private static bool ValidateTargetTypeParameter(ISymbol symbol, in TypeParameterData currentTypeParameter, in TypeParameterContainer typeParameters)
+		private static bool ValidateTargetTypeParameter(
+			ISymbol symbol,
+			in TypeParameterData currentTypeParameter,
+			in TypeParameterContainer typeParameters
+		)
 		{
 			ITypeSymbol? targetType = currentTypeParameter.TargetType;
 			ITypeParameterSymbol typeParameterSymbol = currentTypeParameter.Symbol;

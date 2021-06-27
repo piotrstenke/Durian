@@ -12,7 +12,7 @@ namespace Durian.Info
 	/// </summary>
 	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
 	[DebuggerDisplay("Name = {Name}, Version = {Version}")]
-	public sealed partial class PackageIdentity : IEquatable<PackageIdentity>
+	public sealed partial class PackageIdentity : IEquatable<PackageIdentity>, ICloneable
 	{
 		private ImmutableArray<ModuleReference> _modules;
 
@@ -55,6 +55,15 @@ namespace Durian.Info
 			Type = type;
 		}
 
+		private PackageIdentity(DurianPackage enumValue, string name, string version, PackageType type, ref ImmutableArray<ModuleReference> modules)
+		{
+			EnumValue = enumValue;
+			Name = name;
+			Version = version;
+			Type = type;
+			_modules = modules;
+		}
+
 		/// <inheritdoc/>
 		public static bool operator !=(PackageIdentity a, PackageIdentity b)
 		{
@@ -70,6 +79,15 @@ namespace Durian.Info
 				a.Name == b.Name &&
 				a.Type == b.Type &&
 				Utilities.CompareImmutableArrays(ref a._modules, ref b._modules);
+		}
+
+		/// <summary>
+		/// Creates a new object that is a copy of the current instance.
+		/// </summary>
+		/// <returns>A new object that is a copy of this instance.</returns>
+		public PackageIdentity Clone()
+		{
+			return new PackageIdentity(EnumValue, Name, Version, Type, ref _modules);
 		}
 
 		/// <inheritdoc/>
@@ -93,6 +111,7 @@ namespace Durian.Info
 		public override int GetHashCode()
 		{
 			int hashCode = -726504116;
+			hashCode = (hashCode * -1521134295) + Name.GetHashCode();
 			hashCode = (hashCode * -1521134295) + EnumValue.GetHashCode();
 			hashCode = (hashCode * -1521134295) + Version.GetHashCode();
 			hashCode = (hashCode * -1521134295) + Type.GetHashCode();
@@ -105,6 +124,11 @@ namespace Durian.Info
 		public override string ToString()
 		{
 			return $"{Name}, {Version}";
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 
 		internal void Initialize(DurianModule[]? modules)

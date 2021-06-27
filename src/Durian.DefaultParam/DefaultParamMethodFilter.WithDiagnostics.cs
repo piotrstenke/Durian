@@ -201,7 +201,7 @@ namespace Durian.Analysis.DefaultParam
 				CancellationToken cancellationToken = default
 			)
 			{
-				if (!ShouldBeAnalyzed(diagnosticReceiver, symbol, in typeParameters, compilation, out TypeParameterContainer combinedTypeParameters, cancellationToken))
+				if (!ShouldBeAnalyzed(diagnosticReceiver, symbol, compilation, in typeParameters, out TypeParameterContainer combinedTypeParameters, cancellationToken))
 				{
 					data = null;
 					return false;
@@ -220,10 +220,10 @@ namespace Durian.Analysis.DefaultParam
 					{
 						INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes!);
 
-						if (AnalyzeMethodSignature(diagnosticReceiver, symbol, in combinedParameters, compilation, attributes!, symbols, out HashSet<int>? newModifiers, cancellationToken))
+						if (AnalyzeMethodSignature(diagnosticReceiver, symbol, in combinedParameters, compilation, out HashSet<int>? newModifiers, attributes!, symbols, cancellationToken))
 						{
 							bool call = ShouldCallInsteadOfCopying(symbol, compilation, attributes!, symbols);
-							string targetNamespace = DefaultParamAnalyzer.GetTargetNamespace(symbol, attributes!, symbols, compilation);
+							string targetNamespace = DefaultParamAnalyzer.GetTargetNamespace(symbol, compilation, attributes!, symbols);
 
 							data = new(
 								declaration,

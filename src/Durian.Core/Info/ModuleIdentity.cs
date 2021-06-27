@@ -10,7 +10,7 @@ namespace Durian.Info
 	/// Contains basic information about a Durian module.
 	/// </summary>
 	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
-	public sealed partial class ModuleIdentity : IEquatable<ModuleIdentity>
+	public sealed partial class ModuleIdentity : IEquatable<ModuleIdentity>, ICloneable
 	{
 		private ImmutableArray<DiagnosticData> _diagnostics;
 		private ImmutableArray<PackageIdentity> _packages;
@@ -78,6 +78,23 @@ namespace Durian.Info
 			}
 		}
 
+		private ModuleIdentity(
+					DurianModule module,
+			in IdSection id,
+			ImmutableArray<PackageIdentity> packages,
+			string docsPath,
+			ImmutableArray<DiagnosticData> diagnostics,
+			ImmutableArray<TypeIdentity> types
+		)
+		{
+			Module = module;
+			AnalysisId = id;
+			Documentation = docsPath;
+			_packages = packages;
+			_diagnostics = diagnostics;
+			_types = types;
+		}
+
 		/// <inheritdoc/>
 		public static bool operator !=(ModuleIdentity a, ModuleIdentity b)
 		{
@@ -94,6 +111,15 @@ namespace Durian.Info
 				Utilities.CompareImmutableArrays(ref a._types, ref b._types) &&
 				Utilities.CompareImmutableArrays(ref a._diagnostics, ref b._diagnostics) &&
 				Utilities.CompareImmutableArrays(ref a._packages, ref b._packages);
+		}
+
+		/// <summary>
+		/// Creates a new object that is a copy of the current instance.
+		/// </summary>
+		/// <returns>A new object that is a copy of this instance.</returns>
+		public ModuleIdentity Clone()
+		{
+			return new ModuleIdentity(Module, AnalysisId, _packages, Documentation, _diagnostics, _types);
 		}
 
 		/// <inheritdoc/>
@@ -131,6 +157,11 @@ namespace Durian.Info
 		public override string ToString()
 		{
 			return Module.ToString();
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 	}
 }

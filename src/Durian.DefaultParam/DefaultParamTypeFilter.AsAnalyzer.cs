@@ -31,7 +31,11 @@ namespace Durian.Analysis.DefaultParam
 			}
 
 			/// <inheritdoc/>
-			protected override bool Analyze(DefaultParamCompilationData compilation, SyntaxNodeAnalysisContext context, [NotNullWhen(true)] out DefaultParamTypeData? data)
+			protected override bool Analyze(
+				DefaultParamCompilationData compilation,
+				SyntaxNodeAnalysisContext context,
+				[NotNullWhen(true)] out DefaultParamTypeData? data
+			)
 			{
 				if (context.Node is not TypeParameterListSyntax || context.Node.Parent is not TypeDeclarationSyntax declaration)
 				{
@@ -41,7 +45,13 @@ namespace Durian.Analysis.DefaultParam
 
 				IDiagnosticReceiver diagnosticReceiver = DiagnosticReceiverFactory.SyntaxNode(context);
 
-				return WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, declaration, out data, context.CancellationToken);
+				return WithDiagnostics.ValidateAndCreate(
+					diagnosticReceiver,
+					compilation,
+					declaration,
+					out data,
+					context.CancellationToken
+				);
 			}
 		}
 	}

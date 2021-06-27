@@ -1,4 +1,4 @@
-<div align="left">
+﻿<div align="left">
     <a href="https://www.nuget.org/packages/Durian">
         <img src="https://img.shields.io/nuget/v/Durian?color=seagreen&style=flat-square" alt="Version"/>
     </a>
@@ -23,13 +23,15 @@
 
 ## Features
 
-### DefaultParam
+**To see more about a specific feature, click on its name.**
 
+### [DefaultParam](src/Durian.DefaultParam/README.md)
 DefaultParam allows to specify a default type for a generic parameter.
 
 ```csharp
 using Durian;
 
+// Add the 'Durian.DefaultParamAttribute' to a type parameter to specify a default value.
 public partial class Test<[DefaultParam(typeof(string))]T>
 {
     public T Value { get; }
@@ -40,12 +42,15 @@ public partial class Test<[DefaultParam(typeof(string))]T>
     }
 }
 
-// Generated
-
-public class Test : Test<string>
+class Program
 {
-    public Test(string value) : base(value)
+    static void Main()
     {
+        // Test<T> can be used without type parameters - 'T' defaults to 'string'.
+        Test test1 = new Test("");
+        
+        // Type parameter can be stated explicitly.
+        Test<string> test2 = new Test<string>("");
     }
 }
 
@@ -63,7 +68,7 @@ At the moment, two modules are in experimental stage - *StructInherit* and *Gene
 
 ## History
 
-Durian started as a personal project of a high school student from Gda�sk, Poland - Piotr Stenke, amateur C# programmer and Unity Engine enthusiast. Though the sole idea for a Roslyn-based platform emerged in late 2020, any actual work didn't take place until February 2021. First months of development were especially challenging, with final exams in school, deadly virus roaming all around the globe and adult life slowly, but steadily, approaching. And all of that without even mentioning the worst part - learning from scratch this awful, unintuitive, badly-documented mess of an API that is Roslyn.
+Durian started as a personal project of a high school student from Gdañsk, Poland - Piotr Stenke, amateur C# programmer and Unity Engine enthusiast. Though the sole idea for a Roslyn-based platform emerged in late 2020, any actual work didn't take place until February 2021. First months of development were especially challenging, with final exams in school, deadly virus roaming all around the globe and adult life slowly, but steadily, approaching. And all of that without even mentioning the worst part - learning from scratch this awful, unintuitive, badly-documented mess of an API that is Roslyn.
 
 At its initial release on the 2nd of June 2021, Durian was meant to be a major card that would get its author into the IT industry. 
 

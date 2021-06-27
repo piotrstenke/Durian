@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.CodeAnalysis;
@@ -13,7 +12,7 @@ namespace Durian.Analysis.Logging
 	/// Determines the behavior of the target <see cref="ISourceGenerator"/> when creating log files.
 	/// </summary>
 	[DebuggerDisplay("Enabled = {EnableLogging}, Supported = {SupportedLogs}")]
-	public sealed partial class GeneratorLoggingConfiguration : IEquatable<GeneratorLoggingConfiguration>
+	public sealed partial class GeneratorLoggingConfiguration : IEquatable<GeneratorLoggingConfiguration>, ICloneable
 	{
 		private bool _enableDiagnostics;
 		private bool _enableLogging;
@@ -140,12 +139,28 @@ namespace Durian.Analysis.Logging
 		{
 			return
 				a.SupportsDiagnostics == b.SupportsDiagnostics &&
-				a.CurrentFilterMode == b.CurrentFilterMode &&
 				a.EnableDiagnostics == b.EnableDiagnostics &&
 				a.EnableExceptions == b.EnableExceptions &&
 				a.EnableLogging == b.EnableLogging &&
 				a.LogDirectory == b.LogDirectory &&
 				a.SupportedLogs == b.SupportedLogs;
+		}
+
+		/// <summary>
+		/// Creates a new object that is a copy of the current instance.
+		/// </summary>
+		/// <returns>A new object that is a copy of this instance.</returns>
+		public GeneratorLoggingConfiguration Clone()
+		{
+			return new GeneratorLoggingConfiguration()
+			{
+				_enableDiagnostics = _enableDiagnostics,
+				_enableLogging = _enableLogging,
+				_logDirectory = _logDirectory,
+				SupportedLogs = SupportedLogs,
+				SupportsDiagnostics = SupportsDiagnostics,
+				EnableExceptions = EnableExceptions
+			};
 		}
 
 		/// <inheritdoc/>
@@ -164,14 +179,18 @@ namespace Durian.Analysis.Logging
 		public override int GetHashCode()
 		{
 			int hashCode = -604981020;
-			hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(_logDirectory);
+			hashCode = (hashCode * -1521134295) + _logDirectory.GetHashCode();
 			hashCode = (hashCode * -1521134295) + _enableLogging.GetHashCode();
 			hashCode = (hashCode * -1521134295) + _enableDiagnostics.GetHashCode();
 			hashCode = (hashCode * -1521134295) + SupportedLogs.GetHashCode();
-			hashCode = (hashCode * -1521134295) + CurrentFilterMode.GetHashCode();
 			hashCode = (hashCode * -1521134295) + SupportsDiagnostics.GetHashCode();
 			hashCode = (hashCode * -1521134295) + EnableExceptions.GetHashCode();
 			return hashCode;
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 	}
 }

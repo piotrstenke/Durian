@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Diagnostics;
 
 namespace Durian
 {
@@ -9,6 +10,7 @@ namespace Durian
 	/// Specifies that the class is a specialization of the specified generic type.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+	[Conditional("DEBUG")]
 	public sealed class GenericSpecializationAttribute : Attribute
 	{
 		/// <summary>

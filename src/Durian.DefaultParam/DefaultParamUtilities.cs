@@ -22,42 +22,6 @@ namespace Durian.Analysis.DefaultParam
 	internal static class DefaultParamUtilities
 	{
 		/// <summary>
-		/// Checks, if the collection of <see cref="AttributeData"/> and <paramref name="containingTypes"/> of a <see cref="ISymbol"/> allow to apply the 'new' modifier.
-		/// </summary>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/> representing attributes of a <see cref="ISymbol"/>.</param>
-		/// <param name="containingTypes">Containing types of the target <see cref="ISymbol"/>.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool AllowsNewModifier(IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
-		{
-			const string configPropertyName = nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible);
-			const string scopedPropertyName = nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible);
-
-			if (TryGetConfigurationPropertyValue(attributes, compilation.ConfigurationAttribute!, configPropertyName, out bool value))
-			{
-				return value;
-			}
-			else
-			{
-				int length = containingTypes.Length;
-
-				if (length > 0)
-				{
-					INamedTypeSymbol scopedAttribute = compilation.ScopedConfigurationAttribute!;
-
-					foreach (INamedTypeSymbol type in containingTypes.Reverse())
-					{
-						if (TryGetConfigurationPropertyValue(type.GetAttributes(), scopedAttribute, scopedPropertyName, out value))
-						{
-							return value;
-						}
-					}
-				}
-
-				return compilation.Configuration.ApplyNewModifierWhenPossible;
-			}
-		}
-
-		/// <summary>
 		/// Returns a <see cref="SyntaxList{TNode}"/> of <see cref="TypeParameterConstraintClauseSyntax"/> build from the given <paramref name="constraints"/>.
 		/// </summary>
 		/// <param name="constraints">A collection of <see cref="TypeParameterConstraintClauseSyntax"/> to build the <see cref="SyntaxList{TNode}"/> from.</param>
@@ -90,7 +54,13 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="containingTypes">Types that contain the target <see cref="ISymbol"/>.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="defaultValue">Value to be returned when no other valid configuration value is found.</param>
-		public static int GetConfigurationEnumValue(string propertyName, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation, int defaultValue)
+		public static int GetConfigurationEnumValue(
+			string propertyName,
+			IEnumerable<AttributeData> attributes,
+			INamedTypeSymbol[] containingTypes,
+			DefaultParamCompilationData compilation,
+			int defaultValue
+		)
 		{
 			if (!TryGetConfigurationPropertyValue(attributes, compilation.ConfigurationAttribute!, propertyName, out int value))
 			{
@@ -107,7 +77,12 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="containingTypes">Types that contain the target <see cref="ISymbol"/>.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="defaultValue">Value to be returned when no other valid configuration value is found.</param>
-		public static int GetConfigurationEnumValueOnContainingTypes(string propertyName, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation, int defaultValue)
+		public static int GetConfigurationEnumValueOnContainingTypes(
+			string propertyName,
+			INamedTypeSymbol[] containingTypes,
+			DefaultParamCompilationData compilation,
+			int defaultValue
+		)
 		{
 			int length = containingTypes.Length;
 
@@ -295,12 +270,12 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="value">Value that is potentially invalid and should be converted to a valid one.</param>
 		public static int GetValidConventionEnumValue(int value)
 		{
-			if (value == 2)
+			if (value == 1)
 			{
 				return value;
 			}
 
-			return 1;
+			return 0;
 		}
 
 		/// <summary>
@@ -534,7 +509,12 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="numTypeParameters">Number of type parameters.</param>
 		/// <param name="numNonDefaultParam">Number of non-DefaultParam type parameters.</param>
 		/// <param name="modifiers">Reference to a<see cref="SyntaxTokenList"/> to update.</param>
-		public static bool TryAddNewModifierForType(HashSet<int>? newModifierIndexes, int numTypeParameters, int numNonDefaultParam, ref SyntaxTokenList modifiers)
+		public static bool TryAddNewModifierForType(
+			HashSet<int>? newModifierIndexes,
+			int numTypeParameters,
+			int numNonDefaultParam,
+			ref SyntaxTokenList modifiers
+		)
 		{
 			if (newModifierIndexes is not null && newModifierIndexes.Contains(numTypeParameters - numNonDefaultParam))
 			{
@@ -591,7 +571,12 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="configurationAttribute"><see cref="INamedTypeSymbol"/> of the configuration attribute.</param>
 		/// <param name="propertyName">Name of property to get the value of.</param>
 		/// <param name="value">Returned enum value as an <see cref="int"/>.</param>
-		public static bool TryGetConfigurationPropertyValue<T>(IEnumerable<AttributeData> attributes, INamedTypeSymbol configurationAttribute, string propertyName, out T? value)
+		public static bool TryGetConfigurationPropertyValue<T>(
+			IEnumerable<AttributeData> attributes,
+			INamedTypeSymbol configurationAttribute,
+			string propertyName,
+			out T? value
+		)
 		{
 			AttributeData? attr = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, configurationAttribute));
 
@@ -677,7 +662,11 @@ namespace Durian.Analysis.DefaultParam
 			throw new InvalidOperationException($"Unknown type parameter used as argument for parameter '{parameter.Name}'");
 		}
 
-		private static ParameterGeneration[][] CreateParameterGenerationsForTypeParameters(in TypeParameterContainer typeParameters, ParameterGeneration[] defaultParameters, int numParameters)
+		private static ParameterGeneration[][] CreateParameterGenerationsForTypeParameters(
+			in TypeParameterContainer typeParameters,
+			ParameterGeneration[] defaultParameters,
+			int numParameters
+		)
 		{
 			ParameterGeneration[][] generations = new ParameterGeneration[typeParameters.NumDefaultParam][];
 			ParameterGeneration[] previousParameters = defaultParameters;
@@ -739,7 +728,12 @@ namespace Durian.Analysis.DefaultParam
 			return namespaces.Distinct().Where(n => n != "Durian").ToList();
 		}
 
-		private static AttributeListSyntax[] GetValidAttributes(MemberDeclarationSyntax member, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
+		private static AttributeListSyntax[] GetValidAttributes(
+			MemberDeclarationSyntax member,
+			SemanticModel semanticModel,
+			DefaultParamCompilationData compilation,
+			CancellationToken cancellationToken
+		)
 		{
 			SyntaxList<AttributeListSyntax> attrLists = member.AttributeLists;
 			List<AttributeListSyntax> list = new(attrLists.Count);

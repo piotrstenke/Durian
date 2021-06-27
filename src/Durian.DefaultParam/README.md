@@ -205,7 +205,7 @@ using Durian;
 using Durian.Configuration;
 
 // The configuration is applied only to  'Test<T, U>'. 'Delegate<T, U>' and Dummy.Method<T> are not included.
-[DefaultParamConfiguration(TypeConvention = DPTypeConvention.Inherit]
+[DefaultParamConfiguration(TypeConvention = DPTypeConvention.Inherit)]
 public class Test<T, [DefaultParam(typeof(string))]U>
 {
     public void Method(U value)
@@ -236,10 +236,10 @@ using Durian;
 using Durian.Configuration;
 
 // The configuration is applied to all DefaultParam members in the current assembly.
-[assembly: DefaultParamScopedConfiguration(TypeConvention = DPTypeConvention.Inherit]
+[assembly: DefaultParamScopedConfiguration(TypeConvention = DPTypeConvention.Inherit)]
 
 // The configuration is applied to all DefaultParam members inside this type.
-[DefaultParamScopedConfiguration(TypeConvention = DPTypeConvention.Default]
+[DefaultParamScopedConfiguration(TypeConvention = DPTypeConvention.Default)]
 public partial class Test
 {
     public void Method<[DefaultParam(typeof(string))]T>(T value)
@@ -267,10 +267,10 @@ using Durian;
 using Durian.Configuration;
 
 // Global configuration has the lowest priority and will be picked only if there is no other configuration available.
-[assembly: DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Call]
+[assembly: DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Call)]
 
 // Configuration of a containing type will be picked only if the target member has no configuration applied on itself.
-[DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Default]
+[DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Default)]
 public partial class Test
 {
     public void Method<[DefaultParam(typeof(string))]T>(T value)
@@ -278,7 +278,7 @@ public partial class Test
     }
 }
 
-[DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Default]
+[DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Default)]
 public partial class Other
 {
     // This configuration is applied directly on the member, so it has the biggest priority.
@@ -296,7 +296,7 @@ If the configuration with the highest priority does not specify a value for a pr
 using Durian;
 using Durian.Configuration;
 
-[assembly: DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Call]
+[assembly: DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Call)]
 
 // Method<T> does not specify its own configuration, so the scoped one is used instead.
 // However, it does not specify a value for the MethodConvention property, 
@@ -309,7 +309,7 @@ public partial class Test
     }
 }
 
-[DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Default]
+[DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Default)]
 public partial class Other
 {
     // This configuration does not specify a MethodConvention,

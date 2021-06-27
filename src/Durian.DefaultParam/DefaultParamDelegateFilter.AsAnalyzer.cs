@@ -31,7 +31,11 @@ namespace Durian.Analysis.DefaultParam
 			}
 
 			/// <inheritdoc/>
-			protected override bool Analyze(DefaultParamCompilationData compilation, SyntaxNodeAnalysisContext context, [NotNullWhen(true)] out DefaultParamDelegateData? data)
+			protected override bool Analyze(
+				DefaultParamCompilationData compilation,
+				SyntaxNodeAnalysisContext context,
+				[NotNullWhen(true)] out DefaultParamDelegateData? data
+			)
 			{
 				if (context.Node is not TypeParameterListSyntax || context.Node.Parent is not DelegateDeclarationSyntax declaration)
 				{

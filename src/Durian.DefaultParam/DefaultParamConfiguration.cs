@@ -10,7 +10,7 @@ namespace Durian.Analysis.DefaultParam
 	/// Configures optional features of the <see cref="DefaultParamGenerator"/>.
 	/// </summary>
 	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
-	public sealed class DefaultParamConfiguration : IEquatable<DefaultParamConfiguration>
+	public sealed class DefaultParamConfiguration : IEquatable<DefaultParamConfiguration>, ICloneable
 	{
 		private string? _targetNamespace;
 
@@ -25,7 +25,7 @@ namespace Durian.Analysis.DefaultParam
 		public bool ApplyNewModifierWhenPossible { get; set; } = true;
 
 		/// <inheritdoc cref="DefaultParamConfigurationAttribute.MethodConvention"/>
-		public DPMethodConvention MethodConvention { get; set; } = DPMethodConvention.Default;
+		public DPMethodConvention MethodConvention { get; set; }
 
 		/// <summary>
 		/// Specifies the namespace where the target member should be generated in.
@@ -39,7 +39,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc cref="DefaultParamConfigurationAttribute.TypeConvention"/>
-		public DPTypeConvention TypeConvention { get; set; } = DPTypeConvention.Default;
+		public DPTypeConvention TypeConvention { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamConfiguration"/> class.
@@ -62,6 +62,21 @@ namespace Durian.Analysis.DefaultParam
 				a.MethodConvention == b.MethodConvention &&
 				a.TypeConvention == b.TypeConvention &&
 				a.TargetNamespace == b.TargetNamespace;
+		}
+
+		/// <summary>
+		/// Creates a new object that is a copy of the current instance.
+		/// </summary>
+		/// <returns>A new object that is a copy of this instance.</returns>
+		public DefaultParamConfiguration Clone()
+		{
+			return new DefaultParamConfiguration()
+			{
+				ApplyNewModifierWhenPossible = ApplyNewModifierWhenPossible,
+				_targetNamespace = _targetNamespace,
+				MethodConvention = MethodConvention,
+				TypeConvention = TypeConvention
+			};
 		}
 
 		/// <inheritdoc/>
@@ -88,7 +103,13 @@ namespace Durian.Analysis.DefaultParam
 			hashCode = (hashCode * -1521134295) + ApplyNewModifierWhenPossible.GetHashCode();
 			hashCode = (hashCode * -1521134295) + MethodConvention.GetHashCode();
 			hashCode = (hashCode * -1521134295) + TypeConvention.GetHashCode();
+			hashCode = (hashCode * -1521134295) + _targetNamespace?.GetHashCode() ?? 0;
 			return hashCode;
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 	}
 }

@@ -4,8 +4,8 @@
 using Durian;
 using Durian.Analysis.GenericSpecialization;
 using Durian.Configuration;
-using Durian.Info;
 using Durian.Generator;
+using Durian.Info;
 
 [assembly: PackageDefinition(DurianPackage.GenericSpecialization, PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary, "1.0.0", DurianModule.GenericSpecialization)]
 [assembly: DiagnosticFiles(nameof(GenSpecDiagnostics))]
@@ -13,5 +13,5 @@ using Durian.Generator;
 	nameof(AllowSpecializationAttribute),
 	nameof(GenericSpecializationAttribute),
 	nameof(GenericSpecializationConfigurationAttribute),
-	nameof(GenSpecImport)
+	nameof(GenSpecImportOptions)
 )]

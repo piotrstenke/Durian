@@ -42,34 +42,17 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Determines whether the 'new' modifier is allowed to be applied to the target <see cref="IMethodSymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool AllowsNewModifier(IMethodSymbol method, DefaultParamCompilationData compilation)
-		{
-			return AllowsNewModifier(method.GetAttributes(), method.GetContainingTypeSymbols().ToArray(), compilation);
-		}
-
-		/// <summary>
-		/// Determines whether the 'new' modifier is allowed to the target <see cref="IMethodSymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
-		/// </summary>
-		/// <param name="attributes">A collection of the target <see cref="IMethodSymbol"/>'s attributes.</param>
-		/// <param name="containingTypes"><see cref="INamedTypeSymbol"/>s that contain this <see cref="IMethodSymbol"/>.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool AllowsNewModifier(IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
-		{
-			return DefaultParamUtilities.AllowsNewModifier(attributes, containingTypes, compilation);
-		}
-
-		/// <summary>
 		/// Fully analyzes the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool Analyze(IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		public static bool Analyze(
+			IMethodSymbol symbol,
+			DefaultParamCompilationData compilation,
+			CancellationToken cancellationToken = default
+		)
 		{
 			TypeParameterContainer typeParameters = TypeParameterContainer.CreateFrom(symbol, compilation, cancellationToken);
 
@@ -153,39 +136,29 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Analyzes if the signature of the <paramref name="symbol"/> is valid.
-		/// </summary>
-		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze the signature of.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the signature of <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeMethodSignature(IMethodSymbol symbol, in TypeParameterContainer typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-		{
-			return AnalyzeMethodSignature(symbol, in typeParameters, compilation, symbol.GetAttributes(), symbol.GetContainingTypeSymbols().ToArray(), out _, cancellationToken);
-		}
-
-		/// <summary>
 		/// Analyzes if the signature of the <paramref name="symbol"/> is valid. If so, returns a <see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied.
 		/// </summary>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze the signature of.</param>
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>a of the target <paramref name="symbol"/>.</param>
 		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the <paramref name="symbol"/>'s containing types.</param>
-		/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the signature of <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeMethodSignature(
 			IMethodSymbol symbol,
 			in TypeParameterContainer typeParameters,
 			DefaultParamCompilationData compilation,
-			IEnumerable<AttributeData> attributes,
-			INamedTypeSymbol[] containingTypes,
 			out HashSet<int>? applyNew,
+			IEnumerable<AttributeData>? attributes = null,
+			INamedTypeSymbol[]? containingTypes = null,
 			CancellationToken cancellationToken = default
 		)
 		{
+			InitializeAttributes(ref attributes, symbol);
+			InitializeContainingTypes(ref containingTypes, symbol);
+
 			IParameterSymbol[] symbolParameters = symbol.Parameters.ToArray();
 			CollidingMember[] collidingMethods = GetPotentiallyCollidingMembers(
 				symbol,
@@ -207,7 +180,7 @@ namespace Durian.Analysis.DefaultParam
 				in typeParameters,
 				collidingMethods,
 				symbolParameters,
-				AllowsNewModifier(attributes, containingTypes, compilation),
+				AllowsNewModifier(symbol, compilation, attributes, containingTypes),
 				cancellationToken,
 				out applyNew
 			);
@@ -221,11 +194,11 @@ namespace Durian.Analysis.DefaultParam
 			return GetBaseDiagnostics().Concat(GetAnalyzerSpecificDiagnosticsAsArray());
 		}
 
-		/// <inheritdoc cref="WithDiagnostics.ShouldBeAnalyzed(IDiagnosticReceiver, IMethodSymbol, in TypeParameterContainer, DefaultParamCompilationData, out TypeParameterContainer, CancellationToken)"/>
+		/// <inheritdoc cref="WithDiagnostics.ShouldBeAnalyzed(IDiagnosticReceiver, IMethodSymbol, DefaultParamCompilationData, in TypeParameterContainer, out TypeParameterContainer, CancellationToken)"/>
 		public static bool ShouldBeAnalyzed(
 			IMethodSymbol symbol,
-			in TypeParameterContainer typeParameters,
 			DefaultParamCompilationData compilation,
+			in TypeParameterContainer typeParameters,
 			out TypeParameterContainer combinedTypeParameters,
 			CancellationToken cancellationToken = default
 		)
@@ -261,24 +234,22 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Determines, whether the <see cref="DefaultParamGenerator"/> should call the target <paramref name="method"/> instead of copying its contents.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		public static bool ShouldCallInsteadOfCopying(IMethodSymbol method, DefaultParamCompilationData compilation)
-		{
-			return ShouldCallInsteadOfCopying(method, compilation, method.GetAttributes(), method.GetContainingTypeSymbols().ToArray());
-		}
-
-		/// <summary>
 		/// Determines, whether the <see cref="DefaultParamGenerator"/> should call a <see cref="IMethodSymbol"/> instead of copying its contents.
 		/// </summary>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> to check.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="attributes">A collection of <see cref="IMethodSymbol"/>' attributes.</param>
 		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the target <see cref="IMethodSymbol"/>.</param>
-		public static bool ShouldCallInsteadOfCopying(IMethodSymbol symbol, DefaultParamCompilationData compilation, IEnumerable<AttributeData> attributes, INamedTypeSymbol[] containingTypes)
+		public static bool ShouldCallInsteadOfCopying(
+			IMethodSymbol symbol,
+			DefaultParamCompilationData compilation,
+			IEnumerable<AttributeData>? attributes = null,
+			INamedTypeSymbol[]? containingTypes = null
+		)
 		{
+			InitializeAttributes(ref attributes, symbol);
+			InitializeContainingTypes(ref containingTypes, symbol);
+
 			if (symbol.IsAbstract)
 			{
 				return false;
@@ -392,16 +363,21 @@ namespace Durian.Analysis.DefaultParam
 			return true;
 		}
 
-		private static bool AnalyzeCore(IMethodSymbol symbol, DefaultParamCompilationData compilation, ref TypeParameterContainer typeParameters, CancellationToken cancellationToken)
+		private static bool AnalyzeCore(
+			IMethodSymbol symbol,
+			DefaultParamCompilationData compilation,
+			ref TypeParameterContainer typeParameters,
+			CancellationToken cancellationToken
+		)
 		{
 			return
-				ShouldBeAnalyzed(symbol, in typeParameters, compilation, out TypeParameterContainer combinedTypeParameters, cancellationToken) &&
+				ShouldBeAnalyzed(symbol, compilation, in typeParameters, out TypeParameterContainer combinedTypeParameters, cancellationToken) &&
 				AnalyzeAgainstInvalidMethodType(symbol) &&
 				AnalyzeAgainstPartialOrExtern(symbol, cancellationToken) &&
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
 				AnalyzeContainingTypes(symbol, compilation, out INamedTypeSymbol[]? containingTypes, cancellationToken) &&
 				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, combinedTypeParameters) &&
-				AnalyzeMethodSignature(symbol, in typeParameters, compilation, attributes, containingTypes, out _, cancellationToken);
+				AnalyzeMethodSignature(symbol, in typeParameters, compilation, out _, attributes, containingTypes, cancellationToken);
 		}
 
 		private static bool AnalyzeParameterInBaseMethod(in TypeParameterData thisData, in TypeParameterData baseData)
@@ -435,7 +411,11 @@ namespace Durian.Analysis.DefaultParam
 			};
 		}
 
-		private static TypeParameterContainer GetBaseMethodTypeParameters(IMethodSymbol baseMethod, DefaultParamCompilationData compilation, CancellationToken cancellationToken)
+		private static TypeParameterContainer GetBaseMethodTypeParameters(
+			IMethodSymbol baseMethod,
+			DefaultParamCompilationData compilation,
+			CancellationToken cancellationToken
+		)
 		{
 			TypeParameterContainer parameters = TypeParameterContainer.CreateFrom(baseMethod, compilation, cancellationToken);
 
@@ -469,7 +449,12 @@ namespace Durian.Analysis.DefaultParam
 			return baseTypeParameters.FirstDefaultParamIndex;
 		}
 
-		private static string GetMethodSignatureString(string name, in TypeParameterContainer typeParameters, int numTypeParameters, ParameterGeneration[] parameters)
+		private static string GetMethodSignatureString(
+			string name,
+			in TypeParameterContainer typeParameters,
+			int numTypeParameters,
+			ParameterGeneration[] parameters
+		)
 		{
 			StringBuilder sb = new();
 

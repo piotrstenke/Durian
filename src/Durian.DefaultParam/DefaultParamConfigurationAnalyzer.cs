@@ -152,7 +152,13 @@ namespace Durian.Analysis.DefaultParam
 			}
 		}
 
-		private static void AnalyzeType(ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver, INamedTypeSymbol type, DefaultParamCompilationData compilation, AttributeSyntax node, CancellationToken cancellationToken)
+		private static void AnalyzeType(
+			ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver,
+			INamedTypeSymbol type,
+			DefaultParamCompilationData compilation,
+			AttributeSyntax node,
+			CancellationToken cancellationToken
+		)
 		{
 			if (!type.TypeParameters.Any(t => t.HasAttribute(compilation.MainAttribute!)))
 			{
@@ -243,12 +249,22 @@ namespace Durian.Analysis.DefaultParam
 				.ToArray();
 		}
 
-		private static void ReportConfig(ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver, ISymbol symbol, AttributeSyntax node)
+		private static void ReportConfig(
+			ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver,
+			ISymbol symbol,
+			AttributeSyntax node
+		)
 		{
 			diagnosticReceiver.ReportDiagnostic(DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute, node.GetLocation(), symbol);
 		}
 
-		private static void ReportIfInvalidTargetNamespace(ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver, ISymbol symbol, AttributeSyntax node, (AttributeArgumentSyntax, string)[] arguments, CancellationToken cancellationToken)
+		private static void ReportIfInvalidTargetNamespace(
+			ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver,
+			ISymbol symbol,
+			AttributeSyntax node,
+			(AttributeArgumentSyntax, string)[] arguments,
+			CancellationToken cancellationToken
+		)
 		{
 			const string propertyName = nameof(DefaultParamConfigurationAttribute.TargetNamespace);
 
@@ -269,7 +285,12 @@ namespace Durian.Analysis.DefaultParam
 			}
 		}
 
-		private static void ReportIfMethodIsNotDefaultParam(ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver, IMethodSymbol method, DefaultParamCompilationData compilation, AttributeSyntax node)
+		private static void ReportIfMethodIsNotDefaultParam(
+			ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver,
+			IMethodSymbol method,
+			DefaultParamCompilationData compilation,
+			AttributeSyntax node
+		)
 		{
 			if (!method.TypeParameters.Any(m => m.HasAttribute(compilation.MainAttribute!)))
 			{

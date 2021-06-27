@@ -257,9 +257,9 @@ namespace Durian.Analysis.DefaultParam
 				AnalyzeTypeParameters(symbol, in typeParameters))
 			{
 				INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
-				string targetNamespace = GetTargetNamespace(symbol, attributes, symbols, compilation);
+				string targetNamespace = GetTargetNamespace(symbol, compilation, attributes, symbols);
 
-				if (AnalyzeCollidingMembers(symbol, in typeParameters, compilation, targetNamespace, attributes, symbols, out HashSet<int>? newModifiers, cancellationToken))
+				if (AnalyzeCollidingMembers(symbol, in typeParameters, compilation, targetNamespace, out HashSet<int>? newModifiers, attributes, symbols, cancellationToken))
 				{
 					data = new DefaultParamDelegateData(
 						declaration,
@@ -428,22 +428,45 @@ namespace Durian.Analysis.DefaultParam
 
 		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
 		{
-			return GetValidDelegates((DefaultParamCompilationData)compilation, (DefaultParamSyntaxReceiver)syntaxReceiver, cancellationToken);
+			return GetValidDelegates(
+				(DefaultParamCompilationData)compilation,
+				(DefaultParamSyntaxReceiver)syntaxReceiver,
+				cancellationToken
+			);
 		}
 
 		IEnumerable<IMemberData> ISyntaxFilter.Filtrate(ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken)
 		{
-			return GetValidDelegates((DefaultParamCompilationData)compilation, collectedNodes.OfType<DelegateDeclarationSyntax>(), cancellationToken);
+			return GetValidDelegates(
+				(DefaultParamCompilationData)compilation,
+				collectedNodes.OfType<DelegateDeclarationSyntax>(),
+				cancellationToken
+			);
 		}
 
-		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken)
+		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(
+			IDiagnosticReceiver diagnosticReceiver,
+			ICompilationData compilation,
+			IDurianSyntaxReceiver syntaxReceiver,
+			CancellationToken cancellationToken
+		)
 		{
-			return WithDiagnostics.GetValidDelegates(diagnosticReceiver, (DefaultParamCompilationData)compilation, (DefaultParamSyntaxReceiver)syntaxReceiver, cancellationToken);
+			return WithDiagnostics.GetValidDelegates(
+				diagnosticReceiver,
+				(DefaultParamCompilationData)compilation,
+				(DefaultParamSyntaxReceiver)syntaxReceiver,
+				cancellationToken
+			);
 		}
 
 		IEnumerable<IMemberData> ISyntaxFilterWithDiagnostics.Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken)
 		{
-			return WithDiagnostics.GetValidDelegates(diagnosticReceiver, (DefaultParamCompilationData)compilation, collectedNodes.OfType<DelegateDeclarationSyntax>(), cancellationToken);
+			return WithDiagnostics.GetValidDelegates(
+				diagnosticReceiver,
+				(DefaultParamCompilationData)compilation,
+				collectedNodes.OfType<DelegateDeclarationSyntax>(),
+				cancellationToken
+			);
 		}
 
 		IEnumerable<IMemberData> ICachedGeneratorSyntaxFilter<DefaultParamDelegateData>.Filtrate(in CachedGeneratorExecutionContext<DefaultParamDelegateData> context)
@@ -480,7 +503,44 @@ namespace Durian.Analysis.DefaultParam
 			return GetCandidateDelegates();
 		}
 
-		bool IDefaultParamFilter<IDefaultParamTarget>.GetValidationData(CSharpSyntaxNode node, DefaultParamCompilationData compilation, [NotNullWhen(true)] out SemanticModel? semanticModel, [NotNullWhen(true)] out ISymbol? symbol, out TypeParameterContainer typeParameters, CancellationToken cancellationToken)
+		bool IDefaultParamFilter<IDefaultParamTarget>.GetValidationData(
+			CSharpSyntaxNode node,
+			DefaultParamCompilationData compilation,
+			[NotNullWhen(true)] out SemanticModel? semanticModel,
+			[NotNullWhen(true)] out ISymbol? symbol,
+			out TypeParameterContainer typeParameters,
+			CancellationToken cancellationToken
+		)
+		{
+			if (node is not DelegateDeclarationSyntax del)
+			{
+				semanticModel = null;
+				symbol = null;
+				typeParameters = default;
+				return false;
+			}
+
+			bool isValid = GetValidationData(
+				compilation,
+				del,
+				out semanticModel,
+				out INamedTypeSymbol? s,
+				out typeParameters,
+				cancellationToken
+			);
+
+			symbol = s;
+			return isValid;
+		}
+
+		bool IDefaultParamFilter<DefaultParamDelegateData>.GetValidationData(
+			CSharpSyntaxNode node,
+			DefaultParamCompilationData compilation,
+			[NotNullWhen(true)] out SemanticModel? semanticModel,
+			[NotNullWhen(true)] out ISymbol? symbol,
+			out TypeParameterContainer typeParameters,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del)
 			{
@@ -495,22 +555,13 @@ namespace Durian.Analysis.DefaultParam
 			return isValid;
 		}
 
-		bool IDefaultParamFilter<DefaultParamDelegateData>.GetValidationData(CSharpSyntaxNode node, DefaultParamCompilationData compilation, [NotNullWhen(true)] out SemanticModel? semanticModel, [NotNullWhen(true)] out ISymbol? symbol, out TypeParameterContainer typeParameters, CancellationToken cancellationToken)
-		{
-			if (node is not DelegateDeclarationSyntax del)
-			{
-				semanticModel = null;
-				symbol = null;
-				typeParameters = default;
-				return false;
-			}
-
-			bool isValid = GetValidationData(compilation, del, out semanticModel, out INamedTypeSymbol? s, out typeParameters, cancellationToken);
-			symbol = s;
-			return isValid;
-		}
-
-		bool INodeValidator<DefaultParamDelegateData>.GetValidationData(CSharpSyntaxNode node, ICompilationData compilation, [NotNullWhen(true)] out SemanticModel? semanticModel, [NotNullWhen(true)] out ISymbol? symbol, CancellationToken cancellationToken)
+		bool INodeValidator<DefaultParamDelegateData>.GetValidationData(
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			[NotNullWhen(true)] out SemanticModel? semanticModel,
+			[NotNullWhen(true)] out ISymbol? symbol,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del)
 			{
@@ -519,13 +570,26 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			bool isValid = GetValidationData((DefaultParamCompilationData)compilation, del, out semanticModel, out INamedTypeSymbol? s, out _, cancellationToken);
+			bool isValid = GetValidationData(
+				(DefaultParamCompilationData)compilation,
+				del,
+				out semanticModel,
+				out INamedTypeSymbol? s,
+				out _,
+				cancellationToken
+			);
 
 			symbol = s;
 			return isValid;
 		}
 
-		bool INodeValidator<IDefaultParamTarget>.GetValidationData(CSharpSyntaxNode node, ICompilationData compilation, [NotNullWhen(true)] out SemanticModel? semanticModel, [NotNullWhen(true)] out ISymbol? symbol, CancellationToken cancellationToken)
+		bool INodeValidator<IDefaultParamTarget>.GetValidationData(
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			[NotNullWhen(true)] out SemanticModel? semanticModel,
+			[NotNullWhen(true)] out ISymbol? symbol,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del)
 			{
@@ -534,13 +598,28 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			bool isValid = GetValidationData((DefaultParamCompilationData)compilation, del, out semanticModel, out INamedTypeSymbol? s, out _, cancellationToken);
+			bool isValid = GetValidationData(
+				(DefaultParamCompilationData)compilation,
+				del,
+				out semanticModel,
+				out INamedTypeSymbol? s,
+				out _,
+				cancellationToken
+			);
 
 			symbol = s;
 			return isValid;
 		}
 
-		bool IDefaultParamFilter<IDefaultParamTarget>.ValidateAndCreate(CSharpSyntaxNode node, DefaultParamCompilationData compilation, SemanticModel semanticModel, ISymbol symbol, in TypeParameterContainer typeParameters, [NotNullWhen(true)] out IDefaultParamTarget? data, CancellationToken cancellationToken)
+		bool IDefaultParamFilter<IDefaultParamTarget>.ValidateAndCreate(
+			CSharpSyntaxNode node,
+			DefaultParamCompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			in TypeParameterContainer typeParameters,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del || symbol is not INamedTypeSymbol s || s.TypeKind != TypeKind.Delegate)
 			{
@@ -548,7 +627,16 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			bool isValid = ValidateAndCreate(compilation, del, semanticModel, s, in typeParameters, out DefaultParamDelegateData? d, cancellationToken);
+			bool isValid = ValidateAndCreate(
+				compilation,
+				del,
+				semanticModel,
+				s,
+				in typeParameters,
+				out DefaultParamDelegateData? d,
+				cancellationToken
+			);
+
 			data = d;
 			return isValid;
 		}
@@ -571,7 +659,12 @@ namespace Durian.Analysis.DefaultParam
 			return isValid;
 		}
 
-		bool IDefaultParamFilter<DefaultParamDelegateData>.ValidateAndCreate(DefaultParamCompilationData compilation, CSharpSyntaxNode node, [NotNullWhen(true)] out DefaultParamDelegateData? data, CancellationToken cancellationToken)
+		bool IDefaultParamFilter<DefaultParamDelegateData>.ValidateAndCreate(
+			DefaultParamCompilationData compilation,
+			CSharpSyntaxNode node,
+			[NotNullWhen(true)] out DefaultParamDelegateData? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del)
 			{
@@ -582,7 +675,15 @@ namespace Durian.Analysis.DefaultParam
 			return ValidateAndCreate(compilation, del, out data, cancellationToken);
 		}
 
-		bool IDefaultParamFilter<DefaultParamDelegateData>.ValidateAndCreate(CSharpSyntaxNode node, DefaultParamCompilationData compilation, SemanticModel semanticModel, ISymbol symbol, in TypeParameterContainer typeParameters, [NotNullWhen(true)] out DefaultParamDelegateData? data, CancellationToken cancellationToken)
+		bool IDefaultParamFilter<DefaultParamDelegateData>.ValidateAndCreate(
+			CSharpSyntaxNode node,
+			DefaultParamCompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			in TypeParameterContainer typeParameters,
+			[NotNullWhen(true)] out DefaultParamDelegateData? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del || symbol is not INamedTypeSymbol s || s.TypeKind != TypeKind.Delegate)
 			{
@@ -590,10 +691,23 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			return ValidateAndCreate(compilation, del, semanticModel, s, in typeParameters, out data, cancellationToken);
+			return ValidateAndCreate(
+				compilation,
+				del,
+				semanticModel,
+				s,
+				in typeParameters,
+				out data,
+				cancellationToken
+			);
 		}
 
-		bool INodeValidator<DefaultParamDelegateData>.ValidateAndCreate(CSharpSyntaxNode node, ICompilationData compilation, [NotNullWhen(true)] out DefaultParamDelegateData? data, CancellationToken cancellationToken)
+		bool INodeValidator<DefaultParamDelegateData>.ValidateAndCreate(
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			[NotNullWhen(true)] out DefaultParamDelegateData? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del)
 			{
@@ -604,7 +718,14 @@ namespace Durian.Analysis.DefaultParam
 			return ValidateAndCreate((DefaultParamCompilationData)compilation, del, out data, cancellationToken);
 		}
 
-		bool INodeValidator<DefaultParamDelegateData>.ValidateAndCreate(CSharpSyntaxNode node, ICompilationData compilation, SemanticModel semanticModel, ISymbol symbol, [NotNullWhen(true)] out DefaultParamDelegateData? data, CancellationToken cancellationToken)
+		bool INodeValidator<DefaultParamDelegateData>.ValidateAndCreate(
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			[NotNullWhen(true)] out DefaultParamDelegateData? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del || symbol is not INamedTypeSymbol s || s.TypeKind != TypeKind.Delegate)
 			{
@@ -621,10 +742,23 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			return ValidateAndCreate(c, del, semanticModel, s, in typeParameters, out data, cancellationToken);
+			return ValidateAndCreate(
+				c,
+				del,
+				semanticModel,
+				s,
+				in typeParameters,
+				out data,
+				cancellationToken
+			);
 		}
 
-		bool INodeValidator<IDefaultParamTarget>.ValidateAndCreate(CSharpSyntaxNode node, ICompilationData compilation, [NotNullWhen(true)] out IDefaultParamTarget? data, CancellationToken cancellationToken)
+		bool INodeValidator<IDefaultParamTarget>.ValidateAndCreate(
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del)
 			{
@@ -632,12 +766,25 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			bool isValid = ValidateAndCreate((DefaultParamCompilationData)compilation, del, out DefaultParamDelegateData? d, cancellationToken);
+			bool isValid = ValidateAndCreate(
+				(DefaultParamCompilationData)compilation,
+				del,
+				out DefaultParamDelegateData? d,
+				cancellationToken
+			);
+
 			data = d;
 			return isValid;
 		}
 
-		bool INodeValidator<IDefaultParamTarget>.ValidateAndCreate(CSharpSyntaxNode node, ICompilationData compilation, SemanticModel semanticModel, ISymbol symbol, [NotNullWhen(true)] out IDefaultParamTarget? data, CancellationToken cancellationToken)
+		bool INodeValidator<IDefaultParamTarget>.ValidateAndCreate(
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del || symbol is not INamedTypeSymbol s || s.TypeKind != TypeKind.Delegate)
 			{
@@ -654,12 +801,27 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			bool isValid = ValidateAndCreate(c, del, semanticModel, s, in typeParameters, out DefaultParamDelegateData? d, cancellationToken);
+			bool isValid = ValidateAndCreate(
+				c,
+				del,
+				semanticModel,
+				s,
+				in typeParameters,
+				out DefaultParamDelegateData? d,
+				cancellationToken
+			);
+
 			data = d;
 			return isValid;
 		}
 
-		bool IDefaultParamFilter<IDefaultParamTarget>.ValidateAndCreateWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, CSharpSyntaxNode node, DefaultParamCompilationData compilation, [NotNullWhen(true)] out IDefaultParamTarget? data, CancellationToken cancellationToken)
+		bool IDefaultParamFilter<IDefaultParamTarget>.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			CSharpSyntaxNode node,
+			DefaultParamCompilationData compilation,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del)
 			{
@@ -667,12 +829,28 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, del, out DefaultParamDelegateData? d, cancellationToken);
+			bool isValid = WithDiagnostics.ValidateAndCreate(
+				diagnosticReceiver,
+				compilation,
+				del,
+				out DefaultParamDelegateData? d,
+				cancellationToken
+			);
+
 			data = d;
 			return isValid;
 		}
 
-		bool IDefaultParamFilter<IDefaultParamTarget>.ValidateAndCreateWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, CSharpSyntaxNode node, DefaultParamCompilationData compilation, SemanticModel semanticModel, ISymbol symbol, in TypeParameterContainer typeParameters, [NotNullWhen(true)] out IDefaultParamTarget? data, CancellationToken cancellationToken)
+		bool IDefaultParamFilter<IDefaultParamTarget>.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			CSharpSyntaxNode node,
+			DefaultParamCompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			in TypeParameterContainer typeParameters,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del || symbol is not INamedTypeSymbol s || s.TypeKind != TypeKind.Delegate)
 			{
@@ -680,12 +858,28 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, del, semanticModel, s, in typeParameters, out DefaultParamDelegateData? d, cancellationToken);
+			bool isValid = WithDiagnostics.ValidateAndCreate(
+				diagnosticReceiver,
+				compilation,
+				del,
+				semanticModel,
+				s,
+				in typeParameters,
+				out DefaultParamDelegateData? d,
+				cancellationToken
+			);
+
 			data = d;
 			return isValid;
 		}
 
-		bool IDefaultParamFilter<DefaultParamDelegateData>.ValidateAndCreateWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, CSharpSyntaxNode node, DefaultParamCompilationData compilation, [NotNullWhen(true)] out DefaultParamDelegateData? data, CancellationToken cancellationToken)
+		bool IDefaultParamFilter<DefaultParamDelegateData>.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			CSharpSyntaxNode node,
+			DefaultParamCompilationData compilation,
+			[NotNullWhen(true)] out DefaultParamDelegateData? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del)
 			{
@@ -693,10 +887,25 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			return WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, del, out data, cancellationToken);
+			return WithDiagnostics.ValidateAndCreate(
+				diagnosticReceiver,
+				compilation,
+				del,
+				out data,
+				cancellationToken
+			);
 		}
 
-		bool IDefaultParamFilter<DefaultParamDelegateData>.ValidateAndCreateWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, CSharpSyntaxNode node, DefaultParamCompilationData compilation, SemanticModel semanticModel, ISymbol symbol, in TypeParameterContainer typeParameters, [NotNullWhen(true)] out DefaultParamDelegateData? data, CancellationToken cancellationToken)
+		bool IDefaultParamFilter<DefaultParamDelegateData>.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			CSharpSyntaxNode node,
+			DefaultParamCompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			in TypeParameterContainer typeParameters,
+			[NotNullWhen(true)] out DefaultParamDelegateData? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del || symbol is not INamedTypeSymbol s || s.TypeKind != TypeKind.Delegate)
 			{
@@ -704,10 +913,25 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			return WithDiagnostics.ValidateAndCreate(diagnosticReceiver, compilation, del, semanticModel, s, in typeParameters, out data, cancellationToken);
+			return WithDiagnostics.ValidateAndCreate(
+				diagnosticReceiver,
+				compilation,
+				del,
+				semanticModel,
+				s,
+				in typeParameters,
+				out data,
+				cancellationToken
+			);
 		}
 
-		bool INodeValidatorWithDiagnostics<DefaultParamDelegateData>.ValidateAndCreateWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, CSharpSyntaxNode node, ICompilationData compilation, [NotNullWhen(true)] out DefaultParamDelegateData? data, CancellationToken cancellationToken)
+		bool INodeValidatorWithDiagnostics<DefaultParamDelegateData>.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			[NotNullWhen(true)] out DefaultParamDelegateData? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del)
 			{
@@ -715,10 +939,24 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			return WithDiagnostics.ValidateAndCreate(diagnosticReceiver, (DefaultParamCompilationData)compilation, del, out data, cancellationToken);
+			return WithDiagnostics.ValidateAndCreate(
+				diagnosticReceiver,
+				(DefaultParamCompilationData)compilation,
+				del,
+				out data,
+				cancellationToken
+			);
 		}
 
-		bool INodeValidatorWithDiagnostics<DefaultParamDelegateData>.ValidateAndCreateWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, CSharpSyntaxNode node, ICompilationData compilation, SemanticModel semanticModel, ISymbol symbol, [NotNullWhen(true)] out DefaultParamDelegateData? data, CancellationToken cancellationToken)
+		bool INodeValidatorWithDiagnostics<DefaultParamDelegateData>.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			[NotNullWhen(true)] out DefaultParamDelegateData? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del || symbol is not INamedTypeSymbol s || s.TypeKind != TypeKind.Delegate)
 			{
@@ -735,10 +973,25 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			return WithDiagnostics.ValidateAndCreate(diagnosticReceiver, (DefaultParamCompilationData)compilation, del, semanticModel, s, in typeParameters, out data, cancellationToken);
+			return WithDiagnostics.ValidateAndCreate(
+				diagnosticReceiver,
+				(DefaultParamCompilationData)compilation,
+				del,
+				semanticModel,
+				s,
+				in typeParameters,
+				out data,
+				cancellationToken
+			);
 		}
 
-		bool INodeValidatorWithDiagnostics<IDefaultParamTarget>.ValidateAndCreateWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, CSharpSyntaxNode node, ICompilationData compilation, [NotNullWhen(true)] out IDefaultParamTarget? data, CancellationToken cancellationToken)
+		bool INodeValidatorWithDiagnostics<IDefaultParamTarget>.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del)
 			{
@@ -746,12 +999,27 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, (DefaultParamCompilationData)compilation, del, out DefaultParamDelegateData? d, cancellationToken);
+			bool isValid = WithDiagnostics.ValidateAndCreate(
+				diagnosticReceiver,
+				(DefaultParamCompilationData)compilation,
+				del,
+				out DefaultParamDelegateData? d,
+				cancellationToken
+			);
+
 			data = d;
 			return isValid;
 		}
 
-		bool INodeValidatorWithDiagnostics<IDefaultParamTarget>.ValidateAndCreateWithDiagnostics(IDiagnosticReceiver diagnosticReceiver, CSharpSyntaxNode node, ICompilationData compilation, SemanticModel semanticModel, ISymbol symbol, [NotNullWhen(true)] out IDefaultParamTarget? data, CancellationToken cancellationToken)
+		bool INodeValidatorWithDiagnostics<IDefaultParamTarget>.ValidateAndCreateWithDiagnostics(
+			IDiagnosticReceiver diagnosticReceiver,
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
 		{
 			if (node is not DelegateDeclarationSyntax del || symbol is not INamedTypeSymbol s || s.TypeKind != TypeKind.Delegate)
 			{
@@ -768,7 +1036,17 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			bool isValid = WithDiagnostics.ValidateAndCreate(diagnosticReceiver, c, del, semanticModel, s, in typeParameters, out DefaultParamDelegateData? d, cancellationToken);
+			bool isValid = WithDiagnostics.ValidateAndCreate(
+				diagnosticReceiver,
+				c,
+				del,
+				semanticModel,
+				s,
+				in typeParameters,
+				out DefaultParamDelegateData? d,
+				cancellationToken
+			);
+
 			data = d;
 			return isValid;
 		}

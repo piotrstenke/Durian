@@ -10,7 +10,7 @@ namespace Durian.Analysis.GenericSpecialization
 	/// Configures optional features of the <see cref="GenericSpecializationGenerator"/>.
 	/// </summary>
 	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
-	public sealed class GenSpecConfiguration : IEquatable<GenSpecConfiguration>
+	public sealed class GenSpecConfiguration : IEquatable<GenSpecConfiguration>, ICloneable
 	{
 		/// <summary>
 		/// Represents the default value of <see cref="InterfaceName"/>.
@@ -22,7 +22,7 @@ namespace Durian.Analysis.GenericSpecialization
 		/// </summary>
 		public const string DefaultTemplateName = "Spec";
 
-		private GenSpecImport _importOptions;
+		private GenSpecImportOptions _importOptions;
 		private string _interfaceName;
 		private string _templateName;
 
@@ -36,15 +36,15 @@ namespace Durian.Analysis.GenericSpecialization
 		/// </summary>
 		public bool ForceInherit { get; set; }
 
-		/// <inheritdoc cref="GenSpecImport"/>
-		public GenSpecImport ImportOptions
+		/// <inheritdoc cref="GenSpecImportOptions"/>
+		public GenSpecImportOptions ImportOptions
 		{
 			get => _importOptions;
 			set
 			{
-				if (value < GenSpecImport.Default || value > GenSpecImport.OverrideAny)
+				if (value < default(GenSpecImportOptions) || value > GenSpecImportOptions.OverrideAny)
 				{
-					_importOptions = GenSpecImport.Default;
+					_importOptions = default;
 				}
 				else
 				{
@@ -110,6 +110,19 @@ namespace Durian.Analysis.GenericSpecialization
 				left._importOptions == right._importOptions;
 		}
 
+		/// <summary>
+		/// Creates a new object that is a copy of the current instance.
+		/// </summary>
+		/// <returns>A new object that is a copy of this instance.</returns>
+		public GenSpecConfiguration Clone()
+		{
+			return new GenSpecConfiguration(_templateName, _interfaceName)
+			{
+				ForceInherit = ForceInherit,
+				ImportOptions = ImportOptions
+			};
+		}
+
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
@@ -133,7 +146,14 @@ namespace Durian.Analysis.GenericSpecialization
 			int hashCode = -1810266055;
 			hashCode = (hashCode * -1521134295) + _interfaceName.GetHashCode();
 			hashCode = (hashCode * -1521134295) + _templateName.GetHashCode();
+			hashCode = (hashCode * -1521134295) + ForceInherit.GetHashCode();
+			hashCode = (hashCode * -1521134295) + ImportOptions.GetHashCode();
 			return hashCode;
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 
 		internal static void ThrowIfIsNotValidIdentifier(string value)

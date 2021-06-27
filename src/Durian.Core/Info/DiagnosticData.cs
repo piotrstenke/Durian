@@ -11,7 +11,7 @@ namespace Durian.Info
 	/// </summary>
 	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
 	[DebuggerDisplay("{GetFullId}: {Title}")]
-	public sealed class DiagnosticData : IEquatable<DiagnosticData>
+	public sealed class DiagnosticData : IEquatable<DiagnosticData>, ICloneable
 	{
 		private string? _docsPath;
 		private ModuleReference? _module;
@@ -82,6 +82,18 @@ namespace Durian.Info
 			}
 		}
 
+		private DiagnosticData(string title, in IdSection id, string docsPath, bool fatal, bool hasLocation, ModuleReference originalModule, ModuleReference module, bool isExtern)
+		{
+			Title = title;
+			Id = id;
+			IsFatal = fatal;
+			_docsPath = docsPath;
+			HasLocation = hasLocation;
+			_originalModule = originalModule;
+			_module = module;
+			IsExtern = isExtern;
+		}
+
 		/// <inheritdoc/>
 		public static bool operator !=(DiagnosticData a, DiagnosticData b)
 		{
@@ -100,6 +112,15 @@ namespace Durian.Info
 				a.IsFatal == b.IsFatal &&
 				a.Module == b.Module &&
 				a.OriginalModule == b.OriginalModule;
+		}
+
+		/// <summary>
+		/// Creates a new object that is a copy of the current instance.
+		/// </summary>
+		/// <returns>A new object that is a copy of this instance.</returns>
+		public DiagnosticData Clone()
+		{
+			return new DiagnosticData(Title, Id, _docsPath!, IsFatal, HasLocation, _originalModule!, _module!, IsExtern);
 		}
 
 		/// <inheritdoc/>
@@ -146,6 +167,11 @@ namespace Durian.Info
 		public override string ToString()
 		{
 			return GetFullId();
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 
 		internal void SetModule(ModuleIdentity module)

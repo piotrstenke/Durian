@@ -10,7 +10,7 @@ namespace Durian.Info
 	/// Contains basic information about a type contained within a Durian module.
 	/// </summary>
 	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
-	public sealed partial class TypeIdentity : IEquatable<TypeIdentity>
+	public sealed partial class TypeIdentity : IEquatable<TypeIdentity>, ICloneable
 	{
 		private ImmutableArray<ModuleReference> _modules;
 
@@ -63,6 +63,13 @@ namespace Durian.Info
 			_modules = b.ToImmutable();
 		}
 
+		private TypeIdentity(string name, string @namespace, ref ImmutableArray<ModuleReference> modules)
+		{
+			Name = name;
+			Namespace = @namespace;
+			_modules = modules;
+		}
+
 		/// <inheritdoc/>
 		public static bool operator !=(TypeIdentity a, TypeIdentity b)
 		{
@@ -76,6 +83,15 @@ namespace Durian.Info
 				a.Name == b.Name &&
 				b.Namespace == b.Namespace &&
 				Utilities.CompareImmutableArrays(ref a._modules, ref b._modules);
+		}
+
+		/// <summary>
+		/// Creates a new object that is a copy of the current instance.
+		/// </summary>
+		/// <returns>A new object that is a copy of this instance.</returns>
+		public TypeIdentity Clone()
+		{
+			return new TypeIdentity(Name, Namespace, ref _modules);
 		}
 
 		/// <inheritdoc/>
@@ -110,6 +126,11 @@ namespace Durian.Info
 		public override string ToString()
 		{
 			return FullyQualifiedName;
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 	}
 }

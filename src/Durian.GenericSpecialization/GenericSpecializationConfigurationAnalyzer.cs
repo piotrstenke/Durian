@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Configuration;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
-using static Durian.Analysis.GenericSpecialization.GenSpecDiagnostics;
+using System.Linq;
+using Durian.Analysis.Extensions;
+using Durian.Configuration;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Durian.Analysis.Extensions;
-using System.Linq;
-using System;
+using Microsoft.CodeAnalysis.Diagnostics;
+using static Durian.Analysis.GenericSpecialization.GenSpecDiagnostics;
 
 namespace Durian.Analysis.GenericSpecialization
 {
@@ -31,7 +30,7 @@ namespace Durian.Analysis.GenericSpecialization
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 			DUR0203_SpecifiedNameIsNotAValidIdentifier,
 			DUR0204_DoNotSpecifyConfigurationAttributeOnMemberWithNoSpecializations,
-			DUR0220_CannotForceInheritSealedClass
+			DUR0222_TargetNameCannotBeTheSameAsContainingClass
 		);
 
 		/// <summary>
@@ -61,7 +60,19 @@ namespace Durian.Analysis.GenericSpecialization
 			}
 
 			(AttributeArgumentSyntax, string)[] arguments = GetArguments(attribute);
-			AnalyzeStringProperties(compilation.Compilation.Assembly, attribute, data, arguments, context);
+
+			Diagnostic? intf = GetDiagnosticIfInvalidIdentifier(compilation.Compilation.Assembly, attribute, data, arguments, nameof(GenericSpecializationConfigurationAttribute.InterfaceName));
+			Diagnostic? templ = GetDiagnosticIfInvalidIdentifier(compilation.Compilation.Assembly, attribute, data, arguments, nameof(GenericSpecializationConfigurationAttribute.TemplateName));
+
+			if (intf is not null)
+			{
+				context.ReportDiagnostic(intf);
+			}
+
+			if (templ is not null)
+			{
+				context.ReportDiagnostic(templ);
+			}
 		}
 
 		private static void Analyze(SyntaxNodeAnalysisContext context, GenSpecCompilationData compilation)
@@ -110,46 +121,10 @@ namespace Durian.Analysis.GenericSpecialization
 				return;
 			}
 
-			if (symbol.TypeParameters.Length > 0 && symbol.HasAttribute(compilation.AllowSpecializationAttribute!))
-			{
-				if (AnalyzeForceInherit(data, attr, symbol) is Diagnostic diagnostic)
-				{
-					context.ReportDiagnostic(diagnostic);
-				}
-			}
-			else
-			{
-				if (!symbol.GetMembers().Any(member => member.HasAttribute(compilation.AllowSpecializationAttribute!)))
-				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0204_DoNotSpecifyConfigurationAttributeOnMemberWithNoSpecializations, attr.Name.GetLocation(), symbol));
-				}
-			}
-		}
+			(AttributeArgumentSyntax, string)[] arguments = GetArguments(attr);
 
-		private static Diagnostic? AnalyzeForceInherit(AttributeData data, AttributeSyntax syntax, INamedTypeSymbol symbol)
-		{
-			const string propertyName = nameof(GenericSpecializationConfigurationAttribute.ForceInherit);
-
-			if (symbol.IsSealed && data.TryGetNamedArgumentValue(propertyName, out bool value) && value)
-			{
-				foreach ((AttributeArgumentSyntax arg, string name) in GetArguments(syntax))
-				{
-					if (name == propertyName)
-					{
-						return Diagnostic.Create(DUR0220_CannotForceInheritSealedClass, arg.GetLocation(), symbol);
-					}
-				}
-
-				return Diagnostic.Create(DUR0220_CannotForceInheritSealedClass, syntax.GetLocation(), symbol);
-			}
-
-			return null;
-		}
-
-		private static void AnalyzeStringProperties(ISymbol symbol, AttributeSyntax attribute, AttributeData data, (AttributeArgumentSyntax, string)[] arguments, SyntaxNodeAnalysisContext context)
-		{
-			Diagnostic? intf = GetDiagnosticIfInvalidStringArgument(symbol, attribute, data, arguments, nameof(GenericSpecializationConfigurationAttribute.InterfaceName));
-			Diagnostic? templ = GetDiagnosticIfInvalidStringArgument(symbol, attribute, data, arguments, nameof(GenericSpecializationConfigurationAttribute.TemplateName));
+			Diagnostic? intf = GetDiagnosticIfInvalidIdentifierOrSameAsContainingClass(symbol, attr, data, arguments, nameof(GenericSpecializationConfigurationAttribute.InterfaceName));
+			Diagnostic? templ = GetDiagnosticIfInvalidIdentifierOrSameAsContainingClass(symbol, attr, data, arguments, nameof(GenericSpecializationConfigurationAttribute.TemplateName));
 
 			if (intf is not null)
 			{
@@ -159,6 +134,14 @@ namespace Durian.Analysis.GenericSpecialization
 			if (templ is not null)
 			{
 				context.ReportDiagnostic(templ);
+			}
+
+			if (symbol.TypeParameters.Length == 0 || !symbol.HasAttribute(compilation.AllowSpecializationAttribute!))
+			{
+				if (!symbol.GetMembers().Any(member => member.HasAttribute(compilation.AllowSpecializationAttribute!)))
+				{
+					context.ReportDiagnostic(Diagnostic.Create(DUR0204_DoNotSpecifyConfigurationAttributeOnMemberWithNoSpecializations, attr.Name.GetLocation(), symbol));
+				}
 			}
 		}
 
@@ -170,9 +153,9 @@ namespace Durian.Analysis.GenericSpecialization
 				.ToArray();
 		}
 
-		private static Diagnostic? GetDiagnosticIfInvalidStringArgument(ISymbol symbol, AttributeSyntax node, AttributeData attr, (AttributeArgumentSyntax syntax, string name)[] arguments, string propertyName)
+		private static Diagnostic? GetDiagnosticIfInvalidIdentifier(ISymbol symbol, AttributeSyntax node, AttributeData attr, (AttributeArgumentSyntax syntax, string name)[] arguments, string propertyName)
 		{
-			if (attr.TryGetNamedArgumentValue(propertyName, out string? value) && !AnalysisUtilities.IsValidIdentifier(propertyName))
+			if (attr.TryGetNamedArgumentValue(propertyName, out string? value) && !AnalysisUtilities.IsValidIdentifier(value))
 			{
 				foreach ((AttributeArgumentSyntax syntax, string name) in arguments)
 				{
@@ -183,6 +166,38 @@ namespace Durian.Analysis.GenericSpecialization
 				}
 
 				return Diagnostic.Create(DUR0203_SpecifiedNameIsNotAValidIdentifier, node.GetLocation(), symbol, value);
+			}
+
+			return null;
+		}
+
+		private static Diagnostic? GetDiagnosticIfInvalidIdentifierOrSameAsContainingClass(ISymbol symbol, AttributeSyntax node, AttributeData attr, (AttributeArgumentSyntax syntax, string name)[] arguments, string propertyName)
+		{
+			if (attr.TryGetNamedArgumentValue(propertyName, out string? value))
+			{
+				DiagnosticDescriptor? diag = null;
+
+				if (!AnalysisUtilities.IsValidIdentifier(value))
+				{
+					diag = DUR0203_SpecifiedNameIsNotAValidIdentifier;
+				}
+				else if (value == symbol.Name)
+				{
+					diag = DUR0222_TargetNameCannotBeTheSameAsContainingClass;
+				}
+
+				if (diag is not null)
+				{
+					foreach ((AttributeArgumentSyntax syntax, string name) in arguments)
+					{
+						if (name == propertyName)
+						{
+							return Diagnostic.Create(diag, syntax.GetLocation(), symbol, value);
+						}
+					}
+
+					return Diagnostic.Create(diag, node.GetLocation(), symbol, value);
+				}
 			}
 
 			return null;

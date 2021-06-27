@@ -16,8 +16,8 @@ namespace Durian.Configuration
 		/// </summary>
 		public bool ForceInherit { get; set; }
 
-		/// <inheritdoc cref="GenSpecImport"/>
-		public GenSpecImport ImportOptions { get; }
+		/// <inheritdoc cref="GenSpecImportOptions"/>
+		public GenSpecImportOptions ImportOptions { get; }
 
 		/// <summary>
 		/// Name of the generated specialization interface. Defaults to '<c>ISpecialize</c>'.

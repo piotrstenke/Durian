@@ -2,12 +2,12 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
+using Durian.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Durian.Analysis.Data;
-using Durian.Configuration;
-using Durian.Analysis.Extensions;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.Analysis.GenericSpecialization
 {
@@ -89,7 +89,7 @@ namespace Durian.Analysis.GenericSpecialization
 
 			string templateName = GetStringValue(attribute, nameof(GenericSpecializationConfigurationAttribute.TemplateName)) ?? GenSpecConfiguration.DefaultTemplateName;
 			string interfaceName = GetStringValue(attribute, nameof(GenericSpecializationConfigurationAttribute.InterfaceName)) ?? GenSpecConfiguration.DefaultInterfaceName;
-			GenSpecImport importOptions = (GenSpecImport)attribute.GetNamedArgumentValue<int>(nameof(GenericSpecializationConfigurationAttribute.ImportOptions));
+			GenSpecImportOptions importOptions = (GenSpecImportOptions)attribute.GetNamedArgumentValue<int>(nameof(GenericSpecializationConfigurationAttribute.ImportOptions));
 			bool forceInherit = attribute.GetNamedArgumentValue<bool>(nameof(GenericSpecializationConfigurationAttribute.ForceInherit));
 
 			return new(templateName, interfaceName)
