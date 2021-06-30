@@ -32,7 +32,7 @@ DefaultParam allows to specify a default type for a generic parameter.
 using Durian;
 
 // Add the 'Durian.DefaultParamAttribute' to a type parameter to specify a default value.
-public partial class Test<[DefaultParam(typeof(string))]T>
+public class Test<[DefaultParam(typeof(string))]T>
 {
     public T Value { get; }
 

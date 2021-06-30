@@ -79,7 +79,7 @@ namespace Durian.Info
 		}
 
 		private ModuleIdentity(
-					DurianModule module,
+			DurianModule module,
 			in IdSection id,
 			ImmutableArray<PackageIdentity> packages,
 			string docsPath,

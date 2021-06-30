@@ -342,7 +342,7 @@ using Durian.Configuration;
 
 public partial class Other
 {
-    [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Call]
+    [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Call)]
     public T Method<[DefaultParam(typeof(string))]T>(T value)
     {
         T other = value;
@@ -370,7 +370,7 @@ using Durian.Configuration;
 
 public partial class Other
 {
-    [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Copy]
+    [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Copy)]
     public T Method<[DefaultParam(typeof(string))]T>(T value)
     {
         T other = value;
@@ -411,7 +411,7 @@ When the *Inherit* convention is applied, the target type is inherited by the ge
 using Durian;
 using Durian.Configuration;
 
-[DefaultParamConfiguration(TypeConvention = DPTypeConvention.Inherit]
+[DefaultParamConfiguration(TypeConvention = DPTypeConvention.Inherit)]
 public class Test<[DefaultParam(typeof(string))]T>
 {
     private readonly T _value;
@@ -441,7 +441,7 @@ When the *Copy* convention is applied, the contents of the target type is copied
 using Durian;
 using Durian.Configuration;
 
-[DefaultParamConfiguration(TypeConvention = DPTypeConvention.Copy]
+[DefaultParamConfiguration(TypeConvention = DPTypeConvention.Copy)]
 public class Test<[DefaultParam(typeof(string))]T>
 {
     private readonly T _value;

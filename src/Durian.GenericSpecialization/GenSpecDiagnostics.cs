@@ -227,6 +227,7 @@ namespace Durian.Analysis.GenericSpecialization
 			id: "DUR0217",
 			title: "Do not declare members that are not specializations in a class marked with the AllowSpecializationAttribute",
 			messageFormat: "'{0}': Do not declare members that are not specializations in class marked with the AllowSpecializationAttribute",
+			description: "Do not declare members that are not specializations in a class marked with the AllowSpecializationAttribute. Move them to the default implementation class instead.",
 			category: "Durian.GenericSpecialization",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0217.md",
@@ -240,6 +241,7 @@ namespace Durian.Analysis.GenericSpecialization
 			id: "DUR0218",
 			title: "Do not specify base types or implemented interfaces for a class marked with the AllowSpecializationAttribute",
 			messageFormat: "'{0}': Do not specify base types or implemented interfaces for class marked with the AllowSpecializationAttribute; move them to default implementation class instead",
+			description: "Do not specify base types or implemented interfaces for a class marked with the AllowSpecializationAttribute. Move them to the default implementation class instead.",
 			category: "Durian.GenericSpecialization",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0218.md",
@@ -247,38 +249,38 @@ namespace Durian.Analysis.GenericSpecialization
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the user should not specify attributes on a class marked with the <see cref="AllowSpecializationAttribute"/>.
-		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0219_DoNotSpecifyAttributesForTargetClass = new(
-			id: "DUR0219",
-			title: "Do not specify attributes on a class marked with the AllowSpecializationAttribute",
-			messageFormat: "'{0}': Do not specify attributes on a class marked with the AllowSpecializationAttribute; move them to default implementation class instead",
-			category: "Durian.GenericSpecialization",
-			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + "/DUR0219.md",
-			isEnabledByDefault: true
-		);
-
-		/// <summary>
 		/// Provides diagnostic message indicating that the user should not use the <see cref="GenericSpecializationConfigurationAttribute.ForceInherit"/> property on a sealed class.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0220_CannotForceInheritSealedClass = new(
-			id: "DUR0220",
+		public static readonly DiagnosticDescriptor DUR0219_CannotForceInheritSealedClass = new(
+			id: "DUR0219",
 			title: "Do not force inherit a sealed class",
 			messageFormat: "'{0}': Do not force inherit a sealed class",
 			category: "Durian.GenericSpecialization",
 			defaultSeverity: DiagnosticSeverity.Warning,
-			helpLinkUri: DocsPath + "/DUR0220.md",
+			helpLinkUri: DocsPath + "/DUR0219.md",
 			isEnabledByDefault: true
 		);
 
 		/// <summary>
 		/// Provides diagnostic message indicating that the default generic implementation cannot be abstract or static.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0221_DefaultImplementationCannotBeAbstractOrStatic = new(
-			id: "DUR0221",
+		public static readonly DiagnosticDescriptor DUR0220_DefaultImplementationCannotBeAbstractOrStatic = new(
+			id: "DUR0220",
 			title: "Default generic implementation cannot be abstract or static",
 			messageFormat: "'{0}': Default generic implementation cannot be abstract or static",
+			category: "Durian.GenericSpecialization",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + "/DUR0220.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the default generic implementation cannot be generic.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0221_DefaultImplementationCannotBeGeneric = new(
+			id: "DUR0221",
+			title: "Default generic implementation cannot be generic",
+			messageFormat: "'{0}': Default generic implementation cannot be generic",
 			category: "Durian.GenericSpecialization",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0221.md",
@@ -299,12 +301,12 @@ namespace Durian.Analysis.GenericSpecialization
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the default generic implementation cannot be generic.
+		/// Provides diagnostic message indicating that the default generic specialization must be a class.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0223_DefaultImplementationCannotBeGeneric = new(
+		public static readonly DiagnosticDescriptor DUR0223_DefaultSpecializationMustBeClass = new(
 			id: "DUR0223",
-			title: "Default generic implementation cannot be generic",
-			messageFormat: "'{0}': Default generic implementation cannot be generic",
+			title: "Generic specialization must be a class",
+			messageFormat: "'{0}': Generic specialization must be a class",
 			category: "Durian.GenericSpecialization",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0223.md",

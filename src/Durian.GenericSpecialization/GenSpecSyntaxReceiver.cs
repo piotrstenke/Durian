@@ -19,6 +19,11 @@ namespace Durian.Analysis.GenericSpecialization
 		public List<ClassDeclarationSyntax> CandidateClasses { get; }
 
 		/// <summary>
+		/// Determines whether to exclude non generic classes from the search.
+		/// </summary>
+		public bool ExcludeNonGeneric { get; set; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="GenSpecSyntaxReceiver"/> class.
 		/// </summary>
 		public GenSpecSyntaxReceiver()
@@ -35,11 +40,7 @@ namespace Durian.Analysis.GenericSpecialization
 		/// <inheritdoc/>
 		public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
 		{
-			if (syntaxNode is ClassDeclarationSyntax decl &&
-				decl.TypeParameterList is not null &&
-				decl.TypeParameterList.Parameters.Any() &&
-				decl.AttributeLists.Any()
-			)
+			if (syntaxNode is ClassDeclarationSyntax decl && decl.AttributeLists.Any())
 			{
 				CandidateClasses.Add(decl);
 			}

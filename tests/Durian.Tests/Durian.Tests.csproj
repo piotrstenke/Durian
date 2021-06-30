@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net5</TargetFramework>
+    <RootNamespace>Durian.Tests</RootNamespace>
     <Configurations>Debug;Release;Main Package</Configurations>
   </PropertyGroup>
 

@@ -577,23 +577,23 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Do not specify attributes on a class marked with the AllowSpecializationAttribute",
+					title: "Do not force inherit a sealed class",
 					id: 19,
 					docsPath: "tree/master/docs/GenericSpecialization/DUR0219.md",
-					fatal: true,
-					hasLocation: true
-				),
-
-				new DiagnosticData(
-					title: "Do not force inherit a sealed class",
-					id: 20,
-					docsPath: "tree/master/docs/GenericSpecialization/DUR0220.md",
 					fatal: false,
 					hasLocation: true
 				),
 
 				new DiagnosticData(
 					title: "Default generic implementation cannot be abstract or static",
+					id: 20,
+					docsPath: "tree/master/docs/GenericSpecialization/DUR0220.md",
+					fatal: true,
+					hasLocation: true
+				),
+
+				new DiagnosticData(
+					title: "Default generic implementation cannot be generic",
 					id: 21,
 					docsPath: "tree/master/docs/GenericSpecialization/DUR0221.md",
 					fatal: true,
@@ -609,7 +609,7 @@ namespace Durian.Info
 				),
 
 				new DiagnosticData(
-					title: "Default generic implementation cannot be generic",
+					title: "Generic specialization must be a class",
 					id: 23,
 					docsPath: "tree/master/docs/GenericSpecialization/DUR0223.md",
 					fatal: true,

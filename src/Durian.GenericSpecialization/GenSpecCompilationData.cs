@@ -16,9 +16,9 @@ namespace Durian.Analysis.GenericSpecialization
 	/// </summary>
 	public sealed class GenSpecCompilationData : CompilationData
 	{
-		private readonly string _allowSpecializationAttribute = typeof(DefaultParamAttribute).ToString();
+		private readonly string _allowSpecializationAttribute = typeof(AllowSpecializationAttribute).ToString();
 		private readonly string _genericSpecializationAttribute = typeof(GenericSpecializationAttribute).ToString();
-		private readonly string _genericSpecializationConfigurationAttribute = typeof(DefaultParamConfigurationAttribute).ToString();
+		private readonly string _genericSpecializationConfigurationAttribute = typeof(GenericSpecializationConfigurationAttribute).ToString();
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <see cref="Durian.AllowSpecializationAttribute"/>.
