@@ -8,7 +8,7 @@ namespace Durian.Info
 {
 	internal static class Utilities
 	{
-		public static bool CompareImmutableArrays<T>(ref ImmutableArray<T> first, ref ImmutableArray<T> second) where T : IEquatable<T>
+		public static bool CompareImmutableArrays<T>(ImmutableArray<T> first, ImmutableArray<T> second) where T : IEquatable<T>
 		{
 			int length = first.Length;
 
@@ -28,7 +28,7 @@ namespace Durian.Info
 			return true;
 		}
 
-		public static int GetHashCodeOfImmutableArray<T>(ref ImmutableArray<T> array) where T : IEquatable<T>
+		public static int GetHashCodeOfImmutableArray<T>(ImmutableArray<T> array) where T : IEquatable<T>
 		{
 			if (array.Length == 0)
 			{

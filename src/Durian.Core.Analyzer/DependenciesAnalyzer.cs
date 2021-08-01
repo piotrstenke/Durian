@@ -138,7 +138,7 @@ namespace Durian.Analysis
 				{
 					assemblies.Add(name);
 				}
-				else if (hasManager && hasCore && assemblies.Count >= DurianInfo.NumAnalyzerPackages)
+				else if (hasManager && hasCore && assemblies.Count >= GlobalInfo.NumAnalyzerPackages)
 				{
 					break;
 				}

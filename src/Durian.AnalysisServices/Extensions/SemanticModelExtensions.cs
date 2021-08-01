@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -640,6 +641,7 @@ namespace Durian.Analysis.Extensions
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[DebuggerStepThrough]
 		private static void ValidateGetAttributesParameters(SemanticModel semanticModel, CSharpSyntaxNode syntaxNode, INamedTypeSymbol attrSymbol)
 		{
 			if (semanticModel is null)

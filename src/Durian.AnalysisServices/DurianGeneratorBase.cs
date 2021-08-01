@@ -4,9 +4,9 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text;
 using System.Threading;
+using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
@@ -21,6 +21,44 @@ namespace Durian.Analysis
 	[DebuggerDisplay("Name = {GetGeneratorName()}, Version = {GetVersion()}")]
 	public abstract class DurianGeneratorBase : LoggableSourceGenerator
 	{
+		#region Diagnostics copied from Durian.Core.Analyzer
+
+#if !MAIN_PACKAGE
+
+#pragma warning disable IDE1006 // Naming Styles
+
+		private static readonly DiagnosticDescriptor DUR0001_DoesNotReferenceDurianCore = new(
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning disable RS2008 // Enable analyzer release tracking
+			id: "DUR0001",
+#pragma warning restore RS2008 // Enable analyzer release tracking
+			title: "Projects with any Durian analyzer must reference the Durian.Core package",
+			messageFormat: "Projects with any Durian analyzer must reference the Durian.Core package",
+			category: "Durian",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: GlobalInfo.Repository + "/tree/master/docs/Core/DUR0001.md",
+			isEnabledByDefault: true
+		);
+
+#pragma warning disable IDE1006 // Naming Styles
+
+		private static readonly DiagnosticDescriptor DUR0004_NotCSharpCompilation = new(
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning disable RS2008 // Enable analyzer release tracking
+			id: "DUR0004",
+#pragma warning restore RS2008 // Enable analyzer release tracking
+			title: "Durian modules can be used only in C#",
+			messageFormat: "Durian modules can be used only in C#",
+			category: "Durian",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: GlobalInfo.Repository + "/tree/master/docs/Core/DUR0004.md",
+			isEnabledByDefault: true
+		);
+
+#endif
+
+		#endregion Diagnostics copied from Durian.Core.Analyzer
+
 		private ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? _diagnosticReceiver;
 		private IHintNameProvider _fileNameProvider;
 
@@ -57,8 +95,7 @@ namespace Durian.Analysis
 			}
 		}
 
-		/// <inheritdoc/>
-		/// <exception cref="InvalidOperationException"><see cref="EnableDiagnostics"/> cannot be set to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</exception>
+		/// <inheritdoc cref="GeneratorLoggingConfiguration.EnableDiagnostics"/>
 		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
 		public virtual bool EnableDiagnostics
 		{
@@ -202,19 +239,53 @@ namespace Durian.Analysis
 			return "1.0.0";
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Validates and initializes a <see cref="CSharpCompilation"/> provided by the <paramref name="context"/>.
+		/// </summary>
+		/// <param name="context"><see cref="GeneratorExecutionContext"/> that provides a <see cref="CSharpCompilation"/> to validate and initialize.</param>
+		/// <param name="compilation">The validated and initialized <see cref="CSharpCompilation"/>.</param>
+		/// <returns><see langword="true"/> if the <paramref name="compilation"/> was successfully validated and initialized, <see langword="false"/> otherwise.</returns>
 		protected bool InitializeCompilation(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
 		{
-			if (context.Compilation is not CSharpCompilation c || c.LanguageVersion < LanguageVersion.CSharp9 || !HasReferenceToCoreProject(c))
+#if MAIN_PACKAGE
+			if (context.Compilation is not CSharpCompilation c || !ValidateCompilation(c, in context))
+			{
+				compilation = null;
+				return false;
+			}
+#else
+			if (context.Compilation is not CSharpCompilation c)
+			{
+				if (EnableDiagnostics)
+				{
+					context.ReportDiagnostic(Diagnostic.Create(DUR0004_NotCSharpCompilation, Location.None));
+				}
+
+				compilation = null;
+				return false;
+			}
+
+			if (!HasValidReferences(c))
+			{
+				if (EnableDiagnostics)
+				{
+					context.ReportDiagnostic(Diagnostic.Create(DUR0001_DoesNotReferenceDurianCore, Location.None));
+				}
+
+				compilation = null;
+				return false;
+			}
+
+			if (!ValidateCompilation(c, in context))
 			{
 				compilation = null;
 				return false;
 			}
 
-#if !MAIN_PACKAGE
 			DurianModule[] modules = GetEnabledModules();
 			EnableModules(ref c, in context, modules);
 #endif
+
 			InitializeStaticTrees(ref c, in context);
 
 			compilation = c;
@@ -249,33 +320,76 @@ namespace Durian.Analysis
 			}
 		}
 
+		/// <summary>
+		/// Validates the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to validate.</param>
+		/// <param name="context"><see cref="GeneratorExecutionContext"/> to report <see cref="Diagnostic"/>s to.</param>
+		protected virtual bool ValidateCompilation(CSharpCompilation compilation, in GeneratorExecutionContext context)
+		{
+			return true;
+		}
+
 #if !MAIN_PACKAGE
 
 		private static void EnableModules(ref CSharpCompilation compilation, in GeneratorExecutionContext context, DurianModule[] modules)
 		{
-			foreach (DurianModule module in modules)
-			{
-				if (!ModuleUtilities.IsEnabled(module, compilation))
-				{
-					string source = AutoGenerated.ApplyHeader($"[assembly: {DurianStrings.GeneratorNamespace}.EnableModule({DurianStrings.InfoNamespace}.{nameof(DurianModule)}.{module})]\r\n");
+			AttributeData[] attributes = ModuleUtilities.GetInstancesOfEnableAttribute(compilation);
+			bool[] enabled = new bool[modules.Length];
 
-					context.AddSource($"__EnableModule__{module}", SourceText.From(source, Encoding.UTF8));
-					compilation = compilation.AddSyntaxTrees((CSharpSyntaxTree)CSharpSyntaxTree.ParseText(
-						source,
-						context.ParseOptions as CSharpParseOptions,
-						encoding: Encoding.UTF8,
-						cancellationToken: context.CancellationToken)
-					);
+			foreach (AttributeData attribute in attributes)
+			{
+				if (!attribute.TryGetConstructorArgumentValue(0, out int value))
+				{
+					continue;
 				}
+
+				DurianModule module = (DurianModule)value;
+
+				for (int i = 0; i < modules.Length; i++)
+				{
+					if (modules[i] == module)
+					{
+						enabled[i] = true;
+					}
+				}
+			}
+
+			for (int i = 0; i < modules.Length; i++)
+			{
+				if (enabled[i])
+				{
+					continue;
+				}
+
+				DurianModule module = modules[i];
+
+				string source = AutoGenerated.ApplyHeader($"[assembly: {DurianStrings.GeneratorNamespace}.EnableModule({DurianStrings.InfoNamespace}.{nameof(DurianModule)}.{module})]\r\n");
+
+				context.AddSource($"__EnableModule__{module}", SourceText.From(source, Encoding.UTF8));
+				compilation = compilation.AddSyntaxTrees((CSharpSyntaxTree)CSharpSyntaxTree.ParseText(
+					source,
+					context.ParseOptions as CSharpParseOptions,
+					encoding: Encoding.UTF8,
+					cancellationToken: context.CancellationToken)
+				);
 			}
 		}
 
-#endif
-
-		private static bool HasReferenceToCoreProject(CSharpCompilation compilation)
+		private static bool HasValidReferences(CSharpCompilation compilation)
 		{
-			return compilation.ReferencedAssemblyNames.Any(r => r.Name == "Durian.Core");
+			foreach (AssemblyIdentity assembly in compilation.ReferencedAssemblyNames)
+			{
+				if (assembly.Name == "Durian.Core")
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
+
+#endif
 
 		private void InitializeStaticTrees(ref CSharpCompilation compilation, in GeneratorExecutionContext context)
 		{

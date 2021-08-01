@@ -27,6 +27,9 @@ namespace Durian.Analysis
 		/// <inheritdoc cref="AnalysisContext.RegisterCompilationAction(Action{CompilationAnalysisContext})"/>
 		void RegisterCompilationAction(Action<CompilationAnalysisContext> action);
 
+		/// <inheritdoc cref="AnalysisContext.RegisterCompilationStartAction(Action{CompilationStartAnalysisContext})"/>
+		void RegisterCompilationStartAction(Action<CompilationStartAnalysisContext> action);
+
 		/// <inheritdoc cref="AnalysisContext.RegisterOperationAction(Action{OperationAnalysisContext}, OperationKind[])"/>
 		void RegisterOperationAction(Action<OperationAnalysisContext> action, params OperationKind[] operationKinds);
 

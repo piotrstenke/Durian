@@ -90,14 +90,37 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Gets <see cref="AttributeData"/> of the <paramref name="syntax"/> defined on the specified <paramref name="symbol"/>.
+		/// Returns an <see cref="AttributeData"/> associated with the <paramref name="attrSymbol"/> and defined on the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol">Target <see cref="ISymbol"/>.</param>
+		/// <param name="attrSymbol">Type of attribute to look for.</param>
+		/// <returns>The <see cref="AttributeData"/> associated with the <paramref name="attrSymbol"/> and defined on the specified <paramref name="symbol"/>. -or- <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="attrSymbol"/> is <see langword="null"/>.</exception>
+		public static AttributeData? GetAttribute(this ISymbol symbol, INamedTypeSymbol attrSymbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (attrSymbol is null)
+			{
+				throw new ArgumentNullException(nameof(attrSymbol));
+			}
+
+			return symbol.GetAttributes()
+				.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol));
+		}
+
+		/// <summary>
+		/// Returns an <see cref="AttributeData"/> associated with the <paramref name="syntax"/> defined on the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol">Target <see cref="ISymbol"/>.</param>
 		/// <param name="syntax"><see cref="AttributeSyntax"/> to get the data of.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns>The <see cref="AttributeData"/> of the given <see cref="AttributeSyntax"/> or <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
+		/// <returns>The <see cref="AttributeData"/> associated with the <paramref name="syntax"/>. -or- <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="syntax"/> is <see langword="null"/>.</exception>
-		public static AttributeData? GetAttributeData(this ISymbol symbol, AttributeSyntax syntax, CancellationToken cancellationToken = default)
+		public static AttributeData? GetAttribute(this ISymbol symbol, AttributeSyntax syntax, CancellationToken cancellationToken = default)
 		{
 			if (symbol is null)
 			{
@@ -128,13 +151,12 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Gets <see cref="AttributeData"/> that corresponds to the <paramref name="attrSymbol"/> and is defined on the specified <paramref name="symbol"/>.
+		/// Returns a collection of <see cref="AttributeData"/>s associated with the <paramref name="attrSymbol"/> and defined on the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol">Target <see cref="ISymbol"/>.</param>
-		/// <param name="attrSymbol">Type of attribute to look for.</param>
-		/// <returns>The <see cref="AttributeData"/> that corresponds to the <paramref name="attrSymbol"/> or <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
+		/// <param name="attrSymbol">Type of attributes to look for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="attrSymbol"/> is <see langword="null"/>.</exception>
-		public static AttributeData? GetAttributeData(this ISymbol symbol, INamedTypeSymbol attrSymbol)
+		public static IEnumerable<AttributeData> GetAttributes(this ISymbol symbol, INamedTypeSymbol attrSymbol)
 		{
 			if (symbol is null)
 			{
@@ -146,8 +168,18 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(attrSymbol));
 			}
 
-			return symbol.GetAttributes()
-				.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol));
+			return Yield();
+
+			IEnumerable<AttributeData> Yield()
+			{
+				foreach (AttributeData attr in symbol.GetAttributes())
+				{
+					if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol))
+					{
+						yield return attr;
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -605,6 +637,57 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns a collection of all inner types of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to get the inner types of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<INamedTypeSymbol> GetInnerTypes(this INamedTypeSymbol symbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return GetInnerTypesInternal(symbol);
+		}
+
+		/// <summary>
+		/// Returns a collection of all inner types of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamespaceSymbol"/> to get the inner types of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<INamedTypeSymbol> GetInnerTypes(this INamespaceSymbol symbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return Yield(symbol);
+
+			static IEnumerable<INamedTypeSymbol> Yield(INamespaceSymbol @namespace)
+			{
+				foreach (INamedTypeSymbol type in @namespace.GetTypeMembers())
+				{
+					yield return type;
+
+					foreach (INamedTypeSymbol inner in GetInnerTypesInternal(type))
+					{
+						yield return inner;
+					}
+				}
+
+				foreach (INamespaceSymbol n in @namespace.GetNamespaceMembers())
+				{
+					foreach (INamedTypeSymbol type in Yield(n))
+					{
+						yield return type;
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="IMemberData"/> for.</param>
@@ -868,7 +951,7 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="attrSymbol"/> is <see langword="null"/>.</exception>
 		public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attrSymbol)
 		{
-			return GetAttributeData(symbol, attrSymbol) is not null;
+			return GetAttribute(symbol, attrSymbol) is not null;
 		}
 
 		/// <summary>
@@ -1047,7 +1130,7 @@ namespace Durian.Analysis.Extensions
 				throw new InvalidOperationException($"Target {nameof(compilation)} has errors!");
 			}
 
-			AttributeData? attribute = symbol.GetAttributeData(compilation.DurianGeneratedAttribute);
+			AttributeData? attribute = symbol.GetAttribute(compilation.DurianGeneratedAttribute);
 
 			if (attribute is null)
 			{
@@ -1371,6 +1454,19 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return sb.ToString().TrimEnd('.');
+		}
+
+		private static IEnumerable<INamedTypeSymbol> GetInnerTypesInternal(INamedTypeSymbol symbol)
+		{
+			foreach (INamedTypeSymbol s in symbol.GetTypeMembers())
+			{
+				yield return s;
+
+				foreach (INamedTypeSymbol inner in GetInnerTypesInternal(s))
+				{
+					yield return inner;
+				}
+			}
 		}
 
 		private static bool IsValidForTypeParameter_Internal(ITypeSymbol type, ITypeParameterSymbol parameter)

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Info;
@@ -58,22 +59,26 @@ namespace Durian.Analysis
 				return;
 			}
 
-			(bool isDurianType, bool isDisabled) = compilation.IsDisabledDurianType(type!, out DurianModule module);
-
-			if (isDurianType)
+			if (compilation.IsDisabled(type, out DurianModule[]? modules))
 			{
-				if (module == DurianModule.Core)
+				context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, context.Node.GetLocation(), type, modules[0]));
+			}
+			else if (modules is not null)
+			{
+				// Every type included by the DurianModule.Core module is located in the Durian.Generator namespace.
+
+				if (modules.Length == 1 && modules[0] == DurianModule.Core)
 				{
 					context.ReportDiagnostic(Diagnostic.Create(DUR0003_DoNotUseTypeFromDurianGeneratorNamespace, context.Node.GetLocation()));
 				}
-				else if (isDisabled && module != DurianModule.None)
+				else
 				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, context.Node.GetLocation(), type, module));
+					context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, context.Node.GetLocation(), type, modules[0]));
 				}
 			}
 		}
 
-		private static bool IsValidForAnalysis(SyntaxNode node, SemanticModel semanticModel, CancellationToken cancellationToken, out INamedTypeSymbol? type)
+		private static bool IsValidForAnalysis(SyntaxNode node, SemanticModel semanticModel, CancellationToken cancellationToken, [NotNullWhen(true)] out INamedTypeSymbol? type)
 		{
 			if (node is not SimpleNameSyntax name)
 			{

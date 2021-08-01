@@ -25,8 +25,7 @@ namespace Durian.Analysis
 	{
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
-			DUR0004_DurianModulesAreValidOnlyInCSharp,
-			DUR0006_ProjectMustUseCSharp9
+			DUR0004_DurianModulesAreValidOnlyInCSharp
 		);
 
 		/// <summary>
@@ -43,13 +42,14 @@ namespace Durian.Analysis
 		/// <param name="compilation"><see cref="Compilation"/> to analyze.</param>
 		public static bool Analyze(IDirectDiagnosticReceiver diagnosticReceiver, Compilation compilation)
 		{
-			if (GetDiagnostic(compilation) is DiagnosticDescriptor d)
+			bool value = Analyze(compilation);
+
+			if (!value)
 			{
-				diagnosticReceiver.ReportDiagnostic(d);
-				return false;
+				diagnosticReceiver.ReportDiagnostic(DUR0004_DurianModulesAreValidOnlyInCSharp);
 			}
 
-			return true;
+			return value;
 		}
 
 		/// <summary>
@@ -58,7 +58,7 @@ namespace Durian.Analysis
 		/// <param name="compilation"><see cref="Compilation"/> to analyze.</param>
 		public static bool Analyze(Compilation compilation)
 		{
-			return GetDiagnostic(compilation) is null;
+			return compilation is CSharpCompilation;
 		}
 
 		/// <inheritdoc/>
@@ -69,25 +69,10 @@ namespace Durian.Analysis
 
 		private static void Analyze(CompilationAnalysisContext context)
 		{
-			if (GetDiagnostic(context.Compilation) is DiagnosticDescriptor d)
+			if (!Analyze(context.Compilation))
 			{
-				context.ReportDiagnostic(Diagnostic.Create(d, Location.None));
+				context.ReportDiagnostic(Diagnostic.Create(DUR0004_DurianModulesAreValidOnlyInCSharp, Location.None));
 			}
-		}
-
-		private static DiagnosticDescriptor? GetDiagnostic(Compilation compilation)
-		{
-			if (compilation is not CSharpCompilation c)
-			{
-				return DUR0004_DurianModulesAreValidOnlyInCSharp;
-			}
-
-			if (c.LanguageVersion < LanguageVersion.CSharp9)
-			{
-				return DUR0006_ProjectMustUseCSharp9;
-			}
-
-			return null;
 		}
 	}
 }

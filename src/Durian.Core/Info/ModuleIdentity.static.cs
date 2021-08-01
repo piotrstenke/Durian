@@ -3,521 +3,161 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using Durian.Generator;
 
 namespace Durian.Info
 {
 	public partial class ModuleIdentity
 	{
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> of all existing Durian modules.
-		/// </summary>
-		public static ModuleIdentity[] GetAllModules()
+		private static readonly DurianModule[] _allModules;
+
+		static ModuleIdentity()
 		{
-			return new ModuleIdentity[]
-			{
-				ModuleRepository.Core,
-				ModuleRepository.DefaultParam,
-				ModuleRepository.GenericSpecialization
-			};
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/> values representing all existing Durian modules.
-		/// </summary>
-		public static DurianModule[] GetAllModulesAsEnums()
-		{
-			return new DurianModule[]
-			{
-				DurianModule.Core,
-				DurianModule.DefaultParam,
-				DurianModule.GenericSpecialization,
-			};
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are disabled for the calling <see cref="Assembly"/>.
-		/// </summary>
-		public static ModuleIdentity[] GetDisabledModules()
-		{
-			return GetDisabledModules(Assembly.GetCallingAssembly());
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are disabled for the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the disabled Durian modules of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static ModuleIdentity[] GetDisabledModules(Assembly assembly)
-		{
-			return GetDisabledModules(assembly, GetAllModules());
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the calling <see cref="Assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
-		public static ModuleIdentity[] GetDisabledModules(ModuleIdentity[]? modules)
-		{
-			return GetDisabledModules(Assembly.GetCallingAssembly(), modules);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are disabled for the specified <paramref name="assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the disabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the disabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static ModuleIdentity[] GetDisabledModules(Assembly assembly, ModuleIdentity[]? modules)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return Array.Empty<ModuleIdentity>();
-			}
-
-			ModuleIdentity[] enabledModules = GetEnabledModules(assembly, modules);
-
-			if (modules.Length == enabledModules.Length)
-			{
-				return Array.Empty<ModuleIdentity>();
-			}
-
-			ModuleEnumEqualityComparer comparer = ModuleEnumEqualityComparer.Instance;
-
-			if (enabledModules.Length == 0)
-			{
-				return modules.Distinct(comparer).ToArray();
-			}
-
-			return modules
-				.Except(enabledModules, comparer)
-				.Distinct(comparer)
+			_allModules = Enum.GetValues(typeof(DurianModule))
+				.Cast<DurianModule>()
+				.Skip(1)
 				.ToArray();
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are disabled for the calling <see cref="Assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
+		/// Deallocates all cached instances of <see cref="ModuleIdentity"/>.
+		/// </summary>
+		public static void Deallocate()
+		{
+			IdentityPool.Modules.Clear();
+		}
+
+		/// <summary>
+		/// Throws an <see cref="InvalidOperationException"/> if the specified <paramref name="module"/> is not a valid <see cref="DurianModule"/> value.
+		/// </summary>
+		/// <param name="module"><see cref="DurianModule"/> to ensure that is valid.</param>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		public static void EnsureIsValidModuleEnum(DurianModule module)
+		{
+			if (module == DurianModule.None)
+			{
+				throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!");
+			}
+
+			if (!GlobalInfo.IsValidModuleValue(module))
+			{
+				throw new InvalidOperationException($"Unknown {nameof(DurianModule)} value: {module}!");
+			}
+		}
+
+		/// <summary>
+		/// Returns a collection of all existing Durian modules.
+		/// </summary>
+		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains all the existing Durian modules.</returns>
+		public static ModuleContainer GetAllModules()
+		{
+			List<DurianModule> modules = new(_allModules);
+
+			return new ModuleContainer(modules);
+		}
+
+		/// <summary>
+		/// Returns a collection of all Durian modules that are disabled for the calling <see cref="Assembly"/>.
+		/// </summary>
+		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
+		public static ModuleContainer GetDisabledModules()
+		{
+			return Assembly.GetCallingAssembly().GetDisabledModules();
+		}
+
+		/// <summary>
+		/// Returns a collection of all Durian modules present in the provided array of <paramref name="references"/> that are disabled for the calling <see cref="Assembly"/>.
+		/// </summary>
+		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick from.</param>
+		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
+		public static ModuleContainer GetDisabledModules(params ModuleReference[]? references)
+		{
+			return Assembly.GetCallingAssembly().GetDisabledModules(references);
+		}
+
+		/// <summary>
+		/// Returns a collection of all Durian modules present in the provided collection of <paramref name="modules"/> that are disabled for the calling <see cref="Assembly"/>.
+		/// </summary>
+		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick from.</param>
+		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="modules"/> is <see langword="null"/>.</exception>
+		public static ModuleContainer GetDisabledModules(ModuleContainer modules)
+		{
+			return Assembly.GetCallingAssembly().GetDisabledModules(modules);
+		}
+
+		/// <summary>
+		/// Returns a collection of all Durian modules present in the provided array of <paramref name="modules"/> that are disabled for the calling <see cref="Assembly"/>.
+		/// </summary>
+		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick from.</param>
+		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
+		public static ModuleContainer GetDisabledModules(params ModuleIdentity[]? modules)
+		{
+			return Assembly.GetCallingAssembly().GetDisabledModules(modules);
+		}
+
+		/// <summary>
+		/// Returns a collection of all Durian modules present in the provided array of <paramref name="modules"/> that are disabled for the calling <see cref="Assembly"/>.
 		/// </summary>
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the disabled modules from.</param>
+		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static ModuleIdentity[] GetDisabledModules(DurianModule[]? modules)
+		public static ModuleContainer GetDisabledModules(params DurianModule[]? modules)
 		{
-			return GetDisabledModules(Assembly.GetCallingAssembly(), modules);
+			return Assembly.GetCallingAssembly().GetDisabledModules(modules);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are disabled for the specified <paramref name="assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns a collection of all Durian modules that are enabled for the calling <see cref="Assembly"/>.
 		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the disabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the disabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static ModuleIdentity[] GetDisabledModules(Assembly assembly, DurianModule[]? modules)
+		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
+		public static ModuleContainer GetEnabledModules()
 		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return Array.Empty<ModuleIdentity>();
-			}
-
-			ModuleIdentity[] allModules = EnumArrayToIdentityArray(modules);
-			ModuleIdentity[] enabledModules = GetEnabledModules(assembly, allModules);
-
-			if (modules.Length == enabledModules.Length)
-			{
-				return Array.Empty<ModuleIdentity>();
-			}
-
-			ModuleEnumEqualityComparer comparer = ModuleEnumEqualityComparer.Instance;
-
-			if (enabledModules.Length == 0)
-			{
-				return allModules.Distinct(comparer).ToArray();
-			}
-
-			return allModules
-				.Except(enabledModules, comparer)
-				.Distinct(comparer)
-				.ToArray();
+			return Assembly.GetCallingAssembly().GetEnabledModules();
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are disabled for the calling <see cref="Assembly"/>.
+		/// Returns a collection of all Durian modules present in the provided collection of <paramref name="modules"/> that are enabled for the calling <see cref="Assembly"/>.
 		/// </summary>
-		public static DurianModule[] GetDisabledModulesAsEnums()
+		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick from.</param>
+		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="modules"/> is <see langword="null"/>.</exception>
+		public static ModuleContainer GetEnabledModules(ModuleContainer modules)
 		{
-			return GetDisabledModulesAsEnums(Assembly.GetCallingAssembly());
+			return Assembly.GetCallingAssembly().GetEnabledModules(modules);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are disabled for the specified <paramref name="assembly"/>.
+		/// Returns a collection of all Durian modules present in the provided array of <paramref name="modules"/> that are enabled for the calling <see cref="Assembly"/>.
 		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the disabled Durian modules of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static DurianModule[] GetDisabledModulesAsEnums(Assembly assembly)
+		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick from.</param>
+		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
+		public static ModuleContainer GetEnabledModules(params ModuleIdentity[]? modules)
 		{
-			return GetDisabledModulesAsEnums(assembly, GetAllModules());
+			return Assembly.GetCallingAssembly().GetEnabledModules(modules);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the calling <see cref="Assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns a collection of all Durian modules present in the provided array of <paramref name="references"/> that are enabled for the calling <see cref="Assembly"/>.
 		/// </summary>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
-		public static DurianModule[] GetDisabledModulesAsEnums(ModuleIdentity[]? modules)
+		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick from.</param>
+		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
+		public static ModuleContainer GetEnabledModules(params ModuleReference[]? references)
 		{
-			return GetDisabledModulesAsEnums(Assembly.GetCallingAssembly(), modules);
+			return Assembly.GetCallingAssembly().GetEnabledModules(references);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are disabled for the specified <paramref name="assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the disabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the disabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static DurianModule[] GetDisabledModulesAsEnums(Assembly assembly, ModuleIdentity[]? modules)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return Array.Empty<DurianModule>();
-			}
-
-			ModuleIdentity[] enabledModules = GetEnabledModules(assembly, modules);
-
-			if (modules.Length == enabledModules.Length)
-			{
-				return Array.Empty<DurianModule>();
-			}
-
-			if (enabledModules.Length == 0)
-			{
-				return modules.Select(m => m.Module).ToArray();
-			}
-
-			ModuleEnumEqualityComparer comparer = ModuleEnumEqualityComparer.Instance;
-
-			return modules
-				.Except(enabledModules, comparer)
-				.Distinct(comparer)
-				.Select(m => m.Module)
-				.ToArray();
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are disabled for the calling <see cref="Assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the disabled modules from.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static DurianModule[] GetDisabledModulesAsEnums(DurianModule[]? modules)
-		{
-			return GetDisabledModulesAsEnums(Assembly.GetCallingAssembly(), modules);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are disabled for the specified <paramref name="assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the disabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the disabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static DurianModule[] GetDisabledModulesAsEnums(Assembly assembly, DurianModule[]? modules)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return Array.Empty<DurianModule>();
-			}
-
-			ModuleIdentity[] allModules = EnumArrayToIdentityArray(modules);
-			ModuleIdentity[] enabledModules = GetEnabledModules(assembly, allModules);
-
-			if (modules.Length == enabledModules.Length)
-			{
-				return Array.Empty<DurianModule>();
-			}
-
-			ModuleEnumEqualityComparer comparer = ModuleEnumEqualityComparer.Instance;
-
-			if (enabledModules.Length == 0)
-			{
-				return allModules
-					.Distinct(comparer)
-					.Select(m => m.Module)
-					.ToArray();
-			}
-
-			return allModules
-				.Except(enabledModules, comparer)
-				.Distinct(comparer)
-				.Select(m => m.Module)
-				.ToArray();
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the calling <see cref="Assembly"/>.
-		/// </summary>
-		public static ModuleIdentity[] GetEnabledModules()
-		{
-			return GetEnabledModules(Assembly.GetCallingAssembly());
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the enabled Durian modules of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static ModuleIdentity[] GetEnabledModules(Assembly assembly)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			EnableModuleAttribute[] attrs = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
-			int length = attrs.Length;
-			ModuleIdentity[] modules = new ModuleIdentity[length];
-
-			for (int i = 0; i < length; i++)
-			{
-				modules[i] = GetModule(attrs[i].Module);
-			}
-
-			return modules;
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the calling <see cref="Assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
-		public static ModuleIdentity[] GetEnabledModules(ModuleIdentity[] modules)
-		{
-			return GetEnabledModules(Assembly.GetCallingAssembly(), modules);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the enabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static ModuleIdentity[] GetEnabledModules(Assembly assembly, ModuleIdentity[]? modules)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return Array.Empty<ModuleIdentity>();
-			}
-
-			HashSet<ModuleIdentity> set = new(ModuleEnumEqualityComparer.Instance);
-
-			foreach (EnableModuleAttribute attribute in assembly.GetCustomAttributes<EnableModuleAttribute>())
-			{
-				foreach (ModuleIdentity module in modules)
-				{
-					if (module.Module == attribute.Module)
-					{
-						set.Add(module);
-					}
-				}
-			}
-
-			ModuleIdentity[] array = new ModuleIdentity[set.Count];
-			set.CopyTo(array);
-			return array;
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the calling <see cref="Assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns a collection of all Durian modules present in the provided array of <paramref name="modules"/> that are enabled for the calling <see cref="Assembly"/>.
 		/// </summary>
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
+		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static ModuleIdentity[] GetEnabledModules(DurianModule[]? modules)
+		public static ModuleContainer GetEnabledModules(params DurianModule[]? modules)
 		{
-			return GetEnabledModules(Assembly.GetCallingAssembly(), modules);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="ModuleIdentity"/> representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the enabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static ModuleIdentity[] GetEnabledModules(Assembly assembly, DurianModule[]? modules)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return Array.Empty<ModuleIdentity>();
-			}
-
-			HashSet<DurianModule> set = new();
-			EnableModuleAttribute[] attributes = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
-			List<ModuleIdentity> list = new(attributes.Length);
-
-			foreach (EnableModuleAttribute attribute in attributes)
-			{
-				foreach (DurianModule module in modules)
-				{
-					if (module == attribute.Module && set.Add(module))
-					{
-						list.Add(GetModule(module));
-					}
-				}
-			}
-
-			return list.ToArray();
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the calling <see cref="Assembly"/>.
-		/// </summary>
-		public static DurianModule[] GetEnabledModulesAsEnums()
-		{
-			return GetEnabledModulesAsEnums(Assembly.GetCallingAssembly());
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the enabled Durian modules of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static DurianModule[] GetEnabledModulesAsEnums(Assembly assembly)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			EnableModuleAttribute[] attrs = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
-			int length = attrs.Length;
-			DurianModule[] modules = new DurianModule[length];
-
-			for (int i = 0; i < length; i++)
-			{
-				modules[i] = attrs[i].Module;
-			}
-
-			return modules;
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the calling <see cref="Assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
-		public static DurianModule[] GetEnabledModulesAsEnums(ModuleIdentity[]? modules)
-		{
-			return GetEnabledModulesAsEnums(Assembly.GetCallingAssembly(), modules);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="ModuleIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the enabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static DurianModule[] GetEnabledModulesAsEnums(Assembly assembly, ModuleIdentity[]? modules)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return Array.Empty<DurianModule>();
-			}
-
-			HashSet<DurianModule> set = new();
-
-			foreach (EnableModuleAttribute attribute in assembly.GetCustomAttributes<EnableModuleAttribute>())
-			{
-				foreach (ModuleIdentity module in modules)
-				{
-					if (module.Module == attribute.Module)
-					{
-						set.Add(module.Module);
-					}
-				}
-			}
-
-			DurianModule[] array = new DurianModule[set.Count];
-			set.CopyTo(array);
-			return array;
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the calling <see cref="Assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static DurianModule[] GetEnabledModulesAsEnums(DurianModule[]? modules)
-		{
-			return GetEnabledModulesAsEnums(Assembly.GetCallingAssembly(), modules);
-		}
-
-		/// <summary>
-		/// Returns an array of <see cref="DurianModule"/>s representing Durian modules that are enabled for the specified <paramref name="assembly"/>. Only <see cref="DurianModule"/>s that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the enabled Durian modules of.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static DurianModule[] GetEnabledModulesAsEnums(Assembly assembly, DurianModule[]? modules)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return Array.Empty<DurianModule>();
-			}
-
-			HashSet<DurianModule> set = new();
-
-			foreach (EnableModuleAttribute attribute in assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray())
-			{
-				foreach (DurianModule module in modules)
-				{
-					if (module == attribute.Module)
-					{
-						set.Add(module);
-					}
-				}
-			}
-
-			DurianModule[] array = new DurianModule[set.Count];
-			set.CopyTo(array);
-			return array;
+			return Assembly.GetCallingAssembly().GetEnabledModules(modules);
 		}
 
 		/// <summary>
@@ -532,13 +172,16 @@ namespace Durian.Info
 				DurianModule.Core => ModuleRepository.Core,
 				DurianModule.DefaultParam => ModuleRepository.DefaultParam,
 				DurianModule.GenericSpecialization => ModuleRepository.GenericSpecialization,
+				DurianModule.FriendClass => ModuleRepository.FriendClass,
+				DurianModule.InterfaceTargets => ModuleRepository.InterfaceTargets,
+				DurianModule.Manager => ModuleRepository.Manager,
 				DurianModule.None => throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!"),
 				_ => throw new InvalidOperationException($"Unknown {nameof(DurianModule)} value: {module}!")
 			};
 		}
 
 		/// <summary>
-		/// Returns a new instance of <see cref="ModuleIdentity"/> of Durian module with the specified <paramref name="moduleName"/>.
+		/// Returns a <see cref="ModuleIdentity"/> of Durian module with the specified <paramref name="moduleName"/>.
 		/// </summary>
 		/// <param name="moduleName">Name of the Durian module to get the <see cref="ModuleIdentity"/> of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
@@ -552,7 +195,7 @@ namespace Durian.Info
 		/// <summary>
 		/// Returns a new instance of <see cref="ModuleReference"/> that represents an in-direct reference to a <see cref="ModuleIdentity"/>.
 		/// </summary>
-		/// <param name="module"><see cref="DurianModule"/> to get <see cref="ModuleReference"/> for.</param>
+		/// <param name="module"><see cref="DurianModule"/> to get a <see cref="ModuleReference"/> to.</param>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
 		public static ModuleReference GetReference(DurianModule module)
 		{
@@ -562,9 +205,9 @@ namespace Durian.Info
 		/// <summary>
 		/// Returns a new instance of <see cref="ModuleReference"/> that represents an in-direct reference to a <see cref="ModuleIdentity"/>.
 		/// </summary>
-		/// <param name="moduleName">Name of the Durian module to get the <see cref="ModuleReference"/> for.</param>
+		/// <param name="moduleName">Name of the Durian module to get a <see cref="ModuleReference"/> to.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"> Unknown Durian module name: <paramref name="moduleName"/>.</exception>
+		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>.</exception>
 		public static ModuleReference GetReference(string moduleName)
 		{
 			DurianModule module = ParseModule(moduleName);
@@ -572,100 +215,44 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Checks if the specified <paramref name="module"/> is enabled for the calling <see cref="Assembly"/>.
+		/// Determines whether the <paramref name="module"/> is enabled for the calling <see cref="Assembly"/>.
 		/// </summary>
-		/// <param name="module"><see cref="ModuleIdentity"/> representing a Durian module to check.</param>
+		/// <param name="module"><see cref="ModuleReference"/> of Durian module to check for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>.</exception>
+		public static bool IsEnabled(ModuleReference module)
+		{
+			return Assembly.GetCallingAssembly().IsEnabled(module);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="module"/> is enabled for the calling <see cref="Assembly"/>.
+		/// </summary>
+		/// <param name="module"><see cref="ModuleIdentity"/> representing a Durian module to check for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>.</exception>
 		public static bool IsEnabled(ModuleIdentity module)
 		{
-			return IsEnabled(module, Assembly.GetCallingAssembly());
+			return Assembly.GetCallingAssembly().IsEnabled(module);
 		}
 
 		/// <summary>
-		/// Checks if the specified <paramref name="module"/> is enabled for the specified <paramref name="assembly"/>.
+		/// Determines whether the <paramref name="module"/> is enabled for the calling <see cref="Assembly"/>.
 		/// </summary>
-		/// <param name="module"><see cref="ModuleIdentity"/> representing a Durian module to check.</param>
-		/// <param name="assembly"><see cref="Assembly"/> to check if the <paramref name="module"/> is enabled for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static bool IsEnabled(ModuleIdentity module, Assembly assembly)
-		{
-			if (module is null)
-			{
-				throw new ArgumentNullException(nameof(module));
-			}
-
-			return IsEnabled(module.Module, assembly);
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="module"/> is enabled for the calling <see cref="Assembly"/>.
-		/// </summary>
-		/// <param name="module"><see cref="DurianModule"/> to check.</param>
+		/// <param name="module"><see cref="DurianModule"/> representing a Durian module to check for.</param>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
 		public static bool IsEnabled(DurianModule module)
 		{
-			return IsEnabled(module, Assembly.GetCallingAssembly());
+			return Assembly.GetCallingAssembly().IsEnabled(module);
 		}
 
 		/// <summary>
-		/// Checks if the specified <paramref name="module"/> is enabled for the specified <paramref name="assembly"/>.
+		/// Determines whether the calling <see cref="Assembly"/> references a Durian module with the given <paramref name="moduleName"/>.
 		/// </summary>
-		/// <param name="module"><see cref="DurianModule"/> to check.</param>
-		/// <param name="assembly"><see cref="Assembly"/> to check if the <paramref name="module"/> is enabled for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static bool IsEnabled(DurianModule module, Assembly assembly)
-		{
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			CheckIsValidModuleEnum(module);
-
-			foreach (EnableModuleAttribute attribute in assembly.GetCustomAttributes<EnableModuleAttribute>())
-			{
-				if (attribute.Module == module)
-				{
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		/// <summary>
-		/// Checks if the Durian module with the specified <paramref name="moduleName"/> is enabled for the calling <see cref="Assembly"/>.
-		/// </summary>
-		/// <param name="moduleName">Name of the module to check.</param>
+		/// <param name="moduleName">Name of the Durian module to check for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>.</exception>
 		public static bool IsEnabled(string moduleName)
 		{
-			return IsEnabled(moduleName, Assembly.GetCallingAssembly());
-		}
-
-		/// <summary>
-		/// Checks if the Durian module with the specified <paramref name="moduleName"/> is enabled for the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="moduleName">Name of the module to check.</param>
-		/// <param name="assembly"><see cref="Assembly"/> to check if the module is enabled for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>.</exception>
-		public static bool IsEnabled(string moduleName, Assembly assembly)
-		{
-			if (moduleName is null)
-			{
-				throw new ArgumentNullException(nameof(moduleName));
-			}
-
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			DurianModule module = ParseModule(moduleName);
-			return IsEnabled(module, assembly);
+			return Assembly.GetCallingAssembly().IsEnabled(moduleName);
 		}
 
 		/// <summary>
@@ -673,7 +260,7 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="moduleName"><see cref="string"/> to convert to a value of the <see cref="DurianModule"/> enum.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"> Unknown Durian module name: <paramref name="moduleName"/>.</exception>
+		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>.</exception>
 		public static DurianModule ParseModule(string moduleName)
 		{
 			if (moduleName is null)
@@ -681,42 +268,79 @@ namespace Durian.Info
 				throw new ArgumentNullException(nameof(moduleName));
 			}
 
-			string name = moduleName.Replace("Durian.", "").Replace(".", "");
-
-			try
-			{
-				return (DurianModule)Enum.Parse(typeof(DurianModule), name);
-			}
-			catch
+			if (!TryParseModule(moduleName, out DurianModule module))
 			{
 				throw new ArgumentException($"Unknown Durian module name: {moduleName}", nameof(moduleName));
 			}
+
+			return module;
 		}
 
-		internal static void CheckIsValidModuleEnum(DurianModule module)
+		/// <summary>
+		/// Attempts to return a <see cref="ModuleIdentity"/> of Durian module with the specified <paramref name="moduleName"/>.
+		/// </summary>
+		/// <param name="moduleName">Name of the Durian module to get the <see cref="ModuleIdentity"/> of.</param>
+		/// <param name="module"><see cref="ModuleIdentity"/> that was returned.</param>
+		/// <returns><see langword="true"/> if the <paramref name="module"/> was successfully returned, <see langword="false"/> otherwise.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
+		public static bool TryGetModule(string moduleName, [NotNullWhen(true)] out ModuleIdentity? module)
 		{
-			if (module == DurianModule.None)
+			if (moduleName is null)
 			{
-				throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!");
+				throw new ArgumentNullException(nameof(moduleName));
 			}
 
-			if (module < DurianInfo.ModuleMin || module > DurianInfo.ModuleMax)
+			if (!TryParseModule(moduleName, out DurianModule m))
 			{
-				throw new InvalidOperationException($"Unknown {nameof(DurianModule)} value: {module}!");
+				module = null;
+				return false;
 			}
+
+			module = GetModule(m);
+			return true;
 		}
 
-		internal static ModuleIdentity[] EnumArrayToIdentityArray(DurianModule[] modules)
+		/// <summary>
+		/// Attempts to return a new instance of <see cref="ModuleReference"/> that represents an in-direct reference to a <see cref="ModuleIdentity"/>.
+		/// </summary>
+		/// <param name="moduleName">Name of the Durian module to get a <see cref="ModuleReference"/> to.</param>
+		/// <param name="reference">Newly-created <see cref="ModuleReference"/>.</param>
+		/// <returns><see langword="true"/> if the <see cref="ModuleReference"/> was successfully created, <see langword="false"/> otherwise.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
+		public static bool TryGetReference(string moduleName, [NotNullWhen(true)] out ModuleReference? reference)
 		{
-			int length = modules.Length;
-			ModuleIdentity[] identities = new ModuleIdentity[length];
-
-			for (int i = 0; i < length; i++)
+			if (moduleName is null)
 			{
-				identities[i] = ModuleIdentity.GetModule(modules[i]);
+				throw new ArgumentNullException(nameof(moduleName));
 			}
 
-			return identities;
+			if (!TryParseModule(moduleName, out DurianModule module))
+			{
+				reference = null;
+				return false;
+			}
+
+			reference = new ModuleReference(module);
+			return true;
+		}
+
+		/// <summary>
+		/// Attempts to convert the specified <paramref name="moduleName"/> into a value of the <see cref="DurianModule"/> enum.
+		/// </summary>
+		/// <param name="moduleName"><see cref="string"/> to convert to a value of the <see cref="DurianModule"/> enum.</param>
+		/// <param name="module">Value of the <see cref="DurianModule"/> enum created from the <paramref name="moduleName"/>.</param>
+		/// <returns><see langword="true"/> if the <paramref name="moduleName"/> was successfully converted, <see langword="false"/> otherwise.</returns>
+		public static bool TryParseModule([NotNullWhen(true)] string? moduleName, out DurianModule module)
+		{
+			if (string.IsNullOrWhiteSpace(moduleName))
+			{
+				module = default;
+				return false;
+			}
+
+			string name = moduleName!.Replace("Durian.", "").Replace(".", "");
+
+			return Enum.TryParse(name, true, out module);
 		}
 	}
 }

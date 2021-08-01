@@ -134,7 +134,9 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
 		public static string GetXmlParentTypesString(this IMemberData member, bool includeParameters = false)
 		{
-			return AnalysisUtilities.ConvertFullyQualifiedNameToXml(GetParentTypesString(member, includeParameters));
+			string parentString = GetParentTypesString(member, includeParameters);
+
+			return AnalysisUtilities.ConvertFullyQualifiedNameToXml(parentString);
 		}
 
 		/// <summary>

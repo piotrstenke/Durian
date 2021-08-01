@@ -56,7 +56,10 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc/>
 		public static bool operator ==(ParameterGeneration a, ParameterGeneration b)
 		{
-			return a.GenericParameterIndex == b.GenericParameterIndex && a.RefKind == b.RefKind && SymbolEqualityComparer.Default.Equals(a.Type, b.Type);
+			return
+				a.GenericParameterIndex == b.GenericParameterIndex &&
+				a.RefKind == b.RefKind &&
+				SymbolEqualityComparer.Default.Equals(a.Type, b.Type);
 		}
 
 		/// <inheritdoc/>

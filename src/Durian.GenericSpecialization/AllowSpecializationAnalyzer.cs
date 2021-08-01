@@ -8,20 +8,18 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using static Durian.Analysis.GenericSpecialization.GenSpecDiagnostics;
-
-#if !MAIN_PACKAGE
-
 using Microsoft.CodeAnalysis.Diagnostics;
-
-#endif
 
 namespace Durian.Analysis.GenericSpecialization
 {
+#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
+
 	/// <summary>
 	/// Analyzes classes marked by the <see cref="AllowSpecializationAttribute"/>.
 	/// </summary>
@@ -64,6 +62,24 @@ namespace Durian.Analysis.GenericSpecialization
 		{
 		}
 
+		/// <inheritdoc cref="WithDiagnostics.Analyze(IDiagnosticReceiver, INamedTypeSymbol, GenSpecCompilationData, CancellationToken)"/>
+		public static bool Analyze(
+			INamedTypeSymbol symbol,
+			GenSpecCompilationData compilation,
+			CancellationToken cancellationToken = default
+		)
+		{
+			if (!ShouldAnalyze(symbol, compilation, out AttributeData[]? attributes))
+			{
+				return false;
+			}
+
+			return
+				AnalyzeDeclaration(symbol, cancellationToken) &&
+				AnalyzeContainingTypes(symbol, out INamedTypeSymbol[]? containingTypes, cancellationToken) &&
+				AnalyzeMembers(symbol, compilation, attributes, containingTypes);
+		}
+
 		/// <inheritdoc cref="WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, INamedTypeSymbol, INamedTypeSymbol[], CancellationToken)"/>
 		public static bool AnalyzeContainingTypes(
 			INamedTypeSymbol symbol,
@@ -98,6 +114,31 @@ namespace Durian.Analysis.GenericSpecialization
 			bool isValid = AnalyzeContainingTypes(symbol, symbols, cancellationToken);
 			containingTypes = isValid ? symbols : null;
 			return isValid;
+		}
+
+		/// <inheritdoc cref="WithDiagnostics.AnalyzeContainingTypes(IDiagnosticReceiver, INamedTypeSymbol, GenSpecCompilationData, out ITypeData[])"/>
+		public static bool AnalyzeContainingTypes(
+			INamedTypeSymbol symbol,
+			GenSpecCompilationData compilation,
+			[NotNullWhen(true)] out ITypeData[]? containingTypes
+		)
+		{
+			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
+
+			if (types.Length > 0)
+			{
+				foreach (ITypeData type in types)
+				{
+					if (!type.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+					{
+						containingTypes = null;
+						return false;
+					}
+				}
+			}
+
+			containingTypes = types;
+			return true;
 		}
 
 		/// <inheritdoc cref="WithDiagnostics.AnalyzeDeclaration(IDiagnosticReceiver, INamedTypeSymbol, CancellationToken)"/>
@@ -385,7 +426,7 @@ namespace Durian.Analysis.GenericSpecialization
 			}
 
 			ContextualDiagnosticReceiver<SymbolAnalysisContext> diagnosticReceiver = DiagnosticReceiverFactory.Symbol(context);
-			WithDiagnostics.Analyze(diagnosticReceiver, (INamedTypeSymbol)context.Symbol, compilation, context.CancellationToken);
+			WithDiagnostics.Analyze(diagnosticReceiver, t, compilation, context.CancellationToken);
 		}
 
 		private static bool HasAllProperties(bool[] includedProperties)
@@ -416,7 +457,7 @@ namespace Durian.Analysis.GenericSpecialization
 				return false;
 			}
 
-			if (t.GetAttributeData(compilation.GenericSpecializationAttribute!) is AttributeData attr &&
+			if (t.GetAttribute(compilation.GenericSpecializationAttribute!) is AttributeData attr &&
 				attr.TryGetConstructorArgumentValue(0, out INamedTypeSymbol? value))
 			{
 				return SymbolEqualityComparer.Default.Equals(targetClass, value);

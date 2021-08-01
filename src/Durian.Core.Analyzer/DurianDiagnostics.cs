@@ -85,20 +85,6 @@ namespace Durian.Analysis
 		/// Provides diagnostic message indicating the target project must use C# 9 or greater.
 		/// </summary>
 		[WithoutLocation]
-		public static readonly DiagnosticDescriptor DUR0006_ProjectMustUseCSharp9 = new(
-			id: "DUR0006",
-			title: "Target project must use C# 9 or newer",
-			messageFormat: "Target project must use C# 9 or newer",
-			category: "Durian",
-			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: DocsPath + "/DUR0006.md",
-			isEnabledByDefault: true
-		);
-
-		/// <summary>
-		/// Provides diagnostic message indicating the target project must use C# 9 or greater.
-		/// </summary>
-		[WithoutLocation]
 		public static readonly DiagnosticDescriptor DUR0007_DoNotReferencePackageIfManagerIsPresent = new(
 			id: "DUR0007",
 			title: "Do not reference Durian analyzer package if the main Durian package is already included",
@@ -110,8 +96,8 @@ namespace Durian.Analysis
 		);
 
 		/// <summary>
-		/// Documentation directory of the <c>AnalysisCore</c> module.
+		/// Documentation directory of the <c>Core</c> module.
 		/// </summary>
-		public static string DocsPath => DurianInfo.Repository + "/tree/master/docs/Core";
+		public static string DocsPath => GlobalInfo.Repository + "/tree/master/docs/Core";
 	}
 }

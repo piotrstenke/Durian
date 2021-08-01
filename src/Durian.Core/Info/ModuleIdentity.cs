@@ -9,11 +9,13 @@ namespace Durian.Info
 	/// <summary>
 	/// Contains basic information about a Durian module.
 	/// </summary>
-	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
-	public sealed partial class ModuleIdentity : IEquatable<ModuleIdentity>, ICloneable
+	/// <remarks>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references.
+	/// <para>This class implements the <see cref="IDisposable"/> interface - instance should be disposed using the <see cref="Dispose"/> method if its no longer needed.</para></remarks>
+	public sealed partial class ModuleIdentity : IDurianIdentity, IEquatable<ModuleIdentity>, IDisposable
 	{
 		private ImmutableArray<DiagnosticData> _diagnostics;
-		private ImmutableArray<PackageIdentity> _packages;
+		private bool _disposed;
+		private ImmutableArray<PackageReference> _packages;
 		private ImmutableArray<TypeIdentity> _types;
 
 		/// <summary>
@@ -37,9 +39,14 @@ namespace Durian.Info
 		public DurianModule Module { get; }
 
 		/// <summary>
+		/// Name of the module.
+		/// </summary>
+		public string Name => Module.ToString();
+
+		/// <summary>
 		/// A collection of packages that are part of this module.
 		/// </summary>
-		public ImmutableArray<PackageIdentity> Packages => _packages;
+		public ImmutableArray<PackageReference> Packages => _packages;
 
 		/// <summary>
 		/// A collection of types that are part of this module.
@@ -49,7 +56,7 @@ namespace Durian.Info
 		internal ModuleIdentity(
 			DurianModule module,
 			int id,
-			PackageIdentity[]? packages,
+			DurianPackage[]? packages,
 			string? docsPath,
 			DiagnosticData[]? diagnostics,
 			TypeIdentity[]? types
@@ -57,11 +64,38 @@ namespace Durian.Info
 		{
 			Module = module;
 			AnalysisId = (IdSection)id;
-			Documentation = docsPath is not null ? @$"{DurianInfo.Repository}\{docsPath}" : string.Empty;
+			Documentation = docsPath is not null ? @$"{GlobalInfo.Repository}\{docsPath}" : string.Empty;
 
-			_packages = packages is null ? ImmutableArray.Create<PackageIdentity>() : ImmutableArray.Create(packages);
+			if (packages is null || packages.Length == 0)
+			{
+				_packages = ImmutableArray.Create<PackageReference>();
+			}
+			else
+			{
+				int length = packages.Length;
+				ImmutableArray<PackageReference>.Builder b = ImmutableArray.CreateBuilder<PackageReference>(length);
 
-			_types = packages is null ? ImmutableArray.Create<TypeIdentity>() : ImmutableArray.Create(types);
+				for (int i = 0; i < length; i++)
+				{
+					b.Add(new PackageReference(packages[i], this));
+				}
+
+				_packages = b.ToImmutable();
+			}
+
+			if (types is null)
+			{
+				_types = ImmutableArray.Create<TypeIdentity>();
+			}
+			else
+			{
+				foreach (TypeIdentity type in types)
+				{
+					type.SetModule(this);
+				}
+
+				_types = types.ToImmutableArray();
+			}
 
 			if (diagnostics is null)
 			{
@@ -76,12 +110,14 @@ namespace Durian.Info
 
 				_diagnostics = diagnostics.ToImmutableArray();
 			}
+
+			IdentityPool.Modules.TryAdd(Name, this);
 		}
 
 		private ModuleIdentity(
 			DurianModule module,
 			in IdSection id,
-			ImmutableArray<PackageIdentity> packages,
+			ImmutableArray<PackageReference> packages,
 			string docsPath,
 			ImmutableArray<DiagnosticData> diagnostics,
 			ImmutableArray<TypeIdentity> types
@@ -93,6 +129,10 @@ namespace Durian.Info
 			_packages = packages;
 			_diagnostics = diagnostics;
 			_types = types;
+
+			// This constructor is called only when a clone is created.
+			// Since this instance is a clone, it shouldn't have access to the IdentityPool.
+			_disposed = true;
 		}
 
 		/// <inheritdoc/>
@@ -108,18 +148,25 @@ namespace Durian.Info
 				a.Module == b.Module &&
 				a.Documentation == b.Documentation &&
 				a.AnalysisId == b.AnalysisId &&
-				Utilities.CompareImmutableArrays(ref a._types, ref b._types) &&
-				Utilities.CompareImmutableArrays(ref a._diagnostics, ref b._diagnostics) &&
-				Utilities.CompareImmutableArrays(ref a._packages, ref b._packages);
+				Utilities.CompareImmutableArrays(a._types, b._types) &&
+				Utilities.CompareImmutableArrays(a._diagnostics, b._diagnostics) &&
+				Utilities.CompareImmutableArrays(a._packages, b._packages);
 		}
 
-		/// <summary>
-		/// Creates a new object that is a copy of the current instance.
-		/// </summary>
-		/// <returns>A new object that is a copy of this instance.</returns>
+		/// <inheritdoc cref="ICloneable.Clone"/>
 		public ModuleIdentity Clone()
 		{
 			return new ModuleIdentity(Module, AnalysisId, _packages, Documentation, _diagnostics, _types);
+		}
+
+		/// <inheritdoc/>
+		public void Dispose()
+		{
+			if (!_disposed)
+			{
+				IdentityPool.Modules.TryRemove(Name, out _);
+				_disposed = true;
+			}
 		}
 
 		/// <inheritdoc/>
@@ -146,11 +193,19 @@ namespace Durian.Info
 			hashCode = (hashCode * -1521134295) + Documentation.GetHashCode();
 			hashCode = (hashCode * -1521134295) + AnalysisId.GetHashCode();
 			hashCode = (hashCode * -1521134295) + Module.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _types);
-			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _packages);
-			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _diagnostics);
+			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(_types);
+			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(_packages);
+			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(_diagnostics);
 
 			return hashCode;
+		}
+
+		/// <summary>
+		/// Returns a new instance of <see cref="ModuleReference"/> pointing to the this <see cref="ModuleIdentity"/>.
+		/// </summary>
+		public ModuleReference GetReference()
+		{
+			return new ModuleReference(this);
 		}
 
 		/// <inheritdoc/>
@@ -162,6 +217,18 @@ namespace Durian.Info
 		object ICloneable.Clone()
 		{
 			return Clone();
+		}
+
+		internal void SetPackage(PackageIdentity package)
+		{
+			foreach (PackageReference p in _packages)
+			{
+				if (p.EnumValue == package.EnumValue)
+				{
+					p.Accept(package);
+					return;
+				}
+			}
 		}
 	}
 }

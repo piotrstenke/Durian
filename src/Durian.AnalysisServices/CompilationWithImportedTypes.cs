@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Durian.Analysis.Data;
 using Durian.Generator;
 using Durian.Info;
@@ -18,10 +18,25 @@ namespace Durian.Analysis
 	/// </summary>
 	public sealed class CompilationWithImportedTypes : CompilationData
 	{
+		private sealed class Entry
+		{
+			public TypeIdentity Identity { get; }
+
+			public bool? IsEnabled { get; set; }
+
+			public INamedTypeSymbol Symbol { get; }
+
+			public Entry(TypeIdentity identity, INamedTypeSymbol symbol)
+			{
+				Identity = identity;
+				Symbol = symbol;
+			}
+		}
+
+		private readonly TypeIdentity[] _allTypes;
 		private readonly string _enableModuleAttributeName = typeof(EnableModuleAttribute).ToString();
-		private INamedTypeSymbol[] _allSymbols;
-		private bool[] _enabledOrDisabled;
-		private DurianModule[][] _symbolModules;
+		private readonly List<Entry> _entries;
+		private DurianModule[] _enabledModules;
 
 		/// <summary>
 		/// Represents the <see cref="Generator.EnableModuleAttribute"/>.
@@ -36,11 +51,12 @@ namespace Durian.Analysis
 		/// Initializes a new instance of the <see cref="CompilationWithImportedTypes"/>
 		/// </summary>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="INamedTypeSymbol"/>s from.</param>
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public CompilationWithImportedTypes(CSharpCompilation compilation) : base(compilation)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
+			_allTypes = TypeIdentity.GetAllTypes().ToArray();
+			_entries = new(_allTypes.Length);
+
 			Reset();
 		}
 
@@ -49,7 +65,14 @@ namespace Durian.Analysis
 		/// </summary>
 		public INamedTypeSymbol[] GetAllSymbols()
 		{
-			return _allSymbols;
+			INamedTypeSymbol[] symbols = new INamedTypeSymbol[_entries.Count];
+
+			for (int i = 0; i < _entries.Count; i++)
+			{
+				symbols[i] = _entries[i].Symbol;
+			}
+
+			return symbols;
 		}
 
 		/// <summary>
@@ -62,18 +85,17 @@ namespace Durian.Analysis
 				return Array.Empty<INamedTypeSymbol>();
 			}
 
-			int length = _allSymbols.Length;
-			List<INamedTypeSymbol> list = new(length);
+			List<INamedTypeSymbol> symbols = new(_entries.Count);
 
-			for (int i = 0; i < length; i++)
+			foreach (Entry e in _entries)
 			{
-				if (!_enabledOrDisabled[i])
+				if (!IsEnabled(e))
 				{
-					list.Add(_allSymbols[i]);
+					symbols.Add(e.Symbol);
 				}
 			}
 
-			return list.ToArray();
+			return symbols.ToArray();
 		}
 
 		/// <summary>
@@ -83,132 +105,84 @@ namespace Durian.Analysis
 		{
 			if (HasErrors)
 			{
-				return Array.Empty<INamedTypeSymbol>();
+				return GetAllSymbols();
 			}
 
-			int length = _allSymbols.Length;
-			List<INamedTypeSymbol> list = new(length);
+			List<INamedTypeSymbol> symbols = new(_entries.Count);
 
-			for (int i = 0; i < length; i++)
+			foreach (Entry e in _entries)
 			{
-				if (_enabledOrDisabled[i])
+				if (IsEnabled(e))
 				{
-					list.Add(_allSymbols[i]);
+					symbols.Add(e.Symbol);
 				}
 			}
 
-			return list.ToArray();
+			return symbols.ToArray();
 		}
 
 		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
+		/// Checks if the specified <paramref name="symbol"/> is part of any disabled Durian module.
 		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any disabled Durian module.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
 		public bool IsDisabled(INamedTypeSymbol symbol)
-		{
-			return IsDisabled(symbol, out _);
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
-		/// <param name="module"><see cref="DurianModule"/> this <paramref name="symbol"/> is part of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public bool IsDisabled(INamedTypeSymbol symbol, out DurianModule module)
 		{
 			if (symbol is null)
 			{
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			if (HasErrors)
+			if (!ValidateSymbol(symbol))
 			{
-				module = DurianModule.None;
 				return false;
 			}
 
-			int length = _allSymbols.Length;
-
-			for (int i = 0; i < length; i++)
+			foreach (Entry e in _entries)
 			{
-				if (SymbolEqualityComparer.Default.Equals(_allSymbols[i], symbol))
+				if (SymbolEqualityComparer.Default.Equals(e.Symbol, symbol))
 				{
-					module = _symbolModules[i][0];
-					return !_enabledOrDisabled[i];
+					return !IsEnabled(e);
 				}
 			}
 
-			module = DurianModule.None;
 			return false;
 		}
 
 		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any Durian module and whether that module is disabled.
+		/// Checks if the specified <paramref name="symbol"/> is part of any disabled Durian module.
 		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any disabled Durian module.</param>
+		/// <param name="modules">Array of <see cref="DurianModule"/>s representing the modules the <paramref name="symbol"/> is part of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		/// <returns>Two <see cref="bool"/> values indicating whether the <paramref name="symbol"/> is a Durian type (1) and if is enabled (2).</returns>
-		public (bool isDurianType, bool isEnabled) IsDisabledDurianType(INamedTypeSymbol symbol)
-		{
-			return IsDisabledDurianType(symbol, out _);
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any Durian module and whether that module is disabled.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
-		/// <param name="module"><see cref="DurianModule"/> this <paramref name="symbol"/> is part of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		/// <returns>Two <see cref="bool"/> values indicating whether the <paramref name="symbol"/> is a Durian type (1) and if is enabled (2).</returns>
-		public (bool isDurianType, bool isEnabled) IsDisabledDurianType(INamedTypeSymbol symbol, out DurianModule module)
+		public bool IsDisabled(INamedTypeSymbol symbol, [NotNullWhen(true)] out DurianModule[]? modules)
 		{
 			if (symbol is null)
 			{
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			int length = _allSymbols.Length;
-
-			for (int i = 0; i < length; i++)
-			{
-				if (SymbolEqualityComparer.Default.Equals(symbol, _allSymbols[i]))
-				{
-					module = _symbolModules[i][0];
-					return (true, !_enabledOrDisabled[i]);
-				}
-			}
-
-			module = DurianModule.None;
-			return (false, false);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="symbol"/> is part of any Durian module.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any Durian module.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public bool IsDurianType(INamedTypeSymbol symbol)
-		{
 			if (symbol is null)
 			{
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			if (symbol.ContainingNamespace is not null && !symbol.ContainingNamespace.Name.StartsWith("Durian"))
+			if (!ValidateSymbol(symbol))
 			{
+				modules = null;
 				return false;
 			}
 
-			foreach (INamedTypeSymbol type in _allSymbols)
+			foreach (Entry e in _entries)
 			{
-				if (SymbolEqualityComparer.Default.Equals(type, symbol))
+				if (SymbolEqualityComparer.Default.Equals(e.Symbol, symbol))
 				{
-					return true;
+					modules = ModuleConverter.ToEnums(e.Identity.Modules);
+					return !IsEnabled(e);
 				}
 			}
 
+			modules = null;
 			return false;
 		}
 
@@ -224,18 +198,16 @@ namespace Durian.Analysis
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			if (HasErrors)
+			if (!ValidateSymbol(symbol))
 			{
 				return false;
 			}
 
-			int length = _allSymbols.Length;
-
-			for (int i = 0; i < length; i++)
+			foreach (Entry e in _entries)
 			{
-				if (SymbolEqualityComparer.Default.Equals(_allSymbols[i], symbol))
+				if (SymbolEqualityComparer.Default.Equals(e.Symbol, symbol))
 				{
-					return _enabledOrDisabled[i];
+					return IsEnabled(e);
 				}
 			}
 
@@ -246,155 +218,214 @@ namespace Durian.Analysis
 		/// Checks if the specified <paramref name="symbol"/> is part of any enabled Durian module.
 		/// </summary>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
-		/// <param name="module"><see cref="DurianModule"/> this <paramref name="symbol"/> is part of.</param>
+		/// <param name="modules">Array of <see cref="DurianModule"/>s representing the modules the <paramref name="symbol"/> is part of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public bool IsEnabled(INamedTypeSymbol symbol, out DurianModule module)
+		public bool IsEnabled(INamedTypeSymbol symbol, [NotNullWhen(true)] out DurianModule[]? modules)
 		{
 			if (symbol is null)
 			{
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			if (HasErrors)
+			if (!ValidateSymbol(symbol))
 			{
-				module = DurianModule.None;
+				modules = null;
 				return false;
 			}
 
-			int length = _allSymbols.Length;
-
-			for (int i = 0; i < length; i++)
+			foreach (Entry e in _entries)
 			{
-				if (SymbolEqualityComparer.Default.Equals(_allSymbols[i], symbol))
+				if (SymbolEqualityComparer.Default.Equals(e.Symbol, symbol))
 				{
-					module = _symbolModules[i][0];
-					return _enabledOrDisabled[i];
+					modules = ModuleConverter.ToEnums(e.Identity.Modules);
+					return IsEnabled(e);
 				}
 			}
 
-			module = DurianModule.None;
+			modules = null;
 			return false;
 		}
 
 		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any Durian module and whether that module is enabled.
+		/// Determines whether the specified <paramref name="symbol"/> is part of any Durian module.
 		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any Durian module.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		/// <returns>Two <see cref="bool"/> values indicating whether the <paramref name="symbol"/> is a Durian type (1) and if is enabled (2).</returns>
-		public (bool isDurianType, bool isEnabled) IsEnabledDurianType(INamedTypeSymbol symbol)
-		{
-			return IsEnabledDurianType(symbol, out _);
-		}
-
-		/// <summary>
-		/// Checks if the specified <paramref name="symbol"/> is part of any Durian module and whether that module is enabled.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any enabled Durian module.</param>
-		/// <param name="module"><see cref="DurianModule"/> this <paramref name="symbol"/> is part of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		/// <returns>Two <see cref="bool"/> values indicating whether the <paramref name="symbol"/> is a Durian type (1) and if is enabled (2).</returns>
-		public (bool isDurianType, bool isEnabled) IsEnabledDurianType(INamedTypeSymbol symbol, out DurianModule module)
+		public bool IsPartOfAnyModule(INamedTypeSymbol symbol)
 		{
 			if (symbol is null)
 			{
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			int length = _allSymbols.Length;
-
-			for (int i = 0; i < length; i++)
+			if (!ValidateSymbol(symbol))
 			{
-				if (SymbolEqualityComparer.Default.Equals(symbol, _allSymbols[i]))
+				return false;
+			}
+
+			foreach (Entry e in _entries)
+			{
+				if (SymbolEqualityComparer.Default.Equals(e.Symbol, symbol))
 				{
-					module = _symbolModules[i][0];
-					return (true, _enabledOrDisabled[i]);
+					return true;
 				}
 			}
 
-			module = DurianModule.None;
+			return false;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> is part of any Durian module.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any Durian module.</param>
+		/// <param name="modules">Array of <see cref="DurianModule"/>s representing the modules the <paramref name="symbol"/> is part of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public bool IsPartOfAnyModule(INamedTypeSymbol symbol, [NotNullWhen(true)] out DurianModule[]? modules)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (!ValidateSymbol(symbol))
+			{
+				modules = null;
+				return false;
+			}
+
+			foreach (Entry e in _entries)
+			{
+				if (SymbolEqualityComparer.Default.Equals(e.Symbol, symbol))
+				{
+					modules = ModuleConverter.ToEnums(e.Identity.Modules);
+					return true;
+				}
+			}
+
+			modules = null;
+			return false;
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="symbol"/> is part of any Durian module. If so, also checks if the module is disabled.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any Durian module.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public (bool isPartOfAnyModule, bool isDisabled) IsPartOfAnyModuleAndDisabled(INamedTypeSymbol symbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (!ValidateSymbol(symbol))
+			{
+				return (false, false);
+			}
+
+			foreach (Entry e in _entries)
+			{
+				if (SymbolEqualityComparer.Default.Equals(e.Symbol, symbol))
+				{
+					return (true, !IsEnabled(e));
+				}
+			}
+
+			return (false, false);
+		}
+
+		/// <summary>
+		/// Checks if the specified <paramref name="symbol"/> is part of any Durian module. If so, also checks if the module is enabled.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is part of any Durian module.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public (bool isPartOfAnyModule, bool isEnabled) IsPartOfAnyModuleAndEnabled(INamedTypeSymbol symbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (!ValidateSymbol(symbol))
+			{
+				return (false, false);
+			}
+
+			foreach (Entry e in _entries)
+			{
+				if (SymbolEqualityComparer.Default.Equals(e.Symbol, symbol))
+				{
+					return (true, IsEnabled(e));
+				}
+			}
+
 			return (false, false);
 		}
 
 		/// <summary>
 		/// Resets <see cref="INamedTypeSymbol"/>s from the Durian.Generator namespace.
 		/// </summary>
+		[MemberNotNull(nameof(_enabledModules))]
 		public void Reset()
 		{
-			SetAttributeSymbol();
+			EnableModuleAttribute = Compilation.GetTypeByMetadataName(_enableModuleAttributeName);
 
-			if (HasErrors)
+			if (EnableModuleAttribute is null)
 			{
-				_allSymbols = Array.Empty<INamedTypeSymbol>();
-				_enabledOrDisabled = Array.Empty<bool>();
-				_symbolModules = Array.Empty<DurianModule[]>();
+				if (_enabledModules is null || _enabledModules.Length > 0)
+				{
+					_enabledModules = Array.Empty<DurianModule>();
+				}
+
 				return;
 			}
 
-			ModuleIdentity[] allModules = ModuleIdentity.GetAllModules();
-			ModuleIdentity[] enabledModules = ModuleUtilities.GetEnabledModules(Compilation.Assembly, EnableModuleAttribute, allModules);
-
-			SetTypes(allModules, enabledModules);
+			FillWithEntries();
+			_enabledModules = Compilation.GetEnabledModules(EnableModuleAttribute).AsEnums();
 		}
 
-		private void SetAttributeSymbol()
+		private static bool ValidateSymbol(INamedTypeSymbol symbol)
 		{
-			EnableModuleAttribute = Compilation.GetTypeByMetadataName(_enableModuleAttributeName);
+			return symbol.ContainingNamespace is not null && symbol.ContainingNamespace.Name.StartsWith("Durian");
 		}
 
-		private void SetTypes(ModuleIdentity[] allModules, ModuleIdentity[] enabledModules)
+		private void FillWithEntries()
 		{
-			TypeIdentity[] allTypes = TypeIdentity.GetAllTypes(allModules);
-			List<TypeIdentity> typeList = new(allTypes.Length);
-			List<INamedTypeSymbol> symbolList = new(allTypes.Length);
+			_entries.Clear();
 
-			foreach (TypeIdentity type in allTypes)
+			foreach (TypeIdentity type in _allTypes)
 			{
-				if (Compilation.GetTypeByMetadataName(type.FullyQualifiedName) is INamedTypeSymbol symbol)
+				if (Compilation.GetTypeByMetadataName(type.FullyQualifiedName) is not INamedTypeSymbol symbol)
 				{
-					typeList.Add(type);
-					symbolList.Add(symbol);
-				}
-			}
-
-			int numTypes = typeList.Count;
-			DurianModule[][] modules = new DurianModule[numTypes][];
-			_enabledOrDisabled = new bool[numTypes];
-
-			for (int i = 0; i < numTypes; i++)
-			{
-				ImmutableArray<ModuleReference> references = typeList[i].Modules;
-
-				int numReferences = references.Length;
-				DurianModule[] current = new DurianModule[numReferences];
-
-				for (int j = 0; j < numReferences; j++)
-				{
-					current[j] = references[j].EnumValue;
+					continue;
 				}
 
-				modules[i] = current;
-				_enabledOrDisabled[i] = IsEnabled(references, enabledModules);
+				Entry entry = new(type, symbol);
+				_entries.Add(entry);
+			}
+		}
+
+		private bool IsEnabled(Entry e)
+		{
+			if (e.IsEnabled.HasValue)
+			{
+				return e.IsEnabled.Value;
 			}
 
-			_symbolModules = modules;
-			_allSymbols = symbolList.ToArray();
-
-			static bool IsEnabled(ImmutableArray<ModuleReference> references, ModuleIdentity[] enabledModules)
+			foreach (DurianModule module in _enabledModules)
 			{
-				foreach (ModuleIdentity module in enabledModules)
+				foreach (ModuleReference reference in e.Identity.Modules)
 				{
-					foreach (ModuleReference reference in references)
+					if (reference.EnumValue == module)
 					{
-						if (reference.EnumValue == module.Module)
-						{
-							return true;
-						}
+						e.IsEnabled = true;
+						return true;
 					}
 				}
-
-				return false;
 			}
+
+			e.IsEnabled = false;
+			return false;
 		}
 	}
 }

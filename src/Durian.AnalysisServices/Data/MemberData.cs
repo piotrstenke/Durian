@@ -129,12 +129,6 @@ namespace Durian.Analysis.Data
 			return _containingTypes ??= Symbol.GetContainingTypes(ParentCompilation).ToArray();
 		}
 
-		/// <inheritdoc/>
-		public virtual bool Validate(in GeneratorExecutionContext context)
-		{
-			return true;
-		}
-
 		private protected static InvalidOperationException Exc_NoSyntaxReference(ISymbol symbol)
 		{
 			return new InvalidOperationException($"Symbol '{symbol}' doesn't define any syntax reference, thus can't be used in a {nameof(MemberData)}!");

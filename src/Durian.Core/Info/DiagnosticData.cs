@@ -9,7 +9,7 @@ namespace Durian.Info
 	/// <summary>
 	/// Contains information about a specific diagnostic.
 	/// </summary>
-	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
+	/// <remarks>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references.</remarks>
 	[DebuggerDisplay("{GetFullId}: {Title}")]
 	public sealed class DiagnosticData : IEquatable<DiagnosticData>, ICloneable
 	{
@@ -141,12 +141,12 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Returns a <see cref="string"/> that represents the full id of the diagnostic, composed of the <see cref="DurianInfo.IdPrefix"/>, <see cref="ModuleId"/> and <see cref="Id"/>.
+		/// Returns a <see cref="string"/> that represents the full id of the diagnostic, composed of the <see cref="GlobalInfo.IdPrefix"/>, <see cref="ModuleId"/> and <see cref="Id"/>.
 		/// </summary>
 		/// <remarks>NOTE: Using this property will call the <see cref="ModuleReference.GetModule"/> on the <see cref="OriginalModule"/>.</remarks>
 		public string GetFullId()
 		{
-			return $"{DurianInfo.IdPrefix}{Module}{Id}";
+			return $"{GlobalInfo.IdPrefix}{Module}{Id}";
 		}
 
 		/// <inheritdoc/>

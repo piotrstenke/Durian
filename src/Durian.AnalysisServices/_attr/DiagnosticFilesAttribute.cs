@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Durian.Generator
+namespace Durian
 {
 	/// <summary>
 	/// Informs that the specified files relative to the project directory contain definitions of diagnostics.
@@ -19,7 +19,7 @@ namespace Durian.Generator
 		public string[] Files { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="IncludeTypesAttribute"/> class.
+		/// Initializes a new instance of the <see cref="DiagnosticFilesAttribute"/> class.
 		/// </summary>
 		/// <param name="files">Files that contain definitions of diagnostics.</param>
 		public DiagnosticFilesAttribute(params string[]? files)

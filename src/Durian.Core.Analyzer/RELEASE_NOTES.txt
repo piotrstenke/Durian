@@ -1,8 +1,0 @@
-v1.1.0
-
-- Additional diagnostics.
-- Minor bug-fixes.
-
-v.1.0.0
-
-- Initial release.

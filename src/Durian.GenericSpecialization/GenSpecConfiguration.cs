@@ -9,7 +9,7 @@ namespace Durian.Analysis.GenericSpecialization
 	/// <summary>
 	/// Configures optional features of the <see cref="GenericSpecializationGenerator"/>.
 	/// </summary>
-	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
+	/// <remarks>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references.</remarks>
 	public sealed class GenSpecConfiguration : IEquatable<GenSpecConfiguration>, ICloneable
 	{
 		/// <summary>

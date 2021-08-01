@@ -47,11 +47,5 @@ namespace Durian.Analysis.Data
 		/// Returns all <see cref="ITypeData"/>s that contain the <see cref="Symbol"/>.
 		/// </summary>
 		IEnumerable<ITypeData> GetContainingTypes();
-
-		/// <summary>
-		/// Checks, if the <see cref="IMemberData"/> is actually valid for generation.
-		/// </summary>
-		/// <param name="context"><see cref="GeneratorExecutionContext"/> to register the potential errors to.</param>
-		bool Validate(in GeneratorExecutionContext context);
 	}
 }

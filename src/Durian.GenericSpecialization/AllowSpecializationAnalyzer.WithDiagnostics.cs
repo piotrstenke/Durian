@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Configuration;
 using Microsoft.CodeAnalysis;
@@ -21,7 +22,7 @@ namespace Durian.Analysis.GenericSpecialization
 	public sealed partial class AllowSpecializationAnalyzer
 	{
 		/// <summary>
-		/// Contains <see langword="static"/> methods that perform the most basic GenSpec-related analysis and report <see cref="Diagnostic"/>s if the analyzed <see cref="INamedTypeSymbol"/> is not valid.
+		/// Analyzes classes marked by the <see cref="AllowSpecializationAttribute"/> and reports appropriate <see cref="Diagnostic"/>s.
 		/// </summary>
 		public static class WithDiagnostics
 		{
@@ -32,7 +33,12 @@ namespace Durian.Analysis.GenericSpecialization
 			/// <param name="symbol"><see cref="INamedTypeSymbol"/> to analyzer.</param>
 			/// <param name="compilation">Current <see cref="GenSpecCompilationData"/>.</param>
 			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-			public static bool Analyze(IDiagnosticReceiver diagnosticReceiver, INamedTypeSymbol symbol, GenSpecCompilationData compilation, CancellationToken cancellationToken = default)
+			public static bool Analyze(
+				IDiagnosticReceiver diagnosticReceiver,
+				INamedTypeSymbol symbol,
+				GenSpecCompilationData compilation,
+				CancellationToken cancellationToken = default
+			)
 			{
 				if (!ShouldAnalyze(symbol, compilation, out AttributeData[]? attributes))
 				{
@@ -98,6 +104,40 @@ namespace Durian.Analysis.GenericSpecialization
 				INamedTypeSymbol[] symbols = symbol.GetContainingTypeSymbols().ToArray();
 				bool isValid = AnalyzeContainingTypes(diagnosticReceiver, symbol, symbols, cancellationToken);
 				containingTypes = isValid ? symbols : null;
+				return isValid;
+			}
+
+			/// <summary>
+			/// Determines whether the <paramref name="containingTypes"/> of the <paramref name="symbol"/> are valid.
+			/// </summary>
+			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+			/// <param name="symbol"><see cref="INamedTypeSymbol"/> the <paramref name="containingTypes"/> are associated with.</param>
+			/// <param name="compilation">Current <see cref="GenSpecCompilationData"/>.</param>
+			/// <param name="containingTypes">An array of <see cref="ITypeData"/>s representing the types the <paramref name="symbol"/> is contained within. Included if the method returns <see langword="true"/>.</param>
+			public static bool AnalyzeContainingTypes(
+				IDiagnosticReceiver diagnosticReceiver,
+				INamedTypeSymbol symbol,
+				GenSpecCompilationData compilation,
+				[NotNullWhen(true)] out ITypeData[]? containingTypes
+			)
+			{
+				ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
+
+				bool isValid = true;
+
+				if (types.Length > 0)
+				{
+					foreach (ITypeData type in types)
+					{
+						if (!type.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+						{
+							diagnosticReceiver.ReportDiagnostic(DUR0210_ContainingTypesMustBePartial, type.Symbol);
+							isValid = false;
+						}
+					}
+				}
+
+				containingTypes = isValid ? types : null;
 				return isValid;
 			}
 

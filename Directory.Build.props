@@ -10,12 +10,13 @@
     <Nullable>enable</Nullable>
     <LangVersion>9.0</LangVersion>
     <PreferredUILang>en-US</PreferredUILang>
+	  <NeutralLanguage>en</NeutralLanguage>
   
   </PropertyGroup>
   
   <PropertyGroup Condition="!$(MSBuildProjectDirectoryNoRoot.Contains('samples'))">
   
-	  <OutputPath>..\..\bin\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
+    <OutputPath>..\..\bin\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
     <BaseIntermediateOutputPath>..\..\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <MSBuildProjectExtensionsPath>..\..\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
 	
@@ -42,9 +43,6 @@
     <DocumentationFile>$(BaseIntermediateOutputPath)$(MSBuildProjectName).xml</DocumentationFile>
     <DebugType>embedded</DebugType>
     <Deterministic>true</Deterministic>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <NeutralLanguage>en</NeutralLanguage>
-    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/RELEASE_NOTES.txt"))</PackageReleaseNotes>
 
   </PropertyGroup>
 

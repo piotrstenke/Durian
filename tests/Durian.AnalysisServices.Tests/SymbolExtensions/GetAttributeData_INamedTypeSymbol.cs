@@ -21,7 +21,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		{
 			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Test]class Test { }");
 			INamedTypeSymbol attr = GetAttr();
-			AttributeData? data = type.GetAttributeData(attr);
+			AttributeData? data = type.GetAttribute(attr);
 
 			Assert.True(data is not null && SymbolEqualityComparer.Default.Equals(data.AttributeClass, attr));
 		}
@@ -31,7 +31,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		{
 			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Other][Test]class Test { }");
 			INamedTypeSymbol attr = GetAttr();
-			AttributeData? data = type.GetAttributeData(attr);
+			AttributeData? data = type.GetAttribute(attr);
 
 			Assert.True(data is not null && SymbolEqualityComparer.Default.Equals(data.AttributeClass, attr));
 		}
@@ -41,7 +41,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		{
 			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Other]class Test { }");
 			INamedTypeSymbol attr = GetAttr();
-			AttributeData? data = type.GetAttributeData(attr);
+			AttributeData? data = type.GetAttribute(attr);
 
 			Assert.True(data is null);
 		}
@@ -50,14 +50,14 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		public void ThrowsArgumentNullException_When_SymbolIsNull()
 		{
 			INamedTypeSymbol attr = GetAttr();
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetAttributeData(attr));
+			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetAttribute(attr));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_SyntaxIsNull()
 		{
 			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Test]class Test { }");
-			Assert.Throws<ArgumentNullException>(() => type.GetAttributeData(syntax: null!));
+			Assert.Throws<ArgumentNullException>(() => type.GetAttribute(syntax: null!));
 		}
 
 		private INamedTypeSymbol GetAttr()

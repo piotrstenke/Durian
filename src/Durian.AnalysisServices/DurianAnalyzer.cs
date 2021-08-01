@@ -37,9 +37,16 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		public sealed override void Initialize(AnalysisContext context)
+		public override void Initialize(AnalysisContext context)
 		{
-			InitializeCore(context);
+			if (Concurrent)
+			{
+				context.EnableConcurrentExecution();
+			}
+
+			context.ConfigureGeneratedCodeAnalysis(AllowGenerated ? GeneratedCodeAnalysisFlags.Analyze : GeneratedCodeAnalysisFlags.None);
+			IDurianAnalysisContext c = new DurianAnalysisContext(context);
+			Register(c);
 		}
 
 		/// <inheritdoc cref="IAnalyzerInfo.Register(IDurianAnalysisContext, CSharpCompilation)"/>
@@ -53,18 +60,6 @@ namespace Durian.Analysis
 		void IAnalyzerInfo.Register(IDurianAnalysisContext context, CSharpCompilation compilation)
 		{
 			Register(context, compilation);
-		}
-
-		private protected virtual void InitializeCore(AnalysisContext context)
-		{
-			if (Concurrent)
-			{
-				context.EnableConcurrentExecution();
-			}
-
-			context.ConfigureGeneratedCodeAnalysis(AllowGenerated ? GeneratedCodeAnalysisFlags.Analyze : GeneratedCodeAnalysisFlags.None);
-			IDurianAnalysisContext c = new DurianAnalysisContext(context);
-			Register(c);
 		}
 
 		/// <inheritdoc cref="IAnalyzerInfo.Register(IDurianAnalysisContext, CSharpCompilation)"/>

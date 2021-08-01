@@ -21,25 +21,7 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		public sealed override void Register(IDurianAnalysisContext context)
-		{
-			// Do nothing
-		}
-
-		/// <summary>
-		/// Performs the analysis using the specified <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="context"><see cref="IDurianAnalysisContext"/> to register the actions to.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to be used during the analysis.</param>
-		public abstract void Register(IDurianAnalysisContext context, T compilation);
-
-		/// <summary>
-		/// Creates a new <see cref="ICompilationData"/> based on the specified <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to create the <see cref="ICompilationData"/> from.</param>
-		protected abstract T CreateCompilation(CSharpCompilation compilation);
-
-		private protected sealed override void InitializeCore(AnalysisContext context)
+		public sealed override void Initialize(AnalysisContext context)
 		{
 			if (Concurrent)
 			{
@@ -64,6 +46,25 @@ namespace Durian.Analysis
 				}
 			});
 		}
+
+		/// <inheritdoc/>
+		public sealed override void Register(IDurianAnalysisContext context)
+		{
+			// Do nothing
+		}
+
+		/// <summary>
+		/// Performs the analysis using the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="context"><see cref="IDurianAnalysisContext"/> to register the actions to.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to be used during the analysis.</param>
+		public abstract void Register(IDurianAnalysisContext context, T compilation);
+
+		/// <summary>
+		/// Creates a new <see cref="ICompilationData"/> based on the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to create the <see cref="ICompilationData"/> from.</param>
+		protected abstract T CreateCompilation(CSharpCompilation compilation);
 
 		private protected sealed override void Register(IDurianAnalysisContext context, CSharpCompilation compilation)
 		{

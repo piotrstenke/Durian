@@ -16,7 +16,7 @@ namespace Durian.Analysis.Logging
 	{
 		private bool _enableDiagnostics;
 		private bool _enableLogging;
-		private string _logDirectory;
+		private string? _logDirectory;
 
 		/// <summary>
 		/// Gets the <see cref="FilterMode"/> the current configuration is valid for.
@@ -85,11 +85,12 @@ namespace Durian.Analysis.Logging
 		/// <summary>
 		/// The directory the source generator logs will be written to.
 		/// </summary>
-		/// <remarks>The input value gets converted to a full path.</remarks>
+		/// <remarks>The input value gets converted to a full path.
+		/// <para>The default value is the physical <c>Documents</c> directory.</para></remarks>
 		/// <exception cref="ArgumentException"><see cref="LogDirectory"/> cannot be <see langword="null"/> or empty.</exception>
 		public string LogDirectory
 		{
-			get => _logDirectory;
+			get => _logDirectory ??= Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 			set
 			{
 				if (string.IsNullOrWhiteSpace(value))
@@ -97,14 +98,7 @@ namespace Durian.Analysis.Logging
 					throw new ArgumentException($"{nameof(LogDirectory)} cannot be null or empty!");
 				}
 
-				string dir = Path.GetFullPath(value);
-
-				if (EnableLogging)
-				{
-					Directory.CreateDirectory(dir);
-				}
-
-				_logDirectory = dir;
+				_logDirectory = Path.GetFullPath(value);
 			}
 		}
 
@@ -121,10 +115,7 @@ namespace Durian.Analysis.Logging
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLoggingConfiguration"/> class.
 		/// </summary>
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
 		public GeneratorLoggingConfiguration()
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
 		}
 
@@ -179,7 +170,7 @@ namespace Durian.Analysis.Logging
 		public override int GetHashCode()
 		{
 			int hashCode = -604981020;
-			hashCode = (hashCode * -1521134295) + _logDirectory.GetHashCode();
+			hashCode = (hashCode * -1521134295) + LogDirectory.GetHashCode();
 			hashCode = (hashCode * -1521134295) + _enableLogging.GetHashCode();
 			hashCode = (hashCode * -1521134295) + _enableDiagnostics.GetHashCode();
 			hashCode = (hashCode * -1521134295) + SupportedLogs.GetHashCode();

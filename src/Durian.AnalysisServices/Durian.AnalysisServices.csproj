@@ -5,9 +5,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Durian.AnalysisServices is the base package for all Durian analyzers and source generators, offering solutions for most features a Roslyn-based service could require, such as logging, code generation, node filtration, member data containers, and much more.</Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Service;Utility</PackageTags>
-    <PackageVersion>1.2.1</PackageVersion>
-    <AssemblyVersion>1.2.1</AssemblyVersion>
-    <Version>1.2.1</Version>
+    <PackageVersion>2.0.0</PackageVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <Version>2.0.0</Version>
     <RootNamespace>Durian.Analysis</RootNamespace>
     <Configurations>Debug;Release;Main Package</Configurations>
 

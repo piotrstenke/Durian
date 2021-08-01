@@ -394,6 +394,6 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Documentation directory of the <c>DefaultParam</c> module.
 		/// </summary>
-		public static string DocsPath => DurianInfo.Repository + "/tree/master/docs/DefaultParam";
+		public static string DocsPath => GlobalInfo.Repository + "/tree/master/docs/DefaultParam";
 	}
 }

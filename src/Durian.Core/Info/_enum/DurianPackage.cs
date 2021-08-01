@@ -42,5 +42,20 @@ namespace Durian.Info
 		/// Represents the <c>Durian.GenericSpecialization</c> package.
 		/// </summary>
 		GenericSpecialization = 6,
+
+		/// <summary>
+		/// Represents the <c>Durian.FriendClass</c> package.
+		/// </summary>
+		FriendClass = 7,
+
+		/// <summary>
+		/// Represents the <c>Durian.InterfaceTarget</c> package.
+		/// </summary>
+		InterfaceTargets = 8,
+
+		/// <summary>
+		/// Represents the internal <c>Durian.Manager</c> package.
+		/// </summary>
+		Manager = 9,
 	}
 }

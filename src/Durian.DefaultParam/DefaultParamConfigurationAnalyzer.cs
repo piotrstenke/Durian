@@ -196,7 +196,7 @@ namespace Durian.Analysis.DefaultParam
 			else if (type.TypeKind == TypeKind.Struct || type.IsSealed || type.IsStatic)
 			{
 				if (CheckArguments(arguments, propertyName, out arg) &&
-					type.GetAttributeData(node, cancellationToken) is AttributeData attr &&
+					type.GetAttribute(node, cancellationToken) is AttributeData attr &&
 					attr.TryGetNamedArgumentValue(propertyName, out int value)
 				)
 				{
@@ -212,7 +212,7 @@ namespace Durian.Analysis.DefaultParam
 			{
 				if (CheckArguments(arguments, propertyName, out arg) &&
 					!type.InstanceConstructors.Any(ctor => ctor.DeclaredAccessibility >= Accessibility.Protected) &&
-					type.GetAttributeData(node, cancellationToken) is AttributeData attr &&
+					type.GetAttribute(node, cancellationToken) is AttributeData attr &&
 					attr.TryGetNamedArgumentValue(propertyName, out int value)
 				)
 				{
@@ -269,7 +269,7 @@ namespace Durian.Analysis.DefaultParam
 			const string propertyName = nameof(DefaultParamConfigurationAttribute.TargetNamespace);
 
 			if (CheckArguments(arguments, propertyName, out AttributeArgumentSyntax? arg) &&
-				symbol.GetAttributeData(node, cancellationToken) is AttributeData data &&
+				symbol.GetAttribute(node, cancellationToken) is AttributeData data &&
 				data.TryGetNamedArgumentValue(propertyName, out string? value) &&
 				value is not null)
 			{

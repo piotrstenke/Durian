@@ -23,7 +23,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			AttributeSyntax attr = GetNode<AttributeSyntax>("[Test]class Test { }");
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(attr.SyntaxTree);
 			INamedTypeSymbol type = (semanticModel.GetDeclaredSymbol(attr.Parent!.Parent!) as INamedTypeSymbol)!;
-			Assert.True(type.GetAttributeData(attr)?.ApplicationSyntaxReference?.GetSyntax().IsEquivalentTo(attr) ?? false);
+			Assert.True(type.GetAttribute(attr)?.ApplicationSyntaxReference?.GetSyntax().IsEquivalentTo(attr) ?? false);
 		}
 
 		[Fact]
@@ -31,21 +31,21 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		{
 			AttributeSyntax attr = GetNode<AttributeSyntax>("[Test]class Test { ]");
 			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Parent { }");
-			Assert.True(type.GetAttributeData(attr) is null);
+			Assert.True(type.GetAttribute(attr) is null);
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_SymbolIsNull()
 		{
 			AttributeSyntax attr = GetNode<AttributeSyntax>("[Test]class Test { }");
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetAttributeData(attr));
+			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetAttribute(attr));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_SyntaxIsNull()
 		{
 			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Test]class Test { }");
-			Assert.Throws<ArgumentNullException>(() => type.GetAttributeData(syntax: null!));
+			Assert.Throws<ArgumentNullException>(() => type.GetAttribute(syntax: null!));
 		}
 	}
 }

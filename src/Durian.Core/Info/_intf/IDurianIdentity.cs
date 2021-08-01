@@ -1,0 +1,18 @@
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
+
+namespace Durian.Info
+{
+	/// <summary>
+	/// Provides basic properties of an identity object.
+	/// </summary>
+	public interface IDurianIdentity : ICloneable
+	{
+		/// <summary>
+		/// Name of the identity object.
+		/// </summary>
+		string Name { get; }
+	}
+}

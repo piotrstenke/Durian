@@ -18,21 +18,6 @@ namespace Durian.Info
 		/// <summary>
 		/// Initializes a new instance of the <see cref="IdSection"/> struct.
 		/// </summary>
-		/// <param name="id">A <see cref="string"/> that represents a two-digit number.</param>
-		/// <exception cref="ArgumentException"><paramref name="id"/> does not represent a two-digit number.</exception>
-		public IdSection(string id)
-		{
-			if (!int.TryParse(id, out int value))
-			{
-				throw new ArgumentException("Id does not represent a two-digit number!", nameof(id));
-			}
-
-			Value = value;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="IdSection"/> struct.
-		/// </summary>
 		/// <param name="firstChar">First character of the id.</param>
 		/// <param name="secondChar">Second character of the id.</param>
 		/// <exception cref="ArgumentOutOfRangeException"><paramref name="firstChar"/> is not a digit. -or- <paramref name="secondChar"/> is not a digit.</exception>
@@ -112,6 +97,27 @@ namespace Durian.Info
 		public static bool operator >=(IdSection left, IdSection right)
 		{
 			return left.Value >= right.Value;
+		}
+
+		/// <summary>
+		/// Creates a new instance of the <see cref="IdSection"/> struct with value parsed from the specified <see cref="string"/> <paramref name="id"/>.
+		/// </summary>
+		/// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="id"/> does not represent a two-digit number.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Parsed value is not greater than or equal to <c>0</c>. -or- Parsed value is not less than <c>100</c>.</exception>
+		public static IdSection Parse(string id)
+		{
+			if (id is null)
+			{
+				throw new ArgumentNullException(nameof(id));
+			}
+
+			if (!int.TryParse(id, out int value))
+			{
+				throw new ArgumentException("Id does not represent a two-digit number!", nameof(id));
+			}
+
+			return new IdSection(value);
 		}
 
 		/// <summary>

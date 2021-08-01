@@ -4,4 +4,4 @@
 using Durian.Generator;
 using Durian.Info;
 
-[assembly: PackageDefinition(DurianPackage.Main, PackageType.Unspecified, "1.2.1", DurianModule.None)]
+[assembly: PackageDefinition(DurianPackage.Main, PackageType.Unspecified, "2.0.0", DurianModule.Manager)]

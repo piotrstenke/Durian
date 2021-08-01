@@ -27,5 +27,20 @@ namespace Durian.Info
 		/// Represents the <c>Durian.GenericSpecialization</c> module.
 		/// </summary>
 		GenericSpecialization = 3,
+
+		/// <summary>
+		/// Represents the <c>Durian.FriendClass</c> module.
+		/// </summary>
+		FriendClass = 4,
+
+		/// <summary>
+		/// Represents the <c>Durian.InterfaceTargets</c> module.
+		/// </summary>
+		InterfaceTargets = 5,
+
+		/// <summary>
+		/// Represents the <c>Durian.Manager</c> module.
+		/// </summary>
+		Manager = 6
 	}
 }

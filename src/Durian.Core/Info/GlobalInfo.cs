@@ -6,12 +6,12 @@ namespace Durian.Info
 	/// <summary>
 	/// Contains information about the Durian project.
 	/// </summary>
-	public static class DurianInfo
+	public static class GlobalInfo
 	{
 		/// <summary>
 		/// Specifies the maximal valid value of the <see cref="DurianModule"/> enum.
 		/// </summary>
-		public const DurianModule ModuleMax = DurianModule.GenericSpecialization;
+		public const DurianModule ModuleMax = DurianModule.Manager;
 
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianModule"/> enum.
@@ -21,22 +21,22 @@ namespace Durian.Info
 		/// <summary>
 		/// Number of published Durian analyzer or source generator packages.
 		/// </summary>
-		public const int NumAnalyzerPackages = 2;
+		public const int NumAnalyzerPackages = 5;
 
 		/// <summary>
 		/// Number of published Durian modules.
 		/// </summary>
-		public const int NumModules = 2;
+		public const int NumModules = 5;
 
 		/// <summary>
 		/// Number of published Durian packages.
 		/// </summary>
-		public const int NumPackages = 6;
+		public const int NumPackages = 9;
 
 		/// <summary>
 		/// Specifies the maximal valid value of the <see cref="DurianPackage"/> enum.
 		/// </summary>
-		public const DurianPackage PackageMax = DurianPackage.GenericSpecialization;
+		public const DurianPackage PackageMax = DurianPackage.Manager;
 
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianPackage"/> enum.

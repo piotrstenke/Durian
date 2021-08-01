@@ -282,7 +282,7 @@ public partial class Test
 public partial class Other
 {
     // This configuration is applied directly on the member, so it has the biggest priority.
-    [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Call]
+    [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Call)]
     public void Method<[DefaultParam(typeof(string))]T>(T value)
     {
     }

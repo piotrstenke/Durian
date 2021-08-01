@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Durian.Info;
 
-namespace Durian.Generator
+namespace Durian
 {
 	/// <summary>
 	/// Informs that the specified types from the <c>Durian.Core</c> module are part of this <see cref="DurianModule"/>.

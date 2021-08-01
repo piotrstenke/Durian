@@ -20,6 +20,7 @@ namespace Durian.Analysis
 	[Generator(LanguageNames.CSharp)]
 #endif
 
+	[GeneratorLoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "Core", SupportsDiagnostics = false, RelativeToGlobal = true, EnableExceptions = true)]
 	public sealed class EnableCoreGenerator : DurianGeneratorBase
 	{
 		/// <summary>
@@ -35,7 +36,7 @@ namespace Durian.Analysis
 		public static string GeneratorName => nameof(EnableCoreGenerator);
 
 		/// <inheritdoc cref="DurianGeneratorBase.GetVersion"/>
-		public static string Version => "1.1.0";
+		public static string Version => "2.0.0";
 
 		/// <inheritdoc cref="EnableCoreGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
 		public EnableCoreGenerator()

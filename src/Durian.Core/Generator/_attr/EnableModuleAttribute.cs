@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Diagnostics;
 using Durian.Info;
 
 namespace Durian.Generator
@@ -9,6 +10,7 @@ namespace Durian.Generator
 	/// <summary>
 	/// Specifies that the target <see cref="DurianModule"/> is enabled for the current project.
 	/// </summary>
+	[Conditional("DEBUG")]
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
 	public sealed class EnableModuleAttribute : Attribute
 	{

@@ -473,7 +473,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		public static bool IsDefaultParamGenerated(ISymbol symbol, DefaultParamCompilationData compilation)
 		{
-			AttributeData? attr = symbol.GetAttributeData(compilation.GeneratedCodeAttribute!);
+			AttributeData? attr = symbol.GetAttribute(compilation.GeneratedCodeAttribute!);
 
 			if (attr is null)
 			{

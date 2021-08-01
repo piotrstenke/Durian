@@ -9,9 +9,11 @@ namespace Durian.Info
 	/// <summary>
 	/// Contains basic information about a type contained within a Durian module.
 	/// </summary>
-	/// <remarks><para>NOTE: This class implements the <see cref="IEquatable{T}"/> - two values are compared by their values, not references.</para></remarks>
-	public sealed partial class TypeIdentity : IEquatable<TypeIdentity>, ICloneable
+	/// <remarks>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references.
+	/// <para>This class implements the <see cref="IDisposable"/> interface - instance should be disposed using the <see cref="Dispose"/> method if its no longer needed.</para></remarks>
+	public sealed partial class TypeIdentity : IDurianIdentity, IEquatable<TypeIdentity>, IDisposable
 	{
+		private bool _disposed;
 		private ImmutableArray<ModuleReference> _modules;
 
 		/// <summary>
@@ -61,13 +63,19 @@ namespace Durian.Info
 			}
 
 			_modules = b.ToImmutable();
+
+			IdentityPool.Types.TryAdd(Name, this);
 		}
 
-		private TypeIdentity(string name, string @namespace, ref ImmutableArray<ModuleReference> modules)
+		private TypeIdentity(string name, string @namespace, ImmutableArray<ModuleReference> modules)
 		{
 			Name = name;
 			Namespace = @namespace;
 			_modules = modules;
+
+			// This constructor is called only when a clone is created.
+			// Since this instance is a clone, it shouldn't have access to the IdentityPool.
+			_disposed = true;
 		}
 
 		/// <inheritdoc/>
@@ -82,16 +90,23 @@ namespace Durian.Info
 			return
 				a.Name == b.Name &&
 				b.Namespace == b.Namespace &&
-				Utilities.CompareImmutableArrays(ref a._modules, ref b._modules);
+				Utilities.CompareImmutableArrays(a._modules, b._modules);
 		}
 
-		/// <summary>
-		/// Creates a new object that is a copy of the current instance.
-		/// </summary>
-		/// <returns>A new object that is a copy of this instance.</returns>
+		/// <inheritdoc cref="ICloneable.Clone"/>
 		public TypeIdentity Clone()
 		{
-			return new TypeIdentity(Name, Namespace, ref _modules);
+			return new TypeIdentity(Name, Namespace, _modules);
+		}
+
+		/// <inheritdoc/>
+		public void Dispose()
+		{
+			if (!_disposed)
+			{
+				IdentityPool.Types.TryRemove(Name, out _);
+				_disposed = true;
+			}
 		}
 
 		/// <inheritdoc/>
@@ -117,7 +132,7 @@ namespace Durian.Info
 			int hashCode = -1246297765;
 			hashCode = (hashCode * -1521134295) + Name.GetHashCode();
 			hashCode = (hashCode * -1521134295) + Namespace.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(ref _modules);
+			hashCode = (hashCode * -1521134295) + Utilities.GetHashCodeOfImmutableArray(_modules);
 
 			return hashCode;
 		}
@@ -131,6 +146,18 @@ namespace Durian.Info
 		object ICloneable.Clone()
 		{
 			return Clone();
+		}
+
+		internal void SetModule(ModuleIdentity module)
+		{
+			foreach (ModuleReference m in _modules)
+			{
+				if (m.EnumValue == module.Module)
+				{
+					m.Accept(module);
+					return;
+				}
+			}
 		}
 	}
 }

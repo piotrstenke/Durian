@@ -122,7 +122,7 @@ namespace Durian.Analysis.DefaultParam
 			AttributeArgumentSyntax? argument = node.ArgumentList.Arguments.FirstOrDefault(arg => arg.NameEquals is not null && arg.NameEquals.Name.ToString() == propertyName);
 
 			if (argument is not null &&
-				symbol.GetAttributeData(node, context.CancellationToken) is AttributeData data &&
+				symbol.GetAttribute(node, context.CancellationToken) is AttributeData data &&
 				data.TryGetNamedArgumentValue(propertyName, out string? value) &&
 				value is not null)
 			{

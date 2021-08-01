@@ -57,6 +57,12 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
+		public void RegisterCompilationStartAction(Action<CompilationStartAnalysisContext> action)
+		{
+			action(_context);
+		}
+
+		/// <inheritdoc/>
 		public void RegisterOperationAction(Action<OperationAnalysisContext> action, params OperationKind[] operationKinds)
 		{
 			_context.RegisterOperationAction(action, operationKinds);

@@ -32,7 +32,7 @@ namespace Durian.Tests
 		{
 			StringBuilder builder = new();
 
-			foreach (DurianModule module in ModuleIdentity.GetAllModulesAsEnums().Where(m => m != DurianModule.DefaultParam))
+			foreach (DurianModule module in ModuleIdentity.GetAllModules().AsEnums().Where(m => m != DurianModule.DefaultParam))
 			{
 				builder
 					.Append("[assembly: Durian.Generator.EnableModule(Durian.Info.")
@@ -61,7 +61,7 @@ namespace Durian.Tests
 		{
 			StringBuilder builder = new();
 
-			foreach (DurianModule module in ModuleIdentity.GetAllModulesAsEnums())
+			foreach (DurianModule module in ModuleIdentity.GetAllModules().AsEnums())
 			{
 				builder
 					.Append("[assembly: Durian.Generator.EnableModule(Durian.Info.")
@@ -91,7 +91,7 @@ namespace Durian.Tests
 			DisabledModuleAnalyzer analyzer = new();
 			await analyzer.RunAnalyzer(compilation);
 
-			Assert.True(ModuleIdentity.GetAllModulesAsEnums().All(module => DisabledModuleAnalyzer.IsEnabled(module)));
+			Assert.True(ModuleIdentity.GetAllModules().AsEnums().All(module => DisabledModuleAnalyzer.IsEnabled(module)));
 		}
 	}
 }

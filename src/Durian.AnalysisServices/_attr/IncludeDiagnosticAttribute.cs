@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Durian.Generator
+namespace Durian
 {
 	/// <summary>
 	/// Specifies external diagnostic that should be included in this module.

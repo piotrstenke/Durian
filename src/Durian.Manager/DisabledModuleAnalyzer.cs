@@ -79,7 +79,7 @@ namespace Durian.Manager
 		/// <exception cref="InvalidOperationException">Analyzer is not initialized.</exception>
 		public static DurianModule[] GetEnabledModules()
 		{
-			DurianModule[] modules = ModuleIdentity.GetAllModulesAsEnums();
+			DurianModule[] modules = ModuleIdentity.GetAllModules().AsEnums();
 			List<DurianModule> enabled = new(modules.Length);
 
 			lock (_lockObject)
@@ -107,7 +107,7 @@ namespace Durian.Manager
 		/// <param name="compilation"><see cref="Compilation"/> that is used if the analyzer is not initialized or the disabled managers are changed.</param>
 		public static DurianModule[] GetEnabledModules(Compilation compilation)
 		{
-			DurianModule[] modules = ModuleIdentity.GetAllModulesAsEnums();
+			DurianModule[] modules = ModuleIdentity.GetAllModules().AsEnums();
 			List<DurianModule> enabled = new(modules.Length);
 
 			lock (_lockObject)
@@ -252,7 +252,7 @@ namespace Durian.Manager
 				{
 					DurianModule module = (DurianModule)value;
 
-					if (DurianInfo.IsValidModuleValue(module))
+					if (GlobalInfo.IsValidModuleValue(module))
 					{
 						disabledModules.Add((DurianModule)value);
 					}

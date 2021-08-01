@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Diagnostics;
 using Durian.Info;
 
 namespace Durian
@@ -11,6 +12,7 @@ namespace Durian
 	/// </summary>
 	/// <remarks>Works only if the 'Durian' package is present.</remarks>
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
+	[Conditional("DEBUG")]
 	public sealed class DisableModuleAttribute : Attribute
 	{
 		/// <summary>

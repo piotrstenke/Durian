@@ -63,7 +63,7 @@ namespace Durian.Analysis.GenericSpecialization
 			SyntaxNodeAnalysisContext context
 		)
 		{
-			if (compilation.Compilation.Assembly.GetAttributeData(attribute) is not AttributeData data)
+			if (compilation.Compilation.Assembly.GetAttribute(attribute) is not AttributeData data)
 			{
 				return;
 			}
@@ -130,7 +130,7 @@ namespace Durian.Analysis.GenericSpecialization
 				return;
 			}
 
-			if (symbol.GetAttributeData(attr) is not AttributeData data)
+			if (symbol.GetAttribute(attr) is not AttributeData data)
 			{
 				return;
 			}

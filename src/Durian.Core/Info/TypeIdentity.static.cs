@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 
 namespace Durian.Info
@@ -10,187 +12,268 @@ namespace Durian.Info
 	public partial class TypeIdentity
 	{
 		/// <summary>
-		/// Returns an array of all existing <see cref="TypeIdentity"/>.
+		/// Deallocates all cached instances of <see cref="TypeIdentity"/>.
 		/// </summary>
-		public static TypeIdentity[] GetAllTypes()
+		public static void Deallocate()
 		{
-			return GetAllTypes(ModuleIdentity.GetAllModules());
+			IdentityPool.Types.Clear();
 		}
 
 		/// <summary>
-		/// Returns an array of all <see cref="TypeIdentity"/> present in the specified <paramref name="modules"/>.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all <see cref="Type"/>s declared in the <c>Durian.Core</c> package that are part of any of the provided Durian <paramref name="modules"/>.
 		/// </summary>
-		/// <param name="modules">An array of <see cref="DurianModule"/> to get the <see cref="TypeIdentity"/> from.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static TypeIdentity[] GetAllTypes(DurianModule[]? modules)
+		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="TypeIdentity"/>s from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="modules"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<TypeIdentity> GetAllTypes(ModuleContainer modules)
 		{
-			if (modules is null || modules.Length == 0)
+			if (modules is null)
+			{
+				throw new ArgumentNullException(nameof(modules));
+			}
+
+			if (modules.Count == 0)
 			{
 				return Array.Empty<TypeIdentity>();
 			}
 
-			int length = modules.Length;
-			ModuleIdentity[] identities = new ModuleIdentity[length];
-
-			for (int i = 0; i < length; i++)
-			{
-				identities[i] = ModuleIdentity.GetModule(modules[i]);
-			}
+			ModuleIdentity[] identities = modules.AsIdentities();
 
 			return GetAllTypes(identities);
 		}
 
 		/// <summary>
-		/// Returns an array of all <see cref="TypeIdentity"/> present in the specified <paramref name="modules"/>.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all <see cref="Type"/>s declared in the <c>Durian.Core</c> package that are part of any of the provided Durian modules.
 		/// </summary>
-		/// <param name="modules">An array of <see cref="ModuleIdentity"/> to get the <see cref="TypeIdentity"/> from.</param>
-		public static TypeIdentity[] GetAllTypes(ModuleIdentity[]? modules)
+		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
+		public static IEnumerable<TypeIdentity> GetAllTypes(params ModuleReference[]? references)
+		{
+			if (references is null || references.Length == 0)
+			{
+				return Array.Empty<TypeIdentity>();
+			}
+
+			ModuleIdentity[] modules = ModuleConverter.ToIdentities(references.Where(r => r is not null));
+
+			return GetAllTypes(modules);
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all <see cref="Type"/>s declared in the <c>Durian.Core</c> package that are part of any existing Durian module.
+		/// </summary>
+		public static IEnumerable<TypeIdentity> GetAllTypes()
+		{
+			ModuleIdentity[] identities = ModuleIdentity.GetAllModules().AsIdentities();
+
+			return GetAllTypes(identities);
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all <see cref="Type"/>s declared in the <c>Durian.Core</c> package that are part of any of the provided Durian <paramref name="modules"/>.
+		/// </summary>
+		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		public static IEnumerable<TypeIdentity> GetAllTypes(params DurianModule[]? modules)
 		{
 			if (modules is null || modules.Length == 0)
 			{
 				return Array.Empty<TypeIdentity>();
 			}
 
-			HashSet<TypeIdentity> types = new(EqualityComparer<TypeIdentity>.Default);
+			ModuleIdentity[] identities = ModuleConverter.ToIdentities(modules);
 
-			foreach (ModuleIdentity module in modules)
+			return GetAllTypes(identities);
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all <see cref="Type"/>s declared in the <c>Durian.Core</c> package that are part of any of the provided Durian <paramref name="modules"/>.
+		/// </summary>
+		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
+		public static IEnumerable<TypeIdentity> GetAllTypes(params ModuleIdentity[]? modules)
+		{
+			if (modules is null || modules.Length == 0)
 			{
-				foreach (TypeIdentity type in module.Types)
+				return Array.Empty<TypeIdentity>();
+			}
+
+			return Yield();
+
+			IEnumerable<TypeIdentity> Yield()
+			{
+				HashSet<TypeIdentity> types = new(EqualityComparer<TypeIdentity>.Default);
+
+				foreach (ModuleIdentity module in modules)
 				{
-					types.Add(type);
+					if (module is null)
+					{
+						continue;
+					}
+
+					foreach (TypeIdentity type in module.Types)
+					{
+						if (types.Add(type))
+						{
+							yield return type;
+						}
+					}
 				}
 			}
-
-			TypeIdentity[] array = new TypeIdentity[types.Count];
-			types.CopyTo(array);
-			return array;
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all disabled Durian types for the calling <see cref="Assembly"/>.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all disabled Durian <see cref="Type"/>s for the calling <see cref="Assembly"/>.
 		/// </summary>
-		public static TypeIdentity[] GetDisabledTypes()
+		public static IEnumerable<TypeIdentity> GetDisabledTypes()
 		{
-			return GetDisabledTypes(Assembly.GetCallingAssembly());
+			return Assembly.GetCallingAssembly().GetDisabledTypes();
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all disabled Durian types for the calling <see cref="Assembly"/>.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all disabled Durian <see cref="Type"/>s for the calling <see cref="Assembly"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to check the enabled <see cref="TypeIdentity"/> for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static TypeIdentity[] GetDisabledTypes(Assembly assembly)
+		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
+		/// <exception cref="InvalidOperationException"> Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		public static IEnumerable<TypeIdentity> GetDisabledTypes(params DurianModule[]? modules)
 		{
-			ModuleIdentity[] identities = ModuleIdentity.GetDisabledModules(assembly);
-			return GetAllTypes(identities);
+			return Assembly.GetCallingAssembly().GetDisabledTypes(modules);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all disabled Durian types for the calling <see cref="Assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all disabled Durian <see cref="Type"/>s for the calling <see cref="Assembly"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
-		/// <param name="modules">Array of <see cref="DurianModule"/> to pick the enabled types from.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static TypeIdentity[] GetDisabledTypes(DurianModule[]? modules)
+		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
+		public static IEnumerable<TypeIdentity> GetDisabledTypes(params ModuleIdentity[]? modules)
 		{
-			return GetDisabledTypes(Assembly.GetCallingAssembly(), modules);
+			return Assembly.GetCallingAssembly().GetDisabledTypes(modules);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all disabled Durian types for the specified <paramref name="assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all disabled Durian <see cref="Type"/>s for the calling <see cref="Assembly"/> that are part of any of the provided modules.
 		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to check the enabled <see cref="TypeIdentity"/> for.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/> to pick the enabled types from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static TypeIdentity[] GetDisabledTypes(Assembly assembly, DurianModule[]? modules)
+		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
+		public static IEnumerable<TypeIdentity> GetDisabledTypes(params ModuleReference[]? references)
 		{
-			ModuleIdentity[] identities = ModuleIdentity.GetDisabledModules(assembly, modules);
-			return GetAllTypes(identities);
+			return Assembly.GetCallingAssembly().GetDisabledTypes(references);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all disabled Durian types for the calling <see cref="Assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns a collection of <see cref="TypeIdentity"/>s picked from the given array of <paramref name="types"/> that are disabled for the specified <paramref name="types"/>.
 		/// </summary>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled types from.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static TypeIdentity[] GetDisabledTypes(ModuleIdentity[]? modules)
+		/// <param name="types">Array of <see cref="TypeIdentity"/>s to pick the disabled ones from.</param>
+		public static IEnumerable<TypeIdentity> GetDisabledTypes(params TypeIdentity[]? types)
 		{
-			return GetDisabledTypes(Assembly.GetCallingAssembly(), modules);
+			return Assembly.GetCallingAssembly().GetDisabledTypes(types);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all disabled Durian types for the specified <paramref name="assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all disabled Durian <see cref="Type"/>s for the calling <see cref="Assembly"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to check the enabled <see cref="TypeIdentity"/> for.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled types from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static TypeIdentity[] GetDisabledTypes(Assembly assembly, ModuleIdentity[]? modules)
+		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="TypeIdentity"/>s from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="modules"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<TypeIdentity> GetDisabledTypes(ModuleContainer modules)
 		{
-			ModuleIdentity[] identities = ModuleIdentity.GetEnabledModules(assembly, modules);
-			return GetAllTypes(identities);
+			return Assembly.GetCallingAssembly().GetDisabledTypes(modules);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all enabled Durian types for the calling <see cref="Assembly"/>.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all enabled Durian <see cref="Type"/>s for the calling <see cref="Assembly"/>.
 		/// </summary>
-		public static TypeIdentity[] GetEnabledTypes()
+		public static IEnumerable<TypeIdentity> GetEnabledTypes()
 		{
-			return GetEnabledTypes(Assembly.GetCallingAssembly());
+			return Assembly.GetCallingAssembly().GetEnabledTypes();
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all enabled Durian types for the calling <see cref="Assembly"/>.
+		/// Returns a collection of <see cref="TypeIdentity"/>s picked from the given array of <paramref name="types"/> that are enabled for the specified <paramref name="types"/>.
 		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to check the enabled <see cref="TypeIdentity"/> for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static TypeIdentity[] GetEnabledTypes(Assembly assembly)
+		/// <param name="types">Array of <see cref="TypeIdentity"/>s to pick the enabled ones from.</param>
+		public static IEnumerable<TypeIdentity> GetEnabledTypes(params TypeIdentity[]? types)
 		{
-			ModuleIdentity[] identities = ModuleIdentity.GetEnabledModules(assembly);
-			return GetAllTypes(identities);
+			return Assembly.GetCallingAssembly().GetEnabledTypes(types);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all enabled Durian types for the calling <see cref="Assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all enabled Durian <see cref="Type"/>s for the calling <see cref="Assembly"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
-		/// <param name="modules">Array of <see cref="DurianModule"/> to pick the enabled types from.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static TypeIdentity[] GetEnabledTypes(DurianModule[]? modules)
+		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="TypeIdentity"/>s from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="modules"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<TypeIdentity> GetEnabledTypes(ModuleContainer modules)
 		{
-			return GetEnabledTypes(Assembly.GetCallingAssembly(), modules);
+			return Assembly.GetCallingAssembly().GetEnabledTypes(modules);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all enabled Durian types for the specified <paramref name="assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all enabled Durian <see cref="Type"/>s for the calling <see cref="Assembly"/> that are part of any of the provided modules.
 		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to check the enabled <see cref="TypeIdentity"/> for.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/> to pick the enabled types from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static TypeIdentity[] GetEnabledTypes(Assembly assembly, DurianModule[]? modules)
+		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
+		public static IEnumerable<TypeIdentity> GetEnabledTypes(params ModuleReference[]? references)
 		{
-			ModuleIdentity[] identities = ModuleIdentity.GetEnabledModules(assembly, modules);
-			return GetAllTypes(identities);
+			return Assembly.GetCallingAssembly().GetEnabledTypes(references);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all enabled Durian types for the calling <see cref="Assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all enabled Durian <see cref="Type"/>s for the calling <see cref="Assembly"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled types from.</param>
-		public static TypeIdentity[] GetEnabledTypes(ModuleIdentity[]? modules)
+		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
+		/// <exception cref = "InvalidOperationException" > Unknown <see cref="DurianModule"/> value detected. -or- <see cref = "DurianModule.None" /> is not a valid Durian module.</exception>
+		public static IEnumerable<TypeIdentity> GetEnabledTypes(params DurianModule[]? modules)
 		{
-			return GetEnabledTypes(Assembly.GetCallingAssembly(), modules);
+			return Assembly.GetCallingAssembly().GetEnabledTypes(modules);
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="TypeIdentity"/> representing all enabled Durian types for the specified <paramref name="assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Returns a collection of <see cref="TypeIdentity"/>s representing all enabled Durian <see cref="Type"/>s for the calling <see cref="Assembly"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to check the enabled <see cref="TypeIdentity"/> for.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled types from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static TypeIdentity[] GetEnabledTypes(Assembly assembly, ModuleIdentity[]? modules)
+		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
+		public static IEnumerable<TypeIdentity> GetEnabledTypes(params ModuleIdentity[]? modules)
 		{
-			ModuleIdentity[] identities = ModuleIdentity.GetEnabledModules(assembly, modules);
-			return GetAllTypes(identities);
+			return Assembly.GetCallingAssembly().GetEnabledTypes(modules);
+		}
+
+		/// <summary>
+		/// Returns a collection of all <see cref="TypeIdentity"/>s that represent <see cref="Type"/>s in the specified <paramref name="namespace"/>.
+		/// </summary>
+		/// <param name="namespace">Namespace to get the <see cref="TypeIdentity"/>s from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<TypeIdentity> GetIdentitiesInNamespace(string @namespace)
+		{
+			if (@namespace is null)
+			{
+				throw new ArgumentNullException(nameof(@namespace));
+			}
+
+			if (string.IsNullOrWhiteSpace(@namespace))
+			{
+				return Array.Empty<TypeIdentity>();
+			}
+
+			return Yield();
+
+			IEnumerable<TypeIdentity> Yield()
+			{
+				foreach (TypeIdentity type in GetAllTypes())
+				{
+					if (type.Namespace == @namespace)
+					{
+						yield return type;
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> with the specified <paramref name="name"/>.
+		/// </summary>
+		/// <param name="name">Name of the <see cref="TypeIdentity"/> to return.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException"><paramref name="name"/> is not a valid <see cref="TypeIdentity"/> name.</exception>
+		public static TypeIdentity GetIdentity(string name)
+		{
+			if (!TryGetIdentity(name, out TypeIdentity? identity))
+			{
+				throw new InvalidOperationException($"Name '{name}' is not a valid {nameof(TypeIdentity)} name!");
+			}
+
+			return identity;
 		}
 
 		/// <summary>
@@ -200,173 +283,78 @@ namespace Durian.Info
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 		public static bool IsEnabled(TypeIdentity type)
 		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			return IsEnabled_Internal(type, ModuleIdentity.GetAllModules(), Assembly.GetCallingAssembly());
+			return Assembly.GetCallingAssembly().IsEnabled(type);
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is enabled for the specified <paramref name="assembly"/>.
+		/// Determines whether the specified <paramref name="type"/> is enabled for the calling <see cref="Assembly"/>.
 		/// </summary>
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
-		/// <param name="assembly"><see cref="Assembly"/> to check the <paramref name="type"/> for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or <paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static bool IsEnabled(TypeIdentity type, Assembly assembly)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			return IsEnabled_Internal(type, ModuleIdentity.GetAllModules(), assembly);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is enabled for the calling <see cref="Assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
-		/// </summary>
-		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
+		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static bool IsEnabled(TypeIdentity type, ModuleIdentity[]? modules)
+		public static bool IsEnabled(TypeIdentity type, [NotNullWhen(true)] params ModuleReference[]? references)
 		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return false;
-			}
-
-			return IsEnabled_Internal(type, modules, Assembly.GetCallingAssembly());
+			return Assembly.GetCallingAssembly().IsEnabled(type, references);
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is enabled for the specified <paramref name="assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Determines whether the specified <paramref name="type"/> is enabled for the calling <see cref="Assembly"/>.
 		/// </summary>
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
-		/// <param name="assembly"><see cref="Assembly"/> to check the <paramref name="type"/> for.</param>
-		/// <param name="modules">Array of <see cref="ModuleIdentity"/> to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or <paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static bool IsEnabled(TypeIdentity type, Assembly assembly, ModuleIdentity[]? modules)
+		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="TypeIdentity"/>s from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
+		public static bool IsEnabled(TypeIdentity type, ModuleContainer modules)
 		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return false;
-			}
-
-			return IsEnabled_Internal(type, modules, assembly);
+			return Assembly.GetCallingAssembly().IsEnabled(type, modules);
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is enabled for the calling <see cref="Assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Determines whether the specified <paramref name="type"/> is enabled for the calling <see cref="Assembly"/>.
 		/// </summary>
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/> to pick the enabled modules from.</param>
+		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool IsEnabled(TypeIdentity type, [NotNullWhen(true)] params ModuleIdentity[]? modules)
+		{
+			return Assembly.GetCallingAssembly().IsEnabled(type, modules);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> is enabled for the calling <see cref="Assembly"/>.
+		/// </summary>
+		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
+		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static bool IsEnabled(TypeIdentity type, DurianModule[]? modules)
+		public static bool IsEnabled(TypeIdentity type, [NotNullWhen(true)] params DurianModule[]? modules)
 		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			if (modules is null || modules.Length == 0)
-			{
-				return false;
-			}
-
-			ModuleIdentity[] identities = new ModuleIdentity[modules.Length];
-
-			for (int i = 0; i < modules.Length; i++)
-			{
-				identities[i] = ModuleIdentity.GetModule(modules[i]);
-			}
-
-			return IsEnabled_Internal(type, identities, Assembly.GetCallingAssembly());
+			return Assembly.GetCallingAssembly().IsEnabled(type, modules);
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is enabled for the specified <paramref name="assembly"/>. Only <see cref="TypeIdentity"/> that are present in the given array of <paramref name="modules"/> are included.
+		/// Attempts to return a <see cref="TypeIdentity"/> with the specified <paramref name="name"/>.
 		/// </summary>
-		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
-		/// <param name="assembly"><see cref="Assembly"/> to check the <paramref name="type"/> for.</param>
-		/// <param name="modules">Array of <see cref="DurianModule"/> to pick the enabled modules from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or <paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static bool IsEnabled(TypeIdentity type, Assembly assembly, DurianModule[]? modules)
+		/// <param name="name">Name of the <see cref="TypeIdentity"/> to return.</param>
+		/// <param name="identity"><see cref="TypeIdentity"/> that was found.</param>
+		/// <returns><see langword="true"/> if a <see cref="TypeIdentity"/> with the specified <paramref name="name"/> was found, <see langword="false"/> otherwise.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+		public static bool TryGetIdentity(string name, [NotNullWhen(true)] out TypeIdentity? identity)
 		{
-			if (type is null)
+			if (name is null)
 			{
-				throw new ArgumentNullException(nameof(type));
+				throw new ArgumentNullException(nameof(name));
 			}
 
-			if (assembly is null)
-			{
-				throw new ArgumentNullException(nameof(assembly));
-			}
+			PropertyInfo? property = typeof(TypeRepository).GetProperty(name, BindingFlags.Static | BindingFlags.Public);
 
-			if (modules is null || modules.Length == 0)
+			if (property is null)
 			{
+				identity = null;
 				return false;
 			}
 
-			ModuleIdentity[] identities = new ModuleIdentity[modules.Length];
-
-			for (int i = 0; i < modules.Length; i++)
-			{
-				identities[i] = ModuleIdentity.GetModule(modules[i]);
-			}
-
-			return IsEnabled_Internal(type, identities, assembly);
-		}
-
-		private static bool IsEnabled_Internal(TypeIdentity type, ModuleIdentity[] modules, Assembly assembly)
-		{
-			DurianModule[] enabled = ModuleIdentity.GetEnabledModulesAsEnums(assembly, modules);
-
-			foreach (ModuleIdentity module in modules)
-			{
-				foreach (TypeIdentity t in module.Types)
-				{
-					if (t == type)
-					{
-						DurianModule m = module.Module;
-
-						foreach (DurianModule e in enabled)
-						{
-							if (e == m)
-							{
-								return true;
-							}
-						}
-
-						return false;
-					}
-				}
-			}
-
-			return false;
+			identity = (TypeIdentity)property.GetValue(null);
+			return true;
 		}
 	}
 }

@@ -95,7 +95,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 
 			foreach (IMethodSymbol m in symbol.GetBaseMethods())
 			{
-				if (m.TypeParameters[ordinal].GetAttributeData(attribute) is AttributeData data)
+				if (m.TypeParameters[ordinal].GetAttribute(attribute) is AttributeData data)
 				{
 					return data.GetConstructorArgumentTypeValue<ITypeSymbol>(0);
 				}
