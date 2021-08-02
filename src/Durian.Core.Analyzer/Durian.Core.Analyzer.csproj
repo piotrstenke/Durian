@@ -3,7 +3,10 @@
   <PropertyGroup>
 
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>Durian.Core.Analyzer is a small, entirely analyzer-based package that provides diagnostics for situations when the Durian.Core package is used improperly.</Description>
+    <Description>
+      Durian.Core.Analyzer is a small, entirely analyzer-based package that provides diagnostics for situations when the Durian.Core package is used improperly.
+      Do not reference this package if the main Durian package is already referenced.
+    </Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Core</PackageTags>
     <PackageVersion>2.0.0</PackageVersion>
     <AssemblyVersion>2.0.0</AssemblyVersion>

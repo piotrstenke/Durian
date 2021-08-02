@@ -19,7 +19,7 @@ namespace Durian.Info
 		public const DurianModule ModuleMin = DurianModule.Core;
 
 		/// <summary>
-		/// Number of published Durian analyzer or source generator packages.
+		/// Number of published Durian analyzer or source generator packages, excluding <c>Durian.Manager</c>.
 		/// </summary>
 		public const int NumAnalyzerPackages = 5;
 

@@ -82,7 +82,7 @@ namespace Durian.Analysis
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating the target project must use C# 9 or greater.
+		/// Provides diagnostic message indicating that a Durian package containing analyzers should not be referenced if the main Durian package is present.
 		/// </summary>
 		[WithoutLocation]
 		public static readonly DiagnosticDescriptor DUR0007_DoNotReferencePackageIfManagerIsPresent = new(
@@ -92,6 +92,20 @@ namespace Durian.Analysis
 			category: "Durian",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0007.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the project references multiple Durian analyzers, and should reference the main Durian package instead.
+		/// </summary>
+		[WithoutLocation]
+		public static readonly DiagnosticDescriptor DUR0008_MultipleAnalyzers = new(
+			id: "DUR0008",
+			title: "Separate analyzer packages detected, reference the main Durian package instead for better performance",
+			messageFormat: "Separate analyzer packages detected, reference the main Durian package instead for better performance",
+			category: "Durian",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0008.md",
 			isEnabledByDefault: true
 		);
 

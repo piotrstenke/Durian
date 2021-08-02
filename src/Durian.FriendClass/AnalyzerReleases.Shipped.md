@@ -8,3 +8,7 @@ DUR0302 | Durian.FriendClass | Error | Member cannot be accessed outside of frie
 DUR0303 | Durian.FriendClass | Warning | Do not use FriendClassConfigurationAttribute on types with no friends specified. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0303.md)]
 DUR0304 | Durian.FriendClass | Warning | Do not set ApplyToType to true on types that are not 'internal'. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0304.md)]
 DUR0305 | Durian.FriendClass | Warning | Type specified by a FriendClassAttribute cannot access the target type. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0305.md)]
+DUR0306 | Durian.FriendClass | Warning | Target type does not declare any 'internal' members. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0306.md)]
+DUR0307 | Durian.FriendClass | Error | Friend type is specified multiple times by two different FriendClassAttributes. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0307.md)]
+DUR0308 | Durian.FriendClass | Error | Member cannot be accessed by a friend type's sub class. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0308.md)]
+DUR0309 | Durian.FriendClass | Error | Type cannot be accessed by a non-friend type. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0309.md)]

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using Durian.Info;
-using System;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.InterfaceTargets
@@ -18,7 +17,7 @@ namespace Durian.Analysis.InterfaceTargets
 		public static readonly DiagnosticDescriptor DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind = new(
 			id: "DUR0401",
 			title: "Interface is not valid on members of this kind",
-			messageFormat: "'{0}': Interface '{1}' cannot be implemented by '{2}'",
+			messageFormat: "'{0}': Interface '{1}' cannot be implemented by {2}",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0401.md",
@@ -35,6 +34,19 @@ namespace Durian.Analysis.InterfaceTargets
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0402.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the target interface is not accessible directly in code.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0403_InterfaceIsNotDirectlyAccessible = new(
+			id: "DUR0403",
+			title: "Interface is accessible only through reflection",
+			messageFormat: "'{0}': Interface '{1}' is accessible only through reflection",
+			category: "Durian.FriendClass",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + "/DUR0403.md",
 			isEnabledByDefault: true
 		);
 

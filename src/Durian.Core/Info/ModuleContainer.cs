@@ -148,7 +148,7 @@ namespace Durian.Info
 			_enums = enums;
 			_references = new List<ModuleReference?>(_enums.Count);
 
-			for (int i = 0; i < _references.Count; i++)
+			for (int i = 0; i < _enums.Count; i++)
 			{
 				_references.Add(null);
 			}

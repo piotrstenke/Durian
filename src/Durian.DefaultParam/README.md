@@ -8,7 +8,7 @@
 </div>
 
 <div align="center">
-        <img src="../../img/icons/Durian.DefaultParam-256.png" alt="Durian.DefaultParam logo"/>
+        <img src="../../img/icons/Durian-256.png" alt="Durian logo"/>
 </div>
 
 ##
@@ -38,9 +38,10 @@
 
 Packages that are part of the *DefaultParam* module:
 
- - Durian.DefaultParam
+ - *Durian.DefaultParam*
 
-*DefaultParam* includes 5 types: 
+*DefaultParam* includes 5 types from [Durian.Core](../Durian.Core/README.md): 
+
  - [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs)
  - [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationATtribute.cs)
  - [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs)
@@ -52,7 +53,7 @@ Packages that are part of the *DefaultParam* module:
 To start using *DefaultParam*, reference the *Durian.DefaultParam* package. 
 
 **Note**: 
-Like with other Durian modules, the target project must reference the *Durian.Core* package as well.
+Like with other Durian modules, the target project must reference the [Durian.Core](../Durian.Core/README.md) package as well.
 
 ## Basics
 

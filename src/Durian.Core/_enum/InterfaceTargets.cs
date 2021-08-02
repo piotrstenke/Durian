@@ -12,9 +12,14 @@ namespace Durian
 	public enum InterfaceTargets
 	{
 		/// <summary>
-		/// Default value.
+		/// Interface cannot be implemented in code, only through reflection.
 		/// </summary>
-		None = 0,
+		ReflectionOnly = 0,
+
+		/// <summary>
+		/// Interface cannot be implemented in code. This value is the same as <see cref="ReflectionOnly"/>.
+		/// </summary>
+		None = ReflectionOnly,
 
 		/// <summary>
 		/// Interface can be implemented by classes.

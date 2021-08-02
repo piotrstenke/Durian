@@ -1,16 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5</TargetFramework>
-    <RootNamespace>Durian.Tests</RootNamespace>
+    <RootNamespace>Durian.Analysis.InterfaceTargets.Tests</RootNamespace>
     <Configurations>Debug;Release;Main Package</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
-    
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.10.0" />
-    
+
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -20,19 +20,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    
+
   </ItemGroup>
 
   <ItemGroup>
-    
-    <!-- Needed in DependencyTests.cs -->
-    <ProjectReference Include="..\..\src\Durian.InterfaceTargets\Durian.InterfaceTargets.csproj" />
-    
     <ProjectReference Include="..\..\src\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
-    <ProjectReference Include="..\..\src\Durian.Core.Analyzer\Durian.Core.Analyzer.csproj" />
+    <ProjectReference Include="..\..\src\Durian.InterfaceTargets\Durian.InterfaceTargets.csproj" />
     <ProjectReference Include="..\..\src\Durian.TestServices\Durian.TestServices.csproj" />
-    <ProjectReference Include="..\..\src\Durian\Durian.csproj" />
-    <ProjectReference Include="..\..\src\Durian.Manager\Durian.Manager.csproj" />
-    
   </ItemGroup>
+
 </Project>

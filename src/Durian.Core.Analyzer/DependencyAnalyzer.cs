@@ -20,19 +20,20 @@ namespace Durian.Analysis
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
 
-	public sealed class DependenciesAnalyzer : DurianAnalyzer
+	public sealed class DependencyAnalyzer : DurianAnalyzer
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 			DUR0001_ProjectMustReferenceDurianCore,
-			DUR0007_DoNotReferencePackageIfManagerIsPresent
+			DUR0007_DoNotReferencePackageIfManagerIsPresent,
+			DUR0008_MultipleAnalyzers
 		);
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="DependenciesAnalyzer"/> class.
+		/// Initializes a new instance of the <see cref="DependencyAnalyzer"/> class.
 		/// </summary>
-		public DependenciesAnalyzer()
+		public DependencyAnalyzer()
 		{
 		}
 
@@ -119,11 +120,16 @@ namespace Durian.Analysis
 		{
 			bool hasManager = false;
 			bool hasCore = false;
-			List<string> assemblies = new(8);
+			List<string> analyzerAssemblies = new(8);
 
 			foreach (AssemblyIdentity assembly in compilation.ReferencedAssemblyNames)
 			{
 				string name = assembly.Name;
+
+				if (!name.StartsWith("Durian"))
+				{
+					continue;
+				}
 
 				if (IsDurianManager(name))
 				{
@@ -136,15 +142,15 @@ namespace Durian.Analysis
 				}
 				else if (IsDurianAnalyzerPackage(name))
 				{
-					assemblies.Add(name);
+					analyzerAssemblies.Add(name);
 				}
-				else if (hasManager && hasCore && assemblies.Count >= GlobalInfo.NumAnalyzerPackages)
+				else if (hasManager && hasCore && analyzerAssemblies.Count >= GlobalInfo.NumAnalyzerPackages)
 				{
 					break;
 				}
 			}
 
-			List<Diagnostic> d = new(assemblies.Count + 1);
+			List<Diagnostic> d = new(analyzerAssemblies.Count + 2);
 			bool isValid = true;
 
 			if (!hasCore)
@@ -153,14 +159,21 @@ namespace Durian.Analysis
 				isValid = false;
 			}
 
-			if (assemblies.Count > 0 && hasManager)
+			if (analyzerAssemblies.Count > 0)
 			{
-				foreach (string a in assemblies)
+				if (hasManager)
 				{
-					d.Add(Diagnostic.Create(DUR0007_DoNotReferencePackageIfManagerIsPresent, Location.None, a));
-				}
+					foreach (string a in analyzerAssemblies)
+					{
+						d.Add(Diagnostic.Create(DUR0007_DoNotReferencePackageIfManagerIsPresent, Location.None, a));
+					}
 
-				isValid = false;
+					isValid = false;
+				}
+				else if (analyzerAssemblies.Count > 1)
+				{
+					d.Add(Diagnostic.Create(DUR0008_MultipleAnalyzers, Location.None));
+				}
 			}
 
 			diagnostics = d.ToArray();
@@ -169,7 +182,12 @@ namespace Durian.Analysis
 
 		private static bool IsDurianAnalyzerPackage(string assembly)
 		{
-			return assembly == "Durian.Core.Analyzer" || assembly == "Durian.DefaultParam";
+			return
+				assembly == "Durian.Core.Analyzer" ||
+				assembly == "Durian.DefaultParam" ||
+				assembly == "Durian.InterfaceTargets" ||
+				assembly == "Durian.GenericSpecialization" ||
+				assembly == "Durian.FriendClass";
 		}
 
 		private static bool IsDurianCore(string assembly)
@@ -179,7 +197,7 @@ namespace Durian.Analysis
 
 		private static bool IsDurianManager(string assembly)
 		{
-			return assembly == "Durian";
+			return assembly == "Durian" || assembly == "Durian.Manager";
 		}
 	}
 }

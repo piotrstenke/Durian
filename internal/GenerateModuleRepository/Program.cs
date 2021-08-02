@@ -636,7 +636,7 @@ $@"
 				{{
 					type = new(
 						name: ""{type.Name}"",
-						@namespace: ""{type.Name}"",
+						@namespace: ""{type.Namespace}"",
 						modules: new DurianModule[]
 						{{");
 

@@ -1,9 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>Allows to specify member kinds target interface can be implemented by.</Description>
+    <Description>Durian.InterfaceTargets, similar to how the System.AttributeUsageAttribute works, allows to specify member kinds an interface can be implemented by.
+      Do not reference this package if the main Durian package is already referenced.
+    </Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Interface;Target;Targets;Usage</PackageTags>
     <PackageVersion>1.0.0</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>

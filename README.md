@@ -21,12 +21,16 @@
 
 **Durian is a collection of Roslyn-based analyzers, source generators and utility libraries that bring many extensions to C#, with heavy emphasis on features that can be found in other existing languages. It's main goal is to make C# easier and more pleasant to use through reducing necessary boilerplate code, while at the same time providing additional layers of flexibility.**
 
+## Current state
+
+Durian is at an early stage of its evolution - many core features are still missing, being either in early development or planning phase. As for now, only one fully-fledged module is complete - *DefaultParam*, with *InterfaceTargets* awaiting in experimental stage for release in the closest future.
+
 ## Features
 
-**To see more about a specific feature, click on its name.**
+To see more about a specific feature, click on its name.
 
 ### [DefaultParam](src/Durian.DefaultParam/README.md)
-DefaultParam allows to specify a default type for a generic parameter.
+*DefaultParam* allows to specify a default type for a generic parameter.
 
 ```csharp
 using Durian;
@@ -56,21 +60,37 @@ class Program
 
 ```
 
-## Current state
+## Experimental
 
-Right now, Durian is only at the first stage of its evolution. As for its initial release on the 2nd of June 2021, two modules - *Core* and *DefaultParam* - are available, with additional two - *StructInherit* and *GenericSpecialization* - in early development. This does not include two already existing packages that are not part of any module - *Durian.AnalysisServices* and *Durian.TestServices*.
+### [InterfaceTargets](src/Durian.InterfaceTargets/README.md)
 
-For more information about a specific package or module, go to the *README.md* file in the according project's directory in the *\\src\\* folder.
+*InterfaceTargets*, similar to how [System.AttributeUsageAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.attributeusageattribute?view=net-5.0) works, allows to specify what kinds of members an interface can be implemented by.
+
+```csharp
+using Durian;
+
+[InterfaceTargets(InterfaceTargets.Class)]
+public interface ITest
+{
+}
+
+// OK
+// ITest can be implemented, because ClassTest is a class.
+public class ClassTest : ITest
+{
+}
+
+// Error!
+// ITest cannot be implemented, because StructTest is a struct, and ITest is valid only for classes.
+public struct StructTest : ITest
+{
+}
+
+```
 
 ## What's next?
 
-At the moment, two modules are in experimental stage - *StructInherit* and *GenericSpecialization*, with the latter being further in development. Release dates are yet to be determined.
-
-## History
-
-Durian started as a personal project of a high school student from Gdañsk, Poland - Piotr Stenke, amateur C# programmer and Unity Engine enthusiast. Though the sole idea for a Roslyn-based platform emerged in late 2020, any actual work didn't take place until February 2021. First months of development were especially challenging, with final exams in school, deadly virus roaming all around the globe and adult life slowly, but steadily, approaching. And all of that without even mentioning the worst part - learning from scratch this awful, unintuitive, badly-documented mess of an API that is Roslyn.
-
-At its initial release on the 2nd of June 2021, Durian was meant to be a major card that would get its author into the IT industry. 
+With *InterfaceTargets* being close to leaving the experimental stage, two more features are almost ready to take its place - *GenericSpecialization* and *FriendClass*. Both are planned to be moved to experimental stage in late August - early September 2021.
 
 ##
 

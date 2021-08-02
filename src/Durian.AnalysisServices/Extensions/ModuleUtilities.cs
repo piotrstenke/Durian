@@ -6,12 +6,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Durian.Analysis.Extensions;
 using Durian.Generator;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Analysis
+namespace Durian.Analysis.Extensions
 {
 	/// <summary>
 	/// Contains various <see cref="ModuleIdentity"/>-related extension methods for the <see cref="Compilation"/> class and <see cref="INamedTypeSymbol"/> interface.

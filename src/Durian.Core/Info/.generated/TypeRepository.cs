@@ -27,7 +27,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "DisableModuleAttribute",
-						@namespace: "DisableModuleAttribute",
+						@namespace: "Durian",
 						modules: new DurianModule[]
 						{
 							DurianModule.Manager,
@@ -50,7 +50,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "DurianGeneratedAttribute",
-						@namespace: "DurianGeneratedAttribute",
+						@namespace: "Durian.Generator",
 						modules: new DurianModule[]
 						{
 							DurianModule.Core,
@@ -73,7 +73,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "EnableModuleAttribute",
-						@namespace: "EnableModuleAttribute",
+						@namespace: "Durian.Generator",
 						modules: new DurianModule[]
 						{
 							DurianModule.Core,
@@ -96,7 +96,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "PackageDefinitionAttribute",
-						@namespace: "PackageDefinitionAttribute",
+						@namespace: "Durian.Generator",
 						modules: new DurianModule[]
 						{
 							DurianModule.Core,
@@ -119,7 +119,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "DefaultParamAttribute",
-						@namespace: "DefaultParamAttribute",
+						@namespace: "Durian",
 						modules: new DurianModule[]
 						{
 							DurianModule.DefaultParam,
@@ -142,7 +142,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "DefaultParamConfigurationAttribute",
-						@namespace: "DefaultParamConfigurationAttribute",
+						@namespace: "Durian.Configuration",
 						modules: new DurianModule[]
 						{
 							DurianModule.DefaultParam,
@@ -165,7 +165,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "DefaultParamScopedConfigurationAttribute",
-						@namespace: "DefaultParamScopedConfigurationAttribute",
+						@namespace: "Durian.Configuration",
 						modules: new DurianModule[]
 						{
 							DurianModule.DefaultParam,
@@ -188,7 +188,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "DPMethodConvention",
-						@namespace: "DPMethodConvention",
+						@namespace: "Durian.Configuration",
 						modules: new DurianModule[]
 						{
 							DurianModule.DefaultParam,
@@ -211,7 +211,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "DPTypeConvention",
-						@namespace: "DPTypeConvention",
+						@namespace: "Durian.Configuration",
 						modules: new DurianModule[]
 						{
 							DurianModule.DefaultParam,
@@ -234,7 +234,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "FriendClassAttribute",
-						@namespace: "FriendClassAttribute",
+						@namespace: "Durian",
 						modules: new DurianModule[]
 						{
 							DurianModule.FriendClass,
@@ -257,7 +257,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "FriendClassConfigurationAttribute",
-						@namespace: "FriendClassConfigurationAttribute",
+						@namespace: "Durian.Configuration",
 						modules: new DurianModule[]
 						{
 							DurianModule.FriendClass,
@@ -280,7 +280,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "AllowSpecializationAttribute",
-						@namespace: "AllowSpecializationAttribute",
+						@namespace: "Durian",
 						modules: new DurianModule[]
 						{
 							DurianModule.GenericSpecialization,
@@ -303,7 +303,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "GenericSpecializationAttribute",
-						@namespace: "GenericSpecializationAttribute",
+						@namespace: "Durian",
 						modules: new DurianModule[]
 						{
 							DurianModule.GenericSpecialization,
@@ -326,7 +326,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "GenericSpecializationConfigurationAttribute",
-						@namespace: "GenericSpecializationConfigurationAttribute",
+						@namespace: "Durian.Configuration",
 						modules: new DurianModule[]
 						{
 							DurianModule.GenericSpecialization,
@@ -349,7 +349,7 @@ namespace Durian.Info
 				{
 					type = new(
 						name: "GenSpecImportOptions",
-						@namespace: "GenSpecImportOptions",
+						@namespace: "Durian.Configuration",
 						modules: new DurianModule[]
 						{
 							DurianModule.GenericSpecialization,

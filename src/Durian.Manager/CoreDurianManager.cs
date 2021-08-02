@@ -36,7 +36,7 @@ namespace Durian.Manager
 			return new IAnalyzerInfo[]
 			{
 				new IsCSharpCompilationAnalyzer(),
-				new DependenciesAnalyzer(),
+				new DependencyAnalyzer(),
 				new CustomTypesInGeneratorNamespaceAnalyzer(),
 				new TypeImportAnalyzer()
 			};

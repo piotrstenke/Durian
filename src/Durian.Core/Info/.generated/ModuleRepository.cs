@@ -111,6 +111,14 @@ namespace Durian.Info
 								fatal: true,
 								hasLocation: true
 							),
+
+							new DiagnosticData(
+								title: "Separate analyzer packages detected, reference the main Durian package instead for better performance",
+								id: 08,
+								docsPath: "tree/master/docs/Core/DUR0008.md",
+								fatal: false,
+								hasLocation: true
+							),
 						},
 						types: new TypeIdentity[]
 						{
@@ -750,6 +758,14 @@ namespace Durian.Info
 								title: "Interface cannot be a base of another interface",
 								id: 02,
 								docsPath: "tree/master/docs/InterfaceTargets/DUR0402.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Interface is accessible only through reflection",
+								id: 03,
+								docsPath: "tree/master/docs/InterfaceTargets/DUR0403.md",
 								fatal: true,
 								hasLocation: true
 							),

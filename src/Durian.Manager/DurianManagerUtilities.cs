@@ -14,7 +14,7 @@ namespace Durian.Manager
 			return
 				IsCSharpCompilationAnalyzer.Analyze(compilation) &&
 				DisabledModuleAnalyzer.IsEnabled(module, compilation) &&
-				DependenciesAnalyzer.Analyze(compilation);
+				DependencyAnalyzer.Analyze(compilation);
 		}
 	}
 }

@@ -5,7 +5,7 @@ using System;
 
 namespace Durian.Samples.DefaultParam
 {
-	internal partial class Program
+	internal class Program
 	{
 #pragma warning disable CS0184 // 'is' expression's given expression is never of the provided type
 

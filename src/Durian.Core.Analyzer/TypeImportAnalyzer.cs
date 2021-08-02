@@ -71,10 +71,6 @@ namespace Durian.Analysis
 				{
 					context.ReportDiagnostic(Diagnostic.Create(DUR0003_DoNotUseTypeFromDurianGeneratorNamespace, context.Node.GetLocation()));
 				}
-				else
-				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0002_ModuleOfTypeIsNotImported, context.Node.GetLocation(), type, modules[0]));
-				}
 			}
 		}
 

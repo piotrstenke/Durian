@@ -19,7 +19,7 @@ namespace Durian
 		/// <summary>
 		/// Initializes a new instance of the <see cref="InterfaceTargetsAttribute"/> class.
 		/// </summary>
-		/// <param name="targets"></param>
+		/// <param name="targets">Specifies member kinds this interface is valid on.</param>
 		public InterfaceTargetsAttribute(InterfaceTargets targets)
 		{
 			Targets = targets;

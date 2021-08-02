@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Durian.Generator;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
@@ -386,7 +387,7 @@ namespace Durian.Analysis
 
 		private static bool ValidateSymbol(INamedTypeSymbol symbol)
 		{
-			return symbol.ContainingNamespace is not null && symbol.ContainingNamespace.Name.StartsWith("Durian");
+			return symbol.ContainingNamespace is not null && symbol.JoinNamespaces().StartsWith("Durian");
 		}
 
 		private void FillWithEntries()
