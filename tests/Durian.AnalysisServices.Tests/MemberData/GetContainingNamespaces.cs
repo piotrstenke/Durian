@@ -13,7 +13,7 @@ namespace Durian.Analysis.Tests.MemberData
 		[Fact]
 		public void CanReturnMultipleNamespaces()
 		{
-			Analysis.Data.MemberData data = GetMember("namespace N1.N2 { class Parent { } }", 1);
+			Data.MemberData data = GetMember("namespace N1.N2 { class Parent { } }", 1);
 			INamespaceSymbol[] containingNamespaces = data.GetContainingNamespaces().ToArray();
 			Assert.True(containingNamespaces.Length == 2 && containingNamespaces.Any(t => t.Name == "N1") && containingNamespaces.Any(t => t.Name == "N2"));
 		}
@@ -21,7 +21,7 @@ namespace Durian.Analysis.Tests.MemberData
 		[Fact]
 		public void CanReturnSingleNamespace()
 		{
-			Analysis.Data.MemberData data = GetMember("namespace N1 { class Parent { } }", 1);
+			Data.MemberData data = GetMember("namespace N1 { class Parent { } }", 1);
 			INamespaceSymbol[] containingNamespaces = data.GetContainingNamespaces().ToArray();
 			Assert.True(containingNamespaces.Length == 1 && containingNamespaces[0].Name == "N1");
 		}
@@ -29,7 +29,7 @@ namespace Durian.Analysis.Tests.MemberData
 		[Fact]
 		public void ReturnsEmpty_When_IsNotInNamespace()
 		{
-			Analysis.Data.MemberData data = GetMember("class Test { }");
+			Data.MemberData data = GetMember("class Test { }");
 			INamespaceSymbol[] containingNamespaces = data.GetContainingNamespaces().ToArray();
 			Assert.True(containingNamespaces.Length == 0);
 		}
@@ -37,7 +37,7 @@ namespace Durian.Analysis.Tests.MemberData
 		[Fact]
 		public void ReturnsNamespacesInParentFirstOrder()
 		{
-			Analysis.Data.MemberData data = GetMember("namespace N1.N2 { class Parent { } }", 1);
+			Data.MemberData data = GetMember("namespace N1.N2 { class Parent { } }", 1);
 			INamespaceSymbol[] containingNamespaces = data.GetContainingNamespaces().ToArray();
 			Assert.True(containingNamespaces.Length == 2 && containingNamespaces[0].Name == "N1" && containingNamespaces[1].Name == "N2");
 		}

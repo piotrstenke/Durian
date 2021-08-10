@@ -13,9 +13,14 @@ namespace Durian.Configuration
 	public sealed class FriendClassConfigurationAttribute : Attribute
 	{
 		/// <summary>
-		/// Determines whether <see langword="internal"/> members of the current <see cref="Type"/> can be accessed outside of the current assembly if an appropriate <see cref="InternalsVisibleToAttribute"/> is present. Defaults to <see langword="true"/>.
+		/// Determines whether sub-classes of the current type should be treated like friend types. Defaults to <see langword="false"/>.
 		/// </summary>
-		public bool AllowInternalsVisibleTo { get; set; } = true;
+		public bool AllowsChildren { get; set; }
+
+		/// <summary>
+		/// Determines whether <see langword="internal"/> members of the current <see cref="Type"/> can be accessed outside of the current assembly if an appropriate <see cref="InternalsVisibleToAttribute"/> is present. Defaults to <see langword="false"/>.
+		/// </summary>
+		public bool AllowsExternalAssembly { get; set; }
 
 		/// <summary>
 		/// Determines whether the type itself is inaccessible outside of its friend types. Defaults to <see langword="false"/>.

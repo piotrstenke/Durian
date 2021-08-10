@@ -255,7 +255,7 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			return DefaultParamUtilities.GetConfigurationEnumValue(nameof(DefaultParamConfigurationAttribute.MethodConvention), attributes, containingTypes, compilation, (int)compilation.Configuration.MethodConvention) == (int)DPMethodConvention.Call;
+			return DefaultParamUtilities.GetConfigurationEnumValue(nameof(DefaultParamConfigurationAttribute.MethodConvention), attributes, containingTypes, compilation, (int)compilation.GlobalConfiguration.MethodConvention) == (int)DPMethodConvention.Call;
 		}
 
 		/// <inheritdoc/>
@@ -382,14 +382,14 @@ namespace Durian.Analysis.DefaultParam
 
 		private static bool AnalyzeParameterInBaseMethod(in TypeParameterData thisData, in TypeParameterData baseData)
 		{
-			if (baseData.IsDefaultParam)
+			if (baseData.IsValidDefaultParam)
 			{
-				if (thisData.IsDefaultParam && !SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
+				if (thisData.IsValidDefaultParam && !SymbolEqualityComparer.Default.Equals(thisData.TargetType, baseData.TargetType))
 				{
 					return false;
 				}
 			}
-			else if (thisData.IsDefaultParam)
+			else if (thisData.IsValidDefaultParam)
 			{
 				return false;
 			}

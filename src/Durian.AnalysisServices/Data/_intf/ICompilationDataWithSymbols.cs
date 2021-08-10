@@ -26,7 +26,7 @@ namespace Durian.Analysis.Data
 		public INamedTypeSymbol GeneratedCodeAttribute { get; }
 
 		/// <summary>
-		/// Resets all <see cref="ISymbol"/>s collected by this <see cref="ICompilationData"/>.
+		/// Resets all collected <see cref="ISymbol"/>s.
 		/// </summary>
 		public void Reset();
 	}

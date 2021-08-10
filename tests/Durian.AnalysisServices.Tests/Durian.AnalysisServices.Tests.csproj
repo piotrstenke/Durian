@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net5</TargetFramework>
     <RootNamespace>Durian.Analysis.Tests</RootNamespace>
-    <Configurations>Debug;Release;Main Package</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

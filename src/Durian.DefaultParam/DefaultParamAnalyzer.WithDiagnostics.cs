@@ -130,7 +130,7 @@ namespace Durian.Analysis.DefaultParam
 
 						ImmutableArray<ITypeParameterSymbol> typeParameters = parent.TypeParameters;
 
-						if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute)))
+						if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DefaultParamAttribute)))
 						{
 							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested, symbol);
 							isValid = false;
@@ -171,7 +171,7 @@ namespace Durian.Analysis.DefaultParam
 
 						ImmutableArray<ITypeParameterSymbol> typeParameters = parent.Symbol.TypeParameters;
 
-						if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute)))
+						if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DefaultParamAttribute)))
 						{
 							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested, symbol);
 							isValid = false;
@@ -293,12 +293,9 @@ namespace Durian.Analysis.DefaultParam
 				ITypeSymbol? targetType = currentTypeParameter.TargetType;
 				ITypeParameterSymbol typeParameterSymbol = currentTypeParameter.Symbol;
 
-				if (targetType is null || targetType is IErrorTypeSymbol)
-				{
-					return false;
-				}
-
-				if (targetType.IsStatic ||
+				if (targetType is null ||
+					targetType is IErrorTypeSymbol ||
+					targetType.IsStatic ||
 					targetType.IsRefLikeType ||
 					targetType is IFunctionPointerTypeSymbol ||
 					targetType is IPointerTypeSymbol ||

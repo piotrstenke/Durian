@@ -12,20 +12,20 @@ namespace Durian.Analysis.Tests.CompilationData
 		[Fact]
 		public void CompilationIsNotNullAfterConstructor()
 		{
-			Analysis.Data.CompilationData data = new(RoslynUtilities.CreateBaseCompilation());
+			Data.CompilationData data = new(RoslynUtilities.CreateBaseCompilation());
 			Assert.True(data.Compilation is not null);
 		}
 
 		[Fact]
 		public void ConstructorThrowsArgumentNullException_When_CompilationIsNull()
 		{
-			Assert.Throws<ArgumentNullException>(() => new Analysis.Data.CompilationData(null!));
+			Assert.Throws<ArgumentNullException>(() => new Data.CompilationData(null!));
 		}
 
 		[Fact]
 		public void HasErrorsReturnsFalseByDefault()
 		{
-			Analysis.Data.CompilationData data = new(RoslynUtilities.CreateBaseCompilation());
+			Data.CompilationData data = new(RoslynUtilities.CreateBaseCompilation());
 			Assert.False(data.HasErrors);
 		}
 	}

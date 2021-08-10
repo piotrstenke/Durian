@@ -266,5 +266,39 @@ partial class Test
 
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0121_TypeIsNotValidDefaultParamValue.Id));
 		}
+
+		[Fact]
+		public void Error_When_IsSystemVoid()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(System.Void))]T>()
+	{{
+	}}
+}}
+";
+
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+		}
+
+		[Fact]
+		public void Error_When_IsNull()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	public static void Method<[{nameof(DefaultParamAttribute)}(null)]T>()
+	{{
+	}}
+}}
+";
+
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+		}
 	}
 }

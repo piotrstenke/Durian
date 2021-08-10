@@ -76,7 +76,7 @@ namespace Durian.Analysis.DefaultParam
 
 			ITypeParameterSymbol[] typeParameters = m.TypeParameters.ToArray();
 
-			if (typeParameters.Any(t => t.HasAttribute(compilation.MainAttribute!)))
+			if (typeParameters.Any(t => t.HasAttribute(compilation.DefaultParamAttribute!)))
 			{
 				DiagnosticDescriptor d = DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod;
 				context.ReportDiagnostic(Diagnostic.Create(d, l.GetLocation(), m));

@@ -69,7 +69,7 @@ namespace Durian.Analysis.DefaultParam
 
 			INamedTypeSymbol? configurationAttribute = context.SemanticModel.GetSymbolInfo(syntax).Symbol?.ContainingType;
 
-			if (configurationAttribute is null || !SymbolEqualityComparer.Default.Equals(configurationAttribute, compilation.ConfigurationAttribute))
+			if (configurationAttribute is null || !SymbolEqualityComparer.Default.Equals(configurationAttribute, compilation.DefaultParamConfigurationAttribute))
 			{
 				return;
 			}
@@ -132,7 +132,7 @@ namespace Durian.Analysis.DefaultParam
 					ReportIfMethodIsNotDefaultParam(diagnosticReceiver, baseMethod, compilation, node);
 				}
 			}
-			else if (!typeParameters.Any(m => m.HasAttribute(compilation.MainAttribute!)))
+			else if (!typeParameters.Any(m => m.HasAttribute(compilation.DefaultParamAttribute!)))
 			{
 				ReportConfig(diagnosticReceiver, method, node);
 			}
@@ -160,7 +160,7 @@ namespace Durian.Analysis.DefaultParam
 			CancellationToken cancellationToken
 		)
 		{
-			if (!type.TypeParameters.Any(t => t.HasAttribute(compilation.MainAttribute!)))
+			if (!type.TypeParameters.Any(t => t.HasAttribute(compilation.DefaultParamAttribute!)))
 			{
 				ReportConfig(diagnosticReceiver, type, node);
 			}
@@ -292,7 +292,7 @@ namespace Durian.Analysis.DefaultParam
 			AttributeSyntax node
 		)
 		{
-			if (!method.TypeParameters.Any(m => m.HasAttribute(compilation.MainAttribute!)))
+			if (!method.TypeParameters.Any(m => m.HasAttribute(compilation.DefaultParamAttribute!)))
 			{
 				ReportConfig(diagnosticReceiver, method, node);
 			}

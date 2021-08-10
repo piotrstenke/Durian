@@ -26,7 +26,7 @@ namespace Durian.TestServices
 		public static string DefaultCompilationName => "TestCompilation";
 
 		/// <summary>
-		/// Creates a <see cref="CSharpCompilation"/> that contains <see cref="MetadataReference"/>s to all the essential .NET assemblies.
+		/// Creates a <see cref="CSharpCompilation"/> that contains <see cref="MetadataReference"/>s of all the essential .NET and Durian assemblies.
 		/// </summary>
 		public static CSharpCompilation CreateBaseCompilation()
 		{
@@ -224,7 +224,7 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="MetadataReference"/> to some essential assemblies.
+		/// Returns an array of <see cref="MetadataReference"/>s of all essential .NET and Durian assemblies. 
 		/// </summary>
 		public static MetadataReference[] GetBaseReferences()
 		{

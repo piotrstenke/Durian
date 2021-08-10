@@ -60,7 +60,7 @@ namespace Durian.Analysis.DefaultParam
 			const string configPropertyName = nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible);
 			const string scopedPropertyName = nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible);
 
-			if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.ConfigurationAttribute!, configPropertyName, out bool value))
+			if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.DefaultParamConfigurationAttribute!, configPropertyName, out bool value))
 			{
 				return value;
 			}
@@ -70,7 +70,7 @@ namespace Durian.Analysis.DefaultParam
 
 				if (length > 0)
 				{
-					INamedTypeSymbol scopedAttribute = compilation.ScopedConfigurationAttribute!;
+					INamedTypeSymbol scopedAttribute = compilation.DefaultParamScopedConfigurationAttribute!;
 
 					foreach (INamedTypeSymbol type in containingTypes.Reverse())
 					{
@@ -81,7 +81,7 @@ namespace Durian.Analysis.DefaultParam
 					}
 				}
 
-				return compilation.Configuration.ApplyNewModifierWhenPossible;
+				return compilation.GlobalConfiguration.ApplyNewModifierWhenPossible;
 			}
 		}
 
@@ -180,7 +180,7 @@ namespace Durian.Analysis.DefaultParam
 
 					ImmutableArray<ITypeParameterSymbol> typeParameters = parent.TypeParameters;
 
-					if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute)))
+					if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DefaultParamAttribute)))
 					{
 						return false;
 					}
@@ -235,7 +235,7 @@ namespace Durian.Analysis.DefaultParam
 
 					ImmutableArray<ITypeParameterSymbol> typeParameters = parent.Symbol.TypeParameters;
 
-					if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute)))
+					if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DefaultParamAttribute)))
 					{
 						containingTypes = null;
 						return false;
@@ -398,12 +398,12 @@ namespace Durian.Analysis.DefaultParam
 			InitializeAttributes(ref attributes, symbol);
 			InitializeContainingTypes(ref containingTypes, symbol);
 
-			if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.ConfigurationAttribute!, propertyName, out string? value))
+			if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.DefaultParamConfigurationAttribute!, propertyName, out string? value))
 			{
 				return GetValueOrParentNamespace(value);
 			}
 
-			INamedTypeSymbol scopedConfigurationAttribute = compilation.ScopedConfigurationAttribute!;
+			INamedTypeSymbol scopedConfigurationAttribute = compilation.DefaultParamScopedConfigurationAttribute!;
 
 			foreach (INamedTypeSymbol type in containingTypes.Reverse())
 			{
@@ -413,7 +413,7 @@ namespace Durian.Analysis.DefaultParam
 				}
 			}
 
-			return GetValueOrParentNamespace(compilation.Configuration.TargetNamespace);
+			return GetValueOrParentNamespace(compilation.GlobalConfiguration.TargetNamespace);
 
 			string GetValueOrParentNamespace(string? value)
 			{
@@ -876,7 +876,7 @@ namespace Durian.Analysis.DefaultParam
 				{
 					ref readonly TypeParameterData data = ref typeParameters[p.Ordinal];
 
-					if (data.IsDefaultParam)
+					if (data.IsValidDefaultParam)
 					{
 						if (!type.InheritsOrImplementsFrom(data.TargetType))
 						{

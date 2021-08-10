@@ -14,7 +14,7 @@ namespace Durian
 		/// <summary>
 		/// Determines whether <see langword="internal"/> members of the current <see cref="Type"/> can be accessed by <see cref="Type"/>s that inherit the <see cref="FriendType"/>. Defaults to <see langword="false"/>.
 		/// </summary>
-		public bool AllowInherit { get; set; }
+		public bool AllowsFriendChildren { get; set; }
 
 		/// <summary>
 		/// Friend <see cref="Type"/> of the current <see cref="Type"/>.

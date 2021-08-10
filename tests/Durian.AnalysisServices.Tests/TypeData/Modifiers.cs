@@ -14,7 +14,7 @@ namespace Durian.Analysis.Tests.TypeData
 		[Fact]
 		public void CanReturnMultipleModifiers()
 		{
-			Analysis.Data.TypeData data = GetType("class Parent { protected internal unsafe readonly ref partial struct Test { }}", 1);
+			Data.TypeData data = GetType("class Parent { protected internal unsafe readonly ref partial struct Test { }}", 1);
 			SyntaxToken[] tokens = data.Modifiers;
 
 			Assert.True(
@@ -30,7 +30,7 @@ namespace Durian.Analysis.Tests.TypeData
 		[Fact]
 		public void CanReturnSingleModifier()
 		{
-			Analysis.Data.TypeData data = GetType("internal class Test { }");
+			Data.TypeData data = GetType("internal class Test { }");
 			SyntaxToken[] tokens = data.Modifiers;
 
 			Assert.True(tokens.Length == 1 && tokens[0].IsKind(SyntaxKind.InternalKeyword));
@@ -40,7 +40,7 @@ namespace Durian.Analysis.Tests.TypeData
 		public void DoesNotReturnIdenticalModifiers()
 		{
 			Compilation.UpdateCompilation("public sealed partial class Test { }");
-			Analysis.Data.TypeData data = GetType("public sealed partial class Test { }");
+			Data.TypeData data = GetType("public sealed partial class Test { }");
 			SyntaxToken[] tokens = data.Modifiers;
 
 			Assert.True(
@@ -55,7 +55,7 @@ namespace Durian.Analysis.Tests.TypeData
 		public void ReturnsAllModifiers_When_IsPartial()
 		{
 			Compilation.UpdateCompilation("public partial class Test { }");
-			Analysis.Data.TypeData data = GetType("partial sealed class Test { }");
+			Data.TypeData data = GetType("partial sealed class Test { }");
 			SyntaxToken[] tokens = data.Modifiers;
 
 			Assert.True(
@@ -68,7 +68,7 @@ namespace Durian.Analysis.Tests.TypeData
 		[Fact]
 		public void ReturnsEmpty_When_DeclHasNoModifiers()
 		{
-			Analysis.Data.TypeData data = GetType("class Test { }");
+			Data.TypeData data = GetType("class Test { }");
 			SyntaxToken[] tokens = data.Modifiers;
 			Assert.True(tokens.Length == 0);
 		}

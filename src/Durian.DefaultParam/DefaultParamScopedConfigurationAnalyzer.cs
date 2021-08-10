@@ -60,13 +60,13 @@ namespace Durian.Analysis.DefaultParam
 			INamedTypeSymbol? configurationAttribute = context.SemanticModel.GetSymbolInfo(syntax).Symbol?.ContainingType;
 
 			if (configurationAttribute is null ||
-				!SymbolEqualityComparer.Default.Equals(configurationAttribute, compilation.ScopedConfigurationAttribute) ||
+				!SymbolEqualityComparer.Default.Equals(configurationAttribute, compilation.DefaultParamScopedConfigurationAttribute) ||
 				context.SemanticModel.GetDeclaredSymbol(parent) is not ISymbol symbol)
 			{
 				return;
 			}
 
-			if (parent is TypeDeclarationSyntax && symbol is INamedTypeSymbol type && !HasMemberWithDefaultParamAttribute(type, compilation.MainAttribute!))
+			if (parent is TypeDeclarationSyntax && symbol is INamedTypeSymbol type && !HasMemberWithDefaultParamAttribute(type, compilation.DefaultParamAttribute!))
 			{
 				context.ReportDiagnostic(Diagnostic.Create(DefaultParamDiagnostics.DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers, symbol.Locations.FirstOrDefault(), symbol));
 			}

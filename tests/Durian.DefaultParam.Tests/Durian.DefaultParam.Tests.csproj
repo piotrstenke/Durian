@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net5</TargetFramework>
-    <Configurations>Debug;Release;Main Package</Configurations>
     <RootNamespace>Durian.Analysis.DefaultParam.Tests</RootNamespace>
   </PropertyGroup>
 

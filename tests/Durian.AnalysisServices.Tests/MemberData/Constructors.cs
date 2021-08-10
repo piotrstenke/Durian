@@ -35,26 +35,26 @@ namespace Durian.Analysis.Tests.MemberData
 
 			unit = unit.AddMembers(decl.AddMembers(field));
 
-			Assert.Throws<ArgumentException>(() => new Analysis.Data.MemberData(decl, CreateValidCompilationData(unit.SyntaxTree)));
+			Assert.Throws<ArgumentException>(() => new Data.MemberData(decl, CreateValidCompilationData(unit.SyntaxTree)));
 		}
 
 		[Fact]
 		public void ConstructorThrowsArgumentNullException_When_CompilationIsNull()
 		{
-			Assert.Throws<ArgumentNullException>(() => new Analysis.Data.MemberData(declaration: ClassDeclaration("Test"), null!));
+			Assert.Throws<ArgumentNullException>(() => new Data.MemberData(declaration: ClassDeclaration("Test"), null!));
 		}
 
 		[Fact]
 		public void ConstructorThrowsArgumentNullException_When_DeclarationIsNull()
 		{
-			Assert.Throws<ArgumentNullException>(() => new Analysis.Data.MemberData(declaration: null!, Mock.Of<ICompilationData>()));
+			Assert.Throws<ArgumentNullException>(() => new Data.MemberData(declaration: null!, Mock.Of<ICompilationData>()));
 		}
 
 		[Fact]
 		public void DeclarationReturnsDeclarationPassedAsArgument()
 		{
 			MemberDeclarationSyntax member = CreateValidDeclaration();
-			Analysis.Data.MemberData data = new(member, CreateValidCompilationData(member.SyntaxTree));
+			Data.MemberData data = new(member, CreateValidCompilationData(member.SyntaxTree));
 
 			Assert.True(data.Declaration is not null && data.Declaration.IsEquivalentTo(member));
 		}
@@ -70,7 +70,7 @@ namespace Durian.Analysis.Tests.MemberData
 			ITypeData[] containingTypes = symbol.GetContainingTypes(compilation).ToArray();
 			INamespaceSymbol[] containingNamespaces = symbol.GetContainingNamespaces().ToArray();
 			ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
-			Analysis.Data.MemberData data = new(decl, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes);
+			Data.MemberData data = new(decl, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes);
 			Assert.True(
 				data.SemanticModel is not null &&
 				data.SemanticModel.SyntaxTree.IsEquivalentTo(semanticModel.SyntaxTree) &&
@@ -99,7 +99,7 @@ namespace Durian.Analysis.Tests.MemberData
 			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(decl.SyntaxTree, true);
 			ISymbol symbol = semanticModel.GetDeclaredSymbol(decl)!;
 			Location location = decl.GetLocation();
-			Analysis.Data.MemberData data = new(symbol, compilation);
+			Data.MemberData data = new(symbol, compilation);
 			Assert.True(
 				data.SemanticModel is not null &&
 				data.SemanticModel.SyntaxTree.IsEquivalentTo(semanticModel.SyntaxTree) &&
@@ -119,7 +119,7 @@ namespace Durian.Analysis.Tests.MemberData
 		{
 			MemberDeclarationSyntax member = CreateValidDeclaration();
 			Location location = member.GetLocation();
-			Analysis.Data.MemberData data = new(member, CreateValidCompilationData(member.SyntaxTree));
+			Data.MemberData data = new(member, CreateValidCompilationData(member.SyntaxTree));
 			Location dataLocation = data.Location;
 
 			Assert.True(dataLocation is not null && dataLocation == location);
@@ -130,7 +130,7 @@ namespace Durian.Analysis.Tests.MemberData
 		{
 			MemberDeclarationSyntax member = CreateValidDeclaration();
 			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
-			Analysis.Data.MemberData data = new(member, compilation);
+			Data.MemberData data = new(member, compilation);
 
 			Assert.True(data.Symbol is not null && data.Name == data.Symbol.Name);
 		}
@@ -140,7 +140,7 @@ namespace Durian.Analysis.Tests.MemberData
 		{
 			MemberDeclarationSyntax member = CreateValidDeclaration();
 			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
-			Analysis.Data.MemberData data = new(member, compilation);
+			Data.MemberData data = new(member, compilation);
 
 			Assert.True(data.ParentCompilation is not null && data.ParentCompilation == compilation);
 		}
@@ -151,7 +151,7 @@ namespace Durian.Analysis.Tests.MemberData
 			MemberDeclarationSyntax member = CreateValidDeclaration();
 			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
 			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(member.SyntaxTree, true);
-			Analysis.Data.MemberData data = new(member, compilation);
+			Data.MemberData data = new(member, compilation);
 
 			Assert.True(data.SemanticModel is not null && data.SemanticModel.SyntaxTree.IsEquivalentTo(semanticModel.SyntaxTree));
 		}
@@ -163,7 +163,7 @@ namespace Durian.Analysis.Tests.MemberData
 			ICompilationData compilation = CreateValidCompilationData(member.SyntaxTree);
 			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(member.SyntaxTree, true);
 			ISymbol symbol = semanticModel.GetDeclaredSymbol(member)!;
-			Analysis.Data.MemberData data = new(member, compilation);
+			Data.MemberData data = new(member, compilation);
 
 			Assert.True(data.Symbol is not null && SymbolEqualityComparer.Default.Equals(symbol, data.Symbol));
 		}

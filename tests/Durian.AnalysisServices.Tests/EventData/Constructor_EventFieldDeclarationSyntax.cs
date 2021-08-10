@@ -16,7 +16,7 @@ namespace Durian.Analysis.Tests.EventData
 		public void AsFieldIsSet_And_AsPropertyIsNull_When_EventIsField()
 		{
 			EventFieldDeclarationSyntax field = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action e; }");
-			Analysis.Data.EventData data = new(field, Compilation);
+			Data.EventData data = new(field, Compilation);
 
 			Assert.True(data.AsField is not null && data.AsField.IsEquivalentTo(field) && data.AsProperty is null);
 		}
@@ -26,7 +26,7 @@ namespace Durian.Analysis.Tests.EventData
 		{
 			EventDeclarationSyntax decl = GetNode<EventDeclarationSyntax>("class Test { event System.Action e { add { } remove { } }");
 			;
-			Analysis.Data.EventData data = new(decl, Compilation);
+			Data.EventData data = new(decl, Compilation);
 
 			Assert.True(data.AsProperty is not null && data.AsProperty.IsEquivalentTo(decl) && data.AsField is null);
 		}
@@ -35,7 +35,7 @@ namespace Durian.Analysis.Tests.EventData
 		public void CanHandleDeclarationWithMultipleFields()
 		{
 			EventFieldDeclarationSyntax field = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action e1, e2; }");
-			Analysis.Data.EventData data = new(field, Compilation, 1);
+			Data.EventData data = new(field, Compilation, 1);
 
 			Assert.True(data.Symbol is not null && data.Declaration is not null);
 		}
@@ -44,7 +44,7 @@ namespace Durian.Analysis.Tests.EventData
 		public void CanHandleDeclarationWithSingleField()
 		{
 			EventFieldDeclarationSyntax field = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action e; }");
-			Analysis.Data.EventData data = new(field, Compilation);
+			Data.EventData data = new(field, Compilation);
 
 			Assert.True(data.Symbol is not null && data.Declaration is not null);
 		}
@@ -53,7 +53,7 @@ namespace Durian.Analysis.Tests.EventData
 		public void IndexIs0_And_VariableIsNull_When_EventIsProperty()
 		{
 			EventDeclarationSyntax decl = GetNode<EventDeclarationSyntax>("class Test { event System.Action e { add { } remove { } } }");
-			Analysis.Data.EventData data = new(decl, Compilation);
+			Data.EventData data = new(decl, Compilation);
 
 			Assert.True(data.Index == 0 && data.Variable is null);
 		}
@@ -62,7 +62,7 @@ namespace Durian.Analysis.Tests.EventData
 		public void IndexIsSetThroughConstructor_When_EventIsField()
 		{
 			EventFieldDeclarationSyntax field = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action e1, e2; }");
-			Analysis.Data.EventData data = new(field, Compilation, 1);
+			Data.EventData data = new(field, Compilation, 1);
 
 			Assert.True(data.Index == 1);
 		}
@@ -75,7 +75,7 @@ namespace Durian.Analysis.Tests.EventData
 			VariableDeclaratorSyntax var = decl.Declaration.Variables[index];
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(decl.SyntaxTree);
 			IEventSymbol symbol = (semanticModel.GetDeclaredSymbol(var) as IEventSymbol)!;
-			Analysis.Data.EventData data = new(symbol, Compilation);
+			Data.EventData data = new(symbol, Compilation);
 			Location location = decl.GetLocation();
 
 			Assert.True(
@@ -104,7 +104,7 @@ namespace Durian.Analysis.Tests.EventData
 			EventDeclarationSyntax decl = GetNode<EventDeclarationSyntax>("class Test { event System.Action e { add { } remove { } }");
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(decl.SyntaxTree);
 			IEventSymbol symbol = semanticModel.GetDeclaredSymbol(decl)!;
-			Analysis.Data.EventData data = new(symbol, Compilation);
+			Data.EventData data = new(symbol, Compilation);
 			Location location = decl.GetLocation();
 
 			Assert.True(
@@ -130,14 +130,14 @@ namespace Durian.Analysis.Tests.EventData
 		public void ThrowsIndexOutOfRangeException_When_IndexIsNotWithinTheRangeOfDeclaredFields()
 		{
 			EventFieldDeclarationSyntax field = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action e; }");
-			Assert.Throws<IndexOutOfRangeException>(() => new Analysis.Data.EventData(field, Compilation, 1));
+			Assert.Throws<IndexOutOfRangeException>(() => new Data.EventData(field, Compilation, 1));
 		}
 
 		[Fact]
 		public void VariableIsSetThroughConstructor_When_EventIsField()
 		{
 			EventFieldDeclarationSyntax field = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action e; }");
-			Analysis.Data.EventData data = new(field, Compilation);
+			Data.EventData data = new(field, Compilation);
 
 			Assert.True(data.Variable is not null && data.Variable.IsEquivalentTo(field.Declaration.Variables[0]));
 		}
@@ -146,7 +146,7 @@ namespace Durian.Analysis.Tests.EventData
 		public void VariableIsSetThroughConstructor_When_EventIsField_And_CalledConstructorWithIndex()
 		{
 			EventFieldDeclarationSyntax field = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action e1, e2; }");
-			Analysis.Data.EventData data = new(field, Compilation, 1);
+			Data.EventData data = new(field, Compilation, 1);
 
 			Assert.True(data.Variable is not null && data.Variable.IsEquivalentTo(field.Declaration.Variables[1]));
 		}

@@ -15,13 +15,13 @@ namespace Durian.Configuration
 		public bool ApplyNewModifierWhenPossible { get; set; } = true;
 
 		/// <inheritdoc cref="DefaultParamConfigurationAttribute.MethodConvention"/>
-		public DPMethodConvention MethodConvention { get; set; } = DPMethodConvention.Default;
+		public DPMethodConvention MethodConvention { get; set; }
 
 		/// <inheritdoc cref="DefaultParamConfigurationAttribute.TargetNamespace"/>
 		public string? TargetNamespace { get; set; }
 
 		/// <inheritdoc cref="DefaultParamConfigurationAttribute.TypeConvention"/>
-		public DPTypeConvention TypeConvention { get; set; } = DPTypeConvention.Default;
+		public DPTypeConvention TypeConvention { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamScopedConfigurationAttribute"/> class.

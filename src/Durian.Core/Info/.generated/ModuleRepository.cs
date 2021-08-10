@@ -422,7 +422,7 @@ namespace Durian.Info
 								title: "Target type is outside of the current assembly",
 								id: 01,
 								docsPath: "tree/master/docs/FriendClass/DUR0301.md",
-								fatal: false,
+								fatal: true,
 								hasLocation: true
 							),
 
@@ -435,7 +435,7 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Do not use FriendClassConfigurationAttribute on types with no friends specified",
+								title: "Do not use FriendClassConfigurationAttribute on types with no friend specified",
 								id: 03,
 								docsPath: "tree/master/docs/FriendClass/DUR0303.md",
 								fatal: false,
@@ -475,7 +475,7 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Member cannot be accessed by a friend type's sub class",
+								title: "Internal members of a type with at least one friend cannot be accessed by its children",
 								id: 08,
 								docsPath: "tree/master/docs/FriendClass/DUR0308.md",
 								fatal: true,
@@ -487,6 +487,46 @@ namespace Durian.Info
 								id: 09,
 								docsPath: "tree/master/docs/FriendClass/DUR0309.md",
 								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Type is not a valid friend type",
+								id: 10,
+								docsPath: "tree/master/docs/FriendClass/DUR0310.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Type cannot be a friend of itself",
+								id: 11,
+								docsPath: "tree/master/docs/FriendClass/DUR0311.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "To use external type, a proper InternalsVisibleToAttribute must be specified",
+								id: 12,
+								docsPath: "tree/master/docs/FriendClass/DUR0312.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Member cannot be accessed by friend type's child type",
+								id: 13,
+								docsPath: "tree/master/docs/FriendClass/DUR0313.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Do not use FriendClassConfiguration.AllowsChildren on a sealed type",
+								id: 14,
+								docsPath: "tree/master/docs/FriendClass/DUR0314.md",
+								fatal: false,
 								hasLocation: true
 							),
 						},

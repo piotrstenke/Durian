@@ -113,7 +113,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static TypeParameterContainer CreateFrom(MemberDeclarationSyntax member, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			return CreateFrom(member, semanticModel, compilation.MainAttribute!, cancellationToken);
+			return CreateFrom(member, semanticModel, compilation.DefaultParamAttribute!, cancellationToken);
 		}
 
 		/// <summary>
@@ -216,11 +216,11 @@ namespace Durian.Analysis.DefaultParam
 			{
 				ref readonly TypeParameterData thisData = ref this[i];
 
-				if (thisData.IsDefaultParam)
+				if (thisData.IsValidDefaultParam)
 				{
 					parameters[i] = thisData;
 				}
-				else if (target[i].IsDefaultParam)
+				else if (target[i].IsValidDefaultParam)
 				{
 					ref readonly TypeParameterData targetData = ref target[i];
 					parameters[i] = new(thisData.Syntax, thisData.Symbol, thisData.SemanticModel, targetData.Attribute, targetData.TargetType);
@@ -328,9 +328,9 @@ namespace Durian.Analysis.DefaultParam
 
 			for (int i = 0; i < length; i++)
 			{
-				ref TypeParameterData data = ref parameters[i];
+				ref readonly TypeParameterData data = ref parameters[i];
 
-				if (data.IsDefaultParam)
+				if (data.IsValidDefaultParam)
 				{
 					return i;
 				}

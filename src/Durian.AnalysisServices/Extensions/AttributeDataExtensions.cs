@@ -122,7 +122,7 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 		public static T? GetNamedArgumentTypeValue<T>(this AttributeData attribute, string argumentName) where T : ITypeSymbol
 		{
-			TryGetNamedArgumentTypeValue<T>(attribute, argumentName, out T? symbol);
+			TryGetNamedArgumentTypeValue(attribute, argumentName, out T? symbol);
 			return symbol;
 		}
 

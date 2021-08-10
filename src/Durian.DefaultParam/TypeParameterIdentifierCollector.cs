@@ -88,7 +88,7 @@ namespace Durian.Analysis.DefaultParam
 			ISymbol? symbol = SemanticModel.GetSymbolInfo(node).Symbol?.ContainingType;
 
 			// The DefaultParam attributes will be removed later, so they don't need to be stored.
-			if (SymbolEqualityComparer.Default.Equals(symbol, ParentCompilation?.MainAttribute) || SymbolEqualityComparer.Default.Equals(symbol, ParentCompilation?.ConfigurationAttribute))
+			if (SymbolEqualityComparer.Default.Equals(symbol, ParentCompilation?.DefaultParamAttribute) || SymbolEqualityComparer.Default.Equals(symbol, ParentCompilation?.DefaultParamConfigurationAttribute))
 			{
 				return;
 			}

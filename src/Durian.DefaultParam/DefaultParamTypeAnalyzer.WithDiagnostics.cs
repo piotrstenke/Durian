@@ -281,7 +281,7 @@ namespace Durian.Analysis.DefaultParam
 				{
 					if (HasInheritConventionOnContainingTypes(symbol, compilation, containingTypes))
 					{
-						if (!DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.ConfigurationAttribute!, nameof(DefaultParamConfiguration.TypeConvention), out int value) || value != (int)DPTypeConvention.Copy)
+						if (!DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.DefaultParamConfigurationAttribute!, nameof(DefaultParamConfiguration.TypeConvention), out int value) || value != (int)DPTypeConvention.Copy)
 						{
 							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor, symbol);
 						}

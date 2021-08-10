@@ -12,21 +12,21 @@ namespace Durian.Analysis.Tests.MethodData
 		[Fact]
 		public void CanReturnBlockBody()
 		{
-			Analysis.Data.MethodData data = GetMethod("class Test { void Method() { } }");
+			Data.MethodData data = GetMethod("class Test { void Method() { } }");
 			Assert.True(data.Body is BlockSyntax);
 		}
 
 		[Fact]
 		public void CanReturnExpressionBody()
 		{
-			Analysis.Data.MethodData data = GetMethod("class Test { int Method() => 2; }");
+			Data.MethodData data = GetMethod("class Test { int Method() => 2; }");
 			Assert.True(data.Body is ArrowExpressionClauseSyntax);
 		}
 
 		[Fact]
 		public void ReturnsNull_When_HasNoBody()
 		{
-			Analysis.Data.MethodData data = GetMethod("class Test { partial void Method(); }");
+			Data.MethodData data = GetMethod("class Test { partial void Method(); }");
 			Assert.True(data.Body is null);
 		}
 	}

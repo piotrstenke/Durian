@@ -62,7 +62,7 @@ namespace Durian.Analysis.DefaultParam
 			int defaultValue
 		)
 		{
-			if (!TryGetConfigurationPropertyValue(attributes, compilation.ConfigurationAttribute!, propertyName, out int value))
+			if (!TryGetConfigurationPropertyValue(attributes, compilation.DefaultParamConfigurationAttribute!, propertyName, out int value))
 			{
 				return GetConfigurationEnumValueOnContainingTypes(propertyName, containingTypes, compilation, defaultValue);
 			}
@@ -88,7 +88,7 @@ namespace Durian.Analysis.DefaultParam
 
 			if (length > 0)
 			{
-				INamedTypeSymbol scopedAttribute = compilation.ScopedConfigurationAttribute!;
+				INamedTypeSymbol scopedAttribute = compilation.DefaultParamScopedConfigurationAttribute!;
 
 				foreach (INamedTypeSymbol type in containingTypes.Reverse())
 				{
@@ -296,7 +296,7 @@ namespace Durian.Analysis.DefaultParam
 			out TypeParameterListSyntax updatedTypeParameters
 		)
 		{
-			INamedTypeSymbol mainAttribute = compilation.MainAttribute!;
+			INamedTypeSymbol mainAttribute = compilation.DefaultParamAttribute!;
 
 			SeparatedSyntaxList<TypeParameterSyntax> list = typeParameters.Parameters;
 
@@ -687,7 +687,7 @@ namespace Durian.Analysis.DefaultParam
 
 					ref readonly TypeParameterData data = ref typeParameters[parameter.GenericParameterIndex];
 
-					if (data.IsDefaultParam)
+					if (data.IsValidDefaultParam)
 					{
 						currentParameters[j] = new ParameterGeneration(data.TargetType!, parameter.RefKind, parameter.GenericParameterIndex);
 					}
@@ -750,7 +750,7 @@ namespace Durian.Analysis.DefaultParam
 				attributes = SyntaxFactory.SeparatedList(attributes.Where(attr =>
 				{
 					ISymbol? symbol = semanticModel.GetSymbolInfo(attr, cancellationToken).Symbol;
-					return !SymbolEqualityComparer.Default.Equals(symbol?.ContainingType, compilation.ConfigurationAttribute);
+					return !SymbolEqualityComparer.Default.Equals(symbol?.ContainingType, compilation.DefaultParamConfigurationAttribute);
 				}));
 
 				if (attributes.Any())

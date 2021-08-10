@@ -82,7 +82,7 @@ namespace Durian.Analysis.DefaultParam
 
 			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(localFunction.SyntaxTree);
 
-			if (HasDefaultParamAttribute(localFunction, semanticModel, compilation.MainAttribute!))
+			if (HasDefaultParamAttribute(localFunction, semanticModel, compilation.DefaultParamAttribute!))
 			{
 				ISymbol? symbol = semanticModel.GetDeclaredSymbol(localFunction, cancellationToken);
 

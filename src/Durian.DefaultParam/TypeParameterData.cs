@@ -25,10 +25,16 @@ namespace Durian.Analysis.DefaultParam
 		public readonly AttributeSyntax? Attribute { get; }
 
 		/// <summary>
-		/// Determines whether the type target <see cref="Symbol"/> has a valid <see cref="DefaultParamAttribute"/>.
+		/// Determines whether the target <see cref="Symbol"/> has a <see cref="DefaultParamAttribute"/>.
 		/// </summary>
-		[MemberNotNullWhen(true, nameof(Attribute), nameof(TargetType))]
-		public readonly bool IsDefaultParam => Attribute is not null && TargetType is not null;
+		[MemberNotNullWhen(true, nameof(Attribute))]
+		public readonly bool IsDefaultParam => Attribute is not null;
+
+		/// <summary>
+		/// Determines whether the target <see cref="Symbol"/> has a valid <see cref="DefaultParamAttribute"/>.
+		/// </summary>
+		[MemberNotNullWhen(true, nameof(TargetType))]
+		public readonly bool IsValidDefaultParam => IsDefaultParam && TargetType is not null;
 
 		/// <summary>
 		/// <see cref="Location"/> of the <see cref="Syntax"/>.
@@ -108,7 +114,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static TypeParameterData CreateFrom(TypeParameterSyntax typeParameter, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
 		{
-			return CreateFrom(typeParameter, semanticModel, compilation.MainAttribute!, cancellationToken);
+			return CreateFrom(typeParameter, semanticModel, compilation.DefaultParamAttribute!, cancellationToken);
 		}
 
 		/// <summary>
@@ -126,7 +132,8 @@ namespace Durian.Analysis.DefaultParam
 
 			if (attrSyntax is not null)
 			{
-				return new TypeParameterData(typeParameter, symbol, semanticModel, attrSyntax, GetTargetType(attrData!));
+				ITypeSymbol? targetType = GetTargetType(attrData!);
+				return new TypeParameterData(typeParameter, symbol, semanticModel, attrSyntax, targetType);
 			}
 
 			return new TypeParameterData(typeParameter, symbol, semanticModel);
@@ -146,13 +153,14 @@ namespace Durian.Analysis.DefaultParam
 			}
 
 			ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
-			AttributeData? data = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.MainAttribute));
+			AttributeData? data = attributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DefaultParamAttribute));
 			AttributeSyntax? attrSyntax = data?.ApplicationSyntaxReference?.GetSyntax(cancellationToken) as AttributeSyntax;
 			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(syntax.SyntaxTree);
 
 			if (attrSyntax is not null)
 			{
-				return new TypeParameterData(syntax, symbol, semanticModel, attrSyntax, GetTargetType(data!));
+				ITypeSymbol? targetType = GetTargetType(data!);
+				return new TypeParameterData(syntax, symbol, semanticModel, attrSyntax, targetType);
 			}
 
 			return new TypeParameterData(syntax, symbol, semanticModel);
@@ -264,7 +272,14 @@ namespace Durian.Analysis.DefaultParam
 
 		private static ITypeSymbol? GetTargetType(AttributeData data)
 		{
-			return data.ConstructorArguments.FirstOrDefault().Value as ITypeSymbol;
+			ImmutableArray<TypedConstant> ctor = data.ConstructorArguments;
+
+			if(ctor.Length == 0)
+			{
+				return null;
+			}
+
+			return ctor[0].Value as ITypeSymbol;
 		}
 	}
 }

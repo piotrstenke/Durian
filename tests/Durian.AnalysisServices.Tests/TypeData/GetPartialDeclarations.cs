@@ -15,7 +15,7 @@ namespace Durian.Analysis.Tests.TypeData
 		public void CanReturnsMultipleDeclarations()
 		{
 			TypeDeclarationSyntax firstDecl = GetNode<TypeDeclarationSyntax>("public partial sealed class Test { }");
-			Analysis.Data.TypeData data = GetType("partial class Test { }");
+			Data.TypeData data = GetType("partial class Test { }");
 			TypeDeclarationSyntax[] decl = data.GetPartialDeclarations().ToArray();
 
 			Assert.True(decl.Length == 2 && decl.Any(d => d.IsEquivalentTo(firstDecl)) && decl.Any(d => d.IsEquivalentTo(data.Declaration)));
@@ -24,7 +24,7 @@ namespace Durian.Analysis.Tests.TypeData
 		[Fact]
 		public void ReturnsOneDeclaration_When_IsNotPartial()
 		{
-			Analysis.Data.TypeData data = GetType("class Test { }");
+			Data.TypeData data = GetType("class Test { }");
 			TypeDeclarationSyntax[] decl = data.GetPartialDeclarations().ToArray();
 
 			Assert.True(decl.Length == 1 && decl[0].IsEquivalentTo(data.Declaration));
@@ -33,7 +33,7 @@ namespace Durian.Analysis.Tests.TypeData
 		[Fact]
 		public void ReturnsOneDeclaration_When_PartialIsRedundant()
 		{
-			Analysis.Data.TypeData data = GetType("partial class Test { }");
+			Data.TypeData data = GetType("partial class Test { }");
 			TypeDeclarationSyntax[] decl = data.GetPartialDeclarations().ToArray();
 
 			Assert.True(decl.Length == 1 && decl[0].IsEquivalentTo(data.Declaration));

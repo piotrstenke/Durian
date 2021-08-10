@@ -119,7 +119,7 @@ namespace Durian.Analysis.DefaultParam
 				attributes,
 				containingTypes,
 				compilation,
-				(int)compilation.Configuration.TypeConvention
+				(int)compilation.GlobalConfiguration.TypeConvention
 			);
 
 			return value == (int)DPTypeConvention.Inherit;
@@ -143,7 +143,7 @@ namespace Durian.Analysis.DefaultParam
 				nameof(DefaultParamConfigurationAttribute.TypeConvention),
 				containingTypes,
 				compilation,
-				(int)compilation.Configuration.TypeConvention
+				(int)compilation.GlobalConfiguration.TypeConvention
 			);
 
 			return value == (int)DPTypeConvention.Inherit;

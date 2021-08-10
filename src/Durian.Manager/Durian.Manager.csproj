@@ -10,7 +10,6 @@
     <AssemblyVersion>1.1.0</AssemblyVersion>
     <Version>1.1.0</Version>
     <RootNamespace>Durian.Manager</RootNamespace>
-    <Configurations>Debug;Release;Main Package</Configurations>
 
     <IsRoslynComponent>true</IsRoslynComponent>
     <DevelopmentDependency>true</DevelopmentDependency>

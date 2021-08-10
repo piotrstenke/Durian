@@ -524,7 +524,7 @@ namespace Durian.Analysis.DefaultParam
 				in TypeParameterData baseData
 			)
 			{
-				if (baseData.IsDefaultParam)
+				if (baseData.IsValidDefaultParam)
 				{
 					if (!thisData.IsDefaultParam)
 					{

@@ -16,7 +16,7 @@ namespace Durian.Analysis.Tests.FieldData
 		public void CanHandleDeclarationWithMultipleFields()
 		{
 			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int field1, field2; }");
-			Analysis.Data.FieldData data = new(field, Compilation, 1);
+			Data.FieldData data = new(field, Compilation, 1);
 
 			Assert.True(data.Symbol is not null && data.Declaration is not null);
 		}
@@ -25,7 +25,7 @@ namespace Durian.Analysis.Tests.FieldData
 		public void CanHandleDeclarationWithSingleField()
 		{
 			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int field; }");
-			Analysis.Data.FieldData data = new(field, Compilation);
+			Data.FieldData data = new(field, Compilation);
 
 			Assert.True(data.Symbol is not null && data.Declaration is not null);
 		}
@@ -34,7 +34,7 @@ namespace Durian.Analysis.Tests.FieldData
 		public void IndexIsSetThroughConstructor()
 		{
 			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int field1, field2; }");
-			Analysis.Data.FieldData data = new(field, Compilation, 1);
+			Data.FieldData data = new(field, Compilation, 1);
 
 			Assert.True(data.Index == 1);
 		}
@@ -47,7 +47,7 @@ namespace Durian.Analysis.Tests.FieldData
 			VariableDeclaratorSyntax decl = field.Declaration.Variables[index];
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(field.SyntaxTree);
 			IFieldSymbol symbol = (semanticModel.GetDeclaredSymbol(decl) as IFieldSymbol)!;
-			Analysis.Data.FieldData data = new(symbol, Compilation);
+			Data.FieldData data = new(symbol, Compilation);
 			Location location = field.GetLocation();
 
 			Assert.True(
@@ -71,14 +71,14 @@ namespace Durian.Analysis.Tests.FieldData
 		public void ThrowsIndexOutOfRangeException_When_IndexIsNotWithinTheRangeOfDeclaredFields()
 		{
 			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int field; }");
-			Assert.Throws<IndexOutOfRangeException>(() => new Analysis.Data.FieldData(field, Compilation, 1));
+			Assert.Throws<IndexOutOfRangeException>(() => new Data.FieldData(field, Compilation, 1));
 		}
 
 		[Fact]
 		public void VariableIsSetThroughConstructor()
 		{
 			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int field1; }");
-			Analysis.Data.FieldData data = new(field, Compilation);
+			Data.FieldData data = new(field, Compilation);
 
 			Assert.True(data.Variable is not null && data.Variable.IsEquivalentTo(field.Declaration.Variables[0]));
 		}
@@ -87,7 +87,7 @@ namespace Durian.Analysis.Tests.FieldData
 		public void VariableIsSetThroughConstructor_When_CalledConstructorWithIndex()
 		{
 			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int field1, field2; }");
-			Analysis.Data.FieldData data = new(field, Compilation, 1);
+			Data.FieldData data = new(field, Compilation, 1);
 
 			Assert.True(data.Variable is not null && data.Variable.IsEquivalentTo(field.Declaration.Variables[1]));
 		}

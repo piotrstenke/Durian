@@ -14,7 +14,7 @@ namespace Durian.Analysis.Tests.TypeData
 		[Fact]
 		public void CanReturnMultipleTypes()
 		{
-			Analysis.Data.TypeData data = GetType("class Test { class Parent { class Child { } } }", 2);
+			Data.TypeData data = GetType("class Test { class Parent { class Child { } } }", 2);
 			ITypeData[] containingTypes = data.GetContainingTypes(false).ToArray();
 			Assert.True(containingTypes.Length == 2 && containingTypes.Any(t => t.Symbol.Name == "Parent") && containingTypes.Any(t => t.Symbol.Name == "Test"));
 		}
@@ -22,7 +22,7 @@ namespace Durian.Analysis.Tests.TypeData
 		[Fact]
 		public void CanReturnSingleType()
 		{
-			Analysis.Data.TypeData data = GetType("class Parent { class Child { } }", 1);
+			Data.TypeData data = GetType("class Parent { class Child { } }", 1);
 			ITypeData[] containingTypes = data.GetContainingTypes(false).ToArray();
 			Assert.True(containingTypes.Length == 1 && containingTypes[0].Symbol.Name == "Parent");
 		}
@@ -30,7 +30,7 @@ namespace Durian.Analysis.Tests.TypeData
 		[Fact]
 		public void ReturnsEmpty_When_IsNotNestedType()
 		{
-			Analysis.Data.TypeData data = GetType("class Test { }");
+			Data.TypeData data = GetType("class Test { }");
 			ITypeData[] containingTypes = data.GetContainingTypes(false).ToArray();
 			Assert.True(containingTypes.Length == 0);
 		}
@@ -38,7 +38,7 @@ namespace Durian.Analysis.Tests.TypeData
 		[Fact]
 		public void ReturnsOnlyItself_When_IsNotNestedType_And_IncludeSelfIsTrue()
 		{
-			Analysis.Data.TypeData data = GetType("class Test { }");
+			Data.TypeData data = GetType("class Test { }");
 			ITypeData[] containingTypes = data.GetContainingTypes(true).ToArray();
 			Assert.True(containingTypes.Length == 1 && data == containingTypes[0]);
 		}
@@ -46,7 +46,7 @@ namespace Durian.Analysis.Tests.TypeData
 		[Fact]
 		public void ReturnsTypesInParentFirstOrder()
 		{
-			Analysis.Data.TypeData data = GetType("class Test { class Parent { class Child { } } }", 2);
+			Data.TypeData data = GetType("class Test { class Parent { class Child { } } }", 2);
 			ITypeData[] containingTypes = data.GetContainingTypes(false).ToArray();
 			Assert.True(containingTypes.Length == 2 && containingTypes[0].Symbol.Name == "Test" && containingTypes[1].Symbol.Name == "Parent");
 		}
@@ -54,7 +54,7 @@ namespace Durian.Analysis.Tests.TypeData
 		[Fact]
 		public void ReturnsTypesInParentFirstOrderWithItselfLast_When_IncludeSelfIsTrue()
 		{
-			Analysis.Data.TypeData data = GetType("class Test { class Parent { class Child { } } }", 2);
+			Data.TypeData data = GetType("class Test { class Parent { class Child { } } }", 2);
 			ITypeData[] containingTypes = data.GetContainingTypes(true).ToArray();
 			Assert.True(
 				containingTypes.Length == 3 &&
