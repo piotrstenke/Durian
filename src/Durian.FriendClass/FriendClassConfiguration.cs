@@ -14,9 +14,9 @@ namespace Durian.Analysis.FriendClass
 	public sealed class FriendClassConfiguration
 	{
 		/// <summary>
-		/// <see cref="AttributeSyntax"/> where the <see cref="FriendClassConfigurationAttribute"/> was specified.
+		/// Returns a new instance of <see cref="FriendClassConfiguration"/> with values set to default.
 		/// </summary>
-		public AttributeSyntax? Syntax { get; init; }
+		public static FriendClassConfiguration Default => new();
 
 		/// <summary>
 		/// Determines whether sub-classes of the current type should be treated like friend types. Defaults to <see langword="false"/>.
@@ -29,14 +29,9 @@ namespace Durian.Analysis.FriendClass
 		public bool AllowsExternalAssembly { get; init; }
 
 		/// <summary>
-		/// Determines whether the type itself is inaccessible outside of its friend types. Defaults to <see langword="false"/>.
+		/// <see cref="AttributeSyntax"/> where the <see cref="FriendClassConfigurationAttribute"/> was specified.
 		/// </summary>
-		public bool ApplyToType { get; init; }
-
-		/// <summary>
-		/// Returns a new instance of <see cref="FriendClassConfiguration"/> with values set to default.
-		/// </summary>
-		public static FriendClassConfiguration Default => new();
+		public AttributeSyntax? Syntax { get; init; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FriendClassConfiguration"/> class.

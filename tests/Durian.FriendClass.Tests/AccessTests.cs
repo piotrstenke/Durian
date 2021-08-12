@@ -35,7 +35,7 @@ class Child : Other
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0313_MemberCannotBeAccessedByChildClassOfFriend.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0311_MemberCannotBeAccessedByChildClassOfFriend.Id);
 		}
 
 		[Fact]
@@ -64,7 +64,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0308_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -230,6 +230,32 @@ class Other
 	void Main()
 	{{
 		string name = Test.Name;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		[Fact]
+		public async Task Success_When_TriesToAccessInternalMember_And_OuterTypeIsFriend()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{nameof(FriendClassAttribute)}(typeof(Other))]
+class Test
+{{
+	internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+	class Inner
+	{{
+		void Main()
+		{{
+			string name = Test.Name;
+		}}
 	}}
 }}
 ";

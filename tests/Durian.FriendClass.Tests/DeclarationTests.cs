@@ -32,7 +32,7 @@ class Test
 	internal static string Name {{ get; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0310_TypeIsNotValid.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0308_TypeIsNotValid.Id);
 		}
 
 		[Fact]
@@ -47,7 +47,7 @@ class Test
 	internal static string Name {{ get; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0310_TypeIsNotValid.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0308_TypeIsNotValid.Id);
 		}
 
 		[Fact]
@@ -62,28 +62,7 @@ class Test
 	internal static string Name {{ get; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0311_TypeCannotBeFriendOfItself.Id);
-		}
-
-		[Fact]
-		public async Task Success_When_ApplyToTypeIsTrue_And_IsInternal()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.ApplyToType)} = true)]
-[{nameof(FriendClassAttribute)}(typeof(Other))]
-public class Test
-{{
-	internal static string Name {{ get; }}
-}}
-
-class Other
-{{
-}}
-";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0309_TypeCannotBeFriendOfItself.Id);
 		}
 
 		[Fact]
@@ -138,35 +117,16 @@ $@"using {DurianStrings.MainNamespace};
 [{nameof(FriendClassAttribute)}(typeof(Child))]
 class Test
 {{
+	internal static string Name {{ get; }}
 }}
 
 [{nameof(FriendClassAttribute)}(typeof(Test))]
 class Child
 {{
+	internal static string Name {{ get; }}
 }}
 ";
 			Assert.Empty(await RunAnalyzerAsync(input));
-		}
-
-		[Fact]
-		public async Task Warning_When_ApplyToTypeIsTrue_And_IsNotInternal()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.ApplyToType)} = true)]
-[{nameof(FriendClassAttribute)}(typeof(Other))]
-public class Test
-{{
-	internal static string Name {{ get; }}
-}}
-
-class Other
-{{
-}}
-";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0304_DoNotUseApplyToTypeOnNonInternalTypes.Id);
 		}
 
 		[Fact]
@@ -186,7 +146,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_FriendTypeSpecifiedByMultipleAttributes.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0306_FriendTypeSpecifiedByMultipleAttributes.Id);
 		}
 
 		[Fact]
@@ -209,7 +169,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0306_TypeDoesNotDeclareInternalMembers.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0305_TypeDoesNotDeclareInternalMembers.Id);
 		}
 
 		[Fact]
@@ -231,7 +191,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0305_ValueOfFriendClassCannotAccessTargetType.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0304_ValueOfFriendClassCannotAccessTargetType.Id);
 		}
 
 		[Fact]

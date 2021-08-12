@@ -53,12 +53,12 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the <see cref="FriendClassConfigurationAttribute.ApplyToType"/> property should not be set to <see langword="true"/> on types that are not <see langword="internal"/>.
+		/// Provides diagnostic message indicating that the type specified by a <see cref="FriendClassAttribute"/> cannot access the target type.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0304_DoNotUseApplyToTypeOnNonInternalTypes = new(
+		public static readonly DiagnosticDescriptor DUR0304_ValueOfFriendClassCannotAccessTargetType = new(
 			id: "DUR0304",
-			title: "Do not set ApplyToType to true on types that are not 'internal'",
-			messageFormat: "'{0}': Do not set ApplyToType to true on types that are not 'internal'",
+			title: "Type specified by a FriendClassAttribute cannot access the target type",
+			messageFormat: "'{0}': Type '{1}' cannot access the target type",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + "/DUR0304.md",
@@ -66,12 +66,12 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the type specified by a <see cref="FriendClassAttribute"/> cannot access the target type.
+		/// Provides diagnostic message indicating that the type with one or more <see cref="FriendClassAttribute"/>s does not declare any <see langword="internal"/> members.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0305_ValueOfFriendClassCannotAccessTargetType = new(
+		public static readonly DiagnosticDescriptor DUR0305_TypeDoesNotDeclareInternalMembers = new(
 			id: "DUR0305",
-			title: "Type specified by a FriendClassAttribute cannot access the target type",
-			messageFormat: "'{0}': Type '{1}' cannot access the target type",
+			title: "Target type does not declare any 'internal' members",
+			messageFormat: "'{0}': FriendClassAttribute is unnecessary as the target type does not declare any 'internal' members",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + "/DUR0305.md",
@@ -79,25 +79,25 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the type with one or more <see cref="FriendClassAttribute"/>s does not declare any <see langword="internal"/> members.
+		/// Provides diagnostic message indicating that a value of <see cref="FriendClassAttribute"/> was specified multiple times on the same type.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0306_TypeDoesNotDeclareInternalMembers = new(
+		public static readonly DiagnosticDescriptor DUR0306_FriendTypeSpecifiedByMultipleAttributes = new(
 			id: "DUR0306",
-			title: "Target type does not declare any 'internal' members",
-			messageFormat: "'{0}': FriendClassAttribute is unnecessary as the target type does not declare any 'internal' members",
+			title: "Friend type is specified multiple times by two different FriendClassAttributes",
+			messageFormat: "'{0}': Friend type '{1}' is specified multiple times by two different FriendClassAttributes",
 			category: "Durian.FriendClass",
-			defaultSeverity: DiagnosticSeverity.Warning,
+			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0306.md",
 			isEnabledByDefault: true
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that a value of <see cref="FriendClassAttribute"/> was specified multiple times on the same type.
+		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by the <see cref="Type"/>'s child classes, unless <see cref="FriendClassConfigurationAttribute.AllowsChildren"/> is set to <see langword="true"/>.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0307_FriendTypeSpecifiedByMultipleAttributes = new(
+		public static readonly DiagnosticDescriptor DUR0307_MemberCannotBeAccessedByChildClass = new(
 			id: "DUR0307",
-			title: "Friend type is specified multiple times by two different FriendClassAttributes",
-			messageFormat: "'{0}': Friend type '{1}' is specified multiple times by two different FriendClassAttributes",
+			title: "Member cannot be accessed by a child type",
+			messageFormat: "'{0}': Member '{1}' of type '{2}' cannot be accessed by a child type",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0307.md",
@@ -105,12 +105,12 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by the <see cref="Type"/>'s child classes, unless <see cref="FriendClassConfigurationAttribute.AllowsChildren"/> is set to <see langword="true"/>.
+		/// Provides diagnostic message indicating that a friend type is not valid or is <see langword="null"/>.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0308_MemberCannotBeAccessedByChildClass = new(
+		public static readonly DiagnosticDescriptor DUR0308_TypeIsNotValid = new(
 			id: "DUR0308",
-			title: "Internal members of a type with at least one friend cannot be accessed by its children",
-			messageFormat: "'{0}': Internal members of type '{1}' cannot be accessed by its children",
+			title: "Type is not a valid friend type",
+			messageFormat: "'{0}': Type '{1}' is not a valid friend type",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0308.md",
@@ -118,12 +118,12 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that an <see langword="internal"/> <see cref="Type"/> cannot be accessed by a <see cref="Type"/> that is not a friend <see cref="Type"/>.
+		/// Provides diagnostic message indicating that a type cannot be a friend of itself.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0309_TypeCannotBeAccessedByNonFriendType = new(
+		public static readonly DiagnosticDescriptor DUR0309_TypeCannotBeFriendOfItself = new(
 			id: "DUR0309",
-			title: "Type cannot be accessed by a non-friend type",
-			messageFormat: "'{0}': Type '{1}' cannot be accessed by a non-friend type",
+			title: "Type cannot be a friend of itself",
+			messageFormat: "'{0}': Type cannot be a friend of itself",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0309.md",
@@ -131,12 +131,12 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that a friend type is not valid or is <see langword="null"/>.
+		/// Provides diagnostic message indicating that an <see cref="System.Runtime.CompilerServices.InternalsVisibleToAttribute"/> associated with the friend type was not found.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0310_TypeIsNotValid = new(
+		public static readonly DiagnosticDescriptor DUR0310_InternalsVisibleToNotFound = new(
 			id: "DUR0310",
-			title: "Type is not a valid friend type",
-			messageFormat: "'{0}': Type '{1}' is not a valid friend type",
+			title: "To use external type, a proper InternalsVisibleToAttribute must be specified",
+			messageFormat: "'{0}': To use external type '{1}', an InternalsVisibleToAttribute with value '{2}' must be specified",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0310.md",
@@ -144,12 +144,12 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that a type cannot be a friend of itself.
+		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by child classes of a friend type, unless <see cref="FriendClassAttribute.AllowsFriendChildren"/> is set to <see langword="true"/>.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0311_TypeCannotBeFriendOfItself = new(
+		public static readonly DiagnosticDescriptor DUR0311_MemberCannotBeAccessedByChildClassOfFriend = new(
 			id: "DUR0311",
-			title: "Type cannot be a friend of itself",
-			messageFormat: "'{0}': Type cannot be a friend of itself",
+			title: "Member cannot be accessed by friend type's child type",
+			messageFormat: "'{0}': Member '{1}' of type '{2}' cannot be accessed outside by friend type's child class",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0311.md",
@@ -157,41 +157,28 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that an <see cref="System.Runtime.CompilerServices.InternalsVisibleToAttribute"/> associated with the friend type was not found.
+		/// Provides diagnostic message indicating that the <see cref="FriendClassConfigurationAttribute.AllowsChildren"/> should not be used on structs or sealed/static classes.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0312_InternalsVisibleToNotFound = new(
+		public static readonly DiagnosticDescriptor DUR0312_DoNotAllowChildrenOnSealedType = new(
 			id: "DUR0312",
-			title: "To use external type, a proper InternalsVisibleToAttribute must be specified",
-			messageFormat: "'{0}': To use external type '{1}', an InternalsVisibleToAttribute with value '{2}' must be specified",
+			title: "Do not use FriendClassConfiguration.AllowsChildren on a sealed type",
+			messageFormat: "'{0}': Do not use FriendClassConfiguration.AllowsChildren on a sealed type",
 			category: "Durian.FriendClass",
-			defaultSeverity: DiagnosticSeverity.Error,
+			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + "/DUR0312.md",
 			isEnabledByDefault: true
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by child classes of a friend type, unless <see cref="FriendClassAttribute.AllowsFriendChildren"/> is set to <see langword="true"/>.
+		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed from a non-friend assembly.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0313_MemberCannotBeAccessedByChildClassOfFriend = new(
+		public static readonly DiagnosticDescriptor DUR0313_MemberCannotBeAccessedInExternalAssembly = new(
 			id: "DUR0313",
-			title: "Member cannot be accessed by friend type's child type",
-			messageFormat: "'{0}': Member '{1}' of type '{2}' cannot be accessed outside by friend type's child class",
+			title: "Member cannot be accessed in a non-friend external assembly",
+			messageFormat: "'{0}': Member '{1}' of type '{2}' cannot be accessed from a non-friend external assembly",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0313.md",
-			isEnabledByDefault: true
-		);
-
-		/// <summary>
-		/// Provides diagnostic message indicating that the <see cref="FriendClassConfigurationAttribute.AllowsChildren"/> should not be used on structs or sealed/static classes.
-		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0314_DoNotAllowChildrenOnSealedType = new(
-			id: "DUR0314",
-			title: "Do not use FriendClassConfiguration.AllowsChildren on a sealed type",
-			messageFormat: "'{0}': Do not use FriendClassConfiguration.AllowsChildren on a sealed type",
-			category: "Durian.FriendClass",
-			defaultSeverity: DiagnosticSeverity.Warning,
-			helpLinkUri: DocsPath + "/DUR0314.md",
 			isEnabledByDefault: true
 		);
 

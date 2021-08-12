@@ -23,11 +23,6 @@ namespace Durian.Configuration
 		public bool AllowsExternalAssembly { get; set; }
 
 		/// <summary>
-		/// Determines whether the type itself is inaccessible outside of its friend types. Defaults to <see langword="false"/>.
-		/// </summary>
-		public bool ApplyToType { get; set; }
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="FriendClassConfigurationAttribute"/>.
 		/// </summary>
 		public FriendClassConfigurationAttribute()

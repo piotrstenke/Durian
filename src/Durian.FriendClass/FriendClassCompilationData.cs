@@ -30,7 +30,7 @@ namespace Durian.Analysis.FriendClass
 		public override bool HasErrors
 		{
 			get => base.HasErrors;
-			protected set => base.HasErrors = true;
+			protected set => base.HasErrors = value;
 		}
 
 		/// <summary>
