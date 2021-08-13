@@ -25,16 +25,16 @@
 
 Packages that are part of the *InterfaceTargets* module:
 
- - *Durian.InterfaceTargets*
+ - [*Durian.InterfaceTargets*](https://www.nuget.org/packages/Durian.InterfaceTargets/)
 
-*InterfaceTargets* includes 5 types from [Durian.Core](../Durian.Core/README.md): 
+*InterfaceTargets* includes 2 types from [Durian.Core](../Durian.Core/README.md): 
 
- - [Durian.InterfaceTargetsAttribute](../Durian.Core/_attr/InterfaceTargetsAttribute.cs)
  - [Durian.InterfaceTargets](../Durian.Core/_enum/InterfaceTargets.cs)
+ - [Durian.InterfaceTargetsAttribute](../Durian.Core/_attr/InterfaceTargetsAttribute.cs)
 
 ## Setup
 
-To start using *InterfaceTargets*, reference the *Durian.DefaultParam* package. 
+To start using *InterfaceTargets*, reference either the [*Durian.InterfaceTargets*](https://www.nuget.org/packages/Durian.InterfaceTargets/) or [*Durian*](https://www.nuget.org/packages/Durian/) package.
 
 **Note**: 
 Like with other Durian modules, the target project must reference the [Durian.Core](../Durian.Core/README.md) package as well.
@@ -51,7 +51,7 @@ public interface ITest
 {
 }
 
-// OK
+// Success!
 // ITest can be implemented, because ClassTest is a class.
 public class ClassTest : ITest
 {
@@ -75,13 +75,13 @@ public interface ITest
 {
 }
 
-// OK
+// Success!
 // ITest can be implemented, because ClassTest is a class.
 public class ClassTest : ITest
 {
 }
 
-// OK
+// Success!
 // ITest can be implemented, because StructTest is a struct.
 public struct StructTest : ITest
 {

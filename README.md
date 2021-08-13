@@ -23,7 +23,7 @@
 
 ## Current state
 
-Durian is at an early stage of its evolution - many core features are still missing, being either in early development or planning phase. As for now, only one fully-fledged module is complete - *DefaultParam*, with *InterfaceTargets* awaiting in experimental stage for release in the closest future.
+Durian is at an early stage of its evolution - many core features are still missing, being either in early development or planning phase. As for now, only one fully-fledged module is complete - *DefaultParam*, with *InterfaceTargets* and *FriendClass* awaiting in experimental stage for release in the closest future.
 
 ## Features
 
@@ -35,7 +35,6 @@ To see more about a specific feature, click on its name.
 ```csharp
 using Durian;
 
-// Add the 'Durian.DefaultParamAttribute' to a type parameter to specify a default value.
 public class Test<[DefaultParam(typeof(string))]T>
 {
     public T Value { get; }
@@ -62,6 +61,8 @@ class Program
 
 ## Experimental
 
+Experimental modules include packages that are almost ready to be released, but still need some more polishing.
+
 ### [InterfaceTargets](src/Durian.InterfaceTargets/README.md)
 
 *InterfaceTargets*, similar to how [System.AttributeUsageAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.attributeusageattribute?view=net-5.0) works, allows to specify what kinds of members an interface can be implemented by.
@@ -74,7 +75,7 @@ public interface ITest
 {
 }
 
-// OK
+// Success!
 // ITest can be implemented, because ClassTest is a class.
 public class ClassTest : ITest
 {
@@ -88,9 +89,45 @@ public struct StructTest : ITest
 
 ```
 
+### [FriendClass](src/Durian.FriendClass/README.md)
+
+*FriendClass* allows to limit access to 'internal' members by specifying a fixed list of friend types.
+
+```csharp
+using Durian;
+
+[FriendClass(typeof(A))]
+public class Test
+{
+    internal static string Key { get; }
+}
+
+public class A
+{
+    public string GetKey()
+    {
+        // Success!
+        // Type 'A' is a friend of 'Test', so it can safely access internal members.
+        return Test.Key;
+    }
+}
+
+public class B
+{
+    public string GetKey()
+    {
+        // Error!
+        // Type 'B' is not a friend of 'Test', so it cannot access internal members.
+        return Test.Key;
+    }
+}
+
+```
+
 ## What's next?
 
-With *InterfaceTargets* being close to leaving the experimental stage, two more features are almost ready to take its place - *GenericSpecialization* and *FriendClass*. Both are planned to be moved to experimental stage in late August - early September 2021.
+With *InterfaceTargets* and *FriendClass* being close to leaving the experimental stage, one more features is almost ready to take their place - *GenericSpecialization*, planned to be moved to experimental stage in late August - early September 2021.
+
 
 ##
 

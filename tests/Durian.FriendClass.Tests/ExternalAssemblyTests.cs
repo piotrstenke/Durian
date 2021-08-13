@@ -11,7 +11,10 @@ using Microsoft.CodeAnalysis;
 using System.IO;
 using System.Text;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Emit;
 using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
+using System.Reflection;
+using System;
 
 namespace Durian.Analysis.FriendClass.Tests
 {
@@ -23,18 +26,24 @@ namespace Durian.Analysis.FriendClass.Tests
 			const string externalAssembly = "external";
 
 			string input =
-$@"using {DurianStrings.ConfigurationNamespace};
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo(""{externalAssembly}"")]
 [{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsExternalAssembly)} = false)]
-class Test
+[{nameof(FriendClassAttribute)}(typeof(Other))]
+public class Test
 {{
 	internal static string Name {{ get; }}
 }}
+
+class Other
+{{
+}}
 ";
 			string ext =
-$@"public class Other
+$@"public class External
 {{
 	void Main()
 	{{
@@ -42,7 +51,7 @@ $@"public class Other
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAccessAnalyzerAsync(input, ext, externalAssembly);
+			ImmutableArray<Diagnostic> diagnostics = await RunAccessAnalyzerAsync(input, ext, externalAssembly, true);
 			Assert.Contains(diagnostics, d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
@@ -56,18 +65,19 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo(""another"")]
 [{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsExternalAssembly)} = true)]
-[{nameof(FriendClassAttribute)}(typeof(Other))]
-class Test
+[{nameof(FriendClassAttribute)}(typeof(External))]
+public class Test
 {{
 	internal static string Name {{ get; }}
 }}
+
 ";
 			string ext =
-$@"public class Other
+$@"public class External
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunDeclarationAnalyzerAsync(input, ext, "external");
+			ImmutableArray<Diagnostic> diagnostics = await RunDeclarationAnalyzerAsync(input, ext, "external", false);
 			Assert.Contains(diagnostics, d => d.Id == DUR0310_InternalsVisibleToNotFound.Id);
 		}
 
@@ -79,18 +89,18 @@ $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
 [{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsExternalAssembly)} = false)]
-[{nameof(FriendClassAttribute)}(typeof(Other))]
-class Test
+[{nameof(FriendClassAttribute)}(typeof(External))]
+public class Test
 {{
 	internal static string Name {{ get; }}
 }}
 ";
 			string ext =
-$@"public class Other
+$@"public class External
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunDeclarationAnalyzerAsync(input, ext, "external");
+			ImmutableArray<Diagnostic> diagnostics = await RunDeclarationAnalyzerAsync(input, ext, "external", false);
 			Assert.Contains(diagnostics, d => d.Id == DUR0301_TargetTypeIsOutsideOfAssembly.Id);
 		}
 
@@ -106,81 +116,19 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo(""{externalAssembly}"")]
 [{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsExternalAssembly)} = false)]
-[{nameof(FriendClassAttribute)}(typeof(Other))]
-class Test
+[{nameof(FriendClassAttribute)}(typeof(External))]
+public class Test
 {{
 	internal static string Name {{ get; }}
 }}
 ";
 			string ext =
-$@"public class Other
+$@"public class External
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunDeclarationAnalyzerAsync(input, ext, externalAssembly);
+			ImmutableArray<Diagnostic> diagnostics = await RunDeclarationAnalyzerAsync(input, ext, externalAssembly, false);
 			Assert.Contains(diagnostics, d => d.Id == DUR0301_TargetTypeIsOutsideOfAssembly.Id);
-		}
-
-		[Fact]
-		public async Task Error_When_TypeIsOutsideOfCurrentAssembly_And_DoesNotAllowExternalAssembly_And_HasInternalsVisibleTo_And_TriesToAccessInternalMember()
-		{
-			const string externalAssembly = "external";
-
-			string input =
-$@"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo(""{externalAssembly}"")]
-[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsExternalAssembly)} = false)]
-[{nameof(FriendClassAttribute)}(typeof(Other))]
-class Test
-{{
-	internal static string Name {{ get; }}
-}}
-";
-			string ext =
-$@"public class Other
-{{
-	void Main()
-	{{
-		string name = Test.Name;
-	}}
-}}
-";
-			ImmutableArray<Diagnostic> diagnostics = await RunAccessAnalyzerAsync(input, ext, externalAssembly);
-			Assert.Contains(diagnostics, d => d.Id == DUR0313_MemberCannotBeAccessedInExternalAssembly.Id);
-		}
-
-		[Fact]
-		public async Task Success_When_AllowsExternalAssembly_And_FriendIsInExternalAssembly_And_FriendTriesToAccessInternalMember()
-		{
-			const string externalAssembly = "external";
-
-			string input =
-$@"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo(""{externalAssembly}"")]
-[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsExternalAssembly)} = true)]
-[{nameof(FriendClassAttribute)}(typeof(Other))]
-class Test
-{{
-	internal static string Name {{ get; }}
-}}
-";
-			string ext =
-$@"public class Other
-{{
-	void Main()
-	{{
-		string name = Test.Name;
-	}}
-}}
-";
-			ImmutableArray<Diagnostic> diagnostics = await RunAccessAnalyzerAsync(input, ext, externalAssembly);
-			Assert.Empty(diagnostics);
 		}
 
 		[Fact]
@@ -195,57 +143,70 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo(""{externalAssembly}"")]
 [{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsExternalAssembly)} = true)]
-[{nameof(FriendClassAttribute)}(typeof(Other))]
-class Test
+[{nameof(FriendClassAttribute)}(typeof(External))]
+public class Test
 {{
 	internal static string Name {{ get; }}
 }}
 ";
 			string ext =
-$@"public class Other
+$@"public class External
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunDeclarationAnalyzerAsync(input, ext, externalAssembly);
+			ImmutableArray<Diagnostic> diagnostics = await RunDeclarationAnalyzerAsync(input, ext, externalAssembly, false);
 			Assert.Empty(diagnostics);
 		}
 
-		private static Task<ImmutableArray<Diagnostic>> RunAccessAnalyzerAsync(string input, string externalCode, string externalAssemblyName)
+		private static Task<ImmutableArray<Diagnostic>> RunAccessAnalyzerAsync(string input, string externalCode, string externalAssemblyName, bool refInputOrExternal)
 		{
 			FriendClassAccessAnalyzer analyzer = new();
-			return RunAnalyzerAsync(analyzer, input, externalCode, externalAssemblyName);
+			return RunAnalyzerAsync(analyzer, input, externalCode, externalAssemblyName, refInputOrExternal);
 		}
 
-		private static async Task<ImmutableArray<Diagnostic>> RunAnalyzerAsync(DiagnosticAnalyzer analyzer, string input, string externalCode, string externalAssemblyName)
+		private static async Task<ImmutableArray<Diagnostic>> RunAnalyzerAsync(DiagnosticAnalyzer analyzer, string input, string externalCode, string externalAssemblyName, bool refInputOrExternal)
 		{
-			CSharpCompilation external = RoslynUtilities
-				.CreateBaseCompilation()
-				.WithAssemblyName(externalAssemblyName)
-				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalCode, encoding: Encoding.UTF8));
-
-			CSharpCompilation current = RoslynUtilities
-				.CreateBaseCompilation()
-				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(input, encoding: Encoding.UTF8));
+			CSharpCompilation first = refInputOrExternal ? GetInputCompilation() : GetExternalCompilation();
 
 			using MemoryStream stream = new();
 
-			current.Emit(stream);
-			MetadataReference reference = MetadataReference.CreateFromStream(stream);
-			external = external.AddReferences(reference);
+			EmitResult emit = first.Emit(stream);
 
-			using MemoryStream stream2 = new();
+			if (!emit.Success)
+			{
+				throw new InvalidOperationException("Emit failed!");
+			}
 
-			AnalysisResult result = await external
+			MetadataReference reference = MetadataReference.CreateFromImage(stream.ToArray());
+			CSharpCompilation second = refInputOrExternal ? GetExternalCompilation() : GetInputCompilation();
+			second = second.AddReferences(reference);
+
+			AnalysisResult result = await second
 				.WithAnalyzers(ImmutableArray.Create(analyzer))
 				.GetAnalysisResultAsync(default);
 
 			return result.GetAllDiagnostics(analyzer);
+
+			CSharpCompilation GetInputCompilation()
+			{
+				return RoslynUtilities
+					.CreateBaseCompilation()
+					.AddSyntaxTrees(CSharpSyntaxTree.ParseText(input, encoding: Encoding.UTF8));
+			}
+
+			CSharpCompilation GetExternalCompilation()
+			{
+				return RoslynUtilities
+					.CreateBaseCompilation()
+					.WithAssemblyName(externalAssemblyName)
+					.AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalCode, encoding: Encoding.UTF8));
+			}
 		}
 
-		private static Task<ImmutableArray<Diagnostic>> RunDeclarationAnalyzerAsync(string input, string externalCode, string externalAssemblyName)
+		private static Task<ImmutableArray<Diagnostic>> RunDeclarationAnalyzerAsync(string input, string externalCode, string externalAssemblyName, bool refInputOrExternal)
 		{
 			FriendClassDeclarationAnalyzer analyzer = new();
-			return RunAnalyzerAsync(analyzer, input, externalCode, externalAssemblyName);
+			return RunAnalyzerAsync(analyzer, input, externalCode, externalAssemblyName, refInputOrExternal);
 		}
 	}
 }

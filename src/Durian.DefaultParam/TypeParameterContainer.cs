@@ -330,7 +330,7 @@ namespace Durian.Analysis.DefaultParam
 			{
 				ref readonly TypeParameterData data = ref parameters[i];
 
-				if (data.IsValidDefaultParam)
+				if (data.IsDefaultParam)
 				{
 					return i;
 				}

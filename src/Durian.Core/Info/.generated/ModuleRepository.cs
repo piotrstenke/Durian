@@ -515,10 +515,10 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Member cannot be accessed in a non-friend external assembly",
+								title: "Inner types don't need to be specified as friends explicitly",
 								id: 13,
 								docsPath: "tree/master/docs/FriendClass/DUR0313.md",
-								fatal: true,
+								fatal: false,
 								hasLocation: true
 							),
 						},

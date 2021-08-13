@@ -170,14 +170,14 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed from a non-friend assembly.
+		/// Provides diagnostic message indicating that an inner type does not need to be specified as a friend type, because it is a friend implicitly.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0313_MemberCannotBeAccessedInExternalAssembly = new(
+		public static readonly DiagnosticDescriptor DUR0313_InnerTypeIsImplicitFriend = new(
 			id: "DUR0313",
-			title: "Member cannot be accessed in a non-friend external assembly",
-			messageFormat: "'{0}': Member '{1}' of type '{2}' cannot be accessed from a non-friend external assembly",
+			title: "Inner types don't need to be specified as friends explicitly",
+			messageFormat: "'{0}': Inner types don't need to be specified as friends explicitly",
 			category: "Durian.FriendClass",
-			defaultSeverity: DiagnosticSeverity.Error,
+			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + "/DUR0313.md",
 			isEnabledByDefault: true
 		);

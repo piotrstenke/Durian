@@ -39,7 +39,8 @@ namespace Durian.Analysis.FriendClass
 			DUR0308_TypeIsNotValid,
 			DUR0309_TypeCannotBeFriendOfItself,
 			DUR0310_InternalsVisibleToNotFound,
-			DUR0312_DoNotAllowChildrenOnSealedType
+			DUR0312_DoNotAllowChildrenOnSealedType,
+			DUR0313_InnerTypeIsImplicitFriend
 		);
 
 		/// <summary>
@@ -153,7 +154,7 @@ namespace Durian.Analysis.FriendClass
 		{
 			FriendClassConfiguration @default = FriendClassConfiguration.Default;
 
-			if (symbol.GetAttributes(compilation.FriendClassConfigurationAttribute!) is not AttributeData attr ||
+			if (symbol.GetAttribute(compilation.FriendClassConfigurationAttribute!) is not AttributeData attr ||
 				attr.ApplicationSyntaxReference is null ||
 				attr.ApplicationSyntaxReference.GetSyntax() is not AttributeSyntax syntax
 			)
@@ -193,6 +194,12 @@ namespace Durian.Analysis.FriendClass
 			}
 
 			return arguments[0].GetLocation();
+		}
+
+		private static bool HasAtLeastOneInternalMember(INamedTypeSymbol symbol, [NotNullWhen(true)] out ISymbol? member)
+		{
+			member = symbol.GetMembers().FirstOrDefault(m => m.DeclaredAccessibility == Accessibility.Internal);
+			return member is not null;
 		}
 
 		private static void InitializeFriendArgumentLocation(AttributeData attribute, INamedTypeSymbol symbol, [NotNull] ref Location? location)
@@ -250,7 +257,7 @@ namespace Durian.Analysis.FriendClass
 				return true;
 			}
 
-			if (!compilation.IsSymbolAccessibleWithin(symbol, friend.ContainingAssembly))
+			if (!HasAtLeastOneInternalMember(symbol, out ISymbol? member) || !compilation.IsSymbolAccessibleWithin(member, friend.ContainingAssembly))
 			{
 				diagnostic = Diagnostic.Create(
 					descriptor: DUR0310_InternalsVisibleToNotFound,
@@ -304,6 +311,17 @@ namespace Durian.Analysis.FriendClass
 					descriptor: DUR0306_FriendTypeSpecifiedByMultipleAttributes,
 					location: GetFriendArgumentLocation(attribute, symbol),
 					messageArgs: new[] { symbol, friend }
+				);
+
+				return true;
+			}
+
+			if (symbol.ContainsSymbol(friend))
+			{
+				diagnostic = Diagnostic.Create(
+					descriptor: DUR0313_InnerTypeIsImplicitFriend,
+					location: GetFriendArgumentLocation(attribute, symbol),
+					messageArgs: new[] { symbol }
 				);
 
 				return true;

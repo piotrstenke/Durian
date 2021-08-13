@@ -33,8 +33,7 @@ namespace Durian.Analysis.FriendClass
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 			DUR0302_MemberCannotBeAccessedOutsideOfFriendClass,
 			DUR0307_MemberCannotBeAccessedByChildClass,
-			DUR0311_MemberCannotBeAccessedByChildClassOfFriend,
-			DUR0313_MemberCannotBeAccessedInExternalAssembly
+			DUR0311_MemberCannotBeAccessedByChildClassOfFriend
 		);
 
 		/// <summary>
@@ -225,28 +224,6 @@ namespace Durian.Analysis.FriendClass
 			return false;
 		}
 
-		private static bool TryGetExternalAssemblyDiagnostic(
-			INamedTypeSymbol accessedType,
-			FriendClassCompilationData compilation,
-			[NotNullWhen(true)] out DiagnosticDescriptor? descriptor
-		)
-		{
-			if (SymbolEqualityComparer.Default.Equals(compilation.Compilation.Assembly, accessedType.ContainingAssembly))
-			{
-				descriptor = null;
-				return false;
-			}
-
-			if (GetConfigurationBoolValue(accessedType, compilation, nameof(FriendClassConfigurationAttribute.AllowsExternalAssembly)))
-			{
-				descriptor = null;
-				return false;
-			}
-
-			descriptor = DUR0313_MemberCannotBeAccessedInExternalAssembly;
-			return true;
-		}
-
 		private static bool TryGetInvalidFriendDiagnostic(
 			INamedTypeSymbol currentType,
 			INamedTypeSymbol accessedType,
@@ -262,49 +239,33 @@ namespace Durian.Analysis.FriendClass
 				return false;
 			}
 
-			if (IsSpecifiedFriend(currentType, attributes, out List<(AttributeData attribute, INamedTypeSymbol friend)>? friends))
+			if (!IsSpecifiedFriend(currentType, attributes, out List<(AttributeData attribute, INamedTypeSymbol friend)>? friends))
 			{
-				return TryGetExternalAssemblyDiagnostic(accessedType, compilation, out descriptor);
+				if (IsChildOfAccessedType(currentType, accessedType))
+				{
+					if (!GetConfigurationBoolValue(accessedType, compilation, nameof(FriendClassConfigurationAttribute.AllowsChildren)))
+					{
+						descriptor = DUR0307_MemberCannotBeAccessedByChildClass;
+						return true;
+					}
+				}
+				else if (IsChildOfFriend(currentType, friends, out int targetFriendIndex))
+				{
+					if (!friends[targetFriendIndex].attribute.GetNamedArgumentValue<bool>(nameof(FriendClassAttribute.AllowsFriendChildren)))
+					{
+						descriptor = DUR0311_MemberCannotBeAccessedByChildClassOfFriend;
+						return true;
+					}
+				}
+				else
+				{
+					descriptor = DUR0302_MemberCannotBeAccessedOutsideOfFriendClass;
+					return true;
+				}
 			}
 
-			if (IsChildOfAccessedType(currentType, accessedType))
-			{
-				if (TryGetExternalAssemblyDiagnostic(accessedType, compilation, out DiagnosticDescriptor? d))
-				{
-					descriptor = d;
-					return true;
-				}
-
-				if (!GetConfigurationBoolValue(accessedType, compilation, nameof(FriendClassConfigurationAttribute.AllowsChildren)))
-				{
-					descriptor = DUR0307_MemberCannotBeAccessedByChildClass;
-					return true;
-				}
-
-				descriptor = null;
-				return false;
-			}
-
-			if (IsChildOfFriend(currentType, friends, out int targetFriendIndex))
-			{
-				if (TryGetExternalAssemblyDiagnostic(accessedType, compilation, out DiagnosticDescriptor? d))
-				{
-					descriptor = d;
-					return true;
-				}
-
-				if (!friends[targetFriendIndex].attribute.GetNamedArgumentValue<bool>(nameof(FriendClassAttribute.AllowsFriendChildren)))
-				{
-					descriptor = DUR0311_MemberCannotBeAccessedByChildClassOfFriend;
-					return true;
-				}
-
-				descriptor = null;
-				return false;
-			}
-
-			descriptor = DUR0302_MemberCannotBeAccessedOutsideOfFriendClass;
-			return true;
+			descriptor = null;
+			return false;
 		}
 	}
 }

@@ -38,7 +38,7 @@
 
 Packages that are part of the *DefaultParam* module:
 
- - *Durian.DefaultParam*
+ - [*Durian.DefaultParam*](https://www.nuget.org/packages/Durian.DefaultParam/)
 
 *DefaultParam* includes 5 types from [Durian.Core](../Durian.Core/README.md): 
 
@@ -50,7 +50,7 @@ Packages that are part of the *DefaultParam* module:
 
 ## Setup
 
-To start using *DefaultParam*, reference the *Durian.DefaultParam* package. 
+To start using *DefaultParam*, reference either the [*Durian.DefaultParam*](https://www.nuget.org/packages/Durian.DefaultParam/) or [*Durian*](https://www.nuget.org/packages/Durian/) package. 
 
 **Note**: 
 Like with other Durian modules, the target project must reference the [Durian.Core](../Durian.Core/README.md) package as well.

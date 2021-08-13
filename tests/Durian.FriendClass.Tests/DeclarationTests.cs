@@ -130,6 +130,69 @@ class Child
 		}
 
 		[Fact]
+		public async Task Warning_When_AllowChildrenOnSealedClass()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(FriendClassAttribute)}(typeof(Other))]
+[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsChildren)} = true)]
+sealed class Test
+{{
+	internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0312_DoNotAllowChildrenOnSealedType.Id);
+		}
+
+		[Fact]
+		public async Task Warning_When_AllowChildrenOnStaticClass()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(FriendClassAttribute)}(typeof(Other))]
+[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsChildren)} = true)]
+static class Test
+{{
+	internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0312_DoNotAllowChildrenOnSealedType.Id);
+		}
+
+		[Fact]
+		public async Task Warning_When_AllowChildrenOnStruct()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(FriendClassAttribute)}(typeof(Other))]
+[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsChildren)} = true)]
+struct Test
+{{
+	internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0312_DoNotAllowChildrenOnSealedType.Id);
+		}
+
+		[Fact]
 		public async Task Warning_When_FriendTypeSpecifiedMoreThanOnce()
 		{
 			string input =
@@ -170,6 +233,25 @@ class Other
 }}
 ";
 			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0305_TypeDoesNotDeclareInternalMembers.Id);
+		}
+
+		[Fact]
+		public async Task Warning_When_InnerTypeIsFriend()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{nameof(FriendClassAttribute)}(typeof(Inner))]
+class Test
+{{
+	internal static string Name {{ get; }}
+
+	class Inner
+	{{
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0313_InnerTypeIsImplicitFriend.Id);
 		}
 
 		[Fact]
