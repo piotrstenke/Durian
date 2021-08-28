@@ -45,7 +45,7 @@ public class Test<[DefaultParam(typeof(string))]T>
     }
 }
 
-class Program
+public class Program
 {
     static void Main()
     {

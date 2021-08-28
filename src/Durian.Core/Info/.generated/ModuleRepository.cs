@@ -491,7 +491,7 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "To use external type, a proper InternalsVisibleToAttribute must be specified",
+								title: "Member cannot be accessed by friend type's child type",
 								id: 10,
 								docsPath: "tree/master/docs/FriendClass/DUR0310.md",
 								fatal: true,
@@ -499,15 +499,15 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Member cannot be accessed by friend type's child type",
+								title: "Do not use FriendClassConfiguration.AllowsChildren on a sealed type",
 								id: 11,
 								docsPath: "tree/master/docs/FriendClass/DUR0311.md",
-								fatal: true,
+								fatal: false,
 								hasLocation: true
 							),
 
 							new DiagnosticData(
-								title: "Do not use FriendClassConfiguration.AllowsChildren on a sealed type",
+								title: "Inner types don't need to be specified as friends explicitly",
 								id: 12,
 								docsPath: "tree/master/docs/FriendClass/DUR0312.md",
 								fatal: false,
@@ -515,7 +515,7 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Inner types don't need to be specified as friends explicitly",
+								title: "FriendClassConfigurationAttribute is redundant",
 								id: 13,
 								docsPath: "tree/master/docs/FriendClass/DUR0313.md",
 								fatal: false,

@@ -224,7 +224,7 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="MetadataReference"/>s of all essential .NET and Durian assemblies. 
+		/// Returns an array of <see cref="MetadataReference"/>s of all essential .NET and Durian assemblies.
 		/// </summary>
 		public static MetadataReference[] GetBaseReferences()
 		{

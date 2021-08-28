@@ -21,6 +21,52 @@ namespace Durian.Analysis.FriendClass.Tests
 	public class DeclarationTests : AnalyzerTest<FriendClassDeclarationAnalyzer>
 	{
 		[Fact]
+		public async Task Error_When_FriendIsInDifferentAssembly()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{nameof(FriendClassAttribute)}(typeof(External))]
+class Test
+{{
+	internal static string Name {{ get; }}
+}}
+";
+
+			string external =
+@"public class External
+{
+}
+";
+			CSharpCompilation dependency = RoslynUtilities
+				.CreateBaseCompilation()
+				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(external, encoding: Encoding.UTF8));
+
+			using MemoryStream stream = new();
+
+			EmitResult emit = dependency.Emit(stream);
+
+			if (!emit.Success)
+			{
+				throw new InvalidOperationException("Emit failed!");
+			}
+
+			MetadataReference reference = MetadataReference.CreateFromImage(stream.ToArray());
+			CSharpCompilation current = RoslynUtilities
+				.CreateBaseCompilation()
+				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(input, encoding: Encoding.UTF8))
+				.AddReferences(reference);
+
+			FriendClassDeclarationAnalyzer analyzer = new();
+
+			AnalysisResult result = await current
+				.WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(analyzer))
+				.GetAnalysisResultAsync(default);
+
+			Assert.Contains(result.GetAllDiagnostics(analyzer), d => d.Id == DUR0301_TargetTypeIsOutsideOfAssembly.Id);
+		}
+
+		[Fact]
 		public async Task Error_When_FriendIsNotNamedType()
 		{
 			string input =
@@ -130,6 +176,22 @@ class Child
 		}
 
 		[Fact]
+		public async Task Success_When_UsesConfigurationWithNoExplicitFriends_And_TargetChildrenAreFriends()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsChildren)} = true)]
+class Test
+{{
+	internal static string Name {{ get; }}
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		[Fact]
 		public async Task Warning_When_AllowChildrenOnSealedClass()
 		{
 			string input =
@@ -147,7 +209,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0312_DoNotAllowChildrenOnSealedType.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0311_DoNotAllowChildrenOnSealedType.Id);
 		}
 
 		[Fact]
@@ -168,7 +230,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0312_DoNotAllowChildrenOnSealedType.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0311_DoNotAllowChildrenOnSealedType.Id);
 		}
 
 		[Fact]
@@ -189,7 +251,28 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0312_DoNotAllowChildrenOnSealedType.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0311_DoNotAllowChildrenOnSealedType.Id);
+		}
+
+		[Fact]
+		public async Task Warning_When_ConfigurationValuesAreDefault()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{nameof(FriendClassAttribute)}(typeof(Other))]
+[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsChildren)} = false)]
+class Test
+{{
+	internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0313_ConfigurationIsRedundant.Id);
 		}
 
 		[Fact]
@@ -251,7 +334,7 @@ class Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0313_InnerTypeIsImplicitFriend.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0312_InnerTypeIsImplicitFriend.Id);
 		}
 
 		[Fact]
@@ -283,7 +366,7 @@ class Other
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(FriendClassConfigurationAttribute)}()]
+[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsChildren)} = false)]
 class Test
 {{
 	internal static string Name {{ get; }}

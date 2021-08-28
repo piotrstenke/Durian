@@ -9,17 +9,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.DefaultParam.CodeFixes
 {
-	//
-	// For some unknown reason Visual Studio does not register this code fix.
-	//
-	// It's definitely not a problem with DurianCodeFix<T> or DurianCodeFIx, as they work as intended when used by other classes.
-	//
-
 	/// <summary>
 	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial"/> diagnostic.
 	/// </summary>
-	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(DUR0101_MakeContainingTypePartialCodeFix))]
-	public sealed class DUR0101_MakeContainingTypePartialCodeFix : ApplyModifierCodeFix<TypeDeclarationSyntax>
+	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakePartialCodeFix))]
+	public sealed class MakePartialCodeFix : ApplyModifierCodeFix<TypeDeclarationSyntax>
 	{
 		/// <inheritdoc/>
 		public override string Id => Title + " [DefaultParam]";
@@ -31,9 +25,9 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 		public override string Title => "Make type partial";
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DUR0101_MakeContainingTypePartialCodeFix"/> class.
+		/// Creates a new instance of the <see cref="MakePartialCodeFix"/> class.
 		/// </summary>
-		public DUR0101_MakeContainingTypePartialCodeFix()
+		public MakePartialCodeFix()
 		{
 		}
 

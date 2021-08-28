@@ -16,8 +16,8 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 	/// <summary>
 	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase"/> diagnostic.
 	/// </summary>
-	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(DUR0108_MakeValueTheSameAsBaseMethod))]
-	public sealed class DUR0108_MakeValueTheSameAsBaseMethod : DurianCodeFixBase
+	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakeValueOfOverridenAttributeEquivalentCodeFix))]
+	public sealed class MakeValueOfOverridenAttributeEquivalentCodeFix : DurianCodeFixBase
 	{
 		/// <inheritdoc/>
 		public override string Id => Title + " [DefaultParam]";
@@ -26,9 +26,9 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 		public override string Title => "Make DefaultParam value the same as base method";
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DUR0108_MakeValueTheSameAsBaseMethod"/> class.
+		/// Creates a new instance of the <see cref="MakeValueOfOverridenAttributeEquivalentCodeFix"/> class.
 		/// </summary>
-		public DUR0108_MakeValueTheSameAsBaseMethod()
+		public MakeValueOfOverridenAttributeEquivalentCodeFix()
 		{
 		}
 
@@ -63,7 +63,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 		{
 			INamespaceSymbol? @namespace = (context.SemanticModel.GetSymbolInfo(context.Node).Symbol?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
 
-			NameSyntax name = CodeFixUtility.GetNameSyntax(context.SemanticModel, context.Root.Usings, @namespace, targetType, context.CancellationToken);
+			NameSyntax name = context.SemanticModel.GetNameSyntax(context.Root.Usings, @namespace, targetType, context.CancellationToken);
 
 			AttributeSyntax attr = context.Node
 				.WithArgumentList(SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(

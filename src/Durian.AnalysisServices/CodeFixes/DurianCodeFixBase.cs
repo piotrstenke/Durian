@@ -23,12 +23,12 @@ namespace Durian.Analysis.CodeFixes
 		}
 
 		/// <summary>
-		/// Id of this <see cref="DurianCodeFixBase"/>.
+		/// Id of this code fix.
 		/// </summary>
 		public virtual string Id => Title;
 
 		/// <summary>
-		/// Title of this <see cref="DurianCodeFixBase"/>.
+		/// Title of this code fix.
 		/// </summary>
 		public abstract string Title { get; }
 

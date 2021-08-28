@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Configuration;
+using System.Xml.Linq;
 
 namespace Durian.Analysis.FriendClass
 {
@@ -33,7 +34,7 @@ namespace Durian.Analysis.FriendClass
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 			DUR0302_MemberCannotBeAccessedOutsideOfFriendClass,
 			DUR0307_MemberCannotBeAccessedByChildClass,
-			DUR0311_MemberCannotBeAccessedByChildClassOfFriend
+			DUR0310_MemberCannotBeAccessedByChildClassOfFriend
 		);
 
 		/// <summary>
@@ -253,7 +254,7 @@ namespace Durian.Analysis.FriendClass
 				{
 					if (!friends[targetFriendIndex].attribute.GetNamedArgumentValue<bool>(nameof(FriendClassAttribute.AllowsFriendChildren)))
 					{
-						descriptor = DUR0311_MemberCannotBeAccessedByChildClassOfFriend;
+						descriptor = DUR0310_MemberCannotBeAccessedByChildClassOfFriend;
 						return true;
 					}
 				}

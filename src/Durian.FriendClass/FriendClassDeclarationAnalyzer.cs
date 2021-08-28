@@ -38,9 +38,9 @@ namespace Durian.Analysis.FriendClass
 			DUR0306_FriendTypeSpecifiedByMultipleAttributes,
 			DUR0308_TypeIsNotValid,
 			DUR0309_TypeCannotBeFriendOfItself,
-			DUR0310_InternalsVisibleToNotFound,
-			DUR0312_DoNotAllowChildrenOnSealedType,
-			DUR0313_InnerTypeIsImplicitFriend
+			DUR0311_DoNotAllowChildrenOnSealedType,
+			DUR0312_InnerTypeIsImplicitFriend,
+			DUR0313_ConfigurationIsRedundant
 		);
 
 		/// <summary>
@@ -88,7 +88,7 @@ namespace Durian.Analysis.FriendClass
 				context.ReportDiagnostic(diagnostic);
 			}
 
-			foreach (Diagnostic d in AnalyzeAttributes(attributes, symbol, compilation, config))
+			foreach (Diagnostic d in AnalyzeAttributes(attributes, symbol, compilation))
 			{
 				context.ReportDiagnostic(d);
 			}
@@ -97,8 +97,7 @@ namespace Durian.Analysis.FriendClass
 		private static IEnumerable<Diagnostic> AnalyzeAttributes(
 			AttributeData[] attributes,
 			INamedTypeSymbol symbol,
-			FriendClassCompilationData compilation,
-			FriendClassConfiguration configuration
+			FriendClassCompilationData compilation
 		)
 		{
 #pragma warning disable RS1024 // Compare symbols correctly
@@ -118,7 +117,7 @@ namespace Durian.Analysis.FriendClass
 					continue;
 				}
 
-				if (TryGetInvalidExternalFriendTypeDiagnostic(symbol, friend!, attribute, compilation.Compilation, configuration, out diagnostic))
+				if (TryGetInvalidExternalFriendTypeDiagnostic(symbol, friend!, attribute, compilation.Compilation, out diagnostic))
 				{
 					yield return diagnostic;
 					continue;
@@ -163,12 +162,10 @@ namespace Durian.Analysis.FriendClass
 			}
 
 			bool allowsChildren = GetBoolProperty(nameof(FriendClassConfigurationAttribute.AllowsChildren), @default.AllowsChildren);
-			bool allowsExternalAssembly = GetBoolProperty(nameof(FriendClassConfigurationAttribute.AllowsExternalAssembly), @default.AllowsExternalAssembly);
 
 			return new()
 			{
 				AllowsChildren = allowsChildren,
-				AllowsExternalAssembly = allowsExternalAssembly,
 				Syntax = syntax
 			};
 
@@ -196,12 +193,6 @@ namespace Durian.Analysis.FriendClass
 			return arguments[0].GetLocation();
 		}
 
-		private static bool HasAtLeastOneInternalMember(INamedTypeSymbol symbol, [NotNullWhen(true)] out ISymbol? member)
-		{
-			member = symbol.GetMembers().FirstOrDefault(m => m.DeclaredAccessibility == Accessibility.Internal);
-			return member is not null;
-		}
-
 		private static void InitializeFriendArgumentLocation(AttributeData attribute, INamedTypeSymbol symbol, [NotNull] ref Location? location)
 		{
 			if (location is null)
@@ -216,7 +207,8 @@ namespace Durian.Analysis.FriendClass
 			[NotNullWhen(true)] out Diagnostic? diagnostic
 		)
 		{
-			if (symbol.GetAttribute(compilation.FriendClassConfigurationAttribute!) is AttributeData attr)
+			if (symbol.GetAttribute(compilation.FriendClassConfigurationAttribute!) is AttributeData attr &&
+				!attr.GetNamedArgumentValue<bool>(nameof(FriendClassConfigurationAttribute.AllowsChildren)))
 			{
 				diagnostic = Diagnostic.Create(
 					descriptor: DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends,
@@ -236,7 +228,6 @@ namespace Durian.Analysis.FriendClass
 			ITypeSymbol friend,
 			AttributeData attribute,
 			CSharpCompilation compilation,
-			FriendClassConfiguration configuration,
 			[NotNullWhen(true)] out Diagnostic? diagnostic
 		)
 		{
@@ -246,30 +237,13 @@ namespace Durian.Analysis.FriendClass
 				return false;
 			}
 
-			if (friend.ContainingAssembly is null || !configuration.AllowsExternalAssembly)
-			{
-				diagnostic = Diagnostic.Create(
-					descriptor: DUR0301_TargetTypeIsOutsideOfAssembly,
-					location: GetFriendArgumentLocation(attribute, symbol),
-					messageArgs: new[] { symbol, friend }
-				);
+			diagnostic = Diagnostic.Create(
+				descriptor: DUR0301_TargetTypeIsOutsideOfAssembly,
+				location: GetFriendArgumentLocation(attribute, symbol),
+				messageArgs: new[] { symbol, friend }
+			);
 
-				return true;
-			}
-
-			if (!HasAtLeastOneInternalMember(symbol, out ISymbol? member) || !compilation.IsSymbolAccessibleWithin(member, friend.ContainingAssembly))
-			{
-				diagnostic = Diagnostic.Create(
-					descriptor: DUR0310_InternalsVisibleToNotFound,
-					location: GetFriendArgumentLocation(attribute, symbol),
-					messageArgs: new object[] { symbol, friend, friend.ContainingAssembly.Name }
-				);
-
-				return true;
-			}
-
-			diagnostic = null;
-			return false;
+			return true;
 		}
 
 		private static bool TryGetInvalidFriendTypeDiagnostic(
@@ -319,7 +293,7 @@ namespace Durian.Analysis.FriendClass
 			if (symbol.ContainsSymbol(friend))
 			{
 				diagnostic = Diagnostic.Create(
-					descriptor: DUR0313_InnerTypeIsImplicitFriend,
+					descriptor: DUR0312_InnerTypeIsImplicitFriend,
 					location: GetFriendArgumentLocation(attribute, symbol),
 					messageArgs: new[] { symbol }
 				);
@@ -337,10 +311,23 @@ namespace Durian.Analysis.FriendClass
 			[NotNullWhen(false)] out Diagnostic? diagnostic
 		)
 		{
-			if (configuration.AllowsChildren && (symbol.TypeKind == TypeKind.Struct || symbol.IsSealed || symbol.IsStatic))
+			if (!configuration.AllowsChildren)
+			{
+				if (configuration.Syntax is not null)
+				{
+					diagnostic = Diagnostic.Create(
+						descriptor: DUR0313_ConfigurationIsRedundant,
+						location: configuration.Syntax.GetLocation(),
+						messageArgs: new[] { symbol }
+					);
+
+					return false;
+				}
+			}
+			else if (symbol.TypeKind == TypeKind.Struct || symbol.IsSealed || symbol.IsStatic)
 			{
 				diagnostic = Diagnostic.Create(
-					descriptor: DUR0312_DoNotAllowChildrenOnSealedType,
+					descriptor: DUR0311_DoNotAllowChildrenOnSealedType,
 					location: GetArgumentLocation(nameof(FriendClassConfigurationAttribute.AllowsChildren)),
 					messageArgs: new[] { symbol }
 				);

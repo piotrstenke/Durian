@@ -24,11 +24,6 @@ namespace Durian.Analysis.FriendClass
 		public bool AllowsChildren { get; init; }
 
 		/// <summary>
-		/// Determines whether <see langword="internal"/> members of the current <see cref="Type"/> can be accessed outside of the current assembly if an appropriate <see cref="InternalsVisibleToAttribute"/> is present.
-		/// </summary>
-		public bool AllowsExternalAssembly { get; init; }
-
-		/// <summary>
 		/// <see cref="AttributeSyntax"/> where the <see cref="FriendClassConfigurationAttribute"/> was specified.
 		/// </summary>
 		public AttributeSyntax? Syntax { get; init; }

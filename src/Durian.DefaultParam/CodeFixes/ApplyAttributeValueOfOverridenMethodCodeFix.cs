@@ -14,8 +14,8 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 	/// <summary>
 	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity"/> diagnostic.
 	/// </summary>
-	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(DUR0110_AddMissingDefaultParamOfBaseMethod))]
-	public sealed class DUR0110_AddMissingDefaultParamOfBaseMethod : DurianCodeFixBase
+	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ApplyAttributeValueOfOverridenMethodCodeFix))]
+	public sealed class ApplyAttributeValueOfOverridenMethodCodeFix : DurianCodeFixBase
 	{
 		/// <inheritdoc/>
 		public override string Id => Title + " [DefaultParam]";
@@ -24,9 +24,9 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 		public override string Title => "Add missing DefaultParamAttribute";
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DUR0110_AddMissingDefaultParamOfBaseMethod"/> class.
+		/// Creates a new instance of the <see cref="ApplyAttributeValueOfOverridenMethodCodeFix"/> class.
 		/// </summary>
-		public DUR0110_AddMissingDefaultParamOfBaseMethod()
+		public ApplyAttributeValueOfOverridenMethodCodeFix()
 		{
 		}
 
@@ -41,7 +41,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 			}
 
 			if (data.SemanticModel.GetDeclaredSymbol(data.Node, data.CancellationToken) is not ITypeParameterSymbol typeParameter ||
-				DUR0108_MakeValueTheSameAsBaseMethod.GetTargetType(data.Node, data.SemanticModel, typeParameter.Ordinal, data.CancellationToken) is not ITypeSymbol targetType)
+				MakeValueOfOverridenAttributeEquivalentCodeFix.GetTargetType(data.Node, data.SemanticModel, typeParameter.Ordinal, data.CancellationToken) is not ITypeSymbol targetType)
 			{
 				return;
 			}
@@ -66,7 +66,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 		{
 			INamespaceSymbol? @namespace = (context.SemanticModel.GetDeclaredSymbol(context.Node)?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
 
-			NameSyntax attributeName = CodeFixUtility.GetNameSyntaxForAttribute(context.SemanticModel, context.Root.Usings, @namespace, attribute, context.CancellationToken);
+			NameSyntax attributeName = context.SemanticModel.GetNameSyntaxForAttribute(context.Root.Usings, @namespace, attribute, context.CancellationToken);
 
 			TypeParameterSyntax parameter = context.Node.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Attribute(attributeName))));
 
@@ -74,7 +74,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 
 			AttributeSyntax attr = context.Node.AttributeLists.Last().Attributes[0];
 
-			return Task.FromResult(DUR0108_MakeValueTheSameAsBaseMethod.Execute(context.WithNode(attr), targetType));
+			return Task.FromResult(MakeValueOfOverridenAttributeEquivalentCodeFix.Execute(context.WithNode(attr), targetType));
 		}
 
 		private CodeAction? GetCodeAction(in CodeFixData<TypeParameterSyntax> data, ITypeSymbol targetType)

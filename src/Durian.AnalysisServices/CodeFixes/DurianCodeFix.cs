@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.Analysis.CodeFixes
 {
 	/// <summary>
-	/// Base class for all Durian code fixes that provides methods for straight-up registration and exuection of <see cref="CodeAction"/>s.
+	/// Base class for all Durian code fixes that provides methods for straight-up registration and execution of <see cref="CodeAction"/>s.
 	/// </summary>
 	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> this <see cref="DurianCodeFix{T}"/> can handle.</typeparam>
 	public abstract class DurianCodeFix<T> : DurianCodeFixBase where T : CSharpSyntaxNode
@@ -57,7 +57,13 @@ namespace Durian.Analysis.CodeFixes
 				return null;
 			}
 
-			return CodeAction.Create(Title, cancellationToken => ExecuteAsync(CodeFixExecutionContext<T>.From(diagnostic, document, root, node, semanticModel, cancellationToken)), Id);
+			return CodeAction.Create(Title, cancellationToken => ExecuteAsync(CodeFixExecutionContext<T>.From(
+				diagnostic,
+				document,
+				root,
+				node,
+				semanticModel,
+				cancellationToken)), Id);
 		}
 
 		/// <summary>

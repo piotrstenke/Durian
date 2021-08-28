@@ -24,7 +24,12 @@ namespace Durian.Analysis.CodeFixes
 		/// <param name="currentNamespace">Namespace where the created <see cref="NameSyntax"/> is to be located in.</param>
 		/// <param name="targetType"><see cref="ITypeSymbol"/> to get the <see cref="NameSyntax"/> for.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public static NameSyntax GetNameSyntax(SemanticModel semanticModel, IEnumerable<UsingDirectiveSyntax> usings, INamespaceSymbol currentNamespace, ITypeSymbol targetType, CancellationToken cancellationToken = default)
+		public static NameSyntax GetNameSyntax(
+			this SemanticModel semanticModel,
+			IEnumerable<UsingDirectiveSyntax> usings,
+			INamespaceSymbol currentNamespace,
+			ITypeSymbol targetType,
+			CancellationToken cancellationToken = default)
 		{
 			if (targetType.ContainingNamespace is null ||
 				targetType.ContainingNamespace.IsGlobalNamespace
@@ -72,7 +77,12 @@ namespace Durian.Analysis.CodeFixes
 		/// <param name="currentNamespace">Namespace where the created <see cref="NameSyntax"/> is to be located in.</param>
 		/// <param name="targetType"><see cref="INamedTypeSymbol"/> of an <see cref="Attribute"/> to get the <see cref="NameSyntax"/> for.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public static NameSyntax GetNameSyntaxForAttribute(SemanticModel semanticModel, IEnumerable<UsingDirectiveSyntax> usings, INamespaceSymbol currentNamespace, INamedTypeSymbol targetType, CancellationToken cancellationToken = default)
+		public static NameSyntax GetNameSyntaxForAttribute(
+			this SemanticModel semanticModel,
+			IEnumerable<UsingDirectiveSyntax> usings,
+			INamespaceSymbol currentNamespace,
+			INamedTypeSymbol targetType,
+			CancellationToken cancellationToken = default)
 		{
 			if (targetType.ContainingNamespace is null ||
 				targetType.ContainingNamespace.IsGlobalNamespace ||
@@ -128,7 +138,12 @@ namespace Durian.Analysis.CodeFixes
 		/// <param name="currentNamespace">Current namespace.</param>
 		/// <param name="targetType"><see cref="ITypeSymbol"/> to check.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public static bool HasUsingDirective(SemanticModel semanticModel, IEnumerable<UsingDirectiveSyntax> usings, INamespaceSymbol currentNamespace, ITypeSymbol targetType, CancellationToken cancellationToken = default)
+		public static bool HasUsingDirective(
+			this SemanticModel semanticModel,
+			IEnumerable<UsingDirectiveSyntax> usings,
+			INamespaceSymbol currentNamespace,
+			ITypeSymbol targetType,
+			CancellationToken cancellationToken = default)
 		{
 			if (targetType.ContainingNamespace is null ||
 				targetType.ContainingNamespace.IsGlobalNamespace ||

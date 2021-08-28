@@ -25,8 +25,8 @@
 
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
-    <Compile Include="..\NullableAttributes.cs"/>
-    <Compile Include="..\IsExternalInit.cs"/>
+    <Compile Include="..\NullableAttributes.cs" />
+    <Compile Include="..\IsExternalInit.cs" />
 
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
@@ -49,10 +49,6 @@
     <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="1.0.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
 
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="CodeFixes\" />
   </ItemGroup>
 
 </Project>

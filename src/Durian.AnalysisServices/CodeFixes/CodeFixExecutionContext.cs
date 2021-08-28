@@ -15,7 +15,7 @@ namespace Durian.Analysis.CodeFixes
 	/// Contains data needed to execute a code fix.
 	/// </summary>
 	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> this <see cref="CodeFixExecutionContext{T}"/> can store.</typeparam>
-	public struct CodeFixExecutionContext<T> where T : CSharpSyntaxNode
+	public sealed class CodeFixExecutionContext<T> where T : CSharpSyntaxNode
 	{
 		private readonly SyntaxAnnotation _annotation;
 		private SemanticModel? _semanticModel;
@@ -23,39 +23,45 @@ namespace Durian.Analysis.CodeFixes
 		/// <summary>
 		/// <see cref="System.Threading.CancellationToken"/> that specifies if the operation should be canceled.
 		/// </summary>
-		public readonly CancellationToken CancellationToken { get; }
+		public CancellationToken CancellationToken { get; }
 
 		/// <summary>
 		/// Current <see cref="Microsoft.CodeAnalysis.Compilation"/>.
 		/// </summary>
-		public Compilation Compilation { readonly get; private set; }
+		public CSharpCompilation Compilation { get; private set; }
 
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.Diagnostic"/> that the code fix is being proposed for.
 		/// </summary>
-		public readonly Diagnostic Diagnostic { get; }
+		public Diagnostic Diagnostic { get; }
 
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.Document"/> where the <see cref="Diagnostic"/> is to be found.
 		/// </summary>
-		public Document Document { readonly get; private set; }
+		public Document Document { get; private set; }
 
 		/// <summary>
 		/// <see cref="CSharpSyntaxNode"/> this context represents.
 		/// </summary>
-		public T Node { readonly get; private set; }
+		public T Node { get; private set; }
 
 		/// <summary>
 		/// Root node of the analyzed tree.
 		/// </summary>
-		public CompilationUnitSyntax Root { readonly get; private set; }
+		public CompilationUnitSyntax Root { get; private set; }
 
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="Root"/> node.
 		/// </summary>
 		public SemanticModel SemanticModel => _semanticModel ??= Compilation.GetSemanticModel(Root.SyntaxTree);
 
-		private CodeFixExecutionContext(Diagnostic diagnostic, Document document, CompilationUnitSyntax root, T node, Compilation compilation, CancellationToken cancellationToken)
+		private CodeFixExecutionContext(
+			Diagnostic diagnostic,
+			Document document,
+			CompilationUnitSyntax root,
+			T node,
+			CSharpCompilation compilation,
+			CancellationToken cancellationToken)
 		{
 			_annotation = new();
 			Diagnostic = diagnostic;
@@ -74,9 +80,15 @@ namespace Durian.Analysis.CodeFixes
 		/// <param name="document"><see cref="Microsoft.CodeAnalysis.Document"/> where the <see cref="Diagnostic"/> is to be found.</param>
 		/// <param name="root">Root node of the analyzed tree.</param>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> this context represents.</param>
-		/// <param name="compilation">Current <see cref="Microsoft.CodeAnalysis.Compilation"/>.</param>
+		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
 		/// <param name="cancellationToken"><see cref="System.Threading.CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public static CodeFixExecutionContext<T> From(Diagnostic diagnostic, Document document, CompilationUnitSyntax root, T node, Compilation compilation, CancellationToken cancellationToken = default)
+		public static CodeFixExecutionContext<T> From(
+			Diagnostic diagnostic,
+			Document document,
+			CompilationUnitSyntax root,
+			T node,
+			CSharpCompilation compilation,
+			CancellationToken cancellationToken = default)
 		{
 			return new CodeFixExecutionContext<T>(diagnostic, document, root, node, compilation, cancellationToken);
 		}
@@ -90,9 +102,21 @@ namespace Durian.Analysis.CodeFixes
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> this context represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the target <paramref name="node"/>.</param>
 		/// <param name="cancellationToken"><see cref="System.Threading.CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public static CodeFixExecutionContext<T> From(Diagnostic diagnostic, Document document, CompilationUnitSyntax root, T node, SemanticModel semanticModel, CancellationToken cancellationToken = default)
+		public static CodeFixExecutionContext<T> From(
+			Diagnostic diagnostic,
+			Document document,
+			CompilationUnitSyntax root,
+			T node,
+			SemanticModel semanticModel,
+			CancellationToken cancellationToken = default)
 		{
-			return new CodeFixExecutionContext<T>(diagnostic, document, root, node, semanticModel.Compilation, cancellationToken);
+			return new CodeFixExecutionContext<T>(
+				diagnostic,
+				document,
+				root,
+				node,
+				(CSharpCompilation)semanticModel.Compilation,
+				cancellationToken);
 		}
 
 		/// <inheritdoc cref="FromAsync(CodeFixData{T}, CancellationToken)"/>
@@ -121,12 +145,24 @@ namespace Durian.Analysis.CodeFixes
 
 			if (data.HasSemanticModel)
 			{
-				return new CodeFixExecutionContext<T>(data.Diagnostic, data.Document, data.Root, data.Node, data.SemanticModel.Compilation, cancellationToken);
+				return new CodeFixExecutionContext<T>(
+					data.Diagnostic,
+					data.Document,
+					data.Root,
+					data.Node,
+					(CSharpCompilation)data.SemanticModel.Compilation,
+					cancellationToken);
 			}
 
-			Compilation? compilation = await data.Document.Project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
+			CSharpCompilation? compilation = (CSharpCompilation?)await data.Document.Project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
 
-			return new CodeFixExecutionContext<T>(data.Diagnostic, data.Document, data.Root, data.Node, compilation!, cancellationToken);
+			return new CodeFixExecutionContext<T>(
+				data.Diagnostic,
+				data.Document,
+				data.Root,
+				data.Node,
+				compilation!,
+				cancellationToken);
 		}
 
 		/// <summary>
@@ -162,7 +198,7 @@ namespace Durian.Analysis.CodeFixes
 		/// </summary>
 		/// <typeparam name="TNode">Type of node.</typeparam>
 		/// <param name="node">New target node of the context.</param>
-		public readonly CodeFixExecutionContext<TNode> WithNode<TNode>(TNode node) where TNode : CSharpSyntaxNode
+		public CodeFixExecutionContext<TNode> WithNode<TNode>(TNode node) where TNode : CSharpSyntaxNode
 		{
 			return new CodeFixExecutionContext<TNode>(Diagnostic, Document, Root, node, Compilation, CancellationToken);
 		}

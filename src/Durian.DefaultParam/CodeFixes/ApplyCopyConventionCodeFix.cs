@@ -15,8 +15,8 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 	/// <summary>
 	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor"/> diagnostic.
 	/// </summary>
-	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(DUR0118_ApplyCopyConvention))]
-	public sealed class DUR0118_ApplyCopyConvention : DurianCodeFixBase
+	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ApplyCopyConventionCodeFix))]
+	public sealed class ApplyCopyConventionCodeFix : DurianCodeFixBase
 	{
 		/// <inheritdoc/>
 		public override string Id => Title + " [DefaultParam]";
@@ -25,9 +25,9 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 		public override string Title => "Apply DPTypeConvention.Copy";
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="DUR0118_ApplyCopyConvention"/> class.
+		/// Creates a new instance of the <see cref="ApplyCopyConventionCodeFix"/> class.
 		/// </summary>
-		public DUR0118_ApplyCopyConvention()
+		public ApplyCopyConventionCodeFix()
 		{
 		}
 
@@ -61,7 +61,10 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 		/// <inheritdoc/>
 		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
 		{
-			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor };
+			return new DiagnosticDescriptor[]
+			{
+				DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor
+			};
 		}
 
 		private static Task<Document> ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax> context, INamedTypeSymbol attribute)
@@ -71,7 +74,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 			NameSyntax attrName;
 			NameSyntax enumName;
 
-			if (CodeFixUtility.HasUsingDirective(context.SemanticModel, context.Root.Usings, @namespace, attribute, context.CancellationToken))
+			if (context.SemanticModel.HasUsingDirective(context.Root.Usings, @namespace, attribute, context.CancellationToken))
 			{
 				attrName = SyntaxFactory.IdentifierName("DefaultParamConfiguration");
 				enumName = SyntaxFactory.IdentifierName(nameof(DPTypeConvention));

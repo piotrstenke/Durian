@@ -35,7 +35,7 @@ class Child : Other
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0311_MemberCannotBeAccessedByChildClassOfFriend.Id);
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0310_MemberCannotBeAccessedByChildClassOfFriend.Id);
 		}
 
 		[Fact]
@@ -81,6 +81,10 @@ class Test
 
 class Child
 {{
+	void Main()
+	{{
+		string name = Test.Name;
+	}}
 }}
 
 class Other
@@ -108,6 +112,10 @@ class Test
 
 class Other
 {{
+	void Main()
+	{{
+		string name = Test.Name;
+	}}
 }}
 
 class Child : Other
@@ -137,6 +145,10 @@ class Test
 
 class Other
 {{
+	void Main()
+	{{
+		string name = Test.Name;
+	}}
 }}
 
 class Child : Test

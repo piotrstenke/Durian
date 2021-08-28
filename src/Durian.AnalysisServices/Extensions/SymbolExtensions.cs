@@ -1049,6 +1049,28 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> is an attribute type.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is an attribute type.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> that is used to resolve the <see cref="Attribute"/> type.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Type '<see cref="Attribute"/>' could not be resolved.</exception>
+		public static bool IsAttribute(this INamedTypeSymbol symbol, CSharpCompilation compilation)
+		{
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			if (compilation.GetTypeByMetadataName("System.Attribute") is not INamedTypeSymbol attr)
+			{
+				throw new InvalidOperationException("Type 'System.Attribute' could not be resolved!");
+			}
+
+			return symbol.InheritsOrImplementsFrom(attr);
+		}
+
+		/// <summary>
 		/// Determines whether the <paramref name="first"/> <see cref="IParameterSymbol"/> is equivalent to the <paramref name="second"/> <see cref="IParameterSymbol"/>.
 		/// </summary>
 		/// <param name="first">First <see cref="IParameterSymbol"/>.</param>
@@ -1077,6 +1099,28 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return true;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> is an exception type.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is an exception type.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> that is used to resolve the <see cref="Exception"/> type.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Type '<see cref="Exception"/>' could not be resolved.</exception>
+		public static bool IsException(this INamedTypeSymbol symbol, CSharpCompilation compilation)
+		{
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			if (compilation.GetTypeByMetadataName("System.Exception") is not INamedTypeSymbol exc)
+			{
+				throw new InvalidOperationException("Type 'System.Exception' could not be resolved!");
+			}
+
+			return symbol.InheritsOrImplementsFrom(exc);
 		}
 
 		/// <summary>
