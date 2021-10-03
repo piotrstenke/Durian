@@ -137,6 +137,30 @@ namespace Durian.Info
 		}
 
 		/// <summary>
+		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.EnumServices"/> package.
+		/// </summary>
+		public static PackageIdentity EnumServices
+		{
+			get
+			{
+				if(!IdentityPool.Packages.TryGetValue("EnumServices", out PackageIdentity package))
+				{
+					package = new(
+						enumValue: DurianPackage.EnumServices,
+						version: "1.0.0",
+						type: PackageType.Analyzer | PackageType.SyntaxBasedGenerator,
+						modules: new DurianModule[]
+						{
+							DurianModule.EnumServices,
+						}
+					);
+				}
+
+				return package;
+			}
+		}
+
+		/// <summary>
 		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.FriendClass"/> package.
 		/// </summary>
 		public static PackageIdentity FriendClass
@@ -148,34 +172,10 @@ namespace Durian.Info
 					package = new(
 						enumValue: DurianPackage.FriendClass,
 						version: "1.0.0",
-						type: PackageType.Analyzer,
+						type: PackageType.Analyzer | PackageType.CodeFixLibrary,
 						modules: new DurianModule[]
 						{
 							DurianModule.FriendClass,
-						}
-					);
-				}
-
-				return package;
-			}
-		}
-
-		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.GenericSpecialization"/> package.
-		/// </summary>
-		public static PackageIdentity GenericSpecialization
-		{
-			get
-			{
-				if(!IdentityPool.Packages.TryGetValue("GenericSpecialization", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.GenericSpecialization,
-						version: "1.0.0",
-						type: PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary,
-						modules: new DurianModule[]
-						{
-							DurianModule.GenericSpecialization,
 						}
 					);
 				}

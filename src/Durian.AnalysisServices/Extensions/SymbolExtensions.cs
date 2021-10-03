@@ -359,6 +359,13 @@ namespace Durian.Analysis.Extensions
 						return data;
 					}
 
+					case TypeKind.Enum:
+					{
+						EnumData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
+						parentList.Add(data);
+						return data;
+					}
+
 					default:
 					{
 						TypeData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
@@ -718,6 +725,7 @@ namespace Durian.Analysis.Extensions
 					TypeKind.Struct => new StructData(type, compilation),
 					TypeKind.Interface => new InterfaceData(type, compilation),
 					TypeKind.Delegate => new DelegateData(type, compilation),
+					TypeKind.Enum => new EnumData(type, compilation),
 					_ => new TypeData(type, compilation),
 				};
 			}

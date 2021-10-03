@@ -57,19 +57,6 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="declaration"><see cref="EventFieldDeclarationSyntax"/> this <see cref="DelegateData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="DelegateData"/>.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
-		/// </exception>
-		public EventData(EventFieldDeclarationSyntax declaration, ICompilationData compilation)
-			: this(declaration, compilation, GetSemanticModel(compilation, declaration), GetVariable(declaration, 0))
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="EventData"/> class.
-		/// </summary>
-		/// <param name="declaration"><see cref="EventFieldDeclarationSyntax"/> this <see cref="DelegateData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="DelegateData"/>.</param>
 		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
@@ -77,7 +64,7 @@ namespace Durian.Analysis.Data
 		/// <exception cref="IndexOutOfRangeException">
 		/// <paramref name="index"/> was out of range.
 		/// </exception>
-		public EventData(EventFieldDeclarationSyntax declaration, ICompilationData compilation, int index)
+		public EventData(EventFieldDeclarationSyntax declaration, ICompilationData compilation, int index = 0)
 			: this(declaration, compilation, GetSemanticModel(compilation, declaration), GetVariable(declaration, index))
 		{
 			Index = index;
@@ -88,8 +75,17 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="symbol"><see cref="IEventSymbol"/> this <see cref="EventData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
-		internal EventData(IEventSymbol symbol, ICompilationData compilation)
-			: base(GetFieldOrProperty(symbol, compilation, out SemanticModel semanticModel, out VariableDeclaratorSyntax? variable, out int index), compilation, symbol, semanticModel, null, null, null)
+		internal EventData(IEventSymbol symbol, ICompilationData compilation) : base(
+			GetFieldOrProperty(
+				symbol,
+				compilation,
+				out SemanticModel semanticModel,
+				out VariableDeclaratorSyntax? variable,
+				out int index),
+			compilation,
+			symbol,
+			semanticModel
+		)
 		{
 			Index = index;
 			Variable = variable;
@@ -102,49 +98,77 @@ namespace Durian.Analysis.Data
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
 		/// <param name="symbol"><see cref="IEventSymbol"/> this <see cref="EventData"/> represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="variable"><see cref="VariableDeclaratorSyntax"/> that represents the target variable.</param>
+		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="IEventSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		/// <param name="variable"><see cref="VariableDeclaratorSyntax"/> that represents the target variable.</param>
-		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
 		protected internal EventData(
 			EventFieldDeclarationSyntax declaration,
 			ICompilationData compilation,
 			IEventSymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<ITypeData>? containingTypes,
-			IEnumerable<INamespaceSymbol>? containingNamespaces,
-			IEnumerable<AttributeData>? attributes,
 			VariableDeclaratorSyntax variable,
-			int index
-		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
+			int index,
+			IEnumerable<ITypeData>? containingTypes = null,
+			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
+			IEnumerable<AttributeData>? attributes = null
+		) : base(
+			declaration,
+			compilation,
+			symbol,
+			semanticModel,
+			containingTypes,
+			containingNamespaces,
+			attributes
+		)
 		{
 			Index = index;
 			Variable = variable;
 		}
 
-		/// <inheritdoc cref="EventData(EventFieldDeclarationSyntax, ICompilationData, IEventSymbol, SemanticModel, IEnumerable{ITypeData}?, IEnumerable{INamespaceSymbol}?, IEnumerable{AttributeData}?, VariableDeclaratorSyntax, int)"/>
+		/// <inheritdoc cref="EventData(EventFieldDeclarationSyntax, ICompilationData, IEventSymbol, SemanticModel, VariableDeclaratorSyntax, int, IEnumerable{ITypeData}?, IEnumerable{INamespaceSymbol}?, IEnumerable{AttributeData}?)"/>
 		protected internal EventData(
 			EventDeclarationSyntax declaration,
 			ICompilationData compilation,
 			IEventSymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<ITypeData>? containingTypes,
-			IEnumerable<INamespaceSymbol>? containingNamespaces,
-			IEnumerable<AttributeData>? attributes
+			IEnumerable<ITypeData>? containingTypes = null,
+			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
+			IEnumerable<AttributeData>? attributes = null
 		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
 		{
 		}
 
-		private EventData(EventFieldDeclarationSyntax declaration, ICompilationData compilation, IEventSymbol symbol, SemanticModel semanticModel, VariableDeclaratorSyntax variable, int index)
-			: base(declaration, compilation, symbol, semanticModel, null, null, null)
+		private EventData(
+			EventFieldDeclarationSyntax declaration,
+			ICompilationData compilation,
+			IEventSymbol symbol,
+			SemanticModel semanticModel,
+			VariableDeclaratorSyntax variable,
+			int index
+		) : base(
+			declaration,
+			compilation,
+			symbol,
+			semanticModel
+		)
 		{
 			Variable = variable;
 			Index = index;
 		}
 
-		private EventData(EventFieldDeclarationSyntax declaration, ICompilationData compilation, SemanticModel semanticModel, VariableDeclaratorSyntax variable)
-			: base(declaration, compilation, (semanticModel.GetDeclaredSymbol(variable) as IEventSymbol)!, semanticModel, null, null, null)
+		private EventData(
+			EventFieldDeclarationSyntax declaration,
+			ICompilationData compilation,
+			SemanticModel semanticModel,
+			VariableDeclaratorSyntax variable
+		) : base(
+			declaration,
+			compilation,
+			(semanticModel.GetDeclaredSymbol(variable) as IEventSymbol)!,
+			semanticModel
+		)
 		{
 			Variable = variable;
 		}

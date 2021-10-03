@@ -15,7 +15,7 @@ namespace Durian.Analysis.DefaultParam
 		private string? _targetNamespace;
 
 		/// <summary>
-		/// Returns a new instance of <see cref="DefaultParamConfiguration"/> with all values set to <see langword="default"/>.
+		/// Returns a new instance of <see cref="DefaultParamConfiguration"/> with all values set to default.
 		/// </summary>
 		public static DefaultParamConfiguration Default => new();
 
@@ -64,10 +64,7 @@ namespace Durian.Analysis.DefaultParam
 				a.TargetNamespace == b.TargetNamespace;
 		}
 
-		/// <summary>
-		/// Creates a new object that is a copy of the current instance.
-		/// </summary>
-		/// <returns>A new object that is a copy of this instance.</returns>
+		/// <inheritdoc cref="ICloneable.Clone"/>
 		public DefaultParamConfiguration Clone()
 		{
 			return new DefaultParamConfiguration()

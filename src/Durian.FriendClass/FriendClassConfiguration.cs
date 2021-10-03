@@ -5,6 +5,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Runtime.CompilerServices;
 using Durian.Configuration;
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.FriendClass
 {
@@ -21,12 +23,12 @@ namespace Durian.Analysis.FriendClass
 		/// <summary>
 		/// Determines whether sub-classes of the current type should be treated like friend types. Defaults to <see langword="false"/>.
 		/// </summary>
-		public bool AllowsChildren { get; init; }
+		public bool AllowsChildren { get; set; }
 
 		/// <summary>
 		/// <see cref="AttributeSyntax"/> where the <see cref="FriendClassConfigurationAttribute"/> was specified.
 		/// </summary>
-		public AttributeSyntax? Syntax { get; init; }
+		public AttributeSyntax? Syntax { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FriendClassConfiguration"/> class.

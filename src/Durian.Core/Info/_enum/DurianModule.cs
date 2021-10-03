@@ -14,19 +14,19 @@ namespace Durian.Info
 		None = 0,
 
 		/// <summary>
+		/// Represents the <c>Durian.Manager</c> module.
+		/// </summary>
+		Manager = 1,
+
+		/// <summary>
 		/// Represents the <c>Durian.Core</c> module.
 		/// </summary>
-		Core = 1,
+		Core = 2,
 
 		/// <summary>
 		/// Represents the <c>Durian.DefaultParam</c> module.
 		/// </summary>
-		DefaultParam = 2,
-
-		/// <summary>
-		/// Represents the <c>Durian.GenericSpecialization</c> module.
-		/// </summary>
-		GenericSpecialization = 3,
+		DefaultParam = 3,
 
 		/// <summary>
 		/// Represents the <c>Durian.FriendClass</c> module.
@@ -39,8 +39,8 @@ namespace Durian.Info
 		InterfaceTargets = 5,
 
 		/// <summary>
-		/// Represents the <c>Durian.Manager</c> module.
+		/// Represents the <c>Durian.EnumServices</c> module.
 		/// </summary>
-		Manager = 6
+		EnumServices = 6
 	}
 }

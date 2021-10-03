@@ -59,12 +59,10 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		public DefaultParamSyntaxReceiver()
 		{
-			const int initialCapacity = 64;
-
-			CandidateTypes = new(initialCapacity);
-			CandidateDelegates = new(initialCapacity);
-			CandidateMethods = new(initialCapacity);
-			CandidateLocalFunctions = new(initialCapacity);
+			CandidateTypes = new();
+			CandidateDelegates = new();
+			CandidateMethods = new();
+			CandidateLocalFunctions = new();
 		}
 
 		/// <summary>

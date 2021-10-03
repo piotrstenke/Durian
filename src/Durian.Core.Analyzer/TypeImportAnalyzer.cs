@@ -47,7 +47,7 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		protected override CompilationWithImportedTypes CreateCompilation(CSharpCompilation compilation)
+		protected override CompilationWithImportedTypes CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
 		{
 			return new CompilationWithImportedTypes(compilation);
 		}

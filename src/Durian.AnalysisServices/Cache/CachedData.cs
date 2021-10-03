@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 
@@ -26,13 +27,13 @@ namespace Durian.Analysis.Cache
 		}
 
 		/// <inheritdoc cref="CachedGeneratorExecutionContext{T}.IsCached(FileLinePositionSpan)"/>
-		public readonly bool IsCached(FileLinePositionSpan position)
+		public bool IsCached(FileLinePositionSpan position)
 		{
 			return _cached.ContainsKey(position);
 		}
 
 		/// <inheritdoc cref="CachedGeneratorExecutionContext{T}.TryGetCachedValue(FileLinePositionSpan, out T)"/>
-		public readonly bool TryGetCachedValue(FileLinePositionSpan position, [NotNullWhen(true)] out T? value)
+		public bool TryGetCachedValue(FileLinePositionSpan position, [NotNullWhen(true)] out T? value)
 		{
 			return _cached.TryGetValue(position, out value);
 		}

@@ -93,9 +93,9 @@ namespace Durian.Analysis.Data
 			ICompilationData compilation,
 			ISymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<ITypeData>? containingTypes,
-			IEnumerable<INamespaceSymbol>? containingNamespaces,
-			IEnumerable<AttributeData>? attributes
+			IEnumerable<ITypeData>? containingTypes = null,
+			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
+			IEnumerable<AttributeData>? attributes = null
 		)
 		{
 			Declaration = declaration;

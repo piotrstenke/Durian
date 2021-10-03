@@ -14,11 +14,11 @@ namespace Durian.Analysis.Cache
 	/// <summary>
 	/// <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> that retrieves cached data from a <see cref="ConcurrentDictionary{TKey, TValue}"/>
 	/// </summary>
+	/// <typeparam name="TData">Type of cached values this generator can retrieve.</typeparam>
 	/// <typeparam name="TCompilationData">User-defined type of <see cref="ICompilationData"/> this <see cref="IDurianSourceGenerator"/> operates on.</typeparam>
 	/// <typeparam name="TSyntaxReceiver">User-defined type of <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="CSharpSyntaxNode"/>s to perform the generation on.</typeparam>
 	/// <typeparam name="TFilter">User-defined type of <see cref="ISyntaxFilter"/> that decides what <see cref="CSharpSyntaxNode"/>s collected by the <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SyntaxReceiver"/> are valid for generation.</typeparam>
-	/// <typeparam name="TData">Type of cached values this generator can retrieve.</typeparam>
-	public abstract class CachedDurianGenerator<TCompilationData, TSyntaxReceiver, TFilter, TData> : DurianGeneratorWithBuilder<TCompilationData, TSyntaxReceiver, TFilter>, ICachedDurianSourceGenerator<TData>
+	public abstract class CachedDurianGenerator<TData, TCompilationData, TSyntaxReceiver, TFilter> : DurianGeneratorWithBuilder<TCompilationData, TSyntaxReceiver, TFilter>, ICachedDurianSourceGenerator<TData>
 		where TCompilationData : class, ICompilationDataWithSymbols
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
 		where TFilter : notnull, ICachedGeneratorSyntaxFilter<TData>, IGeneratorSyntaxFilterWithDiagnostics
@@ -42,13 +42,13 @@ namespace Durian.Analysis.Cache
 		{
 		}
 
-		/// <inheritdoc cref="CachedDurianGenerator{TCompilationData, TSyntaxReceiver, TFilter, TData}(GeneratorLoggingConfiguration?, IHintNameProvider?)"/>
+		/// <inheritdoc cref="CachedDurianGenerator(GeneratorLoggingConfiguration?, IHintNameProvider?)"/>
 		protected CachedDurianGenerator(GeneratorLoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedDurianGenerator{TCompilationData, TSyntaxReceiver, TFilter, TData}"/> class.
+		/// Initializes a new instance of the <see cref="CachedDurianGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/> class.
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>

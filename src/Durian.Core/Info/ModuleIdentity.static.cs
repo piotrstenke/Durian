@@ -171,7 +171,7 @@ namespace Durian.Info
 			{
 				DurianModule.Core => ModuleRepository.Core,
 				DurianModule.DefaultParam => ModuleRepository.DefaultParam,
-				DurianModule.GenericSpecialization => ModuleRepository.GenericSpecialization,
+				DurianModule.EnumServices => ModuleRepository.EnumServices,
 				DurianModule.FriendClass => ModuleRepository.FriendClass,
 				DurianModule.InterfaceTargets => ModuleRepository.InterfaceTargets,
 				DurianModule.Manager => ModuleRepository.Manager,

@@ -17,6 +17,7 @@ namespace Durian.Analysis.Logging
 		private bool _enableDiagnostics;
 		private bool _enableLogging;
 		private string? _logDirectory;
+		private bool _supportsLogging;
 
 		/// <summary>
 		/// Gets the <see cref="FilterMode"/> the current configuration is valid for.
@@ -110,7 +111,19 @@ namespace Durian.Analysis.Logging
 		/// <summary>
 		/// Determines whether the <see cref="ISourceGenerator"/> supports reporting <see cref="Diagnostic"/>s.
 		/// </summary>
-		public bool SupportsDiagnostics { get; init; }
+		public bool SupportsDiagnostics
+		{
+			get => _supportsLogging;
+			set
+			{
+				if (!value)
+				{
+					_enableLogging = false;
+				}
+
+				_supportsLogging = value;
+			}
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLoggingConfiguration"/> class.
@@ -129,8 +142,9 @@ namespace Durian.Analysis.Logging
 		public static bool operator ==(GeneratorLoggingConfiguration a, GeneratorLoggingConfiguration b)
 		{
 			return
-				a.SupportsDiagnostics == b.SupportsDiagnostics &&
-				a.EnableDiagnostics == b.EnableDiagnostics &&
+				a._supportsLogging == b._supportsLogging &&
+				a._enableLogging == b._enableLogging &&
+				a._enableDiagnostics == b._enableDiagnostics &&
 				a.EnableExceptions == b.EnableExceptions &&
 				a.EnableLogging == b.EnableLogging &&
 				a.LogDirectory == b.LogDirectory &&
@@ -148,6 +162,7 @@ namespace Durian.Analysis.Logging
 				_enableDiagnostics = _enableDiagnostics,
 				_enableLogging = _enableLogging,
 				_logDirectory = _logDirectory,
+				_supportsLogging = _supportsLogging,
 				SupportedLogs = SupportedLogs,
 				SupportsDiagnostics = SupportsDiagnostics,
 				EnableExceptions = EnableExceptions

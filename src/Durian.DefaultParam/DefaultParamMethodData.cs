@@ -61,26 +61,34 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamMethodData"/>.</param>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> this <see cref="DefaultParamMethodData"/> represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
+		/// <param name="callInsteadOfCopying">Determines whether the generated method should call this method instead of copying its contents.</param>
+		/// <param name="targetNamespace">Specifies the namespace where the target member should be generated in.</param>
+		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
-		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
-		/// <param name="callInsteadOfCopying">Determines whether the generated method should call this method instead of copying its contents.</param>
-		/// <param name="targetNamespace">Specifies the namespace where the target member should be generated in.</param>
 		public DefaultParamMethodData(
 			MethodDeclarationSyntax declaration,
 			DefaultParamCompilationData compilation,
 			IMethodSymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<ITypeData>? containingTypes,
-			IEnumerable<INamespaceSymbol>? containingNamespaces,
-			IEnumerable<AttributeData>? attributes,
 			in TypeParameterContainer typeParameters,
-			HashSet<int>? newModifierIndexes,
 			bool callInsteadOfCopying,
-			string targetNamespace
-		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
+			string targetNamespace,
+			HashSet<int>? newModifierIndexes = null,
+			IEnumerable<ITypeData>? containingTypes = null,
+			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
+			IEnumerable<AttributeData>? attributes = null
+		) : base(
+			declaration,
+			compilation,
+			symbol,
+			semanticModel,
+			containingTypes,
+			containingNamespaces,
+			attributes
+		)
 		{
 			_typeParameters = typeParameters;
 			CallInsteadOfCopying = callInsteadOfCopying;

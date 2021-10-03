@@ -55,7 +55,7 @@ namespace Durian.Analysis.FriendClass
 		}
 
 		/// <inheritdoc/>
-		protected override FriendClassCompilationData CreateCompilation(CSharpCompilation compilation)
+		protected override FriendClassCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
 		{
 			return new FriendClassCompilationData(compilation);
 		}

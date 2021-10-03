@@ -266,12 +266,12 @@ namespace Durian.Analysis.DefaultParam
 						compilation,
 						symbol,
 						semanticModel,
+						typeParameters,
+						targetNamespace,
+						newModifiers,
 						containingTypes,
 						null,
-						attributes,
-						typeParameters,
-						newModifiers,
-						targetNamespace
+						attributes
 					);
 
 					return true;

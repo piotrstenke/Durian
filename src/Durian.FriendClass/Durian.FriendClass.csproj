@@ -26,7 +26,6 @@
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
     <Compile Include="..\NullableAttributes.cs" />
-    <Compile Include="..\IsExternalInit.cs" />
 
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
@@ -39,14 +38,14 @@
 
   <ItemGroup>
 
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" PrivateAssets="all" />
 
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Debug'">
 
-    <PackageReference Include="Roslynator.Analyzers" Version="3.1.0" PrivateAssets="all" />
-    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="1.0.0" PrivateAssets="all" />
+    <PackageReference Include="Roslynator.Analyzers" Version="3.2.2" PrivateAssets="all" />
+    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="1.1.1" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
 
   </ItemGroup>

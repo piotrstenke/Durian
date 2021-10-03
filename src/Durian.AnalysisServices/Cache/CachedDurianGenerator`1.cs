@@ -6,15 +6,15 @@ using Durian.Analysis.Logging;
 
 namespace Durian.Analysis.Cache
 {
-	/// <inheritdoc cref="CachedDurianGenerator{TCompilationData, TSyntaxReceiver, TFilter, TData}"/>
-	public abstract class CachedDurianGenerator<TData> : CachedDurianGenerator<ICompilationDataWithSymbols, IDurianSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>, TData>
+	/// <inheritdoc cref="CachedDurianGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/>
+	public abstract class CachedDurianGenerator<TData> : CachedDurianGenerator<TData, ICompilationDataWithSymbols, IDurianSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
 	{
-		/// <inheritdoc cref="CachedDurianGenerator{TData}.CachedDurianGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
+		/// <inheritdoc cref="CachedDurianGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
 		protected CachedDurianGenerator()
 		{
 		}
 
-		/// <inheritdoc cref="CachedDurianGenerator{TData}.CachedDurianGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
+		/// <inheritdoc cref="CachedDurianGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
 		protected CachedDurianGenerator(in LoggableGeneratorConstructionContext context) : base(in context)
 		{
 		}

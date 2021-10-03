@@ -6,23 +6,23 @@ using Durian.Analysis.Logging;
 
 namespace Durian.Analysis.Cache
 {
-	/// <inheritdoc cref="CachedDurianGenerator{TCompilationData, TSyntaxReceiver, TFilter, TData}"/>
-	public abstract class CachedDurianGenerator<TCompilationData, TSyntaxReceiver, TData> : CachedDurianGenerator<TCompilationData, TSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>, TData>
+	/// <inheritdoc cref="CachedDurianGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/>
+	public abstract class CachedDurianGenerator<TData, TCompilationData, TSyntaxReceiver> : CachedDurianGenerator<TData, TCompilationData, TSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
 		where TCompilationData : class, ICompilationDataWithSymbols
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
 	{
-		/// <inheritdoc cref="CachedDurianGenerator{TCompilationData, TSyntaxReceiver, TData}.CachedDurianGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
+		/// <inheritdoc cref="CachedDurianGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
 		protected CachedDurianGenerator()
 		{
 		}
 
-		/// <inheritdoc cref="CachedDurianGenerator{TCompilationData, TSyntaxReceiver, TData}.CachedDurianGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
+		/// <inheritdoc cref="CachedDurianGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
 		protected CachedDurianGenerator(in LoggableGeneratorConstructionContext context) : base(in context)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedDurianGenerator{TCompilationData, TSyntaxReceiver, TData}"/> class.
+		/// Initializes a new instance of the <see cref="CachedDurianGenerator{TData, TCompilationData, TSyntaxReceiver}"/> class.
 		/// </summary>
 		/// <param name="context">Configures how this <see cref="LoggableSourceGenerator"/> is initialized.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
@@ -36,7 +36,7 @@ namespace Durian.Analysis.Cache
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedDurianGenerator{TCompilationData, TSyntaxReceiver, TData}"/> class.
+		/// Initializes a new instance of the <see cref="CachedDurianGenerator{TData, TCompilationData, TSyntaxReceiver}"/> class.
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>

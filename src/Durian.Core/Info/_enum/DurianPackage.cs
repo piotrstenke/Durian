@@ -14,34 +14,34 @@ namespace Durian.Info
 		Main = 0,
 
 		/// <summary>
+		/// Represents the internal <c>Durian.Manager</c> package.
+		/// </summary>
+		Manager = 1,
+
+		/// <summary>
 		/// Represents the <c>Durian.Core</c> package.
 		/// </summary>
-		Core = 1,
+		Core = 2,
 
 		/// <summary>
 		/// Represents the <c>Durian.Core.Analyzer</c> package.
 		/// </summary>
-		CoreAnalyzer = 2,
+		CoreAnalyzer = 3,
 
 		/// <summary>
 		/// Represents the <c>Durian.AnalysisServices</c> package.
 		/// </summary>
-		AnalysisServices = 3,
+		AnalysisServices = 4,
 
 		/// <summary>
 		/// Represents the <c>Durian.TestServices</c> package.
 		/// </summary>
-		TestServices = 4,
+		TestServices = 5,
 
 		/// <summary>
 		/// Represents the <c>Durian.DefaultParam</c> package.
 		/// </summary>
-		DefaultParam = 5,
-
-		/// <summary>
-		/// Represents the <c>Durian.GenericSpecialization</c> package.
-		/// </summary>
-		GenericSpecialization = 6,
+		DefaultParam = 6,
 
 		/// <summary>
 		/// Represents the <c>Durian.FriendClass</c> package.
@@ -54,8 +54,8 @@ namespace Durian.Info
 		InterfaceTargets = 8,
 
 		/// <summary>
-		/// Represents the internal <c>Durian.Manager</c> package.
+		/// Represents the <c>Durian.EnumServices</c> package.
 		/// </summary>
-		Manager = 9,
+		EnumServices = 9,
 	}
 }

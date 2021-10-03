@@ -265,20 +265,6 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Returns an <see cref="int"/> representing a valid value of one of the convention enums (<see cref="DPMethodConvention"/> and <see cref="DPTypeConvention"/>).
-		/// </summary>
-		/// <param name="value">Value that is potentially invalid and should be converted to a valid one.</param>
-		public static int GetValidConventionEnumValue(int value)
-		{
-			if (value == 1)
-			{
-				return value;
-			}
-
-			return 0;
-		}
-
-		/// <summary>
 		/// Initializes the <paramref name="member"/> by removing unnecessary attributes, applying needed trivia etc.
 		/// </summary>
 		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to initialize.</param>

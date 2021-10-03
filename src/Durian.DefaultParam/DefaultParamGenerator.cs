@@ -21,7 +21,7 @@ namespace Durian.Analysis.DefaultParam
 #endif
 
 	[GeneratorLoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "DefaultParam", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
-	public class DefaultParamGenerator : CachedDurianGenerator<DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter, IDefaultParamTarget>
+	public class DefaultParamGenerator : CachedDurianGenerator<IDefaultParamTarget, DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>
 	{
 		/// <summary>
 		/// Number of trees generated statically by this generator.

@@ -72,7 +72,7 @@ namespace Durian.Analysis.Logging
 		{
 			if (LoggingConfiguration.SupportsDiagnostics)
 			{
-				LoggingConfiguration.EnableLogging = true;
+				LoggingConfiguration.EnableDiagnostics = true;
 			}
 		}
 

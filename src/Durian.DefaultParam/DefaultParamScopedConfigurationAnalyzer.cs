@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Extensions;
 using Durian.Configuration;
@@ -38,6 +40,15 @@ namespace Durian.Analysis.DefaultParam
 		{
 		}
 
+		/// <summary>
+		/// Analyzes whether the specified <paramref name="configuration"/> is valid.
+		/// </summary>
+		/// <param name="configuration"><see cref="DefaultParamConfiguration"/> to analyze.</param>
+		public static bool AnalyzeConfiguration(DefaultParamConfiguration configuration)
+		{
+			return IsValidTargetNamespace(configuration.TargetNamespace);
+		}
+
 		/// <inheritdoc/>
 		public override void Register(IDurianAnalysisContext context, DefaultParamCompilationData compilation)
 		{
@@ -45,14 +56,14 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
+		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
 		{
 			return new DefaultParamCompilationData(compilation);
 		}
 
 		private static void Analyze(SyntaxNodeAnalysisContext context, DefaultParamCompilationData compilation)
 		{
-			if (context.Node is not AttributeSyntax syntax || syntax.Parent?.Parent is not MemberDeclarationSyntax parent)
+			if (context.Node is not AttributeSyntax syntax)
 			{
 				return;
 			}
@@ -60,18 +71,65 @@ namespace Durian.Analysis.DefaultParam
 			INamedTypeSymbol? configurationAttribute = context.SemanticModel.GetSymbolInfo(syntax).Symbol?.ContainingType;
 
 			if (configurationAttribute is null ||
-				!SymbolEqualityComparer.Default.Equals(configurationAttribute, compilation.DefaultParamScopedConfigurationAttribute) ||
-				context.SemanticModel.GetDeclaredSymbol(parent) is not ISymbol symbol)
+				!SymbolEqualityComparer.Default.Equals(configurationAttribute, compilation.DefaultParamScopedConfigurationAttribute))
 			{
 				return;
 			}
 
-			if (parent is TypeDeclarationSyntax && symbol is INamedTypeSymbol type && !HasMemberWithDefaultParamAttribute(type, compilation.DefaultParamAttribute!))
+			ISymbol symbol;
+
+			if (syntax.Parent?.Parent is MemberDeclarationSyntax parent)
 			{
-				context.ReportDiagnostic(Diagnostic.Create(DefaultParamDiagnostics.DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers, symbol.Locations.FirstOrDefault(), symbol));
+				if (context.SemanticModel.GetDeclaredSymbol(parent) is not INamedTypeSymbol type)
+				{
+					return;
+				}
+
+				if (!HasMemberWithDefaultParamAttribute(type, compilation.DefaultParamAttribute!))
+				{
+					context.ReportDiagnostic(Diagnostic.Create(DefaultParamDiagnostics.DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers, type.Locations.FirstOrDefault(), type));
+				}
+
+				symbol = type;
+			}
+			else
+			{
+				if (syntax.Parent is not AttributeListSyntax list || list.Target is null || !list.Target.Identifier.IsKind(SyntaxKind.AssemblyKeyword))
+				{
+					return;
+				}
+
+				symbol = compilation.Compilation.Assembly;
 			}
 
-			ReportIfInvalidTargetNamespace(symbol, syntax, context);
+			Diagnostic? diag = GetDiagnosticIfInvalidTargetNamespace(symbol, syntax);
+
+			if (diag is not null)
+			{
+				context.ReportDiagnostic(diag);
+			}
+		}
+
+		private static Diagnostic? GetDiagnosticIfInvalidTargetNamespace(ISymbol symbol, AttributeSyntax node)
+		{
+			const string propertyName = nameof(DefaultParamConfigurationAttribute.TargetNamespace);
+
+			if (node.ArgumentList is null || !node.ArgumentList.Arguments.Any())
+			{
+				return null;
+			}
+
+			if (node.GetArgument(propertyName) is AttributeArgumentSyntax argument &&
+				symbol.GetAttribute(node) is AttributeData data &&
+				data.TryGetNamedArgumentValue(propertyName, out string? value) &&
+				!IsValidTargetNamespace(value))
+			{
+				Location? location = argument.GetLocation();
+
+				return Diagnostic.Create(DefaultParamDiagnostics.DUR0127_InvalidTargetNamespace, location, symbol, value);
+			}
+
+			return null;
 		}
 
 		private static bool HasMemberWithDefaultParamAttribute(INamedTypeSymbol symbol, INamedTypeSymbol attributeSymbol)
@@ -110,27 +168,9 @@ namespace Durian.Analysis.DefaultParam
 			return false;
 		}
 
-		private static void ReportIfInvalidTargetNamespace(ISymbol symbol, AttributeSyntax node, SyntaxNodeAnalysisContext context)
+		private static bool IsValidTargetNamespace(string? targetNamespace)
 		{
-			const string propertyName = nameof(DefaultParamConfigurationAttribute.TargetNamespace);
-
-			if (node.ArgumentList is null || !node.ArgumentList.Arguments.Any())
-			{
-				return;
-			}
-
-			AttributeArgumentSyntax? argument = node.ArgumentList.Arguments.FirstOrDefault(arg => arg.NameEquals is not null && arg.NameEquals.Name.ToString() == propertyName);
-
-			if (argument is not null &&
-				symbol.GetAttribute(node, context.CancellationToken) is AttributeData data &&
-				data.TryGetNamedArgumentValue(propertyName, out string? value) &&
-				value is not null)
-			{
-				if (value == "Durian.Generator" || !AnalysisUtilities.IsValidNamespaceIdentifier(value))
-				{
-					context.ReportDiagnostic(Diagnostic.Create(DefaultParamDiagnostics.DUR0127_InvalidTargetNamespace, argument.GetLocation(), symbol, value));
-				}
-			}
+			return AnalysisUtilities.IsValidNamespaceIdentifier(targetNamespace) && targetNamespace != "Durian.Generator";
 		}
 	}
 }

@@ -400,6 +400,97 @@ namespace Durian.Info
 		}
 
 		/// <summary>
+		/// Returns a <see cref="ModuleIdentity"/> for the <see cref="DurianModule.EnumServices"/> module.
+		/// </summary>
+		public static ModuleIdentity EnumServices
+		{
+			get
+			{
+				if(!IdentityPool.Modules.TryGetValue("EnumServices", out ModuleIdentity module))
+				{
+					module = new(
+						module: DurianModule.EnumServices,
+						id: 02,
+						packages: new DurianPackage[]
+						{
+							DurianPackage.EnumServices,
+						},
+						docsPath: "tree/master/docs/EnumServices",
+						diagnostics: new DiagnosticData[]
+						{
+							new DiagnosticData(
+								title: "Invalid EnumServices value",
+								id: 01,
+								docsPath: "tree/master/docs/EnumServices/DUR0201.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Invalid prefix or identifier",
+								id: 02,
+								docsPath: "tree/master/docs/EnumServices/DUR0202.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Target class must be static and partial",
+								id: 03,
+								docsPath: "tree/master/docs/EnumServices/DUR0203.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Target enum cannot be less accessible than its generated extension methods",
+								id: 04,
+								docsPath: "tree/master/docs/EnumServices/DUR0204.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Accessibility of generated extension methods cannot be greater than that of their containing type",
+								id: 05,
+								docsPath: "tree/master/docs/EnumServices/DUR0205.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Flags-only methods cannot be generated for non-flags enum",
+								id: 06,
+								docsPath: "tree/master/docs/EnumServices/DUR0206.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Don't use EnumServices on types without inner enums",
+								id: 07,
+								docsPath: "tree/master/docs/EnumServices/DUR0207.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Extension method already exists, so it won't be generated",
+								id: 08,
+								docsPath: "tree/master/docs/EnumServices/DUR0208.md",
+								fatal: false,
+								hasLocation: true
+							),
+						},
+						types: null
+					);
+				}
+
+				return module;
+			}
+		}
+
+		/// <summary>
 		/// Returns a <see cref="ModuleIdentity"/> for the <see cref="DurianModule.FriendClass"/> module.
 		/// </summary>
 		public static ModuleIdentity FriendClass
@@ -526,231 +617,6 @@ namespace Durian.Info
 						{
 							TypeRepository.FriendClassAttribute,
 							TypeRepository.FriendClassConfigurationAttribute,
-						}
-					);
-				}
-
-				return module;
-			}
-		}
-
-		/// <summary>
-		/// Returns a <see cref="ModuleIdentity"/> for the <see cref="DurianModule.GenericSpecialization"/> module.
-		/// </summary>
-		public static ModuleIdentity GenericSpecialization
-		{
-			get
-			{
-				if(!IdentityPool.Modules.TryGetValue("GenericSpecialization", out ModuleIdentity module))
-				{
-					module = new(
-						module: DurianModule.GenericSpecialization,
-						id: 02,
-						packages: new DurianPackage[]
-						{
-							DurianPackage.GenericSpecialization,
-						},
-						docsPath: "tree/master/docs/GenericSpecialization",
-						diagnostics: new DiagnosticData[]
-						{
-							new DiagnosticData(
-								title: "Non-generic types cannot use the AllowSpecializationAttribute",
-								id: 01,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0201.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Target class must be marked with the AllowSpecializationAttribute",
-								id: 02,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0202.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Specified name is not a valid identifier",
-								id: 03,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0203.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Do not specify the GenericSpecializationConfigurationAttribute on members that do not contain any generic child classes or are not generic themselves",
-								id: 04,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0204.md",
-								fatal: false,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Generic specialization must inherit the default implementation class",
-								id: 05,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0205.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Generic specialization must implement the specialization interface",
-								id: 06,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0206.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Class marked with the GenericSpecializationAttribute cannot be abstract or static",
-								id: 07,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0207.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Generic class lacks default implementation",
-								id: 08,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0208.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Class marked with the AllowSpecializationAttribute must be partial",
-								id: 09,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0209.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Containing type of a member marked with the AllowSpecializationAttribute must be partial",
-								id: 10,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0210.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Class marked with the AllowSpecializationAttribute cannot be abstract or static",
-								id: 11,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0211.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Do not provide a specialization for a generic class that is not marked with the AllowSpecializationAttribute",
-								id: 12,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0212.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Do not provide a specialization for a generic class that is not part of the current assembly",
-								id: 13,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0213.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Do not provide a specialization for a generic class from the System namespace or any of its child namespaces",
-								id: 14,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0214.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Type specified in the GenericSpecializationAttribute must be an unbound generic class",
-								id: 15,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0215.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Duplicate GenericSpecializationAttribute type",
-								id: 16,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0216.md",
-								fatal: false,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Do not declare members that are not specializations in a class marked with the AllowSpecializationAttribute",
-								id: 17,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0217.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Do not specify base types or implemented interfaces for a class marked with the AllowSpecializationAttribute",
-								id: 18,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0218.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Do not force inherit a sealed class",
-								id: 19,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0219.md",
-								fatal: false,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Default generic implementation cannot be abstract or static",
-								id: 20,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0220.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Default generic implementation cannot be generic",
-								id: 21,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0221.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Interface or template name cannot be the same as containing class",
-								id: 22,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0222.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Generic specialization must be a class",
-								id: 23,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0223.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Specialization class cannot inherit the type it is a specialization of",
-								id: 24,
-								docsPath: "tree/master/docs/GenericSpecialization/DUR0224.md",
-								fatal: true,
-								hasLocation: true
-							),
-						},
-						types: new TypeIdentity[]
-						{
-							TypeRepository.AllowSpecializationAttribute,
-							TypeRepository.GenericSpecializationAttribute,
-							TypeRepository.GenericSpecializationConfigurationAttribute,
-							TypeRepository.GenSpecImportOptions,
 						}
 					);
 				}

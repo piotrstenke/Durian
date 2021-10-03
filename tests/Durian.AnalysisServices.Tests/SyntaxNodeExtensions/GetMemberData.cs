@@ -28,6 +28,12 @@ namespace Durian.Analysis.Tests.SyntaxNodeExtensions
 		}
 
 		[Fact]
+		public void ReturnsValidEnumData_When_IsEnum()
+		{
+			Assert.True(ValidateMember<EnumData, EnumDeclarationSyntax>("enum Test { }"));
+		}
+
+		[Fact]
 		public void ReturnsValidEventData_When_HasMultipleEventFieldsInSingleDeclaration()
 		{
 			EventFieldDeclarationSyntax e = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action OnInit, OnExit; }");

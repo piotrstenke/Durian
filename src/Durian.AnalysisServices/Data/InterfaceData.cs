@@ -46,12 +46,22 @@ namespace Durian.Analysis.Data
 			ICompilationData compilation,
 			INamedTypeSymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<InterfaceDeclarationSyntax>? partialDeclarations,
-			IEnumerable<SyntaxToken>? modifiers,
-			IEnumerable<ITypeData>? containingTypes,
-			IEnumerable<INamespaceSymbol>? containingNamespaces,
-			IEnumerable<AttributeData>? attributes
-		) : base(declaration, compilation, symbol, semanticModel, partialDeclarations, modifiers, containingTypes, containingNamespaces, attributes)
+			IEnumerable<InterfaceDeclarationSyntax>? partialDeclarations = null,
+			IEnumerable<SyntaxToken>? modifiers = null,
+			IEnumerable<ITypeData>? containingTypes = null,
+			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
+			IEnumerable<AttributeData>? attributes = null
+		) : base(
+			declaration,
+			compilation,
+			symbol,
+			semanticModel,
+			partialDeclarations,
+			modifiers,
+			containingTypes,
+			containingNamespaces,
+			attributes
+		)
 		{
 		}
 	}

@@ -230,13 +230,13 @@ namespace Durian.Analysis.DefaultParam
 								compilation,
 								symbol,
 								semanticModel,
+								in combinedParameters,
+								call,
+								targetNamespace,
+								newModifiers,
 								containingTypes,
 								null,
-								attributes,
-								in combinedParameters,
-								newModifiers,
-								call,
-								targetNamespace
+								attributes
 							);
 
 							return true;

@@ -73,6 +73,20 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
+		/// Creates a new <see cref="EnumData"/> from the specified <paramref name="source"/>.
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="index">Index at which the <see cref="EnumData"/> should be returned. Can be thought of as a number of <see cref="EnumDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
+		/// <returns>
+		/// A new <see cref="EnumData"/> created from a <see cref="EnumDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// <see langword="null"/> if no such <see cref="EnumDeclarationSyntax"/> exists.
+		/// </returns>
+		protected EnumData GetEnum(string? source, int index = 0)
+		{
+			return (Compilation.GetMemberData<EnumDeclarationSyntax>(source, index) as EnumData)!;
+		}
+
+		/// <summary>
 		/// Creates a new <see cref="EventData"/> from the specified <paramref name="source"/>.
 		/// </summary>
 		/// <param name="source"></param>

@@ -74,7 +74,7 @@ namespace Durian.Analysis.Logging
 
 			if (string.IsNullOrWhiteSpace(LogDirectory))
 			{
-				throw new ArgumentException($"{nameof(LogDirectory)} of the {nameof(DefaultGeneratorLoggingConfigurationAttribute)} cannot be empty or whitespace only!");
+				throw new ArgumentException($"{nameof(LogDirectory)} of the {nameof(DefaultGeneratorLoggingConfigurationAttribute)} cannot be empty or whitespace only!", nameof(LogDirectory));
 			}
 
 			string? dir;

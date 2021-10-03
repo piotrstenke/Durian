@@ -54,10 +54,18 @@ namespace Durian.Analysis.Data
 			ICompilationData compilation,
 			IPropertySymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<ITypeData>? containingTypes,
-			IEnumerable<INamespaceSymbol>? containingNamespaces,
-			IEnumerable<AttributeData>? attributes
-		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
+			IEnumerable<ITypeData>? containingTypes = null,
+			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
+			IEnumerable<AttributeData>? attributes = null
+		) : base(
+			declaration,
+			compilation,
+			symbol,
+			semanticModel,
+			containingTypes,
+			containingNamespaces,
+			attributes
+		)
 		{
 		}
 	}

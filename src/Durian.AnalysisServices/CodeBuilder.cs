@@ -698,7 +698,7 @@ namespace Durian.Analysis
 				TextBuilder.Append(' ');
 			}
 
-			TextBuilder.Append(type.Declaration.Keyword);
+			TextBuilder.Append(type.Declaration.GetKeyword());
 			TextBuilder.Append(' ');
 
 			TextBuilder.AppendLine(type.GetGenericName(false, true));

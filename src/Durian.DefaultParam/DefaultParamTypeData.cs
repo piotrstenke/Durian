@@ -14,7 +14,7 @@ namespace Durian.Analysis.DefaultParam
 	/// <summary>
 	/// <see cref="TypeData"/> that contains additional information needed by the <see cref="DefaultParamGenerator"/>.
 	/// </summary>
-	public class DefaultParamTypeData : TypeData, IDefaultParamTarget
+	public class DefaultParamTypeData : TypeData<TypeDeclarationSyntax>, IDefaultParamTarget
 	{
 		private readonly TypeParameterContainer _typeParameters;
 
@@ -61,30 +61,40 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamTypeData"/>.</param>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> this <see cref="DefaultParamTypeData"/> represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
+		/// <param name="inherit">Determines whether the generated members should inherit the original type.</param>
+		/// <param name="targetNamespace">Specifies the namespace where the target member should be generated in.</param>
+		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
 		/// <param name="partialDeclarations">A collection of <see cref="TypeDeclarationSyntax"/> that represent the partial declarations of the target <paramref name="symbol"/>.</param>
 		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
-		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
-		/// <param name="inherit">Determines whether the generated members should inherit the original type.</param>
-		/// <param name="targetNamespace">Specifies the namespace where the target member should be generated in.</param>
 		public DefaultParamTypeData(
 			TypeDeclarationSyntax declaration,
 			DefaultParamCompilationData compilation,
 			INamedTypeSymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<TypeDeclarationSyntax>? partialDeclarations,
-			IEnumerable<SyntaxToken>? modifiers,
-			IEnumerable<ITypeData>? containingTypes,
-			IEnumerable<INamespaceSymbol>? containingNamespaces,
-			IEnumerable<AttributeData>? attributes,
 			in TypeParameterContainer typeParameters,
-			HashSet<int>? newModifierIndexes,
 			bool inherit,
-			string targetNamespace
-		) : base(declaration, compilation, symbol, semanticModel, partialDeclarations, modifiers, containingTypes, containingNamespaces, attributes)
+			string targetNamespace,
+			HashSet<int>? newModifierIndexes = null,
+			IEnumerable<TypeDeclarationSyntax>? partialDeclarations = null,
+			IEnumerable<SyntaxToken>? modifiers = null,
+			IEnumerable<ITypeData>? containingTypes = null,
+			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
+			IEnumerable<AttributeData>? attributes = null
+		) : base(
+			declaration,
+			compilation,
+			symbol,
+			semanticModel,
+			partialDeclarations,
+			modifiers,
+			containingTypes,
+			containingNamespaces,
+			attributes
+		)
 		{
 			_typeParameters = typeParameters;
 			NewModifierIndexes = newModifierIndexes;

@@ -9,7 +9,7 @@ using Durian.Configuration;
 using Durian;
 using Durian.Analysis.FriendClass;
 
-[assembly: PackageDefinition(DurianPackage.FriendClass, PackageType.Analyzer, "1.0.0", DurianModule.FriendClass)]
+[assembly: PackageDefinition(DurianPackage.FriendClass, PackageType.Analyzer | PackageType.CodeFixLibrary, "1.0.0", DurianModule.FriendClass)]
 [assembly: DiagnosticFiles(nameof(FriendClassDiagnostics))]
 [assembly: IncludeTypes(
 	nameof(FriendClassAttribute),

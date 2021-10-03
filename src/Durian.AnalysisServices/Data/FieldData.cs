@@ -40,19 +40,6 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="declaration"><see cref="FieldDeclarationSyntax"/> this <see cref="FieldData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="FieldData"/>.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
-		/// </exception>
-		public FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation)
-			: this(declaration, compilation, GetSemanticModel(compilation, declaration), GetVariable(declaration, 0))
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FieldData"/> class.
-		/// </summary>
-		/// <param name="declaration"><see cref="FieldDeclarationSyntax"/> this <see cref="FieldData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="FieldData"/>.</param>
 		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
@@ -60,8 +47,11 @@ namespace Durian.Analysis.Data
 		/// <exception cref="IndexOutOfRangeException">
 		/// <paramref name="index"/> was out of range.
 		/// </exception>
-		public FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, int index)
-			: this(declaration, compilation, GetSemanticModel(compilation, declaration), GetVariable(declaration, index))
+		public FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, int index = 0) : this(
+			declaration,
+			compilation,
+			GetSemanticModel(compilation, declaration),
+			GetVariable(declaration, index))
 		{
 			Index = index;
 		}
@@ -71,8 +61,17 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="symbol"><see cref="IFieldSymbol"/> this <see cref="FieldData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="FieldData"/>.</param>
-		internal FieldData(IFieldSymbol symbol, ICompilationData compilation)
-			: base(GetFieldDeclarationFromSymbol(symbol, compilation, out SemanticModel semanticModel, out VariableDeclaratorSyntax var, out int index), compilation, symbol, semanticModel, null, null, null)
+		internal FieldData(IFieldSymbol symbol, ICompilationData compilation) : base(
+			GetFieldDeclarationFromSymbol(
+				symbol,
+				compilation,
+				out SemanticModel semanticModel,
+				out VariableDeclaratorSyntax var,
+				out int index),
+			compilation,
+			symbol,
+			semanticModel
+		)
 		{
 			Variable = var;
 			Index = index;
@@ -85,36 +84,58 @@ namespace Durian.Analysis.Data
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="FieldData"/>.</param>
 		/// <param name="symbol"><see cref="IFieldSymbol"/> this <see cref="FieldData"/> represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="variable"><see cref="VariableDeclaratorSyntax"/> that represents the target variable.</param>
+		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="IFieldSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		/// <param name="variable"><see cref="VariableDeclaratorSyntax"/> that represents the target variable.</param>
-		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
 		protected internal FieldData(
 			FieldDeclarationSyntax declaration,
 			ICompilationData compilation,
 			IFieldSymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<ITypeData>? containingTypes,
-			IEnumerable<INamespaceSymbol>? containingNamespaces,
-			IEnumerable<AttributeData>? attributes,
+			VariableDeclaratorSyntax variable,
+			int index,
+			IEnumerable<ITypeData>? containingTypes = null,
+			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
+			IEnumerable<AttributeData>? attributes = null
+		) : base(
+			declaration,
+			compilation,
+			symbol,
+			semanticModel,
+			containingTypes,
+			containingNamespaces,
+			attributes
+		)
+		{
+			Index = index;
+			Variable = variable;
+		}
+
+		private FieldData(
+			FieldDeclarationSyntax declaration,
+			ICompilationData compilation,
+			IFieldSymbol symbol,
+			SemanticModel semanticModel,
 			VariableDeclaratorSyntax variable,
 			int index
-		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
-		{
-			Index = index;
-			Variable = variable;
-		}
-
-		private FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, IFieldSymbol symbol, SemanticModel semanticModel, VariableDeclaratorSyntax variable, int index)
-			: base(declaration, compilation, symbol, semanticModel, null, null, null)
+		) : base(declaration, compilation, symbol, semanticModel)
 		{
 			Variable = variable;
 			Index = index;
 		}
 
-		private FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, SemanticModel semanticModel, VariableDeclaratorSyntax variable)
-			: base(declaration, compilation, (semanticModel.GetDeclaredSymbol(variable) as IFieldSymbol)!, semanticModel, null, null, null)
+		private FieldData(
+			FieldDeclarationSyntax declaration,
+			ICompilationData compilation,
+			SemanticModel semanticModel,
+			VariableDeclaratorSyntax variable
+		) : base(
+			declaration,
+			compilation,
+			(semanticModel.GetDeclaredSymbol(variable) as IFieldSymbol)!,
+			semanticModel)
 		{
 			Variable = variable;
 		}

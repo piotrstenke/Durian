@@ -55,7 +55,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation)
+		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
 		{
 			return new DefaultParamCompilationData(compilation);
 		}

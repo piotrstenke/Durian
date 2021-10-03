@@ -11,7 +11,7 @@ namespace Durian.Analysis.Data
 {
 	/// <inheritdoc cref="ITypeData"/>
 	/// <typeparam name="TDeclaration">Specific type of the target <see cref="TypeDeclarationSyntax"/>.</typeparam>
-	public class TypeData<TDeclaration> : TypeData where TDeclaration : TypeDeclarationSyntax
+	public class TypeData<TDeclaration> : TypeData where TDeclaration : BaseTypeDeclarationSyntax
 	{
 		/// <summary>
 		/// Target <see cref="TypeDeclarationSyntax"/>.
@@ -56,12 +56,22 @@ namespace Durian.Analysis.Data
 			ICompilationData compilation,
 			INamedTypeSymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<TDeclaration>? partialDeclarations,
-			IEnumerable<SyntaxToken>? modifiers,
-			IEnumerable<ITypeData>? containingTypes,
-			IEnumerable<INamespaceSymbol>? containingNamespaces,
-			IEnumerable<AttributeData>? attributes
-		) : base(declaration, compilation, symbol, semanticModel, partialDeclarations, modifiers, containingTypes, containingNamespaces, attributes)
+			IEnumerable<TDeclaration>? partialDeclarations = null,
+			IEnumerable<SyntaxToken>? modifiers = null,
+			IEnumerable<ITypeData>? containingTypes = null,
+			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
+			IEnumerable<AttributeData>? attributes = null
+		) : base(
+			declaration,
+			compilation,
+			symbol,
+			semanticModel,
+			partialDeclarations,
+			modifiers,
+			containingTypes,
+			containingNamespaces,
+			attributes
+		)
 		{
 		}
 

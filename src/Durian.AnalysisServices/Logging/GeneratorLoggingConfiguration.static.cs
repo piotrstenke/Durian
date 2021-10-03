@@ -32,8 +32,12 @@ namespace Durian.Analysis.Logging
 		public static string DefaultLogDirectory => Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/Durian/logs";
 
 		/// <summary>
-		/// Determines whether there is any assembly in the current <see cref="AppDomain"/> has applied the <see cref="GloballyDisableGeneratorLoggingAttribute"/>.
+		/// Determines whether generator logging is globally enabled.
 		/// </summary>
+		/// <remarks>
+		/// Logging becomes globally disabled when an <see cref="GloballyDisableGeneratorLoggingAttribute"/>
+		/// is detected on any assembly in the current <see cref="AppDomain"/>.
+		/// </remarks>
 		public static bool IsEnabled { get; } = CheckLoggingIsEnabled();
 
 		/// <summary>

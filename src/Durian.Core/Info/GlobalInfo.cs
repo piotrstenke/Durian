@@ -11,12 +11,12 @@ namespace Durian.Info
 		/// <summary>
 		/// Specifies the maximal valid value of the <see cref="DurianModule"/> enum.
 		/// </summary>
-		public const DurianModule ModuleMax = DurianModule.Manager;
+		public const DurianModule ModuleMax = DurianModule.EnumServices;
 
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianModule"/> enum.
 		/// </summary>
-		public const DurianModule ModuleMin = DurianModule.Core;
+		public const DurianModule ModuleMin = DurianModule.Manager;
 
 		/// <summary>
 		/// Number of published Durian analyzer or source generator packages, excluding <c>Durian.Manager</c>.
@@ -36,7 +36,7 @@ namespace Durian.Info
 		/// <summary>
 		/// Specifies the maximal valid value of the <see cref="DurianPackage"/> enum.
 		/// </summary>
-		public const DurianPackage PackageMax = DurianPackage.Manager;
+		public const DurianPackage PackageMax = DurianPackage.EnumServices;
 
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianPackage"/> enum.
