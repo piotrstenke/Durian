@@ -402,7 +402,7 @@ namespace Durian.Analysis.DefaultParam
 			return new[]
 			{
 				DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern,
-				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod,
+				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod,
 				DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods,
 				DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase,
 				DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters,

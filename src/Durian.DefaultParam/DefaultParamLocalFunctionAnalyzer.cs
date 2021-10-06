@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.Analysis.DefaultParam
-{
+{	
 #pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 
 	/// <summary>
@@ -39,7 +39,10 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		public static IEnumerable<DiagnosticDescriptor> GetSupportedDiagnostics()
 		{
-			return GetBaseDiagnostics().Concat(GetAnalyzerSpecificDiagnosticsAsArray());
+			return GetBaseDiagnostics().Concat(new[]
+			{
+				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod
+			});
 		}
 
 		/// <inheritdoc/>
@@ -51,7 +54,10 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc/>
 		protected override IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics()
 		{
-			return GetAnalyzerSpecificDiagnosticsAsArray();
+			return new[]
+			{
+				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod
+			};
 		}
 
 		/// <inheritdoc/>
@@ -78,17 +84,9 @@ namespace Durian.Analysis.DefaultParam
 
 			if (typeParameters.Any(t => t.HasAttribute(compilation.DefaultParamAttribute!)))
 			{
-				DiagnosticDescriptor d = DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod;
+				DiagnosticDescriptor d = DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod;
 				context.ReportDiagnostic(Diagnostic.Create(d, l.GetLocation(), m));
 			}
-		}
-
-		private static DiagnosticDescriptor[] GetAnalyzerSpecificDiagnosticsAsArray()
-		{
-			return new[]
-			{
-				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod
-			};
 		}
 	}
 }
