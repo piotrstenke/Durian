@@ -15,6 +15,7 @@ namespace Durian.Analysis.InterfaceTargets.Tests
 		[InlineData("interface")]
 		[InlineData("struct")]
 		[InlineData("record")]
+		[InlineData("record struct")]
 		public async Task Error_When_IsReflectionOnly(string memberType)
 		{
 			string input =
@@ -32,11 +33,36 @@ public {memberType} Test : ITest
 
 			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0403_InterfaceIsNotDirectlyAccessible.Id);
 		}
+		
+		[Theory]
+		[InlineData("class")]
+		[InlineData("interface")]
+		[InlineData("struct")]
+		[InlineData("record")]
+		[InlineData("record struct")]
+		public async Task NoneHasSameEffectAsReflectionOnly(string memberType)
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.None)})]
+public interface ITest
+{{
+}}
+
+public {memberType} Test : ITest
+{{
+}}
+";
+
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0403_InterfaceIsNotDirectlyAccessible.Id);
+		}
 
 		[Theory]
 		[InlineData("interface")]
 		[InlineData("struct")]
 		[InlineData("record")]
+		[InlineData("record struct")]
 		public async Task Error_When_IsValidOnClass_And_TargetIsNotClass(string memberType)
 		{
 			string input =
@@ -60,6 +86,7 @@ public {memberType} Test : ITest
 		[InlineData("class")]
 		[InlineData("struct")]
 		[InlineData("record")]
+		[InlineData("record struct")]
 		public async Task Error_When_IsValidOnInterface_And_TargetIsNotInterface(string memberType)
 		{
 			string input =
@@ -83,12 +110,13 @@ public {memberType} Test : ITest
 		[InlineData("class")]
 		[InlineData("struct")]
 		[InlineData("interface")]
-		public async Task Error_When_IsValidOnRecord_And_TargetIsNotRecord(string memberType)
+		[InlineData("record struct")]
+		public async Task Error_When_IsValidOnRecordClass_And_TargetIsNotRecordClass(string memberType)
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Record)})]
+[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.RecordClass)})]
 public interface ITest
 {{
 }}
@@ -106,12 +134,37 @@ public {memberType} Test : ITest
 		[InlineData("class")]
 		[InlineData("interface")]
 		[InlineData("record")]
+		[InlineData("record struct")]
 		public async Task Error_When_IsValidOnStruct_And_TargetIsNotStruct(string memberType)
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
 [{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Struct)})]
+public interface ITest
+{{
+}}
+
+public {memberType} Test : ITest
+{{
+}}
+";
+			string diag = GetDiagnosticId(memberType);
+
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == diag);
+		}
+		
+		[Theory]
+		[InlineData("struct")]
+		[InlineData("class")]
+		[InlineData("interface")]
+		[InlineData("record")]
+		public async Task Error_When_IsValidOnRecordStruct_And_TargetIsNotRecordStruct(string memberType)
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.RecordStruct)})]
 public interface ITest
 {{
 }}
@@ -162,7 +215,7 @@ public interface Test : ITest
 		}
 
 		[Fact]
-		public async Task Success_When_IsValidOnRecord_And_TargetIsRecord()
+		public async Task Success_When_IsValidOnRecordClass_And_TargetIsRecorClass()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -195,6 +248,64 @@ public struct Test : ITest
 }}
 ";
 			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+		
+		[Fact]
+		public async Task Success_When_IsValidOnRecordStruct_And_TargetIsRecordStruct()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.RecordStruct)})]
+public interface ITest
+{{
+}}
+
+public record struct Test : ITest
+{{
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+		
+		[Fact]
+		public async Task Success_When_IsValidOnMultipleMemberTypes_And_IsOneOfTypes()
+		{
+				string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{nameof(InterfaceTargetsAttribute)}(
+	{nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Class)} |
+	{nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Struct)})]
+public interface ITest
+{{
+}}
+
+public struct Test : ITest
+{{
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+		
+		[Fact]
+		public async Task Error_When_IsValidOnMultipleMemberTypes_And_IsNotOneOfTypes()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{nameof(InterfaceTargetsAttribute)}(
+	{nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Class)} |
+	{nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Struct)})]
+public interface ITest
+{{
+}}
+
+public record Test : ITest
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind.Id);
 		}
 
 		private static string GetDiagnosticId(string memberType)

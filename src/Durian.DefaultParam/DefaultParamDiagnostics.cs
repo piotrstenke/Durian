@@ -42,7 +42,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Provides diagnostic message indicating that a method with the <see cref="DefaultParamAttribute"/> is not valid on this type of method.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0103_DefaultParamIsNotOnThisTypeOfMethod = new(
+		public static readonly DiagnosticDescriptor DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod = new(
 			id: "DUR0103",
 			title: "DefaultParamAttribute is not valid on this type of method",
 			messageFormat: "'{0}': DefaultParamAttribute is not valid on this type of method",

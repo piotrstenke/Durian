@@ -55,11 +55,7 @@ namespace Durian.Analysis.DefaultParam
 			/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 			public static bool AnalyzeAgainstInvalidMethodType(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol symbol)
 			{
-				if (symbol.MethodKind == MethodKind.LocalFunction ||
-					symbol.MethodKind == MethodKind.AnonymousFunction ||
-					symbol.MethodKind == MethodKind.ExplicitInterfaceImplementation ||
-					(symbol.ContainingType is INamedTypeSymbol t && t.TypeKind == TypeKind.Interface)
-				)
+				if (symbol.MethodKind != MethodKind.Ordinary || (symbol.ContainingType is INamedTypeSymbol t && t.TypeKind == TypeKind.Interface))
 				{
 					ReportDiagnosticForInvalidMethodType(diagnosticReceiver, symbol);
 					return false;
@@ -271,7 +267,7 @@ namespace Durian.Analysis.DefaultParam
 			/// <param name="method"><see cref="IMethodSymbol"/> of a method to report the <see cref="Diagnostic"/>s for.</param>
 			public static void ReportDiagnosticForInvalidMethodType(IDiagnosticReceiver diagnosticReceiver, IMethodSymbol method)
 			{
-				diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod, method);
+				diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod, method);
 			}
 
 			/// <summary>

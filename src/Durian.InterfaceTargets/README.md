@@ -130,9 +130,10 @@ The possible values of the [Durian.InterfaceTargets](../Durian.Core/_enum/Interf
  - *None* - Interface cannot be implemented in code.
  - *ReflectionOnly* - Interface can only be implemented through reflection; the same as *None*.
  - *Class* - Interface can only be implemented by classes.
- - *Struct* - Interface can only be implemented by structs.
  - *Interface* - Interface can only be implemented by other interfaces.
- - *Record* - Interface can only be implemented by records.
+ - *Struct* - Interface can only be implemented by structs.
+ - *RecordClass* - Interface can only be implemented by record classes.
+ - *RecordStruct* - Interface can only be implemented by record structs.
  - *All* - Interface can be applied to all kinds of members; same as not specifying the [Durian.InterfaceTargetsAttribute](../Durian.Core/_attr/InterfaceTargetsAttribute.cs) at all.
 
 **Note**: Upon release of C# 10, a new value will be added - *RecordStruct*.
