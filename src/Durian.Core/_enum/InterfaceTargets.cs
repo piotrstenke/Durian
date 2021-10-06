@@ -22,14 +22,14 @@ namespace Durian
 		None = ReflectionOnly,
 
 		/// <summary>
-		/// Interface can be implemented by classes.
+		/// Interface can be implemented by normal C# classes.
 		/// </summary>
 		Class = 1,
 
 		/// <summary>
-		/// Interface can be implemented by structs.
+		/// Interface can be implemeted by record classes.
 		/// </summary>
-		Struct = 2,
+		RecordClass = 2,
 
 		/// <summary>
 		/// Interface can be a base for other interface.
@@ -37,13 +37,18 @@ namespace Durian
 		Interface = 4,
 
 		/// <summary>
-		/// Interface can be implemented by records.
+		/// Interface can be implemented by normal C# structs.
 		/// </summary>
-		Record = 8,
+		Struct = 8,
+
+		/// <summary>
+		/// Interface can be implemented by record structs.
+		/// </summary>
+		RecordStruct = 16,
 
 		/// <summary>
 		/// Interface can be implemented by all valid member kinds.
 		/// </summary>
-		All = Class | Struct | Interface | Record
+		All = Class | RecordClass | Struct | RecordStruct | Interface
 	}
 }
