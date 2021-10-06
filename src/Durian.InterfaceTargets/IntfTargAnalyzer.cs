@@ -19,7 +19,7 @@ namespace Durian.Analysis.InterfaceTargets
 	/// </summary>
 #if !MAIN_PACKAGE
 
-	[DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.FSharp, LanguageNames.VisualBasic)]
+	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
 
 	public class IntfTargAnalyzer : DurianAnalyzer
