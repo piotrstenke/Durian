@@ -96,9 +96,19 @@ namespace Durian.Analysis.InterfaceTargets
 
 				case TypeKind.Struct:
 
-					if (!targets.HasFlag(IntfTargets.Struct))
+					if (intf.IsRecord)
 					{
-						context.ReportDiagnostic(Diagnostic.Create(DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind, context.Node.GetLocation(), context.ContainingSymbol, intf, "a struct"));
+						if (!targets.HasFlag(IntfTargets.RecordStruct))
+						{
+							ReportCannotBeImplemented(context, intf, "a record struct");
+						}
+					}
+					else
+					{
+						if (!targets.HasFlag(IntfTargets.Struct))
+						{
+							ReportCannotBeImplemented(context, intf, "a struct");
+						}
 					}
 
 					break;
@@ -107,21 +117,26 @@ namespace Durian.Analysis.InterfaceTargets
 
 					if (intf.IsRecord)
 					{
-						if (!targets.HasFlag(IntfTargets.Record))
+						if (!targets.HasFlag(IntfTargets.RecordClass))
 						{
-							context.ReportDiagnostic(Diagnostic.Create(DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind, context.Node.GetLocation(), context.ContainingSymbol, intf, "a record"));
+							ReportCannotBeImplemented(context, intf, "a record class");
 						}
 					}
 					else
 					{
 						if (!targets.HasFlag(IntfTargets.Class))
 						{
-							context.ReportDiagnostic(Diagnostic.Create(DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind, context.Node.GetLocation(), context.ContainingSymbol, intf, "a class"));
+							ReportCannotBeImplemented(context, intf, "a class");
 						}
 					}
 
 					break;
 			}
+		}
+
+		private static void ReportCannotBeImplemented(SyntaxNodeAnalysisContext context, INamedTypeSymbol intf, string memberType)
+		{
+			context.ReportDiagnostic(Diagnostic.Create(DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind, context.Node.GetLocation(), context.ContainingSymbol, intf, memberType));
 		}
 	}
 }
