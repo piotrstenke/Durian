@@ -9,11 +9,6 @@ using Durian.Info;
 
 [assembly: PackageDefinition(DurianPackage.CoreAnalyzer, PackageType.Analyzer, "2.0.0", DurianModule.Core)]
 [assembly: DiagnosticFiles(nameof(DurianDiagnostics))]
-[assembly: IncludeTypes(
-	nameof(DurianGeneratedAttribute),
-	nameof(EnableModuleAttribute),
-	nameof(PackageDefinitionAttribute)
-)]
 
 #region SuppressMessage
 

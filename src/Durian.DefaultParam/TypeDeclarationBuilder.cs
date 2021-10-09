@@ -14,7 +14,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
-	/// Builds a new <see cref="TypeDeclarationSyntax"/> based on the value specified in the <see cref="DefaultParamAttribute"/>.
+	/// Builds a new <see cref="TypeDeclarationSyntax"/> based on the value specified in the <c>Durian.DefaultParamAttribute</c>.
 	/// </summary>
 	public sealed class TypeDeclarationBuilder : IDefaultParamDeclarationBuilder
 	{

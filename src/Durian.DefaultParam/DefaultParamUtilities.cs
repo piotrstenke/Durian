@@ -9,7 +9,6 @@ using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
-using Durian.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -47,7 +46,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Gets an <see cref="int"/> value of an enum property of either <see cref="DefaultParamConfigurationAttribute"/> applied to the target <see cref="ISymbol"/> or <see cref="DefaultParamScopedConfigurationAttribute"/> applied to one of the <see cref="ISymbol"/>'s <paramref name="containingTypes"/>.
+		/// Gets an <see cref="int"/> value of an enum property of either <c>Durian.Configuration.DefaultParamConfigurationAttribute</c> applied to the target <see cref="ISymbol"/> or <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> applied to one of the <see cref="ISymbol"/>'s <paramref name="containingTypes"/>.
 		/// </summary>
 		/// <param name="propertyName">Name of the property to get the value of.</param>
 		/// <param name="attributes">Attributes of the target <see cref="ISymbol"/>.</param>
@@ -71,7 +70,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Gets an <see cref="int"/> value of an enum property <see cref="DefaultParamScopedConfigurationAttribute"/> applied to one of the <see cref="ISymbol"/>'s <paramref name="containingTypes"/>.
+		/// Gets an <see cref="int"/> value of an enum property <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> applied to one of the <see cref="ISymbol"/>'s <paramref name="containingTypes"/>.
 		/// </summary>
 		/// <param name="propertyName">Name of the property to get the value of.</param>
 		/// <param name="containingTypes">Types that contain the target <see cref="ISymbol"/>.</param>

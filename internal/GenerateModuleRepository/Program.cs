@@ -19,7 +19,7 @@ internal static class Program
 	private static readonly Regex _diagnosticFilesAttributeRegex = new(@"\[assembly\s*:\s*DiagnosticFiles\s*\(\s*(.*?)\]", RegexOptions.Singleline);
 	private static readonly Regex _includedTypesAttributeRegex = new(@"\[assembly\s*:\s*IncludeTypes\s*\(\s*(.*?)\]", RegexOptions.Singleline);
 	private static readonly Regex _includedDiagnosticsAttributeRegex = new(@"\[assembly\s*:\s*IncludeDiagnostics\s*\(\s*(.*?)\]", RegexOptions.Singleline);
-	private static readonly Regex _attributeValueRegex = new(@"\s*(?:nameof\s*\(\s*(\w+)\s*\)|""(.*?)"")", RegexOptions.Singleline);
+	private static readonly Regex _attributeValueRegex = new(@"\s*(?:nameof\s*\(\s*(\w+)\s*\)|""(.*?)""|MemberNames\.\s*(\w+)\s*)", RegexOptions.Singleline);
 	private static readonly Regex _namespaceRegex = new(@"namespace\s*([\w.]+)", RegexOptions.Singleline);
 
 	private static void Main(string[] args)
@@ -380,22 +380,31 @@ internal static class Program
 
 		foreach (Match match in matches)
 		{
-			string value = match.Groups[1].ToString().Trim();
-
-			if (string.IsNullOrWhiteSpace(value))
-			{
-				value = match.Groups[2].ToString().Trim();
-
-				if (string.IsNullOrWhiteSpace(value))
-				{
-					continue;
-				}
-			}
-
-			list.Add(value);
+			IterateGroups(match);
 		}
 
 		return list.ToArray();
+
+		void IterateGroups(Match match)
+		{
+			for (int i = 1; 1 < 4; i++)
+			{
+				string value = match.Groups[i].ToString();
+
+				if(string.IsNullOrEmpty(value))
+				{
+					continue;
+				}
+
+				if(string.IsNullOrWhiteSpace(value))
+				{
+					return;
+				}
+
+				list.Add(value.Trim());
+				return;
+			}
+		}
 	}
 
 	private static ModuleData[] GetModules(Configuration[] configurations)
@@ -626,7 +635,7 @@ namespace Durian.Info
 				builder.Append(
 $@"
 		/// <summary>
-		/// Returns a <see cref=""TypeIdentity""/> for the <see cref=""{type.Namespace}.{type.Name}""/> type.
+		/// Returns a <see cref=""TypeIdentity""/> for the <c>{type.Namespace}.{type.Name}</c> type.
 		/// </summary>
 		public static TypeIdentity {type.Name}
 		{{

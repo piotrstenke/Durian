@@ -145,7 +145,7 @@ partial class Test : ITest
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod.Id));
 		}
 
 		[Fact]
@@ -173,7 +173,7 @@ partial interface ITest
 	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod.Id));
 		}
 
 		[Fact]
@@ -192,7 +192,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotOnThisTypeOfMethod.Id));
+			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod.Id));
 		}
 
 		[Fact]

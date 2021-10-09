@@ -8,6 +8,10 @@ namespace Durian.Configuration
 	/// </summary>
 	public enum DPMethodConvention
 	{
+		// *********************************************************************************************
+		// Values of this enum have to be exactly the same as Durian.Analysis.DefaultParam.MethodConvention.
+		// *********************************************************************************************
+
 		/// <summary>
 		/// Uses default convention, which is <see cref="Call"/>.
 		/// </summary>

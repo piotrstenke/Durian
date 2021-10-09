@@ -10,11 +10,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.Analysis.DefaultParam
-{	
+{
 #pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 
 	/// <summary>
-	/// Analyzes local functions with type parameters marked by the <see cref="DefaultParamAttribute"/>.
+	/// Analyzes local functions with type parameters marked by the <c>Durian.DefaultParamAttribute</c>.
 	/// </summary>
 #if !MAIN_PACKAGE
 

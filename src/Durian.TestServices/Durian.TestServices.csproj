@@ -14,8 +14,8 @@
 
   <ItemGroup>
 
-    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
     <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
+    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
     <Compile Include="..\NullableAttributes.cs" />
     
   </ItemGroup>

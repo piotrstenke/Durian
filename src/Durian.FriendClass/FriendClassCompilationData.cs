@@ -5,23 +5,22 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using Durian.Analysis.Data;
 using System;
-using Durian.Configuration;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.Analysis.FriendClass
 {
 	/// <summary>
-	/// <see cref="CompilationData"/> that contains all <see cref="ISymbol"/>s needed to properly analyze types marked with the <see cref="FriendClassAttribute"/>.
+	/// <see cref="CompilationData"/> that contains all <see cref="ISymbol"/>s needed to properly analyze types marked with the <c>Durian.FriendClassAttribute</c>.
 	/// </summary>
 	public class FriendClassCompilationData : CompilationData
 	{
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> representing the <see cref="Durian.FriendClassAttribute"/> class.
+		/// <see cref="INamedTypeSymbol"/> representing the <c>Durian.FriendClassAttribute</c> class.
 		/// </summary>
 		public INamedTypeSymbol? FriendClassAttribute { get; private set; }
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> representing the <see cref="Configuration.FriendClassConfigurationAttribute"/> class.
+		/// <see cref="INamedTypeSymbol"/> representing the <c>Durian.Configuration.FriendClassConfigurationAttribute</c> class.
 		/// </summary>
 		public INamedTypeSymbol? FriendClassConfigurationAttribute { get; private set; }
 
@@ -46,8 +45,8 @@ namespace Durian.Analysis.FriendClass
 		/// <inheritdoc cref="ICompilationDataWithSymbols.Reset"/>
 		public void Reset()
 		{
-			FriendClassAttribute = Compilation.GetTypeByMetadataName(typeof(FriendClassAttribute).ToString());
-			FriendClassConfigurationAttribute = Compilation.GetTypeByMetadataName(typeof(FriendClassConfigurationAttribute).ToString());
+			FriendClassAttribute = Compilation.GetTypeByMetadataName(MemberNames.FriendClassAttribute);
+			FriendClassConfigurationAttribute = Compilation.GetTypeByMetadataName(MemberNames.FriendClassConfigurationAttribute);
 
 			HasErrors =
 				FriendClassConfigurationAttribute is null ||

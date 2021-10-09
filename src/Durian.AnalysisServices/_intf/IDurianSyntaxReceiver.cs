@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// <see cref="ISyntaxReceiver"/> that provides an additional method for checking if any <see cref="CSharpSyntaxNode"/>s were collected.
+	/// <see cref="ISyntaxReceiver"/> that provides access to all collected nodes.
 	/// </summary>
 	public interface IDurianSyntaxReceiver : ISyntaxReceiver, INodeProvider
 	{

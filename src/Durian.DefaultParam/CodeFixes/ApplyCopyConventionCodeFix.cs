@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Durian.Analysis.CodeFixes;
-using Durian.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -41,7 +40,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 				return;
 			}
 
-			INamedTypeSymbol? attribute = data.SemanticModel.Compilation.GetTypeByMetadataName(typeof(DefaultParamConfigurationAttribute).ToString());
+			INamedTypeSymbol? attribute = data.SemanticModel.Compilation.GetTypeByMetadataName(MemberNames.DefaultParamConfigurationAttribute);
 
 			if (attribute is null)
 			{
@@ -77,17 +76,17 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 			if (context.SemanticModel.HasUsingDirective(context.Root.Usings, @namespace, attribute, context.CancellationToken))
 			{
 				attrName = SyntaxFactory.IdentifierName("DefaultParamConfiguration");
-				enumName = SyntaxFactory.IdentifierName(nameof(DPTypeConvention));
+				enumName = SyntaxFactory.IdentifierName(nameof(TypeConvention));
 			}
 			else
 			{
 				QualifiedNameSyntax n =
 					SyntaxFactory.QualifiedName(
-							SyntaxFactory.IdentifierName(nameof(Durian)),
-							SyntaxFactory.IdentifierName(nameof(Configuration)));
+							SyntaxFactory.IdentifierName("Durian"),
+							SyntaxFactory.IdentifierName("Configuration"));
 
 				attrName = SyntaxFactory.QualifiedName(n, SyntaxFactory.IdentifierName("DefaultParamConfiguration"));
-				enumName = SyntaxFactory.QualifiedName(n, SyntaxFactory.IdentifierName(nameof(DPTypeConvention)));
+				enumName = SyntaxFactory.QualifiedName(n, SyntaxFactory.IdentifierName(nameof(TypeConvention)));
 			}
 
 			TypeDeclarationSyntax type = context.Node.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
@@ -97,10 +96,10 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 							SyntaxFactory.MemberAccessExpression(
 								SyntaxKind.SimpleMemberAccessExpression,
 								enumName,
-								SyntaxFactory.IdentifierName(nameof(DPTypeConvention.Copy))))
+								SyntaxFactory.IdentifierName(nameof(TypeConvention.Copy))))
 						.WithNameEquals(
 							SyntaxFactory.NameEquals(
-								SyntaxFactory.IdentifierName(nameof(DefaultParamConfigurationAttribute.TypeConvention)),
+								SyntaxFactory.IdentifierName(MemberNames.Config_TypeConvention),
 								SyntaxFactory.Token(SyntaxKind.EqualsToken).WithTrailingTrivia(SyntaxFactory.Space)))))))));
 
 			context.RegisterChange(context.Node, type);

@@ -17,7 +17,7 @@ namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Reports <see cref="Diagnostic"/> s for <see cref="LocalFunctionStatementSyntax"/> with the
-	/// <see cref="DefaultParamAttribute"/> applied.
+	/// <c>Durian.DefaultParamAttribute</c> applied.
 	/// </summary>
 	public partial class DefaultParamLocalFunctionFilter : IDefaultParamFilter<IDefaultParamTarget>, IDefaultParamFilter, INodeProvider<LocalFunctionStatementSyntax>
 	{

@@ -11,12 +11,12 @@ namespace Durian.Analysis.Data
 	public interface ICompilationDataWithSymbols : ICompilationData
 	{
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> that represents the <see cref="Generator.DurianGeneratedAttribute"/>.
+		/// <see cref="INamedTypeSymbol"/> that represents the <see cref="Durian.Generator.DurianGeneratedAttribute"/>..
 		/// </summary>
 		public INamedTypeSymbol DurianGeneratedAttribute { get; }
 
 		/// <summary>
-		/// Returns a <see cref="INamedTypeSymbol"/> that represents the <see cref="Generator.EnableModuleAttribute"/>.
+		/// Returns a <see cref="INamedTypeSymbol"/> that represents the <see cref="Generator.EnableModuleAttribute"/>..
 		/// </summary>
 		public INamedTypeSymbol EnableModuleAttribute { get; }
 

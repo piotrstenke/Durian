@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
-	/// Analyzes delegates with type parameters marked by the <see cref="DefaultParamAttribute"/>.
+	/// Analyzes delegates with type parameters marked by the <c>Durian.DefaultParamAttribute</c>.
 	/// </summary>
 #if !MAIN_PACKAGE
 
@@ -75,7 +75,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="targetNamespace">Namespace where the generated members are located.</param>
-		/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
+		/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <c>Durian.DefaultParamAttribute</c> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>a of the target <paramref name="symbol"/>.</param>
 		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the <paramref name="symbol"/>'s containing types.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
@@ -114,7 +114,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="targetNamespace">Namespace where the generated members are located.</param>
-		/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
+		/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <c>Durian.DefaultParamAttribute</c> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
 		/// <param name="allowsNewModifier">Determines whether to allows applying the <see langword="new"/> modifier.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if there aren't any collisions with the <paramref name="symbol"/>, otherwise <see langword="false"/>.</returns>

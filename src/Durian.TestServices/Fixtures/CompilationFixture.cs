@@ -13,7 +13,7 @@ namespace Durian.TestServices.Fixtures
 	public class CompilationFixture
 	{
 		/// <summary>
-		/// A <see cref="CSharpCompilation"/> that is created by calling the <see cref="RoslynUtilities.CreateBaseCompilation()"/> method.
+		/// A <see cref="CSharpCompilation"/> that is created by calling the <see cref="RoslynUtilities.CreateBaseCompilation(bool)"/> method.
 		/// </summary>
 		public CSharpCompilation Compilation { get; }
 

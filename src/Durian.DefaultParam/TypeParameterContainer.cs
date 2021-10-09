@@ -32,7 +32,7 @@ namespace Durian.Analysis.DefaultParam
 		public readonly bool HasDefaultParams { get; }
 
 		/// <summary>
-		/// Returns a number of <see cref="TypeParameterData"/>s with a valid <see cref="DefaultParamAttribute"/>.
+		/// Returns a number of <see cref="TypeParameterData"/>s with a valid <c>Durian.DefaultParamAttribute</c>.
 		/// </summary>
 		public readonly int NumDefaultParam { get; }
 
@@ -90,7 +90,7 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to create the <see cref="TypeParameterContainer"/> for.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="member"/>.</param>
-		/// <param name="defaultParamAttribute"><see cref="INamedTypeSymbol"/> representing the <see cref="DefaultParamAttribute"/>.</param>
+		/// <param name="defaultParamAttribute"><see cref="INamedTypeSymbol"/> representing the <c>Durian.DefaultParamAttribute</c>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static TypeParameterContainer CreateFrom(MemberDeclarationSyntax member, SemanticModel semanticModel, INamedTypeSymbol defaultParamAttribute, CancellationToken cancellationToken = default)
 		{

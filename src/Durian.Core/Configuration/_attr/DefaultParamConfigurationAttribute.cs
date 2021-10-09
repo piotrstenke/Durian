@@ -17,7 +17,7 @@ namespace Durian.Configuration
 		public bool ApplyNewModifierWhenPossible { get; set; } = true;
 
 		/// <summary>
-		/// Determines, how the <c>DefaultParam</c> generator generates a type. The default value is <see cref="DPTypeConvention.Inherit"/>.
+		/// Determines, how the <c>DefaultParam</c> generator generates a method. The default value is <see cref="DPMethodConvention.Call"/>.
 		/// </summary>
 		public DPMethodConvention MethodConvention { get; set; } = DPMethodConvention.Default;
 
@@ -28,7 +28,7 @@ namespace Durian.Configuration
 		public string? TargetNamespace { get; set; }
 
 		/// <summary>
-		/// Determines, how the <c>DefaultParam</c> generator generates a method. The default value is <see cref="DPMethodConvention.Call"/>.
+		/// Determines, how the <c>DefaultParam</c> generator generates a type. The default value is <see cref="DPTypeConvention.Inherit"/>.
 		/// </summary>
 		public DPTypeConvention TypeConvention { get; set; } = DPTypeConvention.Default;
 

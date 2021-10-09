@@ -171,10 +171,10 @@ namespace Durian.Info
 			{
 				DurianModule.Core => ModuleRepository.Core,
 				DurianModule.DefaultParam => ModuleRepository.DefaultParam,
-				DurianModule.EnumServices => ModuleRepository.EnumServices,
+
+				//DurianModule.EnumServices => ModuleRepository.EnumServices,
 				DurianModule.FriendClass => ModuleRepository.FriendClass,
 				DurianModule.InterfaceTargets => ModuleRepository.InterfaceTargets,
-				DurianModule.Manager => ModuleRepository.Manager,
 				DurianModule.None => throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!"),
 				_ => throw new InvalidOperationException($"Unknown {nameof(DurianModule)} value: {module}!")
 			};

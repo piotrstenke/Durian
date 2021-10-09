@@ -57,7 +57,7 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Creates a new <see cref="TestableCompilationData"/>.
 		/// </summary>
-		/// <param name="includeDefaultAssemblies">Determines whether to include all the default assemblies returned bu the <see cref="RoslynUtilities.GetBaseReferences()"/> method.</param>
+		/// <param name="includeDefaultAssemblies">Determines whether to include all the default assemblies returned by the <see cref="RoslynUtilities.GetBaseReferences(bool)"/> method.</param>
 		public static TestableCompilationData Create(bool includeDefaultAssemblies = true)
 		{
 			return new TestableCompilationData(includeDefaultAssemblies ? RoslynUtilities.CreateBaseCompilation() : null);

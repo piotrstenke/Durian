@@ -12,14 +12,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.CSharp;
-using Durian.Configuration;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 
 namespace Durian.Analysis.FriendClass
 {
 	/// <summary>
-	/// Analyzes classes marked by the <see cref="FriendClassAttribute"/>.
+	/// Analyzes classes marked by the <c>Durian.FriendClassAttribute</c>.
 	/// </summary>
 #if !MAIN_PACKAGE
 
@@ -161,7 +160,7 @@ namespace Durian.Analysis.FriendClass
 				return @default;
 			}
 
-			bool allowsChildren = GetBoolProperty(nameof(FriendClassConfigurationAttribute.AllowsChildren), @default.AllowsChildren);
+			bool allowsChildren = GetBoolProperty(MemberNames.Config_AllowsChildren, @default.AllowsChildren);
 
 			return new()
 			{
@@ -208,7 +207,7 @@ namespace Durian.Analysis.FriendClass
 		)
 		{
 			if (symbol.GetAttribute(compilation.FriendClassConfigurationAttribute!) is AttributeData attr &&
-				!attr.GetNamedArgumentValue<bool>(nameof(FriendClassConfigurationAttribute.AllowsChildren)))
+				!attr.GetNamedArgumentValue<bool>(MemberNames.Config_AllowsChildren))
 			{
 				diagnostic = Diagnostic.Create(
 					descriptor: DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends,
@@ -328,7 +327,7 @@ namespace Durian.Analysis.FriendClass
 			{
 				diagnostic = Diagnostic.Create(
 					descriptor: DUR0311_DoNotAllowChildrenOnSealedType,
-					location: GetArgumentLocation(nameof(FriendClassConfigurationAttribute.AllowsChildren)),
+					location: GetArgumentLocation(MemberNames.Config_AllowsChildren),
 					messageArgs: new[] { symbol }
 				);
 

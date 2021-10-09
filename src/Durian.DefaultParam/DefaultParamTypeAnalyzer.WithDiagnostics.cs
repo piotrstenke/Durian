@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
-using Durian.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -21,7 +20,7 @@ namespace Durian.Analysis.DefaultParam
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <summary>
-		/// Contains static methods that analyze types with type parameters marked using the <see cref="DefaultParamAttribute"/> and report <see cref="Diagnostic"/>s for the invalid ones.
+		/// Contains static methods that analyze types with type parameters marked using the <c>Durian.DefaultParamAttribute</c> and report <see cref="Diagnostic"/>s for the invalid ones.
 		/// </summary>
 		public static new class WithDiagnostics
 		{
@@ -281,7 +280,7 @@ namespace Durian.Analysis.DefaultParam
 				{
 					if (HasInheritConventionOnContainingTypes(symbol, compilation, containingTypes))
 					{
-						if (!DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.DefaultParamConfigurationAttribute!, nameof(DefaultParamConfiguration.TypeConvention), out int value) || value != (int)DPTypeConvention.Copy)
+						if (!DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.DefaultParamConfigurationAttribute!, nameof(DefaultParamConfiguration.TypeConvention), out int value) || value != (int)TypeConvention.Copy)
 						{
 							diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor, symbol);
 						}

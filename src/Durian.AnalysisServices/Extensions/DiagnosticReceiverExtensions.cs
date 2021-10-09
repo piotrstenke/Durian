@@ -14,20 +14,94 @@ namespace Durian.Analysis.Extensions
 	/// </summary>
 	public static class DiagnosticReceiverExtensions
 	{
+		/// <inheritdoc cref="ReportDiagnostic(in DurianGeneratorExecutionContext, DiagnosticDescriptor, ISymbol?, object[])"/>
+		public static void ReportDiagnostic(this in DurianGeneratorExecutionContext context, DiagnosticDescriptor descriptor)
+		{
+			if (!context.IsInitialized)
+			{
+				throw new InvalidOperationException(DurianGeneratorExecutionContext.Exc_NotInitialized);
+			}
+
+			if (descriptor is null)
+			{
+				return;
+			}
+
+			context.ReportDiagnostic(descriptor, Location.None);
+		}
+
 		/// <inheritdoc cref="ReportDiagnostic(IDiagnosticReceiver, DiagnosticDescriptor, ISymbol?, object[])"/>
 		public static void ReportDiagnostic(this IDiagnosticReceiver diagnosticReceiver, DiagnosticDescriptor descriptor)
 		{
-			Validate(diagnosticReceiver, descriptor);
+			if (diagnosticReceiver is null)
+			{
+				throw new ArgumentNullException(nameof(diagnosticReceiver));
+			}
+
+			if (descriptor is null)
+			{
+				return;
+			}
 
 			diagnosticReceiver.ReportDiagnostic(descriptor, Location.None);
+		}
+
+		/// <inheritdoc cref="ReportDiagnostic(in DurianGeneratorExecutionContext, DiagnosticDescriptor, ISymbol?, object[])"/>
+		public static void ReportDiagnostic(this in DurianGeneratorExecutionContext context, DiagnosticDescriptor descriptor, ISymbol? symbol)
+		{
+			if (!context.IsInitialized)
+			{
+				throw new InvalidOperationException(DurianGeneratorExecutionContext.Exc_NotInitialized);
+			}
+
+			if (descriptor is null)
+			{
+				return;
+			}
+
+			context.ReportDiagnostic(Diagnostic.Create(descriptor, symbol?.Locations.FirstOrDefault(), symbol));
 		}
 
 		/// <inheritdoc cref="ReportDiagnostic(IDiagnosticReceiver, DiagnosticDescriptor, ISymbol?, object[])"/>
 		public static void ReportDiagnostic(this IDiagnosticReceiver diagnosticReceiver, DiagnosticDescriptor descriptor, ISymbol? symbol)
 		{
-			Validate(diagnosticReceiver, descriptor);
+			if (diagnosticReceiver is null)
+			{
+				throw new ArgumentNullException(nameof(diagnosticReceiver));
+			}
+
+			if (descriptor is null)
+			{
+				return;
+			}
 
 			diagnosticReceiver.ReportDiagnostic(descriptor, symbol?.Locations.FirstOrDefault(), symbol);
+		}
+
+		/// <summary>
+		/// Reports a <see cref="Diagnostic"/> created from the specified <paramref name="descriptor"/>.
+		/// </summary>
+		/// <param name="context"><see cref="DurianGeneratorExecutionContext"/> to report the <see cref="Diagnostic"/> to.</param>
+		/// <param name="descriptor"><see cref="DiagnosticDescriptor"/> that is used to create the <see cref="Diagnostic"/>.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> that caused the report.</param>
+		/// <param name="messageArgs">Arguments of the diagnostic message.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="descriptor"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="context"/> is not initialized.</exception>
+		public static void ReportDiagnostic(this in DurianGeneratorExecutionContext context, DiagnosticDescriptor descriptor, ISymbol? symbol, params object?[]? messageArgs)
+		{
+			if (!context.IsInitialized)
+			{
+				throw new InvalidOperationException(DurianGeneratorExecutionContext.Exc_NotInitialized);
+			}
+
+			if (descriptor is null)
+			{
+				return;
+			}
+
+			Location? location = symbol?.Locations.FirstOrDefault();
+			object?[] args = GetArgsWithSymbol(symbol, messageArgs);
+			context.ReportDiagnostic(Diagnostic.Create(descriptor, location, args));
 		}
 
 		/// <summary>
@@ -37,30 +111,8 @@ namespace Durian.Analysis.Extensions
 		/// <param name="descriptor"><see cref="DiagnosticDescriptor"/> that is used to create the <see cref="Diagnostic"/>.</param>
 		/// <param name="symbol"><see cref="ISymbol"/> that caused the report.</param>
 		/// <param name="messageArgs">Arguments of the diagnostic message.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="diagnosticReceiver"/> is <see langword="null"/>. -or- <paramref name="descriptor"/> is <see langword="null"/>.</exception>
-		public static void ReportDiagnostic(this IDiagnosticReceiver diagnosticReceiver, DiagnosticDescriptor descriptor, ISymbol? symbol, params object?[]? messageArgs)
-		{
-			Validate(diagnosticReceiver, descriptor);
-
-			Location? location = symbol?.Locations.FirstOrDefault();
-
-			if (messageArgs is null)
-			{
-				diagnosticReceiver.ReportDiagnostic(descriptor, location, symbol);
-			}
-			else
-			{
-				object?[]? args = new object[messageArgs.Length + 1];
-				args[0] = symbol;
-				Array.Copy(messageArgs, 0, args, 1, messageArgs.Length);
-
-				diagnosticReceiver.ReportDiagnostic(descriptor, location, args);
-			}
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		[DebuggerStepThrough]
-		private static void Validate(IDiagnosticReceiver diagnosticReceiver, DiagnosticDescriptor descriptor)
+		/// <exception cref="ArgumentNullException"><paramref name="diagnosticReceiver"/> is <see langword="null"/>.</exception>
+		public static void ReportDiagnostic(this IDiagnosticReceiver diagnosticReceiver, DiagnosticDescriptor? descriptor, ISymbol? symbol, params object?[]? messageArgs)
 		{
 			if (diagnosticReceiver is null)
 			{
@@ -69,8 +121,26 @@ namespace Durian.Analysis.Extensions
 
 			if (descriptor is null)
 			{
-				throw new ArgumentNullException(nameof(descriptor));
+				return;
 			}
+
+			Location? location = symbol?.Locations.FirstOrDefault();
+			object?[] args = GetArgsWithSymbol(symbol, messageArgs);
+			diagnosticReceiver.ReportDiagnostic(descriptor, location, args);
+		}
+
+		private static object?[] GetArgsWithSymbol(ISymbol? symbol, object?[]? initialArgs)
+		{
+			if (initialArgs is null || initialArgs.Length == 0)
+			{
+				return new object?[] { symbol };
+			}
+
+			object?[] args = new object[initialArgs.Length + 1];
+			args[0] = symbol;
+			Array.Copy(initialArgs, 0, args, 1, initialArgs.Length);
+
+			return args;
 		}
 	}
 }

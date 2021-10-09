@@ -11,6 +11,10 @@ namespace Durian
 	[Flags]
 	public enum InterfaceTargets
 	{
+		// *********************************************************************************************
+		// Values of this enum have to be exactly the same as Durian.Analysis.InterfaceTargets.IntfTargets.
+		// *********************************************************************************************
+
 		/// <summary>
 		/// Interface cannot be implemented in code, only through reflection.
 		/// </summary>
@@ -27,7 +31,7 @@ namespace Durian
 		Class = 1,
 
 		/// <summary>
-		/// Interface can be implemeted by record classes.
+		/// Interface can be implemented by record classes.
 		/// </summary>
 		RecordClass = 2,
 

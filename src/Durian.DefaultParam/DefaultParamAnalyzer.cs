@@ -11,7 +11,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
-using Durian.Configuration;
 using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -41,7 +40,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Determines whether the 'new' modifier is allowed to be applied to the target <see cref="ISymbol"/> according to the most specific <see cref="DefaultParamConfigurationAttribute"/> or <see cref="DefaultParamScopedConfigurationAttribute"/>.
+		/// Determines whether the 'new' modifier is allowed to be applied to the target <see cref="ISymbol"/> according to the most specific <c>Durian.Configuration.DefaultParamConfigurationAttribute</c> or <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
@@ -57,8 +56,8 @@ namespace Durian.Analysis.DefaultParam
 			InitializeAttributes(ref attributes, symbol);
 			InitializeContainingTypes(ref containingTypes, symbol);
 
-			const string configPropertyName = nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible);
-			const string scopedPropertyName = nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible);
+			const string configPropertyName = MemberNames.Config_ApplyNewModifierWhenPossible;
+			const string scopedPropertyName = MemberNames.Config_ApplyNewModifierWhenPossible;
 
 			if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.DefaultParamConfigurationAttribute!, configPropertyName, out bool value))
 			{
@@ -351,7 +350,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="targetNamespace">Namespace where the generated members are located.</param>
 		/// <param name="numTypeParameters">Number of type parameters of this <paramref name="symbol"/>.</param>
-		/// <param name="numNonDefaultParam">Number of type parameters of this <paramref name="symbol"/> that don't have the <see cref="DefaultParamAttribute"/>.</param>
+		/// <param name="numNonDefaultParam">Number of type parameters of this <paramref name="symbol"/> that don't have the <c>Durian.DefaultParamAttribute</c>.</param>
 		/// <param name="numParameters">Number of parameters of this <paramref name="symbol"/>. Always use <c>0</c> for members other than methods.</param>
 		public static CollidingMember[] GetPotentiallyCollidingMembers(
 			ISymbol symbol,
@@ -393,7 +392,7 @@ namespace Durian.Analysis.DefaultParam
 			INamedTypeSymbol[]? containingTypes = null
 		)
 		{
-			const string propertyName = nameof(DefaultParamConfigurationAttribute.TargetNamespace);
+			const string propertyName = MemberNames.Config_TargetNamespace;
 
 			InitializeAttributes(ref attributes, symbol);
 			InitializeContainingTypes(ref containingTypes, symbol);

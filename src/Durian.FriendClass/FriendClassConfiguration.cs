@@ -4,14 +4,13 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Runtime.CompilerServices;
-using Durian.Configuration;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.FriendClass
 {
 	/// <summary>
-	/// Represents data specified by an instance of the <see cref="FriendClassConfigurationAttribute"/>.
+	/// Represents data specified by an instance of the <c>Durian.Configuration.FriendClassConfigurationAttribute</c>.
 	/// </summary>
 	public sealed class FriendClassConfiguration
 	{
@@ -26,7 +25,7 @@ namespace Durian.Analysis.FriendClass
 		public bool AllowsChildren { get; set; }
 
 		/// <summary>
-		/// <see cref="AttributeSyntax"/> where the <see cref="FriendClassConfigurationAttribute"/> was specified.
+		/// <see cref="AttributeSyntax"/> where the <c>Durian.Configuration.FriendClassConfigurationAttribute</c> was specified.
 		/// </summary>
 		public AttributeSyntax? Syntax { get; set; }
 

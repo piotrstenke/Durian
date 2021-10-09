@@ -1,4 +1,7 @@
-﻿#pragma warning disable CS0162 // Unreachable code detected
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+#pragma warning disable CS0162 // Unreachable code detected
 
 namespace Durian.EnumServices
 {
@@ -38,20 +41,13 @@ namespace Durian.EnumServices
 
 		public static string FastToString(this TestEnum value)
 		{
-			switch (value)
+			return value switch
 			{
-				case TestEnum.A:
-					return "A";
-
-				case TestEnum.B:
-					return "B";
-
-				case TestEnum.C:
-					return "C";
-
-				default:
-					return ((int)value).ToString();
-			}
+				TestEnum.A => "A",
+				TestEnum.B => "B",
+				TestEnum.C => "C",
+				_ => ((int)value).ToString(),
+			};
 		}
 
 		public static bool IsDefined(this TestEnum value)

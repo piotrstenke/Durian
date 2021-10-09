@@ -24,7 +24,7 @@ namespace Durian.Analysis.DefaultParam
 		public bool CallInsteadOfCopying { get; }
 
 		/// <summary>
-		/// A <see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied.
+		/// A <see cref="HashSet{T}"/> of indexes of type parameters with the <c>Durian.DefaultParamAttribute</c> applied for whom the <see langword="new"/> modifier should be applied.
 		/// </summary>
 		public HashSet<int>? NewModifierIndexes { get; }
 

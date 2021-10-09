@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Extensions;
-using Durian.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -112,7 +111,7 @@ namespace Durian.Analysis.DefaultParam
 
 		private static Diagnostic? GetDiagnosticIfInvalidTargetNamespace(ISymbol symbol, AttributeSyntax node)
 		{
-			const string propertyName = nameof(DefaultParamConfigurationAttribute.TargetNamespace);
+			const string propertyName = MemberNames.Config_TargetNamespace;
 
 			if (node.ArgumentList is null || !node.ArgumentList.Arguments.Any())
 			{

@@ -8,14 +8,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using static Durian.Analysis.InterfaceTargets.IntfTargDiagnostics;
-using IntfTargets = Durian.InterfaceTargets;
 
 namespace Durian.Analysis.InterfaceTargets
 {
 #pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 
 	/// <summary>
-	/// Analyzes types that are marked with the <see cref="InterfaceTargetsAttribute"/>.
+	/// Analyzes types that are marked with the <c>Durian.InterfaceTargetsAttribute</c>.
 	/// </summary>
 #if !MAIN_PACKAGE
 
@@ -37,7 +36,7 @@ namespace Durian.Analysis.InterfaceTargets
 		{
 			context.RegisterCompilationStartAction(context =>
 			{
-				INamedTypeSymbol? targetsAttribute = context.Compilation.GetTypeByMetadataName(typeof(InterfaceTargetsAttribute).ToString());
+				INamedTypeSymbol? targetsAttribute = context.Compilation.GetTypeByMetadataName(MemberNames.InterfaceTargetsAttribute);
 
 				if (targetsAttribute is null)
 				{

@@ -3,9 +3,9 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
-using Durian.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -17,34 +17,34 @@ namespace Durian.Analysis.DefaultParam
 	public sealed class DefaultParamCompilationData : CompilationDataWithSymbols
 	{
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the <see cref="Durian.DefaultParamAttribute"/>.
+		/// <see cref="INamedTypeSymbol"/> of the <c>Durian.DefaultParamAttribute</c> class.
 		/// </summary>
 		public INamedTypeSymbol? DefaultParamAttribute { get; private set; }
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the <see cref="Configuration.DefaultParamConfigurationAttribute"/>.
+		/// <see cref="INamedTypeSymbol"/> of the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c> class.
 		/// </summary>
 		public INamedTypeSymbol? DefaultParamConfigurationAttribute { get; private set; }
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the <see cref="Configuration.DefaultParamScopedConfigurationAttribute"/>.
+		/// <see cref="INamedTypeSymbol"/> of the <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> class.
 		/// </summary>
 		public INamedTypeSymbol? DefaultParamScopedConfigurationAttribute { get; private set; }
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the <see cref="Configuration.DPMethodConvention"/>.
+		/// <see cref="INamedTypeSymbol"/> of the <c>Durian.Configuration.DPMethodConvention</c> enum.
 		/// </summary>
 		public INamedTypeSymbol? DPMethodConvention { get; private set; }
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> of the <see cref="Configuration.DPTypeConvention"/>.
+		/// <see cref="INamedTypeSymbol"/> of the <c>Durian.Configuration.DPTypeConvention</c> enum.
 		/// </summary>
 		public INamedTypeSymbol? DPTypeConvention { get; private set; }
 
 		/// <summary>
-		/// <see cref="DefaultParamConfiguration"/> created from the <see cref="Configuration.DefaultParamScopedConfigurationAttribute"/>
+		/// <see cref="DefaultParamConfiguration"/> created from the <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c>
 		/// defined on the <see cref="CompilationData.Compilation"/>'s main assembly. -or-
-		/// <see cref="DefaultParamConfiguration.Default"/> if no <see cref="Configuration.DefaultParamScopedConfigurationAttribute"/> was found.
+		/// <see cref="DefaultParamConfiguration.Default"/> if no <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> was found.
 		/// </summary>
 		public DefaultParamConfiguration GlobalConfiguration { get; }
 
@@ -68,9 +68,9 @@ namespace Durian.Analysis.DefaultParam
 
 		/// <summary>
 		/// Creates a new instance of <see cref="DefaultParamConfiguration"/> based on the
-		/// <see cref="Configuration.DefaultParamScopedConfigurationAttribute"/> defined on the
+		/// <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> defined on the
 		/// <paramref name="compilation"/>'s main assembly or <see cref="DefaultParamConfiguration.Default"/>
-		/// if no <see cref="Configuration.DefaultParamScopedConfigurationAttribute"/> was found.
+		/// if no <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> was found.
 		/// </summary>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="DefaultParamConfiguration"/> for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
@@ -81,7 +81,7 @@ namespace Durian.Analysis.DefaultParam
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			INamedTypeSymbol? configurationAttribute = compilation.GetTypeByMetadataName(typeof(DefaultParamScopedConfigurationAttribute).ToString());
+			INamedTypeSymbol? configurationAttribute = compilation.GetTypeByMetadataName(MemberNames.DefaultParamScopedConfigurationAttribute);
 			return GetConfiguration(compilation, configurationAttribute);
 		}
 
@@ -90,11 +90,11 @@ namespace Durian.Analysis.DefaultParam
 		{
 			base.Reset();
 
-			DefaultParamAttribute = Compilation.GetTypeByMetadataName(typeof(DefaultParamAttribute).ToString());
-			DefaultParamConfigurationAttribute = Compilation.GetTypeByMetadataName(typeof(DefaultParamConfigurationAttribute).ToString());
-			DefaultParamScopedConfigurationAttribute = Compilation.GetTypeByMetadataName(typeof(DefaultParamScopedConfigurationAttribute).ToString());
-			DPTypeConvention = Compilation.GetTypeByMetadataName(typeof(DPTypeConvention).ToString());
-			DPMethodConvention = Compilation.GetTypeByMetadataName(typeof(DPMethodConvention).ToString());
+			DefaultParamAttribute = Compilation.GetTypeByMetadataName(MemberNames.DefaultParamAttribute);
+			DefaultParamConfigurationAttribute = Compilation.GetTypeByMetadataName(MemberNames.DefaultParamConfigurationAttribute);
+			DefaultParamScopedConfigurationAttribute = Compilation.GetTypeByMetadataName(MemberNames.DefaultParamScopedConfigurationAttribute);
+			DPTypeConvention = Compilation.GetTypeByMetadataName(MemberNames.DPTypeConvention);
+			DPMethodConvention = Compilation.GetTypeByMetadataName(MemberNames.DPMethodConvention);
 
 			HasErrors =
 				base.HasErrors ||
@@ -108,20 +108,17 @@ namespace Durian.Analysis.DefaultParam
 		private static DefaultParamConfiguration BuildConfiguration(AttributeData attribute)
 		{
 			bool applyNewModififer = !attribute.TryGetNamedArgumentValue(
-				nameof(Configuration.DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible),
-				out bool value) ||
-				value;
+				MemberNames.Config_ApplyNewModifierWhenPossible,
+				out bool value)
+				|| value;
 
-			DPMethodConvention methodCon = (DPMethodConvention)GetValidConventionEnumValue(
-				attribute.GetNamedArgumentValue<int>(
-					nameof(Configuration.DefaultParamScopedConfigurationAttribute.MethodConvention)));
+			MethodConvention methodCon = (MethodConvention)GetValidConventionEnumValue(
+				attribute.GetNamedArgumentValue<int>(MemberNames.Config_MethodConvention));
 
-			DPTypeConvention typeCon = (DPTypeConvention)GetValidConventionEnumValue(
-				attribute.GetNamedArgumentValue<int>(nameof(
-					Configuration.DefaultParamScopedConfigurationAttribute.TypeConvention)));
+			TypeConvention typeCon = (TypeConvention)GetValidConventionEnumValue(
+				attribute.GetNamedArgumentValue<int>(MemberNames.Config_TypeConvention));
 
-			string? @namespace = attribute.GetNamedArgumentValue<string>(
-				nameof(Configuration.DefaultParamScopedConfigurationAttribute.TargetNamespace));
+			string? @namespace = attribute.GetNamedArgumentValue<string>(MemberNames.Config_TargetNamespace);
 
 			return new()
 			{

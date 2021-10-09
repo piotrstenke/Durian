@@ -20,18 +20,18 @@ namespace Durian.Analysis.DefaultParam
 	public readonly struct TypeParameterData : IEquatable<TypeParameterData>
 	{
 		/// <summary>
-		/// <see cref="AttributeSyntax"/> where the <see cref="DefaultParamAttribute"/> value was defined. -or- <see langword="null"/> if the <see cref="DefaultParamAttribute"/> is not defined on the target <see cref="Symbol"/>.
+		/// <see cref="AttributeSyntax"/> where the <c>Durian.DefaultParamAttribute</c> value was defined. -or- <see langword="null"/> if the <c>Durian.DefaultParamAttribute</c> is not defined on the target <see cref="Symbol"/>.
 		/// </summary>
 		public readonly AttributeSyntax? Attribute { get; }
 
 		/// <summary>
-		/// Determines whether the target <see cref="Symbol"/> has a <see cref="DefaultParamAttribute"/>.
+		/// Determines whether the target <see cref="Symbol"/> has a <c>Durian.DefaultParamAttribute</c>.
 		/// </summary>
 		[MemberNotNullWhen(true, nameof(Attribute))]
 		public readonly bool IsDefaultParam => Attribute is not null;
 
 		/// <summary>
-		/// Determines whether the target <see cref="Symbol"/> has a valid <see cref="DefaultParamAttribute"/>.
+		/// Determines whether the target <see cref="Symbol"/> has a valid <c>Durian.DefaultParamAttribute</c>.
 		/// </summary>
 		[MemberNotNullWhen(true, nameof(TargetType))]
 		public readonly bool IsValidDefaultParam => IsDefaultParam && TargetType is not null;
@@ -82,7 +82,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="syntax">Target <see cref="TypeParameterSyntax"/>.</param>
 		/// <param name="symbol"><see cref="ITypeParameterSymbol"/> represented by the target <paramref name="syntax"/>.</param>
 		/// <param name="semanticModel"><see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the target <paramref name="syntax"/>.</param>
-		/// <param name="attribute">Valid <see cref="DefaultParamAttribute"/> defined on the target <paramref name="symbol"/>.</param>
+		/// <param name="attribute">Valid <c>Durian.DefaultParamAttribute</c> defined on the target <paramref name="symbol"/>.</param>
 		/// <param name="targetType">The <see cref="ITypeSymbol"/> that was specified using the <paramref name="attribute"/>. -or- <see langword="null"/> if <paramref name="attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.</param>
 		public TypeParameterData(TypeParameterSyntax syntax, ITypeParameterSymbol symbol, SemanticModel semanticModel, AttributeSyntax? attribute, ITypeSymbol? targetType)
 		{
@@ -122,7 +122,7 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		/// <param name="typeParameter"><see cref="TypeParameterSyntax"/> to create the <see cref="TypeParameterData"/> from.</param>
 		/// <param name="semanticModel"><see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the target <paramref name="typeParameter"/>.</param>
-		/// <param name="defaultParamAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="DefaultParamAttribute"/>.</param>
+		/// <param name="defaultParamAttribute"><see cref="INamedTypeSymbol"/> that represents the <c>Durian.DefaultParamAttribute</c>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static TypeParameterData CreateFrom(TypeParameterSyntax typeParameter, SemanticModel semanticModel, INamedTypeSymbol defaultParamAttribute, CancellationToken cancellationToken = default)
 		{
@@ -274,7 +274,7 @@ namespace Durian.Analysis.DefaultParam
 		{
 			ImmutableArray<TypedConstant> ctor = data.ConstructorArguments;
 
-			if(ctor.Length == 0)
+			if (ctor.Length == 0)
 			{
 				return null;
 			}

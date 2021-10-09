@@ -14,7 +14,7 @@ namespace Durian.Analysis.Cache
 	public interface ICachedGeneratorSyntaxFilter<T> : IGeneratorSyntaxFilter
 	{
 		/// <summary>
-		/// Decides, which <see cref="CSharpSyntaxNode"/>s collected by the <see cref="IDurianSourceGenerator.SyntaxReceiver"/> of the <see cref="Generator"/> are valid and returns a collection of <see cref="IMemberData"/> based on those <see cref="CSharpSyntaxNode"/>s. If the <paramref name="context"/> contains a value associated with the current <see cref="CSharpSyntaxNode"/>, this value is used instead.
+		/// Decides, which <see cref="CSharpSyntaxNode"/>s collected by the <see cref="IDurianSourceGenerator.SyntaxReceiver"/> of the <see cref="IGeneratorSyntaxFilter.Generator"/> are valid and returns a collection of <see cref="IMemberData"/> based on those <see cref="CSharpSyntaxNode"/>s. If the <paramref name="context"/> contains a value associated with the current <see cref="CSharpSyntaxNode"/>, this value is used instead.
 		/// </summary>
 		/// <param name="context"><see cref="CachedGeneratorExecutionContext{T}"/> that is used when filtrating the <see cref="IMemberData"/>s.</param>
 		IEnumerable<IMemberData> Filtrate(in CachedGeneratorExecutionContext<T> context);

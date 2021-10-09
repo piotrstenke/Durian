@@ -10,7 +10,7 @@ using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 namespace Durian.Analysis.FriendClass.CodeFixes
 {
 	/// <summary>
-	/// Code fix for diagnostics indicating that value of <see cref="FriendClassAttribute"/> is redundant.
+	/// Code fix for diagnostics indicating that value of <c>Durian.FriendClassAttribute</c> is redundant.
 	/// </summary>
 	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveRedundantFriendClassCodeFix))]
 	public class RemoveRedundantFriendClassCodeFix : RemoveNodeCodeFix<AttributeSyntax>

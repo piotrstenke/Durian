@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Durian.Analysis.CodeFixes;
 using System.Threading;
-using Durian.Configuration;
 using Microsoft.CodeAnalysis.CodeFixes;
 using System.Xml.Linq;
 

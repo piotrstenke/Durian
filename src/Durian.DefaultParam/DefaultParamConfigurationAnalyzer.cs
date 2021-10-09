@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Analysis.Extensions;
-using Durian.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,7 +17,7 @@ namespace Durian.Analysis.DefaultParam
 #pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 
 	/// <summary>
-	/// Analyzes the usage of the <see cref="DefaultParamConfigurationAttribute"/>.
+	/// Analyzes the usage of the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c>.
 	/// </summary>
 #if !MAIN_PACKAGE
 
@@ -97,12 +96,12 @@ namespace Durian.Analysis.DefaultParam
 
 				ReportIfInvalidTargetNamespace(diagnosticReceiver, symbol, syntax, arguments, context.CancellationToken);
 
-				if (CheckArguments(arguments, nameof(DefaultParamConfigurationAttribute.MethodConvention), out AttributeArgumentSyntax? arg))
+				if (CheckArguments(arguments, MemberNames.Config_MethodConvention, out AttributeArgumentSyntax? arg))
 				{
 					diagnosticReceiver.ReportDiagnostic(DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods, arg.GetLocation(), symbol);
 				}
 
-				if (CheckArguments(arguments, nameof(DefaultParamConfigurationAttribute.TypeConvention), out arg))
+				if (CheckArguments(arguments, MemberNames.Config_TypeConvention, out arg))
 				{
 					diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), symbol);
 				}
@@ -146,7 +145,7 @@ namespace Durian.Analysis.DefaultParam
 
 			ReportIfInvalidTargetNamespace(diagnosticReceiver, method, node, arguments, cancellationToken);
 
-			if (CheckArguments(arguments, nameof(DefaultParamConfigurationAttribute.TypeConvention), out AttributeArgumentSyntax? arg))
+			if (CheckArguments(arguments, MemberNames.Config_TypeConvention, out AttributeArgumentSyntax? arg))
 			{
 				diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), method);
 			}
@@ -174,17 +173,17 @@ namespace Durian.Analysis.DefaultParam
 
 			ReportIfInvalidTargetNamespace(diagnosticReceiver, type, node, arguments, cancellationToken);
 
-			if (type.ContainingType is null && CheckArguments(arguments, nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible), out AttributeArgumentSyntax? arg))
+			if (type.ContainingType is null && CheckArguments(arguments, MemberNames.Config_ApplyNewModifierWhenPossible, out AttributeArgumentSyntax? arg))
 			{
 				diagnosticReceiver.ReportDiagnostic(DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType, arg.GetLocation(), type);
 			}
 
-			if (CheckArguments(arguments, nameof(DefaultParamConfigurationAttribute.MethodConvention), out arg))
+			if (CheckArguments(arguments, MemberNames.Config_MethodConvention, out arg))
 			{
 				diagnosticReceiver.ReportDiagnostic(DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods, arg.GetLocation(), type);
 			}
 
-			const string propertyName = nameof(DefaultParamConfigurationAttribute.TypeConvention);
+			const string propertyName = MemberNames.Config_TypeConvention;
 
 			if (type.TypeKind == TypeKind.Delegate)
 			{
@@ -200,9 +199,9 @@ namespace Durian.Analysis.DefaultParam
 					attr.TryGetNamedArgumentValue(propertyName, out int value)
 				)
 				{
-					DPTypeConvention convention = (DPTypeConvention)value;
+					TypeConvention convention = (TypeConvention)value;
 
-					if (convention == DPTypeConvention.Inherit)
+					if (convention == TypeConvention.Inherit)
 					{
 						diagnosticReceiver.ReportDiagnostic(DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType, arg.GetLocation(), type);
 					}
@@ -216,9 +215,9 @@ namespace Durian.Analysis.DefaultParam
 					attr.TryGetNamedArgumentValue(propertyName, out int value)
 				)
 				{
-					DPTypeConvention convention = (DPTypeConvention)value;
+					TypeConvention convention = (TypeConvention)value;
 
-					if (convention == DPTypeConvention.Inherit)
+					if (convention == TypeConvention.Inherit)
 					{
 						diagnosticReceiver.ReportDiagnostic(DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor, arg.GetLocation(), type);
 					}
@@ -266,7 +265,7 @@ namespace Durian.Analysis.DefaultParam
 			CancellationToken cancellationToken
 		)
 		{
-			const string propertyName = nameof(DefaultParamConfigurationAttribute.TargetNamespace);
+			const string propertyName = MemberNames.Config_TargetNamespace;
 
 			if (CheckArguments(arguments, propertyName, out AttributeArgumentSyntax? arg) &&
 				symbol.GetAttribute(node, cancellationToken) is AttributeData data &&

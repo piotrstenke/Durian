@@ -21,7 +21,7 @@
       <_Parameter1>Durian.AnalysisServices.Tests</_Parameter1>
     </AssemblyAttribute>
     
-    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
+    <ProjectReference Include="..\Durian.Info\Durian.Info.csproj" />
     
   </ItemGroup>
 

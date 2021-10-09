@@ -8,6 +8,10 @@ namespace Durian.Configuration
 	/// </summary>
 	public enum DPTypeConvention
 	{
+		// *********************************************************************************************
+		// Values of this enum have to be exactly the same as Durian.Analysis.DefaultParam.TypeConvention.
+		// *********************************************************************************************
+
 		/// <summary>
 		/// Uses default convention, which is <see cref="Inherit"/>.
 		/// </summary>

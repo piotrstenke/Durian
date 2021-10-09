@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using System;
-using Durian.Configuration;
 
 namespace Durian.Analysis.DefaultParam
 {
@@ -24,8 +23,10 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		public bool ApplyNewModifierWhenPossible { get; set; } = true;
 
-		/// <inheritdoc cref="DefaultParamConfigurationAttribute.MethodConvention"/>
-		public DPMethodConvention MethodConvention { get; set; }
+		/// <summary>
+		/// Determines, how the <c>DefaultParam</c> generator generates a method.
+		/// </summary>
+		public MethodConvention MethodConvention { get; set; }
 
 		/// <summary>
 		/// Specifies the namespace where the target member should be generated in.
@@ -38,8 +39,10 @@ namespace Durian.Analysis.DefaultParam
 			set => _targetNamespace = string.IsNullOrWhiteSpace(value) ? null : value;
 		}
 
-		/// <inheritdoc cref="DefaultParamConfigurationAttribute.TypeConvention"/>
-		public DPTypeConvention TypeConvention { get; set; }
+		/// <summary>
+		/// Determines, how the <c>DefaultParam</c> generator generates a type.
+		/// </summary>
+		public TypeConvention TypeConvention { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamConfiguration"/> class.

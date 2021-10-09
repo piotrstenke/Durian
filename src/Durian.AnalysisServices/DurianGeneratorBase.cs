@@ -11,6 +11,7 @@ using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Durian.Analysis
@@ -65,7 +66,7 @@ namespace Durian.Analysis
 		/// <summary>
 		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
 		/// </summary>
-		/// <remarks>Can be set only if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.</remarks>
+		/// <remarks>Can be set only if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</remarks>
 		/// <exception cref="InvalidOperationException">
 		/// <see cref="DiagnosticReceiver"/> cannot be set if <see cref="SupportsDiagnostics"/> is <see langword="false"/>. -or-
 		/// <see cref="DiagnosticReceiver"/> cannot be set to <see langword="null"/> if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.
@@ -140,9 +141,13 @@ namespace Durian.Analysis
 		/// </summary>
 		public LoggableGeneratorDiagnosticReceiver LogReceiver { get; }
 
-		/// <inheritdoc/>
+		/// <inheritdoc cref="GeneratorLoggingConfiguration.SupportsDiagnostics"/>
 		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
-		public virtual bool SupportsDiagnostics => LoggingConfiguration.SupportsDiagnostics;
+		public bool SupportsDiagnostics
+		{
+			get => LoggingConfiguration.SupportsDiagnostics;
+			set => LoggingConfiguration.SupportsDiagnostics = value;
+		}
 
 		/// <inheritdoc cref="DurianGeneratorBase(in LoggableGeneratorConstructionContext, IHintNameProvider)"/>
 		protected DurianGeneratorBase() : this(GeneratorLoggingConfiguration.Default, null)

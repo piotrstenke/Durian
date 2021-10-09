@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using System;
-using Durian.Configuration;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 
@@ -14,7 +13,7 @@ namespace Durian.Analysis.FriendClass
 	public static class FriendClassDiagnostics
 	{
 		/// <summary>
-		/// Provides diagnostic message indicating that <see cref="Type"/> specified by the target <see cref="FriendClassAttribute"/> is outside of the current assembly.
+		/// Provides diagnostic message indicating that <see cref="Type"/> specified by the target <c>Durian.FriendClassAttribute</c> is outside of the current assembly.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0301_TargetTypeIsOutsideOfAssembly = new(
 			id: "DUR0301",
@@ -40,7 +39,7 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the <see cref="FriendClassConfigurationAttribute"/> should not be used on types with no <see cref="FriendClassAttribute"/> applied.
+		/// Provides diagnostic message indicating that the <c>Durian.Configuration.FriendClassConfigurationAttribute</c> should not be used on types with no <c>Durian.FriendClassAttribute</c> applied.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends = new(
 			id: "DUR0303",
@@ -53,7 +52,7 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the type specified by a <see cref="FriendClassAttribute"/> cannot access the target type.
+		/// Provides diagnostic message indicating that the type specified by a <c>Durian.FriendClassAttribute</c> cannot access the target type.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0304_ValueOfFriendClassCannotAccessTargetType = new(
 			id: "DUR0304",
@@ -66,7 +65,7 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the type with one or more <see cref="FriendClassAttribute"/>s does not declare any <see langword="internal"/> members.
+		/// Provides diagnostic message indicating that the type with one or more <c>Durian.FriendClassAttribute</c>s does not declare any <see langword="internal"/> members.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0305_TypeDoesNotDeclareInternalMembers = new(
 			id: "DUR0305",
@@ -79,7 +78,7 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that a value of <see cref="FriendClassAttribute"/> was specified multiple times on the same type.
+		/// Provides diagnostic message indicating that a value of <c>Durian.FriendClassAttribute</c> was specified multiple times on the same type.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0306_FriendTypeSpecifiedByMultipleAttributes = new(
 			id: "DUR0306",
@@ -92,7 +91,7 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by the <see cref="Type"/>'s child classes, unless <see cref="FriendClassConfigurationAttribute.AllowsChildren"/> is set to <see langword="true"/>.
+		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by the <see cref="Type"/>'s child classes, unless the <c>Durian.Configuration.FriendClassConfigurationAttribute.AllowsChildren</c> property is set to <see langword="true"/>.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0307_MemberCannotBeAccessedByChildClass = new(
 			id: "DUR0307",
@@ -131,7 +130,7 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by child classes of a friend type, unless <see cref="FriendClassAttribute.AllowsFriendChildren"/> is set to <see langword="true"/>.
+		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by child classes of a friend type, unless the <c>Durian.FriendClassAttribute.AllowsFriendChildren</c> property is set to <see langword="true"/>.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0310_MemberCannotBeAccessedByChildClassOfFriend = new(
 			id: "DUR0310",
@@ -144,7 +143,7 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the <see cref="FriendClassConfigurationAttribute.AllowsChildren"/> should not be used on structs or sealed/static classes.
+		/// Provides diagnostic message indicating that the <c>Durian.FriendClassAttribute.AllowsChildren</c> property should not be used on structs or sealed/static classes.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0311_DoNotAllowChildrenOnSealedType = new(
 			id: "DUR0311",
@@ -170,7 +169,7 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that a <see cref="FriendClassConfigurationAttribute"/> is redundant, because all its values are set to default.
+		/// Provides diagnostic message indicating that a <c>Durian.Configuration.FriendClassConfigurationAttribute</c> is redundant, because all its values are set to default.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0313_ConfigurationIsRedundant = new(
 			id: "DUR0313",

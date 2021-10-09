@@ -1,4 +1,7 @@
-﻿#pragma warning disable CS0162 // Unreachable code detected
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+#pragma warning disable CS0162 // Unreachable code detected
 
 using System;
 using System.Collections.Generic;

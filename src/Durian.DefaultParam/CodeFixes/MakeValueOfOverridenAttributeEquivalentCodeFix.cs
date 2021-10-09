@@ -86,7 +86,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 			}
 
 			Compilation compilation = semanticModel.Compilation;
-			INamedTypeSymbol? attribute = compilation.GetTypeByMetadataName(typeof(DefaultParamAttribute).ToString());
+			INamedTypeSymbol? attribute = compilation.GetTypeByMetadataName(MemberNames.DefaultParamAttribute);
 
 			if (attribute is null)
 			{

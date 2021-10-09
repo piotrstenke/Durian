@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Durian.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -20,7 +19,7 @@ namespace Durian.Analysis.DefaultParam
 #pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 
 	/// <summary>
-	/// Analyzes types with type parameters marked by the <see cref="DefaultParamAttribute"/>.
+	/// Analyzes types with type parameters marked by the <c>Durian.DefaultParamAttribute</c>.
 	/// </summary>
 #if !MAIN_PACKAGE
 
@@ -98,7 +97,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Checks if the target <paramref name="symbol"/> has the <see cref="DPTypeConvention.Inherit"/> applied, either directly or by one of the containing types.
+		/// Checks if the target <paramref name="symbol"/> has the <see cref="TypeConvention.Inherit"/> applied, either directly or by one of the containing types.
 		/// </summary>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
@@ -115,18 +114,18 @@ namespace Durian.Analysis.DefaultParam
 			InitializeContainingTypes(ref containingTypes, symbol);
 
 			int value = DefaultParamUtilities.GetConfigurationEnumValue(
-				nameof(DefaultParamConfigurationAttribute.TypeConvention),
+				MemberNames.Config_TypeConvention,
 				attributes,
 				containingTypes,
 				compilation,
 				(int)compilation.GlobalConfiguration.TypeConvention
 			);
 
-			return value == (int)DPTypeConvention.Inherit;
+			return value == (int)TypeConvention.Inherit;
 		}
 
 		/// <summary>
-		/// Checks if one of containing types of the target <paramref name="symbol"/> has the <see cref="DPTypeConvention.Inherit"/> applied.
+		/// Checks if one of containing types of the target <paramref name="symbol"/> has the <see cref="TypeConvention.Inherit"/> applied.
 		/// </summary>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
@@ -140,13 +139,13 @@ namespace Durian.Analysis.DefaultParam
 			InitializeContainingTypes(ref containingTypes, symbol);
 
 			int value = DefaultParamUtilities.GetConfigurationEnumValueOnContainingTypes(
-				nameof(DefaultParamConfigurationAttribute.TypeConvention),
+				MemberNames.Config_TypeConvention,
 				containingTypes,
 				compilation,
 				(int)compilation.GlobalConfiguration.TypeConvention
 			);
 
-			return value == (int)DPTypeConvention.Inherit;
+			return value == (int)TypeConvention.Inherit;
 		}
 
 		/// <summary>

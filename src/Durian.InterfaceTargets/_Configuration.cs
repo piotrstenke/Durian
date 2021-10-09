@@ -9,6 +9,6 @@ using Durian.Info;
 [assembly: PackageDefinition(DurianPackage.InterfaceTargets, PackageType.Analyzer, "1.0.0", DurianModule.InterfaceTargets)]
 [assembly: DiagnosticFiles(nameof(IntfTargDiagnostics))]
 [assembly: IncludeTypes(
-	typeof(InterfaceTargetsAttribute),
-	typeof(InterfaceTargets)
+	"InterfaceTargetsAttribute",
+	"InterfaceTargets"
 )]

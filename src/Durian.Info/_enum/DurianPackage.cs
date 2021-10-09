@@ -57,5 +57,10 @@ namespace Durian.Info
 		/// Represents the <c>Durian.EnumServices</c> package.
 		/// </summary>
 		EnumServices = 9,
+
+		/// <summary>
+		/// Represents the <c>Durian.Info</c> package.
+		/// </summary>
+		Info = 10
 	}
 }

@@ -40,7 +40,7 @@ namespace Durian.Analysis
 		private DurianModule[] _enabledModules;
 
 		/// <summary>
-		/// Represents the <see cref="Generator.EnableModuleAttribute"/>.
+		/// Represents the <see cref="Generator.EnableModuleAttribute"/>. class.
 		/// </summary>
 		public INamedTypeSymbol? EnableModuleAttribute { get; private set; }
 

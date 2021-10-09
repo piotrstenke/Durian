@@ -11,36 +11,31 @@ namespace Durian.Info
 		/// <summary>
 		/// This package does not belong to any Durian module.
 		/// </summary>
-		None = 0,
-
-		/// <summary>
-		/// Represents the <c>Durian.Manager</c> module.
-		/// </summary>
-		Manager = 1,
+		None,
 
 		/// <summary>
 		/// Represents the <c>Durian.Core</c> module.
 		/// </summary>
-		Core = 2,
+		Core,
 
 		/// <summary>
 		/// Represents the <c>Durian.DefaultParam</c> module.
 		/// </summary>
-		DefaultParam = 3,
+		DefaultParam,
 
 		/// <summary>
 		/// Represents the <c>Durian.FriendClass</c> module.
 		/// </summary>
-		FriendClass = 4,
+		FriendClass,
 
 		/// <summary>
 		/// Represents the <c>Durian.InterfaceTargets</c> module.
 		/// </summary>
-		InterfaceTargets = 5,
+		InterfaceTargets,
 
 		/// <summary>
 		/// Represents the <c>Durian.EnumServices</c> module.
 		/// </summary>
-		EnumServices = 6
+		EnumServices
 	}
 }

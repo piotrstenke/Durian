@@ -35,22 +35,22 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <c>Durian.DefaultParamAttribute</c> applied.
 		/// </summary>
 		public List<DelegateDeclarationSyntax> CandidateDelegates { get; }
 
 		/// <summary>
-		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied. -or- empty <see cref="List{T}"/> if <see cref="AllowsCollectingLocalFunctions"/> is <see langword="false"/>.
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <c>Durian.DefaultParamAttribute</c> applied. -or- empty <see cref="List{T}"/> if <see cref="AllowsCollectingLocalFunctions"/> is <see langword="false"/>.
 		/// </summary>
 		public List<LocalFunctionStatementSyntax> CandidateLocalFunctions { get; }
 
 		/// <summary>
-		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <c>Durian.DefaultParamAttribute</c> applied.
 		/// </summary>
 		public List<MethodDeclarationSyntax> CandidateMethods { get; }
 
 		/// <summary>
-		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <see cref="DefaultParamAttribute"/> applied.
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <c>Durian.DefaultParamAttribute</c> applied.
 		/// </summary>
 		public List<TypeDeclarationSyntax> CandidateTypes { get; }
 

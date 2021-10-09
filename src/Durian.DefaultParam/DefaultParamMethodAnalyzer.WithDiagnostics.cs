@@ -18,7 +18,7 @@ namespace Durian.Analysis.DefaultParam
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <summary>
-		/// Contains static methods that analyze methods with type parameters marked using the <see cref="DefaultParamAttribute"/> and report <see cref="Diagnostic"/>s for the invalid ones.
+		/// Contains static methods that analyze methods with type parameters marked using the <c>Durian.DefaultParamAttribute</c> and report <see cref="Diagnostic"/>s for the invalid ones.
 		/// </summary>
 		public static new class WithDiagnostics
 		{
@@ -201,13 +201,13 @@ namespace Durian.Analysis.DefaultParam
 			}
 
 			/// <summary>
-			/// Analyzes if the signature of the <paramref name="symbol"/> is valid. If so, returns a <see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied.
+			/// Analyzes if the signature of the <paramref name="symbol"/> is valid. If so, returns a <see cref="HashSet{T}"/> of indexes of type parameters with the <c>Durian.DefaultParamAttribute</c> applied for whom the <see langword="new"/> modifier should be applied.
 			/// </summary>
 			/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 			/// <param name="symbol"><see cref="IMethodSymbol"/> to analyze the signature of.</param>
 			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
 			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-			/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
+			/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <c>Durian.DefaultParamAttribute</c> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
 			/// <param name="attributes">A collection of <see cref="AttributeData"/>a of the target <paramref name="symbol"/>.</param>
 			/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s of the <paramref name="symbol"/>'s containing types.</param>
 			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>

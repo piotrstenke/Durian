@@ -4,18 +4,17 @@
 using System.Diagnostics.CodeAnalysis;
 using Durian;
 using Durian.Analysis.DefaultParam;
-using Durian.Configuration;
 using Durian.Generator;
 using Durian.Info;
 
 [assembly: PackageDefinition(DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary, "1.3.0", DurianModule.DefaultParam)]
 [assembly: DiagnosticFiles(nameof(DefaultParamDiagnostics))]
 [assembly: IncludeTypes(
-	nameof(DefaultParamAttribute),
-	nameof(DefaultParamConfigurationAttribute),
-	nameof(DefaultParamScopedConfigurationAttribute),
-	nameof(DPMethodConvention),
-	nameof(DPTypeConvention))]
+	"DefaultParamAttribute",
+	"DefaultParamConfigurationAttribute",
+	"DefaultParamScopedConfigurationAttribute",
+	"DPMethodConvention",
+	"DPTypeConvention")]
 
 #region SuppressMessage
 

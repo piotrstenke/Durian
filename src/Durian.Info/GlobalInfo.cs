@@ -16,7 +16,7 @@ namespace Durian.Info
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianModule"/> enum.
 		/// </summary>
-		public const DurianModule ModuleMin = DurianModule.Manager;
+		public const DurianModule ModuleMin = DurianModule.Core;
 
 		/// <summary>
 		/// Number of published Durian analyzer or source generator packages, excluding <c>Durian.Manager</c>.

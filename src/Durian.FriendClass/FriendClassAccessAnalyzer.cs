@@ -13,13 +13,12 @@ using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Diagnostics;
 using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Durian.Configuration;
 using System.Xml.Linq;
 
 namespace Durian.Analysis.FriendClass
 {
 	/// <summary>
-	/// Analyzes expressions that attempt to access members of a <see cref="Type"/> with at least one <see cref="FriendClassAttribute"/> specified.
+	/// Analyzes expressions that attempt to access members of a <see cref="Type"/> with at least one <c>Durian.FriendClassAttribute</c> specified.
 	/// </summary>
 #if !MAIN_PACKAGE
 
@@ -244,7 +243,7 @@ namespace Durian.Analysis.FriendClass
 			{
 				if (IsChildOfAccessedType(currentType, accessedType))
 				{
-					if (!GetConfigurationBoolValue(accessedType, compilation, nameof(FriendClassConfigurationAttribute.AllowsChildren)))
+					if (!GetConfigurationBoolValue(accessedType, compilation, MemberNames.Config_AllowsChildren))
 					{
 						descriptor = DUR0307_MemberCannotBeAccessedByChildClass;
 						return true;
@@ -252,7 +251,7 @@ namespace Durian.Analysis.FriendClass
 				}
 				else if (IsChildOfFriend(currentType, friends, out int targetFriendIndex))
 				{
-					if (!friends[targetFriendIndex].attribute.GetNamedArgumentValue<bool>(nameof(FriendClassAttribute.AllowsFriendChildren)))
+					if (!friends[targetFriendIndex].attribute.GetNamedArgumentValue<bool>(MemberNames.Config_AllowsFriendChildren))
 					{
 						descriptor = DUR0310_MemberCannotBeAccessedByChildClassOfFriend;
 						return true;

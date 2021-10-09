@@ -23,7 +23,6 @@
 
   <ItemGroup>
 
-    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
     <Compile Include="..\NullableAttributes.cs" />
 

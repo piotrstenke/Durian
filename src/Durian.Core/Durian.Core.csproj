@@ -13,18 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-
-    <Compile Include="..\NullableAttributes.cs" />
     
-    <Compile Include="Info\.generated\ModuleRepository.cs" />
-    <Compile Include="Info\.generated\PackageRepository.cs" />
-    <Compile Include="Info\.generated\TypeRepository.cs" />
-  
-  </ItemGroup>
-
-  <ItemGroup>
-    
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <ProjectReference Include="..\Durian.Info\Durian.Info.csproj" />
     
   </ItemGroup>
 

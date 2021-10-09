@@ -15,36 +15,6 @@ namespace Durian.Info
 	public static class ModuleRepository
 	{
 		/// <summary>
-		/// Returns a <see cref="ModuleIdentity"/> for the <see cref="DurianModule.Manager"/> module.
-		/// </summary>
-		public static ModuleIdentity Manager
-		{
-			get
-			{
-				if(!IdentityPool.Modules.TryGetValue("Manager", out ModuleIdentity module))
-				{
-					module = new(
-						module: DurianModule.Manager,
-						id: default,
-						packages: new DurianPackage[]
-						{
-							DurianPackage.Main,
-							DurianPackage.Manager,
-						},
-						docsPath: null,
-						diagnostics: null,
-						types: new TypeIdentity[]
-						{
-							TypeRepository.DisableModuleAttribute,
-						}
-					);
-				}
-
-				return module;
-			}
-		}
-
-		/// <summary>
 		/// Returns a <see cref="ModuleIdentity"/> for the <see cref="DurianModule.Core"/> module.
 		/// </summary>
 		public static ModuleIdentity Core
@@ -58,8 +28,11 @@ namespace Durian.Info
 						id: 00,
 						packages: new DurianPackage[]
 						{
+							DurianPackage.Main,
 							DurianPackage.Core,
 							DurianPackage.CoreAnalyzer,
+							DurianPackage.Info,
+							DurianPackage.Manager,
 						},
 						docsPath: "tree/master/docs/Core",
 						diagnostics: new DiagnosticData[]
@@ -122,9 +95,7 @@ namespace Durian.Info
 						},
 						types: new TypeIdentity[]
 						{
-							TypeRepository.DurianGeneratedAttribute,
-							TypeRepository.EnableModuleAttribute,
-							TypeRepository.PackageDefinitionAttribute,
+							TypeRepository.DisableModuleAttribute,
 						}
 					);
 				}
@@ -400,97 +371,6 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Returns a <see cref="ModuleIdentity"/> for the <see cref="DurianModule.EnumServices"/> module.
-		/// </summary>
-		public static ModuleIdentity EnumServices
-		{
-			get
-			{
-				if(!IdentityPool.Modules.TryGetValue("EnumServices", out ModuleIdentity module))
-				{
-					module = new(
-						module: DurianModule.EnumServices,
-						id: 02,
-						packages: new DurianPackage[]
-						{
-							DurianPackage.EnumServices,
-						},
-						docsPath: "tree/master/docs/EnumServices",
-						diagnostics: new DiagnosticData[]
-						{
-							new DiagnosticData(
-								title: "Invalid EnumServices value",
-								id: 01,
-								docsPath: "tree/master/docs/EnumServices/DUR0201.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Invalid prefix or identifier",
-								id: 02,
-								docsPath: "tree/master/docs/EnumServices/DUR0202.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Target class must be static and partial",
-								id: 03,
-								docsPath: "tree/master/docs/EnumServices/DUR0203.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Target enum cannot be less accessible than its generated extension methods",
-								id: 04,
-								docsPath: "tree/master/docs/EnumServices/DUR0204.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Accessibility of generated extension methods cannot be greater than that of their containing type",
-								id: 05,
-								docsPath: "tree/master/docs/EnumServices/DUR0205.md",
-								fatal: true,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Flags-only methods cannot be generated for non-flags enum",
-								id: 06,
-								docsPath: "tree/master/docs/EnumServices/DUR0206.md",
-								fatal: false,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Don't use EnumServices on types without inner enums",
-								id: 07,
-								docsPath: "tree/master/docs/EnumServices/DUR0207.md",
-								fatal: false,
-								hasLocation: true
-							),
-
-							new DiagnosticData(
-								title: "Extension method already exists, so it won't be generated",
-								id: 08,
-								docsPath: "tree/master/docs/EnumServices/DUR0208.md",
-								fatal: false,
-								hasLocation: true
-							),
-						},
-						types: null
-					);
-				}
-
-				return module;
-			}
-		}
-
-		/// <summary>
 		/// Returns a <see cref="ModuleIdentity"/> for the <see cref="DurianModule.FriendClass"/> module.
 		/// </summary>
 		public static ModuleIdentity FriendClass
@@ -668,7 +548,11 @@ namespace Durian.Info
 								hasLocation: true
 							),
 						},
-						types: null
+						types: new TypeIdentity[]
+						{
+							TypeRepository.InterfaceTargetsAttribute,
+							TypeRepository.InterfaceTargets,
+						}
 					);
 				}
 

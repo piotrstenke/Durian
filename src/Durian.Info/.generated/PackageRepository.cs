@@ -31,7 +31,7 @@ namespace Durian.Info
 						type: PackageType.Unspecified,
 						modules: new DurianModule[]
 						{
-							DurianModule.Manager,
+							DurianModule.Core,
 						}
 					);
 				}
@@ -137,30 +137,6 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.EnumServices"/> package.
-		/// </summary>
-		public static PackageIdentity EnumServices
-		{
-			get
-			{
-				if(!IdentityPool.Packages.TryGetValue("EnumServices", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.EnumServices,
-						version: "1.0.0",
-						type: PackageType.Analyzer | PackageType.SyntaxBasedGenerator,
-						modules: new DurianModule[]
-						{
-							DurianModule.EnumServices,
-						}
-					);
-				}
-
-				return package;
-			}
-		}
-
-		/// <summary>
 		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.FriendClass"/> package.
 		/// </summary>
 		public static PackageIdentity FriendClass
@@ -176,6 +152,30 @@ namespace Durian.Info
 						modules: new DurianModule[]
 						{
 							DurianModule.FriendClass,
+						}
+					);
+				}
+
+				return package;
+			}
+		}
+
+		/// <summary>
+		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.Info"/> package.
+		/// </summary>
+		public static PackageIdentity Info
+		{
+			get
+			{
+				if(!IdentityPool.Packages.TryGetValue("Info", out PackageIdentity package))
+				{
+					package = new(
+						enumValue: DurianPackage.Info,
+						version: "1.0.0",
+						type: PackageType.Library,
+						modules: new DurianModule[]
+						{
+							DurianModule.Core,
 						}
 					);
 				}
@@ -223,7 +223,7 @@ namespace Durian.Info
 						type: PackageType.Analyzer,
 						modules: new DurianModule[]
 						{
-							DurianModule.Manager,
+							DurianModule.Core,
 						}
 					);
 				}

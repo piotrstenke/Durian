@@ -16,8 +16,8 @@ namespace Durian.Analysis.DefaultParam
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <summary>
-		/// Contains static methods that analyze delegate with type parameters marked using the <see
-		/// cref="DefaultParamAttribute"/> and report <see cref="Diagnostic"/> s for the invalid ones.
+		/// Contains static methods that analyze delegate with type parameters marked using the <c>Durian.DefaultParamAttribute</c>
+		/// and report <see cref="Diagnostic"/> s for the invalid ones.
 		/// </summary>
 		public static new class WithDiagnostics
 		{
@@ -91,7 +91,7 @@ namespace Durian.Analysis.DefaultParam
 			/// <param name="targetNamespace">Namespace where the generated members are located.</param>
 			/// <param name="applyNew">
 			/// <see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters
-			/// with the <see cref="DefaultParamAttribute"/> applied for whom the <see
+			/// with the <c>Durian.DefaultParamAttribute</c> applied for whom the <see
 			/// langword="new"/> modifier should be applied. -or- <see langword="null"/> if the
 			/// <paramref name="symbol"/> is not valid.
 			/// </param>
@@ -146,7 +146,7 @@ namespace Durian.Analysis.DefaultParam
 			/// <param name="typeParameters"><see cref="TypeParameterContainer"/> containing type parameters of the <paramref name="symbol"/>.</param>
 			/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 			/// <param name="targetNamespace">Namespace where the generated members are located.</param>
-			/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <see cref="DefaultParamAttribute"/> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
+			/// <param name="applyNew"><see langword="abstract"/><see cref="HashSet{T}"/> of indexes of type parameters with the <c>Durian.DefaultParamAttribute</c> applied for whom the <see langword="new"/> modifier should be applied. -or- <see langword="null"/> if the <paramref name="symbol"/> is not valid.</param>
 			/// <param name="allowsNewModifier">Determines whether to allows applying the <see langword="new"/> modifier.</param>
 			/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 			/// <returns><see langword="true"/> if there aren't any collisions with the <paramref name="symbol"/>, otherwise <see langword="false"/>.</returns>

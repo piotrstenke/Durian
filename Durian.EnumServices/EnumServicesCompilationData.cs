@@ -124,19 +124,23 @@ namespace Durian.Analysis.EnumServices
 					string? className = attribute.GetNamedArgumentValue<string>(
 						nameof(Durian.EnumServicesAttribute.ClassName));
 
-					return new()
-					{
-						AllowCustomization = allowCustomization,
-						Accessibility = accessibility,
-						EnumServices = services,
-						Prefix = prefix,
-						Namespace = @namespace,
-						ClassName = className
-					};
+					if ()
+
+						return new()
+						{
+							AllowCustomization = allowCustomization,
+							Accessibility = accessibility,
+							EnumServices = services,
+							Prefix = prefix,
+							Namespace = @namespace,
+							ClassName = className
+						};
 				}
 			}
 
 			return EnumServicesConfiguration.Default;
 		}
+
+		private static
 	}
 }

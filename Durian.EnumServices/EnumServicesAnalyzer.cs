@@ -63,6 +63,11 @@ namespace Durian.Analysis.EnumServices
 
 		private static void AnalyzeSymbol(SymbolAnalysisContext context, EnumServicesCompilationData compilation)
 		{
+			if (context.Symbol is not INamedTypeSymbol symbol || symbol.TypeKind != TypeKind.Enum)
+			{
+				return;
+			}
+
 			if ()
 		}
 
