@@ -126,7 +126,7 @@ public class B
 
 ## What's next?
 
-With *InterfaceTargets* and *FriendClass* being close to leaving the experimental stage, one more features is almost ready to take their place - *GenericSpecialization*, planned to be moved to experimental stage in late October - early November 2021.
+With *InterfaceTargets* and *FriendClass* being close to leaving the experimental stage, one more features is almost ready to take their place - *GenericSpecialization*, planned to be moved to experimental stage in early 2022.
 
 
 ##
