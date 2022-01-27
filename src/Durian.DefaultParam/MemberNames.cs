@@ -6,7 +6,7 @@ namespace Durian.Analysis.DefaultParam
 	internal static class MemberNames
 	{
 		public const string Config_ApplyNewModifierWhenPossible = "ApplyNewModifierWhenPossible";
-		public const string Config_MethodConvention = "MethodConvetion";
+		public const string Config_MethodConvention = "MethodConvention";
 		public const string Config_TargetNamespace = "TargetNamespace";
 		public const string Config_TypeConvention = "TypeConvention";
 		public const string DefaultParamAttribute = "Durian.DefaultParamAttribute";

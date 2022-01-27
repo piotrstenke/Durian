@@ -164,7 +164,10 @@ namespace Durian.Analysis.DefaultParam
 
 		private static bool IsValidTargetNamespace(string? targetNamespace)
 		{
-			return AnalysisUtilities.IsValidNamespaceIdentifier(targetNamespace) && targetNamespace != "Durian.Generator";
+			return
+				targetNamespace is null ||
+				(AnalysisUtilities.IsValidNamespaceIdentifier(targetNamespace) &&
+				targetNamespace != "Durian.Generator");
 		}
 	}
 }
