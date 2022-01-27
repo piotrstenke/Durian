@@ -188,11 +188,6 @@ namespace Durian.Analysis.DefaultParam
 				{
 					diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), type);
 				}
-
-				if(CheckArguments(arguments, MemberNames.Config_MethodConvention, out arg))
-				{
-					diagnosticReceiver.ReportDiagnostic(DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods, arg.GetLocation(), type);
-				}
 			}
 			else if (type.TypeKind == TypeKind.Struct || type.IsSealed || type.IsStatic)
 			{
