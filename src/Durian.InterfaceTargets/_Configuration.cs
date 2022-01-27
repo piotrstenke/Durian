@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+#if DEBUG
 using Durian;
 using Durian.Analysis.InterfaceTargets;
 using Durian.Generator;
@@ -12,3 +13,4 @@ using Durian.Info;
 	"InterfaceTargetsAttribute",
 	"InterfaceTargets"
 )]
+#endif

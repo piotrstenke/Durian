@@ -124,8 +124,12 @@ internal static class Program
 
 	private static string[] GetFilesInDurianCore(string directory)
 	{
-		string dir = directory + @"\" + "Durian.Core";
-		return Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories);
+		string basePath = directory + @"\";
+
+		string[] core = Directory.GetFiles(basePath + "Durian.Core", "*.cs", SearchOption.AllDirectories);
+		string[] info = Directory.GetFiles(basePath + "Durian.Info\\Generator", "*.cs", SearchOption.AllDirectories);
+
+		return core.Concat(info).ToArray();
 	}
 
 	private static string[] GetNamesOfFilesInDurianCore(string[] files)

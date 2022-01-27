@@ -71,7 +71,7 @@ namespace Durian.Analysis
 		{
 			if (diagnostic is null)
 			{
-				return;
+				throw new ArgumentNullException(nameof(diagnostic));
 			}
 
 			_diagnostics.Add(diagnostic);
@@ -82,7 +82,7 @@ namespace Durian.Analysis
 		{
 			if (descriptor is null)
 			{
-				return;
+				throw new ArgumentNullException(nameof(descriptor));
 			}
 
 			_diagnostics.Add(Diagnostic.Create(descriptor, location, messageArgs));

@@ -14,5 +14,8 @@ namespace Durian.Info
 		/// Name of the identity object.
 		/// </summary>
 		string Name { get; }
+
+		/// <inheritdoc cref="ICloneable.Clone"/>
+		new IDurianIdentity Clone();
 	}
 }

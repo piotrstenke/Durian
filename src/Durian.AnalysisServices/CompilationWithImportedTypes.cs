@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// A <see cref="CompilationData"/> with <see cref="INamedTypeSymbol"/>s for all types in the Durian.Generator namespace.
+	/// A <see cref="CompilationData"/> with <see cref="INamedTypeSymbol"/>s for all types in the <c>Durian.Core</c> package.
 	/// </summary>
 	public sealed class CompilationWithImportedTypes : CompilationData
 	{

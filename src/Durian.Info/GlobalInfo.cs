@@ -36,7 +36,7 @@ namespace Durian.Info
 		/// <summary>
 		/// Specifies the maximal valid value of the <see cref="DurianPackage"/> enum.
 		/// </summary>
-		public const DurianPackage PackageMax = DurianPackage.EnumServices;
+		public const DurianPackage PackageMax = DurianPackage.InterfaceTargets;
 
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianPackage"/> enum.

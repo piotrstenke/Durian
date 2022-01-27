@@ -19,7 +19,7 @@ namespace Durian.Configuration
 		/// <summary>
 		/// Determines, how the <c>DefaultParam</c> generator generates a method. The default value is <see cref="DPMethodConvention.Call"/>.
 		/// </summary>
-		public DPMethodConvention MethodConvention { get; set; } = DPMethodConvention.Default;
+		public DPMethodConvention MethodConvention { get; set; }
 
 		/// <summary>
 		/// Specifies the namespace where the target member should be generated in.
@@ -30,7 +30,7 @@ namespace Durian.Configuration
 		/// <summary>
 		/// Determines, how the <c>DefaultParam</c> generator generates a type. The default value is <see cref="DPTypeConvention.Inherit"/>.
 		/// </summary>
-		public DPTypeConvention TypeConvention { get; set; } = DPTypeConvention.Default;
+		public DPTypeConvention TypeConvention { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamConfigurationAttribute"/> class.

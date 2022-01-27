@@ -35,5 +35,8 @@ namespace Durian.Info
 		/// Allocates the internal object or overrides it if it already exists.
 		/// </summary>
 		void Reallocate();
+
+		/// <inheritdoc cref="ICloneable.Clone"/>
+		new IDurianReference Clone();
 	}
 }

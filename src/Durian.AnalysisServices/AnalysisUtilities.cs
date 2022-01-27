@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -20,7 +21,7 @@ namespace Durian.Analysis
 	public static class AnalysisUtilities
 	{
 		private static readonly string[] _keywords = new string[]
-																																								{
+		{
 			"__arglist",    "__makeref",    "__reftype",    "__refvalue",
 			"abstract",     "as",           "base",         "bool",
 			"break",        "byte",         "case",         "catch",
@@ -42,7 +43,7 @@ namespace Durian.Analysis
 			"ulong",        "unchecked",    "unsafe",       "ushort",
 			"using",        "virtual",      "volatile",     "void",
 			"while"
-				};
+		};
 
 		private static readonly HashSet<string> _keywordsHashed = new(_keywords);
 
@@ -200,16 +201,21 @@ namespace Durian.Analysis
 		/// Determines whether the specified <paramref name="value"/> is a reserved C# keyword.
 		/// </summary>
 		/// <param name="value">Value to check if is a C# keyword.</param>
-		public static bool IsKeyword(string value)
+		public static bool IsKeyword([NotNullWhen(true)] string? value)
 		{
-			return _keywordsHashed.Contains(value);
+			if (string.IsNullOrWhiteSpace(value))
+			{
+				return false;
+			}
+
+			return _keywordsHashed.Contains(value!);
 		}
 
 		/// <summary>
 		/// Determines whether the specified <paramref name="value"/> can be used as an identifier.
 		/// </summary>
 		/// <param name="value">Value to check if can be used as an identifier.</param>
-		public static bool IsValidIdentifier(string? value)
+		public static bool IsValidIdentifier([NotNullWhen(true)] string? value)
 		{
 			if (string.IsNullOrWhiteSpace(value))
 			{
@@ -231,7 +237,7 @@ namespace Durian.Analysis
 		/// Determines whether the specified <paramref name="value"/> can be used as an identifier of a namespace.
 		/// </summary>
 		/// <param name="value">Value to check if can be used as an identifier of a namespace.</param>
-		public static bool IsValidNamespaceIdentifier(string? value)
+		public static bool IsValidNamespaceIdentifier([NotNullWhen(true)] string? value)
 		{
 			if (string.IsNullOrWhiteSpace(value))
 			{
@@ -319,10 +325,10 @@ namespace Durian.Analysis
 		/// Converts the type keyword to its proper .NET type (<see langword="int"/> to <c>Int32</c>, <see langword="float"/> to <c>Single</c> etc.).
 		/// </summary>
 		/// <param name="keyword">C# keyword to convert.</param>
-		/// <returns>Name of the type behind the given <paramref name="keyword"/>. -or- <paramref name="keyword"/> if it's not a C# type keyword. -or- <see cref="string.Empty"/> of the <paramref name="keyword"/> is <see langword="null"/>.</returns>
+		/// <returns>Name of the type behind the given <paramref name="keyword"/>. -or- <paramref name="keyword"/> if it's not a C# type keyword. -or- <see cref="string.Empty"/> of the <paramref name="keyword"/> is <see langword="null"/> or empty.</returns>
 		public static string KeywordToType(string? keyword)
 		{
-			if (keyword is null)
+			if (string.IsNullOrWhiteSpace(keyword))
 			{
 				return string.Empty;
 			}
@@ -347,7 +353,7 @@ namespace Durian.Analysis
 				"nuint" => "UIntPtr",
 				"object" => "Object",
 				"void" => "Void",
-				_ => keyword,
+				_ => keyword!,
 			};
 		}
 

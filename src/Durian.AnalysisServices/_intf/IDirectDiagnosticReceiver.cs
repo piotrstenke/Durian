@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis
@@ -14,6 +15,7 @@ namespace Durian.Analysis
 		/// Reports a <see cref="Diagnostic"/>.
 		/// </summary>
 		/// <param name="diagnostic"><see cref="Diagnostic"/> to report.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		void ReportDiagnostic(Diagnostic diagnostic);
 	}
 }

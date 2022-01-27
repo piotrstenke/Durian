@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+#if DEBUG
 using System;
-using System.Diagnostics;
 using Durian.Info;
 
 namespace Durian.Generator
@@ -10,7 +10,6 @@ namespace Durian.Generator
 	/// <summary>
 	/// Defines basic information about this Durian module.
 	/// </summary>
-	[Conditional("DEBUG")]
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
 	public sealed class PackageDefinitionAttribute : Attribute
 	{
@@ -50,3 +49,4 @@ namespace Durian.Generator
 		}
 	}
 }
+#endif

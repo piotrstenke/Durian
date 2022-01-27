@@ -13,12 +13,9 @@ namespace Durian.Info
 	/// <para>This class implements the <see cref="IDisposable"/> interface - instance should be disposed using the <see cref="Dispose"/> method if its no longer needed.</para></remarks>
 	public sealed partial class ModuleIdentity : IDurianIdentity, IEquatable<ModuleIdentity>, IDisposable
 	{
-		private ImmutableArray<DiagnosticData> _diagnostics;
-
 		private bool _disposed;
-
+		private ImmutableArray<DiagnosticData> _diagnostics;
 		private ImmutableArray<PackageReference> _packages;
-
 		private ImmutableArray<TypeIdentity> _types;
 
 		/// <summary>
@@ -57,13 +54,13 @@ namespace Durian.Info
 		public ImmutableArray<TypeIdentity> Types => _types;
 
 		internal ModuleIdentity(
-					DurianModule module,
-					int id,
-					DurianPackage[]? packages,
-					string? docsPath,
-					DiagnosticData[]? diagnostics,
-					TypeIdentity[]? types
-				)
+			DurianModule module,
+			int id,
+			DurianPackage[]? packages,
+			string? docsPath,
+			DiagnosticData[]? diagnostics,
+			TypeIdentity[]? types
+		)
 		{
 			Module = module;
 			AnalysisId = (IdSection)id;
@@ -118,13 +115,13 @@ namespace Durian.Info
 		}
 
 		private ModuleIdentity(
-					DurianModule module,
-					in IdSection id,
-					ImmutableArray<PackageReference> packages,
-					string docsPath,
-					ImmutableArray<DiagnosticData> diagnostics,
-					ImmutableArray<TypeIdentity> types
-				)
+			DurianModule module,
+			in IdSection id,
+			ImmutableArray<PackageReference> packages,
+			string docsPath,
+			ImmutableArray<DiagnosticData> diagnostics,
+			ImmutableArray<TypeIdentity> types
+		)
 		{
 			Module = module;
 			AnalysisId = id;
@@ -139,14 +136,24 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(ModuleIdentity a, ModuleIdentity b)
+		public static bool operator !=(ModuleIdentity? a, ModuleIdentity? b)
 		{
 			return !(a == b);
 		}
 
 		/// <inheritdoc/>
-		public static bool operator ==(ModuleIdentity a, ModuleIdentity b)
+		public static bool operator ==(ModuleIdentity? a, ModuleIdentity? b)
 		{
+			if(a is null)
+			{
+				return b is null;
+			}
+
+			if(b is null)
+			{
+				return false;
+			}
+
 			return
 				a.Module == b.Module &&
 				a.Documentation == b.Documentation &&
@@ -173,7 +180,7 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is not ModuleIdentity other)
 			{
@@ -184,7 +191,7 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public bool Equals(ModuleIdentity other)
+		public bool Equals(ModuleIdentity? other)
 		{
 			return other == this;
 		}
@@ -218,6 +225,11 @@ namespace Durian.Info
 		}
 
 		object ICloneable.Clone()
+		{
+			return Clone();
+		}
+
+		IDurianIdentity IDurianIdentity.Clone()
 		{
 			return Clone();
 		}

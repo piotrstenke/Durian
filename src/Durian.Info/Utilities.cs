@@ -3,11 +3,14 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Text.RegularExpressions;
 
 namespace Durian.Info
 {
 	internal static class Utilities
 	{
+		public static Regex DurianRegex = new(@"durian\.", RegexOptions.IgnoreCase);
+
 		public static bool CompareImmutableArrays<T>(ImmutableArray<T> first, ImmutableArray<T> second) where T : IEquatable<T>
 		{
 			int length = first.Length;

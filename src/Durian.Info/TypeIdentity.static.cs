@@ -233,17 +233,12 @@ namespace Durian.Info
 		/// Returns a collection of all <see cref="TypeIdentity"/>s that represent <see cref="Type"/>s in the specified <paramref name="namespace"/>.
 		/// </summary>
 		/// <param name="namespace">Namespace to get the <see cref="TypeIdentity"/>s from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="namespace"/> is <see langword="null"/> or empty.</exception>
 		public static IEnumerable<TypeIdentity> GetIdentitiesInNamespace(string @namespace)
 		{
-			if (@namespace is null)
-			{
-				throw new ArgumentNullException(nameof(@namespace));
-			}
-
 			if (string.IsNullOrWhiteSpace(@namespace))
 			{
-				return Array.Empty<TypeIdentity>();
+				throw new ArgumentException($"'{nameof(@namespace)}' cannot be null or empty", nameof(@namespace));
 			}
 
 			return Yield();
@@ -264,12 +259,19 @@ namespace Durian.Info
 		/// Returns a <see cref="TypeIdentity"/> with the specified <paramref name="name"/>.
 		/// </summary>
 		/// <param name="name">Name of the <see cref="TypeIdentity"/> to return.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException"><paramref name="name"/> is not a valid <see cref="TypeIdentity"/> name.</exception>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="name"/> is <see langword="null"/> or empty. -or-
+		/// <paramref name="name"/> is not a valid <see cref="TypeIdentity"/> name.
+		/// </exception>
 		public static TypeIdentity GetIdentity(string name)
 		{
 			if (!TryGetIdentity(name, out TypeIdentity? identity))
 			{
+				if(string.IsNullOrWhiteSpace(name))
+				{
+					throw new ArgumentException($"'{nameof(name)}' cannot be null or empty", nameof(name));
+				}
+
 				throw new InvalidOperationException($"Name '{name}' is not a valid {nameof(TypeIdentity)} name!");
 			}
 
@@ -336,13 +338,12 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="name">Name of the <see cref="TypeIdentity"/> to return.</param>
 		/// <param name="identity"><see cref="TypeIdentity"/> that was found.</param>
-		/// <returns><see langword="true"/> if a <see cref="TypeIdentity"/> with the specified <paramref name="name"/> was found, <see langword="false"/> otherwise.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
-		public static bool TryGetIdentity(string name, [NotNullWhen(true)] out TypeIdentity? identity)
+		public static bool TryGetIdentity([NotNullWhen(true)] string? name, [NotNullWhen(true)] out TypeIdentity? identity)
 		{
-			if (name is null)
+			if(string.IsNullOrWhiteSpace(name))
 			{
-				throw new ArgumentNullException(nameof(name));
+				identity = default;
+				return false;
 			}
 
 			PropertyInfo? property = typeof(TypeRepository).GetProperty(name, BindingFlags.Static | BindingFlags.Public);

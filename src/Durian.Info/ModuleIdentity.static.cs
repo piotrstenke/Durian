@@ -11,11 +11,11 @@ namespace Durian.Info
 {
 	public partial class ModuleIdentity
 	{
-		private static readonly DurianModule[] _allModules;
+		private static DurianModule[]? _allModules;
 
-		static ModuleIdentity()
+		private static DurianModule[] AllModules
 		{
-			_allModules = Enum.GetValues(typeof(DurianModule))
+			get => _allModules ??= Enum.GetValues(typeof(DurianModule))
 				.Cast<DurianModule>()
 				.Skip(1)
 				.ToArray();
@@ -27,6 +27,7 @@ namespace Durian.Info
 		public static void Deallocate()
 		{
 			IdentityPool.Modules.Clear();
+			_allModules = default;
 		}
 
 		/// <summary>
@@ -53,7 +54,7 @@ namespace Durian.Info
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains all the existing Durian modules.</returns>
 		public static ModuleContainer GetAllModules()
 		{
-			List<DurianModule> modules = new(_allModules);
+			List<DurianModule> modules = new(AllModules);
 
 			return new ModuleContainer(modules);
 		}
@@ -171,8 +172,6 @@ namespace Durian.Info
 			{
 				DurianModule.Core => ModuleRepository.Core,
 				DurianModule.DefaultParam => ModuleRepository.DefaultParam,
-
-				//DurianModule.EnumServices => ModuleRepository.EnumServices,
 				DurianModule.FriendClass => ModuleRepository.FriendClass,
 				DurianModule.InterfaceTargets => ModuleRepository.InterfaceTargets,
 				DurianModule.None => throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!"),
@@ -184,8 +183,10 @@ namespace Durian.Info
 		/// Returns a <see cref="ModuleIdentity"/> of Durian module with the specified <paramref name="moduleName"/>.
 		/// </summary>
 		/// <param name="moduleName">Name of the Durian module to get the <see cref="ModuleIdentity"/> of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"> Unknown Durian module name: <paramref name="moduleName"/>.</exception>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="moduleName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian module name: <paramref name="moduleName"/>.
+		/// </exception>
 		public static ModuleIdentity GetModule(string moduleName)
 		{
 			DurianModule module = ParseModule(moduleName);
@@ -206,8 +207,10 @@ namespace Durian.Info
 		/// Returns a new instance of <see cref="ModuleReference"/> that represents an in-direct reference to a <see cref="ModuleIdentity"/>.
 		/// </summary>
 		/// <param name="moduleName">Name of the Durian module to get a <see cref="ModuleReference"/> to.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>.</exception>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="moduleName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian module name: <paramref name="moduleName"/>.
+		/// </exception>
 		public static ModuleReference GetReference(string moduleName)
 		{
 			DurianModule module = ParseModule(moduleName);
@@ -248,8 +251,10 @@ namespace Durian.Info
 		/// Determines whether the calling <see cref="Assembly"/> references a Durian module with the given <paramref name="moduleName"/>.
 		/// </summary>
 		/// <param name="moduleName">Name of the Durian module to check for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>.</exception>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="moduleName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian module name: <paramref name="moduleName"/>.
+		/// </exception>
 		public static bool IsEnabled(string moduleName)
 		{
 			return Assembly.GetCallingAssembly().IsEnabled(moduleName);
@@ -259,17 +264,19 @@ namespace Durian.Info
 		/// Converts the specified <paramref name="moduleName"/> into a value of the <see cref="DurianModule"/> enum.
 		/// </summary>
 		/// <param name="moduleName"><see cref="string"/> to convert to a value of the <see cref="DurianModule"/> enum.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>.</exception>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="moduleName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian module name: <paramref name="moduleName"/>.
+		/// </exception>
 		public static DurianModule ParseModule(string moduleName)
 		{
-			if (moduleName is null)
-			{
-				throw new ArgumentNullException(nameof(moduleName));
-			}
-
 			if (!TryParseModule(moduleName, out DurianModule module))
 			{
+				if (string.IsNullOrWhiteSpace(moduleName))
+				{
+					throw new ArgumentException($"$'{nameof(moduleName)}' cannot be null or empty", nameof(moduleName));
+				}
+
 				throw new ArgumentException($"Unknown Durian module name: {moduleName}", nameof(moduleName));
 			}
 
@@ -281,15 +288,8 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="moduleName">Name of the Durian module to get the <see cref="ModuleIdentity"/> of.</param>
 		/// <param name="module"><see cref="ModuleIdentity"/> that was returned.</param>
-		/// <returns><see langword="true"/> if the <paramref name="module"/> was successfully returned, <see langword="false"/> otherwise.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
-		public static bool TryGetModule(string moduleName, [NotNullWhen(true)] out ModuleIdentity? module)
+		public static bool TryGetModule([NotNullWhen(true)] string? moduleName, [NotNullWhen(true)] out ModuleIdentity? module)
 		{
-			if (moduleName is null)
-			{
-				throw new ArgumentNullException(nameof(moduleName));
-			}
-
 			if (!TryParseModule(moduleName, out DurianModule m))
 			{
 				module = null;
@@ -305,15 +305,8 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="moduleName">Name of the Durian module to get a <see cref="ModuleReference"/> to.</param>
 		/// <param name="reference">Newly-created <see cref="ModuleReference"/>.</param>
-		/// <returns><see langword="true"/> if the <see cref="ModuleReference"/> was successfully created, <see langword="false"/> otherwise.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>.</exception>
-		public static bool TryGetReference(string moduleName, [NotNullWhen(true)] out ModuleReference? reference)
+		public static bool TryGetReference([NotNullWhen(true)] string? moduleName, [NotNullWhen(true)] out ModuleReference? reference)
 		{
-			if (moduleName is null)
-			{
-				throw new ArgumentNullException(nameof(moduleName));
-			}
-
 			if (!TryParseModule(moduleName, out DurianModule module))
 			{
 				reference = null;
@@ -329,7 +322,6 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="moduleName"><see cref="string"/> to convert to a value of the <see cref="DurianModule"/> enum.</param>
 		/// <param name="module">Value of the <see cref="DurianModule"/> enum created from the <paramref name="moduleName"/>.</param>
-		/// <returns><see langword="true"/> if the <paramref name="moduleName"/> was successfully converted, <see langword="false"/> otherwise.</returns>
 		public static bool TryParseModule([NotNullWhen(true)] string? moduleName, out DurianModule module)
 		{
 			if (string.IsNullOrWhiteSpace(moduleName))
@@ -338,10 +330,7 @@ namespace Durian.Info
 				return false;
 			}
 
-			string name = moduleName!
-				.Replace("Durian.", "")
-				.Replace("durian.", "")
-				.Replace(".", "");
+			string name = Utilities.DurianRegex.Replace(moduleName, "");
 
 			return Enum.TryParse(name, true, out module);
 		}

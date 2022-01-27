@@ -40,6 +40,52 @@ namespace Durian.Info
 		}
 
 		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Generator.DurianGeneratedAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity DurianGeneratedAttribute
+		{
+			get
+			{
+				if(!IdentityPool.Types.TryGetValue("DurianGeneratedAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "DurianGeneratedAttribute",
+						@namespace: "Durian.Generator",
+						modules: new DurianModule[]
+						{
+							DurianModule.Core,
+						}
+					);
+				}
+
+				return type;
+			}
+		}
+
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Generator.EnableModuleAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity EnableModuleAttribute
+		{
+			get
+			{
+				if(!IdentityPool.Types.TryGetValue("EnableModuleAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "EnableModuleAttribute",
+						@namespace: "Durian.Generator",
+						modules: new DurianModule[]
+						{
+							DurianModule.Core,
+						}
+					);
+				}
+
+				return type;
+			}
+		}
+
+		/// <summary>
 		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.DefaultParamAttribute</c> type.
 		/// </summary>
 		public static TypeIdentity DefaultParamAttribute

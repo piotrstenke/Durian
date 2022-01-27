@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Durian.Analysis;
 using Durian.Analysis.Extensions;
@@ -277,7 +276,6 @@ namespace Durian.Manager
 			return true;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static void UpdateIfNullOrChanged(Compilation compilation)
 		{
 			if (_disabledModules is null || _disabledModules!.Length != _previousNumOfDisabledModules)

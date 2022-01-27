@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+#if DEBUG
+
 using System;
-using System.Diagnostics;
 
 namespace Durian
 {
 	/// <summary>
 	/// Informs that the specified files relative to the project directory contain definitions of diagnostics.
 	/// </summary>
-	[Conditional("DEBUG")]
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
 	public sealed class DiagnosticFilesAttribute : Attribute
 	{
@@ -28,3 +28,5 @@ namespace Durian
 		}
 	}
 }
+
+#endif

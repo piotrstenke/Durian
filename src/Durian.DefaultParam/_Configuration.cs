@@ -2,12 +2,14 @@
 // Licensed under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+
+#if DEBUG
 using Durian;
 using Durian.Analysis.DefaultParam;
 using Durian.Generator;
 using Durian.Info;
 
-[assembly: PackageDefinition(DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary, "1.3.0", DurianModule.DefaultParam)]
+[assembly: PackageDefinition(DurianPackage.DefaultParam, PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary, "2.0.0", DurianModule.DefaultParam)]
 [assembly: DiagnosticFiles(nameof(DefaultParamDiagnostics))]
 [assembly: IncludeTypes(
 	"DefaultParamAttribute",
@@ -15,6 +17,7 @@ using Durian.Info;
 	"DefaultParamScopedConfigurationAttribute",
 	"DPMethodConvention",
 	"DPTypeConvention")]
+#endif
 
 #region SuppressMessage
 

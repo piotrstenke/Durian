@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+
+#if DEBUG
 using Durian;
 using Durian.Analysis;
 using Durian.Generator;
@@ -9,6 +11,7 @@ using Durian.Info;
 
 [assembly: PackageDefinition(DurianPackage.CoreAnalyzer, PackageType.Analyzer, "2.0.0", DurianModule.Core)]
 [assembly: DiagnosticFiles(nameof(DurianDiagnostics))]
+#endif
 
 #region SuppressMessage
 

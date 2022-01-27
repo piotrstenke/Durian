@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 
 namespace Durian.Info
 {
@@ -12,7 +11,6 @@ namespace Durian.Info
 	/// </summary>
 	/// <remarks>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references.
 	/// <para>This class implements the <see cref="IDisposable"/> interface - instance should be disposed using the <see cref="Dispose"/> method if its no longer needed.</para></remarks>
-	[DebuggerDisplay("Name = {Name}, Version = {Version}")]
 	public sealed partial class PackageIdentity : IDurianIdentity, IEquatable<PackageIdentity>, IDisposable
 	{
 		private bool _disposed;
@@ -91,14 +89,24 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(PackageIdentity a, PackageIdentity b)
+		public static bool operator !=(PackageIdentity? a, PackageIdentity? b)
 		{
 			return !(a == b);
 		}
 
 		/// <inheritdoc/>
-		public static bool operator ==(PackageIdentity a, PackageIdentity b)
+		public static bool operator ==(PackageIdentity? a, PackageIdentity? b)
 		{
+			if(a is null)
+			{
+				return b is null;
+			}
+
+			if(b is null)
+			{
+				return false;
+			}
+
 			return
 				a.EnumValue == b.EnumValue &&
 				a.Version == b.Version &&
@@ -124,7 +132,7 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is not PackageIdentity other)
 			{
@@ -135,7 +143,7 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public bool Equals(PackageIdentity other)
+		public bool Equals(PackageIdentity? other)
 		{
 			return other == this;
 		}
@@ -168,6 +176,11 @@ namespace Durian.Info
 		}
 
 		object ICloneable.Clone()
+		{
+			return Clone();
+		}
+
+		IDurianIdentity IDurianIdentity.Clone()
 		{
 			return Clone();
 		}

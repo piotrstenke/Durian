@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -16,6 +17,8 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to set as the target.</param>
 		/// <param name="hintName">Name that is used to identify the <paramref name="node"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="node"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="hintName"/> is <see langword="null"/> or empty.</exception>
 		void SetTargetNode(CSharpSyntaxNode node, string hintName);
 	}
 }

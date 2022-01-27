@@ -15,7 +15,7 @@ namespace Durian.Info
 	/// <para>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references</para></remarks>
 	public sealed class ModuleReference : IDurianReference, IEquatable<ModuleReference>
 	{
-		private readonly PackageIdentity? _onAllocate;
+		private readonly PackageIdentity? _targetIdentity;
 
 		private ModuleIdentity? _module;
 
@@ -27,7 +27,6 @@ namespace Durian.Info
 		/// <summary>
 		/// Determines whether the <see cref="PackageIdentity"/> object has been allocated.
 		/// </summary>
-		[MemberNotNullWhen(true, nameof(_module))]
 		public bool IsAllocated => _module is not null;
 
 		/// <summary>
@@ -57,21 +56,31 @@ namespace Durian.Info
 			EnumValue = module.Module;
 		}
 
-		internal ModuleReference(DurianModule module, PackageIdentity onAllocate)
+		internal ModuleReference(DurianModule module, PackageIdentity targetIdentity)
 		{
 			EnumValue = module;
-			_onAllocate = onAllocate;
+			_targetIdentity = targetIdentity;
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(ModuleReference a, ModuleReference b)
+		public static bool operator !=(ModuleReference? a, ModuleReference? b)
 		{
 			return !(a == b);
 		}
 
 		/// <inheritdoc/>
-		public static bool operator ==(ModuleReference a, ModuleReference b)
+		public static bool operator ==(ModuleReference? a, ModuleReference? b)
 		{
+			if(a is null)
+			{
+				return b is null;
+			}
+
+			if(b is null)
+			{
+				return false;
+			}
+
 			return a.EnumValue == b.EnumValue;
 		}
 
@@ -130,7 +139,7 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is not ModuleReference r)
 			{
@@ -141,7 +150,7 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public bool Equals(ModuleReference other)
+		public bool Equals(ModuleReference? other)
 		{
 			return other == this;
 		}
@@ -169,9 +178,9 @@ namespace Durian.Info
 		{
 			_module = ModuleIdentity.GetModule(EnumValue);
 
-			if (_onAllocate is not null)
+			if (_targetIdentity is not null)
 			{
-				_module.SetPackage(_onAllocate);
+				_module.SetPackage(_targetIdentity);
 			}
 		}
 
@@ -182,6 +191,11 @@ namespace Durian.Info
 		}
 
 		object ICloneable.Clone()
+		{
+			return Clone();
+		}
+
+		IDurianReference IDurianReference.Clone()
 		{
 			return Clone();
 		}

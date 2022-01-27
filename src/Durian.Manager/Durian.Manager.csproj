@@ -6,9 +6,9 @@
     <Description>This package offers access to all the released Durian analyzers and source generators. 
     DO NOT reference this package if you're using the 'Durian' or any other Durian-related analyzer package.</Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Manager</PackageTags>
-    <PackageVersion>1.1.0</PackageVersion>
-    <AssemblyVersion>1.1.0</AssemblyVersion>
-    <Version>1.1.0</Version>
+    <PackageVersion>2.0.0</PackageVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <Version>2.0.0</Version>
     <RootNamespace>Durian.Manager</RootNamespace>
 
     <IsRoslynComponent>true</IsRoslynComponent>
@@ -27,6 +27,7 @@
     <ProjectReference Include="..\Durian.InterfaceTargets\Durian.InterfaceTargets.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Durian.FriendClass\Durian.FriendClass.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Durian.TestServices\Durian.TestServices.csproj" />
     
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.Info.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />

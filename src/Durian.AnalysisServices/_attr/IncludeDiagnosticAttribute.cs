@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+#if DEBUG
+
 using System;
-using System.Diagnostics;
 
 namespace Durian
 {
 	/// <summary>
 	/// Specifies external diagnostic that should be included in this module.
 	/// </summary>
-	[Conditional("DEBUG")]
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
 	public sealed class IncludeDiagnosticsAttribute : Attribute
 	{
@@ -28,3 +28,5 @@ namespace Durian
 		}
 	}
 }
+
+#endif

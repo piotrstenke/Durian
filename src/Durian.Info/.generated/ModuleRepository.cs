@@ -96,6 +96,8 @@ namespace Durian.Info
 						types: new TypeIdentity[]
 						{
 							TypeRepository.DisableModuleAttribute,
+							TypeRepository.DurianGeneratedAttribute,
+							TypeRepository.EnableModuleAttribute,
 						}
 					);
 				}

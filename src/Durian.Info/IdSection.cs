@@ -11,7 +11,7 @@ namespace Durian.Info
 	public readonly struct IdSection : IEquatable<IdSection>, IComparable<IdSection>
 	{
 		/// <summary>
-		/// Returns an <see cref="int"/> representing the value of the id.
+		/// Number representing the two digit value of the id.
 		/// </summary>
 		public readonly int Value { get; }
 
@@ -20,17 +20,17 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="firstChar">First character of the id.</param>
 		/// <param name="secondChar">Second character of the id.</param>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="firstChar"/> is not a digit. -or- <paramref name="secondChar"/> is not a digit.</exception>
+		/// <exception cref="ArgumentException"><paramref name="firstChar"/> is not a digit. -or- <paramref name="secondChar"/> is not a digit.</exception>
 		public IdSection(char firstChar, char secondChar)
 		{
 			if (!char.IsDigit(firstChar))
 			{
-				throw new ArgumentOutOfRangeException(nameof(firstChar), "Id character must be a digit!");
+				throw new ArgumentException($"Character '{firstChar}' is not a digit", nameof(firstChar));
 			}
 
 			if (!char.IsDigit(secondChar))
 			{
-				throw new ArgumentOutOfRangeException(nameof(secondChar), "Id character must be a digit!");
+				throw new ArgumentException($"Character '{secondChar}' is not a digit", nameof(secondChar));
 			}
 
 			Value = int.Parse(firstChar.ToString() + secondChar.ToString());
@@ -40,12 +40,12 @@ namespace Durian.Info
 		/// Initializes a new instance of the <see cref="IdSection"/> struct.
 		/// </summary>
 		/// <param name="value">Number representing the id. Must be greater than or equal to <c>0</c> and less than <c>100</c>.</param>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is not greater than or equal to <c>0</c>. -or- <paramref name="value"/> is not less than <c>100</c>.</exception>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> must be greater than or equal to <c>0</c> and less than <c>100</c>.</exception>
 		public IdSection(int value)
 		{
 			if (value < 0 || value > 99)
 			{
-				throw new ArgumentOutOfRangeException(nameof(value), "Value must be greater than or equal to 0 and less than 100!");
+				throw new ArgumentOutOfRangeException(nameof(value), "Value must be greater than or equal to 0 and less than 100");
 			}
 
 			Value = value;
@@ -100,24 +100,26 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="IdSection"/> struct with value parsed from the specified <see cref="string"/> <paramref name="id"/>.
+		/// Creates a new instance of the <see cref="IdSection"/> struct with value parsed from the specified <see cref="string"/> value.
 		/// </summary>
-		/// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="id"/> does not represent a two-digit number.</exception>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="value"/> is <see langword="null"/>. -or-
+		/// <paramref name="value"/> does not represent a two-digit number.
+		/// </exception>
 		/// <exception cref="ArgumentOutOfRangeException">Parsed value is not greater than or equal to <c>0</c>. -or- Parsed value is not less than <c>100</c>.</exception>
-		public static IdSection Parse(string id)
+		public static IdSection Parse(string value)
 		{
-			if (id is null)
+			if (string.IsNullOrWhiteSpace(value))
 			{
-				throw new ArgumentNullException(nameof(id));
+				throw new ArgumentException("Value is null or empty", nameof(value));
 			}
 
-			if (!int.TryParse(id, out int value))
+			if (!int.TryParse(value, out int id))
 			{
-				throw new ArgumentException("Id does not represent a two-digit number!", nameof(id));
+				throw new ArgumentException("Id does not represent a two-digit number", nameof(value));
 			}
 
-			return new IdSection(value);
+			return new IdSection(id);
 		}
 
 		/// <summary>
@@ -143,7 +145,7 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public override readonly bool Equals(object obj)
+		public override readonly bool Equals(object? obj)
 		{
 			if (obj is not IdSection other)
 			{
@@ -175,7 +177,7 @@ namespace Durian.Info
 				return str;
 			}
 
-			return str + str;
+			return "0" + str;
 		}
 	}
 }

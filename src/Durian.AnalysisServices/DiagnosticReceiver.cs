@@ -30,12 +30,22 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		public void ReportDiagnostic(DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs)
 		{
+			if(descriptor is null)
+			{
+				throw new ArgumentNullException(nameof(descriptor));
+			}
+
 			_action.Invoke(Diagnostic.Create(descriptor, location, messageArgs));
 		}
 
 		/// <inheritdoc/>
 		public void ReportDiagnostic(Diagnostic diagnostic)
 		{
+			if (diagnostic is null)
+			{
+				throw new ArgumentNullException(nameof(diagnostic));
+			}
+
 			_action.Invoke(diagnostic);
 		}
 	}

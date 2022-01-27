@@ -12,7 +12,7 @@ namespace Durian.Analysis.DefaultParam
 		public const string DefaultParamAttribute = "Durian.DefaultParamAttribute";
 		public const string DefaultParamConfigurationAttribute = "Durian.Configuration.DefaultParamConfigurationAttribute";
 		public const string DefaultParamScopedConfigurationAttribute = "Durian.Configuration.DefaultParamScopedConfigurationAttribute";
-		public const string DPMethodConvention = "Durian.DPMethodConvention";
-		public const string DPTypeConvention = "Durian.DPTypeConvention";
+		public const string DPMethodConvention = "Durian.Configuration.DPMethodConvention";
+		public const string DPTypeConvention = "Durian.Configuration.DPTypeConvention";
 	}
 }

@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+#if DEBUG
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Durian.Info;
 
 namespace Durian
@@ -11,7 +12,6 @@ namespace Durian
 	/// <summary>
 	/// Informs that the specified types from the <c>Durian.Core</c> module are part of this <see cref="DurianModule"/>.
 	/// </summary>
-	[Conditional("DEBUG")]
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
 	public sealed class IncludeTypesAttribute : Attribute
 	{
@@ -53,3 +53,5 @@ namespace Durian
 		}
 	}
 }
+
+#endif

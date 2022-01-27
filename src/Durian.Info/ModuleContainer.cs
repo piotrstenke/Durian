@@ -14,13 +14,12 @@ namespace Durian.Info
 	/// A collection of Durian modules represented as either <see cref="ModuleReference"/>, direct <see cref="ModuleIdentity"/> or a value of <see cref="DurianModule"/>.
 	/// </summary>
 	/// <remarks>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references.</remarks>
-	[DebuggerDisplay("Count = {_references?.Count}, nq")]
-	public sealed class ModuleContainer : IDurianContainer, ICollection<ModuleReference>, ICloneable
+	[DebuggerDisplay("Count = {_references?.Count ?? 0}, nq")]
+	public sealed class ModuleContainer : IDurianContainer, ICollection<ModuleReference>
 	{
 		// Both lists must have the same length.
 
 		private readonly List<DurianModule> _enums;
-
 		private readonly List<ModuleReference?> _references;
 
 		/// <summary>
@@ -195,7 +194,7 @@ namespace Durian.Info
 
 			for (int i = 0; i < array.Length; i++)
 			{
-				ModuleReference reference = GetReference(i);
+				ModuleReference reference = GetReferenceAt(i);
 
 				array[i] = reference.GetModule();
 			}
@@ -217,7 +216,7 @@ namespace Durian.Info
 
 			for (int i = 0; i < array.Length; i++)
 			{
-				array[i] = GetReference(i);
+				array[i] = GetReferenceAt(i);
 			}
 
 			return array;
@@ -282,7 +281,7 @@ namespace Durian.Info
 
 			for (int i = 0; i < Count; i++)
 			{
-				ModuleReference reference = GetReference(i);
+				ModuleReference reference = GetReferenceAt(i);
 
 				if (predicate(reference))
 				{
@@ -334,7 +333,7 @@ namespace Durian.Info
 
 			for (int i = 0; i < Count; i++)
 			{
-				ModuleReference reference = GetReference(i);
+				ModuleReference reference = GetReferenceAt(i);
 
 				if (predicate(reference))
 				{
@@ -357,7 +356,7 @@ namespace Durian.Info
 			{
 				if (_enums[i] == module)
 				{
-					ModuleReference reference = GetReference(i);
+					ModuleReference reference = GetReferenceAt(i);
 
 					modules.Add(reference.GetModule());
 				}
@@ -373,11 +372,16 @@ namespace Durian.Info
 		/// <exception cref="ArgumentNullException"><paramref name="predicate"/> is <see langword="null"/>.</exception>
 		public IEnumerable<ModuleReference> GetAllReferences(Predicate<ModuleReference> predicate)
 		{
+			if(predicate is null)
+			{
+				throw new ArgumentNullException(nameof(predicate));
+			}
+
 			List<ModuleReference> modules = new(Count);
 
 			for (int i = 0; i < Count; i++)
 			{
-				ModuleReference reference = GetReference(i);
+				ModuleReference reference = GetReferenceAt(i);
 
 				if (predicate(reference))
 				{
@@ -400,7 +404,7 @@ namespace Durian.Info
 			{
 				if (_enums[i] == module)
 				{
-					ModuleReference reference = GetReference(i);
+					ModuleReference reference = GetReferenceAt(i);
 
 					modules.Add(reference);
 				}
@@ -420,18 +424,15 @@ namespace Durian.Info
 		/// Returns the first <see cref="ModuleIdentity"/> that represents the specified <paramref name="module"/>.
 		/// </summary>
 		/// <param name="module"><see cref="DurianModule"/> to get the <see cref="ModuleIdentity"/> for.</param>
-		public ModuleIdentity? GetModule(DurianModule module)
+		/// <exception cref="ArgumentException"><paramref name="module"/> not registered.</exception>
+		public ModuleIdentity GetModule(DurianModule module)
 		{
-			for (int i = 0; i < Count; i++)
+			if (!TryGetModule(module, out ModuleIdentity? identity))
 			{
-				if (_enums[i] == module)
-				{
-					ModuleReference reference = GetReference(i);
-					return reference.GetModule();
-				}
+				throw new ArgumentException($"Module '{module}' not registered", nameof(module));
 			}
 
-			return null;
+			return identity;
 		}
 
 		/// <summary>
@@ -439,24 +440,15 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="predicate">Function that determines whether to return a specific <see cref="ModuleReference"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="predicate"/> is <see langword="null"/>.</exception>
-		public ModuleIdentity? GetModule(Predicate<ModuleReference> predicate)
+		/// <exception cref="ArgumentException">No module satisfies the specified condition.</exception>
+		public ModuleIdentity GetModule(Predicate<ModuleReference> predicate)
 		{
-			if (predicate is null)
+			if (!TryGetModule(predicate, out ModuleIdentity? identity))
 			{
-				throw new ArgumentNullException(nameof(predicate));
+				throw new ArgumentException("No module satisfies the specified condition", nameof(predicate));
 			}
 
-			for (int i = 0; i < Count; i++)
-			{
-				ModuleReference reference = GetReference(i);
-
-				if (predicate(reference))
-				{
-					return reference.GetModule();
-				}
-			}
-
-			return null;
+			return identity;
 		}
 
 		/// <summary>
@@ -464,42 +456,30 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="predicate">Function that determines whether to return a specific <see cref="ModuleReference"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="predicate"/> is <see langword="null"/>.</exception>
-		public ModuleReference? GetReference(Predicate<ModuleReference> predicate)
+		/// <exception cref="ArgumentException">No module satisfies the specified condition.</exception>
+		public ModuleReference GetReference(Predicate<ModuleReference> predicate)
 		{
-			if (predicate is null)
+			if (!TryGetReference(predicate, out ModuleReference? reference))
 			{
-				throw new ArgumentNullException(nameof(predicate));
+				throw new ArgumentException("No module satisfies the specified condition", nameof(predicate));
 			}
 
-			for (int i = 0; i < Count; i++)
-			{
-				ModuleReference reference = GetReference(i);
-
-				if (predicate(reference))
-				{
-					return reference;
-				}
-			}
-
-			return null;
+			return reference;
 		}
 
 		/// <summary>
 		/// Returns the first <see cref="ModuleReference"/> that references the specified <paramref name="module"/>.
 		/// </summary>
 		/// <param name="module"><see cref="DurianModule"/> to get the <see cref="ModuleIdentity"/> for.</param>
-		public ModuleReference? GetReference(DurianModule module)
+		/// <exception cref="ArgumentException"><paramref name="module"/> not registered.</exception>
+		public ModuleReference GetReference(DurianModule module)
 		{
-			for (int i = 0; i < Count; i++)
+			if(!TryGetReference(module, out ModuleReference? reference))
 			{
-				if (_enums[i] == module)
-				{
-					ModuleReference reference = GetReference(i);
-					return reference;
-				}
+				throw new ArgumentException($"Module '{module}' not registered", nameof(module));
 			}
 
-			return null;
+			return reference;
 		}
 
 		/// <summary>
@@ -683,7 +663,7 @@ namespace Durian.Info
 
 			for (int i = 0; i < Count; i++)
 			{
-				ModuleReference reference = GetReference(i);
+				ModuleReference reference = GetReferenceAt(i);
 
 				if (predicate(reference))
 				{
@@ -747,7 +727,7 @@ namespace Durian.Info
 
 			for (int i = 0; i < Count; i++)
 			{
-				ModuleReference reference = GetReference(i);
+				ModuleReference reference = GetReferenceAt(i);
 
 				if (predicate(reference))
 				{
@@ -779,9 +759,18 @@ namespace Durian.Info
 		/// <param name="identity"><see cref="ModuleIdentity"/> that represents the specified <paramref name="module"/>.</param>
 		public bool TryGetModule(DurianModule module, [NotNullWhen(true)] out ModuleIdentity? identity)
 		{
-			identity = GetModule(module);
+			for (int i = 0; i < Count; i++)
+			{
+				if (_enums[i] == module)
+				{
+					ModuleReference reference = GetReferenceAt(i);
+					identity = reference.GetModule();
+					return true;
+				}
+			}
 
-			return identity is not null;
+			identity = default;
+			return false;
 		}
 
 		/// <summary>
@@ -789,13 +778,27 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="predicate">Function that determines whether to return a specific <see cref="ModuleReference"/>.</param>
 		/// <param name="identity"><see cref="ModuleIdentity"/> that is compliant with the specified <paramref name="predicate"/>.</param>
-		/// <returns><see langword="true"/> if an appropriate <see cref="ModuleIdentity"/> has been found, <see langword="false"/> otherwise.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="predicate"/> is <see langword="null"/>.</exception>
 		public bool TryGetModule(Predicate<ModuleReference> predicate, [NotNullWhen(true)] out ModuleIdentity? identity)
 		{
-			identity = GetModule(predicate);
+			if(predicate is null)
+			{
+				throw new ArgumentNullException(nameof(predicate));
+			}
 
-			return identity is not null;
+			for (int i = 0; i < Count; i++)
+			{
+				ModuleReference reference = GetReferenceAt(i);
+
+				if (predicate(reference))
+				{
+					identity = reference.GetModule();
+					return true;
+				}
+			}
+
+			identity = default;
+			return false;
 		}
 
 		/// <summary>
@@ -806,9 +809,17 @@ namespace Durian.Info
 		/// <param name="reference"><see cref="ModuleReference"/> that represents the specified <paramref name="module"/>.</param>
 		public bool TryGetReference(DurianModule module, [NotNullWhen(true)] out ModuleReference? reference)
 		{
-			reference = GetReference(module);
+			for (int i = 0; i < Count; i++)
+			{
+				if (_enums[i] == module)
+				{
+					reference = GetReferenceAt(i);
+					return true;
+				}
+			}
 
-			return reference is not null;
+			reference = default;
+			return false;
 		}
 
 		/// <summary>
@@ -816,19 +827,32 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="predicate">Function that determines whether to return a specific <see cref="ModuleReference"/>.</param>
 		/// <param name="reference"><see cref="ModuleReference"/> that is compliant with the specified <paramref name="predicate"/>.</param>
-		/// <returns><see langword="true"/> if an appropriate <see cref="ModuleReference"/> has been found, <see langword="false"/> otherwise.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="predicate"/> is <see langword="null"/>.</exception>
 		public bool TryGetReference(Predicate<ModuleReference> predicate, [NotNullWhen(true)] out ModuleReference? reference)
 		{
-			reference = GetReference(predicate);
+			if (predicate is null)
+			{
+				throw new ArgumentNullException(nameof(predicate));
+			}
 
-			return reference is not null;
+			for (int i = 0; i < Count; i++)
+			{
+				ModuleReference target = GetReferenceAt(i);
+
+				if (predicate(target))
+				{
+					reference = target;
+					return true;
+				}
+			}
+
+			reference = default;
+			return false;
 		}
 
 		/// <summary>
 		/// Includes the specified <paramref name="reference"/> in the container unless the <see cref="DurianModule"/> it is referring to is already included.
 		/// </summary>
-		/// <returns><see langword="true"/> if the <paramref name="reference"/> has been successfully included, <see langword="false"/> otherwise.</returns>
 		/// <param name="reference"><see cref="ModuleReference"/> to include.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="reference"/> is <see langword="null"/>.</exception>
 		public bool TryInclude(ModuleReference reference)
@@ -851,7 +875,6 @@ namespace Durian.Info
 		/// <summary>
 		/// Includes the specified <paramref name="module"/> in the container unless the <see cref="DurianModule"/> it represents is already included.
 		/// </summary>
-		/// <returns><see langword="true"/> if the <paramref name="module"/> has been successfully included, <see langword="false"/> otherwise.</returns>
 		/// <param name="module"><see cref="ModuleIdentity"/> to include.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>.</exception>
 		public bool TryInclude(ModuleIdentity module)
@@ -874,7 +897,6 @@ namespace Durian.Info
 		/// <summary>
 		/// Includes the specified <paramref name="module"/> in the container unless it is already included.
 		/// </summary>
-		/// <returns><see langword="true"/> if the <paramref name="module"/> has been successfully included, <see langword="false"/> otherwise.</returns>
 		/// <param name="module"><see cref="DurianModule"/> to include.</param>
 		/// <exception cref="ArgumentException"><paramref name="module"/> is not a valid <see cref="DurianModule"/> value.</exception>
 		public bool TryInclude(DurianModule module)
@@ -893,7 +915,7 @@ namespace Durian.Info
 			Include(item);
 		}
 
-		int[] IDurianContainer.AsEnums()
+		IEnumerable<int> IDurianContainer.AsEnums()
 		{
 			DurianModule[] modules = AsEnums();
 			int[] ints = new int[modules.Length];
@@ -901,20 +923,19 @@ namespace Durian.Info
 			return ints;
 		}
 
-		IDurianIdentity[] IDurianContainer.AsIdentities()
+		IEnumerable<IDurianIdentity> IDurianContainer.AsIdentities()
 		{
-			ModuleIdentity[] modules = AsIdentities();
-			IDurianIdentity[] identities = new IDurianIdentity[modules.Length];
-			modules.CopyTo(identities, 0);
-			return identities;
+			return AsIdentities();
 		}
 
-		IDurianReference[] IDurianContainer.AsReferences()
+		IEnumerable<IDurianReference> IDurianContainer.AsReferences()
 		{
-			ModuleReference[] references = AsReferences();
-			IDurianReference[] array = new IDurianReference[references.Length];
-			references.CopyTo(array, 0);
-			return array;
+			return AsReferences();
+		}
+
+		IDurianContainer IDurianContainer.Clone(bool sharedReference)
+		{
+			return Clone(sharedReference);
 		}
 
 		object ICloneable.Clone()
@@ -995,7 +1016,7 @@ namespace Durian.Info
 			return Remove(item.EnumValue);
 		}
 
-		private ModuleReference GetReference(int index)
+		private ModuleReference GetReferenceAt(int index)
 		{
 			ModuleReference? reference = _references[index];
 

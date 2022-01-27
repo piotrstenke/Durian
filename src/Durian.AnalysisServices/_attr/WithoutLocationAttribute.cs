@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+#if DEBUG
+
 using System;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis
@@ -10,7 +11,6 @@ namespace Durian.Analysis
 	/// <summary>
 	/// Specifies that the target <see cref="DiagnosticDescriptor"/> does not have a specific location.
 	/// </summary>
-	[Conditional("DEBUG")]
 	[AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 	public sealed class WithoutLocationAttribute : Attribute
 	{
@@ -22,3 +22,5 @@ namespace Durian.Analysis
 		}
 	}
 }
+
+#endif

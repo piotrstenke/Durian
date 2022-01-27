@@ -14,13 +14,12 @@ namespace Durian.Info
 	/// A collection of Durian packages represented as either <see cref="PackageReference"/>, direct <see cref="PackageIdentity"/> or a value of <see cref="DurianPackage"/>.
 	/// </summary>
 	/// <remarks>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references.</remarks>
-	[DebuggerDisplay("Count = {_references?.Count}, nq")]
+	[DebuggerDisplay("Count = {_references?.Count ?? 0}, nq")]
 	public sealed class PackageContainer : IDurianContainer, ICollection<PackageReference>, ICloneable
 	{
 		// Both lists must have the same length.
 
 		private readonly List<DurianPackage> _enums;
-
 		private readonly List<PackageReference?> _references;
 
 		/// <summary>
@@ -373,6 +372,11 @@ namespace Durian.Info
 		/// <exception cref="ArgumentNullException"><paramref name="predicate"/> is <see langword="null"/>.</exception>
 		public IEnumerable<PackageReference> GetAllReferences(Predicate<PackageReference> predicate)
 		{
+			if(predicate is null)
+			{
+				throw new ArgumentNullException(nameof(predicate));
+			}
+
 			List<PackageReference> packages = new(Count);
 
 			for (int i = 0; i < Count; i++)
@@ -420,18 +424,15 @@ namespace Durian.Info
 		/// Returns the first <see cref="PackageIdentity"/> that represents the specified <paramref name="package"/>.
 		/// </summary>
 		/// <param name="package"><see cref="DurianPackage"/> to get the <see cref="PackageIdentity"/> for.</param>
+		/// <exception cref="ArgumentException"><paramref name="package"/> not registered.</exception>
 		public PackageIdentity? GetPackage(DurianPackage package)
 		{
-			for (int i = 0; i < Count; i++)
+			if (!TryGetPackage(package, out PackageIdentity? identity))
 			{
-				if (_enums[i] == package)
-				{
-					PackageReference reference = GetReference(i);
-					return reference.GetPackage();
-				}
+				throw new ArgumentException($"Package '{package}' not registered", nameof(package));
 			}
 
-			return null;
+			return identity;
 		}
 
 		/// <summary>
@@ -439,24 +440,15 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="predicate">Function that determines whether to return a specific <see cref="PackageReference"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="predicate"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">No package satisfies the specified condition.</exception>
 		public PackageIdentity? GetPackage(Predicate<PackageReference> predicate)
 		{
-			if (predicate is null)
+			if (!TryGetPackage(predicate, out PackageIdentity? identity))
 			{
-				throw new ArgumentNullException(nameof(predicate));
+				throw new ArgumentException("No package satisfies the specified condition", nameof(predicate));
 			}
 
-			for (int i = 0; i < Count; i++)
-			{
-				PackageReference reference = GetReference(i);
-
-				if (predicate(reference))
-				{
-					return reference.GetPackage();
-				}
-			}
-
-			return null;
+			return identity;
 		}
 
 		/// <summary>
@@ -464,42 +456,30 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="predicate">Function that determines whether to return a specific <see cref="PackageReference"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="predicate"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">No package satisfies the specified condition.</exception>
 		public PackageReference? GetReference(Predicate<PackageReference> predicate)
 		{
-			if (predicate is null)
+			if (!TryGetReference(predicate, out PackageReference? reference))
 			{
-				throw new ArgumentNullException(nameof(predicate));
+				throw new ArgumentException("No package satisfies the specified condition", nameof(predicate));
 			}
 
-			for (int i = 0; i < Count; i++)
-			{
-				PackageReference reference = GetReference(i);
-
-				if (predicate(reference))
-				{
-					return reference;
-				}
-			}
-
-			return null;
+			return reference;
 		}
 
 		/// <summary>
 		/// Returns the first <see cref="PackageReference"/> that references the specified <paramref name="package"/>.
 		/// </summary>
 		/// <param name="package"><see cref="DurianPackage"/> to get the <see cref="PackageIdentity"/> for.</param>
+		/// <exception cref="ArgumentException"><paramref name="package"/> not registered.</exception>
 		public PackageReference? GetReference(DurianPackage package)
 		{
-			for (int i = 0; i < Count; i++)
+			if (!TryGetReference(package, out PackageReference? reference))
 			{
-				if (_enums[i] == package)
-				{
-					PackageReference reference = GetReference(i);
-					return reference;
-				}
+				throw new ArgumentException($"Package '{package}' not registered", nameof(package));
 			}
 
-			return null;
+			return reference;
 		}
 
 		/// <summary>
@@ -779,9 +759,18 @@ namespace Durian.Info
 		/// <param name="identity"><see cref="PackageIdentity"/> that represents the specified <paramref name="package"/>.</param>
 		public bool TryGetPackage(DurianPackage package, [NotNullWhen(true)] out PackageIdentity? identity)
 		{
-			identity = GetPackage(package);
+			for (int i = 0; i < Count; i++)
+			{
+				if (_enums[i] == package)
+				{
+					PackageReference reference = GetReference(i);
+					identity = reference.GetPackage();
+					return true;
+				}
+			}
 
-			return identity is not null;
+			identity = default;
+			return false;
 		}
 
 		/// <summary>
@@ -793,9 +782,24 @@ namespace Durian.Info
 		/// <exception cref="ArgumentNullException"><paramref name="predicate"/> is <see langword="null"/>.</exception>
 		public bool TryGetPackage(Predicate<PackageReference> predicate, [NotNullWhen(true)] out PackageIdentity? identity)
 		{
-			identity = GetPackage(predicate);
+			if (predicate is null)
+			{
+				throw new ArgumentNullException(nameof(predicate));
+			}
 
-			return identity is not null;
+			for (int i = 0; i < Count; i++)
+			{
+				PackageReference target = GetReference(i);
+
+				if (predicate(target))
+				{
+					identity = target.GetPackage();
+					return true;
+				}
+			}
+
+			identity = default;
+			return false;
 		}
 
 		/// <summary>
@@ -806,9 +810,17 @@ namespace Durian.Info
 		/// <param name="reference"><see cref="PackageReference"/> that represents the specified <paramref name="package"/>.</param>
 		public bool TryGetReference(DurianPackage package, [NotNullWhen(true)] out PackageReference? reference)
 		{
-			reference = GetReference(package);
+			for (int i = 0; i < Count; i++)
+			{
+				if (_enums[i] == package)
+				{
+					reference = GetReference(i);
+					return true;
+				}
+			}
 
-			return reference is not null;
+			reference = default;
+			return false;
 		}
 
 		/// <summary>
@@ -816,19 +828,32 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="predicate">Function that determines whether to return a specific <see cref="PackageReference"/>.</param>
 		/// <param name="reference"><see cref="PackageReference"/> that is compliant with the specified <paramref name="predicate"/>.</param>
-		/// <returns><see langword="true"/> if an appropriate <see cref="PackageReference"/> has been found, <see langword="false"/> otherwise.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="predicate"/> is <see langword="null"/>.</exception>
 		public bool TryGetReference(Predicate<PackageReference> predicate, [NotNullWhen(true)] out PackageReference? reference)
 		{
-			reference = GetReference(predicate);
+			if (predicate is null)
+			{
+				throw new ArgumentNullException(nameof(predicate));
+			}
 
-			return reference is not null;
+			for (int i = 0; i < Count; i++)
+			{
+				PackageReference target = GetReference(i);
+
+				if (predicate(target))
+				{
+					reference = target;
+					return true;
+				}
+			}
+
+			reference = default;
+			return false;
 		}
 
 		/// <summary>
 		/// Includes the specified <paramref name="reference"/> in the container unless the <see cref="DurianPackage"/> it is referring to is already included.
 		/// </summary>
-		/// <returns><see langword="true"/> if the <paramref name="reference"/> has been successfully included, <see langword="false"/> otherwise.</returns>
 		/// <param name="reference"><see cref="PackageReference"/> to include.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="reference"/> is <see langword="null"/>.</exception>
 		public bool TryInclude(PackageReference reference)
@@ -851,7 +876,6 @@ namespace Durian.Info
 		/// <summary>
 		/// Includes the specified <paramref name="package"/> in the container unless the <see cref="DurianPackage"/> it represents is already included.
 		/// </summary>
-		/// <returns><see langword="true"/> if the <paramref name="package"/> has been successfully included, <see langword="false"/> otherwise.</returns>
 		/// <param name="package"><see cref="PackageIdentity"/> to include.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="package"/> is <see langword="null"/>.</exception>
 		public bool TryInclude(PackageIdentity package)
@@ -874,7 +898,6 @@ namespace Durian.Info
 		/// <summary>
 		/// Includes the specified <paramref name="package"/> in the container unless it is already included.
 		/// </summary>
-		/// <returns><see langword="true"/> if the <paramref name="package"/> has been successfully included, <see langword="false"/> otherwise.</returns>
 		/// <param name="package"><see cref="DurianPackage"/> to include.</param>
 		/// <exception cref="ArgumentException"><paramref name="package"/> is not a valid <see cref="DurianPackage"/> value.</exception>
 		public bool TryInclude(DurianPackage package)
@@ -893,7 +916,7 @@ namespace Durian.Info
 			Include(item);
 		}
 
-		int[] IDurianContainer.AsEnums()
+		IEnumerable<int> IDurianContainer.AsEnums()
 		{
 			DurianPackage[] packages = AsEnums();
 			int[] ints = new int[packages.Length];
@@ -901,20 +924,19 @@ namespace Durian.Info
 			return ints;
 		}
 
-		IDurianIdentity[] IDurianContainer.AsIdentities()
+		IEnumerable<IDurianIdentity> IDurianContainer.AsIdentities()
 		{
-			PackageIdentity[] packages = AsIdentities();
-			IDurianIdentity[] identities = new IDurianIdentity[packages.Length];
-			packages.CopyTo(identities, 0);
-			return identities;
+			return AsIdentities();
 		}
 
-		IDurianReference[] IDurianContainer.AsReferences()
+		IEnumerable<IDurianReference> IDurianContainer.AsReferences()
 		{
-			PackageReference[] references = AsReferences();
-			IDurianReference[] array = new IDurianReference[references.Length];
-			references.CopyTo(array, 0);
-			return array;
+			return AsReferences();
+		}
+
+		IDurianContainer IDurianContainer.Clone(bool sharedReference)
+		{
+			return Clone(sharedReference);
 		}
 
 		object ICloneable.Clone()

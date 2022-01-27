@@ -112,12 +112,13 @@ namespace Durian.Analysis
 		/// Add a <see cref="Diagnostic"/> to the user's compilation.
 		/// </summary>
 		/// <param name="diagnostic"><see cref="Diagnostic"/> to report.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Context is not initialized.</exception>
-		public void ReportDiagnostic(Diagnostic? diagnostic)
+		public void ReportDiagnostic(Diagnostic diagnostic)
 		{
 			if (diagnostic is null)
 			{
-				return;
+				throw new ArgumentNullException(nameof(diagnostic));
 			}
 
 			if (!IsInitialized)
@@ -134,12 +135,13 @@ namespace Durian.Analysis
 		/// <param name="descriptor"><see cref="DiagnosticDescriptor"/> that is used to create the <see cref="Diagnostic"/>.</param>
 		/// <param name="location">Source <see cref="Location"/> of the reported diagnostic.</param>>
 		/// <param name="messageArgs">Arguments of the diagnostic message.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="descriptor"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Context is not initialized.</exception>
-		public void ReportDiagnostic(DiagnosticDescriptor? descriptor, Location? location, params object?[]? messageArgs)
+		public void ReportDiagnostic(DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs)
 		{
 			if (descriptor is null)
 			{
-				return;
+				throw new ArgumentNullException(nameof(descriptor));
 			}
 
 			if (!IsInitialized)

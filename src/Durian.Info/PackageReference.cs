@@ -14,8 +14,7 @@ namespace Durian.Info
 	/// <para>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references.</para></remarks>
 	public sealed class PackageReference : IDurianReference, IEquatable<PackageReference>, ICloneable
 	{
-		private readonly ModuleIdentity? _onAllocate;
-
+		private readonly ModuleIdentity? _targetIdentity;
 		private PackageIdentity? _package;
 
 		/// <summary>
@@ -56,21 +55,31 @@ namespace Durian.Info
 			EnumValue = package.EnumValue;
 		}
 
-		internal PackageReference(DurianPackage package, ModuleIdentity onAllocate)
+		internal PackageReference(DurianPackage package, ModuleIdentity targetIdentity)
 		{
 			EnumValue = package;
-			_onAllocate = onAllocate;
+			_targetIdentity = targetIdentity;
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(PackageReference a, PackageReference b)
+		public static bool operator !=(PackageReference? a, PackageReference? b)
 		{
 			return !(a == b);
 		}
 
 		/// <inheritdoc/>
-		public static bool operator ==(PackageReference a, PackageReference b)
+		public static bool operator ==(PackageReference? a, PackageReference? b)
 		{
+			if (a is null)
+			{
+				return b is null;
+			}
+
+			if (b is null)
+			{
+				return false;
+			}
+
 			return a.EnumValue == b.EnumValue;
 		}
 
@@ -129,7 +138,7 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is not PackageReference r)
 			{
@@ -140,7 +149,7 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public bool Equals(PackageReference other)
+		public bool Equals(PackageReference? other)
 		{
 			return other == this;
 		}
@@ -168,9 +177,9 @@ namespace Durian.Info
 		{
 			_package = PackageIdentity.GetPackage(EnumValue);
 
-			if (_onAllocate is not null)
+			if (_targetIdentity is not null)
 			{
-				_package.SetModule(_onAllocate);
+				_package.SetModule(_targetIdentity);
 			}
 		}
 
@@ -181,6 +190,11 @@ namespace Durian.Info
 		}
 
 		object ICloneable.Clone()
+		{
+			return Clone();
+		}
+
+		IDurianReference IDurianReference.Clone()
 		{
 			return Clone();
 		}

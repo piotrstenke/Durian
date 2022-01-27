@@ -14,7 +14,6 @@ namespace Durian.Info
 	public sealed partial class TypeIdentity : IDurianIdentity, IEquatable<TypeIdentity>, IDisposable
 	{
 		private bool _disposed;
-
 		private ImmutableArray<ModuleReference> _modules;
 
 		/// <summary>
@@ -80,14 +79,24 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(TypeIdentity a, TypeIdentity b)
+		public static bool operator !=(TypeIdentity? a, TypeIdentity? b)
 		{
 			return !(a == b);
 		}
 
 		/// <inheritdoc/>
-		public static bool operator ==(TypeIdentity a, TypeIdentity b)
+		public static bool operator ==(TypeIdentity? a, TypeIdentity? b)
 		{
+			if (a is null)
+			{
+				return b is null;
+			}
+
+			if (b is null)
+			{
+				return false;
+			}
+
 			return
 				a.Name == b.Name &&
 				b.Namespace == b.Namespace &&
@@ -111,7 +120,7 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is not TypeIdentity other)
 			{
@@ -122,7 +131,7 @@ namespace Durian.Info
 		}
 
 		/// <inheritdoc/>
-		public bool Equals(TypeIdentity other)
+		public bool Equals(TypeIdentity? other)
 		{
 			return other == this;
 		}
@@ -145,6 +154,11 @@ namespace Durian.Info
 		}
 
 		object ICloneable.Clone()
+		{
+			return Clone();
+		}
+
+		IDurianIdentity IDurianIdentity.Clone()
 		{
 			return Clone();
 		}

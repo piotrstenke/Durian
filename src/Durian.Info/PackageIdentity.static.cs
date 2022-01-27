@@ -11,11 +11,11 @@ namespace Durian.Info
 {
 	public partial class PackageIdentity
 	{
-		private static readonly DurianPackage[] _allPackages;
+		private static DurianPackage[]? _allPackages;
 
-		static PackageIdentity()
+		private static DurianPackage[] AllPackages
 		{
-			_allPackages = Enum.GetValues(typeof(DurianPackage))
+			get => _allPackages ??= Enum.GetValues(typeof(DurianPackage))
 				.Cast<DurianPackage>()
 				.ToArray();
 		}
@@ -26,6 +26,7 @@ namespace Durian.Info
 		public static void Deallocate()
 		{
 			IdentityPool.Packages.Clear();
+			_allPackages = default;
 		}
 
 		/// <summary>
@@ -47,7 +48,7 @@ namespace Durian.Info
 		/// <returns>A new instance of <see cref="PackageContainer"/> that contains all the existing Durian packages.</returns>
 		public static PackageContainer GetAllPackages()
 		{
-			List<DurianPackage> packages = new(_allPackages);
+			List<DurianPackage> packages = new(AllPackages);
 
 			return new PackageContainer(packages);
 		}
@@ -130,8 +131,10 @@ namespace Durian.Info
 		/// Returns a new instance of <see cref="PackageIdentity"/> of Durian package with the specified <paramref name="packageName"/>.
 		/// </summary>
 		/// <param name="packageName">Name of the Durian package to get the <see cref="PackageIdentity"/> of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian package name: <paramref name="packageName"/>.</exception>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="packageName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian package name: <paramref name="packageName"/>.
+		/// </exception>
 		public static PackageIdentity GetPackage(string packageName)
 		{
 			DurianPackage package = ParsePackage(packageName);
@@ -142,8 +145,10 @@ namespace Durian.Info
 		/// Returns a new instance of <see cref="PackageReference"/> that represents an in-direct reference to a <see cref="PackageIdentity"/>.
 		/// </summary>
 		/// <param name="packageName">Name of the Durian package to get a <see cref="PackageReference"/> to.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian package name: <paramref name="packageName"/>.</exception>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="packageName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian package name: <paramref name="packageName"/>.
+		/// </exception>
 		public static PackageReference GetReference(string packageName)
 		{
 			DurianPackage package = ParsePackage(packageName);
@@ -245,8 +250,10 @@ namespace Durian.Info
 		/// Determines whether the calling <see cref="Assembly"/> references a Durian package with the given <paramref name="packageName"/>.
 		/// </summary>
 		/// <param name="packageName">Name of the Durian package to check for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian package name: <paramref name="packageName"/>.</exception>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="packageName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian package name: <paramref name="packageName"/>.
+		/// </exception>
 		public static bool HasReference(string packageName)
 		{
 			return Assembly.GetCallingAssembly().HasReference(packageName);
@@ -267,8 +274,10 @@ namespace Durian.Info
 		/// Determines whether <see cref="DurianPackage"/> with the specified <paramref name="packageName"/> is a Roslyn-based analyzer package.
 		/// </summary>
 		/// <param name="packageName">Name of the Durian package to check.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Unknown Durian package name: <paramref name="packageName"/>.</exception>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="packageName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian package name: <paramref name="packageName"/>.
+		/// </exception>
 		public static bool IsAnalyzerPackage(string packageName)
 		{
 			PackageIdentity identity = GetPackage(packageName);
@@ -309,17 +318,19 @@ namespace Durian.Info
 		/// Converts the specified <paramref name="packageName"/> into a value of the <see cref="DurianPackage"/> enum.
 		/// </summary>
 		/// <param name="packageName"><see cref="string"/> to convert to a value of the <see cref="DurianPackage"/> enum.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"> Unknown Durian package name: <paramref name="packageName"/>.</exception>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="packageName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian package name: <paramref name="packageName"/>.
+		/// </exception>
 		public static DurianPackage ParsePackage(string packageName)
 		{
-			if (packageName is null)
-			{
-				throw new ArgumentNullException(nameof(packageName));
-			}
-
 			if (!TryParsePackage(packageName, out DurianPackage package))
 			{
+				if (string.IsNullOrWhiteSpace(packageName))
+				{
+					throw new ArgumentException($"$'{nameof(packageName)}' cannot be null or empty", nameof(packageName));
+				}
+
 				throw new ArgumentException($"Unknown Durian package name: {packageName}", nameof(packageName));
 			}
 
@@ -331,15 +342,8 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="packageName">Name of the Durian package to get the <see cref="PackageIdentity"/> of.</param>
 		/// <param name="package"><see cref="PackageIdentity"/> that was returned.</param>
-		/// <returns><see langword="true"/> if the <paramref name="package"/> was successfully returned, <see langword="false"/> otherwise.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>.</exception>
-		public static bool TryGetPackage(string packageName, [NotNullWhen(true)] out PackageIdentity? package)
+		public static bool TryGetPackage([NotNullWhen(true)] string? packageName, [NotNullWhen(true)] out PackageIdentity? package)
 		{
-			if (packageName is null)
-			{
-				throw new ArgumentNullException(nameof(packageName));
-			}
-
 			if (!TryParsePackage(packageName, out DurianPackage p))
 			{
 				package = null;
@@ -355,15 +359,8 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="packageName">Name of the Durian module to get a <see cref="PackageReference"/> to.</param>
 		/// <param name="reference">Newly-created <see cref="PackageReference"/>.</param>
-		/// <returns><see langword="true"/> if the <see cref="PackageReference"/> was successfully created, <see langword="false"/> otherwise.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="packageName"/> is <see langword="null"/>.</exception>
-		public static bool TryGetReference(string packageName, [NotNullWhen(true)] out PackageReference? reference)
+		public static bool TryGetReference([NotNullWhen(true)] string? packageName, [NotNullWhen(true)] out PackageReference? reference)
 		{
-			if (packageName is null)
-			{
-				throw new ArgumentNullException(nameof(packageName));
-			}
-
 			if (!TryParsePackage(packageName, out DurianPackage package))
 			{
 				reference = null;
@@ -379,8 +376,7 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="packageName"><see cref="string"/> to convert to a value of the <see cref="DurianPackage"/> enum.</param>
 		/// <param name="package">Value of the <see cref="DurianPackage"/> enum created from the <paramref name="packageName"/>.</param>
-		/// <returns><see langword="true"/> if the <paramref name="package"/> was successfully converted, <see langword="false"/> otherwise.</returns>
-		public static bool TryParsePackage(string? packageName, out DurianPackage package)
+		public static bool TryParsePackage([NotNullWhen(true)]string? packageName, out DurianPackage package)
 		{
 			if (string.IsNullOrWhiteSpace(packageName))
 			{
@@ -388,21 +384,9 @@ namespace Durian.Info
 				return false;
 			}
 
-			string name = packageName!.Replace("Durian.", "").Replace(".", "");
+			string name = Utilities.DurianRegex.Replace(packageName, "");
 
-			if (Enum.TryParse(name, true, out package))
-			{
-				return true;
-			}
-
-			if (string.Equals(name, "main", StringComparison.OrdinalIgnoreCase))
-			{
-				package = DurianPackage.Main;
-				return true;
-			}
-
-			package = default;
-			return false;
+			return Enum.TryParse(name, true, out package);
 		}
 	}
 }

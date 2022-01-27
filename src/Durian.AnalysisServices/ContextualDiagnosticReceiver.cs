@@ -65,6 +65,11 @@ namespace Durian.Analysis
 		/// <exception cref="InvalidOperationException">Target context not set.</exception>
 		public void ReportDiagnostic(DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs)
 		{
+			if (descriptor is null)
+			{
+				throw new ArgumentNullException(nameof(descriptor));
+			}
+
 			CheckContext();
 			_action.Invoke(_context, Diagnostic.Create(descriptor, location, messageArgs));
 		}
@@ -73,6 +78,11 @@ namespace Durian.Analysis
 		/// <exception cref="InvalidOperationException">Target context not set.</exception>
 		public void ReportDiagnostic(Diagnostic diagnostic)
 		{
+			if(diagnostic is null)
+			{
+				throw new ArgumentNullException(nameof(diagnostic));
+			}
+
 			CheckContext();
 			_action.Invoke(_context, diagnostic);
 		}

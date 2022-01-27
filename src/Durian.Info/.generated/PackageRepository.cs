@@ -123,7 +123,7 @@ namespace Durian.Info
 				{
 					package = new(
 						enumValue: DurianPackage.DefaultParam,
-						version: "1.3.0",
+						version: "2.0.0",
 						type: PackageType.SyntaxBasedGenerator | PackageType.Analyzer | PackageType.CodeFixLibrary,
 						modules: new DurianModule[]
 						{
@@ -219,7 +219,7 @@ namespace Durian.Info
 				{
 					package = new(
 						enumValue: DurianPackage.Manager,
-						version: "1.1.0",
+						version: "2.0.0",
 						type: PackageType.Analyzer,
 						modules: new DurianModule[]
 						{
