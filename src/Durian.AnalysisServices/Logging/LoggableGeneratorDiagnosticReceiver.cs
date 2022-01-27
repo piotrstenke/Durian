@@ -14,6 +14,9 @@ namespace Durian.Analysis.Logging
 	{
 		private readonly DiagnosticBag _bag;
 
+		/// <inheritdoc/>
+		public int Count => _bag.Count;
+
 		/// <summary>
 		/// <see cref="LoggableSourceGenerator"/> this <see cref="LoggableGeneratorDiagnosticReceiver"/> reports the diagnostics to.
 		/// </summary>
@@ -28,9 +31,6 @@ namespace Durian.Analysis.Logging
 		/// Target <see cref="CSharpSyntaxNode"/>.
 		/// </summary>
 		public CSharpSyntaxNode? Node { get; private set; }
-
-		/// <inheritdoc/>
-		public int Count => _bag.Count;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableSourceGenerator"/> class.

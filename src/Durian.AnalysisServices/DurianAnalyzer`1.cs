@@ -2,9 +2,6 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -78,7 +75,8 @@ namespace Durian.Analysis
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to report diagnostics to.</param>
 		protected abstract TCompilation CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver);
 
-		private protected sealed override void Register(IDurianAnalysisContext context, CSharpCompilation compilation)
+		/// <inheritdoc/>
+		protected sealed override void Register(IDurianAnalysisContext context, CSharpCompilation compilation)
 		{
 			DiagnosticBag diagnosticReceiver = DiagnosticReceiverFactory.Bag();
 			TCompilation data = CreateCompilation(compilation, diagnosticReceiver);

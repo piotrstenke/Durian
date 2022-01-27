@@ -24,6 +24,7 @@ namespace Durian.Analysis
 		where TFilter : notnull, IGeneratorSyntaxFilterWithDiagnostics
 	{
 		private readonly List<CSharpSyntaxTree> _generatedDuringCurrentPass = new(16);
+
 		private bool _isFilterWithGeneratedSymbols;
 
 		/// <inheritdoc/>
@@ -51,13 +52,9 @@ namespace Durian.Analysis
 		public TCompilationData? TargetCompilation { get; private set; }
 
 		string IDurianSourceGenerator.GeneratorName => GetGeneratorName();
-
 		CSharpParseOptions IDurianSourceGenerator.ParseOptions => ParseOptions!;
-
 		IDurianSyntaxReceiver IDurianSourceGenerator.SyntaxReceiver => SyntaxReceiver!;
-
 		ICompilationData IDurianSourceGenerator.TargetCompilation => TargetCompilation!;
-
 		string IDurianSourceGenerator.Version => GetVersion();
 
 		/// <inheritdoc cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.DurianGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>

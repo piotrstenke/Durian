@@ -338,7 +338,10 @@ namespace Durian.Info
 				return false;
 			}
 
-			string name = moduleName!.Replace("Durian.", "").Replace(".", "");
+			string name = moduleName!
+				.Replace("Durian.", "")
+				.Replace("durian.", "")
+				.Replace(".", "");
 
 			return Enum.TryParse(name, true, out module);
 		}

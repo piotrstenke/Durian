@@ -20,7 +20,7 @@ namespace Durian.Analysis
 	public static class AnalysisUtilities
 	{
 		private static readonly string[] _keywords = new string[]
-		{
+																																								{
 			"__arglist",    "__makeref",    "__reftype",    "__refvalue",
 			"abstract",     "as",           "base",         "bool",
 			"break",        "byte",         "case",         "catch",
@@ -42,7 +42,7 @@ namespace Durian.Analysis
 			"ulong",        "unchecked",    "unsafe",       "ushort",
 			"using",        "virtual",      "volatile",     "void",
 			"while"
-		};
+				};
 
 		private static readonly HashSet<string> _keywordsHashed = new(_keywords);
 

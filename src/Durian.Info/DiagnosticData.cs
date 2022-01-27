@@ -14,7 +14,9 @@ namespace Durian.Info
 	public sealed class DiagnosticData : IEquatable<DiagnosticData>, ICloneable
 	{
 		private string? _docsPath;
+
 		private ModuleReference? _module;
+
 		private ModuleReference? _originalModule;
 
 		/// <summary>

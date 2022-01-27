@@ -20,7 +20,9 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Copies contents of the type.
 		/// </summary>
+#pragma warning disable CA1069 // Enums values should not be duplicated
 		Inherit = 0,
+#pragma warning restore CA1069 // Enums values should not be duplicated
 
 		/// <summary>
 		/// Inherits the type.

@@ -21,7 +21,9 @@ namespace Durian.Analysis.Cache
 	public struct CachedFilterEnumeratorWithDiagnostics<T> : IEnumerator<T> where T : IMemberData
 	{
 		internal readonly CachedData<T> _cache;
+
 		private readonly CSharpSyntaxNode[] _nodes;
+
 		private int _index;
 
 		/// <summary>
@@ -50,7 +52,6 @@ namespace Durian.Analysis.Cache
 		public readonly INodeValidatorWithDiagnostics<T> Validator { get; }
 
 		readonly T IEnumerator<T>.Current => Current!;
-
 		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>
@@ -89,7 +90,6 @@ namespace Durian.Analysis.Cache
 		}
 
 #pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
-
 		/// <inheritdoc/>
 		public static explicit operator CachedFilterEnumeratorWithDiagnostics<T>(in FilterEnumeratorWithDiagnostics<T> a)
 		{
@@ -101,7 +101,6 @@ namespace Durian.Analysis.Cache
 		{
 			return new FilterEnumeratorWithDiagnostics<T>(a._nodes, a.Compilation, a.Validator, a.DiagnosticReceiver, a._index);
 		}
-
 #pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 
 		/// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>

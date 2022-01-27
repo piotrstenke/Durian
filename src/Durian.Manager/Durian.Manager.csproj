@@ -21,7 +21,7 @@
 
   <ItemGroup>
 
-    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Durian.Info\Durian.Info.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Durian.Core.Analyzer\Durian.Core.Analyzer.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Durian.DefaultParam\Durian.DefaultParam.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Durian.InterfaceTargets\Durian.InterfaceTargets.csproj" PrivateAssets="all" />
@@ -29,7 +29,7 @@
     <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" PrivateAssets="all" />
     
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(OutputPath)\Durian.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\Durian.Info.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.Core.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.AnalysisServices.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.DefaultParam.Dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />

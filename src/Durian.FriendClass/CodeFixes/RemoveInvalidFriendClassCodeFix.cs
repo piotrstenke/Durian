@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.CodeFixes;
 using Durian.Analysis.CodeFixes;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 
 namespace Durian.Analysis.FriendClass.CodeFixes

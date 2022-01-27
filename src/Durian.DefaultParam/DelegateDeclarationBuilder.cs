@@ -16,8 +16,11 @@ namespace Durian.Analysis.DefaultParam
 	public sealed class DelegateDeclarationBuilder : IDefaultParamDeclarationBuilder
 	{
 		private HashSet<int>? _newModifierIndexes;
+
 		private int _numNonDefaultParam;
+
 		private int _numOriginalConstraints;
+
 		private int _numOriginalTypeParameters;
 
 		/// <summary>
@@ -36,9 +39,7 @@ namespace Durian.Analysis.DefaultParam
 		public SemanticModel SemanticModel { get; private set; }
 
 		CSharpSyntaxNode IDefaultParamDeclarationBuilder.CurrentNode => CurrentDeclaration;
-
 		CSharpSyntaxNode IDefaultParamDeclarationBuilder.OriginalNode => OriginalDeclaration;
-
 		bool IDefaultParamDeclarationBuilder.VisitDeclarationBody => true;
 
 		/// <summary>

@@ -21,16 +21,16 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc cref="DefaultParamMethodData.NewModifierIndexes"/>
 		public HashSet<int>? NewModifierIndexes { get; }
 
+		/// <summary>
+		/// Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamDelegateData"/>.
+		/// </summary>
+		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
+
 		/// <inheritdoc cref="DefaultParamTypeData.TargetNamespace"/>
 		public string TargetNamespace { get; }
 
 		/// <inheritdoc/>
 		public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
-
-		/// <summary>
-		/// Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamDelegateData"/>.
-		/// </summary>
-		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamDelegateData"/> class.

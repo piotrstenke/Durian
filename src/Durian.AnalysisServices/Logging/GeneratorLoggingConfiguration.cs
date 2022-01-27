@@ -15,8 +15,11 @@ namespace Durian.Analysis.Logging
 	public sealed partial class GeneratorLoggingConfiguration : IEquatable<GeneratorLoggingConfiguration>, ICloneable
 	{
 		private bool _enableDiagnostics;
+
 		private bool _enableLogging;
+
 		private string? _logDirectory;
+
 		private bool _supportsDiagnostics;
 
 		/// <summary>

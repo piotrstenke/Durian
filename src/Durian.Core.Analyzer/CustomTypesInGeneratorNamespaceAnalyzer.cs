@@ -10,16 +10,13 @@ using static Durian.Analysis.DurianDiagnostics;
 
 namespace Durian.Analysis
 {
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-
 	/// <summary>
 	/// Analyzes if the user added custom types to the <c>Durian.Analysis</c> namespace.
 	/// </summary>
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 #if !MAIN_PACKAGE
-
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
-
 	public sealed class CustomTypesInGeneratorNamespaceAnalyzer : DurianAnalyzer
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{

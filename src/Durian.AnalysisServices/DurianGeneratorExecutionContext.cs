@@ -20,33 +20,8 @@ namespace Durian.Analysis
 		internal const string Exc_NotInitialized = "Context is not initialized!";
 
 		private readonly GeneratorExecutionContext _context;
+
 		private readonly DiagnosticBag _diagnostics;
-
-		/// <summary>
-		/// Determines whether the current instance is initialize, i.e. it wasn't created using the default constructor.
-		/// </summary>
-		public bool IsInitialized => _diagnostics is not null;
-
-		/// <summary>
-		/// <see cref="IDurianSyntaxReceiver"/> created for the current generation pass.
-		/// </summary>
-		public IDurianSyntaxReceiver? SyntaxReceiver
-		{
-			get
-			{
-				if (_context.SyntaxReceiver is not null)
-				{
-					return (_context.SyntaxReceiver as IDurianSyntaxReceiver)!;
-				}
-
-				if (_context.SyntaxContextReceiver is not null)
-				{
-					return (_context.SyntaxContextReceiver as IDurianSyntaxReceiver)!;
-				}
-
-				return null;
-			}
-		}
 
 		/// <inheritdoc cref="GeneratorExecutionContext.AdditionalFiles"/>
 		public ImmutableArray<AdditionalText> AdditionalFiles => _context.AdditionalFiles;
@@ -69,9 +44,35 @@ namespace Durian.Analysis
 		public CSharpCompilation Compilation => (_context.Compilation as CSharpCompilation)!;
 
 		/// <summary>
+		/// Determines whether the current instance is initialize, i.e. it wasn't created using the default constructor.
+		/// </summary>
+		public bool IsInitialized => _diagnostics is not null;
+
+		/// <summary>
 		/// <see cref="CSharpParseOptions"/> that will be used to parse any added sources.
 		/// </summary>
 		public CSharpParseOptions ParseOptions => (_context.ParseOptions as CSharpParseOptions)!;
+
+		/// <summary>
+		/// <see cref="IDurianSyntaxReceiver"/> created for the current generation pass.
+		/// </summary>
+		public IDurianSyntaxReceiver? SyntaxReceiver
+		{
+			get
+			{
+				if (_context.SyntaxReceiver is not null)
+				{
+					return (_context.SyntaxReceiver as IDurianSyntaxReceiver)!;
+				}
+
+				if (_context.SyntaxContextReceiver is not null)
+				{
+					return (_context.SyntaxContextReceiver as IDurianSyntaxReceiver)!;
+				}
+
+				return null;
+			}
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGeneratorExecutionContext"/> struct.

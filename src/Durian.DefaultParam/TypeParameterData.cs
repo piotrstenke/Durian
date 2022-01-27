@@ -42,6 +42,11 @@ namespace Durian.Analysis.DefaultParam
 		public readonly Location Location => Attribute?.GetLocation() ?? Syntax.GetLocation();
 
 		/// <summary>
+		/// Name of the <see cref="Symbol"/>.
+		/// </summary>
+		public readonly string Name => Symbol.Name;
+
+		/// <summary>
 		/// Parent <see cref="MemberDeclarationSyntax"/> of the <see cref="Syntax"/>.
 		/// </summary>
 		public readonly MemberDeclarationSyntax Parent { get; }
@@ -65,11 +70,6 @@ namespace Durian.Analysis.DefaultParam
 		/// The <see cref="ITypeSymbol"/> that was specified using the <see cref="Attribute"/>. -or- <see langword="null"/> if <see cref="Attribute"/> is <see langword="null"/> or the type cannot be resolved because of error.
 		/// </summary>
 		public readonly ITypeSymbol? TargetType { get; }
-
-		/// <summary>
-		/// Name of the <see cref="Symbol"/>.
-		/// </summary>
-		public readonly string Name => Symbol.Name;
 
 		/// <inheritdoc cref="TypeParameterData(TypeParameterSyntax, ITypeParameterSymbol, SemanticModel, AttributeSyntax, ITypeSymbol)"/>
 		public TypeParameterData(TypeParameterSyntax syntax, ITypeParameterSymbol symbol, SemanticModel semanticModel) : this(syntax, symbol, semanticModel, null, null)

@@ -23,7 +23,9 @@ namespace Durian.Manager
 	public sealed class DisabledModuleAnalyzer : DiagnosticAnalyzer, ISourceGenerator
 	{
 		private static readonly object _lockObject = new();
+
 		private static DurianModule[]? _disabledModules;
+
 		private static int _previousNumOfDisabledModules;
 
 		/// <inheritdoc/>
@@ -174,7 +176,7 @@ namespace Durian.Manager
 		}
 
 		/// <summary>
-		/// Writes the <see cref="EnableModuleAttribute"/> for all the <see cref="DurianModule"/> that are not disabled using the <see cref="DisableModuleAttribute"/>.
+		/// Writes the <see cref="EnableModuleAttribute"/> for all the <see cref="DurianModule"/> that are not disabled using the <c>Durian.DisableModuleAttribute</c>.
 		/// </summary>
 		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
 		/// <exception cref="InvalidOperationException">Analyzer is not initialized.</exception>
@@ -185,7 +187,7 @@ namespace Durian.Manager
 		}
 
 		/// <summary>
-		/// Writes the <see cref="EnableModuleAttribute"/> for all the <see cref="DurianModule"/> that are not disabled using the <see cref="DisableModuleAttribute"/>.
+		/// Writes the <see cref="EnableModuleAttribute"/> for all the <see cref="DurianModule"/> that are not disabled using the <c>Durian.DisableModuleAttributec</c>.
 		/// </summary>
 		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
 		/// <param name="compilation"><see cref="Compilation"/> that is used if the analyzer is not initialized or the disabled managers are changed.</param>

@@ -11,7 +11,6 @@ using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Durian.Analysis
@@ -61,6 +60,7 @@ namespace Durian.Analysis
 		#endregion Diagnostics copied from Durian.Core.Analyzer
 
 		private ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? _diagnosticReceiver;
+
 		private IHintNameProvider _fileNameProvider;
 
 		/// <summary>

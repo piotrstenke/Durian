@@ -15,9 +15,13 @@ namespace Durian.TestServices
 	public sealed class GeneratorRunResultBuilder
 	{
 		internal GeneratorDriverRunResultBuilder? _parent;
+
 		private readonly List<Diagnostic> _diagnostics;
+
 		private readonly List<GeneratedSourceResult> _sources;
+
 		private Exception? _exception;
+
 		private ISourceGenerator? _generator;
 
 		/// <inheritdoc cref="GeneratorRunResultBuilder(IEnumerable{GeneratedSourceResult})"/>

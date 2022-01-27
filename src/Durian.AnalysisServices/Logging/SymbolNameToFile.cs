@@ -13,7 +13,9 @@ namespace Durian.Analysis.Logging
 	public sealed class SymbolNameToFile : IHintNameProvider
 	{
 		private readonly StringBuilder _builder;
+
 		private bool _isCleared;
+
 		private ISymbol? _previousSymbol;
 
 		/// <inheritdoc cref="SymbolNameToFile(StringBuilder)"/>

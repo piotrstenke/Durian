@@ -15,6 +15,7 @@ namespace Durian.Info
 	public sealed class PackageReference : IDurianReference, IEquatable<PackageReference>, ICloneable
 	{
 		private readonly ModuleIdentity? _onAllocate;
+
 		private PackageIdentity? _package;
 
 		/// <summary>

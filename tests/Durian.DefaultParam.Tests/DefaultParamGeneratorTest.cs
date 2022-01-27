@@ -15,6 +15,7 @@ namespace Durian.Analysis.DefaultParam.Tests
 		private sealed class TestableGenerator : DefaultParamGenerator
 		{
 			private int _analyzerCounter;
+
 			private int _generatorCounter;
 
 			public TestableGenerator(GeneratorLoggingConfiguration configuration, string testName) : base(configuration, new TestNameToFile(testName))

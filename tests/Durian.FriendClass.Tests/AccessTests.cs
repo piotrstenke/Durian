@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Xunit;
-using Durian.TestServices;
-using Durian.Configuration;
 using System.Threading.Tasks;
+using Durian.Configuration;
+using Durian.TestServices;
+using Xunit;
 using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 
 namespace Durian.Analysis.FriendClass.Tests

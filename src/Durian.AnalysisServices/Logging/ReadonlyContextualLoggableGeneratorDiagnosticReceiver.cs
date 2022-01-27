@@ -12,7 +12,9 @@ namespace Durian.Analysis.Logging
 	public sealed class ReadonlyContextualLoggableGeneratorDiagnosticReceiver<T> : LoggableGeneratorDiagnosticReceiver where T : struct
 	{
 		private readonly ReadonlyContextualDiagnosticReceiver<T> _diagnosticReceiver;
+
 		private bool _enableLogging;
+
 		private bool _enableReport;
 
 		/// <summary>

@@ -16,6 +16,7 @@ namespace Durian.Info
 	public sealed partial class PackageIdentity : IDurianIdentity, IEquatable<PackageIdentity>, IDisposable
 	{
 		private bool _disposed;
+
 		private ImmutableArray<ModuleReference> _modules;
 
 		/// <summary>

@@ -20,17 +20,18 @@ namespace Durian.Info
 		// Both lists must have the same length.
 
 		private readonly List<DurianModule> _enums;
-		private readonly List<ModuleReference?> _references;
 
-		/// <summary>
-		/// Determines whether the current <see cref="ModuleContainer"/> does not contain any Durian modules.
-		/// </summary>
-		public bool IsEmpty => Count == 0;
+		private readonly List<ModuleReference?> _references;
 
 		/// <summary>
 		/// Number of referenced Durian modules.
 		/// </summary>
 		public int Count => _references.Count;
+
+		/// <summary>
+		/// Determines whether the current <see cref="ModuleContainer"/> does not contain any Durian modules.
+		/// </summary>
+		public bool IsEmpty => Count == 0;
 
 		bool ICollection<ModuleReference>.IsReadOnly => false;
 

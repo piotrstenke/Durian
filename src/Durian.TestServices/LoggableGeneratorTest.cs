@@ -14,6 +14,7 @@ namespace Durian.TestServices
 	public abstract class LoggableGeneratorTest<T> where T : ILoggableSourceGenerator
 	{
 		private readonly GeneratorLoggingConfiguration _configuration;
+
 		private readonly bool _enableDiagnostics;
 
 		/// <summary>

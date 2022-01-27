@@ -23,7 +23,9 @@ namespace Durian.Analysis.DefaultParam
 	public struct CachedDefaultParamFilterEnumerator<T> : IEnumerator<T> where T : class, IDefaultParamTarget
 	{
 		private readonly CachedData<T> _cache;
+
 		private readonly CSharpSyntaxNode[] _nodes;
+
 		private int _index;
 
 		/// <summary>
@@ -51,14 +53,13 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		public readonly IDefaultParamFilter<T> Filter { get; }
 
-		readonly T IEnumerator<T>.Current => Current!;
-
-		readonly object IEnumerator.Current => Current!;
-
 		/// <summary>
 		/// <see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
 		public readonly IHintNameProvider HintNameProvider => Filter.HintNameProvider;
+
+		readonly T IEnumerator<T>.Current => Current!;
+		readonly object IEnumerator.Current => Current!;
 
 		/// <inheritdoc cref="CachedDefaultParamFilterEnumerator(IDefaultParamFilter{T}, INodeDiagnosticReceiver, in CachedData{T})"/>
 		public CachedDefaultParamFilterEnumerator(IDefaultParamFilter<T> filter, in CachedData<T> cache) : this(filter, filter.Generator.LogReceiver, in cache, default)

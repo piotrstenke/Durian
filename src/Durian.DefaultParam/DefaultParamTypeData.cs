@@ -27,17 +27,17 @@ namespace Durian.Analysis.DefaultParam
 		public HashSet<int>? NewModifierIndexes { get; }
 
 		/// <summary>
+		/// Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamTypeData"/>.
+		/// </summary>
+		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
+
+		/// <summary>
 		/// Specifies the namespace where the target member should be generated in.
 		/// </summary>
 		public string TargetNamespace { get; }
 
 		/// <inheritdoc/>
 		public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
-
-		/// <summary>
-		/// Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamTypeData"/>.
-		/// </summary>
-		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamTypeData"/> class.

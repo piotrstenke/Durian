@@ -13,7 +13,9 @@ namespace Durian.Analysis.Cache
 	public readonly struct CachedGeneratorExecutionContext<T>
 	{
 		internal readonly GeneratorExecutionContext _context;
+
 		internal readonly CachedData<T> _data;
+
 		private readonly bool _hasData;
 
 		/// <inheritdoc cref="CachedGeneratorExecutionContext(in GeneratorExecutionContext, ConcurrentDictionary{FileLinePositionSpan, T})"/>

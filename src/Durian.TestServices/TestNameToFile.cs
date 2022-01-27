@@ -69,18 +69,17 @@ namespace Durian.TestServices
 			_current = _testName;
 		}
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TestNameToFile"/> class.
 		/// </summary>
 		/// <param name="testName">Name of the current test.</param>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 		public TestNameToFile(string testName)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
 			TestName = testName;
 		}
-
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 		/// <inheritdoc/>
 		public string GetFileName()

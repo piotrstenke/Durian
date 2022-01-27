@@ -10,7 +10,9 @@ namespace Durian.Analysis
 	public sealed class ContextualDiagnosticReceiver<T> : IContextualDiagnosticReceiver<T> where T : struct
 	{
 		private readonly ContextualDirectReportAction<T> _action;
+
 		private T _context;
+
 		private bool _contextIsSet;
 
 		/// <inheritdoc cref="ContextualDiagnosticReceiver{T}(ContextualDirectReportAction{T}, in T)"/>

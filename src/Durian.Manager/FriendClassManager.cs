@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 
 using Durian.Analysis;
+using Durian.Analysis.FriendClass;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Durian.Analysis.FriendClass;
 
 namespace Durian.Manager
 {

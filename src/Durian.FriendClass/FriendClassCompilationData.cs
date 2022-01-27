@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis;
-using Durian.Analysis.Data;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Durian.Analysis.Data;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.FriendClass
 {

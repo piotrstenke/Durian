@@ -16,6 +16,7 @@ namespace Durian.Info
 	public sealed class ModuleReference : IDurianReference, IEquatable<ModuleReference>
 	{
 		private readonly PackageIdentity? _onAllocate;
+
 		private ModuleIdentity? _module;
 
 		/// <summary>

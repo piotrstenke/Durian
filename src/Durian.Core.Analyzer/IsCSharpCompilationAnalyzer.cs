@@ -10,16 +10,13 @@ using static Durian.Analysis.DurianDiagnostics;
 
 namespace Durian.Analysis
 {
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-
 	/// <summary>
 	/// Analyzes if the current compilation is <see cref="CSharpCompilation"/>.
 	/// </summary>
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 #if !MAIN_PACKAGE
-
 	[DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.FSharp, LanguageNames.VisualBasic)]
 #endif
-
 	public sealed class IsCSharpCompilationAnalyzer : DurianAnalyzer
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{

@@ -16,24 +16,24 @@ namespace Durian.Analysis.Data
 	public class FieldData : MemberData
 	{
 		/// <summary>
-		/// Index of this field in the <see cref="Declaration"/>.
-		/// </summary>
-		public int Index { get; }
-
-		/// <summary>
-		/// <see cref="VariableDeclaratorSyntax"/> used to declare this field. Equivalent to using <c>Declaration.Declaration.Variables[Index]</c>.
-		/// </summary>
-		public VariableDeclaratorSyntax Variable { get; }
-
-		/// <summary>
 		/// Target <see cref="FieldDeclarationSyntax"/>.
 		/// </summary>
 		public new FieldDeclarationSyntax Declaration => (base.Declaration as FieldDeclarationSyntax)!;
 
 		/// <summary>
+		/// Index of this field in the <see cref="Declaration"/>.
+		/// </summary>
+		public int Index { get; }
+
+		/// <summary>
 		/// <see cref="IFieldSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		public new IFieldSymbol Symbol => (base.Symbol as IFieldSymbol)!;
+
+		/// <summary>
+		/// <see cref="VariableDeclaratorSyntax"/> used to declare this field. Equivalent to using <c>Declaration.Declaration.Variables[Index]</c>.
+		/// </summary>
+		public VariableDeclaratorSyntax Variable { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FieldData"/> class.
@@ -114,28 +114,28 @@ namespace Durian.Analysis.Data
 		}
 
 		private FieldData(
-			FieldDeclarationSyntax declaration,
-			ICompilationData compilation,
-			IFieldSymbol symbol,
-			SemanticModel semanticModel,
-			VariableDeclaratorSyntax variable,
-			int index
-		) : base(declaration, compilation, symbol, semanticModel)
+					FieldDeclarationSyntax declaration,
+					ICompilationData compilation,
+					IFieldSymbol symbol,
+					SemanticModel semanticModel,
+					VariableDeclaratorSyntax variable,
+					int index
+				) : base(declaration, compilation, symbol, semanticModel)
 		{
 			Variable = variable;
 			Index = index;
 		}
 
 		private FieldData(
-			FieldDeclarationSyntax declaration,
-			ICompilationData compilation,
-			SemanticModel semanticModel,
-			VariableDeclaratorSyntax variable
-		) : base(
-			declaration,
-			compilation,
-			(semanticModel.GetDeclaredSymbol(variable) as IFieldSymbol)!,
-			semanticModel)
+					FieldDeclarationSyntax declaration,
+					ICompilationData compilation,
+					SemanticModel semanticModel,
+					VariableDeclaratorSyntax variable
+				) : base(
+					declaration,
+					compilation,
+					(semanticModel.GetDeclaredSymbol(variable) as IFieldSymbol)!,
+					semanticModel)
 		{
 			Variable = variable;
 		}

@@ -11,17 +11,8 @@ namespace Durian.TestServices
 	public class SourceGeneratorProxy : ISourceGenerator
 	{
 		private GeneratorExecutionContext _exeContext;
+
 		private GeneratorInitializationContext _initContext;
-
-		/// <summary>
-		/// Event invoked when the <see cref="Execute"/> method is called.
-		/// </summary>
-		public event GeneratorExecute? OnExecute;
-
-		/// <summary>
-		/// Event invoked when the <see cref="Initialize"/> method is called.
-		/// </summary>
-		public event GeneratorInitialize? OnInitialize;
 
 		/// <summary>
 		/// Returns a readonly reference to the last <see cref="GeneratorExecutionContext"/>.
@@ -32,6 +23,16 @@ namespace Durian.TestServices
 		/// Returns a readonly reference to the last <see cref="GeneratorInitializationContext"/>.
 		/// </summary>
 		public ref readonly GeneratorInitializationContext InitializationContext => ref _initContext;
+
+		/// <summary>
+		/// Event invoked when the <see cref="Execute"/> method is called.
+		/// </summary>
+		public event GeneratorExecute? OnExecute;
+
+		/// <summary>
+		/// Event invoked when the <see cref="Initialize"/> method is called.
+		/// </summary>
+		public event GeneratorInitialize? OnInitialize;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SourceGeneratorProxy"/> class.

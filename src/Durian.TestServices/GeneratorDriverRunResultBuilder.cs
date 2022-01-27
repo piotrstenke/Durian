@@ -13,6 +13,7 @@ namespace Durian.TestServices
 	public sealed class GeneratorDriverRunResultBuilder
 	{
 		private readonly List<GeneratorRunResultBuilder> _childBuilders;
+
 		private readonly List<GeneratorRunResult> _results;
 
 		/// <summary>

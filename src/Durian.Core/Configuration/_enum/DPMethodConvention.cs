@@ -20,7 +20,9 @@ namespace Durian.Configuration
 		/// <summary>
 		/// Copies contents of the method.
 		/// </summary>
+#pragma warning disable CA1069 // Enums values should not be duplicated
 		Call = 0,
+#pragma warning restore CA1069 // Enums values should not be duplicated
 
 		/// <summary>
 		/// Call the method.

@@ -14,16 +14,13 @@ using static Durian.Analysis.DurianDiagnostics;
 
 namespace Durian.Analysis
 {
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-
 	/// <summary>
 	/// Analyzes if the Durian types used by the user are properly imported.
 	/// </summary>
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 #if !MAIN_PACKAGE
-
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
-
 	public sealed class TypeImportAnalyzer : DurianAnalyzer<CompilationWithImportedTypes>
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{

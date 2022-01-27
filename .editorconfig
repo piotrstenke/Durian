@@ -236,3 +236,6 @@ dotnet_diagnostic.IDE0078.severity											= none
 # RCS1124: Inline local variable.
 dotnet_diagnostic.RCS1124.severity											= none
 dotnet_diagnostic.IDE0073.severity=warning
+
+# IDE0150: Prefer 'null' check over type check
+csharp_style_prefer_null_check_over_type_check = false

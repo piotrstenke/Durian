@@ -60,10 +60,10 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		void ICachedAnalyzerInfo<IDefaultParamTarget>.Register(
-			IDurianAnalysisContext context,
-			CSharpCompilation compilation,
-			ConcurrentDictionary<FileLinePositionSpan, IDefaultParamTarget> cached
-		)
+					IDurianAnalysisContext context,
+					CSharpCompilation compilation,
+					ConcurrentDictionary<FileLinePositionSpan, IDefaultParamTarget> cached
+				)
 		{
 			DefaultParamCompilationData data = new(compilation);
 

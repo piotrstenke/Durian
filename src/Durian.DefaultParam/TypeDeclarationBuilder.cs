@@ -19,11 +19,17 @@ namespace Durian.Analysis.DefaultParam
 	public sealed class TypeDeclarationBuilder : IDefaultParamDeclarationBuilder
 	{
 		private readonly List<(ConstructorDeclarationSyntax syntax, ParameterGeneration[] parameters)> _currentConstructors = new(16);
+
 		private readonly Queue<IdentifierNameSyntax> _inheritTypeArguments = new(16);
+
 		private GenericNameSyntax? _inheritedType;
+
 		private HashSet<int>? _newModifierIndexes;
+
 		private int _numNonDefaultParam;
+
 		private int _numOriginalConstraints;
+
 		private int _numOriginalTypeParameters;
 
 		/// <summary>
@@ -42,9 +48,7 @@ namespace Durian.Analysis.DefaultParam
 		public SemanticModel SemanticModel { get; private set; }
 
 		CSharpSyntaxNode IDefaultParamDeclarationBuilder.CurrentNode => CurrentDeclaration;
-
 		CSharpSyntaxNode IDefaultParamDeclarationBuilder.OriginalNode => OriginalDeclaration;
-
 		bool IDefaultParamDeclarationBuilder.VisitDeclarationBody => true;
 
 		/// <summary>

@@ -14,16 +14,31 @@ namespace Durian.Analysis.DefaultParam
 	public class DefaultParamRewriter
 	{
 		private readonly TypeParameterIdentifierCollector _collector;
+
 		private readonly List<TypeParameterConstraintClauseSyntax> _includedConstraints;
+
 		private readonly List<ITypeParameterSymbol> _includedConstraintSymbols;
+
 		private readonly TypeParameterReplacer _replacer;
+
 		private int _numConstraints;
+
 		private int _numParameters;
+
+		/// <summary>
+		/// <see cref="OriginalNode"/> after modification.
+		/// </summary>
+		public CSharpSyntaxNode CurrentNode => DeclarationBuilder.CurrentNode;
 
 		/// <summary>
 		/// <see cref="IDefaultParamDeclarationBuilder"/> that is used to generate new <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
 		public IDefaultParamDeclarationBuilder DeclarationBuilder { get; private set; }
+
+		/// <summary>
+		/// Original <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
+		public CSharpSyntaxNode OriginalNode => DeclarationBuilder.OriginalNode;
 
 		/// <summary>
 		/// <see cref="DefaultParamCompilationData"/> the <see cref="OriginalNode"/> is to be found in.
@@ -33,16 +48,6 @@ namespace Durian.Analysis.DefaultParam
 			get => _collector.ParentCompilation;
 			set => _collector.ParentCompilation = value;
 		}
-
-		/// <summary>
-		/// <see cref="OriginalNode"/> after modification.
-		/// </summary>
-		public CSharpSyntaxNode CurrentNode => DeclarationBuilder.CurrentNode;
-
-		/// <summary>
-		/// Original <see cref="CSharpSyntaxNode"/>.
-		/// </summary>
-		public CSharpSyntaxNode OriginalNode => DeclarationBuilder.OriginalNode;
 
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="OriginalNode"/>.

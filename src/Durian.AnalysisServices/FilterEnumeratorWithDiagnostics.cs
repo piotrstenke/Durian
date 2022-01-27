@@ -21,6 +21,7 @@ namespace Durian.Analysis
 	public struct FilterEnumeratorWithDiagnostics<T> : IEnumerator<T> where T : IMemberData
 	{
 		internal readonly CSharpSyntaxNode[] _nodes;
+
 		internal int _index;
 
 		/// <summary>
@@ -49,7 +50,6 @@ namespace Durian.Analysis
 		public readonly INodeValidatorWithDiagnostics<T> Validator { get; }
 
 		readonly T IEnumerator<T>.Current => Current!;
-
 		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>

@@ -118,8 +118,6 @@ namespace Durian.Info
 				DurianPackage.CoreAnalyzer => PackageRepository.CoreAnalyzer,
 				DurianPackage.DefaultParam => PackageRepository.DefaultParam,
 				DurianPackage.TestServices => PackageRepository.TestServices,
-
-				//DurianPackage.EnumServices => PackageRepository.EnumServices,
 				DurianPackage.Info => PackageRepository.Info,
 				DurianPackage.FriendClass => PackageRepository.FriendClass,
 				DurianPackage.InterfaceTargets => PackageRepository.InterfaceTargets,

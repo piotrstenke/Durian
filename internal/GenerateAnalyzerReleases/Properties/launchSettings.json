@@ -2,7 +2,7 @@
   "profiles": {
     "GenerateAnalyzerReleases": {
       "commandName": "Project",
-      "commandLineArgs": "\"$(SolutionDir)src/Durian.EnumServices/_Configuration.cs\" \"$(SolutionDir)src/Durian.FriendClass/_Configuration.cs\" \"$(SolutionDir)src/Durian.InterfaceTargets/_Configuration.cs\""
+      "commandLineArgs": "\"$(SolutionDir)src/Durian.FriendClass/_Configuration.cs\" \"$(SolutionDir)src/Durian.InterfaceTargets/_Configuration.cs\""
     }
   }
 }

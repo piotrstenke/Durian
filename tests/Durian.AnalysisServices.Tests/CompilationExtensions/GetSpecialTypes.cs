@@ -52,6 +52,7 @@ namespace Durian.Analysis.Tests.CompilationExtensions
 		}
 
 		private const int _numSpecialTypes = 45;
+
 		private readonly Fixture _fixture;
 
 		public GetSpecialTypes(Fixture fixture)

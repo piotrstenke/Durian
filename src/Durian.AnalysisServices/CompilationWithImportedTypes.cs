@@ -35,8 +35,11 @@ namespace Durian.Analysis
 		}
 
 		private readonly TypeIdentity[] _allTypes;
+
 		private readonly string _enableModuleAttributeName = typeof(EnableModuleAttribute).ToString();
+
 		private readonly List<Entry> _entries;
+
 		private DurianModule[] _enabledModules;
 
 		/// <summary>

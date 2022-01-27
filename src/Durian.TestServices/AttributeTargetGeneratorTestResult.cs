@@ -23,6 +23,15 @@ namespace Durian.TestServices
 		public readonly GeneratedSourceResult Attribute { get; }
 
 		/// <inheritdoc/>
+		public readonly ImmutableArray<Diagnostic> Diagnostics => _runResult.Diagnostics;
+
+		/// <inheritdoc/>
+		public readonly Exception? Exception => _runResult.Exception;
+
+		/// <inheritdoc/>
+		public readonly ISourceGenerator Generator => _runResult.Generator;
+
+		/// <inheritdoc/>
 		public readonly CSharpCompilation InputCompilation { get; }
 
 		/// <inheritdoc/>
@@ -35,15 +44,6 @@ namespace Durian.TestServices
 		/// A <see cref="GeneratedSourceResult"/> that represents the generated <see cref="CSharpSyntaxTree"/> that uses the generated <see cref="Attribute"/>.
 		/// </summary>
 		public readonly GeneratedSourceResult Source { get; }
-
-		/// <inheritdoc/>
-		public readonly ImmutableArray<Diagnostic> Diagnostics => _runResult.Diagnostics;
-
-		/// <inheritdoc/>
-		public readonly Exception? Exception => _runResult.Exception;
-
-		/// <inheritdoc/>
-		public readonly ISourceGenerator Generator => _runResult.Generator;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AttributeTargetGeneratorTestResult"/> struct.

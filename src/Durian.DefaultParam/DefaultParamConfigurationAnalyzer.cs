@@ -14,16 +14,13 @@ using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Analysis.DefaultParam
 {
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-
 	/// <summary>
 	/// Analyzes the usage of the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c>.
 	/// </summary>
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 #if !MAIN_PACKAGE
-
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
-
 	public sealed class DefaultParamConfigurationAnalyzer : DurianAnalyzer<DefaultParamCompilationData>
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{

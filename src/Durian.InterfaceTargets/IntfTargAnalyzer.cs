@@ -11,16 +11,13 @@ using static Durian.Analysis.InterfaceTargets.IntfTargDiagnostics;
 
 namespace Durian.Analysis.InterfaceTargets
 {
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-
 	/// <summary>
 	/// Analyzes types that are marked with the <c>Durian.InterfaceTargetsAttribute</c>.
 	/// </summary>
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 #if !MAIN_PACKAGE
-
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
-
 	public class IntfTargAnalyzer : DurianAnalyzer
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Durian.Analysis;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
@@ -20,6 +19,7 @@ namespace Durian.TestServices
 	public sealed class TestableCompilationData : ICompilationData
 	{
 		private CSharpCompilation? _currentCompilation;
+
 		private CSharpCompilation? _originalCompilation;
 
 		/// <summary>

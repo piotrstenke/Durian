@@ -20,7 +20,9 @@ namespace Durian.Analysis.Cache
 	public struct CachedFilterEnumerator<T> : IEnumerator<T> where T : IMemberData
 	{
 		internal readonly CachedData<T> _cache;
+
 		private readonly CSharpSyntaxNode[] _nodes;
+
 		private int _index;
 
 		/// <inheritdoc cref="FilterEnumerator{T}.Compilation"/>
@@ -38,7 +40,6 @@ namespace Durian.Analysis.Cache
 		public readonly INodeValidator<T> Validator { get; }
 
 		readonly T IEnumerator<T>.Current => Current!;
-
 		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>
@@ -63,6 +64,8 @@ namespace Durian.Analysis.Cache
 		{
 		}
 
+#pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
+
 		internal CachedFilterEnumerator(CSharpSyntaxNode[] nodes, ICompilationData compilation, INodeValidator<T> validator, in CachedData<T> cache, int index)
 		{
 			Validator = validator;
@@ -72,8 +75,6 @@ namespace Durian.Analysis.Cache
 			Current = default;
 			_cache = cache;
 		}
-
-#pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
 
 		/// <inheritdoc/>
 		public static explicit operator CachedFilterEnumerator<T>(in FilterEnumerator<T> a)
@@ -132,5 +133,8 @@ namespace Durian.Analysis.Cache
 		{
 			// Do nothing.
 		}
+
+#pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
+#pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 	}
 }

@@ -18,6 +18,7 @@ namespace Durian.Analysis.CodeFixes
 	public sealed class CodeFixExecutionContext<T> where T : CSharpSyntaxNode
 	{
 		private readonly SyntaxAnnotation _annotation;
+
 		private SemanticModel? _semanticModel;
 
 		/// <summary>
@@ -56,12 +57,12 @@ namespace Durian.Analysis.CodeFixes
 		public SemanticModel SemanticModel => _semanticModel ??= Compilation.GetSemanticModel(Root.SyntaxTree);
 
 		private CodeFixExecutionContext(
-			Diagnostic diagnostic,
-			Document document,
-			CompilationUnitSyntax root,
-			T node,
-			CSharpCompilation compilation,
-			CancellationToken cancellationToken)
+					Diagnostic diagnostic,
+					Document document,
+					CompilationUnitSyntax root,
+					T node,
+					CSharpCompilation compilation,
+					CancellationToken cancellationToken)
 		{
 			_annotation = new();
 			Diagnostic = diagnostic;

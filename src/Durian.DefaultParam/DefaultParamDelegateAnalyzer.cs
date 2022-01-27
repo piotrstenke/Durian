@@ -17,12 +17,10 @@ namespace Durian.Analysis.DefaultParam
 	/// <summary>
 	/// Analyzes delegates with type parameters marked by the <c>Durian.DefaultParamAttribute</c>.
 	/// </summary>
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 #if !MAIN_PACKAGE
-
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
-
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 	public sealed partial class DefaultParamDelegateAnalyzer : DefaultParamAnalyzer
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{

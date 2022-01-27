@@ -18,8 +18,15 @@ namespace Durian.Analysis
 	public class FilterGroup<TFilter> : ICollection<TFilter> where TFilter : notnull, ISyntaxFilter
 	{
 		internal List<FilterContainer<TFilter>> _containers;
+
 		private readonly List<TFilter> _filters;
+
 		private string? _name;
+
+		/// <summary>
+		/// Number of <typeparamref name="TFilter"/>s in this <see cref="FilterGroup{TFilter}"/>.
+		/// </summary>
+		public int Count => _filters.Count;
 
 		/// <summary>
 		/// Determines whether this <see cref="FilterGroup{TFilter}"/> has a name.
@@ -58,11 +65,6 @@ namespace Durian.Analysis
 				_name = value;
 			}
 		}
-
-		/// <summary>
-		/// Number of <typeparamref name="TFilter"/>s in this <see cref="FilterGroup{TFilter}"/>.
-		/// </summary>
-		public int Count => _filters.Count;
 
 		bool ICollection<TFilter>.IsReadOnly => IsSealed;
 

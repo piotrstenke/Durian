@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Metadata;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;

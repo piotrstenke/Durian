@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Durian.Generator;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
-using Durian.Generator;
 
 namespace Durian.Analysis.Extensions
 {

@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using System.Collections.Concurrent;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System;
 
 namespace Durian.Analysis.Cache
 {
@@ -22,8 +22,8 @@ namespace Durian.Analysis.Cache
 		}
 
 		/// <inheritdoc/>
-		[Obsolete("This method shouldn't be used directly - use Register(IDurianAnalysisContext, ConcurrentDictionary<FileLinePositionSpan, TTarget>) instead.")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		[Obsolete("This method shouldn't be used directly - use Register(IDurianAnalysisContext, ConcurrentDictionary<FileLinePositionSpan, TTarget>) instead.")]
 		public sealed override void Register(IDurianAnalysisContext context)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 		{

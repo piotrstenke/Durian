@@ -17,14 +17,23 @@ namespace Durian.Analysis.DefaultParam
 	public sealed class MethodDeclarationBuilder : IDefaultParamDeclarationBuilder
 	{
 		private readonly Queue<IdentifierNameSyntax> _callTypeArguments;
+
 		private bool _applyReturnSyntax;
+
 		private ArgumentListSyntax? _callArguments;
+
 		private GenericNameSyntax? _callMethodSyntax;
+
 		private int _indentLevel;
+
 		private HashSet<int>? _newModifierIndexes;
+
 		private int _numNonDefaultParam;
+
 		private int _numOriginalConstraints;
+
 		private int _numOriginalTypeParameters;
+
 		private IMethodSymbol _symbol;
 
 		/// <summary>
@@ -43,9 +52,7 @@ namespace Durian.Analysis.DefaultParam
 		public SemanticModel SemanticModel { get; private set; }
 
 		CSharpSyntaxNode IDefaultParamDeclarationBuilder.CurrentNode => CurrentDeclaration;
-
 		CSharpSyntaxNode IDefaultParamDeclarationBuilder.OriginalNode => OriginalDeclaration;
-
 		bool IDefaultParamDeclarationBuilder.VisitDeclarationBody => _callMethodSyntax is null;
 
 		/// <summary>

@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using System;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
@@ -14,15 +12,12 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Durian.Analysis.DefaultParam
 {
 #pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-
 	/// <summary>
 	/// Analyzes the usage of the <see cref="DefaultParamScopedConfigurationAnalyzer"/>
 	/// </summary>
 #if !MAIN_PACKAGE
-
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
-
 	public sealed class DefaultParamScopedConfigurationAnalyzer : DurianAnalyzer<DefaultParamCompilationData>
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{

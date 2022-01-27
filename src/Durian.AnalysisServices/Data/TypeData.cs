@@ -14,15 +14,16 @@ namespace Durian.Analysis.Data
 	public class TypeData : MemberData, ITypeData
 	{
 		private SyntaxToken[]? _modifiers;
-		private TypeDeclarationSyntax[]? _partialDeclarations;
 
-		/// <inheritdoc/>
-		public SyntaxToken[] Modifiers => _modifiers ??= GetPartialDeclarations().GetModifiers().ToArray();
+		private TypeDeclarationSyntax[]? _partialDeclarations;
 
 		/// <summary>
 		/// Target <see cref="BaseTypeDeclarationSyntax"/>.
 		/// </summary>
 		public new BaseTypeDeclarationSyntax Declaration => (base.Declaration as BaseTypeDeclarationSyntax)!;
+
+		/// <inheritdoc/>
+		public SyntaxToken[] Modifiers => _modifiers ??= GetPartialDeclarations().GetModifiers().ToArray();
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.

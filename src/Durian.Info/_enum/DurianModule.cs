@@ -31,11 +31,6 @@ namespace Durian.Info
 		/// <summary>
 		/// Represents the <c>Durian.InterfaceTargets</c> module.
 		/// </summary>
-		InterfaceTargets,
-
-		/// <summary>
-		/// Represents the <c>Durian.EnumServices</c> module.
-		/// </summary>
-		EnumServices
+		InterfaceTargets
 	}
 }

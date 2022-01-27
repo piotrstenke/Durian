@@ -22,6 +22,7 @@ namespace Durian.Analysis.DefaultParam
 	public struct DefaultParamFilterEnumerator<T> : IEnumerator<T> where T : class, IDefaultParamTarget
 	{
 		internal readonly CSharpSyntaxNode[] _nodes;
+
 		internal int _index;
 
 		/// <summary>
@@ -53,15 +54,14 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		public readonly IDefaultParamFilter<T> Filter { get; }
 
-		readonly T IEnumerator<T>.Current => Current!;
-
-		readonly object IEnumerator.Current => Current!;
-
 		/// <summary>
 		/// <see cref="IHintNameProvider"/> that creates hint names for the <see
 		/// cref="CSharpSyntaxNode"/> s.
 		/// </summary>
 		public readonly IHintNameProvider HintNameProvider => Filter.HintNameProvider;
+
+		readonly T IEnumerator<T>.Current => Current!;
+		readonly object IEnumerator.Current => Current!;
 
 		/// <inheritdoc cref="DefaultParamFilterEnumerator(IDefaultParamFilter{T}, INodeDiagnosticReceiver)"/>
 		public DefaultParamFilterEnumerator(IDefaultParamFilter<T> filter) : this(filter, filter.Generator.LogReceiver, default)

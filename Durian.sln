@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.6.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}"
 	ProjectSection(SolutionItems) = preProject
@@ -157,11 +157,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FriendClass", "FriendClass"
 		docs\FriendClass\DUR0313.md = docs\FriendClass\DUR0313.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "experimental", "experimental", "{847D11D8-E9AF-46A4-B80B-AEDC49E04F69}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.EnumServices", "experimental\Durian.EnumServices\Durian.EnumServices.csproj", "{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Durian.Info", "src\Durian.Info\Durian.Info.csproj", "{4DBE4E9E-F2CE-4C01-B723-3DAA1F0EC77D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Info", "src\Durian.Info\Durian.Info.csproj", "{4DBE4E9E-F2CE-4C01-B723-3DAA1F0EC77D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -536,24 +532,6 @@ Global
 		{498E3E94-34E3-489D-B1E5-14ECB2A568C0}.Release|x64.Build.0 = Release|Any CPU
 		{498E3E94-34E3-489D-B1E5-14ECB2A568C0}.Release|x86.ActiveCfg = Release|Any CPU
 		{498E3E94-34E3-489D-B1E5-14ECB2A568C0}.Release|x86.Build.0 = Release|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Debug|x64.Build.0 = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Debug|x86.Build.0 = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Main Package|Any CPU.ActiveCfg = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Main Package|Any CPU.Build.0 = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Main Package|x64.ActiveCfg = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Main Package|x64.Build.0 = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Main Package|x86.ActiveCfg = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Main Package|x86.Build.0 = Debug|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Release|x64.ActiveCfg = Release|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Release|x64.Build.0 = Release|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Release|x86.ActiveCfg = Release|Any CPU
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7}.Release|x86.Build.0 = Release|Any CPU
 		{4DBE4E9E-F2CE-4C01-B723-3DAA1F0EC77D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4DBE4E9E-F2CE-4C01-B723-3DAA1F0EC77D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DBE4E9E-F2CE-4C01-B723-3DAA1F0EC77D}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -603,7 +581,6 @@ Global
 		{2FFC93C9-1D87-4366-AC28-B26D41C56620} = {F6EC89D8-4343-42A1-B6D6-B0022D3004A0}
 		{498E3E94-34E3-489D-B1E5-14ECB2A568C0} = {F6EC89D8-4343-42A1-B6D6-B0022D3004A0}
 		{F883B125-35E9-4047-9FFD-6D643D48CF8A} = {BA3DE2E2-7B32-4612-8219-24FBCF850813}
-		{D8EFECF7-3AB5-430A-AF56-39F1ADA7AEB7} = {847D11D8-E9AF-46A4-B80B-AEDC49E04F69}
 		{4DBE4E9E-F2CE-4C01-B723-3DAA1F0EC77D} = {74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

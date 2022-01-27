@@ -14,8 +14,11 @@ namespace Durian.Info
 	public sealed partial class ModuleIdentity : IDurianIdentity, IEquatable<ModuleIdentity>, IDisposable
 	{
 		private ImmutableArray<DiagnosticData> _diagnostics;
+
 		private bool _disposed;
+
 		private ImmutableArray<PackageReference> _packages;
+
 		private ImmutableArray<TypeIdentity> _types;
 
 		/// <summary>
@@ -54,13 +57,13 @@ namespace Durian.Info
 		public ImmutableArray<TypeIdentity> Types => _types;
 
 		internal ModuleIdentity(
-			DurianModule module,
-			int id,
-			DurianPackage[]? packages,
-			string? docsPath,
-			DiagnosticData[]? diagnostics,
-			TypeIdentity[]? types
-		)
+					DurianModule module,
+					int id,
+					DurianPackage[]? packages,
+					string? docsPath,
+					DiagnosticData[]? diagnostics,
+					TypeIdentity[]? types
+				)
 		{
 			Module = module;
 			AnalysisId = (IdSection)id;
@@ -115,13 +118,13 @@ namespace Durian.Info
 		}
 
 		private ModuleIdentity(
-			DurianModule module,
-			in IdSection id,
-			ImmutableArray<PackageReference> packages,
-			string docsPath,
-			ImmutableArray<DiagnosticData> diagnostics,
-			ImmutableArray<TypeIdentity> types
-		)
+					DurianModule module,
+					in IdSection id,
+					ImmutableArray<PackageReference> packages,
+					string docsPath,
+					ImmutableArray<DiagnosticData> diagnostics,
+					ImmutableArray<TypeIdentity> types
+				)
 		{
 			Module = module;
 			AnalysisId = id;

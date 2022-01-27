@@ -20,17 +20,18 @@ namespace Durian.Info
 		// Both lists must have the same length.
 
 		private readonly List<DurianPackage> _enums;
-		private readonly List<PackageReference?> _references;
 
-		/// <summary>
-		/// Determines whether the current <see cref="PackageContainer"/> does not contain any Durian packages.
-		/// </summary>
-		public bool IsEmpty => Count == 0;
+		private readonly List<PackageReference?> _references;
 
 		/// <summary>
 		/// Number of referenced Durian packages.
 		/// </summary>
 		public int Count => _references.Count;
+
+		/// <summary>
+		/// Determines whether the current <see cref="PackageContainer"/> does not contain any Durian packages.
+		/// </summary>
+		public bool IsEmpty => Count == 0;
 
 		bool ICollection<PackageReference>.IsReadOnly => false;
 

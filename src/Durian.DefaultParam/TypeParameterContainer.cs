@@ -32,6 +32,11 @@ namespace Durian.Analysis.DefaultParam
 		public readonly bool HasDefaultParams { get; }
 
 		/// <summary>
+		/// Returns a number of all <see cref="TypeParameterData"/>s.
+		/// </summary>
+		public readonly int Length => _parameters.Length;
+
+		/// <summary>
 		/// Returns a number of <see cref="TypeParameterData"/>s with a valid <c>Durian.DefaultParamAttribute</c>.
 		/// </summary>
 		public readonly int NumDefaultParam { get; }
@@ -40,11 +45,6 @@ namespace Durian.Analysis.DefaultParam
 		/// Returns a number of <see cref="TypeParameterData"/>s that aren't DefaultParam.
 		/// </summary>
 		public readonly int NumNonDefaultParam => _parameters.Length - NumDefaultParam;
-
-		/// <summary>
-		/// Returns a number of all <see cref="TypeParameterData"/>s.
-		/// </summary>
-		public readonly int Length => _parameters.Length;
 
 		/// <summary>
 		/// Returns a <see cref="TypeParameterData"/> at the specified <paramref name="index"/>.

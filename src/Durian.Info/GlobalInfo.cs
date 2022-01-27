@@ -11,7 +11,7 @@ namespace Durian.Info
 		/// <summary>
 		/// Specifies the maximal valid value of the <see cref="DurianModule"/> enum.
 		/// </summary>
-		public const DurianModule ModuleMax = DurianModule.EnumServices;
+		public const DurianModule ModuleMax = DurianModule.InterfaceTargets;
 
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianModule"/> enum.

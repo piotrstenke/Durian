@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 
 using Durian.Analysis;
+using Durian.Analysis.InterfaceTargets;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Durian.Analysis.InterfaceTargets;
 
 namespace Durian.Manager
 {

@@ -21,6 +21,7 @@ namespace Durian.Analysis.Logging
 	public struct LoggableFilterEnumerator<T> : IEnumerator<T> where T : IMemberData
 	{
 		internal readonly CSharpSyntaxNode[] _nodes;
+
 		internal int _index;
 
 		/// <summary>
@@ -54,7 +55,6 @@ namespace Durian.Analysis.Logging
 		public readonly INodeValidatorWithDiagnostics<T> Validator { get; }
 
 		readonly T IEnumerator<T>.Current => Current!;
-
 		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>

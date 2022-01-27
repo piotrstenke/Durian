@@ -1,30 +1,26 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis;
-using Durian.Analysis.Cache;
-using System.Collections.Immutable;
-using Durian.Analysis.Extensions;
-using Microsoft.CodeAnalysis.Diagnostics;
-using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.InteropServices;
+using Durian.Analysis.Extensions;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
+using Microsoft.CodeAnalysis.Diagnostics;
+using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 
 namespace Durian.Analysis.FriendClass
 {
 	/// <summary>
 	/// Analyzes classes marked by the <c>Durian.FriendClassAttribute</c>.
 	/// </summary>
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 #if !MAIN_PACKAGE
-
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 	public class FriendClassDeclarationAnalyzer : DurianAnalyzer<FriendClassCompilationData>
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{

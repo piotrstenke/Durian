@@ -33,6 +33,11 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public Location Location => _location ??= Declaration.GetLocation();
 
+		/// <summary>
+		/// Name of the member.
+		/// </summary>
+		public string Name => Symbol.Name;
+
 		/// <inheritdoc/>
 		public ICompilationData ParentCompilation { get; }
 
@@ -41,11 +46,6 @@ namespace Durian.Analysis.Data
 
 		/// <inheritdoc/>
 		public ISymbol Symbol { get; }
-
-		/// <summary>
-		/// Name of the member.
-		/// </summary>
-		public string Name => Symbol.Name;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemberData"/> class.

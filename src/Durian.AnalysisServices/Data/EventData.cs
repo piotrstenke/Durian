@@ -31,14 +31,14 @@ namespace Durian.Analysis.Data
 		public int Index { get; }
 
 		/// <summary>
-		/// <see cref="VariableDeclaratorSyntax"/> used to declare this event field. Equivalent to using <c>AsField.Declaration.Variables[Index]</c>.
-		/// </summary>
-		public VariableDeclaratorSyntax? Variable { get; }
-
-		/// <summary>
 		/// <see cref="IEventSymbol"/> associated with the <see cref="EventFieldDeclarationSyntax"/> or <see cref="EventDeclarationSyntax"/>.
 		/// </summary>
 		public new IEventSymbol Symbol => (base.Symbol as IEventSymbol)!;
+
+		/// <summary>
+		/// <see cref="VariableDeclaratorSyntax"/> used to declare this event field. Equivalent to using <c>AsField.Declaration.Variables[Index]</c>.
+		/// </summary>
+		public VariableDeclaratorSyntax? Variable { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EventData"/> class.
@@ -141,34 +141,34 @@ namespace Durian.Analysis.Data
 		}
 
 		private EventData(
-			EventFieldDeclarationSyntax declaration,
-			ICompilationData compilation,
-			IEventSymbol symbol,
-			SemanticModel semanticModel,
-			VariableDeclaratorSyntax variable,
-			int index
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel
-		)
+					EventFieldDeclarationSyntax declaration,
+					ICompilationData compilation,
+					IEventSymbol symbol,
+					SemanticModel semanticModel,
+					VariableDeclaratorSyntax variable,
+					int index
+				) : base(
+					declaration,
+					compilation,
+					symbol,
+					semanticModel
+				)
 		{
 			Variable = variable;
 			Index = index;
 		}
 
 		private EventData(
-			EventFieldDeclarationSyntax declaration,
-			ICompilationData compilation,
-			SemanticModel semanticModel,
-			VariableDeclaratorSyntax variable
-		) : base(
-			declaration,
-			compilation,
-			(semanticModel.GetDeclaredSymbol(variable) as IEventSymbol)!,
-			semanticModel
-		)
+					EventFieldDeclarationSyntax declaration,
+					ICompilationData compilation,
+					SemanticModel semanticModel,
+					VariableDeclaratorSyntax variable
+				) : base(
+					declaration,
+					compilation,
+					(semanticModel.GetDeclaredSymbol(variable) as IEventSymbol)!,
+					semanticModel
+				)
 		{
 			Variable = variable;
 		}

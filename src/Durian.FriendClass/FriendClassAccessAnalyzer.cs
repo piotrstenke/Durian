@@ -4,28 +4,24 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Durian.Analysis.Extensions;
-using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Diagnostics;
 using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Xml.Linq;
 
 namespace Durian.Analysis.FriendClass
 {
 	/// <summary>
 	/// Analyzes expressions that attempt to access members of a <see cref="Type"/> with at least one <c>Durian.FriendClassAttribute</c> specified.
 	/// </summary>
+#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 #if !MAIN_PACKAGE
-
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 #endif
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-
 	public class FriendClassAccessAnalyzer : DurianAnalyzer<FriendClassCompilationData>
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
