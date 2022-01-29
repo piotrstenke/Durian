@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using System.Threading.Tasks;
-using Durian.Configuration;
 using Durian.TestServices;
 using Xunit;
 using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
@@ -17,7 +16,7 @@ namespace Durian.Analysis.FriendClass.Tests
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{nameof(FriendClassAttribute)}(typeof(Other), {nameof(FriendClassAttribute.AllowsFriendChildren)} = false)]
+[{FriendClassAttributeProvider.TypeName}(typeof(Other), {FriendClassAttributeProvider.AllowsFriendChildren} = false)]
 class Test
 {{
 	internal static string Name {{ get; }}
@@ -45,8 +44,8 @@ class Child : Other
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsChildren)} = false)]
-[{nameof(FriendClassAttribute)}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowsChildren} = false)]
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
 class Test
 {{
 	internal static string Name {{ get; }}
@@ -73,7 +72,7 @@ class Child : Test
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{nameof(FriendClassAttribute)}(typeof(Child))]
+[{FriendClassAttributeProvider.TypeName}(typeof(Child))]
 class Test
 {{
 	internal static string Name {{ get; }}
@@ -104,7 +103,7 @@ class Other
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{nameof(FriendClassAttribute)}(typeof(Other), {nameof(FriendClassAttribute.AllowsFriendChildren)} = true)]
+[{FriendClassAttributeProvider.TypeName}(typeof(Other), {FriendClassAttributeProvider.AllowsFriendChildren} = true)]
 class Test
 {{
 	internal static string Name {{ get; }}
@@ -136,8 +135,8 @@ class Child : Other
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(FriendClassConfigurationAttribute)}({nameof(FriendClassConfigurationAttribute.AllowsChildren)} = true)]
-[{nameof(FriendClassAttribute)}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowsChildren} = true)]
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
 class Test
 {{
 	internal static string Name {{ get; }}
@@ -168,8 +167,8 @@ class Child : Test
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{nameof(FriendClassAttribute)}(typeof(Other))]
-[{nameof(FriendClassAttribute)}(typeof(Another))]
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassAttributeProvider.TypeName}(typeof(Another))]
 class Test
 {{
 	internal static string Name {{ get; }}
@@ -200,7 +199,7 @@ class Another
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{nameof(FriendClassAttribute)}(typeof(Child))]
+[{FriendClassAttributeProvider.TypeName}(typeof(Child))]
 class Test
 {{
 	internal static string Name {{ get; }}
@@ -211,7 +210,7 @@ class Test
 	}}
 }}
 
-[{nameof(FriendClassAttribute)}(typeof(Test))]
+[{FriendClassAttributeProvider.TypeName}(typeof(Test))]
 class Child
 {{
 	internal static string Name {{ get; }}
@@ -231,7 +230,7 @@ class Child
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{nameof(FriendClassAttribute)}(typeof(Other))]
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
 class Test
 {{
 	internal static string Name {{ get; }}
@@ -254,7 +253,7 @@ class Other
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{nameof(FriendClassAttribute)}(typeof(Other))]
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
 class Test
 {{
 	internal static string Name {{ get; }}

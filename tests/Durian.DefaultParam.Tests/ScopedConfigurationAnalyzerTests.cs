@@ -4,7 +4,6 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using Durian.Configuration;
 using Durian.TestServices;
 using Microsoft.CodeAnalysis;
 using Xunit;
@@ -21,10 +20,10 @@ namespace Durian.Analysis.DefaultParam.Tests
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}]
 public partial class Test
 {{
-	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	private class Child<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -39,10 +38,10 @@ public partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""@int"")]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TargetNamespace} = ""@int"")]
 public partial class Test
 {{
-	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	private class Child<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -57,10 +56,10 @@ public partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = null)]
-public partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TargetNamespace} = null)]
+public partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
-	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	private class Child<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -75,10 +74,10 @@ public partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Durian"")]
-public partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TargetNamespace} = ""Durian"")]
+public partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
-	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	private class Child<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -93,10 +92,10 @@ public partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Durian.Core"")]
-public partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TargetNamespace} = ""Durian.Core"")]
+public partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
-	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	private class Child<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -111,7 +110,7 @@ public partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}]
 public class Test
 {{
 }}
@@ -127,10 +126,10 @@ public class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Durian.Generator"")]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TargetNamespace} = ""Durian.Generator"")]
 public partial class Test
 {{
-	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	private class Child<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -146,10 +145,10 @@ public partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""int"")]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TargetNamespace} = ""int"")]
 public partial class Test
 {{
-	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	private class Child<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -165,10 +164,10 @@ public partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""15412"")]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TargetNamespace} = ""15412"")]
 public partial class Test
 {{
-	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	private class Child<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -184,10 +183,10 @@ public partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""   "")]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TargetNamespace} = ""   "")]
 public partial class Test
 {{
-	private class Child<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	private class Child<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}

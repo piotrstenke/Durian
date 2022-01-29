@@ -1,0 +1,10 @@
+{
+  "package": "Main",
+  "version": "2.0.0",
+  "modules": [
+    "Core"
+  ],
+  "type": [
+    "Unspecified"
+  ]
+}

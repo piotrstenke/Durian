@@ -10,27 +10,27 @@ namespace Durian.Analysis
 	public abstract class DurianGeneratorWithBuilder<TCompilationData> : DurianGeneratorWithBuilder<TCompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
 		where TCompilationData : class, ICompilationDataWithSymbols
 	{
-		/// <inheritdoc cref="DurianGeneratorWithBuilder{TCompilationData}.DurianGeneratorWithBuilder(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
+		/// <inheritdoc cref="DurianGeneratorWithBuilder{TCompilationData}.DurianGeneratorWithBuilder(in ConstructionContext, IHintNameProvider?)"/>
 		protected DurianGeneratorWithBuilder()
 		{
 		}
 
-		/// <inheritdoc cref="DurianGeneratorWithBuilder{TCompilationData}.DurianGeneratorWithBuilder(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
-		protected DurianGeneratorWithBuilder(in LoggableGeneratorConstructionContext context) : base(in context)
+		/// <inheritdoc cref="DurianGeneratorWithBuilder{TCompilationData}.DurianGeneratorWithBuilder(in ConstructionContext, IHintNameProvider?)"/>
+		protected DurianGeneratorWithBuilder(in ConstructionContext context) : base(in context)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGeneratorWithBuilder{TCompilationData}"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="LoggableSourceGenerator"/> is initialized.</param>
+		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		protected DurianGeneratorWithBuilder(in LoggableGeneratorConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
+		protected DurianGeneratorWithBuilder(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
 		{
 		}
 
-		/// <inheritdoc cref="DurianGeneratorWithBuilder(GeneratorLoggingConfiguration?, IHintNameProvider?)"/>
-		protected DurianGeneratorWithBuilder(GeneratorLoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		/// <inheritdoc cref="DurianGeneratorWithBuilder(LoggingConfiguration?, IHintNameProvider?)"/>
+		protected DurianGeneratorWithBuilder(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
 
@@ -39,7 +39,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		protected DurianGeneratorWithBuilder(GeneratorLoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		protected DurianGeneratorWithBuilder(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
 		{
 		}
 	}

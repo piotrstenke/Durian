@@ -16,7 +16,7 @@ namespace Durian.Analysis.DefaultParam.Tests.Methods
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(string value)
 	{{
 	}}
 
@@ -36,7 +36,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 
@@ -56,7 +56,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 	{{
 	}}
 
@@ -76,7 +76,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 	{{
 	}}
 
@@ -97,7 +97,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(U value)
+	void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]U>(U value)
 	{{
 	}}
 
@@ -117,7 +117,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(T value)
+	void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]U>(T value)
 	{{
 	}}
 
@@ -137,14 +137,14 @@ partial class Test
 
 class Parent
 {{
-	public virtual void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
+	public virtual void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(string value)
 	{{
 	}}
 }}
 
 partial class Test : Parent
 {{
-	public override void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
+	public override void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(string value)
 	{{
 	}}
 }}
@@ -160,7 +160,7 @@ partial class Test : Parent
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(string value)
 	{{
 	}}
 }}
@@ -183,7 +183,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	public new void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
+	public new void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(string value)
 	{{
 	}}
 }}

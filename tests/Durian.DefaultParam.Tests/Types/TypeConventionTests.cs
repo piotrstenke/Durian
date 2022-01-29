@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Configuration;
 using Durian.TestServices;
 using Xunit;
 
@@ -16,11 +15,11 @@ namespace Durian.Analysis.DefaultParam.Tests.Types
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
 partial class Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)})]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Copy})]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 		T value = default;
 	}}
@@ -48,11 +47,11 @@ partial class Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
 partial class Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)})]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Copy})]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 		T value = default;
 	}}
@@ -80,10 +79,10 @@ partial class Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
 partial class Parent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 		public Test()
 		{{
@@ -129,10 +128,10 @@ partial class Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
 partial class Parent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 		T value = default;
 	}}
@@ -159,8 +158,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 		T value = default;
 	}}
@@ -187,11 +186,11 @@ partial class Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)})]
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Copy})]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
 partial class Parent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 		T value = default;
 	}}
@@ -216,11 +215,11 @@ partial class Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)})]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Copy})]
 partial class Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 		T value = default;
 	}}
@@ -247,11 +246,11 @@ partial class Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Copy)})]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Copy})]
 partial class Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 		T value = default;
 	}}
@@ -282,8 +281,8 @@ using System;
 partial class Parent
 {{
 	[Serializable]
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 		T value = default;
 	}}
@@ -314,8 +313,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U> where T : struct where U : class
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U> where T : struct where U : class
 	{{
 		T value = default;
 	}}
@@ -347,10 +346,10 @@ partial class Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)}]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit}]
 partial class Parent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(int))]U, [{nameof(DefaultParamAttribute)}(typeof(string))]V>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]U, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]V>
 	{{
 		T t = default;
 	}}
@@ -389,8 +388,8 @@ using System;
 
 partial class Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T> : Attribute, System.Collections.ICollection
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T> : Attribute, System.Collections.ICollection
 	{{
 		T value = default;
 	}}
@@ -421,8 +420,8 @@ using System;
 
 partial class Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U> : Attribute, System.Collections.ICollection where T : struct where U : class
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U> : Attribute, System.Collections.ICollection where T : struct where U : class
 	{{
 		T value = default;
 	}}
@@ -455,10 +454,10 @@ partial class Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
 partial class Parent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 		protected Test(int value)
 		{{
@@ -492,10 +491,10 @@ partial class Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
 partial class Parent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 		private Test()
 		{{
@@ -529,8 +528,8 @@ partial class Parent
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 	T value;
 
@@ -562,8 +561,8 @@ class Test
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-sealed class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+sealed class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 	int value;
 }}
@@ -587,8 +586,8 @@ sealed class Test
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-static class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+static class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 	int value;
 }}
@@ -612,8 +611,8 @@ static class Test
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-struct Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+struct Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 	int value;
 }}

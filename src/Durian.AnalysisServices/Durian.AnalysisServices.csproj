@@ -20,8 +20,8 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>Durian.AnalysisServices.Tests</_Parameter1>
     </AssemblyAttribute>
-    
-    <ProjectReference Include="..\Durian.Info\Durian.Info.csproj" />
+
+    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
     
   </ItemGroup>
 

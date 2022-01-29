@@ -16,7 +16,7 @@ namespace Durian.Analysis.Logging
 		None = 0,
 
 		/// <summary>
-		/// Reports <see cref="Diagnostic"/>s only to the <see cref="LoggableSourceGenerator"/>.
+		/// Reports <see cref="Diagnostic"/>s only to the <see cref="LoggableGenerator"/>.
 		/// </summary>
 		Log = 1,
 
@@ -26,7 +26,7 @@ namespace Durian.Analysis.Logging
 		Report = 2,
 
 		/// <summary>
-		/// Reports to both <see cref="LoggableSourceGenerator"/> and a context struct.
+		/// Reports to both <see cref="LoggableGenerator"/> and a context struct.
 		/// </summary>
 		Both = 3
 	}

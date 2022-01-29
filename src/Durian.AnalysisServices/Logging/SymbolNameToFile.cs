@@ -43,7 +43,6 @@ namespace Durian.Analysis.Logging
 		}
 
 		/// <inheritdoc/>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
 		public string GetFileName(ISymbol symbol)
 		{
 			if (symbol is null)

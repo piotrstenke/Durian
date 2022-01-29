@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Configuration;
 using Durian.Generator;
 using Durian.TestServices;
 using Xunit;
@@ -16,9 +15,9 @@ namespace Durian.Analysis.DefaultParam.Tests.Delegates
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>();
 }}
 ";
 
@@ -33,7 +32,7 @@ partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 
 class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>();
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
@@ -47,7 +46,7 @@ class Test
 
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>() where T : class;
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>() where T : class;
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
@@ -61,7 +60,7 @@ partial class Test
 
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string)]T, U>();
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T, U>();
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
@@ -76,7 +75,7 @@ partial class Test
 partial class Test
 {{
 	[{DurianStrings.GeneratorNamespace}.{nameof(DurianGeneratedAttribute)}]
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>();
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
@@ -91,7 +90,7 @@ partial class Test
 partial class Test
 {{
 	[System.CodeDom.Compiler.GeneratedCode("", "")]
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>();
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
@@ -111,8 +110,8 @@ namespace N2
 
 namespace N1
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""N2"")]
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""N2"")]
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
 
@@ -132,8 +131,8 @@ struct Del
 
 namespace N1
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""global"")]
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""global"")]
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
 
@@ -153,8 +152,8 @@ namespace N1
 	{{
 	}}
 
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""N1"")]
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""N1"")]
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
 
@@ -171,7 +170,7 @@ class Parent
 {{
 	partial class Test
 	{{
-		delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+		delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>();
 	}}
 }}
 ";
@@ -186,7 +185,7 @@ class Parent
 
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]>() where T : class where U : class;
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]>() where T : class where U : class;
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
@@ -200,7 +199,7 @@ partial class Test
 
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T, U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>();
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T, U, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]V>();
 }}
 ";
 

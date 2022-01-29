@@ -15,9 +15,9 @@ namespace Durian.Analysis.DefaultParam.Tests.Methods
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -34,7 +34,7 @@ partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 
 class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -50,7 +50,7 @@ class Test
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>() where T : class
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>() where T : class
 	{{
 	}}
 }}
@@ -66,7 +66,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(string)]T, U>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T, U>()
 	{{
 	}}
 }}
@@ -83,7 +83,7 @@ partial class Test
 partial class Test
 {{
 	[{DurianStrings.GeneratorNamespace}.{nameof(DurianGeneratedAttribute)}]
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -100,7 +100,7 @@ partial class Test
 partial class Test
 {{
 	[System.CodeDom.Compiler.GeneratedCode("", "")]
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -117,7 +117,7 @@ using System.Collections;
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(IEnumerable))]T, [{nameof(DefaultParamAttribute)}(typeof(ICollection))]U>(T value) where T : U
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(IEnumerable))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(ICollection))]U>(T value) where T : U
 	{{
 		T t = default;
 	}}
@@ -140,7 +140,7 @@ interface ITest
 
 partial class Test : ITest
 {{
-	void ITest.Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+	void ITest.Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>()
 	{{
 	}}
 }}
@@ -156,7 +156,7 @@ partial class Test : ITest
 
 partial class Test
 {{
-	public static extern void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	public static extern void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
@@ -170,7 +170,7 @@ partial class Test
 
 partial interface ITest
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod.Id));
@@ -186,7 +186,7 @@ partial class Test
 {{
 	void Method()
 	{{
-		void Local<[{nameof(DefaultParamAttribute)}(typeof(string))]T>(T value)
+		void Local<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>(T value)
 		{{
 		}}
 	}}
@@ -203,7 +203,7 @@ partial class Test
 
 partial class Test
 {{
-	partial void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	partial void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 
 partial class Test
@@ -230,7 +230,7 @@ partial class Test
 
 partial class Test
 {{
-	partial void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+	partial void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>()
 	{{
 	}}
 }}
@@ -247,7 +247,7 @@ partial class Test
 
 partial class Test
 {{
-	partial void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	partial void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
 			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
@@ -263,7 +263,7 @@ class Parent
 {{
 	partial class Test
 	{{
-		void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+		void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 		{{
 		}}
 	}}
@@ -280,7 +280,7 @@ class Parent
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]>() where T : class where U : class
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]>() where T : class where U : class
 	{{
 	}}
 }}
@@ -296,7 +296,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T, U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T, U, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]V>()
 	{{
 	}}
 }}

@@ -15,7 +15,7 @@ namespace Durian.Analysis.DefaultParam.Tests.Delegates
 
 partial class Test
 {{
-	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string))]U, [{nameof(DefaultParamAttribute)}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull;
+	delegate void Del<T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U, [{DefaultParamAttributeProvider.TypeName}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull;
 }}
 ";
 			string expected =
@@ -39,7 +39,7 @@ partial class Test
 
 delegate void Del(string value);
 
-delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string)]U>(U value);
+delegate void Del<T, [{DefaultParamAttributeProvider.TypeName}(typeof(string)]U>(U value);
 ";
 
 			string expected =
@@ -62,7 +62,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string)]U>(U value);
+	delegate void Del<T, [{DefaultParamAttributeProvider.TypeName}(typeof(string)]U>(U value);
 }}
 ";
 
@@ -84,7 +84,7 @@ partial class Test : Parent
 
 partial class Test
 {{
-	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string)]U>(U value);
+	delegate void Del<T, [{DefaultParamAttributeProvider.TypeName}(typeof(string)]U>(U value);
 
 	delegate void Del(string value);
 }}
@@ -108,7 +108,7 @@ partial class Test
 
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value);
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U>(T value);
 }}
 ";
 
@@ -133,7 +133,7 @@ partial class Test
 
 partial class Test
 {{
-	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value);
+	delegate void Del<T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U>(T value);
 }}
 ";
 
@@ -155,7 +155,7 @@ partial class Test
 
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
 
@@ -177,7 +177,7 @@ partial class Test
 
 partial class Test
 {{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T>(T value);
+	public delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>(T value);
 }}
 ";
 
@@ -202,7 +202,7 @@ partial class Test
 {{
 	[CLSCompliant(true)]
 	[Obsolete]
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
 
@@ -226,7 +226,7 @@ partial class Test
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(float))]out T, [{nameof(DefaultParamAttribute)}(typeof(string))]in U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>();
+delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(float))]out T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]in U, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]V>();
 ";
 			string expected =
 $@"{GetCodeGenerationAttributes("Del<T, U, V>")}
@@ -250,7 +250,7 @@ $@"using {DurianStrings.MainNamespace};
 
 partial interface ITest<in TType, out TName>
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
 			string expected =
@@ -271,7 +271,7 @@ $@"using {DurianStrings.MainNamespace};
 
 partial class Test<TNumber> where TNumber : class
 {{
-	delegate TNumber Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value, TNumber number);
+	delegate TNumber Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value, TNumber number);
 }}
 ";
 
@@ -293,7 +293,7 @@ partial class Test<TNumber> where TNumber : class
 
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U, [{nameof(DefaultParamAttribute)}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull;
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U, [{DefaultParamAttributeProvider.TypeName}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull;
 }}
 ";
 
@@ -321,7 +321,7 @@ partial class Test
 
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>() where T : unmanaged;
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>() where T : unmanaged;
 }}
 ";
 
@@ -346,7 +346,7 @@ using System.Collections.Generic;
 
 partial class Test
 {{
-	delegate void Del<T, [{nameof(DefaultParamAttribute)}(typeof(System.Collections.IEnumerable))]U>(U value) where T : IEnumerable<U>;
+	delegate void Del<T, [{DefaultParamAttributeProvider.TypeName}(typeof(System.Collections.IEnumerable))]U>(U value) where T : IEnumerable<U>;
 }}
 ";
 
@@ -373,7 +373,7 @@ using {DurianStrings.MainNamespace};
 [Serializable]
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
 
@@ -410,7 +410,7 @@ using System.Collections;
 
 partial class Test
 {{
-	delegate U Del<[{nameof(DefaultParamAttribute)}(typeof(ICollection))]T, [{nameof(DefaultParamAttribute)}(typeof(IEnumerable))]U>(T value) where T : U;
+	delegate U Del<[{DefaultParamAttributeProvider.TypeName}(typeof(ICollection))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(IEnumerable))]U>(T value) where T : U;
 }}
 ";
 
@@ -437,7 +437,7 @@ partial class Test
 
 partial class Test
 {{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string[])]T>(T value);
+	public delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string[])]T>(T value);
 }}
 ";
 
@@ -459,7 +459,7 @@ partial class Test
 
 partial class Test
 {{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.Collections.Generic.List<int>)]T>(T value);
+	public delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(System.Collections.Generic.List<int>)]T>(T value);
 }}
 ";
 
@@ -483,7 +483,7 @@ partial class Test
 
 partial class Test
 {{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(object))]T>(T value);
+	public delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(object))]T>(T value);
 }}
 ";
 
@@ -505,7 +505,7 @@ partial class Test
 
 partial class Test
 {{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.Array))]T>(T value);
+	public delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(System.Array))]T>(T value);
 }}
 ";
 
@@ -529,7 +529,7 @@ partial class Test
 
 partial class Test
 {{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.ValueType))]T>(T value);
+	public delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(System.ValueType))]T>(T value);
 }}
 ";
 
@@ -553,7 +553,7 @@ partial class Test
 
 partial class Test
 {{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value);
+	public delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
 
@@ -614,7 +614,7 @@ partial class Test
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>();
 ";
 
 			string expected =
@@ -634,7 +634,7 @@ delegate void Del();
 
 partial class Test<TNumber>
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value);
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T>(T value);
 }}
 ";
 
@@ -656,7 +656,7 @@ partial class Test<TNumber>
 
 partial class Test<TNumber> where TNumber : class
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value);
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T>(T value);
 }}
 ";
 
@@ -678,7 +678,7 @@ partial class Test<TNumber> where TNumber : class
 
 namespace Test
 {{
-	public delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value);
+	public delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T>(T value);
 }}
 ";
 
@@ -701,7 +701,7 @@ using System.Numerics;
 
 partial class Test
 {{
-	delegate void Del<[{nameof(DefaultParamAttribute)}(typeof(System.Int32))]T>(BigInteger integer);
+	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(System.Int32))]T>(BigInteger integer);
 }}
 ";
 

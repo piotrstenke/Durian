@@ -78,7 +78,7 @@ namespace Durian.Analysis
 		/// <exception cref="InvalidOperationException">Target context not set.</exception>
 		public void ReportDiagnostic(Diagnostic diagnostic)
 		{
-			if(diagnostic is null)
+			if (diagnostic is null)
 			{
 				throw new ArgumentNullException(nameof(diagnostic));
 			}

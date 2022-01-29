@@ -14,7 +14,12 @@
 
   <ItemGroup>
     
-    <ProjectReference Include="..\Durian.Info\Durian.Info.csproj" />
+    <Compile Include="..\NullableAttributes.cs" Link="NullableAttributes.cs" />
+    <Compile Include=".generated\ModuleRepository.cs" />
+    <Compile Include=".generated\PackageRepository.cs" />
+    <Compile Include=".generated\TypeRepository.cs" />
+
+    <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
     
   </ItemGroup>
 

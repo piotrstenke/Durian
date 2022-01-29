@@ -22,7 +22,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation)
 		{
 			if (compilation is null)
@@ -38,7 +38,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all disabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, INamedTypeSymbol enableModuleAttribute)
 		{
@@ -63,7 +63,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, ModuleContainer modules)
 		{
 			if (compilation is null)
@@ -90,7 +90,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all disabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, INamedTypeSymbol enableModuleAttribute, ModuleContainer modules)
@@ -126,7 +126,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="types">Array of <see cref="TypeIdentity"/>s to pick the disabled ones from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, params TypeIdentity[]? types)
 		{
 			if (compilation is null)
@@ -147,7 +147,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all disabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/> picked from the provided array of <paramref name="types"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="types">Array of <see cref="TypeIdentity"/>s to pick the disabled ones from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, INamedTypeSymbol enableModuleAttribute, params TypeIdentity[]? types)
@@ -212,7 +212,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="types">Array of <see cref="INamedTypeSymbol"/>s to pick the disabled ones from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class. -or- Symbol is not a Durian type.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class. -or- Symbol is not a Durian type.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, params INamedTypeSymbol[]? types)
 		{
 			if (compilation is null)
@@ -233,7 +233,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s picked from the given array of <paramref name="types"/> that are disabled for the specified <paramref name="types"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="types">Array of <see cref="INamedTypeSymbol"/>s to pick the disabled ones from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, INamedTypeSymbol enableModuleAttribute, params INamedTypeSymbol[]? types)
@@ -299,7 +299,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, params ModuleIdentity[]? modules)
 		{
 			if (compilation is null)
@@ -320,7 +320,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all disabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, INamedTypeSymbol enableModuleAttribute, params ModuleIdentity[]? modules)
@@ -375,7 +375,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, params ModuleReference[]? references)
 		{
 			if (compilation is null)
@@ -396,7 +396,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all disabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/> that are part of any of the provided modules.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, INamedTypeSymbol enableModuleAttribute, params ModuleReference[]? references)
@@ -453,7 +453,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException"> Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException"> Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDisabledDurianTypes(this Compilation compilation, params DurianModule[]? modules)
 		{
 			if (compilation is null)
@@ -474,7 +474,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all disabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException"> Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
@@ -532,7 +532,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get all the disabled Durian modules of.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static ModuleContainer GetDisabledModules(this Compilation compilation)
 		{
 			if (compilation is null)
@@ -551,7 +551,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of all Durian modules that are disabled for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get all the disabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static ModuleContainer GetDisabledModules(this Compilation compilation, INamedTypeSymbol enableModuleAttribute)
@@ -578,7 +578,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static ModuleContainer GetDisabledModules(this Compilation compilation, ModuleContainer modules)
 		{
 			if (compilation is null)
@@ -605,7 +605,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of all Durian modules present in the provided collection of <paramref name="modules"/> that are disabled for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian modules from.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
@@ -641,7 +641,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static ModuleContainer GetDisabledModules(this Compilation compilation, params ModuleReference[]? references)
 		{
 			if (compilation is null)
@@ -662,7 +662,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of all Durian modules present in the provided array of <paramref name="references"/> that are disabled for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
@@ -715,7 +715,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static ModuleContainer GetDisabledModules(this Compilation compilation, params ModuleIdentity[]? modules)
 		{
 			if (compilation is null)
@@ -736,7 +736,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of all Durian modules present in the provided array of <paramref name="modules"/> that are disabled for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
@@ -790,7 +790,7 @@ namespace Durian.Analysis.Extensions
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or-
-		/// Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static ModuleContainer GetDisabledModules(this Compilation compilation, params DurianModule[]? modules)
 		{
 			if (compilation is null)
@@ -811,7 +811,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of all Durian modules present in the provided array of <paramref name="modules"/> that are disabled for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the disabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the disabled modules from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the disabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
@@ -998,7 +998,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="types">Array of <see cref="TypeIdentity"/>s to pick the enabled ones from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation, params TypeIdentity[]? types)
 		{
 			if (compilation is null)
@@ -1019,7 +1019,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all enabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/> picked from the provided array of <paramref name="types"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="types">Array of <see cref="TypeIdentity"/>s to pick the enabled ones from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation, INamedTypeSymbol enableModuleAttribute, params TypeIdentity[]? types)
@@ -1083,7 +1083,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation)
 		{
 			if (compilation is null)
@@ -1101,7 +1101,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all enabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation, INamedTypeSymbol enableModuleAttribute)
 		{
@@ -1126,7 +1126,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation, ModuleContainer modules)
 		{
 			if (compilation is null)
@@ -1155,7 +1155,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all enabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation, INamedTypeSymbol enableModuleAttribute, ModuleContainer modules)
@@ -1191,7 +1191,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="types">Array of <see cref="INamedTypeSymbol"/>s to pick the enabled ones from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class. -or- Symbol is not a Durian type.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class. -or- Symbol is not a Durian type.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation, params INamedTypeSymbol[]? types)
 		{
 			if (compilation is null)
@@ -1212,7 +1212,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s picked from the given array of <paramref name="types"/> that are enabled for the specified <paramref name="types"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="types">Array of <see cref="INamedTypeSymbol"/>s to pick the enabled ones from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException"> Symbol is not a Durian type.</exception>
@@ -1279,7 +1279,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation, params ModuleIdentity[]? modules)
 		{
 			if (compilation is null)
@@ -1300,7 +1300,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all enabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation, INamedTypeSymbol enableModuleAttribute, params ModuleIdentity[]? modules)
@@ -1355,7 +1355,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation, params ModuleReference[]? references)
 		{
 			if (compilation is null)
@@ -1376,7 +1376,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all enabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/> that are part of any of the provided modules.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation, INamedTypeSymbol enableModuleAttribute, params ModuleReference[]? references)
@@ -1433,7 +1433,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetEnabledDurianTypes(this Compilation compilation, params DurianModule[]? modules)
 		{
 			if (compilation is null)
@@ -1454,7 +1454,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of <see cref="INamedTypeSymbol"/>s representing all enabled Durian <see cref="Type"/>s for the specified <paramref name="compilation"/> that are part of any of the provided <paramref name="modules"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian <see cref="Type"/>s of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
@@ -1513,7 +1513,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>>
 		public static ModuleContainer GetEnabledModules(this Compilation compilation, params ModuleReference[]? references)
 		{
 			if (compilation is null)
@@ -1534,7 +1534,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of all Durian modules present in the provided array of <paramref name="references"/> that are enabled for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
@@ -1587,7 +1587,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static ModuleContainer GetEnabledModules(this Compilation compilation, params DurianModule[]? modules)
 		{
 			if (compilation is null)
@@ -1608,7 +1608,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of all Durian modules present in the provided array of <paramref name="modules"/> that are enabled for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the enabled modules from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
@@ -1656,7 +1656,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get all the enabled Durian modules of.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static ModuleContainer GetEnabledModules(this Compilation compilation)
 		{
 			if (compilation is null)
@@ -1674,7 +1674,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of all Durian modules that are enabled for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get all the enabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static ModuleContainer GetEnabledModules(this Compilation compilation, INamedTypeSymbol enableModuleAttribute)
@@ -1701,7 +1701,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static ModuleContainer GetEnabledModules(this Compilation compilation, ModuleContainer modules)
 		{
 			if (compilation is null)
@@ -1728,7 +1728,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of all Durian modules present in the provided collection of <paramref name="modules"/> that are enabled for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian modules from.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
@@ -1764,7 +1764,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static ModuleContainer GetEnabledModules(this Compilation compilation, params ModuleIdentity[]? modules)
 		{
 			if (compilation is null)
@@ -1785,7 +1785,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of all Durian modules present in the provided array of <paramref name="modules"/> that are enabled for the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the enabled Durian modules of.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick from.</param>
 		/// <returns>A new instance of <see cref="ModuleContainer"/> that contains the enabled Durian modules.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
@@ -1874,7 +1874,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="module"/> is enabled for.</param>
 		/// <param name="module"><see cref="ModuleReference"/> of Durian module to check for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static bool IsEnabled(this Compilation compilation, ModuleReference module)
 		{
 			if (compilation is null)
@@ -1895,7 +1895,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="module"/> is enabled for.</param>
 		/// <param name="module"><see cref="ModuleReference"/> of Durian module to check for.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static bool IsEnabled(this Compilation compilation, ModuleReference module, INamedTypeSymbol enableModuleAttribute)
 		{
@@ -1923,7 +1923,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="module"/> is enabled for.</param>
 		/// <param name="module"><see cref="ModuleIdentity"/> representing a Durian module to check for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static bool IsEnabled(this Compilation compilation, ModuleIdentity module)
 		{
 			if (compilation is null)
@@ -1944,7 +1944,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="module"/> is enabled for.</param>
 		/// <param name="module"><see cref="ModuleIdentity"/> representing a Durian module to check for.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="module"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static bool IsEnabled(this Compilation compilation, ModuleIdentity module, INamedTypeSymbol enableModuleAttribute)
 		{
@@ -1972,7 +1972,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="module"/> is enabled for.</param>
 		/// <param name="module"><see cref="DurianModule"/> representing a Durian module to check for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static bool IsEnabled(this Compilation compilation, DurianModule module)
 		{
 			if (compilation is null)
@@ -1989,7 +1989,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="module"/> is enabled for.</param>
 		/// <param name="module"><see cref="DurianModule"/> representing a Durian module to check for.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
 		public static bool IsEnabled(this Compilation compilation, DurianModule module, INamedTypeSymbol enableModuleAttribute)
@@ -2015,7 +2015,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="moduleName">Name of the Durian module to check for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static bool IsEnabled(this Compilation compilation, string moduleName)
 		{
 			if (compilation is null)
@@ -2032,7 +2032,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if contains the reference.</param>
 		/// <param name="moduleName">Name of the Durian module to check for.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="moduleName"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Unknown Durian module name: <paramref name="moduleName"/>.</exception>
 		public static bool IsEnabled(this Compilation compilation, string moduleName, INamedTypeSymbol enableModuleAttribute)
@@ -2057,7 +2057,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is enabled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class. -or- <paramref name="type"/> is not a Durian type.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class. -or- <paramref name="type"/> is not a Durian type.</exception>
 		public static bool IsEnabled(this Compilation compilation, INamedTypeSymbol type)
 		{
 			if (compilation is null)
@@ -2081,7 +2081,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is enabled.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException"><paramref name="type"/> is not a Durian type.</exception>
 		public static bool IsEnabled(this Compilation compilation, INamedTypeSymbol type, INamedTypeSymbol enableModuleAttribute)
@@ -2114,7 +2114,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is enabled.</param>
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class. -or- <paramref name="type"/> is not a Durian type.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class. -or- <paramref name="type"/> is not a Durian type.</exception>
 		public static bool IsEnabled(this Compilation compilation, INamedTypeSymbol type, ModuleContainer modules)
 		{
 			if (compilation is null)
@@ -2148,7 +2148,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is enabled.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException"><paramref name="type"/> is not a Durian type.</exception>
@@ -2193,7 +2193,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or-
-		/// Error while resolving the <see cref="EnableModuleAttribute"/>. class. -or- <paramref name="type"/> is not a Durian type.</exception>
+		/// Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class. -or- <paramref name="type"/> is not a Durian type.</exception>
 		public static bool IsEnabled(this Compilation compilation, INamedTypeSymbol type, [NotNullWhen(true)] params DurianModule[]? modules)
 		{
 			if (compilation is null)
@@ -2225,7 +2225,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is enabled.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or-
@@ -2268,7 +2268,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is enabled.</param>
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class. -or- <paramref name="type"/> is not a Durian type.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class. -or- <paramref name="type"/> is not a Durian type.</exception>
 		public static bool IsEnabled(this Compilation compilation, INamedTypeSymbol type, [NotNullWhen(true)] params ModuleIdentity[]? modules)
 		{
 			if (compilation is null)
@@ -2297,7 +2297,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is enabled.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">\<paramref name="type"/> is not a Durian type.</exception>
@@ -2336,7 +2336,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is enabled.</param>
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class. -or- <paramref name="type"/> is not a Durian type.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class. -or- <paramref name="type"/> is not a Durian type.</exception>
 		public static bool IsEnabled(this Compilation compilation, INamedTypeSymbol type, [NotNullWhen(true)] params ModuleReference[]? references)
 		{
 			if (compilation is null)
@@ -2365,7 +2365,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is enabled.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException"><paramref name="type"/> is not a Durian type.</exception>
@@ -2403,7 +2403,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static bool IsEnabled(this Compilation compilation, TypeIdentity type)
 		{
 			if (compilation is null)
@@ -2425,7 +2425,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static bool IsEnabled(this Compilation compilation, TypeIdentity type, INamedTypeSymbol enableModuleAttribute)
 		{
@@ -2455,7 +2455,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="TypeIdentity"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static bool IsEnabled(this Compilation compilation, TypeIdentity type, ModuleContainer modules)
 		{
 			if (compilation is null)
@@ -2487,7 +2487,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules"><see cref="ModuleContainer"/> that provides a collection of Durian modules to pick the <see cref="TypeIdentity"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>. -or- <paramref name="modules"/> is <see langword="null"/>.</exception>
 		public static bool IsEnabled(this Compilation compilation, TypeIdentity type, INamedTypeSymbol enableModuleAttribute, ModuleContainer modules)
@@ -2529,7 +2529,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or-
-		/// Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static bool IsEnabled(this Compilation compilation, TypeIdentity type, [NotNullWhen(true)] params DurianModule[]? modules)
 		{
 			if (compilation is null)
@@ -2555,7 +2555,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="DurianModule"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
@@ -2591,7 +2591,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static bool IsEnabled(this Compilation compilation, TypeIdentity type, [NotNullWhen(true)] params ModuleIdentity[]? modules)
 		{
 			if (compilation is null)
@@ -2618,7 +2618,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="modules">Array of <see cref="ModuleIdentity"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static bool IsEnabled(this Compilation compilation, TypeIdentity type, INamedTypeSymbol enableModuleAttribute, [NotNullWhen(true)] params ModuleIdentity[]? modules)
@@ -2654,7 +2654,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="EnableModuleAttribute"/>. class.</exception>
+		/// <exception cref="InvalidOperationException">Error while resolving the <see cref="RegisterDurianModuleAttribute"/>. class.</exception>
 		public static bool IsEnabled(this Compilation compilation, TypeIdentity type, [NotNullWhen(true)] params ModuleReference[]? references)
 		{
 			if (compilation is null)
@@ -2681,7 +2681,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="type"/> is enabled for.</param>
 		/// <param name="type"><see cref="TypeIdentity"/> to check if is enabled.</param>
-		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/>. class.</param>
+		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="RegisterDurianModuleAttribute"/>. class.</param>
 		/// <param name="references">Array of <see cref="ModuleReference"/>s to pick the <see cref="TypeIdentity"/>s from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="type"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
 		public static bool IsEnabled(this Compilation compilation, TypeIdentity type, INamedTypeSymbol enableModuleAttribute, [NotNullWhen(true)] params ModuleReference[]? references)
@@ -2914,11 +2914,11 @@ namespace Durian.Analysis.Extensions
 
 		internal static INamedTypeSymbol GetEnableAttributeSymbol(Compilation compilation)
 		{
-			INamedTypeSymbol? symbol = compilation.GetTypeByMetadataName(typeof(EnableModuleAttribute).ToString());
+			INamedTypeSymbol? symbol = compilation.GetTypeByMetadataName(typeof(RegisterDurianModuleAttribute).ToString());
 
 			if (symbol is null)
 			{
-				throw new InvalidOperationException($"Error while resolving the {nameof(EnableModuleAttribute)} class!");
+				throw new InvalidOperationException($"Error while resolving the {nameof(RegisterDurianModuleAttribute)} class!");
 			}
 
 			return symbol;

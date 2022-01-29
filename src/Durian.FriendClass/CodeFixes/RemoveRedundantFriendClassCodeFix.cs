@@ -16,10 +16,10 @@ namespace Durian.Analysis.FriendClass.CodeFixes
 	public class RemoveRedundantFriendClassCodeFix : RemoveNodeCodeFix<AttributeSyntax>
 	{
 		/// <inheritdoc/>
-		public override string Id => Title + " [FriendClass]";
+		public override string Id => $"{Title} [{nameof(FriendClass)}]";
 
 		/// <inheritdoc/>
-		public override string Title => "Remove redundant FriendClassAttribute";
+		public override string Title => $"Remove redundant {FriendClassAttributeProvider.TypeName}";
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RemoveRedundantFriendClassCodeFix"/> class.

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Configuration;
 using Durian.TestServices;
 using Xunit;
 
@@ -16,7 +15,7 @@ namespace Durian.Analysis.DefaultParam.Tests.Methods
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Parent
 {{
 	public delegate void Method();
@@ -24,7 +23,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -50,7 +49,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 class Parent
 {{
 	public void Method(int value)
@@ -58,10 +57,10 @@ class Parent
 	}}
 }}
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Test : Parent
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -86,7 +85,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 class Parent
 {{
 	public void Method(int value)
@@ -96,8 +95,8 @@ class Parent
 
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -124,7 +123,7 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Parent
 {{
 	public void Method<T>(int value)
@@ -138,7 +137,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>(V value)
+	void Method<T, U, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]V>(V value)
 	{{
 	}}
 }}
@@ -164,7 +163,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Parent
 {{
 	public void Method<T>(int value)
@@ -174,7 +173,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>(U value)
+	void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]U>(U value)
 	{{
 	}}
 }}
@@ -207,11 +206,11 @@ class Parent
 	}}
 }}
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -238,7 +237,7 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Parent
 {{
 	public string Method {{ get; }}
@@ -246,7 +245,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -272,7 +271,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Parent
 {{
 	public void Method(int value)
@@ -282,7 +281,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -308,7 +307,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Parent
 {{
 	public void Method<T>(int value)
@@ -322,7 +321,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(string))]U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>(V value)
+	void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]V>(V value)
 	{{
 	}}
 }}
@@ -354,7 +353,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Parent
 {{
 	public void Method<T>(int value)
@@ -364,7 +363,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U, [{nameof(DefaultParamAttribute)}(typeof(string))]V>(U value)
+	void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]U, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]V>(U value)
 	{{
 	}}
 }}
@@ -396,7 +395,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Parent
 {{
 	public void Method(int value)
@@ -404,10 +403,10 @@ class Parent
 	}}
 }}
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 partial class Test : Parent
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -422,7 +421,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Parent
 {{
 	public void Method(int value)
@@ -432,8 +431,8 @@ class Parent
 
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -455,11 +454,11 @@ class Parent
 	}}
 }}
 
-[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -474,7 +473,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 class Parent
 {{
 	public delegate void Method();
@@ -482,7 +481,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -498,7 +497,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 class Parent
 {{
 	public string Method {{ get; }}
@@ -506,7 +505,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 	{{
 	}}
 }}
@@ -521,7 +520,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 class Parent
 {{
 	public void Method(string value)
@@ -531,7 +530,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(string value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(string value)
 	{{
 	}}
 }}
@@ -546,10 +545,10 @@ partial class Test : Parent
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Test : Parent
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 
@@ -568,7 +567,7 @@ partial class Test : Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Parent
 {{
 	private void Method()
@@ -578,7 +577,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>()
 	{{
 	}}
 }}

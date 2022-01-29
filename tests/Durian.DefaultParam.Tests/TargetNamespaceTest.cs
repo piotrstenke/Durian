@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Configuration;
 using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests
@@ -17,8 +16,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""global"")]
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""global"")]
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -46,8 +45,8 @@ namespace Parent
 {{
 	public partial class A
 	{{
-		[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""Durian"")]
-		public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+		[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""Durian"")]
+		public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 		{{
 		}}
 	}}
@@ -79,8 +78,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""@int"")]
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""@int"")]
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -109,8 +108,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""Durian"")]
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""Durian"")]
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -139,8 +138,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""Durian.Configuration"")]
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""Durian.Configuration"")]
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -167,10 +166,10 @@ namespace Durian.Configuration
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.TargetNamespace)} = ""Durian"")]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.TargetNamespace} = ""Durian"")]
 namespace Parent
 {{
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -198,8 +197,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""Durian.Generator"")]
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""Durian.Generator"")]
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -227,8 +226,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""2352"")]
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""2352"")]
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -256,8 +255,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""int"")]
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""int"")]
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -285,8 +284,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = null)]
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = null)]
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -314,8 +313,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""  "")]
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""  "")]
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -343,7 +342,7 @@ using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
 {{
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}

@@ -14,7 +14,7 @@ namespace Durian.Analysis.SyntaxVisitors
 		/// <summary>
 		/// <see cref="SyntaxTrivia"/> that is the replacement.
 		/// </summary>
-		public virtual SyntaxTrivia Replacement { get; set; }
+		public SyntaxTrivia Replacement { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TriviaReplacer"/> class.

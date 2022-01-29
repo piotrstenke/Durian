@@ -15,7 +15,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Analyzer-like class that performs analysis defined by the <see cref="DefaultParamMethodFilter"/>.
 		/// </summary>
-		public sealed class AsAnalyzer : DefaultParamFilterAsAnalyzer<DefaultParamMethodData>, ICachedAnalyzerInfo<DefaultParamMethodData>
+		public sealed class AsAnalyzer : DefaultParamFilterAsAnalyzer<DefaultParamMethodData>, ICachedAnalyzer<DefaultParamMethodData>
 		{
 			/// <summary>
 			/// Initializes a new instance of the <see cref="AsAnalyzer"/> class.

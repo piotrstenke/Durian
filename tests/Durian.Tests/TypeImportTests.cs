@@ -90,34 +90,6 @@ class Test
 		}
 
 		[Fact]
-		public async Task Error_WhenUsesNotImportedType()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
-{{
-}}
-";
-
-			Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0002_ModuleOfTypeIsNotImported.Id);
-		}
-
-		[Fact]
-		public async Task Success_When_TypeIsImported()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
-{{
-}}
-";
-
-			Assert.Empty(await RunAnalyzer(new TypeImportAnalyzer(), input, nameof(DurianModule.DefaultParam)));
-		}
-
-		[Fact]
 		public async Task UsingStatementWithGeneratorNamespaceDoesNotProduceError()
 		{
 			string input =

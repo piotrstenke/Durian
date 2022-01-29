@@ -50,6 +50,14 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Creates a <see cref="Diagnostic"/> indicating that the current compilation is not a C# compilation.
+		/// </summary>
+		public static Diagnostic GetNotCSharpCompilationDiagnostic()
+		{
+			return Diagnostic.Create(DUR0004_DurianModulesAreValidOnlyInCSharp, Location.None);
+		}
+
+		/// <summary>
 		/// Analyzes the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to analyze.</param>

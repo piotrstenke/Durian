@@ -4,7 +4,6 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using Durian.Configuration;
 using Durian.TestServices;
 using Microsoft.CodeAnalysis;
 using Xunit;
@@ -25,8 +24,8 @@ partial class Test
 {{
 	public static void Method()
 	{{
-		[{nameof(DefaultParamConfigurationAttribute)}()]
-		static void Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+		[{DefaultParamConfigurationAttributeProvider.TypeName}()]
+		static void Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>()
 		{{
 		}}
 	}}
@@ -43,8 +42,8 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-public sealed class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+public sealed class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>()
 {{
 }}
 ";
@@ -59,8 +58,8 @@ public sealed class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-public static class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+public static class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -75,8 +74,8 @@ public static class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-public struct Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+public struct Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>()
 {{
 }}
 ";
@@ -91,8 +90,8 @@ public struct Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 	private Test()
 	{{
@@ -117,7 +116,7 @@ interface ITest
 
 class Test : ITest
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}]
 	void ITest.Method<[DefaultParam(typeof(string))]T>()
 	{{
 	}}
@@ -136,8 +135,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial interface ITest
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}()]
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	[{DefaultParamConfigurationAttributeProvider.TypeName}()]
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
@@ -153,8 +152,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}()]
-	public delegate void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	[{DefaultParamConfigurationAttributeProvider.TypeName}()]
+	public delegate void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
 			Assert.Empty(await RunAnalyzerAsync(input));
@@ -169,8 +168,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}()]
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+	[{DefaultParamConfigurationAttributeProvider.TypeName}()]
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>()
 	{{
 	}}
 }}
@@ -185,8 +184,8 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}()]
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}()]
+partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -202,8 +201,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.MethodConvention} = {DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Call})]
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>()
 	{{
 	}}
 }}
@@ -218,8 +217,8 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -233,8 +232,8 @@ partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""@int"")]
-public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""@int"")]
+public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -248,8 +247,8 @@ public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = null)]
-public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = null)]
+public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -263,8 +262,8 @@ public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""Durian"")]
-public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""Durian"")]
+public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -278,8 +277,8 @@ public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""Durian.Core"")]
-public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""Durian.Core"")]
+public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -295,7 +294,7 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}()]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}()]
 	public delegate void Method<T>();
 }}
 ";
@@ -312,7 +311,7 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}()]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}()]
 	public static void Method<T>()
 	{{
 	}}
@@ -329,7 +328,7 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}()]
+[{DefaultParamConfigurationAttributeProvider.TypeName}()]
 partial class Test<T>
 {{
 }}
@@ -345,8 +344,8 @@ partial class Test<T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
-public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -363,8 +362,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
-	public delegate void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.MethodConvention} = {DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Call})]
+	public delegate void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
@@ -378,8 +377,8 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Call)})]
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.MethodConvention} = {DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Call})]
+partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -396,8 +395,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 public class Parent
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""Durian"")]
-	public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""Durian"")]
+	public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -413,8 +412,8 @@ public class Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""Durian.Generator"")]
-public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""Durian.Generator"")]
+public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -429,8 +428,8 @@ public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""int"")]
-public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""int"")]
+public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -445,8 +444,8 @@ public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""12fwa"")]
-public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""12fwa"")]
+public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -461,8 +460,8 @@ public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = "" "")]
-public class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = "" "")]
+public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
@@ -479,8 +478,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-	public delegate void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>();
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+	public delegate void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
@@ -496,8 +495,8 @@ using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TypeConvention)} = {nameof(DPTypeConvention)}.{nameof(DPTypeConvention.Inherit)})]
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>()
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TypeConvention} = {DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit})]
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>()
 	{{
 	}}
 }}

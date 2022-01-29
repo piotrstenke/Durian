@@ -11,7 +11,7 @@ namespace Durian.Analysis
 	/// <summary>
 	/// Base class for all Durian analyzers.
 	/// </summary>
-	public abstract class DurianAnalyzer : DiagnosticAnalyzer, IAnalyzerInfo
+	public abstract class DurianAnalyzer : DiagnosticAnalyzer, IDurianAnalyzer
 	{
 		/// <inheritdoc/>
 		public virtual bool AllowGenerated => false;
@@ -49,20 +49,20 @@ namespace Durian.Analysis
 			Register(c);
 		}
 
-		/// <inheritdoc cref="IAnalyzerInfo.Register(IDurianAnalysisContext, CSharpCompilation)"/>
+		/// <inheritdoc cref="IDurianAnalyzer.Register(IDurianAnalysisContext, CSharpCompilation)"/>
 		public abstract void Register(IDurianAnalysisContext context);
 
-		IEnumerable<DiagnosticDescriptor> IAnalyzerInfo.GetSupportedDiagnostics()
+		IEnumerable<DiagnosticDescriptor> IDurianAnalyzer.GetSupportedDiagnostics()
 		{
 			return SupportedDiagnostics;
 		}
 
-		void IAnalyzerInfo.Register(IDurianAnalysisContext context, CSharpCompilation compilation)
+		void IDurianAnalyzer.Register(IDurianAnalysisContext context, CSharpCompilation compilation)
 		{
 			Register(context, compilation);
 		}
 
-		/// <inheritdoc cref="IAnalyzerInfo.Register(IDurianAnalysisContext, CSharpCompilation)"/>
+		/// <inheritdoc cref="IDurianAnalyzer.Register(IDurianAnalysisContext, CSharpCompilation)"/>
 		protected virtual void Register(IDurianAnalysisContext context, CSharpCompilation compilation)
 		{
 			Register(context);

@@ -45,8 +45,8 @@ namespace Durian.Analysis.FriendClass
 		/// <inheritdoc cref="ICompilationDataWithSymbols.Reset"/>
 		public void Reset()
 		{
-			FriendClassAttribute = Compilation.GetTypeByMetadataName(MemberNames.FriendClassAttribute);
-			FriendClassConfigurationAttribute = Compilation.GetTypeByMetadataName(MemberNames.FriendClassConfigurationAttribute);
+			FriendClassAttribute = Compilation.GetTypeByMetadataName(FriendClassAttributeProvider.FullName);
+			FriendClassConfigurationAttribute = Compilation.GetTypeByMetadataName(FriendClassConfigurationAttributeProvider.FullName);
 
 			HasErrors =
 				FriendClassConfigurationAttribute is null ||

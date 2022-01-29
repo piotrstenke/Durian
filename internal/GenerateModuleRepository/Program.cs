@@ -395,12 +395,12 @@ internal static class Program
 			{
 				string value = match.Groups[i].ToString();
 
-				if(string.IsNullOrEmpty(value))
+				if (string.IsNullOrEmpty(value))
 				{
 					continue;
 				}
 
-				if(string.IsNullOrWhiteSpace(value))
+				if (string.IsNullOrWhiteSpace(value))
 				{
 					return;
 				}

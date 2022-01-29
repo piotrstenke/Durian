@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-#if DEBUG
-
 using System;
 using Microsoft.CodeAnalysis;
 
@@ -22,5 +20,3 @@ namespace Durian.Analysis
 		}
 	}
 }
-
-#endif

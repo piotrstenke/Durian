@@ -114,7 +114,7 @@ namespace Durian.Analysis.DefaultParam
 			{
 				FilterMode.Diagnostics => new FilterEnumeratorWithDiagnostics<T>(filter, generator.TargetCompilation!, filter, generator.DiagnosticReceiver!),
 				FilterMode.Logs => new DefaultParamFilterEnumerator<T>(filter, generator.LogReceiver),
-				FilterMode.Both => new DefaultParamFilterEnumerator<T>(filter, LoggableGeneratorDiagnosticReceiverFactory.SourceGenerator(generator, generator.DiagnosticReceiver!)),
+				FilterMode.Both => new DefaultParamFilterEnumerator<T>(filter, LoggableGenerator.DiagnosticReceiverFactory.SourceGenerator(generator, generator.DiagnosticReceiver!)),
 				_ => new FilterEnumerator<T>(filter, generator.TargetCompilation!, filter)
 			};
 		}
@@ -133,7 +133,7 @@ namespace Durian.Analysis.DefaultParam
 			{
 				FilterMode.Diagnostics => new CachedFilterEnumeratorWithDiagnostics<T>(filter, generator.TargetCompilation!, filter, generator.DiagnosticReceiver!, in cache),
 				FilterMode.Logs => new CachedDefaultParamFilterEnumerator<T>(filter, generator.LogReceiver, in cache),
-				FilterMode.Both => new CachedDefaultParamFilterEnumerator<T>(filter, LoggableGeneratorDiagnosticReceiverFactory.SourceGenerator(generator, generator.DiagnosticReceiver!), in cache),
+				FilterMode.Both => new CachedDefaultParamFilterEnumerator<T>(filter, LoggableGenerator.DiagnosticReceiverFactory.SourceGenerator(generator, generator.DiagnosticReceiver!), in cache),
 				_ => new CachedFilterEnumerator<T>(filter, generator.TargetCompilation!, filter, in cache)
 			};
 		}
@@ -363,7 +363,7 @@ namespace Durian.Analysis.DefaultParam
 
 				case FilterMode.Both:
 				{
-					DefaultParamFilterEnumerator<T> enumerator = new(filter, LoggableGeneratorDiagnosticReceiverFactory.SourceGenerator(generator, generator.DiagnosticReceiver!));
+					DefaultParamFilterEnumerator<T> enumerator = new(filter, LoggableGenerator.DiagnosticReceiverFactory.SourceGenerator(generator, generator.DiagnosticReceiver!));
 
 					List<T> list = new(enumerator.Count);
 
@@ -434,7 +434,7 @@ namespace Durian.Analysis.DefaultParam
 
 				case FilterMode.Both:
 				{
-					CachedDefaultParamFilterEnumerator<T> enumerator = new(filter, LoggableGeneratorDiagnosticReceiverFactory.SourceGenerator(generator, generator.DiagnosticReceiver!), in cache);
+					CachedDefaultParamFilterEnumerator<T> enumerator = new(filter, LoggableGenerator.DiagnosticReceiverFactory.SourceGenerator(generator, generator.DiagnosticReceiver!), in cache);
 
 					List<T> list = new(enumerator.Count);
 

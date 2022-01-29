@@ -36,14 +36,14 @@ namespace Durian.Analysis
 
 		private readonly TypeIdentity[] _allTypes;
 
-		private readonly string _enableModuleAttributeName = typeof(EnableModuleAttribute).ToString();
+		private readonly string _enableModuleAttributeName = typeof(RegisterDurianModuleAttribute).ToString();
 
 		private readonly List<Entry> _entries;
 
 		private DurianModule[] _enabledModules;
 
 		/// <summary>
-		/// Represents the <see cref="Generator.EnableModuleAttribute"/>. class.
+		/// Represents the <see cref="Generator.RegisterDurianModuleAttribute"/>. class.
 		/// </summary>
 		public INamedTypeSymbol? EnableModuleAttribute { get; private set; }
 

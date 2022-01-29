@@ -1,7 +1,6 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Configuration;
 using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Methods
@@ -15,10 +14,10 @@ namespace Durian.Analysis.DefaultParam.Tests.Methods
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.MethodConvention} = {DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Copy}]
 partial class Test
 {{
-	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(string))]U, [{nameof(DefaultParamAttribute)}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
+	void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U, [{DefaultParamAttributeProvider.TypeName}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
 	{{
 	}}
 }}
@@ -49,7 +48,7 @@ using System.Collections;
 
 partial abstract class Test
 {{
-	abstract void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>();
+	abstract void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>();
 }}
 ";
 			string expected =
@@ -69,10 +68,10 @@ partial abstract class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.MethodConvention} = {DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Copy}]
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U>(T value)
 	{{
 		U name = default;
 	}}
@@ -105,10 +104,10 @@ partial class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.MethodConvention} = {DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Copy}]
 partial class Test
 {{
-	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value)
+	void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U>(T value)
 	{{
 		U name = default;
 	}}
@@ -136,7 +135,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -163,7 +162,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(string)]T>(T value)
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T>(T value)
 	{{
 	}}
 }}
@@ -193,7 +192,7 @@ partial class Test
 {{
 	[CLSCompliant(true)]
 	[Obsolete]
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -223,10 +222,10 @@ partial class Test
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.MethodConvention} = {DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Copy}]
 partial class Test<TNumber> where TNumber : class
 {{
-	TNumber Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value, TNumber number)
+	TNumber Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value, TNumber number)
 	{{
 		return default;
 	}}
@@ -253,10 +252,10 @@ partial class Test<TNumber> where TNumber : class
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.MethodConvention} = {DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Copy}]
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U, [{nameof(DefaultParamAttribute)}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U, [{DefaultParamAttributeProvider.TypeName}(typeof(float))]V>() where T : unmanaged where U : class where V : notnull
 	{{
 	}}
 }}
@@ -292,7 +291,7 @@ partial class Test
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>() where T : unmanaged
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>() where T : unmanaged
 	{{
 	}}
 }}
@@ -322,10 +321,10 @@ using System.Collections.Generic;
 using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.MethodConvention} = {DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Copy}]
 partial class Test
 {{
-	void Method<T, [{nameof(DefaultParamAttribute)}(typeof(System.Collections.IEnumerable))]U>(U value) where T : IEnumerable<U>
+	void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(System.Collections.IEnumerable))]U>(U value) where T : IEnumerable<U>
 	{{
 		U v = default(U);
 		object obj = (U)2;
@@ -365,7 +364,7 @@ using {DurianStrings.MainNamespace};
 [Serializable]
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
@@ -410,7 +409,7 @@ using System.Collections;
 
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(ICollection))]T, [{nameof(DefaultParamAttribute)}(typeof(IEnumerable))]U>(T value) where T : U
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(ICollection))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(IEnumerable))]U>(T value) where T : U
 	{{
 		T t = default;
 	}}
@@ -446,7 +445,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(string[])]T>(T value)
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string[])]T>(T value)
 	{{
 		T t = default;
 	}}
@@ -474,7 +473,7 @@ partial class Test
 
 partial static class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(this T value)
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(this T value)
 	{{
 		T t = default;
 	}}
@@ -501,10 +500,10 @@ partial static class Test
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.MethodConvention} = {DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Copy}]
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(System.Collections.Generic.List<int>)]T>()
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(System.Collections.Generic.List<int>)]T>()
 	{{
 		T value = default;
 	}}
@@ -538,7 +537,7 @@ partial class Test
 	{{
 	}}
 
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(C))]T>()
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(C))]T>()
 	{{
 		T t = default;
 	}}
@@ -566,7 +565,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(object))]T>(T value)
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(object))]T>(T value)
 	{{
 		T t = default;
 	}}
@@ -594,7 +593,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(System.Array))]T>(T value)
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(System.Array))]T>(T value)
 	{{
 		T t = default;
 	}}
@@ -624,7 +623,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(System.ValueType))]T>(T value)
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(System.ValueType))]T>(T value)
 	{{
 		T t = default;
 	}}
@@ -654,7 +653,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(int))]T>(T value)
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 		T t = default;
 	}}
@@ -728,7 +727,7 @@ partial class Test
 
 partial class Test<TNumber>
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>(T value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>(T value)
 	{{
 	}}
 }}
@@ -755,7 +754,7 @@ partial class Test<TNumber>
 
 partial class Test<TNumber> where TNumber : class
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(string))]T>(T value)
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>(T value)
 	{{
 	}}
 }}
@@ -784,10 +783,10 @@ using System.Collections;
 using {DurianStrings.ConfigurationNamespace};
 using System;
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.MethodConvention)} = {nameof(DPMethodConvention)}.{nameof(DPMethodConvention.Copy)}]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.MethodConvention} = {DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Copy}]
 partial class Test
 {{
-	void Method<[{nameof(DefaultParamAttribute)}(typeof(System.Int32))]T>()
+	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(System.Int32))]T>()
 	{{
 		Attribute atrr = null;
 		System.Collections.Generic.List<BigInteger> list = new();

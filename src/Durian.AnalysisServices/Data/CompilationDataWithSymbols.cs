@@ -55,7 +55,7 @@ namespace Durian.Analysis.Data
 		{
 			DurianGeneratedAttribute = Compilation.GetTypeByMetadataName(typeof(DurianGeneratedAttribute).ToString());
 			GeneratedCodeAttribute = Compilation.GetTypeByMetadataName(typeof(GeneratedCodeAttribute).ToString());
-			EnableModuleAttribute = Compilation.GetTypeByMetadataName(typeof(EnableModuleAttribute).ToString());
+			EnableModuleAttribute = Compilation.GetTypeByMetadataName(typeof(RegisterDurianModuleAttribute).ToString());
 
 			HasErrors = DurianGeneratedAttribute is null || GeneratedCodeAttribute is null || EnableModuleAttribute is null;
 		}

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Configuration;
 using Durian.TestServices;
 using Xunit;
 
@@ -15,9 +14,9 @@ namespace Durian.Analysis.DefaultParam.Tests.Types
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
-	class Child<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Child<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -34,7 +33,7 @@ partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
 
 class Parent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -50,7 +49,7 @@ class Parent
 
 partial class Parent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T> where T : class
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T> where T : class
 	{{
 	}}
 }}
@@ -66,7 +65,7 @@ partial class Parent
 
 partial class Parent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(string)]T, U>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T, U>
 	{{
 	}}
 }}
@@ -83,7 +82,7 @@ partial class Parent
 partial class Parent
 {{
 	[{DurianStrings.GeneratorNamespace}.{nameof(Generator.DurianGeneratedAttribute)}]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -100,7 +99,7 @@ partial class Parent
 partial class Parent
 {{
 	[System.CodeDom.Compiler.GeneratedCode("", "")]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -114,7 +113,7 @@ partial class Parent
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-partial class Test<[{nameof(DefaultParamAttribute)}(typeof(string)]T>
+partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T>
 {{
 }}
 ";
@@ -137,8 +136,8 @@ namespace N2
 
 namespace N1
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""N2"")]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""N2"")]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -160,8 +159,8 @@ class Test
 
 namespace N1
 {{
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""global"")]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""global"")]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -183,8 +182,8 @@ namespace N1
 	{{
 	}}
 
-	[{nameof(DefaultParamConfigurationAttribute)}({nameof(DefaultParamConfigurationAttribute.TargetNamespace)} = ""N1"")]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.TargetNamespace} = ""N1"")]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -203,7 +202,7 @@ class Parent1
 {{
 	partial class Parent2
 	{{
-		class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+		class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 		{{
 		}}
 	}}
@@ -220,7 +219,7 @@ class Parent1
 
 partial class Parent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]> where T : class where U : class
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]> where T : class where U : class
 	{{
 	}}
 }}
@@ -236,7 +235,7 @@ partial class Parent
 
 partial class Parent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T, U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T, U, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]V>
 	{{
 	}}
 }}

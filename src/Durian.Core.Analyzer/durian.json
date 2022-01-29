@@ -1,0 +1,10 @@
+{
+  "package": "CoreAnalyzer",
+  "version": "2.0.0",
+  "modules": [
+    "Core"
+  ],
+  "type": [
+    "Analyzer"
+  ]
+}

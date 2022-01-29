@@ -13,12 +13,12 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// Abstract implementation of the <see cref="IDurianSourceGenerator"/> interface that performs early validation of the input <see cref="GeneratorExecutionContext"/>.
+	/// Abstract implementation of the <see cref="IDurianGenerator"/> interface that performs early validation of the input <see cref="GeneratorExecutionContext"/>.
 	/// </summary>
-	/// <typeparam name="TCompilationData">User-defined type of <see cref="ICompilationData"/> this <see cref="IDurianSourceGenerator"/> operates on.</typeparam>
+	/// <typeparam name="TCompilationData">User-defined type of <see cref="ICompilationData"/> this <see cref="IDurianGenerator"/> operates on.</typeparam>
 	/// <typeparam name="TSyntaxReceiver">User-defined type of <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="CSharpSyntaxNode"/>s to perform the generation on.</typeparam>
 	/// <typeparam name="TFilter">User-defined type of <see cref="ISyntaxFilter"/> that decides what <see cref="CSharpSyntaxNode"/>s collected by the <see cref="SyntaxReceiver"/> are valid for generation.</typeparam>
-	public abstract class DurianGenerator<TCompilationData, TSyntaxReceiver, TFilter> : DurianGeneratorBase, IDurianSourceGenerator
+	public abstract class DurianGenerator<TCompilationData, TSyntaxReceiver, TFilter> : DurianGeneratorBase, IDurianGenerator
 		where TCompilationData : class, ICompilationDataWithSymbols
 		where TSyntaxReceiver : class, IDurianSyntaxReceiver
 		where TFilter : notnull, IGeneratorSyntaxFilterWithDiagnostics
@@ -42,42 +42,42 @@ namespace Durian.Analysis
 		[MemberNotNullWhen(true, nameof(TargetCompilation), nameof(SyntaxReceiver), nameof(ParseOptions))]
 		public bool IsSuccess { get; private protected set; }
 
-		/// <inheritdoc cref="IDurianSourceGenerator.ParseOptions"/>
+		/// <inheritdoc cref="IDurianGenerator.ParseOptions"/>
 		public CSharpParseOptions? ParseOptions { get; private set; }
 
-		/// <inheritdoc cref="IDurianSourceGenerator.SyntaxReceiver"/>
+		/// <inheritdoc cref="IDurianGenerator.SyntaxReceiver"/>
 		public TSyntaxReceiver? SyntaxReceiver { get; private set; }
 
-		/// <inheritdoc cref="IDurianSourceGenerator.TargetCompilation"/>
+		/// <inheritdoc cref="IDurianGenerator.TargetCompilation"/>
 		public TCompilationData? TargetCompilation { get; private set; }
 
-		string IDurianSourceGenerator.GeneratorName => GetGeneratorName();
-		CSharpParseOptions IDurianSourceGenerator.ParseOptions => ParseOptions!;
-		IDurianSyntaxReceiver IDurianSourceGenerator.SyntaxReceiver => SyntaxReceiver!;
-		ICompilationData IDurianSourceGenerator.TargetCompilation => TargetCompilation!;
-		string IDurianSourceGenerator.Version => GetVersion();
+		string? IDurianGenerator.GeneratorName => GetGeneratorName();
+		CSharpParseOptions IDurianGenerator.ParseOptions => ParseOptions!;
+		IDurianSyntaxReceiver IDurianGenerator.SyntaxReceiver => SyntaxReceiver!;
+		ICompilationData IDurianGenerator.TargetCompilation => TargetCompilation!;
+		string? IDurianGenerator.GeneratorVersion => GetGeneratorVersion();
 
-		/// <inheritdoc cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.DurianGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
+		/// <inheritdoc cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.DurianGenerator(in ConstructionContext, IHintNameProvider?)"/>
 		protected DurianGenerator()
 		{
 		}
 
-		/// <inheritdoc cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.DurianGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
-		protected DurianGenerator(in LoggableGeneratorConstructionContext context) : base(in context)
+		/// <inheritdoc cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.DurianGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		protected DurianGenerator(in ConstructionContext context) : base(in context)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="LoggableSourceGenerator"/> is initialized.</param>
+		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		protected DurianGenerator(in LoggableGeneratorConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
+		protected DurianGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
 		{
 		}
 
-		/// <inheritdoc cref="DurianGenerator(GeneratorLoggingConfiguration?, IHintNameProvider?)"/>
-		protected DurianGenerator(GeneratorLoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		/// <inheritdoc cref="DurianGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
+		protected DurianGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
 
@@ -86,7 +86,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		protected DurianGenerator(GeneratorLoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		protected DurianGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
 		{
 		}
 
@@ -147,12 +147,25 @@ namespace Durian.Analysis
 		/// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
 		public override void Initialize(GeneratorInitializationContext context)
 		{
+			base.Initialize(context);
 			context.RegisterForSyntaxNotifications(CreateSyntaxReceiver);
 		}
 
-		IDurianSyntaxReceiver IDurianSourceGenerator.CreateSyntaxReceiver()
+		IDurianSyntaxReceiver IDurianGenerator.CreateSyntaxReceiver()
 		{
 			return CreateSyntaxReceiver();
+		}
+
+		/// <inheritdoc/>
+		protected sealed override void AddSource(CSharpSyntaxTree syntaxTree, string hintName, in GeneratorPostInitializationContext context)
+		{
+			base.AddSource(syntaxTree, hintName, context);
+		}
+
+		/// <inheritdoc/>
+		protected sealed override void AddSource(string source, string hintName, in GeneratorPostInitializationContext context)
+		{
+			base.AddSource(source, hintName, context);
 		}
 
 		/// <summary>
@@ -162,7 +175,7 @@ namespace Durian.Analysis
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		/// <exception cref="InvalidOperationException"><see cref="HasValidData"/> must be <see langword="true"/> in order to add new source.</exception>
-		protected void AddSource(string source, string hintName, in GeneratorExecutionContext context)
+		protected sealed override void AddSource(string source, string hintName, in GeneratorExecutionContext context)
 		{
 			ThrowIfHasNoValidData();
 
@@ -177,7 +190,7 @@ namespace Durian.Analysis
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		/// <exception cref="InvalidOperationException"><see cref="HasValidData"/> must be <see langword="true"/> in order to add new source.</exception>
-		protected void AddSource(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+		protected sealed override void AddSource(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
 			ThrowIfHasNoValidData();
 			AddSource_Internal(tree, hintName, in context);

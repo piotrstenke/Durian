@@ -156,7 +156,7 @@ namespace Durian.Analysis.FriendClass
 				return @default;
 			}
 
-			bool allowsChildren = GetBoolProperty(MemberNames.Config_AllowsChildren, @default.AllowsChildren);
+			bool allowsChildren = GetBoolProperty(FriendClassConfigurationAttributeProvider.AllowsChildren, @default.AllowsChildren);
 
 			return new()
 			{
@@ -203,7 +203,7 @@ namespace Durian.Analysis.FriendClass
 		)
 		{
 			if (symbol.GetAttribute(compilation.FriendClassConfigurationAttribute!) is AttributeData attr &&
-				!attr.GetNamedArgumentValue<bool>(MemberNames.Config_AllowsChildren))
+				!attr.GetNamedArgumentValue<bool>(FriendClassConfigurationAttributeProvider.AllowsChildren))
 			{
 				diagnostic = Diagnostic.Create(
 					descriptor: DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends,
@@ -323,7 +323,7 @@ namespace Durian.Analysis.FriendClass
 			{
 				diagnostic = Diagnostic.Create(
 					descriptor: DUR0311_DoNotAllowChildrenOnSealedType,
-					location: GetArgumentLocation(MemberNames.Config_AllowsChildren),
+					location: GetArgumentLocation(FriendClassConfigurationAttributeProvider.AllowsChildren),
 					messageArgs: new[] { symbol }
 				);
 

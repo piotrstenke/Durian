@@ -1,0 +1,19 @@
+{
+  "package": "FriendClass",
+  "version": "1.0.0",
+  "modules": [
+    "FriendClass"
+  ],
+  "type": [
+    "Analyzer",
+    "CodeFix",
+    "StaticGenerator"
+  ],
+  "includedTypes": [
+    "FriendClassAttribute",
+    "FriendClassConfigurationAttribute"
+  ],
+  "diagnosticFiles": [
+    "FriendClassDiagnostics.cs"
+  ]
+}

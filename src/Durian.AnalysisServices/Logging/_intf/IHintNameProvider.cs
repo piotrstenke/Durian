@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Logging
@@ -14,6 +15,7 @@ namespace Durian.Analysis.Logging
 		/// Returns a name of the log file for the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the file name for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
 		string GetFileName(ISymbol symbol);
 
 		/// <summary>

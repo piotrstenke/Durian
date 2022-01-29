@@ -33,7 +33,7 @@ namespace Durian.TestServices
 		{
 			ISourceGenerator generator = CreateGenerator();
 
-			if (enableDiagnostics && generator is IDurianSourceGenerator g && g.SupportsDiagnostics)
+			if (enableDiagnostics && generator is IDurianGenerator g && g.SupportsDiagnostics)
 			{
 				g.EnableDiagnostics = true;
 			}

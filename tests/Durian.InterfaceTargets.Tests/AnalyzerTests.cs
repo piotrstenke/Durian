@@ -4,11 +4,11 @@
 using System.Threading.Tasks;
 using Durian.TestServices;
 using Xunit;
-using static Durian.Analysis.InterfaceTargets.IntfTargDiagnostics;
+using static Durian.Analysis.InterfaceTargets.InterfaceTargetsDiagnostics;
 
 namespace Durian.Analysis.InterfaceTargets.Tests
 {
-	public sealed class AnalyzerTests : AnalyzerTest<IntfTargAnalyzer>
+	public sealed class AnalyzerTests : AnalyzerTest<InterfaceTargetsAnalyzer>
 	{
 		[Theory]
 		[InlineData("class")]
@@ -21,7 +21,7 @@ namespace Durian.Analysis.InterfaceTargets.Tests
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.ReflectionOnly)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.ReflectionOnly})]
 public interface ITest
 {{
 }}
@@ -44,7 +44,7 @@ public {memberType} Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Class)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.Class})]
 public interface ITest
 {{
 }}
@@ -68,7 +68,7 @@ public {memberType} Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Interface)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.Interface})]
 public interface ITest
 {{
 }}
@@ -88,9 +88,9 @@ public {memberType} Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}(
-	{nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Class)} |
-	{nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Struct)})]
+[{InterfaceTargetsAttributeProvider.TypeName}(
+	{InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.Class} |
+	{InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.Struct})]
 public interface ITest
 {{
 }}
@@ -112,7 +112,7 @@ public record Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.RecordClass)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.RecordClass})]
 public interface ITest
 {{
 }}
@@ -136,7 +136,7 @@ public {memberType} Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.RecordStruct)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.RecordStruct})]
 public interface ITest
 {{
 }}
@@ -160,7 +160,7 @@ public {memberType} Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Struct)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.Struct})]
 public interface ITest
 {{
 }}
@@ -185,7 +185,7 @@ public {memberType} Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.None)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.None})]
 public interface ITest
 {{
 }}
@@ -204,7 +204,7 @@ public {memberType} Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Class)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.Class})]
 public interface ITest
 {{
 }}
@@ -222,7 +222,7 @@ public class Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Interface)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.Interface})]
 public interface ITest
 {{
 }}
@@ -240,9 +240,9 @@ public interface Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}(
-	{nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Class)} |
-	{nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Struct)})]
+[{InterfaceTargetsAttributeProvider.TypeName}(
+	{InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.Class} |
+	{InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.Struct})]
 public interface ITest
 {{
 }}
@@ -260,7 +260,7 @@ public struct Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.RecordClass)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.RecordClass})]
 public interface ITest
 {{
 }}
@@ -278,7 +278,7 @@ public record Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.RecordStruct)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.RecordStruct})]
 public interface ITest
 {{
 }}
@@ -296,7 +296,7 @@ public record struct Test : ITest
 			string input =
 @$"using {DurianStrings.MainNamespace};
 
-[{nameof(InterfaceTargetsAttribute)}({nameof(Durian.InterfaceTargets)}.{nameof(Durian.InterfaceTargets.Struct)})]
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.Struct})]
 public interface ITest
 {{
 }}

@@ -1,6 +1,7 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
 using System.Linq;
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
@@ -20,8 +21,8 @@ namespace Durian.Analysis.DefaultParam
 	[Generator(LanguageNames.CSharp)]
 #endif
 
-	[GeneratorLoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "DefaultParam", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
-	public class DefaultParamGenerator : CachedDurianGenerator<IDefaultParamTarget, DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>
+	[LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "DefaultParam", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
+	public class DefaultParamGenerator : CachedGenerator<IDefaultParamTarget, DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>
 	{
 		/// <summary>
 		/// Number of trees generated statically by this generator.
@@ -37,14 +38,14 @@ namespace Durian.Analysis.DefaultParam
 		private FilterContainer<IDefaultParamFilter>? _filters;
 
 		/// <summary>
-		/// Name of this source generator, i.e. 'DefaultParam'.
+		/// Name of this source generator.
 		/// </summary>
 		public static string GeneratorName => "DefaultParam";
 
 		/// <summary>
 		/// Version of this source generator.
 		/// </summary>
-		public static string Version => "1.3.0";
+		public static string Version => "2.0.0";
 
 		/// <inheritdoc/>
 		public override bool EnableDiagnostics
@@ -62,27 +63,27 @@ namespace Durian.Analysis.DefaultParam
 			}
 		}
 
-		/// <inheritdoc cref="DefaultParamGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
+		/// <inheritdoc cref="DefaultParamGenerator(in ConstructionContext, IHintNameProvider?)"/>
 		public DefaultParamGenerator()
 		{
 		}
 
-		/// <inheritdoc cref="DefaultParamGenerator(in LoggableGeneratorConstructionContext, IHintNameProvider?)"/>
-		public DefaultParamGenerator(in LoggableGeneratorConstructionContext context) : base(in context)
+		/// <inheritdoc cref="DefaultParamGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		public DefaultParamGenerator(in ConstructionContext context) : base(in context)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamGenerator"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="LoggableSourceGenerator"/> is initialized.</param>
+		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public DefaultParamGenerator(in LoggableGeneratorConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
+		public DefaultParamGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
 		{
 		}
 
-		/// <inheritdoc cref="DefaultParamGenerator(GeneratorLoggingConfiguration?, IHintNameProvider?)"/>
-		public DefaultParamGenerator(GeneratorLoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		/// <inheritdoc cref="DefaultParamGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
+		public DefaultParamGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
 
@@ -91,7 +92,7 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public DefaultParamGenerator(GeneratorLoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		public DefaultParamGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
 		{
 		}
 
@@ -101,6 +102,19 @@ namespace Durian.Analysis.DefaultParam
 		public override DefaultParamSyntaxReceiver CreateSyntaxReceiver()
 		{
 			return new DefaultParamSyntaxReceiver(SupportsDiagnostics);
+		}
+
+		/// <inheritdoc/>
+		protected override IEnumerable<ISourceTextProvider>? GetStaticSyntaxTrees()
+		{
+			return new ISourceTextProvider[]
+			{
+				new DPMethodConventionProvider(),
+				new DPTypeConventionProvider(),
+				new DefaultParamAttributeProvider(),
+				new DefaultParamConfigurationAttributeProvider(),
+				new DefaultParamScopedConfigurationAttributeProvider()
+			};
 		}
 
 		/// <inheritdoc/>
@@ -179,7 +193,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		protected sealed override string GetVersion()
+		protected sealed override string GetGeneratorVersion()
 		{
 			return Version;
 		}
@@ -215,7 +229,7 @@ namespace Durian.Analysis.DefaultParam
 
 				case FilterMode.Both:
 				{
-					DefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, LoggableGeneratorDiagnosticReceiverFactory.SourceGenerator(this, DiagnosticReceiver!));
+					DefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, DiagnosticReceiverFactory.SourceGenerator(this, DiagnosticReceiver!));
 
 					while (enumerator.MoveNext())
 					{
@@ -273,7 +287,7 @@ namespace Durian.Analysis.DefaultParam
 
 				case FilterMode.Both:
 				{
-					CachedDefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, LoggableGeneratorDiagnosticReceiverFactory.SourceGenerator(this, DiagnosticReceiver!), in cache);
+					CachedDefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, DiagnosticReceiverFactory.SourceGenerator(this, DiagnosticReceiver!), in cache);
 
 					while (enumerator.MoveNext())
 					{

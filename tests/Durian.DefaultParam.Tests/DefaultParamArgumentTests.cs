@@ -17,7 +17,7 @@ namespace Durian.Analysis.DefaultParam.Tests
 
 partial class Test
 {{
-	public static void Method<T, [{nameof(DefaultParamAttribute)}(typeof(int[]))]U>() where T : U
+	public static void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(int[]))]U>() where T : U
 	{{
 	}}
 }}
@@ -34,7 +34,7 @@ using System;
 
 partial class Test
 {{
-	public static void Method<T, [{nameof(DefaultParamAttribute)}(typeof(Action))]U>() where T : U
+	public static void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(Action))]U>() where T : U
 	{{
 	}}
 }}
@@ -50,7 +50,7 @@ partial class Test
 
 partial class Test
 {{
-	public static unsafe void Method<[{nameof(DefaultParamAttribute)}(typeof(delegate*<int>))]T>()
+	public static unsafe void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(delegate*<int>))]T>()
 	{{
 	}}
 }}
@@ -70,7 +70,7 @@ public partial class Test
 	{{
 	}}
 
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(C))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T[] value)
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(C))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U>(T[] value)
 	{{
 	}}
 }}
@@ -90,7 +90,7 @@ public partial class Test
 	{{
 	}}
 
-	public static void Method<T, [{nameof(DefaultParamAttribute)}(typeof(C))]U>() where T : U
+	public static void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(C))]U>() where T : U
 	{{
 	}}
 }}
@@ -110,7 +110,7 @@ public partial class Test
 	{{
 	}}
 
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(C))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>(T value)
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(C))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U>(T value)
 	{{
 	}}
 }}
@@ -130,7 +130,7 @@ public partial class Test
 	{{
 	}}
 
-	public static T Method<[{nameof(DefaultParamAttribute)}(typeof(C))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>()
+	public static T Method<[{DefaultParamAttributeProvider.TypeName}(typeof(C))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U>()
 	{{
 	}}
 }}
@@ -146,7 +146,7 @@ public partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(null)]T>()
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(null)]T>()
 	{{
 	}}
 }}
@@ -163,7 +163,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(object))]T, [{nameof(DefaultParamAttribute)}(typeof(string))]U>() where U : T
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(object))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]U>() where U : T
 	{{
 	}}
 }}
@@ -179,7 +179,7 @@ partial class Test
 
 partial class Test
 {{
-	public static unsafe void Method<[{nameof(DefaultParamAttribute)}(typeof(int*))]T>()
+	public static unsafe void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int*))]T>()
 	{{
 	}}
 }}
@@ -195,7 +195,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(System.Span<int>))]T>()
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(System.Span<int>))]T>()
 	{{
 	}}
 }}
@@ -211,7 +211,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(System.Linq.Enumerable))]T>()
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(System.Linq.Enumerable))]T>()
 	{{
 	}}
 }}
@@ -227,7 +227,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<T, [{nameof(DefaultParamAttribute)}(typeof(System.Array))]U>() where T : U
+	public static void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(System.Array))]U>() where T : U
 	{{
 	}}
 }}
@@ -243,7 +243,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<T, [{nameof(DefaultParamAttribute)}(typeof(System.ValueType))]U>() where T : U
+	public static void Method<T, [{DefaultParamAttributeProvider.TypeName}(typeof(System.ValueType))]U>() where T : U
 	{{
 	}}
 }}
@@ -259,7 +259,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(System.Void))]T>()
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(System.Void))]T>()
 	{{
 	}}
 }}
@@ -276,7 +276,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(System.Collections.Generic.List<>))]T>()
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(System.Collections.Generic.List<>))]T>()
 	{{
 	}}
 }}
@@ -292,7 +292,7 @@ partial class Test
 
 partial class Test
 {{
-	public static void Method<[{nameof(DefaultParamAttribute)}(typeof(void))]T>()
+	public static void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(void))]T>()
 	{{
 	}}
 }}

@@ -11,22 +11,22 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Configuration namespace of the Durian project.
 		/// </summary>
-		public static string ConfigurationNamespace => $"{MainNamespace}.Configuration";
+		public const string ConfigurationNamespace = MainNamespace + ".Configuration";
 
 		/// <summary>
 		/// Namespace where the Durian code generation attributes are to be found.
 		/// </summary>
-		public static string GeneratorNamespace => $"{MainNamespace}.Generator";
+		public const string GeneratorNamespace = MainNamespace + ".Generator";
 
 		/// <summary>
 		/// Namespace where module and package types are to be found.
 		/// </summary>
-		public static string InfoNamespace => $"{MainNamespace}.Info";
+		public const string InfoNamespace = MainNamespace + ".Info";
 
 		/// <summary>
 		/// Main namespace of the Durian project.
 		/// </summary>
-		public static string MainNamespace => "Durian";
+		public const string MainNamespace = "Durian";
 
 		/// <summary>
 		/// Returns the <paramref name="attributeName"/> with a 'Attribute' at the end.

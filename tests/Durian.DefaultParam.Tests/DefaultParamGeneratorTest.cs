@@ -18,7 +18,7 @@ namespace Durian.Analysis.DefaultParam.Tests
 
 			private int _generatorCounter;
 
-			public TestableGenerator(GeneratorLoggingConfiguration configuration, string testName) : base(configuration, new TestNameToFile(testName))
+			public TestableGenerator(LoggingConfiguration configuration, string testName) : base(configuration, new TestNameToFile(testName))
 			{
 			}
 
@@ -98,7 +98,7 @@ namespace Durian.Analysis.DefaultParam.Tests
 			return base.RunGenerator(input, DefaultParamGenerator.NumStaticTrees, testName);
 		}
 
-		protected sealed override DefaultParamGenerator CreateGenerator(GeneratorLoggingConfiguration configuration, string testName)
+		protected sealed override DefaultParamGenerator CreateGenerator(LoggingConfiguration configuration, string testName)
 		{
 			return new TestableGenerator(configuration, testName);
 		}

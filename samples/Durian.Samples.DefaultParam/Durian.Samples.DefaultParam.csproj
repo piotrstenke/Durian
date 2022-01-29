@@ -5,9 +5,5 @@
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>9</LangVersion>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Durian" Version="1.2.0" />
-  </ItemGroup>
   
 </Project>

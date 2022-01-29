@@ -35,7 +35,7 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
 
-		IDurianSourceGenerator IGeneratorSyntaxFilter.Generator => Generator;
+		IDurianGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
 		/// <inheritdoc cref="DefaultParamLocalFunctionFilter(DefaultParamGenerator, IHintNameProvider)"/>
 		public DefaultParamLocalFunctionFilter(DefaultParamGenerator generator) : this(generator, new SymbolNameToFile())

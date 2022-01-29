@@ -26,12 +26,11 @@ namespace Durian.TestServices
 		public static string DefaultCompilationName => "TestCompilation";
 
 		/// <summary>
-		/// Creates a <see cref="CSharpCompilation"/> that contains <see cref="MetadataReference"/>s of all the essential .NET and Durian assemblies.
+		/// Creates a <see cref="CSharpCompilation"/> that contains <see cref="MetadataReference"/>s of all the essential .NET assemblies.
 		/// </summary>
-		/// <param name="includeDurianCore">Determines whether to include the <c>Durian.Core.dll</c> assembly.</param>
-		public static CSharpCompilation CreateBaseCompilation(bool includeDurianCore = true)
+		public static CSharpCompilation CreateBaseCompilation()
 		{
-			return CreateCompilationWithReferences(sources: null, GetBaseReferences(includeDurianCore));
+			return CreateCompilationWithReferences(sources: null, GetBaseReferences());
 		}
 
 		/// <summary>
@@ -225,10 +224,9 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="MetadataReference"/>s of all essential .NET and Durian assemblies.
+		/// Returns an array of <see cref="MetadataReference"/>s of all essential .NET assemblies.
 		/// </summary>
-		/// <param name="includeDurianCore">Determines whether to include the <c>Durian.Core.dll</c> assembly.</param>
-		public static MetadataReference[] GetBaseReferences(bool includeDurianCore = true)
+		public static MetadataReference[] GetBaseReferences()
 		{
 			string directory = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
 
@@ -242,12 +240,6 @@ namespace Durian.TestServices
 				MetadataReference.CreateFromFile(Path.Combine(directory, "System.Runtime.dll")),
 				MetadataReference.CreateFromFile(Path.Combine(directory, "netstandard.dll")),
 			};
-
-			if (includeDurianCore)
-			{
-				references.Add(MetadataReference.CreateFromFile(typeof(Generator.DurianGeneratedAttribute).Assembly.Location));
-				references.Add(MetadataReference.CreateFromFile(typeof(DefaultParamAttribute).Assembly.Location));
-			}
 
 			return references.ToArray();
 		}

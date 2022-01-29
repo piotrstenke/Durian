@@ -17,11 +17,13 @@
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
     <ProjectReference Include="..\Durian.Manager\Durian.Manager.csproj" PrivateAssets="all" />
     
-    <None Include="$(OutputPath)\Durian.Manager.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.Core.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.AnalysisServices.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(OutputPath)\Durian.DefaultParam.Dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\Durian.DefaultParam.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\Durian.FriendClass.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\Durian.InterfaceTargets.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
   </ItemGroup>
   

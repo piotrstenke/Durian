@@ -14,7 +14,7 @@ namespace Durian.Analysis.SyntaxVisitors
 		/// <summary>
 		/// <see cref="SyntaxToken"/> that is the replacement.
 		/// </summary>
-		public virtual SyntaxToken Replacement { get; set; }
+		public SyntaxToken Replacement { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TokenReplacer"/> class.

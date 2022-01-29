@@ -15,7 +15,7 @@ namespace Durian.Analysis.DefaultParam
 	/// Base class for all DefaultParam <see cref="ISyntaxFilter"/>s that want to act as an Roslyn analyzer.
 	/// </summary>
 	/// <typeparam name="T">Type of <see cref="IDefaultParamTarget"/> this <see cref="DefaultParamFilterAsAnalyzer{T}"/> supports.</typeparam>
-	public abstract class DefaultParamFilterAsAnalyzer<T> : ICachedAnalyzerInfo<IDefaultParamTarget> where T : IDefaultParamTarget
+	public abstract class DefaultParamFilterAsAnalyzer<T> : ICachedAnalyzer<IDefaultParamTarget> where T : IDefaultParamTarget
 	{
 		/// <inheritdoc/>
 		public bool AllowGenerated => true;
@@ -59,7 +59,7 @@ namespace Durian.Analysis.DefaultParam
 			context.RegisterSyntaxNodeAction(context => Analyze(data, context, out _), SyntaxKind.TypeParameterList);
 		}
 
-		void ICachedAnalyzerInfo<IDefaultParamTarget>.Register(
+		void ICachedAnalyzer<IDefaultParamTarget>.Register(
 					IDurianAnalysisContext context,
 					CSharpCompilation compilation,
 					ConcurrentDictionary<FileLinePositionSpan, IDefaultParamTarget> cached

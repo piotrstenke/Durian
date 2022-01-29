@@ -12,12 +12,12 @@ namespace Durian.Analysis.Extensions
 	/// </summary>
 	public static class DiagnosticReceiverExtensions
 	{
-		/// <inheritdoc cref="ReportDiagnostic(in DurianGeneratorExecutionContext, DiagnosticDescriptor, ISymbol?, object[])"/>
-		public static void ReportDiagnostic(this in DurianGeneratorExecutionContext context, DiagnosticDescriptor descriptor)
+		/// <inheritdoc cref="ReportDiagnostic(in DurianExecutionContext, DiagnosticDescriptor, ISymbol?, object[])"/>
+		public static void ReportDiagnostic(this in DurianExecutionContext context, DiagnosticDescriptor descriptor)
 		{
 			if (!context.IsInitialized)
 			{
-				throw new InvalidOperationException(DurianGeneratorExecutionContext.Exc_NotInitialized);
+				throw new InvalidOperationException(DurianExecutionContext.Exc_NotInitialized);
 			}
 
 			if (descriptor is null)
@@ -44,12 +44,12 @@ namespace Durian.Analysis.Extensions
 			diagnosticReceiver.ReportDiagnostic(descriptor, Location.None);
 		}
 
-		/// <inheritdoc cref="ReportDiagnostic(in DurianGeneratorExecutionContext, DiagnosticDescriptor, ISymbol?, object[])"/>
-		public static void ReportDiagnostic(this in DurianGeneratorExecutionContext context, DiagnosticDescriptor descriptor, ISymbol? symbol)
+		/// <inheritdoc cref="ReportDiagnostic(in DurianExecutionContext, DiagnosticDescriptor, ISymbol?, object[])"/>
+		public static void ReportDiagnostic(this in DurianExecutionContext context, DiagnosticDescriptor descriptor, ISymbol? symbol)
 		{
 			if (!context.IsInitialized)
 			{
-				throw new InvalidOperationException(DurianGeneratorExecutionContext.Exc_NotInitialized);
+				throw new InvalidOperationException(DurianExecutionContext.Exc_NotInitialized);
 			}
 
 			if (descriptor is null)
@@ -79,17 +79,17 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Reports a <see cref="Diagnostic"/> created from the specified <paramref name="descriptor"/>.
 		/// </summary>
-		/// <param name="context"><see cref="DurianGeneratorExecutionContext"/> to report the <see cref="Diagnostic"/> to.</param>
+		/// <param name="context"><see cref="DurianExecutionContext"/> to report the <see cref="Diagnostic"/> to.</param>
 		/// <param name="descriptor"><see cref="DiagnosticDescriptor"/> that is used to create the <see cref="Diagnostic"/>.</param>
 		/// <param name="symbol"><see cref="ISymbol"/> that caused the report.</param>
 		/// <param name="messageArgs">Arguments of the diagnostic message.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="descriptor"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="context"/> is not initialized.</exception>
-		public static void ReportDiagnostic(this in DurianGeneratorExecutionContext context, DiagnosticDescriptor descriptor, ISymbol? symbol, params object?[]? messageArgs)
+		public static void ReportDiagnostic(this in DurianExecutionContext context, DiagnosticDescriptor descriptor, ISymbol? symbol, params object?[]? messageArgs)
 		{
 			if (!context.IsInitialized)
 			{
-				throw new InvalidOperationException(DurianGeneratorExecutionContext.Exc_NotInitialized);
+				throw new InvalidOperationException(DurianExecutionContext.Exc_NotInitialized);
 			}
 
 			if (descriptor is null)

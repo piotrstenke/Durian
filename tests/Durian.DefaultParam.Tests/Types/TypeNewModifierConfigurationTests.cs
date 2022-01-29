@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Configuration;
 using Durian.TestServices;
 using Xunit;
 using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
@@ -25,7 +24,7 @@ class Inner
 
 partial class Parent : Inner
 {{
-	class Test<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>
+	class Test<T, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]U>
 	{{
 	}}
 }}
@@ -56,7 +55,7 @@ class Inner
 
 partial class Parent : Inner
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -81,7 +80,7 @@ partial class Parent : Inner
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 class Inner
 {{
 	public class Test
@@ -89,10 +88,10 @@ class Inner
 	}}
 }}
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Parent : Inner
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -116,7 +115,7 @@ partial class Parent : Inner
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 class Inner
 {{
 	public class Test
@@ -126,8 +125,8 @@ class Inner
 
 partial class Parent : Inner
 {{
-	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -153,7 +152,7 @@ partial class Parent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Inner
 {{
 	public class Test<T>
@@ -167,7 +166,7 @@ class Inner
 
 partial class Parent : Inner
 {{
-	class Test<T, U, [{nameof(DefaultParamAttribute)}(typeof(int))]V>
+	class Test<T, U, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]V>
 	{{
 	}}
 }}
@@ -192,7 +191,7 @@ partial class Parent : Inner
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Inner
 {{
 	public class Test<T>
@@ -202,7 +201,7 @@ class Inner
 
 partial class Parent : Inner
 {{
-	class Test<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>
+	class Test<T, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]U>
 	{{
 	}}
 }}
@@ -234,11 +233,11 @@ class Inner
 	}}
 }}
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Parent : Inner
 {{
-	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -264,7 +263,7 @@ partial class Parent
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 interface IParent
 {{
 	class Test
@@ -274,7 +273,7 @@ interface IParent
 
 partial interface IChild : IParent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -298,7 +297,7 @@ $@"partial interface IChild
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Inner
 {{
 	public class Test
@@ -308,7 +307,7 @@ class Inner
 
 partial class Parent : Inner
 {{
-	ref struct Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	ref struct Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -333,7 +332,7 @@ partial class Parent : Inner
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Inner
 {{
 	public class Test
@@ -341,10 +340,10 @@ class Inner
 	}}
 }}
 
-[{nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 partial class Parent : Inner
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T> : Test<int>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T> : Test<int>
 	{{
 	}}
 }}
@@ -359,7 +358,7 @@ partial class Parent : Inner
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Inner
 {{
 	public class Test
@@ -369,8 +368,8 @@ class Inner
 
 partial class Parent : Inner
 {{
-	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -392,11 +391,11 @@ class Inner
 	}}
 }}
 
-[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Parent : Inner
 {{
-	[{nameof(DefaultParamConfiguration)}({nameof(DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -411,7 +410,7 @@ partial class Parent : Inner
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 class Inner
 {{
 	public void Test<T>()
@@ -421,7 +420,7 @@ class Inner
 
 partial class Parent : Inner
 {{
-	class Test<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>
+	class Test<T, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]U>
 	{{
 	}}
 }}
@@ -437,14 +436,14 @@ partial class Parent : Inner
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Parent
 {{
 	public void Test<T>()
 	{{
 	}}
 
-	class Test<T, [{nameof(DefaultParamAttribute)}(typeof(int))]U>
+	class Test<T, [{DefaultParamAttributeProvider.TypeName}(typeof(int))]U>
 	{{
 	}}
 }}
@@ -460,7 +459,7 @@ partial class Parent
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 interface IParent
 {{
 	class Test
@@ -470,7 +469,7 @@ interface IParent
 
 partial interface IChild : IParent
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(string))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	{{
 	}}
 }}
@@ -486,7 +485,7 @@ partial interface IChild : IParent
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = false)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 class Inner
 {{
 	public string Test {{ get; }}
@@ -494,7 +493,7 @@ class Inner
 
 partial class Parent : Inner
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -510,12 +509,12 @@ partial class Parent : Inner
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Parent
 {{
 	public string Test {{ get; }}
 
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
@@ -534,7 +533,7 @@ class Test
 {{
 }}
 
-class Test<[{nameof(DefaultParamAttribute)}(typeof(string)]T>
+class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T>
 {{
 }}
 ";
@@ -548,7 +547,7 @@ class Test<[{nameof(DefaultParamAttribute)}(typeof(string)]T>
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
-[assembly: {nameof(DefaultParamScopedConfigurationAttribute)}({nameof(DefaultParamScopedConfigurationAttribute.ApplyNewModifierWhenPossible)} = true)]
+[assembly: {DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 class Inner
 {{
 	private class Test
@@ -558,7 +557,7 @@ class Inner
 
 partial class Parent : Inner
 {{
-	class Test<[{nameof(DefaultParamAttribute)}(typeof(int))]T>
+	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}

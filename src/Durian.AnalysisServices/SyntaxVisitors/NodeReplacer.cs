@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.SyntaxVisitors
@@ -14,8 +13,7 @@ namespace Durian.Analysis.SyntaxVisitors
 		/// <summary>
 		/// <see cref="CSharpSyntaxNode"/> that is the replacement.
 		/// </summary>
-		[MaybeNull]
-		public virtual CSharpSyntaxNode Replacement { get; set; }
+		public CSharpSyntaxNode? Replacement { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="NodeReplacer"/> class.
@@ -28,7 +26,7 @@ namespace Durian.Analysis.SyntaxVisitors
 		/// Initializes a new instance of the <see cref="NodeReplacer"/> class.
 		/// </summary>
 		/// <param name="replacement"><see cref="CSharpSyntaxNode"/> that is the replacement.</param>
-		protected NodeReplacer(CSharpSyntaxNode replacement)
+		protected NodeReplacer(CSharpSyntaxNode? replacement)
 		{
 			Replacement = replacement;
 		}
