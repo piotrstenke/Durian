@@ -5,5 +5,13 @@
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>9</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Durian.AnalysisServices" Version="2.0.0" />
+    <PackageReference Include="Durian.DefaultParam" Version="2.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
   
 </Project>

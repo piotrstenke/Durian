@@ -136,8 +136,6 @@ The possible values of the [Durian.InterfaceTargets](../Durian.Core/_enum/Interf
  - *RecordStruct* - Interface can only be implemented by record structs.
  - *All* - Interface can be applied to all kinds of members; same as not specifying the [Durian.InterfaceTargetsAttribute](../Durian.Core/_attr/InterfaceTargetsAttribute.cs) at all.
 
-**Note**: Upon release of C# 10, a new value will be added - *RecordStruct*.
-
 
 ##
 

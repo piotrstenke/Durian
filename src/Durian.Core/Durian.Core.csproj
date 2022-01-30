@@ -19,7 +19,7 @@
     <Compile Include=".generated\PackageRepository.cs" />
     <Compile Include=".generated\TypeRepository.cs" />
 
-    <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
     
   </ItemGroup>
 
