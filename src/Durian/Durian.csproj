@@ -15,9 +15,6 @@
   <ItemGroup>
 
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
-    <ProjectReference Include="..\Durian.DefaultParam\Durian.DefaultParam.csproj" />
-    <ProjectReference Include="..\Durian.FriendClass\Durian.FriendClass.csproj" />
-    <ProjectReference Include="..\Durian.InterfaceTargets\Durian.InterfaceTargets.csproj" />
     
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
