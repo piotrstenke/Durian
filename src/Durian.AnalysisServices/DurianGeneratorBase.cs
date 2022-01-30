@@ -26,8 +26,6 @@ namespace Durian.Analysis
 
 		#region Diagnostics copied from Durian.Core.Analyzer
 
-#if !MAIN_PACKAGE
-
 #pragma warning disable IDE1006 // Naming Styles
 
 		private static readonly DiagnosticDescriptor DUR0001_DoesNotReferenceDurianCore = new(
@@ -57,8 +55,6 @@ namespace Durian.Analysis
 			helpLinkUri: GlobalInfo.Repository + "/tree/master/docs/Core/DUR0004.md",
 			isEnabledByDefault: true
 		);
-
-#endif
 
 #endregion Diagnostics copied from Durian.Core.Analyzer
 
@@ -213,7 +209,7 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Returns an array of <see cref="DurianModule"/>s representing modules that should be enabled before the current generator pass is executed.
 		/// </summary>
-		protected abstract DurianModule[] GetEnabledModules();
+		protected abstract DurianModule[] GetRequiredModules();
 
 		/// <summary>
 		/// Returns name of this <see cref="IDurianGenerator"/>.
@@ -247,13 +243,6 @@ namespace Durian.Analysis
 		/// <returns><see langword="true"/> if the <paramref name="compilation"/> was successfully validated and initialized, <see langword="false"/> otherwise.</returns>
 		protected bool InitializeCompilation(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
 		{
-#if MAIN_PACKAGE
-			if (context.Compilation is not CSharpCompilation c || !ValidateCompilation(c, in context))
-			{
-				compilation = null;
-				return false;
-			}
-#else
 			if (context.Compilation is not CSharpCompilation c)
 			{
 				if (EnableDiagnostics)
@@ -282,9 +271,8 @@ namespace Durian.Analysis
 				return false;
 			}
 
-			DurianModule[] modules = GetEnabledModules();
+			DurianModule[] modules = GetRequiredModules();
 			EnableModules(ref c, in context, modules);
-#endif
 
 			compilation = c;
 			return true;
@@ -386,10 +374,9 @@ namespace Durian.Analysis
 			}
 		}
 
-#if !MAIN_PACKAGE
 		private static void EnableModules(ref CSharpCompilation compilation, in GeneratorExecutionContext context, DurianModule[] modules)
 		{
-			AttributeData[] attributes = ModuleUtilities.GetInstancesOfRegisterAttribute(compilation);
+			AttributeData[] attributes = ModuleUtilities.GetInstancesOfEnableAttribute(compilation);
 			bool[] enabled = new bool[modules.Length];
 
 			foreach (AttributeData attribute in attributes)
@@ -443,6 +430,5 @@ namespace Durian.Analysis
 
 			return false;
 		}
-#endif
 	}
 }

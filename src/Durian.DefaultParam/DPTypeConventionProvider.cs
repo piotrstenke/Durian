@@ -82,7 +82,8 @@ $@"namespace {Namespace}
 		/// </summary>
 		{Copy} = 1
 	}}
-}}";
+}}
+";
 		}
 	}
 }

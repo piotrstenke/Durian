@@ -9,7 +9,7 @@ namespace Durian.Generator
 	/// <summary>
 	/// Declares that the specified Durian module is present in the compilation.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
+	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
 	public sealed class EnableModuleAttribute : Attribute
 	{
 		/// <summary>

@@ -11,15 +11,11 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.Analysis.DefaultParam
 {
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 	/// <summary>
 	/// Analyzes local functions with type parameters marked by the <c>Durian.DefaultParamAttribute</c>.
 	/// </summary>
-#if !MAIN_PACKAGE
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
-#endif
 	public class DefaultParamLocalFunctionAnalyzer : DefaultParamAnalyzer
-#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override SymbolKind SupportedSymbolKind => SymbolKind.Method;

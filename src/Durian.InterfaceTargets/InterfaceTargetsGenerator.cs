@@ -11,9 +11,7 @@ namespace Durian.Analysis.InterfaceTargets
 	/// <summary>
 	/// Generates syntax tree of types required by the <c>InterfaceTargets</c> module.
 	/// </summary>
-#if !MAIN_PACKAGE
 	[Generator(LanguageNames.CSharp)]
-#endif
 	[LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "InterfaceTargets", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
 	public class InterfaceTargetsGenerator : DurianGeneratorBase
 	{
@@ -61,7 +59,7 @@ namespace Durian.Analysis.InterfaceTargets
 		}
 
 		/// <inheritdoc/>
-		protected override DurianModule[] GetEnabledModules()
+		protected override DurianModule[] GetRequiredModules()
 		{
 			return new DurianModule[] { DurianModule.InterfaceTargets };
 		}

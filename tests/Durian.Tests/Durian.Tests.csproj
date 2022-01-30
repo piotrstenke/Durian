@@ -31,7 +31,6 @@
     <ProjectReference Include="..\..\src\Durian.Core.Analyzer\Durian.Core.Analyzer.csproj" />
     <ProjectReference Include="..\..\src\Durian.TestServices\Durian.TestServices.csproj" />
     <ProjectReference Include="..\..\src\Durian\Durian.csproj" />
-    <ProjectReference Include="..\..\src\Durian.Manager\Durian.Manager.csproj" />
     
   </ItemGroup>
 </Project>

@@ -16,11 +16,7 @@ namespace Durian.Analysis.DefaultParam
 	/// <summary>
 	/// Main class of the <c>DefaultParam</c> module. Generates source code of members marked with the <c>Durian.DefaultParamAttribute</c>.
 	/// </summary>
-#if !MAIN_PACKAGE
-
 	[Generator(LanguageNames.CSharp)]
-#endif
-
 	[LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "DefaultParam", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
 	public class DefaultParamGenerator : CachedGenerator<IDefaultParamTarget, DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>
 	{
@@ -31,11 +27,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Number of trees generated statically by this generator.
 		/// </summary>
-#if MAIN_PACKAGE
-		public const int NumStaticTrees = 5;
-#else
 		public const int NumStaticTrees = 6;
-#endif
 
 		/// <summary>
 		/// Name of this source generator.
@@ -189,7 +181,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		protected sealed override DurianModule[] GetEnabledModules()
+		protected sealed override DurianModule[] GetRequiredModules()
 		{
 			return new DurianModule[] { DurianModule.DefaultParam };
 		}

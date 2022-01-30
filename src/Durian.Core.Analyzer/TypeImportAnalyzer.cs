@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Durian.Analysis.Extensions;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -17,12 +19,8 @@ namespace Durian.Analysis
 	/// <summary>
 	/// Analyzes if the Durian types used by the user are properly imported.
 	/// </summary>
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-#if !MAIN_PACKAGE
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
-#endif
 	public sealed class TypeImportAnalyzer : DurianAnalyzer<CompilationWithImportedTypes>
-#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
@@ -62,9 +60,9 @@ namespace Durian.Analysis
 			}
 			else if (modules is not null)
 			{
-				// Every type included by the DurianModule.Core module is located in the Durian.Generator namespace.
+				// Every type in the 'Durian.Generator' namespace is located in the Core module.
 
-				if (modules.Length == 1 && modules[0] == DurianModule.Core)
+				if (Array.IndexOf(modules, DurianModule.Core) > -1 && type.GetContainingNamespaces().JoinNamespaces() == "Durian.Generator")
 				{
 					context.ReportDiagnostic(Diagnostic.Create(DUR0003_DoNotUseTypeFromDurianGeneratorNamespace, context.Node.GetLocation()));
 				}

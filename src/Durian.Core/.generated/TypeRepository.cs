@@ -63,29 +63,6 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.DisableModuleAttribute</c> type.
-		/// </summary>
-		public static TypeIdentity DisableModuleAttribute
-		{
-			get
-			{
-				if(!IdentityPool.Types.TryGetValue("DisableModuleAttribute", out TypeIdentity type))
-				{
-					type = new(
-						name: "DisableModuleAttribute",
-						@namespace: "Durian",
-						modules: new DurianModule[]
-						{
-							DurianModule.Core,
-						}
-					);
-				}
-
-				return type;
-			}
-		}
-
-		/// <summary>
 		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.DefaultParamAttribute</c> type.
 		/// </summary>
 		public static TypeIdentity DefaultParamAttribute

@@ -67,6 +67,8 @@ namespace Durian.Analysis.DefaultParam
 			return
 $@"using System;
 
+#nullable enable
+
 namespace {Namespace}
 {{
 	/// <summary>

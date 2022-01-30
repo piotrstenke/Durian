@@ -11,15 +11,11 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.Analysis.DefaultParam
 {
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 	/// <summary>
 	/// Analyzes the usage of the <see cref="DefaultParamScopedConfigurationAnalyzer"/>
 	/// </summary>
-#if !MAIN_PACKAGE
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
-#endif
 	public sealed class DefaultParamScopedConfigurationAnalyzer : DurianAnalyzer<DefaultParamCompilationData>
-#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(

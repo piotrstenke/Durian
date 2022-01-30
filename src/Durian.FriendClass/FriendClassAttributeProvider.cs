@@ -85,7 +85,8 @@ namespace {Namespace}
 			{FriendType} = type;
 		}}
 	}}
-}}";
+}}
+";
 		}
 
 		/// <inheritdoc/>

@@ -136,7 +136,8 @@ namespace {Namespace}
 		/// </summary>
 		{All} = {Class} | {RecordClass} | {Struct} | {RecordStruct} | {Interface}
 	}}
-}}";
+}}
+";
 		}
 
 		/// <inheritdoc/>

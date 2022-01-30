@@ -3,23 +3,14 @@
 
 using Durian.Analysis.Logging;
 using Durian.Info;
-
-#if !MAIN_PACKAGE
-
 using Microsoft.CodeAnalysis;
-
-#endif
 
 namespace Durian.Analysis
 {
 	/// <summary>
 	/// Enables the <see cref="DurianModule.Core"/> module.
 	/// </summary>
-#if !MAIN_PACKAGE
-
 	[Generator(LanguageNames.CSharp)]
-#endif
-
 	[LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "Core", SupportsDiagnostics = false, RelativeToGlobal = true, EnableExceptions = true)]
 	public sealed class EnableCoreModuleGenerator : DurianGeneratorBase
 	{
@@ -57,7 +48,7 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		protected override DurianModule[] GetEnabledModules()
+		protected override DurianModule[] GetRequiredModules()
 		{
 			return new DurianModule[] { DurianModule.Core };
 		}

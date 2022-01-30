@@ -39,8 +39,7 @@
       "documentation": "https://github.com/piotrstenke/Durian/tree/master/docs/Core",
       "includedTypes": [
         "Durian.Generator.EnableModuleAttribute",
-        "Durian.Generator.DurianGeneratedAttribute",
-        "Durian.DisableModuleAttribute"
+        "Durian.Generator.DurianGeneratedAttribute"
       ]
     },
     {

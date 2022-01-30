@@ -68,7 +68,8 @@ namespace {Namespace}
 			{Type} = type;
 		}}
 	}}
-}}";
+}}
+";
 		}
 
 		/// <inheritdoc/>

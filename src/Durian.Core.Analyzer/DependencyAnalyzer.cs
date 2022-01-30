@@ -10,15 +10,11 @@ using static Durian.Analysis.DurianDiagnostics;
 
 namespace Durian.Analysis
 {
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
 	/// <summary>
 	/// Analyzer that checks if the current compilation references the <c>Durian.Core</c> package.
 	/// </summary>
-#if !MAIN_PACKAGE
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
-#endif
 	public sealed class DependencyAnalyzer : DurianAnalyzer
-#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(

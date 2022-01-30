@@ -167,7 +167,7 @@ namespace Durian.Analysis.Extensions
 				return Array.Empty<INamedTypeSymbol>();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -253,7 +253,7 @@ namespace Durian.Analysis.Extensions
 				return Array.Empty<INamedTypeSymbol>();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -340,7 +340,7 @@ namespace Durian.Analysis.Extensions
 				return Array.Empty<INamedTypeSymbol>();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -416,7 +416,7 @@ namespace Durian.Analysis.Extensions
 				return Array.Empty<INamedTypeSymbol>();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -500,7 +500,7 @@ namespace Durian.Analysis.Extensions
 				ModuleIdentity.EnsureIsValidModuleEnum(module);
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -683,7 +683,7 @@ namespace Durian.Analysis.Extensions
 				return new ModuleContainer();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -757,7 +757,7 @@ namespace Durian.Analysis.Extensions
 				return new ModuleContainer();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -838,7 +838,7 @@ namespace Durian.Analysis.Extensions
 				ModuleIdentity.EnsureIsValidModuleEnum(module);
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -1039,7 +1039,7 @@ namespace Durian.Analysis.Extensions
 				return Array.Empty<INamedTypeSymbol>();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -1233,7 +1233,7 @@ namespace Durian.Analysis.Extensions
 				return Array.Empty<INamedTypeSymbol>();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -1320,7 +1320,7 @@ namespace Durian.Analysis.Extensions
 				return Array.Empty<INamedTypeSymbol>();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -1396,7 +1396,7 @@ namespace Durian.Analysis.Extensions
 				return Array.Empty<INamedTypeSymbol>();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -1480,7 +1480,7 @@ namespace Durian.Analysis.Extensions
 				ModuleIdentity.EnsureIsValidModuleEnum(module);
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -1555,7 +1555,7 @@ namespace Durian.Analysis.Extensions
 				return new ModuleContainer();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -1630,7 +1630,7 @@ namespace Durian.Analysis.Extensions
 				return new ModuleContainer();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -1806,7 +1806,7 @@ namespace Durian.Analysis.Extensions
 				return new ModuleContainer();
 			}
 
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{
@@ -2924,13 +2924,13 @@ namespace Durian.Analysis.Extensions
 			return symbol;
 		}
 
-		internal static AttributeData[] GetInstancesOfRegisterAttribute(Compilation compilation)
+		internal static AttributeData[] GetInstancesOfEnableAttribute(Compilation compilation)
 		{
 			INamedTypeSymbol symbol = GetEnableAttributeSymbol(compilation);
-			return GetInstancesOfRegisterAttribute(compilation, symbol);
+			return GetInstancesOfEnableAttribute(compilation, symbol);
 		}
 
-		internal static AttributeData[] GetInstancesOfRegisterAttribute(Compilation compilation, INamedTypeSymbol enableModuleAttribute)
+		internal static AttributeData[] GetInstancesOfEnableAttribute(Compilation compilation, INamedTypeSymbol enableModuleAttribute)
 		{
 			return compilation.Assembly.GetAttributes(enableModuleAttribute).ToArray();
 		}
@@ -2971,7 +2971,7 @@ namespace Durian.Analysis.Extensions
 
 		private static bool IsEnabled_Internal(Compilation compilation, TypeIdentity type, DurianModule[] modules, INamedTypeSymbol enableModuleAttribute)
 		{
-			AttributeData[] attributes = GetInstancesOfRegisterAttribute(compilation, enableModuleAttribute);
+			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
 
 			if (attributes.Length == 0)
 			{

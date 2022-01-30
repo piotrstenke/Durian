@@ -8,24 +8,15 @@ using System.Threading;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-#if !MAIN_PACKAGE
-
 using Microsoft.CodeAnalysis.Diagnostics;
-
-#endif
 
 namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Analyzes methods with type parameters marked by the <c>Durian.DefaultParamAttribute</c>.
 	/// </summary>
-#pragma warning disable RS1001 // Missing diagnostic analyzer attribute.
-#if !MAIN_PACKAGE
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
-#endif
 	public sealed partial class DefaultParamMethodAnalyzer : DefaultParamAnalyzer
-#pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
 	{
 		/// <inheritdoc/>
 		public override SymbolKind SupportedSymbolKind => SymbolKind.Method;

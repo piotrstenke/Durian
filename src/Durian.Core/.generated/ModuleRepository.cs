@@ -96,7 +96,6 @@ namespace Durian.Info
 						{
 							TypeRepository.EnableModuleAttribute,
 							TypeRepository.DurianGeneratedAttribute,
-							TypeRepository.DisableModuleAttribute,
 						}
 					);
 				}
