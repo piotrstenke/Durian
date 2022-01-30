@@ -1,0 +1,138 @@
+{
+  "modules": [
+    {
+      "name": "Core",
+      "packages": [
+        {
+          "name": "Main",
+          "version": "2.0.0",
+          "type": [
+            "Unspecified"
+          ]
+        },
+        {
+          "name": "CoreAnalyzer",
+          "version": "2.0.0",
+          "type": [
+            "Analyzer"
+          ]
+        },
+        {
+          "name": "Core",
+          "version": "2.0.0",
+          "type": [
+            "Library"
+          ]
+        },
+        {
+          "name": "Manager",
+          "version": "2.0.0",
+          "type": [
+            "Analyzer"
+          ]
+        }
+      ],
+      "diagnosticIdPrefix": "00",
+      "diagnosticFiles": [
+        "src/Durian.Core.Analyzer/DurianDiagnostics.cs"
+      ],
+      "documentation": "https://github.com/piotrstenke/Durian/tree/master/docs/Core",
+      "includedTypes": [
+        "Durian.Generator.EnableModuleAttribute",
+        "Durian.Generator.DurianGeneratedAttribute",
+        "Durian.DisableModuleAttribute"
+      ]
+    },
+    {
+      "name": "Development",
+      "packages": [
+        {
+          "name": "AnalysisServices",
+          "version": "2.0.0",
+          "type": [
+            "Library"
+          ]
+        },
+        {
+          "name": "TestServices",
+          "version": "2.0.0",
+          "type": [
+            "Library"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DefaultParam",
+      "packages": [
+        {
+          "name": "DefaultParam",
+          "version": "2.0.0",
+          "type": [
+            "Analyzer",
+            "CodeFixLibrary",
+            "StaticGenerator",
+            "SyntaxBasedGenerator"
+          ]
+        }
+      ],
+      "includedTypes": [
+        "Durian.DefaultParamAttribute",
+        "Durian.Configuration.DefaultParamConfigurationAttribute",
+        "Durian.Configuration.DefaultParamScopedConfigurationAttribute",
+        "Durian.Configuration.DPMethodConvention",
+        "Durian.Configuration.DPTypeConvention"
+      ],
+      "diagnosticIdPrefix": "01",
+      "diagnosticFiles": [
+        "src/Durian.DefaultParam/DefaultParamDiagnostics.cs"
+      ],
+      "documentation": "https://github.com/piotrstenke/Durian/tree/master/docs/DefaultParam"
+    },
+    {
+      "name": "FriendClass",
+      "packages": [
+        {
+          "name": "FriendClass",
+          "version": "1.0.0",
+          "type": [
+            "Analyzer",
+            "CodeFixLibrary",
+            "StaticGenerator"
+          ]
+        }
+      ],
+      "includedTypes": [
+        "Durian.FriendClassAttribute",
+        "Durian.Configuration.FriendClassConfigurationAttribute"
+      ],
+      "diagnosticIdPrefix": "03",
+      "diagnosticFiles": [
+        "src/Durian.FriendClass/FriendClassDiagnostics.cs"
+      ],
+      "documentation": "https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass"
+    },
+    {
+      "name": "InterfaceTargets",
+      "packages": [
+        {
+          "name": "InterfaceTargets",
+          "version": "1.0.0",
+          "type": [
+            "Analyzer",
+            "StaticGenerator"
+          ]
+        }
+      ],
+      "includedTypes": [
+        "Durian.InterfaceTargets",
+        "Durian.InterfaceTargetsAttribute"
+      ],
+      "diagnosticIdPrefix": "04",
+      "diagnosticFiles": [
+        "src/Durian.InterfaceTargets/InterfaceTargetsDiagnostics.cs"
+      ],
+      "documentation": "https://github.com/piotrstenke/Durian/tree/master/docs/InterfaceTargets"
+    }
+  ]
+}

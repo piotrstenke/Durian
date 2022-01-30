@@ -1,6 +1,11 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Durian.Analysis;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,6 +29,7 @@ namespace Durian.TestServices
 		protected CompilationTest()
 		{
 			Compilation = TestableCompilationData.Create();
+			AddInitialSources();
 		}
 
 		/// <summary>
@@ -33,15 +39,51 @@ namespace Durian.TestServices
 		protected CompilationTest(params string[]? sources)
 		{
 			Compilation = TestableCompilationData.Create(sources);
+			AddInitialSources();
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CompilationTest"/> class.
 		/// </summary>
 		/// <param name="compilation">An instance of <see cref="TestableCompilationData"/> to share between all tests in this class.</param>
-		protected CompilationTest(TestableCompilationData compilation)
+		/// <param name="addInitialSources">Determines whether to add sources created using the <see cref="GetInitialSources()"/> method to the <paramref name="compilation"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
+		protected CompilationTest(TestableCompilationData compilation, bool addInitialSources = true)
 		{
+			if(compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
 			Compilation = compilation;
+
+			if(addInitialSources)
+			{
+				AddInitialSources();
+			}
+		}
+
+		/// <summary>
+		/// Adds sources created by the <see cref="GetInitialSources()"/> method to the target <paramref name="compilation"/>.
+		/// </summary>
+		protected void AddInitialSources(ref CSharpCompilation compilation)
+		{
+			IEnumerable<ISourceTextProvider>? sourceTexts = GetInitialSources();
+
+			if (sourceTexts is not null)
+			{
+				IEnumerable<CSharpSyntaxTree> syntaxTrees = sourceTexts.Select(text => (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text.GetText(), encoding: Encoding.UTF8));
+
+				compilation = compilation.AddSyntaxTrees(syntaxTrees);
+			}
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="ISourceTextProvider"/>s that create initial sources.
+		/// </summary>
+		protected virtual IEnumerable<ISourceTextProvider>? GetInitialSources()
+		{
+			return null;
 		}
 
 		/// <summary>
@@ -254,6 +296,13 @@ namespace Durian.TestServices
 		protected TypeData GetType(string? source, int index = 0)
 		{
 			return (Compilation.GetMemberData<TypeDeclarationSyntax>(source, index) as TypeData)!;
+		}
+
+		private void AddInitialSources()
+		{
+			CSharpCompilation newCompilation = Compilation.OriginalCompilation;
+			AddInitialSources(ref newCompilation);
+			Compilation.OriginalCompilation = newCompilation;
 		}
 	}
 }

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Types
 {
-	public sealed class BasicTypeTests : DefaultParamGeneratorTest
+	public sealed class BasicTypeTests : DefaultParamGeneratorTestBase
 	{
 		[Fact]
 		public void DoesNotRemoveConstraintOfNonDefaultParam()

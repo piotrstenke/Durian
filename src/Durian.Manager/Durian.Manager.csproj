@@ -25,7 +25,6 @@
     <ProjectReference Include="..\Durian.InterfaceTargets\Durian.InterfaceTargets.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Durian.FriendClass\Durian.FriendClass.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" PrivateAssets="all" />
-    <ProjectReference Include="..\Durian.TestServices\Durian.TestServices.csproj" />
     
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />

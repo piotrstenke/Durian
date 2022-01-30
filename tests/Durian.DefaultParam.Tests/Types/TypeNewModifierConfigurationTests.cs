@@ -7,7 +7,7 @@ using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Analysis.DefaultParam.Tests.Types
 {
-	public sealed class TypeNewModifierConfigurationTests : DefaultParamGeneratorTest
+	public sealed class TypeNewModifierConfigurationTests : DefaultParamGeneratorTestBase
 	{
 		[Fact]
 		public void AppliesNewModifier_When_GeneratedGenericNameAlreadyExistsInBaseClass()
@@ -125,16 +125,14 @@ class Inner
 
 partial class Parent : Inner
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Parent
+@$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new class Test : Test<int>
@@ -236,16 +234,14 @@ class Inner
 [{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Parent : Inner
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Parent
+@$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new class Test : Test<int>
@@ -368,7 +364,7 @@ class Inner
 
 partial class Parent : Inner
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}
@@ -391,10 +387,10 @@ class Inner
 	}}
 }}
 
-[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Parent : Inner
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 	class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>
 	{{
 	}}

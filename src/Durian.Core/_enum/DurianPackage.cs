@@ -19,11 +19,6 @@ namespace Durian.Info
 		Manager,
 
 		/// <summary>
-		/// Represents the <c>Durian.Info</c> package.
-		/// </summary>
-		Info,
-
-		/// <summary>
 		/// Represents the <c>Durian.Core</c> package.
 		/// </summary>
 		Core,

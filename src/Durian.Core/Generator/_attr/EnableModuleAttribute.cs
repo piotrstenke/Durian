@@ -10,7 +10,7 @@ namespace Durian.Generator
 	/// Declares that the specified Durian module is present in the compilation.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
-	public sealed class RegisterDurianModuleAttribute : Attribute
+	public sealed class EnableModuleAttribute : Attribute
 	{
 		/// <summary>
 		/// Durian module to register.
@@ -18,10 +18,10 @@ namespace Durian.Generator
 		public DurianModule Module { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="RegisterDurianModuleAttribute"/> class.
+		/// Initializes a new instance of the <see cref="EnableModuleAttribute"/> class.
 		/// </summary>
 		/// <param name="module">Durian module to register.</param>
-		public RegisterDurianModuleAttribute(DurianModule module)
+		public EnableModuleAttribute(DurianModule module)
 		{
 			Module = module;
 		}

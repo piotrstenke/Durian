@@ -18,7 +18,7 @@ namespace Durian.Info
 		/// <summary>
 		/// A two-digit number that precedes the id of a diagnostic.
 		/// </summary>
-		public IdSection AnalysisId { get; }
+		public IdSection? AnalysisId { get; }
 
 		/// <summary>
 		/// A collection of diagnostics that can be reported by this module.
@@ -52,7 +52,7 @@ namespace Durian.Info
 
 		internal ModuleIdentity(
 			DurianModule module,
-			int id,
+			int? id,
 			DurianPackage[]? packages,
 			string? docsPath,
 			DiagnosticData[]? diagnostics,
@@ -60,8 +60,12 @@ namespace Durian.Info
 		)
 		{
 			Module = module;
-			AnalysisId = (IdSection)id;
-			Documentation = docsPath is not null ? @$"{GlobalInfo.Repository}\{docsPath}" : string.Empty;
+			Documentation = docsPath ?? string.Empty;
+
+			if(id.HasValue)
+			{
+				AnalysisId = new IdSection(id.Value);
+			}
 
 			if (packages is null || packages.Length == 0)
 			{
@@ -113,7 +117,7 @@ namespace Durian.Info
 
 		private ModuleIdentity(
 			DurianModule module,
-			in IdSection id,
+			IdSection? id,
 			ImmutableArray<PackageReference> packages,
 			string docsPath,
 			ImmutableArray<DiagnosticData> diagnostics,

@@ -13,7 +13,7 @@ namespace Durian.Info
 	[DebuggerDisplay("{GetFullId}: {Title}")]
 	public sealed class DiagnosticData : IEquatable<DiagnosticData>, ICloneable
 	{
-		private string? _docsPath;
+		private readonly string? _docsPath;
 
 		private ModuleReference? _module;
 
@@ -53,7 +53,7 @@ namespace Durian.Info
 		/// Two-digit number that precedes the actual <see cref="Id"/> of the diagnostic. Diagnostics created in the same module will have the same <see cref="ModuleId"/>.
 		/// </summary>
 		/// <remarks>NOTE: Using this property will call the <see cref="ModuleReference.GetModule"/> on the <see cref="OriginalModule"/>.</remarks>
-		public IdSection ModuleId => _originalModule!.GetModule().AnalysisId;
+		public IdSection ModuleId => _originalModule!.GetModule().AnalysisId!.Value;
 
 		/// <summary>
 		/// If <see cref="IsExtern"/> is <see langword="true"/>, returns <see cref="ModuleReference"/> to the module this diagnostic was created in, otherwise returns <see cref="Module"/>.
@@ -75,7 +75,6 @@ namespace Durian.Info
 			if (originalModule is not null)
 			{
 				_originalModule = new ModuleReference(originalModule);
-				_docsPath = $@"{originalModule.Documentation}\{docsPath}";
 				IsExtern = true;
 			}
 			else
@@ -183,7 +182,6 @@ namespace Durian.Info
 			if (_originalModule is null)
 			{
 				_originalModule = reference;
-				_docsPath = $@"{module.Documentation}\{_docsPath}";
 			}
 
 			_module = reference;

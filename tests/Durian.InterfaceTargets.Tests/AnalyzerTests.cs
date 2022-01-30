@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Durian.TestServices;
 using Xunit;
@@ -306,6 +307,11 @@ public struct Test : ITest
 }}
 ";
 			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
+		{
+			return InterfaceTargetsGenerator.GetSourceProviders();
 		}
 
 		private static string GetDiagnosticId(string memberType)

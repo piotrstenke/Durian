@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Methods
 {
-	public sealed class MethodCopyingConfigurationTests : DefaultParamGeneratorTest
+	public sealed class MethodCopyingConfigurationTests : DefaultParamGeneratorTestBase
 	{
 		[Fact]
 		public void AppliesReturn_When_MethodIsNotVoid()
@@ -114,9 +114,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Test
+@$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -176,9 +174,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Test
+@$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -208,9 +204,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Test
+@$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -240,9 +234,7 @@ partial static class Test
 ";
 
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial static class Test
+@$"partial static class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(this int value)
@@ -272,9 +264,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Test
+@$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -304,9 +294,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Test
+@$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()

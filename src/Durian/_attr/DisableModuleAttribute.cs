@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Diagnostics;
 using Durian.Info;
 
 namespace Durian
@@ -10,7 +11,8 @@ namespace Durian
 	/// Specifies that the target <see cref="DurianModule"/> is enabled for the current project.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
-	public sealed class EnableModuleAttribute : Attribute
+	[Conditional("DEBUG")]
+	public sealed class DisableModuleAttribute : Attribute
 	{
 		/// <summary>
 		/// Module that is enabled.
@@ -18,10 +20,10 @@ namespace Durian
 		public DurianModule Module { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="EnableModuleAttribute"/> class.
+		/// Initializes a new instance of the <see cref="DisableModuleAttribute"/> class.
 		/// </summary>
 		/// <param name="module">Module that is enabled.</param>
-		public EnableModuleAttribute(DurianModule module)
+		public DisableModuleAttribute(DurianModule module)
 		{
 			Module = module;
 		}

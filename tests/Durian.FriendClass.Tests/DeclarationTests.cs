@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Text;
@@ -40,6 +41,8 @@ class Test
 				.CreateBaseCompilation()
 				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(external, encoding: Encoding.UTF8));
 
+			AddInitialSources(ref dependency);
+
 			using MemoryStream stream = new();
 
 			EmitResult emit = dependency.Emit(stream);
@@ -54,6 +57,8 @@ class Test
 				.CreateBaseCompilation()
 				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(input, encoding: Encoding.UTF8))
 				.AddReferences(reference);
+
+			AddInitialSources(ref current);
 
 			FriendClassDeclarationAnalyzer analyzer = new();
 
@@ -371,6 +376,11 @@ class Test
 }}
 ";
 			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends.Id);
+		}
+
+		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
+		{
+			return FriendClassGenerator.GetSourceProviders();
 		}
 	}
 }

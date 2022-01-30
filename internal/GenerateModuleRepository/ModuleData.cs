@@ -1,44 +1,29 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
+using Newtonsoft.Json;
 
-internal class ModuleData
+[JsonObject]
+internal sealed class ModuleData
 {
-	public List<DiagnosticData> Diagnostics { get; }
+	[JsonProperty("name", Required = Required.Always)]
+	public string? Name { get; set; }
 
-	public string Documentation { get; }
+	[JsonProperty("packages", Required = Required.Always)]
+	public PackageData[]? Packages { get; set; }
 
-	public List<DiagnosticData> ExternalDiagnostics { get; }
+	[JsonProperty("diagnosticIdPrefix")]
+	public string? DiagnosticIdPrefix { get; set; }
 
-	public List<IncludedType> IncludedTypes { get; }
+	[JsonProperty("diagnosticFiles")]
+	public string[]? DiagnosticFiles { get; set; }
 
-	public string Name { get; }
+	[JsonProperty("documentation")]
+	public string? Documentation { get; set; }
 
-	public List<string> Packages { get; }
+	[JsonProperty("includedTypes")]
+	public string[]? IncludedTypes { get; set; }
 
-	public ModuleData(string moduleName)
-	{
-		Name = moduleName;
-		Diagnostics = new(32);
-		ExternalDiagnostics = new(8);
-		IncludedTypes = new(8);
-		Packages = new(4);
-		Documentation = $"tree/master/docs/{moduleName}";
-	}
-
-	public string GetId()
-	{
-		if (Diagnostics.Count > 0)
-		{
-			ref readonly DiagnosticData data = ref Diagnostics.ToArray()[0];
-
-			if (data.Id.Length >= 5)
-			{
-				return data.Id.Substring(3, 2);
-			}
-		}
-
-		return "default";
-	}
+	[JsonProperty("externalDiagnostics")]
+	public string[]? ExternalDiagnostics { get; set; }
 }

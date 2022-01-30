@@ -21,38 +21,38 @@ namespace Durian.Analysis
 #endif
 
 	[LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "Core", SupportsDiagnostics = false, RelativeToGlobal = true, EnableExceptions = true)]
-	public sealed class EnableModuleGenerator_Core : DurianGeneratorBase
+	public sealed class EnableCoreModuleGenerator : DurianGeneratorBase
 	{
-		/// <inheritdoc cref="EnableModuleGenerator_Core(in ConstructionContext, IHintNameProvider?)"/>
-		public EnableModuleGenerator_Core()
+		/// <inheritdoc cref="EnableCoreModuleGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		public EnableCoreModuleGenerator()
 		{
 		}
 
-		/// <inheritdoc cref="EnableModuleGenerator_Core(in ConstructionContext, IHintNameProvider?)"/>
-		public EnableModuleGenerator_Core(in ConstructionContext context) : base(in context)
+		/// <inheritdoc cref="EnableCoreModuleGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		public EnableCoreModuleGenerator(in ConstructionContext context) : base(in context)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="EnableModuleGenerator_Core"/> class.
+		/// Initializes a new instance of the <see cref="EnableCoreModuleGenerator"/> class.
 		/// </summary>
 		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public EnableModuleGenerator_Core(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
+		public EnableCoreModuleGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
 		{
 		}
 
-		/// <inheritdoc cref="EnableModuleGenerator_Core(LoggingConfiguration?, IHintNameProvider?)"/>
-		public EnableModuleGenerator_Core(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		/// <inheritdoc cref="EnableCoreModuleGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
+		public EnableCoreModuleGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="EnableModuleGenerator_Core"/> class.
+		/// Initializes a new instance of the <see cref="EnableCoreModuleGenerator"/> class.
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public EnableModuleGenerator_Core(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		public EnableCoreModuleGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
 		{
 		}
 
@@ -65,7 +65,13 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		protected override string GetGeneratorName()
 		{
-			return nameof(EnableModuleGenerator_Core);
+			return nameof(EnableCoreModuleGenerator);
+		}
+
+		/// <inheritdoc/>
+		protected override string? GetGeneratorVersion()
+		{
+			return "2.0.0";
 		}
 	}
 }

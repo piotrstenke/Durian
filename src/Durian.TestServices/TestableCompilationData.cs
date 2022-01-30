@@ -1,10 +1,12 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Durian.Analysis;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
@@ -33,11 +35,17 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Original <see cref="CSharpCompilation"/> that is not affected by the <see cref="UpdateCompilation(CSharpSyntaxTree)"/> method or its overloads.
 		/// </summary>
+		/// <exception cref="ArgumentNullException">Value cannot be <see langword="null"/>.</exception>
 		public CSharpCompilation OriginalCompilation
 		{
 			get => _originalCompilation!;
 			set
 			{
+				if(value is null)
+				{
+					throw new ArgumentNullException(nameof(OriginalCompilation));
+				}
+
 				if (_originalCompilation != value)
 				{
 					_originalCompilation = value;
@@ -57,7 +65,7 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Creates a new <see cref="TestableCompilationData"/>.
 		/// </summary>
-		/// <param name="includeDefaultAssemblies">Determines whether to include all the default assemblies returned by the <see cref="RoslynUtilities.GetBaseReferences()"/> method.</param>
+		/// <param name="includeDefaultAssemblies">Determines whether to include all the default assemblies returned by the <see cref="RoslynUtilities.GetBaseReferences(bool)"/> method.</param>
 		public static TestableCompilationData Create(bool includeDefaultAssemblies = true)
 		{
 			return new TestableCompilationData(includeDefaultAssemblies ? RoslynUtilities.CreateBaseCompilation() : null);

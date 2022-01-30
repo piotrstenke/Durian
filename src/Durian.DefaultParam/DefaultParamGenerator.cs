@@ -24,18 +24,18 @@ namespace Durian.Analysis.DefaultParam
 	[LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "DefaultParam", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
 	public class DefaultParamGenerator : CachedGenerator<IDefaultParamTarget, DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>
 	{
+		private readonly DefaultParamRewriter _rewriter = new();
+
+		private FilterContainer<IDefaultParamFilter>? _filters;
+
 		/// <summary>
 		/// Number of trees generated statically by this generator.
 		/// </summary>
 #if MAIN_PACKAGE
-		public const int NumStaticTrees = 0;
+		public const int NumStaticTrees = 5;
 #else
-		public const int NumStaticTrees = 1;
+		public const int NumStaticTrees = 6;
 #endif
-
-		private readonly DefaultParamRewriter _rewriter = new();
-
-		private FilterContainer<IDefaultParamFilter>? _filters;
 
 		/// <summary>
 		/// Name of this source generator.
@@ -97,15 +97,9 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="DefaultParamSyntaxReceiver"/> to be used during the current generation pass.
+		/// Returns a collection of <see cref="ISourceTextProvider"/> used by this generator to create initial sources.
 		/// </summary>
-		public override DefaultParamSyntaxReceiver CreateSyntaxReceiver()
-		{
-			return new DefaultParamSyntaxReceiver(SupportsDiagnostics);
-		}
-
-		/// <inheritdoc/>
-		protected override IEnumerable<ISourceTextProvider>? GetStaticSyntaxTrees()
+		public static IEnumerable<ISourceTextProvider> GetSourceProviders()
 		{
 			return new ISourceTextProvider[]
 			{
@@ -115,6 +109,14 @@ namespace Durian.Analysis.DefaultParam
 				new DefaultParamConfigurationAttributeProvider(),
 				new DefaultParamScopedConfigurationAttributeProvider()
 			};
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="DefaultParamSyntaxReceiver"/> to be used during the current generation pass.
+		/// </summary>
+		public override DefaultParamSyntaxReceiver CreateSyntaxReceiver()
+		{
+			return new DefaultParamSyntaxReceiver(SupportsDiagnostics);
 		}
 
 		/// <inheritdoc/>
@@ -152,6 +154,12 @@ namespace Durian.Analysis.DefaultParam
 		public override FilterContainer<IDefaultParamFilter> GetFilters(in CachedGeneratorExecutionContext<IDefaultParamTarget> context)
 		{
 			return GetFilters(new SymbolNameToFile());
+		}
+
+		/// <inheritdoc/>
+		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
+		{
+			return GetSourceProviders();
 		}
 
 		/// <inheritdoc/>

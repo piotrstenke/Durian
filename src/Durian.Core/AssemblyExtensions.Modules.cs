@@ -75,7 +75,7 @@ namespace Durian.Info
 				return new ModuleContainer();
 			}
 
-			RegisterDurianModuleAttribute[] attributes = assembly.GetCustomAttributes<RegisterDurianModuleAttribute>().ToArray();
+			EnableModuleAttribute[] attributes = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
 
 			if (attributes.Length == 0)
 			{
@@ -119,7 +119,7 @@ namespace Durian.Info
 				return new ModuleContainer();
 			}
 
-			RegisterDurianModuleAttribute[] attributes = assembly.GetCustomAttributes<RegisterDurianModuleAttribute>().ToArray();
+			EnableModuleAttribute[] attributes = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
 
 			if (attributes.Length == 0)
 			{
@@ -169,7 +169,7 @@ namespace Durian.Info
 				ModuleIdentity.EnsureIsValidModuleEnum(module);
 			}
 
-			RegisterDurianModuleAttribute[] attributes = assembly.GetCustomAttributes<RegisterDurianModuleAttribute>().ToArray();
+			EnableModuleAttribute[] attributes = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
 
 			if (attributes.Length == 0)
 			{
@@ -208,7 +208,7 @@ namespace Durian.Info
 				return new ModuleContainer();
 			}
 
-			RegisterDurianModuleAttribute[] attributes = assembly.GetCustomAttributes<RegisterDurianModuleAttribute>().ToArray();
+			EnableModuleAttribute[] attributes = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
 
 			if (attributes.Length == 0)
 			{
@@ -258,7 +258,7 @@ namespace Durian.Info
 				ModuleIdentity.EnsureIsValidModuleEnum(module);
 			}
 
-			RegisterDurianModuleAttribute[] attributes = assembly.GetCustomAttributes<RegisterDurianModuleAttribute>().ToArray();
+			EnableModuleAttribute[] attributes = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
 
 			if (attributes.Length == 0)
 			{
@@ -342,7 +342,7 @@ namespace Durian.Info
 				return new ModuleContainer();
 			}
 
-			RegisterDurianModuleAttribute[] attributes = assembly.GetCustomAttributes<RegisterDurianModuleAttribute>().ToArray();
+			EnableModuleAttribute[] attributes = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
 
 			if (attributes.Length == 0)
 			{
@@ -447,12 +447,12 @@ namespace Durian.Info
 
 		private static bool IsEnabled_Internal(Assembly assembly, DurianModule module)
 		{
-			return IsEnabled_Internal(assembly.GetCustomAttributes<RegisterDurianModuleAttribute>(), module);
+			return IsEnabled_Internal(assembly.GetCustomAttributes<EnableModuleAttribute>(), module);
 		}
 
-		private static bool IsEnabled_Internal(IEnumerable<RegisterDurianModuleAttribute> attributes, DurianModule module)
+		private static bool IsEnabled_Internal(IEnumerable<EnableModuleAttribute> attributes, DurianModule module)
 		{
-			foreach (RegisterDurianModuleAttribute attribute in attributes)
+			foreach (EnableModuleAttribute attribute in attributes)
 			{
 				if (attribute.Module == module)
 				{

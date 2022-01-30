@@ -10,6 +10,8 @@ using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Durian.Analysis;
+using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -28,9 +30,17 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Creates a <see cref="CSharpCompilation"/> that contains <see cref="MetadataReference"/>s of all the essential .NET assemblies.
 		/// </summary>
-		public static CSharpCompilation CreateBaseCompilation()
+		/// <param name="includeDurianCore">Determines whether to include the <c>Durian.Core.dll</c> assembly.</param>
+		public static CSharpCompilation CreateBaseCompilation(bool includeDurianCore = true)
 		{
-			return CreateCompilationWithReferences(sources: null, GetBaseReferences());
+			MetadataReference[] references = GetBaseReferences(includeDurianCore);
+			return CreateCompilationWithReferences(sources: null, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilation(string?, IEnumerable{Type}?)"/>
+		public static CSharpCompilation CreateCompilation(string? source, params Type[]? types)
+		{
+			return CreateCompilation(source, types as IEnumerable<Type>);
 		}
 
 		/// <summary>
@@ -39,9 +49,16 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the output <see cref="CSharpCompilation"/>.</param>
 		/// <param name="types">A collection of <see cref="Type"/>s to get the assemblies to reference to.</param>
-		public static CSharpCompilation CreateCompilation(string? source, params Type[]? types)
+		public static CSharpCompilation CreateCompilation(string? source, IEnumerable<Type>? types)
 		{
-			return CreateCompilationWithReferences(source is not null ? CSharpSyntaxTree.ParseText(source) as CSharpSyntaxTree : null, GetReferences(types).ToArray());
+			IEnumerable<MetadataReference> references = GetReferences(types);
+			return CreateCompilationWithReferences(source, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilation(IEnumerable{string}?, IEnumerable{Type}?)"/>
+		public static CSharpCompilation CreateCompilation(IEnumerable<string>? sources, params Type[]? types)
+		{
+			return CreateCompilation(sources, types as IEnumerable<Type>);
 		}
 
 		/// <summary>
@@ -50,42 +67,106 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the output <see cref="CSharpCompilation"/>.</param>
 		/// <param name="types">A collection of <see cref="Type"/>s to get the assemblies to reference to.</param>
-		public static CSharpCompilation CreateCompilation(IEnumerable<string>? sources, params Type[]? types)
+		public static CSharpCompilation CreateCompilation(IEnumerable<string>? sources, IEnumerable<Type>? types)
 		{
-			return CreateCompilationWithReferences(GetSyntaxTrees(sources).ToArray(), GetReferences(types).ToArray());
+			IEnumerable<MetadataReference> references = GetReferences(types);
+			return CreateCompilationWithReferences(sources, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilation(CSharpSyntaxTree?, IEnumerable{Type}?)"/>
+		public static CSharpCompilation CreateCompilation(CSharpSyntaxTree? syntaxTree, params Type[]? types)
+		{
+			return CreateCompilation(syntaxTree, types as IEnumerable<Type>);
 		}
 
 		/// <summary>
 		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <see cref="CSharpSyntaxTree"/>
 		/// and <see cref="MetadataReference"/>s to the assemblies that contain the specified <paramref name="types"/>.
 		/// </summary>
-		/// <param name="tree">A <see cref="CSharpSyntaxTree"/> that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="syntaxTree">A <see cref="CSharpSyntaxTree"/> that will be added to the output <see cref="CSharpCompilation"/>.</param>
 		/// <param name="types">A collection of <see cref="Type"/>s to get the assemblies to reference to.</param>
-		public static CSharpCompilation CreateCompilation(CSharpSyntaxTree? tree, params Type[]? types)
+		public static CSharpCompilation CreateCompilation(CSharpSyntaxTree? syntaxTree, IEnumerable<Type>? types)
 		{
-			return CreateCompilationWithReferences(tree, GetReferences(types).ToArray());
+			IEnumerable<MetadataReference> references = GetReferences(types);
+			return CreateCompilationWithReferences(syntaxTree, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilation(IEnumerable{CSharpSyntaxTree}?, IEnumerable{Type}?)"/>
+		public static CSharpCompilation CreateCompilation(IEnumerable<CSharpSyntaxTree>? syntaxTrees, params Type[]? types)
+		{
+			return CreateCompilation(syntaxTrees, types as IEnumerable<Type>);
 		}
 
 		/// <summary>
 		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <see cref="CSharpSyntaxTree"/>s
 		/// and <see cref="MetadataReference"/>s to the assemblies that contain the specified <paramref name="types"/>.
 		/// </summary>
-		/// <param name="trees">A collection of <see cref="CSharpSyntaxTree"/>s that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="syntaxTrees">A collection of <see cref="CSharpSyntaxTree"/>s that will be added to the output <see cref="CSharpCompilation"/>.</param>
 		/// <param name="types">A collection of <see cref="Type"/>s to get the assemblies to reference to.</param>
-		public static CSharpCompilation CreateCompilation(IEnumerable<CSharpSyntaxTree>? trees, params Type[] types)
+		public static CSharpCompilation CreateCompilation(IEnumerable<CSharpSyntaxTree>? syntaxTrees, IEnumerable<Type>? types)
 		{
-			return CreateCompilationWithReferences(trees, GetReferences(types).ToArray());
+			IEnumerable<MetadataReference> references = GetReferences(types);
+			return CreateCompilationWithReferences(syntaxTrees, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilation(ISourceTextProvider?, IEnumerable{Type}?)"/>
+		public static CSharpCompilation CreateCompilation(ISourceTextProvider? sourceText, params Type[]? types)
+		{
+			return CreateCompilation(sourceText, types as IEnumerable<Type>);
 		}
 
 		/// <summary>
-		/// Creates a <see cref="CSharpCompilation"/> that contains a <see cref="CSharpSyntaxTree"/> created from the specified <paramref name="source"/>
-		/// and <see cref="MetadataReference"/>s to the specified <paramref name="assemblies"/>.
+		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <paramref name="sourceText"/>
+		/// and <see cref="MetadataReference"/>s to the assemblies that contain the specified <paramref name="types"/>.
 		/// </summary>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the output <see cref="CSharpCompilation"/>.</param>
-		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="sourceText">A <see cref="ISourceTextProvider"/> that creates source text that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="types">A collection of <see cref="Type"/>s to get the assemblies to reference to.</param>
+		public static CSharpCompilation CreateCompilation(ISourceTextProvider? sourceText, IEnumerable<Type>? types)
+		{
+			IEnumerable<MetadataReference> references = GetReferences(types);
+			return CreateCompilationWithReferences(sourceText, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilation(IEnumerable{ISourceTextProvider}?, IEnumerable{Type}?)"/>
+		public static CSharpCompilation CreateCompilation(IEnumerable<ISourceTextProvider>? sourceTexts, params Type[]? types)
+		{
+			return CreateCompilation(sourceTexts, types as IEnumerable<Type>);
+		}
+
+		/// <summary>
+		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <see cref="ISourceTextProvider"/>s
+		/// and <see cref="MetadataReference"/>s to the assemblies that contain the specified <paramref name="types"/>.
+		/// </summary>
+		/// <param name="sourceTexts">A collection of <see cref="ISourceTextProvider"/>s that create source texts that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="types">A collection of <see cref="Type"/>s to get the assemblies to reference to.</param>
+		public static CSharpCompilation CreateCompilation(IEnumerable<ISourceTextProvider>? sourceTexts, IEnumerable<Type>? types)
+		{
+			IEnumerable<MetadataReference> references = GetReferences(types);
+			return CreateCompilationWithReferences(sourceTexts, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilationWithAssemblies(string?, IEnumerable{Assembly}?)"/>
 		public static CSharpCompilation CreateCompilationWithAssemblies(string? source, params Assembly[]? assemblies)
 		{
-			return CreateCompilationWithReferences(source is not null ? CSharpSyntaxTree.ParseText(source) as CSharpSyntaxTree : null, GetReferences(assemblies).ToArray());
+			return CreateCompilationWithAssemblies(source, assemblies as IEnumerable<Assembly>);
+		}
+
+		/// <summary>
+		/// Creates a <see cref="CSharpCompilation"/> that contains a <see cref="CSharpSyntaxTree"/> created from the specified <paramref name="source"/>
+		/// and <see cref="MetadataReference"/>s to the specified <paramref name="assemblies"/>.
+		/// </summary>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithAssemblies(string? source, IEnumerable<Assembly>? assemblies)
+		{
+			IEnumerable<MetadataReference> references = GetReferences(assemblies);
+			return CreateCompilationWithReferences(source, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilationWithAssemblies(IEnumerable{string}?, IEnumerable{Assembly}?)"/>
+		public static CSharpCompilation CreateCompilationWithAssemblies(IEnumerable<string>? sources, params Assembly[]? assemblies)
+		{
+			return CreateCompilationWithAssemblies(sources, assemblies as IEnumerable<Assembly>);
 		}
 
 		/// <summary>
@@ -93,83 +174,200 @@ namespace Durian.TestServices
 		/// and <see cref="MetadataReference"/>s to the specified <paramref name="assemblies"/>.
 		/// </summary>
 		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the output <see cref="CSharpCompilation"/>.</param>
-		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the output <see cref="CSharpCompilation"/>.</param>
-		public static CSharpCompilation CreateCompilationWithAssemblies(IEnumerable<string>? sources, params Assembly[]? assemblies)
+		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithAssemblies(IEnumerable<string>? sources, IEnumerable<Assembly>? assemblies)
 		{
-			return CreateCompilationWithReferences(GetSyntaxTrees(sources).ToArray(), GetReferences(assemblies).ToArray());
+			IEnumerable<MetadataReference> references = GetReferences(assemblies);
+			return CreateCompilationWithReferences(sources, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilationWithAssemblies(CSharpSyntaxTree?, IEnumerable{Assembly}?)"/>
+		public static CSharpCompilation CreateCompilationWithAssemblies(CSharpSyntaxTree? syntaxTree, params Assembly[]? assemblies)
+		{
+			return CreateCompilationWithAssemblies(syntaxTree, assemblies as IEnumerable<Assembly>);
 		}
 
 		/// <summary>
 		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <see cref="CSharpSyntaxTree"/>
 		/// and <see cref="MetadataReference"/>s to the specified <paramref name="assemblies"/>.
 		/// </summary>
-		/// <param name="tree">A <see cref="CSharpSyntaxTree"/> that will be added to the output <see cref="CSharpCompilation"/>.</param>
-		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the output <see cref="CSharpCompilation"/>.</param>
-		public static CSharpCompilation CreateCompilationWithAssemblies(CSharpSyntaxTree? tree, params Assembly[]? assemblies)
+		/// <param name="syntaxTree">A <see cref="CSharpSyntaxTree"/> that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithAssemblies(CSharpSyntaxTree? syntaxTree, IEnumerable<Assembly>? assemblies)
 		{
-			return CreateCompilationWithReferences(tree, GetReferences(assemblies).ToArray());
+			IEnumerable<MetadataReference> references = GetReferences(assemblies);
+			return CreateCompilationWithReferences(syntaxTree, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilationWithAssemblies(IEnumerable{CSharpSyntaxTree}?, IEnumerable{Assembly}?)"/>
+		public static CSharpCompilation CreateCompilationWithAssemblies(IEnumerable<CSharpSyntaxTree>? syntaxTrees, params Assembly[]? assemblies)
+		{
+			return CreateCompilationWithAssemblies(syntaxTrees, assemblies as IEnumerable<Assembly>);
 		}
 
 		/// <summary>
 		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <see cref="CSharpSyntaxTree"/>s
 		/// and <see cref="MetadataReference"/>s to the specified <paramref name="assemblies"/>.
 		/// </summary>
-		/// <param name="trees">A collection of <see cref="CSharpSyntaxTree"/>s that will be added to the output <see cref="CSharpCompilation"/>.</param>
-		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the output <see cref="CSharpCompilation"/>.</param>
-		public static CSharpCompilation CreateCompilationWithAssemblies(IEnumerable<CSharpSyntaxTree>? trees, params Assembly[]? assemblies)
+		/// <param name="syntaxTrees">A collection of <see cref="CSharpSyntaxTree"/>s that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithAssemblies(IEnumerable<CSharpSyntaxTree>? syntaxTrees, IEnumerable<Assembly>? assemblies)
 		{
-			return CreateCompilationWithReferences(trees, GetReferences(assemblies).ToArray());
+			IEnumerable<MetadataReference> references = GetReferences(assemblies);
+			return CreateCompilationWithReferences(syntaxTrees, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilationWithAssemblies(ISourceTextProvider?, IEnumerable{Assembly}?)"/>
+		public static CSharpCompilation CreateCompilationWithAssemblies(ISourceTextProvider? sourceText, params Assembly[]? assemblies)
+		{
+			return CreateCompilationWithAssemblies(sourceText, assemblies as IEnumerable<Assembly>);
+		}
+
+		/// <summary>
+		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <paramref name="sourceText"/>
+		/// and <see cref="MetadataReference"/>s to the specified <paramref name="assemblies"/>.
+		/// </summary>
+		/// <param name="sourceText">A <see cref="ISourceTextProvider"/> that creates source text that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithAssemblies(ISourceTextProvider? sourceText, IEnumerable<Assembly>? assemblies)
+		{
+			IEnumerable<MetadataReference> references = GetReferences(assemblies);
+			return CreateCompilationWithReferences(sourceText, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilationWithAssemblies(IEnumerable{ISourceTextProvider}?, IEnumerable{Assembly}?)"/>
+		public static CSharpCompilation CreateCompilationWithAssemblies(IEnumerable<ISourceTextProvider>? sourceTexts, params Assembly[]? assemblies)
+		{
+			return CreateCompilationWithAssemblies(sourceTexts, assemblies as IEnumerable<Assembly>);
+		}
+
+		/// <summary>
+		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <see cref="ISourceTextProvider"/>s
+		/// and <see cref="MetadataReference"/>s to the specified <paramref name="assemblies"/>.
+		/// </summary>
+		/// <param name="sourceTexts">A collection of <see cref="ISourceTextProvider"/>s that create source texts that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="assemblies">A collection of <see cref="Assembly"/> instances to be referenced by the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithAssemblies(IEnumerable<ISourceTextProvider>? sourceTexts, IEnumerable<Assembly>? assemblies)
+		{
+			IEnumerable<MetadataReference> references = GetReferences(assemblies);
+			return CreateCompilationWithReferences(sourceTexts, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilationWithReferences(string?, IEnumerable{MetadataReference}?)"/>
+		public static CSharpCompilation CreateCompilationWithReferences(string? source, params MetadataReference[]? references)
+		{
+			return CreateCompilationWithReferences(source, references as IEnumerable<MetadataReference>);
 		}
 
 		/// <summary>
 		/// Creates a <see cref="CSharpCompilation"/> that contains a <see cref="CSharpSyntaxTree"/> created from the specified <paramref name="source"/>
-		/// and all the given <see cref="MetadataReference"/>s.
+		/// and all given <see cref="MetadataReference"/>s.
 		/// </summary>
 		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the output <see cref="CSharpCompilation"/>.</param>
-		/// <param name="references">An array of <see cref="MetadataReference"/> to be added to the output <see cref="CSharpCompilation"/>.</param>
-		public static CSharpCompilation CreateCompilationWithReferences(string? source, params MetadataReference[]? references)
+		/// <param name="references">A collection of <see cref="MetadataReference"/> to be added to the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithReferences(string? source, IEnumerable<MetadataReference>? references)
 		{
-			return CreateCompilationWithReferences(source is not null ? CSharpSyntaxTree.ParseText(source) as CSharpSyntaxTree : null, references);
+			CSharpSyntaxTree? syntaxTree = source is null ? null : (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(source, encoding: Encoding.UTF8);
+
+			return CreateCompilationWithReferences(syntaxTree, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilationWithReferences(IEnumerable{string}?, IEnumerable{MetadataReference}?)"/>
+		public static CSharpCompilation CreateCompilationWithReferences(IEnumerable<string>? sources, params MetadataReference[]? references)
+		{
+			return CreateCompilationWithReferences(sources, references as IEnumerable<MetadataReference>);
 		}
 
 		/// <summary>
 		/// Creates a <see cref="CSharpCompilation"/> that contains <see cref="CSharpSyntaxTree"/>s created from the specified <paramref name="sources"/>
-		/// and all the given <see cref="MetadataReference"/>s.
+		/// and all given <see cref="MetadataReference"/>s.
 		/// </summary>
 		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the output <see cref="CSharpCompilation"/>.</param>
-		/// <param name="references">An array of <see cref="MetadataReference"/> to be added to the output <see cref="CSharpCompilation"/>.</param>
-		public static CSharpCompilation CreateCompilationWithReferences(IEnumerable<string>? sources, params MetadataReference[]? references)
+		/// <param name="references">A collection of <see cref="MetadataReference"/> to be added to the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithReferences(IEnumerable<string>? sources, IEnumerable<MetadataReference>? references)
 		{
-			return CreateCompilationWithReferences(GetSyntaxTrees(sources).ToArray(), references);
+			IEnumerable<CSharpSyntaxTree> syntaxTrees = GetSyntaxTrees(sources);
+			return CreateCompilationWithReferences(syntaxTrees, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilationWithReferences(CSharpSyntaxTree?, IEnumerable{MetadataReference}?)"/>
+		public static CSharpCompilation CreateCompilationWithReferences(CSharpSyntaxTree? syntaxTree, params MetadataReference[]? references)
+		{
+			return CreateCompilationWithReferences(syntaxTree, references as IEnumerable<MetadataReference>);
 		}
 
 		/// <summary>
-		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <see cref="CSharpSyntaxTree"/> and all the given <see cref="MetadataReference"/>s.
+		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <see cref="CSharpSyntaxTree"/> and all given <see cref="MetadataReference"/>s.
 		/// </summary>
-		/// <param name="tree">A <see cref="CSharpSyntaxTree"/> that will be added to the output <see cref="CSharpCompilation"/>.</param>
-		/// <param name="references">An array of <see cref="MetadataReference"/> to be added to the output <see cref="CSharpCompilation"/>.</param>
-		public static CSharpCompilation CreateCompilationWithReferences(CSharpSyntaxTree? tree, params MetadataReference[]? references)
+		/// <param name="syntaxTree">A <see cref="CSharpSyntaxTree"/> that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="references">A collection of <see cref="MetadataReference"/> to be added to the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithReferences(CSharpSyntaxTree? syntaxTree, IEnumerable<MetadataReference>? references)
 		{
-			return CreateCompilationWithReferences(tree is not null ? new CSharpSyntaxTree[] { tree } : null, references);
+			CSharpSyntaxTree[]? syntaxTrees = syntaxTree is null ? null : new CSharpSyntaxTree[] { syntaxTree };
+			return CreateCompilationWithReferences(syntaxTrees, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilationWithReferences(IEnumerable{CSharpSyntaxTree}?, IEnumerable{MetadataReference}?)"/>
+		public static CSharpCompilation CreateCompilationWithReferences(IEnumerable<CSharpSyntaxTree>? syntaxTrees, params MetadataReference[]? references)
+		{
+			return CreateCompilationWithReferences(syntaxTrees, references as IEnumerable<MetadataReference>);
 		}
 
 		/// <summary>
-		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <see cref="CSharpSyntaxTree"/> and all the given <see cref="MetadataReference"/>s.
+		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <see cref="CSharpSyntaxTree"/> and all given <see cref="MetadataReference"/>s.
 		/// </summary>
-		/// <param name="trees">A collection of <see cref="CSharpSyntaxTree"/>s that will be added to the output <see cref="CSharpCompilation"/>.</param>
-		/// <param name="references">An array of <see cref="MetadataReference"/> to be added to the output <see cref="CSharpCompilation"/>.</param>
-		public static CSharpCompilation CreateCompilationWithReferences(IEnumerable<CSharpSyntaxTree>? trees, params MetadataReference[]? references)
+		/// <param name="syntaxTrees">A collection of <see cref="CSharpSyntaxTree"/>s that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="references">A collection of <see cref="MetadataReference"/> to be added to the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithReferences(IEnumerable<CSharpSyntaxTree>? syntaxTrees, IEnumerable<MetadataReference>? references)
 		{
 			return CSharpCompilation.Create(
 				assemblyName: DefaultCompilationName,
-				syntaxTrees: trees,
+				syntaxTrees: syntaxTrees,
 				references: references,
 				options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
 			);
 		}
 
+		/// <inheritdoc cref="CreateCompilationWithReferences(ISourceTextProvider?, IEnumerable{MetadataReference}?)"/>
+		public static CSharpCompilation CreateCompilationWithReferences(ISourceTextProvider? sourceText, params MetadataReference[]? references)
+		{
+			return CreateCompilationWithReferences(sourceText, references as IEnumerable<MetadataReference>);
+		}
+
 		/// <summary>
-		/// Creates a new, non-defaulted <see cref="GeneratorExecutionContext"/> using a <see cref="CSharpGeneratorDriver"/>.
+		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <paramref name="sourceText"/>
+		/// and all given <see cref="MetadataReference"/>s.
+		/// </summary>
+		/// <param name="sourceText">A <see cref="ISourceTextProvider"/> that creates source text that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="references">A collection of <see cref="MetadataReference"/> to be added to the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithReferences(ISourceTextProvider? sourceText, IEnumerable<MetadataReference>? references)
+		{
+			CSharpSyntaxTree? syntaxTree = sourceText is null ? null : (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(sourceText.GetText(), encoding: Encoding.UTF8);
+
+			return CreateCompilationWithReferences(syntaxTree, references);
+		}
+
+		/// <inheritdoc cref="CreateCompilationWithReferences(IEnumerable{ISourceTextProvider}?, IEnumerable{MetadataReference}?)"/>
+		public static CSharpCompilation CreateCompilationWithReferences(IEnumerable<ISourceTextProvider>? sourceTexts, params MetadataReference[]? references)
+		{
+			return CreateCompilationWithReferences(sourceTexts, references as IEnumerable<MetadataReference>);
+		}
+
+		/// <summary>
+		/// Creates a <see cref="CSharpCompilation"/> that contains the specified <see cref="ISourceTextProvider"/>s
+		/// and all given <see cref="MetadataReference"/>s.
+		/// </summary>
+		/// <param name="sourceTexts">A collection of <see cref="ISourceTextProvider"/>s that create source texts that will be added to the output <see cref="CSharpCompilation"/>.</param>
+		/// <param name="references">A collection of <see cref="MetadataReference"/> to be added to the output <see cref="CSharpCompilation"/>.</param>
+		public static CSharpCompilation CreateCompilationWithReferences(IEnumerable<ISourceTextProvider>? sourceTexts, IEnumerable<MetadataReference>? references)
+		{
+			IEnumerable<CSharpSyntaxTree>? syntaxTrees = sourceTexts?.Select(text => (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text.GetText(), encoding: Encoding.UTF8));
+
+			return CreateCompilationWithReferences(syntaxTrees, references);
+		}
+
+		/// <summary>
+		/// Creates a new, non-defaulted <see cref="GeneratorExecutionContext"/> using a <see cref="CSharpGeneratorDriver"/> and a generator proxy.
 		/// </summary>
 		public static GeneratorExecutionContext CreateExecutionContext()
 		{
@@ -210,7 +408,7 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Creates a new, non-defaulted <see cref="GeneratorInitializationContext"/> using <c>System.Reflection</c>.
+		/// Creates a new, non-defaulted <see cref="GeneratorInitializationContext"/> using reflection.
 		/// </summary>
 		public static GeneratorInitializationContext CreateInitializationContext()
 		{
@@ -224,9 +422,10 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Returns an array of <see cref="MetadataReference"/>s of all essential .NET assemblies.
+		/// Returns A collection of <see cref="MetadataReference"/>s of all essential .NET assemblies.
 		/// </summary>
-		public static MetadataReference[] GetBaseReferences()
+		/// <param name="includeDurianCore">Determines whether to include the <c>Durian.Core.dll</c> assembly.</param>
+		public static MetadataReference[] GetBaseReferences(bool includeDurianCore = true)
 		{
 			string directory = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
 
@@ -240,6 +439,11 @@ namespace Durian.TestServices
 				MetadataReference.CreateFromFile(Path.Combine(directory, "System.Runtime.dll")),
 				MetadataReference.CreateFromFile(Path.Combine(directory, "netstandard.dll")),
 			};
+
+			if(includeDurianCore)
+			{
+				references.Add(MetadataReference.CreateFromFile(typeof(DurianGeneratedAttribute).Assembly.Location));
+			}
 
 			return references.ToArray();
 		}

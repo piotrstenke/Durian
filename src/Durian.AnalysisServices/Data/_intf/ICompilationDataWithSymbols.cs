@@ -16,7 +16,7 @@ namespace Durian.Analysis.Data
 		public INamedTypeSymbol DurianGeneratedAttribute { get; }
 
 		/// <summary>
-		/// Returns a <see cref="INamedTypeSymbol"/> that represents the <see cref="Generator.RegisterDurianModuleAttribute"/>..
+		/// Returns a <see cref="INamedTypeSymbol"/> that represents the <see cref="Generator.EnableModuleAttribute"/>..
 		/// </summary>
 		public INamedTypeSymbol EnableModuleAttribute { get; }
 

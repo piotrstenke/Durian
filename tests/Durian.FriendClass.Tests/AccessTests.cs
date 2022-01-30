@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Durian.TestServices;
 using Xunit;
@@ -271,6 +272,11 @@ class Other
 }}
 ";
 			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
+		{
+			return FriendClassGenerator.GetSourceProviders();
 		}
 	}
 }

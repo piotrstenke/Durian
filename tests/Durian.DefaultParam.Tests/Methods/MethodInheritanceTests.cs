@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Methods
 {
-	public sealed class MethodInheritanceTests : DefaultParamGeneratorTest
+	public sealed class MethodInheritanceTests : DefaultParamGeneratorTestBase
 	{
 		[Fact]
 		public void Error_When_AddedAttributeOnNonDefautParamParameter()

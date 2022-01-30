@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,7 +36,9 @@ namespace Durian.TestServices
 		/// Initializes a new instance of the <see cref="AnalyzerTest{T}"/> class.
 		/// </summary>
 		/// <param name="compilation">An instance of <see cref="TestableCompilationData"/> to share between all tests in this class.</param>
-		protected AnalyzerTest(TestableCompilationData compilation) : base(compilation)
+		/// <param name="addInitialSources">Determines whether to add sources created using the <see cref="CompilationTest.GetInitialSources()"/> method to the <paramref name="compilation"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
+		protected AnalyzerTest(TestableCompilationData compilation, bool addInitialSources = true) : base(compilation, addInitialSources)
 		{
 		}
 

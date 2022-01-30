@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using System.Collections.Immutable;
-using System.Text;
 using System.Threading.Tasks;
 using Durian.Analysis;
 using Durian.Generator;
@@ -114,10 +113,7 @@ class Test
 
 [assembly: {DurianStrings.GeneratorNamespace}.{nameof(EnableModuleAttribute)}({DurianStrings.InfoNamespace}.{nameof(DurianModule)}.{module})]";
 
-			SyntaxTree generatedTree = CSharpSyntaxTree.ParseText(moduleMock, encoding: Encoding.UTF8);
-			SyntaxTree tree = CSharpSyntaxTree.ParseText(input, encoding: Encoding.UTF8);
-			CSharpCompilation compilation = RoslynUtilities.CreateBaseCompilation();
-			compilation = compilation.AddSyntaxTrees(generatedTree, tree);
+			CSharpCompilation compilation = RoslynUtilities.CreateCompilation(new string[] { moduleMock, input});
 
 			return analyzer.RunAnalyzer(compilation);
 		}

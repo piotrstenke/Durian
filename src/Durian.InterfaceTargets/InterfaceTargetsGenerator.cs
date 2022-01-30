@@ -79,7 +79,15 @@ namespace Durian.Analysis.InterfaceTargets
 		}
 
 		/// <inheritdoc/>
-		protected override IEnumerable<ISourceTextProvider>? GetStaticSyntaxTrees()
+		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
+		{
+			return GetSourceProviders();
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="ISourceTextProvider"/> used by this generator to create initial sources.
+		/// </summary>
+		public static IEnumerable<ISourceTextProvider> GetSourceProviders()
 		{
 			return new ISourceTextProvider[]
 			{

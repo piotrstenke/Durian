@@ -1,44 +1,29 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using System;
+using Newtonsoft.Json;
 
-internal readonly struct DiagnosticData : IEquatable<DiagnosticData>
+[JsonObject]
+internal sealed class DiagnosticData
 {
-	public readonly bool Fatal { get; }
+	[JsonProperty("title", Required = Required.Always)]
+	public string? Title { get; set; }
 
-	public readonly string File { get; }
+	[JsonProperty("id", Required = Required.Always)]
+	public string? Id { get; set; }
 
-	public readonly bool HasLocation { get; }
+	[JsonProperty("moduleName", Required = Required.Always)]
+	public string? ModuleName { get; set; }
 
-	public readonly string Id { get; }
+	[JsonProperty("file", Required = Required.Always)]
+	public string? File { get; set; }
 
-	public readonly string Module { get; }
+	[JsonProperty("documentation")]
+	public string? Documentation { get; set; }
 
-	public readonly string Title { get; }
-
-	public DiagnosticData(string title, string id, string module, bool hasLocation, bool fatal, string file)
-	{
-		Title = title;
-		Id = id;
-		Module = module;
-		HasLocation = hasLocation;
-		Fatal = fatal;
-		File = file;
-	}
-
-	public readonly bool Equals(DiagnosticData other)
-	{
-		return other.Id == other.Id;
-	}
-
-	public override readonly bool Equals(object? obj)
-	{
-		return obj is DiagnosticData data && Equals(data);
-	}
-
-	public override readonly int GetHashCode()
-	{
-		return Id.GetHashCode();
-	}
+	[JsonProperty("fatal")]
+	public bool Fatal { get; set; }
+	
+	[JsonProperty("hasLocation")]
+	public bool HasLocation { get; set; }
 }

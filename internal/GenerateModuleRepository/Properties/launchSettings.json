@@ -2,7 +2,7 @@
   "profiles": {
     "GenerateModuleRepository": {
       "commandName": "Project",
-      "commandLineArgs": "\"$(SolutionDir)src\" \"$(SolutionDir)src\\Durian.Info\""
+      "commandLineArgs": "\"$(SolutionDir)\\\" \"src\\Durian.Core\""
     }
   }
 }

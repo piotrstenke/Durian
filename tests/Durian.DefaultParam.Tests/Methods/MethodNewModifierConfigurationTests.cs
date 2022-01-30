@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Methods
 {
-	public sealed class MethodNewModifierConfigurationTests : DefaultParamGeneratorTest
+	public sealed class MethodNewModifierConfigurationTests : DefaultParamGeneratorTestBase
 	{
 		[Fact]
 		public void AppliesNewModifier_When_GenericMemberOtherThanMethodIsPresentInBaseClass()
@@ -95,16 +95,14 @@ class Parent
 
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Test
+@$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
@@ -209,16 +207,14 @@ class Parent
 [{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Test
+@$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
@@ -431,7 +427,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}
@@ -454,10 +450,10 @@ class Parent
 	}}
 }}
 
-[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value)
 	{{
 	}}

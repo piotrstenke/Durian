@@ -7,7 +7,7 @@ using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Analysis.DefaultParam.Tests.Delegates
 {
-	public sealed class DelegateNewModifierConfigurationTests : DefaultParamGeneratorTest
+	public sealed class DelegateNewModifierConfigurationTests : DefaultParamGeneratorTestBase
 	{
 		[Fact]
 		public void AppliesNewModifier_When_GeneratedGenericNameAlreadyExistsInBaseClass()
@@ -109,14 +109,12 @@ class Parent
 
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Test
+@$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	new delegate void Del(int value);
@@ -200,14 +198,12 @@ class Parent
 [{DefaultParamScopedConfigurationAttributeProvider.TypeName}({DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Test
+@$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	new delegate void Del(int value);
@@ -281,7 +277,7 @@ class Parent
 
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
@@ -300,10 +296,10 @@ class Parent
 	public delegate void Del(int value);
 }}
 
-[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
+[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = true)]
 partial class Test : Parent
 {{
-	[{nameof(DefaultParamConfiguration)}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
+	[{DefaultParamConfigurationAttributeProvider.TypeName}({DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible} = false)]
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";

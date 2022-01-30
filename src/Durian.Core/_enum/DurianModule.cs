@@ -19,6 +19,11 @@ namespace Durian.Info
 		Core,
 
 		/// <summary>
+		/// Represents the <c>Durian.Development</c> module.
+		/// </summary>
+		Development,
+
+		/// <summary>
 		/// Represents the <c>Durian.DefaultParam</c> module.
 		/// </summary>
 		DefaultParam,

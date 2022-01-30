@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
@@ -503,6 +504,11 @@ partial class Test
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes.Id));
+		}
+
+		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
+		{
+			return DefaultParamGenerator.GetSourceProviders();
 		}
 	}
 }

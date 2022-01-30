@@ -174,6 +174,7 @@ namespace Durian.Info
 				DurianModule.DefaultParam => ModuleRepository.DefaultParam,
 				DurianModule.FriendClass => ModuleRepository.FriendClass,
 				DurianModule.InterfaceTargets => ModuleRepository.InterfaceTargets,
+				DurianModule.Development => ModuleRepository.Development,
 				DurianModule.None => throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!"),
 				_ => throw new InvalidOperationException($"Unknown {nameof(DurianModule)} value: {module}!")
 			};

@@ -43,7 +43,6 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		public const string TargetNamespace = "TargetNamespace";
 
-
 		/// <inheritdoc/>
 		public override string GetNamespace()
 		{

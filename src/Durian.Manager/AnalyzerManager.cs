@@ -82,7 +82,7 @@ namespace Durian.Manager
 		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
 		public virtual bool ShouldAnalyze(CSharpCompilation compilation)
 		{
-			return true;
+			return DisabledModuleAnalyzer.AreEnabled(RequiredModules.ToArray());
 		}
 
 		IEnumerable<DiagnosticDescriptor> IDurianAnalyzer.GetSupportedDiagnostics()

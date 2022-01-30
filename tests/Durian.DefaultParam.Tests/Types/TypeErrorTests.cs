@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Types
 {
-	public sealed class TypeErrorTests : DefaultParamGeneratorTest
+	public sealed class TypeErrorTests : DefaultParamGeneratorTestBase
 	{
 		[Fact]
 		public void Error_When_ContainingTypeIsDefaultParam()

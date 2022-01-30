@@ -17,17 +17,17 @@ namespace Durian.Info
 	public static class TypeRepository
 	{
 		/// <summary>
-		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.DisableModuleAttribute</c> type.
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Generator.EnableModuleAttribute</c> type.
 		/// </summary>
-		public static TypeIdentity DisableModuleAttribute
+		public static TypeIdentity EnableModuleAttribute
 		{
 			get
 			{
-				if(!IdentityPool.Types.TryGetValue("DisableModuleAttribute", out TypeIdentity type))
+				if(!IdentityPool.Types.TryGetValue("EnableModuleAttribute", out TypeIdentity type))
 				{
 					type = new(
-						name: "DisableModuleAttribute",
-						@namespace: "Durian",
+						name: "EnableModuleAttribute",
+						@namespace: "Durian.Generator",
 						modules: new DurianModule[]
 						{
 							DurianModule.Core,
@@ -63,17 +63,17 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Generator.EnableModuleAttribute</c> type.
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.DisableModuleAttribute</c> type.
 		/// </summary>
-		public static TypeIdentity EnableModuleAttribute
+		public static TypeIdentity DisableModuleAttribute
 		{
 			get
 			{
-				if(!IdentityPool.Types.TryGetValue("EnableModuleAttribute", out TypeIdentity type))
+				if(!IdentityPool.Types.TryGetValue("DisableModuleAttribute", out TypeIdentity type))
 				{
 					type = new(
-						name: "EnableModuleAttribute",
-						@namespace: "Durian.Generator",
+						name: "DisableModuleAttribute",
+						@namespace: "Durian",
 						modules: new DurianModule[]
 						{
 							DurianModule.Core,
@@ -247,16 +247,16 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.InterfaceTargetsAttribute</c> type.
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.InterfaceTargets</c> type.
 		/// </summary>
-		public static TypeIdentity InterfaceTargetsAttribute
+		public static TypeIdentity InterfaceTargets
 		{
 			get
 			{
-				if(!IdentityPool.Types.TryGetValue("InterfaceTargetsAttribute", out TypeIdentity type))
+				if(!IdentityPool.Types.TryGetValue("InterfaceTargets", out TypeIdentity type))
 				{
 					type = new(
-						name: "InterfaceTargetsAttribute",
+						name: "InterfaceTargets",
 						@namespace: "Durian",
 						modules: new DurianModule[]
 						{
@@ -270,16 +270,16 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.InterfaceTargets</c> type.
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.InterfaceTargetsAttribute</c> type.
 		/// </summary>
-		public static TypeIdentity InterfaceTargets
+		public static TypeIdentity InterfaceTargetsAttribute
 		{
 			get
 			{
-				if(!IdentityPool.Types.TryGetValue("InterfaceTargets", out TypeIdentity type))
+				if(!IdentityPool.Types.TryGetValue("InterfaceTargetsAttribute", out TypeIdentity type))
 				{
 					type = new(
-						name: "InterfaceTargets",
+						name: "InterfaceTargetsAttribute",
 						@namespace: "Durian",
 						modules: new DurianModule[]
 						{

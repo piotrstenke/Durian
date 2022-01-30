@@ -38,7 +38,6 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		public const string Copy = nameof(TypeConvention.Copy);
 
-
 		/// <inheritdoc/>
 		public override string GetNamespace()
 		{

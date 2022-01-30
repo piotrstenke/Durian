@@ -60,6 +60,18 @@ namespace Durian.Analysis.FriendClass
 		{
 		}
 
+		/// <summary>
+		/// Returns a collection of <see cref="ISourceTextProvider"/> used by this generator to create initial sources.
+		/// </summary>
+		public static IEnumerable<ISourceTextProvider> GetSourceProviders()
+		{
+			return new ISourceTextProvider[]
+			{
+				new FriendClassAttributeProvider(),
+				new FriendClassConfigurationAttributeProvider()
+			};
+		}
+
 		/// <inheritdoc/>
 		protected override DurianModule[] GetEnabledModules()
 		{
@@ -79,13 +91,9 @@ namespace Durian.Analysis.FriendClass
 		}
 
 		/// <inheritdoc/>
-		protected override IEnumerable<ISourceTextProvider>? GetStaticSyntaxTrees()
+		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
 		{
-			return new ISourceTextProvider[]
-			{
-				new FriendClassAttributeProvider(),
-				new FriendClassConfigurationAttributeProvider()
-			};
+			return GetSourceProviders();
 		}
 	}
 }

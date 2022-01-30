@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Types
 {
-	public sealed class TypeConventionTests : DefaultParamGeneratorTest
+	public sealed class TypeConventionTests : DefaultParamGeneratorTestBase
 	{
 		[Fact]
 		public void Copies_When_GloballyTrue_And_LocallyFalse()
@@ -26,9 +26,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Parent
+@$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test
@@ -58,9 +56,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Parent
+@$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test
@@ -166,9 +162,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Parent
+@$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -226,9 +220,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Parent
+@$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -257,9 +249,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Parent
+@$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -290,7 +280,6 @@ partial class Parent
 ";
 			string expected =
 @$"using System;
-using {DurianStrings.ConfigurationNamespace};
 
 partial class Parent
 {{
@@ -321,9 +310,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"using {DurianStrings.ConfigurationNamespace};
-
-partial class Parent
+@$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	class Test<T> : Test<T, string> where T : struct
@@ -397,7 +384,6 @@ partial class Parent
 ";
 			string expected =
 @$"using System;
-using {DurianStrings.ConfigurationNamespace};
 
 partial class Parent
 {{
@@ -429,7 +415,6 @@ partial class Parent
 ";
 			string expected =
 @$"using System;
-using {DurianStrings.ConfigurationNamespace};
 
 partial class Parent
 {{
