@@ -23,7 +23,7 @@
 
 ## Current state
 
-Durian is at an early stage of its evolution - many core features are still missing, being either in early development or planning phase. As for now, only one fully-fledged module is complete - *DefaultParam*, with *InterfaceTargets* and *FriendClass* awaiting in experimental stage for release in the closest future.
+Durian is at an early stage of its evolution - many core features are still missing, being either in early development or planning phase. As for now, three fully-fledged modules are completed - *DefaultParam*, *InterfaceTargets* and *FriendClass*.
 
 ## Features
 
