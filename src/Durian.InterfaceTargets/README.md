@@ -29,8 +29,8 @@ Packages that are part of the *InterfaceTargets* module:
 
 *InterfaceTargets* includes 2 types from [Durian.Core](../Durian.Core/README.md): 
 
- - [Durian.InterfaceTargets](../Durian.Core/_enum/InterfaceTargets.cs)
- - [Durian.InterfaceTargetsAttribute](../Durian.Core/_attr/InterfaceTargetsAttribute.cs)
+ - [Durian.InterfaceTargets](../Durian.InterfaceTargets/InterfaceTargetsProvider.cs)
+ - [Durian.InterfaceTargetsAttribute](../Durian.InterfaceTargets/InterfaceTargetsAttributeProvider.cs)
 
 ## Setup
 
@@ -41,7 +41,7 @@ Like with other Durian modules, the target project must reference the [Durian.Co
 
 ## Basics
 
-The premise of this package is fairly straight-forward and recognizable. Similar to how [System.AttributeUsageAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.attributeusageattribute?view=net-5.0) works, the [Durian.InterfaceTargetsAttribute](../Durian.Core/_attr/InterfaceTargetsAttribute.cs) allows to specify what kind of members the target interface can be implemented by.
+The premise of this package is fairly straight-forward and recognizable. Similar to how [System.AttributeUsageAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.attributeusageattribute?view=net-5.0) works, the [Durian.InterfaceTargetsAttribute](../Durian.InterfaceTargets/InterfaceTargetsAttributeProvider.cs) allows to specify what kind of members the target interface can be implemented by.
 
 ```csharp
 using Durian;
@@ -125,7 +125,7 @@ public struct StructTest : ITest
 
 ## Possible values
 
-The possible values of the [Durian.InterfaceTargets](../Durian.Core/_enum/InterfaceTargets.cs) enum are:
+The possible values of the [Durian.InterfaceTargets](../Durian.InterfaceTargets/InterfaceTargetsProvider.cs) enum are:
 
  - *None* - Interface cannot be implemented in code.
  - *ReflectionOnly* - Interface can only be implemented through reflection; the same as *None*.
@@ -134,7 +134,7 @@ The possible values of the [Durian.InterfaceTargets](../Durian.Core/_enum/Interf
  - *Struct* - Interface can only be implemented by structs.
  - *RecordClass* - Interface can only be implemented by record classes.
  - *RecordStruct* - Interface can only be implemented by record structs.
- - *All* - Interface can be applied to all kinds of members; same as not specifying the [Durian.InterfaceTargetsAttribute](../Durian.Core/_attr/InterfaceTargetsAttribute.cs) at all.
+ - *All* - Interface can be applied to all kinds of members; same as not specifying the [Durian.InterfaceTargetsAttribute](../Durian.InterfaceTargets/InterfaceTargetsAttributeProvider.cs) at all.
 
 
 ##

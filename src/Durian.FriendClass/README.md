@@ -32,8 +32,8 @@ Packages that are part of the *FriendClass* module:
 
 *FriendClass* includes 5 types from [Durian.Core](../Durian.Core/README.md): 
 
- - [Durian.FriendClassAttribute](../Durian.Core/_attr/FriendClassAttribute.cs)
-  - [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.Core/Configuration/_attr/FriendClassConfigurationAttribute.cs)
+ - [Durian.FriendClassAttribute](../Durian.FriendClass/FriendClassAttributeProvider.cs)
+  - [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs)
 
 ## Setup
 
@@ -44,7 +44,7 @@ Like with other Durian modules, the target project must reference the [Durian.Co
 
 ## Basics
 
-To limit access of 'internal' members, specify a [Durian.FriendClassAttribute](../Durian.Core/_attr/FriendClassAttribute.cs) with the target friend type as argument.
+To limit access of 'internal' members, specify a [Durian.FriendClassAttribute](../Durian.FriendClass/FriendClassAttributeProvider.cs) with the target friend type as argument.
 
 ```csharp
 using Durian;
@@ -206,7 +206,7 @@ public class B
 
 ### Inner types
 
-Inner types of the target type are implicit friends, meaning they don't have to be specified using the [Durian.FriendClassAttribute](../Durian.Core/_attr/FriendClassAttribute.cs). This behavior cannot be changed.
+Inner types of the target type are implicit friends, meaning they don't have to be specified using the [Durian.FriendClassAttribute](../Durian.FriendClass/FriendClassAttributeProvider.cs). This behavior cannot be changed.
 
 ```csharp
 using Durian;
@@ -362,7 +362,7 @@ public class Child : Other
 
 ```
 
-However, both features can be easily configured - children of target using the *AllowsChildren* property of the [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.Core/Configuration/_attr/FriendClassConfigurationAttribute.cs)...
+However, both features can be easily configured - children of target using the *AllowsChildren* property of the [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs)...
 
 ```csharp
 
@@ -392,7 +392,7 @@ public class Child : Test
 
 ```
 
-...and children of friends using the *AllowsFriendChildren* property of the [Durian.FriendClassAttribute](../Durian.Core/_attr/FriendClassAttribute.cs).
+...and children of friends using the *AllowsFriendChildren* property of the [Durian.FriendClassAttribute](../Durian.FriendClass/FriendClassAttributeProvider.cs).
 
 ```csharp
 
@@ -420,7 +420,7 @@ public class Child : Other
 
 ```
 
-**Note**: Setting the *AllowsChildren* property of the [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.Core/Configuration/_attr/FriendClassConfigurationAttribute.cs) to *true* on structs or sealed/static classes is not allowed.
+**Note**: Setting the *AllowsChildren* property of the [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs) to *true* on structs or sealed/static classes is not allowed.
 
 
 ##

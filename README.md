@@ -59,10 +59,6 @@ public class Program
 
 ```
 
-## Experimental
-
-Experimental modules include packages that are almost ready to be released, but still need some more polishing.
-
 ### [InterfaceTargets](src/Durian.InterfaceTargets/README.md)
 
 *InterfaceTargets*, similar to how [System.AttributeUsageAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.attributeusageattribute?view=net-5.0) works, allows to specify what kinds of members an interface can be implemented by.
@@ -121,8 +117,13 @@ public class B
         return Test.Key;
     }
 }
-
 ```
+
+## Experimental
+
+Experimental modules include packages that are almost ready to be released, but still need some more polishing.
+
+Currently, there are no modules in the experimental stage.
 
 ##
 

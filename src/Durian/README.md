@@ -21,7 +21,6 @@ This package includes almost every existing Durian package, that is:
  - [Durian.Core](../Durian.Core/README.md)
  - [Durian.Core.Analyzer](../Durian.Core.Analyzer/README.md)
  - [Durian.DefaultParam](../Durian.DefaultParam/README.md)
- - [Durian.GenericSpecialization](../Durian.GenericSpecialization/README.md)
  - [Durian.FriendClass](../Durian.FriendClass/README.md)
  - [Durian.InterfaceTargets](../Durian.InterfaceTargets/README.md)
 
@@ -35,7 +34,6 @@ In order to ensure best user experience, some of the dependent packages contain 
 
  - [Durian.Core.Analyzer](../Durian.Core.Analyzer/README.md)
  - [Durian.DefaultParam](../Durian.DefaultParam/README.md)
- - [Durian.GenericSpecialization](../Durian.GenericSpecialization/README.md)
  - [Durian.FriendClass](../Durian.FriendClass/README.md)
  - [Durian.InterfaceTargets](../Durian.InterfaceTargets/README.md)
 

@@ -40,13 +40,13 @@ Packages that are part of the *DefaultParam* module:
 
  - [*Durian.DefaultParam*](https://www.nuget.org/packages/Durian.DefaultParam/)
 
-*DefaultParam* includes 5 types from [Durian.Core](../Durian.Core/README.md): 
+*DefaultParam* provides 5 types: 
 
- - [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs)
- - [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationATtribute.cs)
- - [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs)
- - [Durian.Configuration.DPTypeConvention](../Durian.Core/Configuration/_enum/DPTypeConvention.cs)
- - [Durian.Configuration.DPMethodConvention](../Durian.Core/Configuration/_enum/DPMethodConvention.cs)
+ - [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs)
+ - [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationAttributeProvider.cs)
+ - [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationAttributeProvider.cs)
+ - [Durian.Configuration.DPTypeConvention](../Durian.DefaultParam/DPTypeConventionProvider.cs)
+ - [Durian.Configuration.DPMethodConvention](../Durian.DefaultParam/DPMethodConventionProvider.cs)
 
 ## Setup
 
@@ -57,7 +57,7 @@ Like with other Durian modules, the target project must reference the [Durian.Co
 
 ## Basics
 
-Main type in this module is the [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs). When attribute is placed on a type parameter, a new member is generated - a direct copy of the original, but with the target type parameter replaced with the specified default type.
+Main type in this module is the [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs). When attribute is placed on a type parameter, a new member is generated - a direct copy of the original, but with the target type parameter replaced with the specified default type.
 
 ```csharp
 using Durian;
@@ -83,9 +83,9 @@ public class Test : Test<string>
 
 ```
 
-[Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs) can only be placed on the last type parameter or next to another [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs).
+[Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs) can only be placed on the last type parameter or next to another [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs).
 
-If multiple type parameters are marked with the [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs), multiple members are generated accordingly.
+If multiple type parameters are marked with the [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs), multiple members are generated accordingly.
 
 ```csharp
 using Durian;
@@ -122,7 +122,7 @@ public class Test : Test<int, string>
 
 ### Parameter constraints
 
-Default type defined using the [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs) must fulfill all constraints of the target type parameter.
+Default type defined using the [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs) must fulfill all constraints of the target type parameter.
 
 ```csharp
 using Durian;
@@ -141,7 +141,7 @@ public class Other<[DefaultParam(typeof(string))]T> where T : struct
 
 ### Accessibility
 
-*DefaultParam* respects all language restrictions of accessibility. As long as the target type parameter is never used in a context more accessible than the value of [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs), it is not an error.
+*DefaultParam* respects all language restrictions of accessibility. As long as the target type parameter is never used in a context more accessible than the value of [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs), it is not an error.
 
 ```csharp
 using Durian;
@@ -164,7 +164,7 @@ public class Other<[DefaultParam(typeof(Dummy))]T>
 
 ### Invalid values
 
-Not all types are valid for the [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs). This includes: 
+Not all types are valid for the [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs). This includes: 
 
  - void or [System.Void](https://docs.microsoft.com/en-us/dotnet/api/system.void?view=net-5.0);
  - pointers or function pointers;
@@ -186,7 +186,7 @@ Additionally, the following types can't be used when there is a type parameter c
 
 Most generic-compatible members are supported, but there are some notable rules and exceptions:
 
-- target member cannot be placed within another member with the [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs);
+- target member cannot be placed within another member with the [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs);
 - all containing types of the target member must be *partial*;
 - if the member is a type, it cannot be *partial*;
 - if the *DPTypeConvention.Inherit* (see: [Configuration](#configuration)) is applied, the member cannot be a *struct* or a *sealed* or *static* class and must define at least one accessible constructor;
@@ -195,11 +195,11 @@ Most generic-compatible members are supported, but there are some notable rules 
 
 ## Configuration
 
-*DefaultParam* allows the user to configure, how new members are generated through the [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationATtribute.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationATtribute.cs) types.
+*DefaultParam* allows the user to configure, how new members are generated through the [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationAttributeProvider.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationATtributeProvider.cs) types.
 
 ### Local configuration
 
-Local configuration is determined through the [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationATtribute.cs). It is applied only to the member it is defined on.
+Local configuration is determined through the [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationATtributeProvider.cs). It is applied only to the member it is defined on.
 
 ```csharp
 using Durian;
@@ -226,11 +226,11 @@ public partial class Dummy
 
 ```
 
-**Note**: This attribute shouldn't be placed on members without the [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs), as in such case it is meaningless.
+**Note**: This attribute shouldn't be placed on members without the [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs), as in such case it is meaningless.
 
 ### Scoped configuration
 
-Scoped configuration is determined through the [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs). It is applied to all members in the current scope.
+Scoped configuration is determined through the [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationAttributeProvider.cs). It is applied to all members in the current scope.
 
 ```csharp
 using Durian;
@@ -255,11 +255,11 @@ public class Another<T, [DefaultParam(typeof(string))]U>
 
 ```
 
-**Note**: This attribute shouldn't be placed on a type with no members with the [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs), as in such case it is meaningless.
+**Note**: This attribute shouldn't be placed on a type with no members with the [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs), as in such case it is meaningless.
 
 ### Configuration priority
 
-The [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs) acts only as the default configuration for the scope - it cannot override values defined by a [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationAttribute.cs). 
+The [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationAttributeProvider.cs) acts only as the default configuration for the scope - it cannot override values defined by a [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationAttributeProvider.cs). 
 
 When applying the configuration, the generator will pick the inner most one it can find.
 
@@ -325,9 +325,9 @@ public partial class Other
 
 ### Method convention
 
-Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationAttribute.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs) define a *MethodConvention* property of type [Durian.Configuration.DPMethodConvention](../Durian.Core/Configuration/_enum/DPMethodConvention.cs). Thanks to this property, the user can specify how the target methods should be generated.
+Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationAttributeProvider.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationAttributeProvider.cs) define a *MethodConvention* property of type [Durian.Configuration.DPMethodConvention](../Durian.DefaultParam/DPMethodConventionProvider.cs). Thanks to this property, the user can specify how the target methods should be generated.
 
-[Durian.Configuration.DPMethodConvention](../Durian.Core/Configuration/_enum/DPMethodConvention.cs) is an enum with three constants:
+[Durian.Configuration.DPMethodConvention](../Durian.DefaultParam/DPMethodConventionProvider.cs) is an enum with three constants:
 
  - *Default*
  - *Call*
@@ -396,9 +396,9 @@ public partial class Other
 
 ### Type convention
 
-Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationAttribute.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs) define a *TypeConvention* property of type [Durian.Configuration.DPTypeConvention](../Durian.Core/Configuration/_enum/DPTypeConvention.cs). Thanks to this property, the user can specify how the target types should be generated.
+Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationAttributeProvider.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationAttributeProvider.cs) define a *TypeConvention* property of type [Durian.Configuration.DPTypeConvention](../Durian.DefaultParam/DPTypeConventionProvider.cs). Thanks to this property, the user can specify how the target types should be generated.
 
-[Durian.Configuration.DPTypeConvention](../Durian.Core/Configuration/_enum/DPTypeConvention.cs) is an enum with three constants:
+[Durian.Configuration.DPTypeConvention](../Durian.DefaultParam/DPTypeConventionProvider.cs) is an enum with three constants:
 
  - *Default*
  - *Inherit*
@@ -482,7 +482,7 @@ However, not all types support the *Inherit* convention. This includes:
 
 ### 'new' modifier
 
-Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationAttribute.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs) define a *bool* *ApplyNewModifierWhenPossible* property. Thanks to this property, the user can specify whether to apply the *new* modifier whenever it is placeable. By default, this property is set to *true*.
+Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationAttributeProvider.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationAttributeProvider.cs) define a *bool* *ApplyNewModifierWhenPossible* property. Thanks to this property, the user can specify whether to apply the *new* modifier whenever it is placeable. By default, this property is set to *true*.
 
 If the *ApplyNewModifierWhenPossible* property is *true*, upon detecting a member with a colliding name, the *new* modifier will be applied to the generated member.
 
@@ -546,7 +546,7 @@ public partial class Other : Parent
 
 ### Target namespace
 
-Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamConfigurationAttribute.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.Core/Configuration/_attr/DefaultParamScopedConfigurationAttribute.cs) define a *string* *TargetNamespace* property. Thanks to this property, the user can specify a namespace where the generated member should be placed.
+Both [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationAttributeProvider.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationAttributeProvider.cs) define a *string* *TargetNamespace* property. Thanks to this property, the user can specify a namespace where the generated member should be placed.
 
 In some cases, it is desirable to place the generated members in a separate namespace to increase overall readability.
 
@@ -629,11 +629,11 @@ public class Other : Other<string>
 
 *DefaultParam* offers support for *virtual* and *abstract* methods, excluding those declared as part of an interface. However, overriding methods must meet some requirements in order to be valid:
 
-- Overriding methods cannot add a [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs) on a type parameter that previously didn't have one.
-- Value of [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs) must be exactly the same as for the base method.
+- Overriding methods cannot add a [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs) on a type parameter that previously didn't have one.
+- Value of [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs) must be exactly the same as for the base method.
 - Methods that were generated by the *DefaultParam* generator cannot be overridden directly; original method should be overridden instead.
 
-**Note**: It is possible for an overriding method to not have a [Durian.DefaultParamAttribute](../Durian.Core/_attr/DefaultParamAttribute.cs) on a type parameter that in the base method had one. Such situations should be discouraged, however, as it leads to unnecessary confusion. For this reason an appropriate warning will be provided (see: [DUR0110](../../docs/DefaultParam/DUR0110.md)).
+**Note**: It is possible for an overriding method to not have a [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs) on a type parameter that in the base method had one. Such situations should be discouraged, however, as it leads to unnecessary confusion. For this reason an appropriate warning will be provided (see: [DUR0110](../../docs/DefaultParam/DUR0110.md)).
 
 ```csharp
 using Durian;
