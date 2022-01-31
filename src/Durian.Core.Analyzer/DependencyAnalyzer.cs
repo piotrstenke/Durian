@@ -179,7 +179,6 @@ namespace Durian.Analysis
 				assembly == "Durian.Core.Analyzer" ||
 				assembly == "Durian.DefaultParam" ||
 				assembly == "Durian.InterfaceTargets" ||
-				assembly == "Durian.GenericSpecialization" ||
 				assembly == "Durian.FriendClass";
 		}
 

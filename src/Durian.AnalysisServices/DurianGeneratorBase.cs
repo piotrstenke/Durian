@@ -245,10 +245,7 @@ namespace Durian.Analysis
 		{
 			if (context.Compilation is not CSharpCompilation c)
 			{
-				if (EnableDiagnostics)
-				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0004_NotCSharpCompilation, Location.None));
-				}
+				context.ReportDiagnostic(Diagnostic.Create(DUR0004_NotCSharpCompilation, Location.None));
 
 				compilation = null;
 				return false;
@@ -256,10 +253,7 @@ namespace Durian.Analysis
 
 			if (!HasValidReferences(c))
 			{
-				if (EnableDiagnostics)
-				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0001_DoesNotReferenceDurianCore, Location.None));
-				}
+				context.ReportDiagnostic(Diagnostic.Create(DUR0001_DoesNotReferenceDurianCore, Location.None));
 
 				compilation = null;
 				return false;
@@ -422,7 +416,7 @@ namespace Durian.Analysis
 		{
 			foreach (AssemblyIdentity assembly in compilation.ReferencedAssemblyNames)
 			{
-				if (assembly.Name == "Durian.Core")
+				if (assembly.Name == "Durian.Core" || assembly.Name == "Durian" || assembly.Name == "Durian.Manager")
 				{
 					return true;
 				}

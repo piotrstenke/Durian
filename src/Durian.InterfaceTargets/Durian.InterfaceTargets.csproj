@@ -8,9 +8,9 @@
       Do not reference this package if the main Durian package is already referenced.
     </Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Interface;Target;Targets;Usage</PackageTags>
-    <PackageVersion>1.0.0</PackageVersion>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
-    <Version>1.0.0</Version>
+    <PackageVersion>1.0.1</PackageVersion>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <Version>1.0.1</Version>
     <RootNamespace>Durian.Analysis.InterfaceTargets</RootNamespace>
     <IsRoslynComponent>true</IsRoslynComponent>
 

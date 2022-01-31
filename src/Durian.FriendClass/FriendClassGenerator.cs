@@ -23,7 +23,7 @@ namespace Durian.Analysis.FriendClass
 		/// <summary>
 		/// Version of this source generator.
 		/// </summary>
-		public static string Version => "1.0.0";
+		public static string Version => "1.0.1";
 
 		/// <inheritdoc cref="FriendClassGenerator(in ConstructionContext, IHintNameProvider?)"/>
 		public FriendClassGenerator()

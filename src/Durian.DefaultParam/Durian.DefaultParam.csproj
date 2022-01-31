@@ -8,9 +8,9 @@
       Do not reference this package if the main Durian package is already referenced.
     </Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Default;Param;Parameter;Type;Generic;Argument</PackageTags>
-    <PackageVersion>2.0.0</PackageVersion>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
-    <Version>2.0.0</Version>
+    <PackageVersion>2.0.1</PackageVersion>
+    <AssemblyVersion>2.0.1</AssemblyVersion>
+    <Version>2.0.1</Version>
     <RootNamespace>Durian.Analysis.DefaultParam</RootNamespace>
     <IsRoslynComponent>true</IsRoslynComponent>
 

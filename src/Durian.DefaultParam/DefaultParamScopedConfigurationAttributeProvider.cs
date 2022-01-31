@@ -77,16 +77,25 @@ namespace {Namespace}
 	[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = true)]
 	public sealed class {TypeName} : Attribute
 	{{
-		// <inheritdoc cref=""{DefaultParamConfigurationAttributeProvider.TypeName}.{DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible}""/>
+		/// <summary>
+		/// Determines whether to apply the <see langword=""new""/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword=""true""/>.
+		/// </summary>
 		public bool {ApplyNewModifierWhenPossible} {{ get; set; }} = true;
 
-		// <inheritdoc cref=""{DefaultParamConfigurationAttributeProvider.TypeName}.{DefaultParamConfigurationAttributeProvider.MethodConvention}""/>
+		/// <summary>
+		/// Determines, how the <c>DefaultParam</c> generator generates a method. The default value is <see cref=""{DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Call}""/>.
+		/// </summary>
 		public {DPMethodConventionProvider.TypeName} {MethodConvention} {{ get; set; }}
 
-		// <inheritdoc cref=""{DefaultParamConfigurationAttributeProvider.TypeName}.{DefaultParamConfigurationAttributeProvider.TargetNamespace}""/>
+		/// <summary>
+		/// Specifies the namespace where the target member should be generated in.
+		/// </summary>
+		/// <remarks>Set this property to <c>global</c> to use the global namespace or to <see langword=""null""/> to use namespace of the original member.</remarks>
 		public string? {TargetNamespace} {{ get; set; }}
 
-		/// <inheritdoc cref=""{DefaultParamConfigurationAttributeProvider.TypeName}.{DefaultParamConfigurationAttributeProvider.TypeConvention}""/>
+		/// <summary>
+		/// Determines, how the <c>DefaultParam</c> generator generates a type. The default value is <see cref=""{DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit}""/>.
+		/// </summary>
 		public {DPTypeConventionProvider.TypeName} {TypeConvention} {{ get; set; }}
 
 		/// <summary>

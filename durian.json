@@ -5,30 +5,23 @@
       "packages": [
         {
           "name": "Main",
-          "version": "2.0.0",
+          "version": "2.0.1",
           "type": [
             "Unspecified"
           ]
         },
         {
           "name": "CoreAnalyzer",
-          "version": "2.0.0",
+          "version": "2.0.1",
           "type": [
             "Analyzer"
           ]
         },
         {
           "name": "Core",
-          "version": "2.0.0",
+          "version": "2.0.1",
           "type": [
             "Library"
-          ]
-        },
-        {
-          "name": "Manager",
-          "version": "2.0.0",
-          "type": [
-            "Analyzer"
           ]
         }
       ],
@@ -47,14 +40,14 @@
       "packages": [
         {
           "name": "AnalysisServices",
-          "version": "2.0.0",
+          "version": "2.0.1",
           "type": [
             "Library"
           ]
         },
         {
           "name": "TestServices",
-          "version": "2.0.0",
+          "version": "2.0.1",
           "type": [
             "Library"
           ]
@@ -66,7 +59,7 @@
       "packages": [
         {
           "name": "DefaultParam",
-          "version": "2.0.0",
+          "version": "2.0.1",
           "type": [
             "Analyzer",
             "CodeFixLibrary",
@@ -93,7 +86,7 @@
       "packages": [
         {
           "name": "FriendClass",
-          "version": "1.0.0",
+          "version": "1.0.1",
           "type": [
             "Analyzer",
             "CodeFixLibrary",
@@ -116,7 +109,7 @@
       "packages": [
         {
           "name": "InterfaceTargets",
-          "version": "1.0.0",
+          "version": "1.0.1",
           "type": [
             "Analyzer",
             "StaticGenerator"

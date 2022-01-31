@@ -25,7 +25,7 @@ namespace Durian.Info
 				{
 					package = new(
 						enumValue: DurianPackage.Main,
-						version: "2.0.0",
+						version: "2.0.1",
 						type: PackageType.Unspecified,
 						modules: new DurianModule[]
 						{
@@ -49,7 +49,7 @@ namespace Durian.Info
 				{
 					package = new(
 						enumValue: DurianPackage.CoreAnalyzer,
-						version: "2.0.0",
+						version: "2.0.1",
 						type: PackageType.Analyzer,
 						modules: new DurianModule[]
 						{
@@ -73,32 +73,8 @@ namespace Durian.Info
 				{
 					package = new(
 						enumValue: DurianPackage.Core,
-						version: "2.0.0",
+						version: "2.0.1",
 						type: PackageType.Library,
-						modules: new DurianModule[]
-						{
-							DurianModule.Core
-						}
-					);
-				}
-
-				return package;
-			}
-		}
-
-		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.Manager"/> package.
-		/// </summary>
-		public static PackageIdentity Manager
-		{
-			get
-			{
-				if(!IdentityPool.Packages.TryGetValue("Manager", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.Manager,
-						version: "2.0.0",
-						type: PackageType.Analyzer,
 						modules: new DurianModule[]
 						{
 							DurianModule.Core
@@ -121,7 +97,7 @@ namespace Durian.Info
 				{
 					package = new(
 						enumValue: DurianPackage.AnalysisServices,
-						version: "2.0.0",
+						version: "2.0.1",
 						type: PackageType.Library,
 						modules: new DurianModule[]
 						{
@@ -145,7 +121,7 @@ namespace Durian.Info
 				{
 					package = new(
 						enumValue: DurianPackage.TestServices,
-						version: "2.0.0",
+						version: "2.0.1",
 						type: PackageType.Library,
 						modules: new DurianModule[]
 						{
@@ -169,7 +145,7 @@ namespace Durian.Info
 				{
 					package = new(
 						enumValue: DurianPackage.DefaultParam,
-						version: "2.0.0",
+						version: "2.0.1",
 						type: PackageType.Analyzer | PackageType.CodeFixLibrary | PackageType.StaticGenerator | PackageType.SyntaxBasedGenerator,
 						modules: new DurianModule[]
 						{
@@ -193,7 +169,7 @@ namespace Durian.Info
 				{
 					package = new(
 						enumValue: DurianPackage.FriendClass,
-						version: "1.0.0",
+						version: "1.0.1",
 						type: PackageType.Analyzer | PackageType.CodeFixLibrary | PackageType.StaticGenerator,
 						modules: new DurianModule[]
 						{
@@ -217,7 +193,7 @@ namespace Durian.Info
 				{
 					package = new(
 						enumValue: DurianPackage.InterfaceTargets,
-						version: "1.0.0",
+						version: "1.0.1",
 						type: PackageType.Analyzer | PackageType.StaticGenerator,
 						modules: new DurianModule[]
 						{

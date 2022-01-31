@@ -31,7 +31,6 @@ namespace Durian.Info
 							DurianPackage.Main,
 							DurianPackage.CoreAnalyzer,
 							DurianPackage.Core,
-							DurianPackage.Manager,
 						},
 						docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/Core",
 						diagnostics: new DiagnosticData[]

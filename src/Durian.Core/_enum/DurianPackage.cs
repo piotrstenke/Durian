@@ -14,11 +14,6 @@ namespace Durian.Info
 		Main,
 
 		/// <summary>
-		/// Represents the internal <c>Durian.Manager</c> package.
-		/// </summary>
-		Manager,
-
-		/// <summary>
 		/// Represents the <c>Durian.Core</c> package.
 		/// </summary>
 		Core,

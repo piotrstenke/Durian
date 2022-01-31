@@ -121,7 +121,6 @@ namespace Durian.Info
 				DurianPackage.TestServices => PackageRepository.TestServices,
 				DurianPackage.FriendClass => PackageRepository.FriendClass,
 				DurianPackage.InterfaceTargets => PackageRepository.InterfaceTargets,
-				DurianPackage.Manager => PackageRepository.Manager,
 				_ => throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!")
 			};
 		}
