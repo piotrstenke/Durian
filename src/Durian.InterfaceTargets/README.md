@@ -27,7 +27,7 @@ Packages that are part of the *InterfaceTargets* module:
 
  - [*Durian.InterfaceTargets*](https://www.nuget.org/packages/Durian.InterfaceTargets/)
 
-*InterfaceTargets* includes 2 types from [Durian.Core](../Durian.Core/README.md): 
+*InterfaceTargets* provides 2 types:
 
  - [Durian.InterfaceTargets](../Durian.InterfaceTargets/InterfaceTargetsProvider.cs)
  - [Durian.InterfaceTargetsAttribute](../Durian.InterfaceTargets/InterfaceTargetsAttributeProvider.cs)
