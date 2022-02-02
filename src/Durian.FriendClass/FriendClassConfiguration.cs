@@ -18,7 +18,7 @@ namespace Durian.Analysis.FriendClass
 		/// <summary>
 		/// Determines whether sub-classes of the current type should be treated like friend types. Defaults to <see langword="false"/>.
 		/// </summary>
-		public bool AllowsChildren { get; set; }
+		public bool AllowChildren { get; set; }
 
 		/// <summary>
 		/// <see cref="AttributeSyntax"/> where the <c>Durian.Configuration.FriendClassConfigurationAttribute</c> was specified.

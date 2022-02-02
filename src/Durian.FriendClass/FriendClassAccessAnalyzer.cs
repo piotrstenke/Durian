@@ -235,7 +235,7 @@ namespace Durian.Analysis.FriendClass
 			{
 				if (IsChildOfAccessedType(currentType, accessedType))
 				{
-					if (!GetConfigurationBoolValue(accessedType, compilation, FriendClassConfigurationAttributeProvider.AllowsChildren))
+					if (!GetConfigurationBoolValue(accessedType, compilation, FriendClassConfigurationAttributeProvider.AllowChildren))
 					{
 						descriptor = DUR0307_MemberCannotBeAccessedByChildClass;
 						return true;
@@ -243,7 +243,7 @@ namespace Durian.Analysis.FriendClass
 				}
 				else if (IsChildOfFriend(currentType, friends, out int targetFriendIndex))
 				{
-					if (!friends[targetFriendIndex].attribute.GetNamedArgumentValue<bool>(FriendClassAttributeProvider.AllowsFriendChildren))
+					if (!friends[targetFriendIndex].attribute.GetNamedArgumentValue<bool>(FriendClassAttributeProvider.AllowFriendChildren))
 					{
 						descriptor = DUR0310_MemberCannotBeAccessedByChildClassOfFriend;
 						return true;

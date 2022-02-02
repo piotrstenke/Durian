@@ -15,6 +15,26 @@ namespace Durian.Analysis.Extensions
 	public static class AttributeDataExtensions
 	{
 		/// <summary>
+		/// Returns the <see cref="Location"/> of the specified <paramref name="attribute"/>.
+		/// </summary>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the location of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
+		public static Location? GetLocation(this AttributeData attribute)
+		{
+			if(attribute is null)
+			{
+				throw new ArgumentNullException(nameof(attribute));
+			}
+
+			if(attribute.ApplicationSyntaxReference is null)
+			{
+				return null;
+			}
+
+			return Location.Create(attribute.ApplicationSyntaxReference.SyntaxTree, attribute.ApplicationSyntaxReference.Span);
+		}
+
+		/// <summary>
 		/// Returns a <see cref="TypedConstant"/> representing the named argument at the specified <paramref name="position"/>.
 		/// </summary>
 		/// <param name="attribute"><see cref="AttributeData"/> to get the <see cref="TypedConstant"/> from.</param>

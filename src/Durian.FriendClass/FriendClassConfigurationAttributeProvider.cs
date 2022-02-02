@@ -24,9 +24,14 @@ namespace Durian.Analysis.FriendClass
 		public const string FullName = Namespace + "." + TypeName;
 
 		/// <summary>
-		/// Name of the 'AllowsChildren' property.
+		/// Name of the 'AllowChildren' property.
 		/// </summary>
-		public const string AllowsChildren = "AllowsChildren";
+		public const string AllowChildren = "AllowChildren";
+
+		/// <summary>
+		/// Name of the 'IncludeInherited' property.
+		/// </summary>
+		public const string IncludeInherited = "IncludeInherited";
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FriendClassAttributeProvider"/> class.
@@ -64,7 +69,12 @@ namespace {Namespace}
 		/// <summary>
 		/// Determines whether sub-classes of the current type should be treated like friend types. Defaults to <see langword=""false""/>.
 		/// </summary>
-		public bool {AllowsChildren} {{ get; set; }}
+		public bool {AllowChildren} {{ get; set; }}
+
+		/// <summary>
+		/// Determines whether to include inherited <see langword=""internal""/> members in the analysis. Defaults to <see langword=""false""/>.
+		/// </summary>
+		public bool {IncludeInherited} {{ get; set; }}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref=""{TypeName}""/>.

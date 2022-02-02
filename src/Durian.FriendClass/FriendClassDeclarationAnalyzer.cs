@@ -129,11 +129,17 @@ namespace Durian.Analysis.FriendClass
 
 				if (!symbol.GetMembers().Any(m => m.DeclaredAccessibility == Accessibility.Internal))
 				{
-					InitializeFriendArgumentLocation(attribute, symbol, ref location);
+					Location? attrLocation = attribute.GetLocation();
+
+					if(attrLocation is null)
+					{
+						InitializeFriendArgumentLocation(attribute, symbol, ref location);
+						attrLocation = location;
+					}
 
 					yield return Diagnostic.Create(
 						descriptor: DUR0305_TypeDoesNotDeclareInternalMembers,
-						location: location,
+						location: attrLocation,
 						messageArgs: new[] { symbol }
 					);
 				}
@@ -152,11 +158,11 @@ namespace Durian.Analysis.FriendClass
 				return @default;
 			}
 
-			bool allowsChildren = GetBoolProperty(FriendClassConfigurationAttributeProvider.AllowsChildren, @default.AllowsChildren);
+			bool allowChildren = GetBoolProperty(FriendClassConfigurationAttributeProvider.AllowChildren, @default.AllowChildren);
 
 			return new()
 			{
-				AllowsChildren = allowsChildren,
+				AllowChildren = allowChildren,
 				Syntax = syntax
 			};
 
@@ -199,7 +205,7 @@ namespace Durian.Analysis.FriendClass
 		)
 		{
 			if (symbol.GetAttribute(compilation.FriendClassConfigurationAttribute!) is AttributeData attr &&
-				!attr.GetNamedArgumentValue<bool>(FriendClassConfigurationAttributeProvider.AllowsChildren))
+				!attr.GetNamedArgumentValue<bool>(FriendClassConfigurationAttributeProvider.AllowChildren))
 			{
 				diagnostic = Diagnostic.Create(
 					descriptor: DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends,
@@ -302,7 +308,7 @@ namespace Durian.Analysis.FriendClass
 			[NotNullWhen(false)] out Diagnostic? diagnostic
 		)
 		{
-			if (!configuration.AllowsChildren)
+			if (!configuration.AllowChildren)
 			{
 				if (configuration.Syntax is not null)
 				{
@@ -319,7 +325,7 @@ namespace Durian.Analysis.FriendClass
 			{
 				diagnostic = Diagnostic.Create(
 					descriptor: DUR0311_DoNotAllowChildrenOnSealedType,
-					location: GetArgumentLocation(FriendClassConfigurationAttributeProvider.AllowsChildren),
+					location: GetArgumentLocation(FriendClassConfigurationAttributeProvider.AllowChildren),
 					messageArgs: new[] { symbol }
 				);
 

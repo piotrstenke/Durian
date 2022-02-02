@@ -171,7 +171,7 @@ public class B
 
 ```
 
-Members with 'private protected' or 'protected internal' modifier are not affected.
+Members with the 'protected internal' are also protected, but only against external access - inherited classes still can access them.
 
 ```csharp
 using Durian;
@@ -187,7 +187,7 @@ public class A
     public string GetKey()
     {
         // Success!
-        // Protected internal members are not affected.
+        // Class 'A' is a friend of 'Test'.
         return Test.Key;
     }
 }
@@ -196,8 +196,18 @@ public class B
 {
     public string GetKey()
     {
-         // Success!
-        // Protected internal members are not affected.
+        // Error!
+        // Class 'B' is NOT a friend of 'Test'.
+        return Test.Key;
+    }
+}
+
+public class C : Test
+{
+    public string GetKey()
+    {
+        // Success!
+        // Class 'A' is a child of 'Test', so Key is not protected.
         return Test.Key;
     }
 }
@@ -362,7 +372,7 @@ public class Child : Other
 
 ```
 
-However, both features can be easily configured - children of target using the *AllowsChildren* property of the [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs)...
+However, both features can be easily configured - children of target using the *AllowChildren* property of the [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs)...
 
 ```csharp
 
@@ -370,7 +380,7 @@ using Durian;
 using Durian.Configuration;
 
 [FriendClass(typeof(Other))]
-[FriendClassConfiguration(AllowsChildren = true)]
+[FriendClassConfiguration(AllowChildren = true)]
 public class Test
 {
     internal static string Key { get; }
@@ -392,13 +402,13 @@ public class Child : Test
 
 ```
 
-...and children of friends using the *AllowsFriendChildren* property of the [Durian.FriendClassAttribute](../Durian.FriendClass/FriendClassAttributeProvider.cs).
+...and children of friends using the *AllowFriendChildren* property of the [Durian.FriendClassAttribute](../Durian.FriendClass/FriendClassAttributeProvider.cs).
 
 ```csharp
 
 using Durian;
 
-[FriendClass(typeof(Other), AllowsFriendChildren = true)]
+[FriendClass(typeof(Other), AllowFriendChildren = true)]
 public class Test
 {
     internal static string Key { get; }
@@ -420,7 +430,7 @@ public class Child : Other
 
 ```
 
-**Note**: Setting the *AllowsChildren* property of the [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs) to *true* on structs or sealed/static classes is not allowed.
+**Note**: Setting the *AllowChildren* property of the [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs) to *true* on structs or sealed/static classes is not allowed.
 
 
 ##

@@ -152,6 +152,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FriendClass", "FriendClass"
 		docs\FriendClass\DUR0311.md = docs\FriendClass\DUR0311.md
 		docs\FriendClass\DUR0312.md = docs\FriendClass\DUR0312.md
 		docs\FriendClass\DUR0313.md = docs\FriendClass\DUR0313.md
+		DUR0314.md = DUR0314.md
+		DUR0315.md = DUR0315.md
+		DUR0316.md = DUR0316.md
 	EndProjectSection
 EndProject
 Global

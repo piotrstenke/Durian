@@ -29,9 +29,9 @@ namespace Durian.Analysis.FriendClass
 		public const string FriendType = "FriendType";
 
 		/// <summary>
-		/// Name of the 'AllowsFriendChildren' property.
+		/// Name of the 'AllowFriendChildren' property.
 		/// </summary>
-		public const string AllowsFriendChildren = "AllowsFriendChildren";
+		public const string AllowFriendChildren = "AllowFriendChildren";
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FriendClassAttributeProvider"/> class.
@@ -69,7 +69,7 @@ namespace {Namespace}
 		/// <summary>
 		/// Determines whether <see langword=""internal""/> members of the current <see cref=""Type""/> can be accessed by <see cref=""Type""/>s that inherit the <see cref=""{FriendType}""/>. Defaults to <see langword=""false""/>.
 		/// </summary>
-		public bool {AllowsFriendChildren} {{ get; set; }}
+		public bool {AllowFriendChildren} {{ get; set; }}
 
 		/// <summary>
 		/// Friend <see cref=""Type""/> of the current <see cref=""Type""/>.
