@@ -30,10 +30,10 @@ Packages that are part of the *FriendClass* module:
 
  - [*Durian.FriendClass*](https://www.nuget.org/packages/Durian.FriendClass/)
 
-*FriendClass* includes 5 types from [Durian.Core](../Durian.Core/README.md): 
+*FriendClass* provides 2 types"
 
  - [Durian.FriendClassAttribute](../Durian.FriendClass/FriendClassAttributeProvider.cs)
-  - [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs)
+ - [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs)
 
 ## Setup
 
