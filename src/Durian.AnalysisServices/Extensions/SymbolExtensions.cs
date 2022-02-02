@@ -20,6 +20,21 @@ namespace Durian.Analysis.Extensions
 	public static class SymbolExtensions
 	{
 		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> can inherit from other types.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if can inherit.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool CanInherit(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.TypeKind == TypeKind.Class && !type.IsStatic;
+		}
+
+		/// <summary>
 		/// Determines whether the <paramref name="child"/> is contained withing the <paramref name="parent"/> at any nesting level.
 		/// </summary>
 		/// <param name="parent">Parent <see cref="ISymbol"/>.</param>
@@ -1353,6 +1368,47 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return IsPredefined(type) || SymbolEqualityComparer.Default.Equals(type, compilation.DynamicType);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> is of sealed kind (struct or sealed/static class).
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is sealed.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool IsSealedKind(this INamedTypeSymbol type)
+		{
+			if(type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.IsSealed || type.IsValueType || type.IsStatic;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> has an explicitly specified base type.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if has an explicit base type.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> that provides a <see cref="INamedTypeSymbol"/> for the <see langword="object"/> type.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		public static bool HasExplicitBaseType(this INamedTypeSymbol type, CSharpCompilation compilation)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			if(type.BaseType is null || type.TypeKind != TypeKind.Class)
+			{
+				return false;
+			}
+
+			return !SymbolEqualityComparer.Default.Equals(type.BaseType, compilation.ObjectType);
 		}
 
 		/// <summary>

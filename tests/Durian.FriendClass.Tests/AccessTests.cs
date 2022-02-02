@@ -169,6 +169,34 @@ class Other
 		}
 
 		[Fact]
+		public async Task Error_When_NotFriendTriesToAccessProtectedInternalMember()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+class Test
+{{
+	protected internal string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+
+class NotFriend
+{{
+	void M()
+	{{
+		Test test = new();
+		test.Name = "";
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+		}
+
+		[Fact]
 		public async Task Error_When_TriesToAccessInternalMember_And_IsNotFriend()
 		{
 			string input =

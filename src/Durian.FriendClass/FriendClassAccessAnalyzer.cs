@@ -25,7 +25,8 @@ namespace Durian.Analysis.FriendClass
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 			DUR0302_MemberCannotBeAccessedOutsideOfFriendClass,
 			DUR0307_MemberCannotBeAccessedByChildClass,
-			DUR0310_MemberCannotBeAccessedByChildClassOfFriend
+			DUR0310_MemberCannotBeAccessedByChildClassOfFriend,
+			DUR0314_DoNotAccessInheritedStaticMembers
 		);
 
 		/// <summary>
@@ -64,7 +65,7 @@ namespace Durian.Analysis.FriendClass
 			ISymbol? symbol = context.SemanticModel.GetSymbolInfo(node).Symbol;
 
 			if (symbol is null ||
-				symbol.DeclaredAccessibility != Accessibility.Internal ||
+				symbol.DeclaredAccessibility is not Accessibility.Internal and not Accessibility.ProtectedOrInternal ||
 				symbol.ContainingType is not INamedTypeSymbol accessedType
 			)
 			{
