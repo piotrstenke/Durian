@@ -39,11 +39,7 @@ namespace Durian.Analysis.FriendClass
 		/// <inheritdoc/>
 		public override void Register(IDurianAnalysisContext context, FriendClassCompilationData compilation)
 		{
-			context.RegisterSyntaxNodeAction(
-				context => Analyze(context, compilation),
-				SyntaxKind.SimpleMemberAccessExpression,
-				SyntaxKind.PointerMemberAccessExpression
-			);
+			context.RegisterSyntaxNodeAction(context => Analyze(context, compilation), SyntaxKind.IdentifierName);
 		}
 
 		/// <inheritdoc/>
@@ -54,30 +50,39 @@ namespace Durian.Analysis.FriendClass
 
 		private static void Analyze(SyntaxNodeAnalysisContext context, FriendClassCompilationData compilation)
 		{
-			if (context.Node is not MemberAccessExpressionSyntax node ||
-				context.ContainingSymbol is null ||
-				context.ContainingSymbol.ContainingType is not INamedTypeSymbol currentType
-			)
+			if (context.ContainingSymbol?.ContainingType is not INamedTypeSymbol currentType)
 			{
 				return;
 			}
 
-			ISymbol? symbol = context.SemanticModel.GetSymbolInfo(node).Symbol;
+			ISymbol? accessedSymbol = context.SemanticModel.GetSymbolInfo(context.Node).Symbol;
 
-			if (symbol is null ||
-				symbol.DeclaredAccessibility is not Accessibility.Internal and not Accessibility.ProtectedOrInternal ||
-				symbol.ContainingType is not INamedTypeSymbol accessedType
-			)
+			if (accessedSymbol is null || accessedSymbol.DeclaredAccessibility is not Accessibility.Internal and not Accessibility.ProtectedOrInternal)
 			{
 				return;
+			}
+
+			if(accessedSymbol.ContainingType is not INamedTypeSymbol accessedType || SymbolEqualityComparer.Default.Equals(currentType, accessedSymbol.ContainingType))
+			{
+				return;
+			}
+
+			if(context.Node is MethodDeclarationSyntax && accessedSymbol is IMethodSymbol method && method.IsOverride)
+			{
+				if(method.OverriddenMethod?.ContainingType is not INamedTypeSymbol overrideType)
+				{
+					return;
+				}
+
+				accessedType = overrideType;
 			}
 
 			if (TryGetInvalidFriendDiagnostic(currentType, accessedType, compilation, out DiagnosticDescriptor? descriptor))
 			{
 				context.ReportDiagnostic(Diagnostic.Create(
 					descriptor: descriptor,
-					location: node.GetLocation(),
-					messageArgs: new object[] { context.ContainingSymbol, symbol.Name, currentType }
+					location: context.Node.GetLocation(),
+					messageArgs: new object[] { context.ContainingSymbol, accessedSymbol.Name, currentType }
 				));
 			}
 		}

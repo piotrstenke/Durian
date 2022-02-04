@@ -94,7 +94,237 @@ class NotFriend
 	void A()
 	{{
 		Test test = new();
-		test.Id = "";
+		test.Id = """";
+	}}
+}}
+";
+
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_OverridesNotFriendMethod()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+class Test
+{{
+	internal virtual void M()
+	{{
+	}}
+}}
+
+class Other
+{{
+}}
+
+class Child : Test
+{{
+	internal override void M()
+	{{
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_OverridesNotFriendProperty()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+class Test
+{{
+	internal virtual string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+
+class Child : Test
+{{
+	internal override string Name {{ get; }}
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_ChildCallsNotFriendMethod()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+class Test
+{{
+	internal void M1()
+	{{
+	}}
+}}
+
+class Other
+{{
+}}
+
+class Child : Test
+{{
+	internal void M2()
+	{{
+		M1();
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_ChildCallsNotFriendPropertyOrField()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+class Test
+{{
+	static internal string Name {{ get; set; }}
+}}
+
+class Other
+{{
+}}
+
+class Child : Test
+{{
+	internal void M2()
+	{{
+		Name = """""";
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_ChildCallsNotFriendConstructor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+class Test
+{{
+	internal Test(string name)
+	{{
+	}}
+}}
+
+class Other
+{{
+}}
+
+class Child : Test
+{{
+	public Child(string name) : base(name)
+	{{
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_ChildTriesToAccessInnerClass()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+class Test
+{{
+	internal class Inner
+	{{
+	}}
+}}
+
+class Other
+{{
+}}
+
+class Child : Test
+{{
+	void M()
+	{{
+		new Inner();
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_ChildTriesToInheritInnerClass()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+class Test
+{{
+	internal class Inner
+	{{
+	}}
+}}
+
+class Other
+{{
+}}
+
+class Child : Test.Inner
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_IncludeInherited_And_NotFriendTriesToAccessInstanceMemberReturnedFromMethod()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+class Test : Parent
+{{
+}}
+
+class Parent
+{{
+	internal string Id {{ get; set; }}
+
+	public Test AsTest()
+	{{
+		return this as Test;
+	}}
+}}
+
+class Other
+{{
+}}
+
+class NotFriend
+{{
+	void A()
+	{{
+		Test test = new();
+		test.AsTest().Id = """""";
 	}}
 }}
 ";
@@ -129,7 +359,7 @@ class NotFriend
 	void A()
 	{{
 		Test test = new();
-		test.Id = "";
+		test.Id = """""";
 	}}
 }}
 ";
@@ -155,8 +385,8 @@ class Parent
 	void A()
 	{{
 		Test test = new();
-		test.Id = "";
-		Test.Name = "";
+		test.Id = """""";
+		Test.Name = """""";
 	}}
 }}
 
@@ -189,7 +419,7 @@ class NotFriend
 	void M()
 	{{
 		Test test = new();
-		test.Name = "";
+		test.Name = """";
 	}}
 }}
 ";
@@ -248,9 +478,9 @@ class Other
 {{
 	void Method()
 	{{
-		Test.Name = "";
+		Test.Name = """";
 		Test test = new();
-		test.Id = "";
+		test.Id = """";
 	}}
 }}
 ";
@@ -340,8 +570,8 @@ class Parent
 	void A()
 	{{
 		Test test = new();
-		test.Id = "";
-		Test.Name = "";
+		test.Id = """";
+		Test.Name = """";
 	}}
 }}
 ";
@@ -405,8 +635,8 @@ class Other
 	void A()
 	{{
 		Test test = new();
-		test.Id = "";
-		Test.Name = "";
+		test.Id = """";
+		Test.Name = """";
 	}}
 }}
 ";
@@ -435,8 +665,8 @@ class Parent
 	void A()
 	{{
 		Test test = new();
-		test.Id = "";
-		Test.Name = "";
+		test.Id = """";
+		Test.Name = """";
 	}}
 }}
 
@@ -466,8 +696,8 @@ class Parent : ParentParent
 	void A()
 	{{
 		Test test = new();
-		test.Id = "";
-		Test.Name = "";
+		test.Id = """";
+		Test.Name = """";
 	}}
 }}
 
@@ -541,7 +771,7 @@ class NotFriend
 	void Method()
 	{{
 		Test test = new();
-		test.Name = "";
+		test.Name = """";
 	}}
 }}
 ";
@@ -615,7 +845,7 @@ interface IOther
 {{
 	void M()
 	{{
-		Test.Name == "";
+		Test.Name == """";
 	}}
 }}
 ";
@@ -649,7 +879,7 @@ class NotFriend
 {{
 	void A()
 	{{
-		Test.Name == "";
+		Test.Name == """";
 	}}
 }}
 ";
@@ -681,7 +911,7 @@ class NotFriend
 {{
 	void Method()
 	{{
-		Test.Name = "";
+		Test.Name = """";
 	}}
 }}
 ";
