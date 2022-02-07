@@ -13,7 +13,7 @@ namespace Durian.Analysis.FriendClass.CodeFixes
 	/// Code fox for the <see cref="DUR0306_FriendTypeSpecifiedByMultipleAttributes"/> diagnostic.
 	/// </summary>
 	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveDuplicateFriendClassCodeFix))]
-	public class RemoveDuplicateFriendClassCodeFix : RemoveNodeCodeFix<AttributeSyntax>
+	public sealed class RemoveDuplicateFriendClassCodeFix : RemoveNodeCodeFix<AttributeSyntax>
 	{
 		/// <inheritdoc/>
 		public override string Id => $"{Title} [{nameof(FriendClass)}]";

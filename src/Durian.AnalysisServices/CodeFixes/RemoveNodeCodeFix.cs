@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.Analysis.CodeFixes
 {
 	/// <summary>
-	/// A code fix that removes a specific <see cref="SyntaxNode"/>.
+	/// A code fix that removes a specific <see cref="CSharpSyntaxNode"/>.
 	/// </summary>
 	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to remove.</typeparam>
 	public abstract class RemoveNodeCodeFix<T> : DurianCodeFix<T> where T : CSharpSyntaxNode
@@ -21,7 +21,7 @@ namespace Durian.Analysis.CodeFixes
 		}
 
 		/// <inheritdoc/>
-		protected override Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
+		protected sealed override Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
 		{
 			SyntaxNode? newRoot = context.Root.RemoveNode(context.Node, SyntaxRemoveOptions.KeepEndOfLine | SyntaxRemoveOptions.KeepDirectives);
 

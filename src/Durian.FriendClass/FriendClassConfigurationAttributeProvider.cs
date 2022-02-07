@@ -9,14 +9,9 @@ namespace Durian.Analysis.FriendClass
 	public sealed class FriendClassConfigurationAttributeProvider : SourceTextProvider
 	{
 		/// <summary>
-		/// Name of the provided type.
+		/// Name of the 'AllowChildren' property.
 		/// </summary>
-		public const string TypeName = "FriendClassConfigurationAttribute";
-
-		/// <summary>
-		/// Namespace the provided type is located in.
-		/// </summary>
-		public const string Namespace = DurianStrings.ConfigurationNamespace;
+		public const string AllowChildren = "AllowChildren";
 
 		/// <summary>
 		/// Full name of the provided type.
@@ -24,14 +19,19 @@ namespace Durian.Analysis.FriendClass
 		public const string FullName = Namespace + "." + TypeName;
 
 		/// <summary>
-		/// Name of the 'AllowChildren' property.
-		/// </summary>
-		public const string AllowChildren = "AllowChildren";
-
-		/// <summary>
 		/// Name of the 'IncludeInherited' property.
 		/// </summary>
 		public const string IncludeInherited = "IncludeInherited";
+
+		/// <summary>
+		/// Namespace the provided type is located in.
+		/// </summary>
+		public const string Namespace = DurianStrings.ConfigurationNamespace;
+
+		/// <summary>
+		/// Name of the provided type.
+		/// </summary>
+		public const string TypeName = "FriendClassConfigurationAttribute";
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FriendClassAttributeProvider"/> class.
@@ -41,15 +41,15 @@ namespace Durian.Analysis.FriendClass
 		}
 
 		/// <inheritdoc/>
-		public override string GetNamespace()
-		{
-			return Namespace;
-		}
-
-		/// <inheritdoc/>
 		public override string GetFullName()
 		{
 			return FullName;
+		}
+
+		/// <inheritdoc/>
+		public override string GetNamespace()
+		{
+			return Namespace;
 		}
 
 		/// <inheritdoc/>

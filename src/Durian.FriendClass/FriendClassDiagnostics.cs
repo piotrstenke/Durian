@@ -31,7 +31,7 @@ namespace Durian.Analysis.FriendClass
 		public static readonly DiagnosticDescriptor DUR0302_MemberCannotBeAccessedOutsideOfFriendClass = new(
 			id: "DUR0302",
 			title: "Member cannot be accessed outside of friend types",
-			messageFormat: "'{0}': Member '{1}' of type '{2}' cannot be accessed outside of friend types",
+			messageFormat: "'{0}': Member '{1}' cannot be accessed outside of friend types",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0302.md",
@@ -96,7 +96,7 @@ namespace Durian.Analysis.FriendClass
 		public static readonly DiagnosticDescriptor DUR0307_MemberCannotBeAccessedByChildClass = new(
 			id: "DUR0307",
 			title: "Member cannot be accessed by a child type",
-			messageFormat: "'{0}': Member '{1}' of type '{2}' cannot be accessed by a child type",
+			messageFormat: "'{0}': Member '{1}' cannot be accessed by a child type",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0307.md",
@@ -135,7 +135,7 @@ namespace Durian.Analysis.FriendClass
 		public static readonly DiagnosticDescriptor DUR0310_MemberCannotBeAccessedByChildClassOfFriend = new(
 			id: "DUR0310",
 			title: "Member cannot be accessed by friend type's child type",
-			messageFormat: "'{0}': Member '{1}' of type '{2}' cannot be accessed outside by friend type's child class",
+			messageFormat: "'{0}': Member '{1}' cannot be accessed outside by friend type's child class",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0310.md",

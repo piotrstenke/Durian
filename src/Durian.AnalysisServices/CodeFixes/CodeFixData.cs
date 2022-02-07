@@ -68,13 +68,14 @@ namespace Durian.Analysis.CodeFixes
 		public readonly bool Success { get; }
 
 		private CodeFixData(
-							Diagnostic diagnostic,
-					Document document,
-					SemanticModel? semanticModel,
-					CompilationUnitSyntax root,
-					T? node,
-					bool success,
-					CancellationToken cancellationToken)
+			Diagnostic diagnostic,
+			Document document,
+			SemanticModel? semanticModel,
+			CompilationUnitSyntax root,
+			T? node,
+			bool success,
+			CancellationToken cancellationToken
+		)
 		{
 			Diagnostic = diagnostic;
 			Document = document;
@@ -134,7 +135,8 @@ namespace Durian.Analysis.CodeFixes
 				root,
 				node,
 				true,
-				context.CancellationToken);
+				context.CancellationToken
+			);
 		}
 	}
 }

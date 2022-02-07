@@ -13,7 +13,7 @@ namespace Durian.Analysis.FriendClass.CodeFixes
 	/// Code fix for diagnostics indicating that value of <c>Durian.FriendClassAttribute</c> is not valid.
 	/// </summary>
 	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveInvalidFriendClassCodeFix))]
-	public class RemoveInvalidFriendClassCodeFix : RemoveNodeCodeFix<AttributeSyntax>
+	public sealed class RemoveInvalidFriendClassCodeFix : RemoveNodeCodeFix<AttributeSyntax>
 	{
 		/// <inheritdoc/>
 		public override string Id => $"{Title} [{nameof(FriendClass)}]";

@@ -5,29 +5,25 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Durian.AnalysisServices is the base package for all Durian analyzers and source generators, offering solutions for most features a Roslyn-based service could require, such as logging, code generation, node filtration, member data containers, and much more.</Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Service;Utility</PackageTags>
-    <PackageVersion>2.0.1</PackageVersion>
-    <AssemblyVersion>2.0.1</AssemblyVersion>
-    <Version>2.0.1</Version>
+    <PackageVersion>2.1.0</PackageVersion>
+    <AssemblyVersion>2.1.0</AssemblyVersion>
+    <Version>2.1.0</Version>
     <RootNamespace>Durian.Analysis</RootNamespace>
 
   </PropertyGroup>
 
   <ItemGroup>
+
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" />
+
+    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
     
     <Compile Include="..\NullableAttributes.cs" />
         
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>Durian.AnalysisServices.Tests</_Parameter1>
     </AssemblyAttribute>
-
-    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
-    
-  </ItemGroup>
-
-  <ItemGroup>
-    
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" />
     
   </ItemGroup>
 

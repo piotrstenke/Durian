@@ -49,6 +49,11 @@ namespace Durian.Analysis.FriendClass
 			context.RegisterSymbolAction(context => Analyze(context, compilation), SymbolKind.NamedType);
 		}
 
+		internal static bool IsInternal(ISymbol symbol)
+		{
+			return symbol.DeclaredAccessibility is Accessibility.Internal or Accessibility.ProtectedOrInternal;
+		}
+
 		/// <inheritdoc/>
 		protected override FriendClassCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
 		{
@@ -135,7 +140,7 @@ namespace Durian.Analysis.FriendClass
 				{
 					Location? attrLocation = attribute.GetLocation();
 
-					if(attrLocation is null)
+					if (attrLocation is null)
 					{
 						InitializeFriendArgumentLocation(attribute, symbol, ref location);
 						attrLocation = location;
@@ -148,31 +153,6 @@ namespace Durian.Analysis.FriendClass
 					));
 				}
 			}
-		}
-
-		private static bool IsInternal(ISymbol symbol)
-		{
-			return symbol.DeclaredAccessibility is Accessibility.Internal or Accessibility.ProtectedOrInternal;
-		}
-
-		private static bool IsValidInternalParentMember(ISymbol symbol)
-		{
-			if(!IsInternal(symbol))
-			{
-				return false;
-			}
-
-			if(symbol.IsStatic)
-			{
-				return false;
-			}
-
-			if(symbol is IMethodSymbol method && method.MethodKind == MethodKind.Constructor)
-			{
-				return false;
-			}
-
-			return true;
 		}
 
 		private static FriendClassConfiguration GetConfiguration(INamedTypeSymbol symbol, FriendClassCompilationData compilation)
@@ -232,6 +212,26 @@ namespace Durian.Analysis.FriendClass
 			{
 				location = GetFriendArgumentLocation(attribute, symbol);
 			}
+		}
+
+		private static bool IsValidInternalParentMember(ISymbol symbol)
+		{
+			if (!IsInternal(symbol))
+			{
+				return false;
+			}
+
+			if (symbol.IsStatic)
+			{
+				return false;
+			}
+
+			if (symbol is IMethodSymbol method && method.MethodKind == MethodKind.Constructor)
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		private static bool TryGetInvalidConfigurationDiagnostic(
@@ -345,7 +345,7 @@ namespace Durian.Analysis.FriendClass
 			List<Diagnostic> diagnostics
 		)
 		{
-			if(configuration.IsZeroed)
+			if (configuration.IsZeroed)
 			{
 				diagnostics.Add(Diagnostic.Create(
 					descriptor: DUR0313_ConfigurationIsRedundant,
@@ -356,11 +356,11 @@ namespace Durian.Analysis.FriendClass
 				return;
 			}
 
-			if(configuration.AllowChildren && symbol.IsSealedKind())
+			if (configuration.AllowChildren && symbol.IsSealedKind())
 			{
 				diagnostics.Add(Diagnostic.Create(
 					descriptor: DUR0311_DoNotAllowChildrenOnSealedType,
-					location: GetArgumentLocation(FriendClassConfigurationAttributeProvider.AllowChildren),
+					location: GetArgumentLocation(configuration.Syntax, symbol, FriendClassConfigurationAttributeProvider.AllowChildren),
 					messageArgs: new[] { symbol }
 				));
 			}
@@ -369,11 +369,11 @@ namespace Durian.Analysis.FriendClass
 			{
 				if (symbol.HasExplicitBaseType(compilation.Compilation))
 				{
-					if(!symbol.BaseType!.GetAllMembers().Any(IsValidInternalParentMember))
+					if (!symbol.BaseType!.GetAllMembers().Any(IsValidInternalParentMember))
 					{
 						diagnostics.Add(Diagnostic.Create(
 							descriptor: DUR0316_BaseTypeHasNoInternalInstanceMembers,
-							location: GetArgumentLocation(FriendClassConfigurationAttributeProvider.IncludeInherited),
+							location: GetArgumentLocation(configuration.Syntax, symbol, FriendClassConfigurationAttributeProvider.IncludeInherited),
 							messageArgs: new[] { symbol }
 						));
 					}
@@ -382,25 +382,25 @@ namespace Durian.Analysis.FriendClass
 				{
 					diagnostics.Add(Diagnostic.Create(
 						descriptor: DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType,
-						location: GetArgumentLocation(FriendClassConfigurationAttributeProvider.IncludeInherited),
+						location: GetArgumentLocation(configuration.Syntax, symbol, FriendClassConfigurationAttributeProvider.IncludeInherited),
 						messageArgs: new[] { symbol }
 					));
 				}
 			}
+		}
 
-			Location GetArgumentLocation(string argName)
+		private static Location GetArgumentLocation(AttributeSyntax? syntax, ISymbol symbol, string argName)
+		{
+			if (syntax is not null &&
+				syntax.ArgumentList is not null &&
+				syntax.ArgumentList.Arguments is SeparatedSyntaxList<AttributeArgumentSyntax> { Count: > 0 } arguments &&
+				arguments.FirstOrDefault(arg => arg.NameEquals is not null && arg.NameEquals.Name.ToString() == argName) is AttributeArgumentSyntax arg
+			)
 			{
-				if (configuration.Syntax is not null &&
-					configuration.Syntax.ArgumentList is not null &&
-					configuration.Syntax.ArgumentList.Arguments is SeparatedSyntaxList<AttributeArgumentSyntax> { Count: > 0 } arguments &&
-					arguments.FirstOrDefault(arg => arg.NameEquals is not null && arg.NameEquals.Name.ToString() == argName) is AttributeArgumentSyntax arg
-				)
-				{
-					return arg.GetLocation();
-				}
-
-				return symbol.Locations.FirstOrDefault() ?? Location.None;
+				return arg.GetLocation();
 			}
+
+			return symbol.Locations.FirstOrDefault() ?? Location.None;
 		}
 	}
 }

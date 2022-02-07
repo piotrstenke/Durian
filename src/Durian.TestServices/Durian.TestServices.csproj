@@ -5,24 +5,21 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Durian.TestServices is a package providing many utility methods and types that help to unit test and debug Roslyn-based libraries.</Description>
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;CSharp;C#;Feature;Analysis;Syntax;Tree;Node;Service;Utility;Test;Unit;Testing</PackageTags>
-    <PackageVersion>2.0.1</PackageVersion>
-    <AssemblyVersion>2.0.1</AssemblyVersion>
-    <Version>2.0.1</Version>
+    <PackageVersion>2.1.0</PackageVersion>
+    <AssemblyVersion>2.1.0</AssemblyVersion>
+    <Version>2.1.0</Version>
     <RootNamespace>Durian.TestServices</RootNamespace>
 
   </PropertyGroup>
 
   <ItemGroup>
 
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
+    
     <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
+    
     <Compile Include="..\NullableAttributes.cs" />
-    
-  </ItemGroup>
-
-  <ItemGroup>
-    
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
     
   </ItemGroup>
 

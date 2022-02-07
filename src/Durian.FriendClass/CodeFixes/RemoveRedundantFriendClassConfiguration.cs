@@ -14,7 +14,7 @@ namespace Durian.Analysis.FriendClass.CodeFixes
 	/// and <see cref="DUR0313_ConfigurationIsRedundant"/> diagnostics.
 	/// </summary>
 	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveRedundantFriendClassConfiguration))]
-	public class RemoveRedundantFriendClassConfiguration : RemoveNodeCodeFix<AttributeSyntax>
+	public sealed class RemoveRedundantFriendClassConfiguration : RemoveNodeCodeFix<AttributeSyntax>
 	{
 		/// <inheritdoc/>
 		public override string Id => $"{Title} [{nameof(FriendClass)}]";

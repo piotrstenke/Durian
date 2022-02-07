@@ -10,10 +10,10 @@ using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 namespace Durian.Analysis.FriendClass.CodeFixes
 {
 	/// <summary>
-	/// Code fox for the <see cref="DUR0311_DoNotAllowChildrenOnSealedType"/> diagnostic.
+	/// Code fox for diagnostics indicating that value of <c>Durian.Configuration.FriendClassConfigurationAttribute</c> is not valid.
 	/// </summary>
 	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveInvalidFriendClassConfigurationCodeFix))]
-	public class RemoveInvalidFriendClassConfigurationCodeFix : RemoveNodeCodeFix<AttributeArgumentSyntax>
+	public sealed class RemoveInvalidFriendClassConfigurationCodeFix : RemoveNodeCodeFix<AttributeArgumentSyntax>
 	{
 		/// <inheritdoc/>
 		public override string Id => $"{Title} [{nameof(FriendClass)}]";
@@ -33,7 +33,9 @@ namespace Durian.Analysis.FriendClass.CodeFixes
 		{
 			return new[]
 			{
-				DUR0311_DoNotAllowChildrenOnSealedType
+				DUR0311_DoNotAllowChildrenOnSealedType,
+				DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType,
+				DUR0316_BaseTypeHasNoInternalInstanceMembers
 			};
 		}
 	}
