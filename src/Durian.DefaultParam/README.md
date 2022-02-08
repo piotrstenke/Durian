@@ -166,9 +166,9 @@ public class Other<[DefaultParam(typeof(Dummy))]T>
 
 Not all types are valid for the [Durian.DefaultParamAttribute](../Durian.DefaultParam/DefaultParamAttributeProvider.cs). This includes: 
 
- - void or [System.Void](https://docs.microsoft.com/en-us/dotnet/api/system.void?view=net-5.0);
+ - void or [System.Void](https://docs.microsoft.com/en-us/dotnet/api/system.void);
  - pointers or function pointers;
- - ref structs, like [System.Span\<T\>](https://docs.microsoft.com/en-us/dotnet/api/system.span-1?view=net-5.0);
+ - ref structs, like [System.Span\<T\>](https://docs.microsoft.com/en-us/dotnet/api/system.span-1);
  - static classes;
  - dynamic (language restriction);
  - nullable reference type (language restriction);
@@ -176,9 +176,9 @@ Not all types are valid for the [Durian.DefaultParamAttribute](../Durian.Default
 
 Additionally, the following types can't be used when there is a type parameter constrained to the target type parameter:
 
-- [System.Object](https://docs.microsoft.com/en-us/dotnet/api/system.object?view=net-5.0);
--  [System.ValueType](https://docs.microsoft.com/en-us/dotnet/api/system.valuetype?view=net-5.0);
- - [System.Array](https://docs.microsoft.com/en-us/dotnet/api/system.array?view=net-5.0);
+- [System.Object](https://docs.microsoft.com/en-us/dotnet/api/system.object);
+-  [System.ValueType](https://docs.microsoft.com/en-us/dotnet/api/system.valuetype);
+ - [System.Array](https://docs.microsoft.com/en-us/dotnet/api/system.array);
  - any array type, either jagged or multidimensional;
  - any delegate type.
 

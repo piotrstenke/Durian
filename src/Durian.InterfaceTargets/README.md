@@ -41,7 +41,7 @@ Like with other Durian modules, the target project must reference the [Durian.Co
 
 ## Basics
 
-The premise of this package is fairly straight-forward and recognizable. Similar to how [System.AttributeUsageAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.attributeusageattribute?view=net-5.0) works, the [Durian.InterfaceTargetsAttribute](../Durian.InterfaceTargets/InterfaceTargetsAttributeProvider.cs) allows to specify what kind of members the target interface can be implemented by.
+The premise of this package is fairly straight-forward and recognizable. Similar to how [System.AttributeUsageAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.attributeusageattribute) works, the [Durian.InterfaceTargetsAttribute](../Durian.InterfaceTargets/InterfaceTargetsAttributeProvider.cs) allows to specify what kind of members the target interface can be implemented by.
 
 ```csharp
 using Durian;

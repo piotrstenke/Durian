@@ -61,7 +61,7 @@ public class Program
 
 ### [InterfaceTargets](src/Durian.InterfaceTargets/README.md)
 
-*InterfaceTargets*, similar to how [System.AttributeUsageAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.attributeusageattribute?view=net-5.0) works, allows to specify what kinds of members an interface can be implemented by.
+*InterfaceTargets*, similar to how [System.AttributeUsageAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.attributeusageattribute) works, allows to specify what kinds of members an interface can be implemented by.
 
 ```csharp
 using Durian;
