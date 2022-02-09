@@ -10,7 +10,7 @@
     <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Interface;Target;Targets;Usage</PackageTags>
     <PackageVersion>1.1.0</PackageVersion>
     <AssemblyVersion>1.1.0</AssemblyVersion>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <RootNamespace>Durian.Analysis.InterfaceTargets</RootNamespace>
     <IsRoslynComponent>true</IsRoslynComponent>
 
