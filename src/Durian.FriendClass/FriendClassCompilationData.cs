@@ -33,7 +33,7 @@ namespace Durian.Analysis.FriendClass
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CompilationData"/> class.
+		/// Initializes a new instance of the <see cref="FriendClassCompilationData"/> class.
 		/// </summary>
 		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
