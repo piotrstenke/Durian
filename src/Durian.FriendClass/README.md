@@ -19,10 +19,13 @@
 2. [Setup](#setup)
 3. [Basics](#basics)
 4. [Member rules](#member-rules)
-    1. [Accessibility](#accessibility)
-    2. [Inner types](#inner-types)
+    1. [Allowed members](#allowed-members)
+    2. [Accessibility](#accessibility)
+    3. [Inner types](#inner-types)
 5. [Inheritance](#inheritance)
-6. [External assemblies](#external-assemblies)
+    1. [Child types](#child-types)
+    2. [Inherited members](#inherited-members)
+    3. [External assemblies](#external-assemblies)
 
 ## Structure
 
@@ -114,6 +117,10 @@ public class B
 ## Member rules
 
 To ensure proper usage, *FriendClass* enforces a set of limitations on a potential target and its friend types.
+
+### Allowed members
+
+[Durian.FriendClassAttribute](../Durian.FriendClass/FriendClassAttributeProvider.cs) can be applied to classes, structs and records. Other type members, like enums, interfaces and delegates are not allowed.
 
 ### Accessibility
 
@@ -318,6 +325,10 @@ public class Other
 
 ## Inheritance
 
+*FriendClass* fully supports class inheritance and provides multiple ways to configure it.
+
+### Child types
+
 By default, child types of target are not considered friends.
 
 ```csharp
@@ -375,7 +386,6 @@ public class Child : Other
 However, both features can be easily configured - children of target using the *AllowChildren* property of the [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs)...
 
 ```csharp
-
 using Durian;
 using Durian.Configuration;
 
@@ -405,7 +415,6 @@ public class Child : Test
 ...and children of friends using the *AllowFriendChildren* property of the [Durian.FriendClassAttribute](../Durian.FriendClass/FriendClassAttributeProvider.cs).
 
 ```csharp
-
 using Durian;
 
 [FriendClass(typeof(Other), AllowFriendChildren = true)]
@@ -432,6 +441,143 @@ public class Child : Other
 
 **Note**: Setting the *AllowChildren* property of the [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs) to *true* on structs or sealed/static classes is not allowed.
 
+### Inherited members
+
+By default, inherited 'internal' members are not protected against external usage. 
+
+```csharp
+using Durian;
+
+[FriendClass(typeof(Other))]
+public class Test : Parent
+{
+}
+
+public class Parent
+{
+    internal string Name { get; set; }  
+}
+
+public class Other
+{
+}
+
+public class NotFriend
+{
+    public string GetName()
+    {
+        // Success! Inherited 'internal' members are not protected.
+        Test test = new();
+        test.Name = "";
+        return test.Name;
+    }
+}
+
+```
+
+If such behaviour is not desirable, it can be easily configured.
+
+```csharp
+using Durian;
+using Durian.Configuration;
+
+[FriendClass(typeof(Other))]
+[FriendClassConfiguration(IncludeInherited = true)]
+public class Test : Parent
+{
+}
+
+public class Parent
+{
+    internal string Name { get; set; }  
+}
+
+public class Other
+{
+}
+
+public class NotFriend
+{
+    public string GetName()
+    {
+        // Error! Inherited member cannot be accessed.
+        Test test = new();
+        test.Name = "";
+        return test.Name;
+    }
+}
+
+```
+
+**Note**: Setting the *IncludeInherited* property of the [Durian.Configuration.FriendClassConfigurationAttribute](../Durian.FriendClass/FriendClassConfigurationAttributeProvider.cs) to *true* on structs or static classes or classes with direct base type other than [System.Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) is not allowed.
+
+Even with the *IncludeInherited* property set to true, inherited static members still can be accessed, but with a proper diagnostic.
+
+```csharp
+using Durian;
+using Durian.Configuration;
+
+[FriendClass(typeof(Other))]
+[FriendClassConfiguration(IncludeInherited = true)]
+public class Test : Parent
+{
+}
+
+public class Parent
+{
+    internal static string Name { get; set; }  
+}
+
+public class Other
+{
+}
+
+public class NotFriend
+{
+    public void SetName()
+    {
+        // Success! Inherited static members are not protected.
+        Test.Name = "";
+    }
+}
+```
+
+### External assemblies
+
+Members with the 'internal' modifier specified in other assembly can be accessed if the [System.Runtime.CompilerServices.InternalsVisibleToAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.internalsvisibletoattribute) is applied.
+
+```csharp
+using Durian;
+using Durian.Configuration;
+
+[FriendClass(typeof(Other))]
+[FriendClassConfiguration(IncludeInherited = true)]
+public class Test : Parent
+{
+}
+
+public class Other
+{
+}
+
+public class NotFriend
+{
+    public string GetName()
+    {
+        // Error! Inherited member cannot be accessed.
+        Test test = new();
+        test.Name = "";
+        return test.Name;
+    }
+}
+
+// In different assembly...
+
+public class Parent
+{
+    internal string Name { get; set; }  
+}
+```
 
 ##
 
