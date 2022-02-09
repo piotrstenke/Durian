@@ -1,4 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
 using System;
@@ -40,7 +40,8 @@ namespace Durian.Analysis.FriendClass
 		public override void Register(IDurianAnalysisContext context, FriendClassCompilationData compilation)
 		{
 			context.RegisterSyntaxNodeAction(context => AnalyzeIndentifierName(context, compilation),
-				SyntaxKind.IdentifierName
+				SyntaxKind.IdentifierName,
+				SyntaxKind.ImplicitObjectCreationExpression
 			);
 
 			context.RegisterSyntaxNodeAction(context => AnalyzeMemberDeclaration(context, compilation),
@@ -268,6 +269,7 @@ namespace Durian.Analysis.FriendClass
 			}
 
 			if (TryGetInvalidFriendDiagnostic(
+				accessedSymbol,
 				currentType,
 				accessedType,
 				compilation,
@@ -299,39 +301,26 @@ namespace Durian.Analysis.FriendClass
 				return null;
 			}
 
-			bool reportStaticAccess = false;
-			bool accessedConfigurationAttribute = false;
-			AttributeData? configurationAttribute = null;
-
-			if (node.Parent is MemberAccessExpressionSyntax memberAccess && memberAccess.Expression is not ThisExpressionSyntax)
-			{
-				if (semanticModel.GetSymbolInfo(memberAccess.Expression).Symbol is INamedTypeSymbol targetType &&
-				targetType.InheritsFrom(accessedType, false))
-				{
-					accessedType = targetType;
-					reportStaticAccess = true;
-				}
-				else if (semanticModel.GetTypeInfo(memberAccess.Expression).Type is INamedTypeSymbol type &&
-					type.InheritsFrom(accessedType, false) &&
-					CheckIncludeInherited(type)
-				)
-				{
-					accessedType = type;
-				}
-			}
-			else if (currentType.InheritsFrom(accessedType))
-			{
-				CheckIncludeInherited(currentType);
-			}
+			HandleSpecificSyntaxNodeTypes(
+				node,
+				semanticModel,
+				compilation,
+				currentType,
+				ref accessedType,
+				out AttributeData? configurationAttribute,
+				out bool accessedConfigurationAttribute,
+				out bool reportStaticAccess
+			);
 
 			if (TryGetInvalidFriendDiagnostic(
+				accessedSymbol,
 				currentType,
 				accessedType,
 				compilation,
 				configurationAttribute,
 				accessedConfigurationAttribute,
-				out DiagnosticDescriptor? descriptor)
-			)
+				out DiagnosticDescriptor? descriptor
+			))
 			{
 				if (reportStaticAccess)
 				{
@@ -350,30 +339,6 @@ namespace Durian.Analysis.FriendClass
 			}
 
 			return null;
-
-			bool CheckIncludeInherited(INamedTypeSymbol target)
-			{
-				(INamedTypeSymbol? type, AttributeData? configAttr) = target
-					.GetBaseTypes(true)
-					.Select(t => (type: t, attribute: t.GetAttribute(compilation.FriendClassConfigurationAttribute!)))
-					.FirstOrDefault(t => t.attribute is not null);
-
-				bool hasConfig = false;
-
-				if (configAttr is not null)
-				{
-					configurationAttribute = configAttr;
-
-					if (configAttr.GetNamedArgumentValue<bool>(FriendClassConfigurationAttributeProvider.IncludeInherited))
-					{
-						accessedType = type;
-						hasConfig = true;
-					}
-				}
-
-				accessedConfigurationAttribute = true;
-				return hasConfig;
-			}
 		}
 
 		private static bool HandleMemberDeclaration(SyntaxNode node, ref ISymbol accessedSymbol)
@@ -417,6 +382,118 @@ namespace Durian.Analysis.FriendClass
 			}
 
 			return false;
+		}
+
+		private static void HandleSpecificSyntaxNodeTypes(
+			SyntaxNode node,
+			SemanticModel semanticModel,
+			FriendClassCompilationData compilation,
+			INamedTypeSymbol currentType,
+			ref INamedTypeSymbol accessedType,
+			out AttributeData? configurationAttribute,
+			out bool accessedConfigurationAttribute,
+			out bool reportStaticAccess
+		)
+		{
+			if (node.Parent is MemberAccessExpressionSyntax memberAccess && memberAccess.Expression is not ThisExpressionSyntax)
+			{
+				if (semanticModel.GetSymbolInfo(memberAccess.Expression).Symbol is INamedTypeSymbol targetType && targetType.InheritsFrom(accessedType, false))
+				{
+					accessedType = targetType;
+					reportStaticAccess = true;
+					accessedConfigurationAttribute = false;
+					configurationAttribute = null;
+
+					return;
+				}
+				else if (semanticModel.GetTypeInfo(memberAccess.Expression).Type is INamedTypeSymbol type && type.InheritsFrom(accessedType, false))
+				{
+					CheckIncludeInherited(type, ref accessedType, out configurationAttribute, out accessedConfigurationAttribute);
+
+					reportStaticAccess = false;
+					return;
+				}
+			}
+			else
+			{
+				reportStaticAccess = false;
+
+				if (currentType.InheritsFrom(accessedType))
+				{
+					CheckIncludeInherited(currentType, ref accessedType, out configurationAttribute, out accessedConfigurationAttribute);
+
+					return;
+				}
+				else
+				{
+					foreach (SyntaxNode ancestor in node.Ancestors())
+					{
+						if (ancestor is InitializerExpressionSyntax initializer)
+						{
+							if (semanticModel.GetTypeInfo(initializer.Parent!).Type is INamedTypeSymbol type)
+							{
+								CheckIncludeInherited(type, ref accessedType, out configurationAttribute, out accessedConfigurationAttribute);
+								return;
+							}
+
+							break;
+						}
+
+						if (ancestor is IsPatternExpressionSyntax pattern)
+						{
+							if (semanticModel.GetTypeInfo(pattern.Expression).Type is INamedTypeSymbol type)
+							{
+								CheckIncludeInherited(type, ref accessedType, out configurationAttribute, out accessedConfigurationAttribute);
+								return;
+							}
+
+							break;
+						}
+
+						if (ancestor is MemberDeclarationSyntax)
+						{
+							break;
+						}
+					}
+				}
+			}
+
+			configurationAttribute = null;
+			accessedConfigurationAttribute = false;
+			reportStaticAccess = false;
+
+			bool CheckIncludeInherited(
+				INamedTypeSymbol target,
+				ref INamedTypeSymbol accessedType,
+				[NotNullWhen(true)] out AttributeData? configurationAttribute,
+				out bool accessedConfigurationAttribute
+			)
+			{
+				(INamedTypeSymbol? type, AttributeData? configAttr) = target
+					.GetBaseTypes(true)
+					.Select(t => (type: t, attribute: t.GetAttribute(compilation.FriendClassConfigurationAttribute!)))
+					.FirstOrDefault(t => t.attribute is not null);
+
+				bool hasConfig = false;
+
+				if (configAttr is null)
+				{
+					configurationAttribute = null;
+				}
+				else
+				{
+					configurationAttribute = configAttr;
+
+					if (configAttr.GetNamedArgumentValue<bool>(FriendClassConfigurationAttributeProvider.IncludeInherited))
+					{
+						accessedType = type;
+						hasConfig = true;
+					}
+				}
+
+				accessedConfigurationAttribute = true;
+				return hasConfig;
+			}
 		}
 
 		private static bool IsChildOfAccessedType(INamedTypeSymbol currentType, INamedTypeSymbol accessedType)
@@ -545,6 +622,7 @@ namespace Durian.Analysis.FriendClass
 		}
 
 		private static bool TryGetInvalidFriendDiagnostic(
+			ISymbol accessedSymbol,
 			INamedTypeSymbol currentType,
 			INamedTypeSymbol accessedType,
 			FriendClassCompilationData compilation,
@@ -553,6 +631,14 @@ namespace Durian.Analysis.FriendClass
 			[NotNullWhen(true)] out DiagnosticDescriptor? descriptor
 		)
 		{
+			bool isProtected = accessedSymbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal;
+
+			if (isProtected && IsChildOfAccessedType(currentType, accessedType))
+			{
+				descriptor = null;
+				return false;
+			}
+
 			AttributeData[] attributes = accessedType.GetAttributes(compilation.FriendClassAttribute!).ToArray();
 
 			if (attributes.Length == 0)
@@ -563,7 +649,7 @@ namespace Durian.Analysis.FriendClass
 
 			if (!IsSpecifiedFriend(currentType, attributes, out List<(AttributeData attribute, INamedTypeSymbol friend)>? friends))
 			{
-				if (IsChildOfAccessedType(currentType, accessedType))
+				if (!isProtected && IsChildOfAccessedType(currentType, accessedType))
 				{
 					if (!GetConfigurationBoolValue(accessedType, compilation, configurationAttribute, accessedConfigurationAttribute, FriendClassConfigurationAttributeProvider.AllowChildren))
 					{
