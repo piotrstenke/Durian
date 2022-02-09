@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.Analysis.Data
 {
 	/// <summary>
-	/// Encapsulates data associated with a single <see cref="TypeDeclarationSyntax"/>.
+	/// Encapsulates data associated with a single <see cref="BaseTypeDeclarationSyntax"/>.
 	/// </summary>
 	public interface ITypeData : IMemberData
 	{

@@ -68,6 +68,21 @@ namespace Durian.Analysis.Extensions
 			return false;
 		}
 
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> is an inner type.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is an inner type.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool IsInnerType(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.ContainingType is not null;
+		}
+
 		/// <inheritdoc cref="GetAllMembers(INamedTypeSymbol, string)"/>
 		public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type)
 		{
@@ -263,7 +278,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent namespaces of.</param>
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
-		/// <param name="order">Specifies order at types members should be returned.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this ISymbol symbol, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
 		{
@@ -331,9 +346,10 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
-		/// <param name="order">Specifies order at types members should be returned.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<ITypeData> GetContainingTypes(this ISymbol symbol, ICompilationData compilation, ReturnOrder order = ReturnOrder.Root)
+		public static IEnumerable<ITypeData> GetContainingTypes(this ISymbol symbol, ICompilationData compilation, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)
 			{
@@ -345,7 +361,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			INamedTypeSymbol[] parentSymbols = GetContainingTypeSymbols(symbol, order).ToArray();
+			INamedTypeSymbol[] parentSymbols = GetContainingTypeSymbols(symbol, includeSelf, order).ToArray();
 			List<ITypeData> parentList = new(parentSymbols.Length);
 
 			return parentSymbols.Select<INamedTypeSymbol, ITypeData>(parent =>
@@ -401,9 +417,10 @@ namespace Durian.Analysis.Extensions
 		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
-		/// <param name="order">Specifies order at types members should be returned.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<INamedTypeSymbol> GetContainingTypeSymbols(this ISymbol symbol, ReturnOrder order = ReturnOrder.Root)
+		public static IEnumerable<INamedTypeSymbol> GetContainingTypeSymbols(this ISymbol symbol, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)
 			{
@@ -414,6 +431,11 @@ namespace Durian.Analysis.Extensions
 
 			IEnumerable<INamedTypeSymbol> GetTypes()
 			{
+				if(includeSelf && symbol is INamedTypeSymbol t)
+				{
+					yield return t;
+				}
+
 				INamedTypeSymbol parent = symbol.ContainingType;
 
 				if (parent is not null)
@@ -985,6 +1007,53 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return p;
+		}
+
+		/// <summary>
+		/// Returns a new <see cref="UsingDirectiveSyntax"/> build for the specified <paramref name="namespace"/> symbol.
+		/// </summary>
+		/// <param name="namespace"><see cref="INamespaceSymbol"/> to built the <see cref="UsingDirectiveSyntax"/> from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
+		public static UsingDirectiveSyntax GetUsingDirective(this INamespaceSymbol @namespace)
+		{
+			NameSyntax name;
+
+			if (@namespace.GetContainingNamespaces().JoinIntoQualifiedName() is QualifiedNameSyntax q)
+			{
+				name = q;
+			}
+			else
+			{
+				name = SyntaxFactory.IdentifierName(@namespace.Name);
+			}
+
+			return SyntaxFactory.UsingDirective(name);
+		}
+
+		/// <summary>
+		/// Returns a new <see cref="UsingDirectiveSyntax"/> build for the specified <paramref name="namespaces"/> symbol.
+		/// </summary>
+		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to build the <see cref="UsingDirectiveSyntax"/> from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="namespaces"/> cannot be empty.</exception>
+		public static UsingDirectiveSyntax GetUsingDirective(this IEnumerable<INamespaceSymbol> namespaces)
+		{
+			NameSyntax name;
+
+			if (namespaces.JoinIntoQualifiedName() is QualifiedNameSyntax q)
+			{
+				name = q;
+			}
+			else if(namespaces.FirstOrDefault() is INamespaceSymbol first)
+			{
+				name = SyntaxFactory.IdentifierName(first.Name);
+			}
+			else
+			{
+				throw new ArgumentException($"'{nameof(namespaces)}' cannot be empty");
+			}
+
+			return SyntaxFactory.UsingDirective(name);
 		}
 
 		/// <summary>

@@ -2,8 +2,10 @@
 // Licensed under the MIT license.
 
 using System.Threading.Tasks;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.CodeFixes
 {
@@ -24,13 +26,18 @@ namespace Durian.Analysis.CodeFixes
 		/// <inheritdoc/>
 		protected sealed override Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
 		{
-			U newNode = GetNewNode(context.Node, context.SemanticModel);
-			SyntaxNode newRoot = context.Root.ReplaceNode(context.Node, newNode);
+			U newNode = GetNewNode(context.Node, context.Compilation, context.SemanticModel, out INamespaceSymbol[]? requiredNamespaces);
+			CompilationUnitSyntax newRoot = context.Root.ReplaceNode(context.Node, newNode);
+
+			if (requiredNamespaces?.Length > 0)
+			{
+				newRoot = newRoot.AddUsings(requiredNamespaces);
+			}
 
 			return Task.FromResult(context.Document.WithSyntaxRoot(newRoot));
 		}
 
-		/// <inheritdoc cref="ReplaceNodeCodeFix{T}.GetNewNode(T, SemanticModel)"/>
-		protected abstract U GetNewNode(T currentNode, SemanticModel semanticModel);
+		/// <inheritdoc cref="ReplaceNodeCodeFix{T}.GetNewNode(T, CSharpCompilation, SemanticModel, out INamespaceSymbol[])"/>
+		protected abstract U GetNewNode(T currentNode, CSharpCompilation compilation, SemanticModel semanticModel, out INamespaceSymbol[]? requiredNamespaces);
 	}
 }
