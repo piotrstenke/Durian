@@ -496,7 +496,7 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Do not use FriendClassConfiguration.AllowsChildren on a sealed type",
+								title: "Do not use FriendClassConfigurationAttribute.AllowChildren on a sealed type",
 								id: 11,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0311.md",
 								fatal: false,
@@ -515,6 +515,30 @@ namespace Durian.Info
 								title: "FriendClassConfigurationAttribute is redundant",
 								id: 13,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0313.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Inherited static members are not protected against access from non-friend types",
+								id: 14,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0314.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Do not use FriendClassConfigurationAttribute.IncludeInherited on a type without parent type",
+								id: 15,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0315.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Base type does not provide internal instance members",
+								id: 16,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0316.md",
 								fatal: false,
 								hasLocation: true
 							),

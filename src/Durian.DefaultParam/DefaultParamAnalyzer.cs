@@ -877,7 +877,7 @@ namespace Durian.Analysis.DefaultParam
 
 					if (data.IsValidDefaultParam)
 					{
-						if (!type.InheritsOrImplementsFrom(data.TargetType))
+						if (!type.InheritsFrom(data.TargetType))
 						{
 							return false;
 						}
@@ -887,7 +887,7 @@ namespace Durian.Analysis.DefaultParam
 						return false;
 					}
 				}
-				else if (!type.InheritsOrImplementsFrom(constraint))
+				else if (!type.InheritsFrom(constraint))
 				{
 					return false;
 				}

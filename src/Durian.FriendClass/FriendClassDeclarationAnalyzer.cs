@@ -31,7 +31,9 @@ namespace Durian.Analysis.FriendClass
 			DUR0309_TypeCannotBeFriendOfItself,
 			DUR0311_DoNotAllowChildrenOnSealedType,
 			DUR0312_InnerTypeIsImplicitFriend,
-			DUR0313_ConfigurationIsRedundant
+			DUR0313_ConfigurationIsRedundant,
+			DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType,
+			DUR0316_BaseTypeHasNoInternalInstanceMembers
 		);
 
 		/// <summary>
@@ -45,6 +47,11 @@ namespace Durian.Analysis.FriendClass
 		public override void Register(IDurianAnalysisContext context, FriendClassCompilationData compilation)
 		{
 			context.RegisterSymbolAction(context => Analyze(context, compilation), SymbolKind.NamedType);
+		}
+
+		internal static bool IsInternal(ISymbol symbol)
+		{
+			return symbol.DeclaredAccessibility is Accessibility.Internal or Accessibility.ProtectedOrInternal;
 		}
 
 		/// <inheritdoc/>
@@ -74,21 +81,23 @@ namespace Durian.Analysis.FriendClass
 
 			FriendClassConfiguration config = GetConfiguration(symbol, compilation);
 
-			if (!ValidateConfiguration(symbol, config, out Diagnostic? diagnostic))
-			{
-				context.ReportDiagnostic(diagnostic);
-			}
+			List<Diagnostic> diagnostics = new(attributes.Length * 2);
 
-			foreach (Diagnostic d in AnalyzeAttributes(attributes, symbol, compilation))
+			ValidateConfiguration(symbol, config, compilation, diagnostics);
+			AnalyzeAttributes(attributes, symbol, config, compilation, diagnostics);
+
+			foreach (Diagnostic d in diagnostics)
 			{
 				context.ReportDiagnostic(d);
 			}
 		}
 
-		private static IEnumerable<Diagnostic> AnalyzeAttributes(
+		private static void AnalyzeAttributes(
 			AttributeData[] attributes,
 			INamedTypeSymbol symbol,
-			FriendClassCompilationData compilation
+			FriendClassConfiguration config,
+			FriendClassCompilationData compilation,
+			List<Diagnostic> diagnostics
 		)
 		{
 #pragma warning disable RS1024 // Compare symbols correctly
@@ -104,13 +113,13 @@ namespace Durian.Analysis.FriendClass
 
 				if (TryGetInvalidFriendTypeDiagnostic(symbol, friend, attribute, friendTypes, out Diagnostic? diagnostic))
 				{
-					yield return diagnostic;
+					diagnostics.Add(diagnostic);
 					continue;
 				}
 
 				if (TryGetInvalidExternalFriendTypeDiagnostic(symbol, friend!, attribute, compilation.Compilation, out diagnostic))
 				{
-					yield return diagnostic;
+					diagnostics.Add(diagnostic);
 					continue;
 				}
 
@@ -120,51 +129,64 @@ namespace Durian.Analysis.FriendClass
 				{
 					InitializeFriendArgumentLocation(attribute, symbol, ref location);
 
-					yield return Diagnostic.Create(
+					diagnostics.Add(Diagnostic.Create(
 						descriptor: DUR0304_ValueOfFriendClassCannotAccessTargetType,
 						location: location,
 						messageArgs: new[] { symbol, friend }
-					);
+					));
 				}
 
-				if (!symbol.GetMembers().Any(m => m.DeclaredAccessibility == Accessibility.Internal))
+				if (!config.IncludeInherited && !symbol.GetMembers().Any(IsInternal))
 				{
-					InitializeFriendArgumentLocation(attribute, symbol, ref location);
+					Location? attrLocation = attribute.GetLocation();
 
-					yield return Diagnostic.Create(
+					if (attrLocation is null)
+					{
+						InitializeFriendArgumentLocation(attribute, symbol, ref location);
+						attrLocation = location;
+					}
+
+					diagnostics.Add(Diagnostic.Create(
 						descriptor: DUR0305_TypeDoesNotDeclareInternalMembers,
-						location: location,
+						location: attrLocation,
 						messageArgs: new[] { symbol }
-					);
+					));
 				}
 			}
 		}
 
 		private static FriendClassConfiguration GetConfiguration(INamedTypeSymbol symbol, FriendClassCompilationData compilation)
 		{
-			FriendClassConfiguration @default = FriendClassConfiguration.Default;
-
 			if (symbol.GetAttribute(compilation.FriendClassConfigurationAttribute!) is not AttributeData attr ||
 				attr.ApplicationSyntaxReference is null ||
 				attr.ApplicationSyntaxReference.GetSyntax() is not AttributeSyntax syntax
 			)
 			{
-				return @default;
+				return FriendClassConfiguration.Default;
 			}
 
-			bool allowsChildren = GetBoolProperty(FriendClassConfigurationAttributeProvider.AllowsChildren, @default.AllowsChildren);
+			bool isZeroed = true;
+
+			bool allowChildren = GetBoolProperty(FriendClassConfigurationAttributeProvider.AllowChildren, ref isZeroed);
+			bool includeInherited = GetBoolProperty(FriendClassConfigurationAttributeProvider.IncludeInherited, ref isZeroed);
 
 			return new()
 			{
-				AllowsChildren = allowsChildren,
+				AllowChildren = allowChildren,
+				IncludeInherited = includeInherited,
+				IsZeroed = isZeroed,
 				Syntax = syntax
 			};
 
-			bool GetBoolProperty(string name, bool @default)
+			bool GetBoolProperty(string name, ref bool isZeroed)
 			{
-				if (!attr.TryGetNamedArgumentValue(name, out bool value))
+				if (attr.TryGetNamedArgumentValue(name, out bool value))
 				{
-					value = @default;
+					isZeroed = false;
+				}
+				else
+				{
+					value = default;
 				}
 
 				return value;
@@ -192,6 +214,26 @@ namespace Durian.Analysis.FriendClass
 			}
 		}
 
+		private static bool IsValidInternalParentMember(ISymbol symbol)
+		{
+			if (!IsInternal(symbol))
+			{
+				return false;
+			}
+
+			if (symbol.IsStatic)
+			{
+				return false;
+			}
+
+			if (symbol is IMethodSymbol method && method.MethodKind == MethodKind.Constructor)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
 		private static bool TryGetInvalidConfigurationDiagnostic(
 			INamedTypeSymbol symbol,
 			FriendClassCompilationData compilation,
@@ -199,7 +241,7 @@ namespace Durian.Analysis.FriendClass
 		)
 		{
 			if (symbol.GetAttribute(compilation.FriendClassConfigurationAttribute!) is AttributeData attr &&
-				!attr.GetNamedArgumentValue<bool>(FriendClassConfigurationAttributeProvider.AllowsChildren))
+				!attr.GetNamedArgumentValue<bool>(FriendClassConfigurationAttributeProvider.AllowChildren))
 			{
 				diagnostic = Diagnostic.Create(
 					descriptor: DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends,
@@ -296,52 +338,69 @@ namespace Durian.Analysis.FriendClass
 			return false;
 		}
 
-		private static bool ValidateConfiguration(
+		private static void ValidateConfiguration(
 			INamedTypeSymbol symbol,
 			FriendClassConfiguration configuration,
-			[NotNullWhen(false)] out Diagnostic? diagnostic
+			FriendClassCompilationData compilation,
+			List<Diagnostic> diagnostics
 		)
 		{
-			if (!configuration.AllowsChildren)
+			if (configuration.IsZeroed)
 			{
-				if (configuration.Syntax is not null)
-				{
-					diagnostic = Diagnostic.Create(
-						descriptor: DUR0313_ConfigurationIsRedundant,
-						location: configuration.Syntax.GetLocation(),
-						messageArgs: new[] { symbol }
-					);
-
-					return false;
-				}
-			}
-			else if (symbol.TypeKind == TypeKind.Struct || symbol.IsSealed || symbol.IsStatic)
-			{
-				diagnostic = Diagnostic.Create(
-					descriptor: DUR0311_DoNotAllowChildrenOnSealedType,
-					location: GetArgumentLocation(FriendClassConfigurationAttributeProvider.AllowsChildren),
+				diagnostics.Add(Diagnostic.Create(
+					descriptor: DUR0313_ConfigurationIsRedundant,
+					location: configuration.Syntax.GetLocation(),
 					messageArgs: new[] { symbol }
-				);
+				));
 
-				return false;
+				return;
 			}
 
-			diagnostic = null;
-			return true;
-
-			Location GetArgumentLocation(string argName)
+			if (configuration.AllowChildren && symbol.IsSealedKind())
 			{
-				if (configuration.Syntax is not null &&
-					configuration.Syntax.ArgumentList is not null &&
-					configuration.Syntax.ArgumentList.Arguments is SeparatedSyntaxList<AttributeArgumentSyntax> { Count: > 0 } arguments &&
-					arguments.FirstOrDefault(arg => arg.NameEquals is not null && arg.NameEquals.Name.ToString() == argName) is AttributeArgumentSyntax arg
-				)
-				{
-					return arg.GetLocation();
-				}
-
-				return symbol.Locations.FirstOrDefault() ?? Location.None;
+				diagnostics.Add(Diagnostic.Create(
+					descriptor: DUR0311_DoNotAllowChildrenOnSealedType,
+					location: GetArgumentLocation(configuration.Syntax, symbol, FriendClassConfigurationAttributeProvider.AllowChildren),
+					messageArgs: new[] { symbol }
+				));
 			}
+
+			if (configuration.IncludeInherited)
+			{
+				if (symbol.HasExplicitBaseType(compilation.Compilation))
+				{
+					if (!symbol.BaseType!.GetAllMembers().Any(IsValidInternalParentMember))
+					{
+						diagnostics.Add(Diagnostic.Create(
+							descriptor: DUR0316_BaseTypeHasNoInternalInstanceMembers,
+							location: GetArgumentLocation(configuration.Syntax, symbol, FriendClassConfigurationAttributeProvider.IncludeInherited),
+							messageArgs: new[] { symbol }
+						));
+					}
+				}
+				else
+				{
+					diagnostics.Add(Diagnostic.Create(
+						descriptor: DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType,
+						location: GetArgumentLocation(configuration.Syntax, symbol, FriendClassConfigurationAttributeProvider.IncludeInherited),
+						messageArgs: new[] { symbol }
+					));
+				}
+			}
+		}
+
+		private static Location GetArgumentLocation(AttributeSyntax? syntax, ISymbol symbol, string argName)
+		{
+			if (syntax is not null &&
+				syntax.ArgumentList is not null &&
+				syntax.ArgumentList.Arguments is SeparatedSyntaxList<AttributeArgumentSyntax> { Count: > 0 } arguments &&
+				arguments.FirstOrDefault(arg => arg.NameEquals is not null && arg.NameEquals.Name.ToString() == argName) is AttributeArgumentSyntax arg
+			)
+			{
+				return arg.GetLocation();
+			}
+
+			return symbol.Locations.FirstOrDefault() ?? Location.None;
 		}
 	}
 }

@@ -16,6 +16,64 @@ namespace Durian.Analysis.Extensions
 	public static class SyntaxNodeExtensions
 	{
 		/// <summary>
+		/// Builds a <see cref="UsingDirectiveSyntax"/> from the specified <paramref name="namespace"/> and adds it to the given <paramref name="compilationUnit"/>.
+		/// </summary>
+		/// <param name="compilationUnit"><see cref="CompilationUnitSyntax"/> to add the using directive to.</param>
+		/// <param name="namespace"><see cref="INamespaceSymbol"/> to build the <see cref="UsingDirectiveSyntax"/> from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilationUnit"/> is <see langword="null"/>. -or- <paramref name="namespace"/> is <see langword="null"/>.</exception>
+		public static CompilationUnitSyntax AddUsings(this CompilationUnitSyntax compilationUnit, INamespaceSymbol @namespace)
+		{
+			if (compilationUnit is null)
+			{
+				throw new ArgumentNullException(nameof(compilationUnit));
+			}
+
+			UsingDirectiveSyntax directive = @namespace.GetUsingDirective();
+			string name = directive.Name.ToString();
+
+			if (compilationUnit.Usings.Any(u => u.Name.ToString() == name))
+			{
+				return compilationUnit;
+			}
+
+			return compilationUnit.AddUsings(directive);
+		}
+
+		/// <summary>
+		/// Builds <see cref="UsingDirectiveSyntax"/>es from the specified <paramref name="namespaces"/> and adds them to the given <paramref name="compilationUnit"/>.
+		/// </summary>
+		/// <param name="compilationUnit"><see cref="CompilationUnitSyntax"/> to add the using directives to.</param>
+		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to build the <see cref="UsingDirectiveSyntax"/>es from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilationUnit"/> is <see langword="null"/>. -or- <paramref name="namespaces"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="namespaces"/> cannot be empty.</exception>
+		public static CompilationUnitSyntax AddUsings(this CompilationUnitSyntax compilationUnit, IEnumerable<INamespaceSymbol>? namespaces)
+		{
+			if (compilationUnit is null)
+			{
+				throw new ArgumentNullException(nameof(compilationUnit));
+			}
+
+			if (namespaces is null)
+			{
+				throw new ArgumentNullException(nameof(namespaces));
+			}
+
+			HashSet<string> usings = new(compilationUnit.Usings.Where(u => u.Alias is null).Select(u => u.Name.ToString()));
+			UsingDirectiveSyntax[] directives = namespaces
+				.Where(n => n.Name != string.Empty)
+				.Select(n => n.GetUsingDirective())
+				.Where(n => usings.Add(n.Name.ToString()))
+				.ToArray();
+
+			if(directives.Length == 0)
+			{
+				return compilationUnit;
+			}
+
+			return compilationUnit.AddUsings(directives);
+		}
+
+		/// <summary>
 		/// Returns attribute argument with the specified <paramref name="argumentName"/>
 		/// or <see langword="null"/> if no argument with the <paramref name="argumentName"/> was found.
 		/// </summary>
@@ -231,13 +289,21 @@ namespace Durian.Analysis.Extensions
 				InterfaceDeclarationSyntax => new InterfaceData((InterfaceDeclarationSyntax)member, compilation),
 				RecordDeclarationSyntax => new RecordData((RecordDeclarationSyntax)member, compilation),
 				EnumDeclarationSyntax => new EnumData((EnumDeclarationSyntax)member, compilation),
-				BaseTypeDeclarationSyntax => new TypeData((BaseTypeDeclarationSyntax)member, compilation),
 				MethodDeclarationSyntax => new MethodData((MethodDeclarationSyntax)member, compilation),
 				FieldDeclarationSyntax => new FieldData((FieldDeclarationSyntax)member, compilation),
 				PropertyDeclarationSyntax => new PropertyData((PropertyDeclarationSyntax)member, compilation),
 				EventDeclarationSyntax => new EventData((EventDeclarationSyntax)member, compilation),
 				EventFieldDeclarationSyntax => new EventData((EventFieldDeclarationSyntax)member, compilation),
 				DelegateDeclarationSyntax => new DelegateData((DelegateDeclarationSyntax)member, compilation),
+				IndexerDeclarationSyntax => new IndexerData((IndexerDeclarationSyntax)member, compilation),
+				ConstructorDeclarationSyntax => new ConstructorData((ConstructorDeclarationSyntax)member, compilation),
+				DestructorDeclarationSyntax => new DestructorData((DestructorDeclarationSyntax)member, compilation),
+				OperatorDeclarationSyntax => new OperatorData((OperatorDeclarationSyntax)member, compilation),
+				ConversionOperatorDeclarationSyntax => new ConversionOperatorData((ConversionOperatorDeclarationSyntax)member, compilation),
+
+				// Fallbacks
+				TypeDeclarationSyntax => new TypeData((TypeDeclarationSyntax)member, compilation),
+
 				_ => new MemberData(member, compilation),
 			};
 		}

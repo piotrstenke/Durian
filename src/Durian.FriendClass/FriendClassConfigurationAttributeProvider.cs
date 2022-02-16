@@ -9,14 +9,9 @@ namespace Durian.Analysis.FriendClass
 	public sealed class FriendClassConfigurationAttributeProvider : SourceTextProvider
 	{
 		/// <summary>
-		/// Name of the provided type.
+		/// Name of the 'AllowChildren' property.
 		/// </summary>
-		public const string TypeName = "FriendClassConfigurationAttribute";
-
-		/// <summary>
-		/// Namespace the provided type is located in.
-		/// </summary>
-		public const string Namespace = DurianStrings.ConfigurationNamespace;
+		public const string AllowChildren = "AllowChildren";
 
 		/// <summary>
 		/// Full name of the provided type.
@@ -24,9 +19,19 @@ namespace Durian.Analysis.FriendClass
 		public const string FullName = Namespace + "." + TypeName;
 
 		/// <summary>
-		/// Name of the 'AllowsChildren' property.
+		/// Name of the 'IncludeInherited' property.
 		/// </summary>
-		public const string AllowsChildren = "AllowsChildren";
+		public const string IncludeInherited = "IncludeInherited";
+
+		/// <summary>
+		/// Namespace the provided type is located in.
+		/// </summary>
+		public const string Namespace = DurianStrings.ConfigurationNamespace;
+
+		/// <summary>
+		/// Name of the provided type.
+		/// </summary>
+		public const string TypeName = "FriendClassConfigurationAttribute";
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FriendClassAttributeProvider"/> class.
@@ -36,15 +41,15 @@ namespace Durian.Analysis.FriendClass
 		}
 
 		/// <inheritdoc/>
-		public override string GetNamespace()
-		{
-			return Namespace;
-		}
-
-		/// <inheritdoc/>
 		public override string GetFullName()
 		{
 			return FullName;
+		}
+
+		/// <inheritdoc/>
+		public override string GetNamespace()
+		{
+			return Namespace;
 		}
 
 		/// <inheritdoc/>
@@ -64,7 +69,12 @@ namespace {Namespace}
 		/// <summary>
 		/// Determines whether sub-classes of the current type should be treated like friend types. Defaults to <see langword=""false""/>.
 		/// </summary>
-		public bool {AllowsChildren} {{ get; set; }}
+		public bool {AllowChildren} {{ get; set; }}
+
+		/// <summary>
+		/// Determines whether to include inherited <see langword=""internal""/> members in the analysis. Defaults to <see langword=""false""/>.
+		/// </summary>
+		public bool {IncludeInherited} {{ get; set; }}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref=""{TypeName}""/>.

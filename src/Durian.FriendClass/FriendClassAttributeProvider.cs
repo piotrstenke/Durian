@@ -9,19 +9,9 @@ namespace Durian.Analysis.FriendClass
 	public sealed class FriendClassAttributeProvider : SourceTextProvider
 	{
 		/// <summary>
-		/// Name of the provided type.
+		/// Name of the 'AllowFriendChildren' property.
 		/// </summary>
-		public const string TypeName = "FriendClassAttribute";
-
-		/// <summary>
-		/// Namespace the provided type is located in.
-		/// </summary>
-		public const string Namespace = DurianStrings.MainNamespace;
-
-		/// <summary>
-		/// Full name of the provided type.
-		/// </summary>
-		public const string FullName = Namespace + "." + TypeName;
+		public const string AllowFriendChildren = "AllowFriendChildren";
 
 		/// <summary>
 		/// Name of the 'FriendType' property.
@@ -29,9 +19,19 @@ namespace Durian.Analysis.FriendClass
 		public const string FriendType = "FriendType";
 
 		/// <summary>
-		/// Name of the 'AllowsFriendChildren' property.
+		/// Full name of the provided type.
 		/// </summary>
-		public const string AllowsFriendChildren = "AllowsFriendChildren";
+		public const string FullName = Namespace + "." + TypeName;
+
+		/// <summary>
+		/// Namespace the provided type is located in.
+		/// </summary>
+		public const string Namespace = DurianStrings.MainNamespace;
+
+		/// <summary>
+		/// Name of the provided type.
+		/// </summary>
+		public const string TypeName = "FriendClassAttribute";
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FriendClassAttributeProvider"/> class.
@@ -41,15 +41,15 @@ namespace Durian.Analysis.FriendClass
 		}
 
 		/// <inheritdoc/>
-		public override string GetNamespace()
-		{
-			return Namespace;
-		}
-
-		/// <inheritdoc/>
 		public override string GetFullName()
 		{
 			return FullName;
+		}
+
+		/// <inheritdoc/>
+		public override string GetNamespace()
+		{
+			return Namespace;
 		}
 
 		/// <inheritdoc/>
@@ -69,7 +69,7 @@ namespace {Namespace}
 		/// <summary>
 		/// Determines whether <see langword=""internal""/> members of the current <see cref=""Type""/> can be accessed by <see cref=""Type""/>s that inherit the <see cref=""{FriendType}""/>. Defaults to <see langword=""false""/>.
 		/// </summary>
-		public bool {AllowsFriendChildren} {{ get; set; }}
+		public bool {AllowFriendChildren} {{ get; set; }}
 
 		/// <summary>
 		/// Friend <see cref=""Type""/> of the current <see cref=""Type""/>.

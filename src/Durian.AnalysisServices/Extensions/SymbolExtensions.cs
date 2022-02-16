@@ -20,6 +20,21 @@ namespace Durian.Analysis.Extensions
 	public static class SymbolExtensions
 	{
 		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> can inherit from other types.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if can inherit.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool CanInherit(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.TypeKind == TypeKind.Class && !type.IsStatic;
+		}
+
+		/// <summary>
 		/// Determines whether the <paramref name="child"/> is contained withing the <paramref name="parent"/> at any nesting level.
 		/// </summary>
 		/// <param name="parent">Parent <see cref="ISymbol"/>.</param>
@@ -53,8 +68,23 @@ namespace Durian.Analysis.Extensions
 			return false;
 		}
 
-		/// <inheritdoc cref="GetAllMembers(ITypeSymbol, string)"/>
-		public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol type)
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> is an inner type.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is an inner type.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool IsInnerType(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.ContainingType is not null;
+		}
+
+		/// <inheritdoc cref="GetAllMembers(INamedTypeSymbol, string)"/>
+		public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type)
 		{
 			if (type is null)
 			{
@@ -70,7 +100,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="ITypeSymbol"/> to get the members of.</param>
 		/// <param name="name">Name of the members to find.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol type, string name)
+		public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, string name)
 		{
 			if (type is null)
 			{
@@ -208,30 +238,36 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns all types the specified <paramref name="symbol"/> inherits from.
+		/// Returns all types the specified <paramref name="type"/> inherits from.
 		/// </summary>
-		/// <param name="symbol"><see cref="ITypeSymbol"/> to get the base types of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<INamedTypeSymbol> GetBaseTypes(this ITypeSymbol symbol)
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the base types of.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<INamedTypeSymbol> GetBaseTypes(this INamedTypeSymbol type, bool includeSelf = false)
 		{
-			if (symbol is null)
+			if (type is null)
 			{
-				throw new ArgumentNullException(nameof(symbol));
+				throw new ArgumentNullException(nameof(type));
 			}
 
 			return Yield();
 
 			IEnumerable<INamedTypeSymbol> Yield()
 			{
-				INamedTypeSymbol? type = symbol.BaseType;
-
-				if (type is not null)
+				if(includeSelf)
 				{
 					yield return type;
+				}
 
-					while ((type = type!.BaseType) is not null)
+				INamedTypeSymbol? currentType = type.BaseType;
+
+				if (currentType is not null)
+				{
+					yield return currentType;
+
+					while ((currentType = currentType!.BaseType) is not null)
 					{
-						yield return type;
+						yield return currentType;
 					}
 				}
 			}
@@ -242,7 +278,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent namespaces of.</param>
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
-		/// <param name="order">Specifies order at types members should be returned.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this ISymbol symbol, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
 		{
@@ -310,9 +346,10 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
-		/// <param name="order">Specifies order at types members should be returned.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<ITypeData> GetContainingTypes(this ISymbol symbol, ICompilationData compilation, ReturnOrder order = ReturnOrder.Root)
+		public static IEnumerable<ITypeData> GetContainingTypes(this ISymbol symbol, ICompilationData compilation, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)
 			{
@@ -324,7 +361,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			INamedTypeSymbol[] parentSymbols = GetContainingTypeSymbols(symbol, order).ToArray();
+			INamedTypeSymbol[] parentSymbols = GetContainingTypeSymbols(symbol, includeSelf, order).ToArray();
 			List<ITypeData> parentList = new(parentSymbols.Length);
 
 			return parentSymbols.Select<INamedTypeSymbol, ITypeData>(parent =>
@@ -380,9 +417,10 @@ namespace Durian.Analysis.Extensions
 		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
-		/// <param name="order">Specifies order at types members should be returned.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<INamedTypeSymbol> GetContainingTypeSymbols(this ISymbol symbol, ReturnOrder order = ReturnOrder.Root)
+		public static IEnumerable<INamedTypeSymbol> GetContainingTypeSymbols(this ISymbol symbol, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)
 			{
@@ -393,6 +431,11 @@ namespace Durian.Analysis.Extensions
 
 			IEnumerable<INamedTypeSymbol> GetTypes()
 			{
+				if(includeSelf && symbol is INamedTypeSymbol t)
+				{
+					yield return t;
+				}
+
 				INamedTypeSymbol parent = symbol.ContainingType;
 
 				if (parent is not null)
@@ -805,6 +848,36 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the default constructor of the specified <paramref name="type"/> if it has one.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the default constructor of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static IMethodSymbol? GetDefaultConstructor(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.InstanceConstructors.FirstOrDefault(ctor => ctor.IsImplicitlyDeclared && ctor.Parameters.Length == 0);
+		}
+
+		/// <summary>
+		/// Returns the parameterless constructor of the specified <paramref name="type"/> if it has one.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the parameterless constructor of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static IMethodSymbol? GetParameterlessConstructor(this INamedTypeSymbol type)
+		{
+			if(type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.InstanceConstructors.FirstOrDefault(ctor => ctor.Parameters.Length == 0);
+		}
+
+		/// <summary>
 		/// Returns a <see cref="string"/> that represents the parameter signature of the <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the signature of.</param>
@@ -937,6 +1010,53 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns a new <see cref="UsingDirectiveSyntax"/> build for the specified <paramref name="namespace"/> symbol.
+		/// </summary>
+		/// <param name="namespace"><see cref="INamespaceSymbol"/> to built the <see cref="UsingDirectiveSyntax"/> from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
+		public static UsingDirectiveSyntax GetUsingDirective(this INamespaceSymbol @namespace)
+		{
+			NameSyntax name;
+
+			if (@namespace.GetContainingNamespaces().JoinIntoQualifiedName() is QualifiedNameSyntax q)
+			{
+				name = q;
+			}
+			else
+			{
+				name = SyntaxFactory.IdentifierName(@namespace.Name);
+			}
+
+			return SyntaxFactory.UsingDirective(name);
+		}
+
+		/// <summary>
+		/// Returns a new <see cref="UsingDirectiveSyntax"/> build for the specified <paramref name="namespaces"/> symbol.
+		/// </summary>
+		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to build the <see cref="UsingDirectiveSyntax"/> from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="namespaces"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="namespaces"/> cannot be empty.</exception>
+		public static UsingDirectiveSyntax GetUsingDirective(this IEnumerable<INamespaceSymbol> namespaces)
+		{
+			NameSyntax name;
+
+			if (namespaces.JoinIntoQualifiedName() is QualifiedNameSyntax q)
+			{
+				name = q;
+			}
+			else if(namespaces.FirstOrDefault() is INamespaceSymbol first)
+			{
+				name = SyntaxFactory.IdentifierName(first.Name);
+			}
+			else
+			{
+				throw new ArgumentException($"'{nameof(namespaces)}' cannot be empty");
+			}
+
+			return SyntaxFactory.UsingDirective(name);
+		}
+
+		/// <summary>
 		/// Returns a <see cref="string"/> representing the fully qualified name of the <paramref name="symbol"/> that can be used in the XML documentation.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the fully qualified name of.</param>
@@ -1006,7 +1126,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="baseType">Base type to check if is inherited by the target <paramref name="type"/>.</param>
 		/// <param name="toReturnIfSame">Determines what to return when the <paramref name="type"/> and <paramref name="baseType"/> are the same.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or - <paramref name="baseType"/> is <see langword="null"/>.</exception>
-		public static bool InheritsOrImplementsFrom(this ITypeSymbol type, ITypeSymbol baseType, bool toReturnIfSame = true)
+		public static bool InheritsFrom(this ITypeSymbol type, ITypeSymbol baseType, bool toReturnIfSame = true)
 		{
 			if (type is null)
 			{
@@ -1075,7 +1195,7 @@ namespace Durian.Analysis.Extensions
 				throw new InvalidOperationException("Type 'System.Attribute' could not be resolved!");
 			}
 
-			return symbol.InheritsOrImplementsFrom(attr);
+			return symbol.InheritsFrom(attr);
 		}
 
 		/// <summary>
@@ -1128,7 +1248,7 @@ namespace Durian.Analysis.Extensions
 				throw new InvalidOperationException("Type 'System.Exception' could not be resolved!");
 			}
 
-			return symbol.InheritsOrImplementsFrom(exc);
+			return symbol.InheritsFrom(exc);
 		}
 
 		/// <summary>
@@ -1356,6 +1476,47 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> is of sealed kind (struct or sealed/static class).
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is sealed.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool IsSealedKind(this INamedTypeSymbol type)
+		{
+			if(type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.IsSealed || type.IsValueType || type.IsStatic;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> has an explicitly specified base type.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if has an explicit base type.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> that provides a <see cref="INamedTypeSymbol"/> for the <see langword="object"/> type.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		public static bool HasExplicitBaseType(this INamedTypeSymbol type, CSharpCompilation compilation)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			if(type.BaseType is null || type.TypeKind != TypeKind.Class)
+			{
+				return false;
+			}
+
+			return !SymbolEqualityComparer.Default.Equals(type.BaseType, compilation.ObjectType);
+		}
+
+		/// <summary>
 		/// Determines whether the <paramref name="type"/> can be applied to the <paramref name="parameter"/>.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is valid for the <paramref name="parameter"/>.</param>
@@ -1579,7 +1740,7 @@ namespace Durian.Analysis.Extensions
 						return false;
 					}
 				}
-				else if (!InheritsOrImplementsFrom(type, t))
+				else if (!InheritsFrom(type, t))
 				{
 					return false;
 				}

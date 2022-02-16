@@ -23,7 +23,7 @@ namespace Durian.Analysis.FriendClass
 		/// <summary>
 		/// Version of this source generator.
 		/// </summary>
-		public static string Version => "1.0.1";
+		public static string Version => "1.1.0";
 
 		/// <inheritdoc cref="FriendClassGenerator(in ConstructionContext, IHintNameProvider?)"/>
 		public FriendClassGenerator()
@@ -71,9 +71,9 @@ namespace Durian.Analysis.FriendClass
 		}
 
 		/// <inheritdoc/>
-		protected override DurianModule[] GetRequiredModules()
+		protected override string GetGeneratorName()
 		{
-			return new DurianModule[] { DurianModule.FriendClass };
+			return GeneratorName;
 		}
 
 		/// <inheritdoc/>
@@ -83,15 +83,15 @@ namespace Durian.Analysis.FriendClass
 		}
 
 		/// <inheritdoc/>
-		protected override string GetGeneratorName()
-		{
-			return GeneratorName;
-		}
-
-		/// <inheritdoc/>
 		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
 		{
 			return GetSourceProviders();
+		}
+
+		/// <inheritdoc/>
+		protected override DurianModule[] GetRequiredModules()
+		{
+			return new DurianModule[] { DurianModule.FriendClass };
 		}
 	}
 }

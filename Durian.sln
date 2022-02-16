@@ -32,10 +32,22 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.DefaultParam.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.AnalysisServices.Tests", "tests\Durian.AnalysisServices.Tests\Durian.AnalysisServices.Tests.csproj", "{5C21C0A5-6EFE-43E1-AEB5-23EAA4FDCBAA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.InterfaceTargets.Tests", "tests\Durian.InterfaceTargets.Tests\Durian.InterfaceTargets.Tests.csproj", "{2FFC93C9-1D87-4366-AC28-B26D41C56620}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.FriendClass.Tests", "tests\Durian.FriendClass.Tests\Durian.FriendClass.Tests.csproj", "{498E3E94-34E3-489D-B1E5-14ECB2A568C0}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "internal", "internal", "{80273A51-C8E4-433F-BD7C-4336BEB04A1D}"
 	ProjectSection(SolutionItems) = preProject
 		internal\README.md = internal\README.md
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{D98DD137-AADE-4474-86EF-9F0874607687}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.DefaultParam", "samples\Durian.Samples.DefaultParam\Durian.Samples.DefaultParam.csproj", "{3B778CDC-7A0E-4D5B-A76E-704E0F854EE9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.InterfaceTargets", "samples\Durian.Samples.InterfaceTargets\Durian.Samples.InterfaceTargets.csproj", "{8CACC9A2-DD96-4670-9848-7CC9CE544C86}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.FriendClass", "samples\Durian.Samples.FriendClass\Durian.Samples.FriendClass.csproj", "{2B7CA60B-F172-4DEB-946E-992140A817EC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateAnalyzerReleases", "internal\GenerateAnalyzerReleases\GenerateAnalyzerReleases.csproj", "{312B14BF-6208-4E10-81A8-53263C66DEB0}"
 EndProject
@@ -98,6 +110,33 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DefaultParam", "DefaultPara
 		docs\DefaultParam\DUR0129.md = docs\DefaultParam\DUR0129.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FriendClass", "FriendClass", "{F883B125-35E9-4047-9FFD-6D643D48CF8A}"
+	ProjectSection(SolutionItems) = preProject
+		docs\FriendClass\DUR0301.md = docs\FriendClass\DUR0301.md
+		docs\FriendClass\DUR0302.md = docs\FriendClass\DUR0302.md
+		docs\FriendClass\DUR0303.md = docs\FriendClass\DUR0303.md
+		docs\FriendClass\DUR0304.md = docs\FriendClass\DUR0304.md
+		docs\FriendClass\DUR0305.md = docs\FriendClass\DUR0305.md
+		docs\FriendClass\DUR0306.md = docs\FriendClass\DUR0306.md
+		docs\FriendClass\DUR0307.md = docs\FriendClass\DUR0307.md
+		docs\FriendClass\DUR0308.md = docs\FriendClass\DUR0308.md
+		docs\FriendClass\DUR0309.md = docs\FriendClass\DUR0309.md
+		docs\FriendClass\DUR0310.md = docs\FriendClass\DUR0310.md
+		docs\FriendClass\DUR0311.md = docs\FriendClass\DUR0311.md
+		docs\FriendClass\DUR0312.md = docs\FriendClass\DUR0312.md
+		docs\FriendClass\DUR0313.md = docs\FriendClass\DUR0313.md
+		docs\FriendClass\DUR0314.md = docs\FriendClass\DUR0314.md
+		docs\FriendClass\DUR0315.md = docs\FriendClass\DUR0315.md
+		docs\FriendClass\DUR0316.md = docs\FriendClass\DUR0316.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InterfaceTargets", "InterfaceTargets", "{5F891978-E8BA-423F-9125-F02EB33494C4}"
+	ProjectSection(SolutionItems) = preProject
+		docs\InterfaceTargets\DUR0401.md = docs\InterfaceTargets\DUR0401.md
+		docs\InterfaceTargets\DUR0402.md = docs\InterfaceTargets\DUR0402.md
+		docs\InterfaceTargets\DUR0403.md = docs\InterfaceTargets\DUR0403.md
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{180C285B-7C46-4E5B-9DC9-88439B518746}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "icons", "icons", "{1321229E-C3C2-4B4B-AD81-88B76CB4A938}"
@@ -116,42 +155,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{508BEDA0-0AE7-455C-A432-37575FEBA0F3}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{D98DD137-AADE-4474-86EF-9F0874607687}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.DefaultParam", "samples\Durian.Samples.DefaultParam\Durian.Samples.DefaultParam.csproj", "{3B778CDC-7A0E-4D5B-A76E-704E0F854EE9}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.InterfaceTargets", "samples\Durian.Samples.InterfaceTargets\Durian.Samples.InterfaceTargets.csproj", "{8CACC9A2-DD96-4670-9848-7CC9CE544C86}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.FriendClass", "samples\Durian.Samples.FriendClass\Durian.Samples.FriendClass.csproj", "{2B7CA60B-F172-4DEB-946E-992140A817EC}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InterfaceTargets", "InterfaceTargets", "{5F891978-E8BA-423F-9125-F02EB33494C4}"
-	ProjectSection(SolutionItems) = preProject
-		docs\InterfaceTargets\DUR0401.md = docs\InterfaceTargets\DUR0401.md
-		docs\InterfaceTargets\DUR0402.md = docs\InterfaceTargets\DUR0402.md
-		docs\InterfaceTargets\DUR0403.md = docs\InterfaceTargets\DUR0403.md
-	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.InterfaceTargets.Tests", "tests\Durian.InterfaceTargets.Tests\Durian.InterfaceTargets.Tests.csproj", "{2FFC93C9-1D87-4366-AC28-B26D41C56620}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.FriendClass.Tests", "tests\Durian.FriendClass.Tests\Durian.FriendClass.Tests.csproj", "{498E3E94-34E3-489D-B1E5-14ECB2A568C0}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FriendClass", "FriendClass", "{F883B125-35E9-4047-9FFD-6D643D48CF8A}"
-	ProjectSection(SolutionItems) = preProject
-		docs\FriendClass\DUR0301.md = docs\FriendClass\DUR0301.md
-		docs\FriendClass\DUR0302.md = docs\FriendClass\DUR0302.md
-		docs\FriendClass\DUR0303.md = docs\FriendClass\DUR0303.md
-		docs\FriendClass\DUR0304.md = docs\FriendClass\DUR0304.md
-		docs\FriendClass\DUR0305.md = docs\FriendClass\DUR0305.md
-		docs\FriendClass\DUR0306.md = docs\FriendClass\DUR0306.md
-		docs\FriendClass\DUR0307.md = docs\FriendClass\DUR0307.md
-		docs\FriendClass\DUR0308.md = docs\FriendClass\DUR0308.md
-		docs\FriendClass\DUR0309.md = docs\FriendClass\DUR0309.md
-		docs\FriendClass\DUR0310.md = docs\FriendClass\DUR0310.md
-		docs\FriendClass\DUR0311.md = docs\FriendClass\DUR0311.md
-		docs\FriendClass\DUR0312.md = docs\FriendClass\DUR0312.md
-		docs\FriendClass\DUR0313.md = docs\FriendClass\DUR0313.md
 	EndProjectSection
 EndProject
 Global

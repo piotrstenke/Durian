@@ -31,7 +31,7 @@ namespace Durian.Analysis.FriendClass
 		public static readonly DiagnosticDescriptor DUR0302_MemberCannotBeAccessedOutsideOfFriendClass = new(
 			id: "DUR0302",
 			title: "Member cannot be accessed outside of friend types",
-			messageFormat: "'{0}': Member '{1}' of type '{2}' cannot be accessed outside of friend types",
+			messageFormat: "'{0}': Member '{1}' cannot be accessed outside of friend types",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0302.md",
@@ -91,12 +91,12 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by the <see cref="Type"/>'s child classes, unless the <c>Durian.Configuration.FriendClassConfigurationAttribute.AllowsChildren</c> property is set to <see langword="true"/>.
+		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by the <see cref="Type"/>'s child classes, unless the <c>Durian.Configuration.FriendClassConfigurationAttribute.AllowChildren</c> property is set to <see langword="true"/>.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0307_MemberCannotBeAccessedByChildClass = new(
 			id: "DUR0307",
 			title: "Member cannot be accessed by a child type",
-			messageFormat: "'{0}': Member '{1}' of type '{2}' cannot be accessed by a child type",
+			messageFormat: "'{0}': Member '{1}' cannot be accessed by a child type",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0307.md",
@@ -130,12 +130,12 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by child classes of a friend type, unless the <c>Durian.FriendClassAttribute.AllowsFriendChildren</c> property is set to <see langword="true"/>.
+		/// Provides diagnostic message indicating that an <see langword="internal"/> member cannot be accessed by child classes of a friend type, unless the <c>Durian.FriendClassAttribute.AllowFriendChildren</c> property is set to <see langword="true"/>.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0310_MemberCannotBeAccessedByChildClassOfFriend = new(
 			id: "DUR0310",
 			title: "Member cannot be accessed by friend type's child type",
-			messageFormat: "'{0}': Member '{1}' of type '{2}' cannot be accessed outside by friend type's child class",
+			messageFormat: "'{0}': Member '{1}' cannot be accessed outside by friend type's child class",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0310.md",
@@ -143,12 +143,12 @@ namespace Durian.Analysis.FriendClass
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that the <c>Durian.FriendClassAttribute.AllowsChildren</c> property should not be used on structs or sealed/static classes.
+		/// Provides diagnostic message indicating that the <c>Durian.FriendClassAttribute.AllowChildren</c> property should not be used on structs or sealed/static classes.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0311_DoNotAllowChildrenOnSealedType = new(
 			id: "DUR0311",
-			title: "Do not use FriendClassConfiguration.AllowsChildren on a sealed type",
-			messageFormat: "'{0}': Do not use FriendClassConfiguration.AllowsChildren on a sealed type",
+			title: "Do not use FriendClassConfigurationAttribute.AllowChildren on a sealed type",
+			messageFormat: "'{0}': Do not use FriendClassConfigurationAttribute.AllowChildren on a sealed type",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + "/DUR0311.md",
@@ -178,6 +178,45 @@ namespace Durian.Analysis.FriendClass
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + "/DUR0313.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that inherited static members should not be accessed by non-friend types.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0314_DoNotAccessInheritedStaticMembers = new(
+			id: "DUR0314",
+			title: "Inherited static members are not protected against access from non-friend types",
+			messageFormat: "'{0}': Inherited static members are not protected against access from non-friend types",
+			category: "Durian.FriendClass",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0314.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the <c>Durian.Configuration.FriendClassConfigurationAttribute.IncludeInherited</c> property should not be used on types that have no base type.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType = new(
+			id: "DUR0315",
+			title: "Do not use FriendClassConfigurationAttribute.IncludeInherited on a type without parent type",
+			messageFormat: "'{0}': Do not use FriendClassConfigurationAttribute.IncludeInherited on a type without parent type",
+			category: "Durian.FriendClass",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + "/DUR0315.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that the no internal instance members were inherited.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0316_BaseTypeHasNoInternalInstanceMembers = new(
+			id: "DUR0316",
+			title: "Base type does not provide internal instance members",
+			messageFormat: "'{0}': Base type does not provide internal instance members",
+			category: "Durian.FriendClass",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0316.md",
 			isEnabledByDefault: true
 		);
 

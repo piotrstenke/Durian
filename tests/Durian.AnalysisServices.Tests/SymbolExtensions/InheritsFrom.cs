@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Durian.Analysis.Tests.SymbolExtensions
 {
-	public sealed class InheritsOrImplementsFrom : CompilationTest
+	public sealed class InheritsFrom : CompilationTest
 	{
 		[Fact]
 		public void ReturnsFalse_When_DoesNotInheritFromParent()
@@ -20,14 +20,14 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			INamedTypeSymbol parent = GetClass("class Test { }");
 			INamedTypeSymbol child = GetClass("class Child { }");
 
-			Assert.False(child.InheritsOrImplementsFrom(parent));
+			Assert.False(child.InheritsFrom(parent));
 		}
 
 		[Fact]
 		public void ReturnsFalse_When_ParentAndChildAreTheSameSymbol_And_ToReturnIfSameIsFalse()
 		{
 			INamedTypeSymbol type = GetClass("class Test { }");
-			Assert.False(type.InheritsOrImplementsFrom(type, false));
+			Assert.False(type.InheritsFrom(type, false));
 		}
 
 		[Fact]
@@ -40,7 +40,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			child.SetupGet(t => t.BaseType).Returns(parent);
 			child.SetupGet(t => t.TypeKind).Returns(TypeKind.Class);
 
-			Assert.True(child.Object.InheritsOrImplementsFrom(parent));
+			Assert.True(child.Object.InheritsFrom(parent));
 		}
 
 		[Fact]
@@ -58,14 +58,14 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			childOfChild.SetupGet(t => t.BaseType).Returns(child.Object);
 			childOfChild.SetupGet(t => t.TypeKind).Returns(TypeKind.Class);
 
-			Assert.True(childOfChild.Object.InheritsOrImplementsFrom(parent));
+			Assert.True(childOfChild.Object.InheritsFrom(parent));
 		}
 
 		[Fact]
 		public void ReturnsTrue_When_ParentAndChildAreTheSameSymbol()
 		{
 			INamedTypeSymbol type = GetClass("class Test { }");
-			Assert.True(type.InheritsOrImplementsFrom(type));
+			Assert.True(type.InheritsFrom(type));
 		}
 
 		[Fact]
@@ -77,7 +77,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			child.SetupGet(t => t.AllInterfaces).Returns(ImmutableArray.Create(parent));
 			child.SetupGet(t => t.TypeKind).Returns(TypeKind.Class);
 
-			Assert.True(child.Object.InheritsOrImplementsFrom(parent));
+			Assert.True(child.Object.InheritsFrom(parent));
 		}
 
 		[Fact]
@@ -94,7 +94,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			child.SetupGet(t => t.TypeKind).Returns(TypeKind.Class);
 			child.SetupGet(t => t.BaseType).Returns(parent.Object);
 
-			Assert.True(child.Object.InheritsOrImplementsFrom(intf));
+			Assert.True(child.Object.InheritsFrom(intf));
 		}
 
 		[Fact]
@@ -102,7 +102,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		{
 			INamedTypeSymbol child = null!;
 			INamedTypeSymbol parent = GetClass("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => child.InheritsOrImplementsFrom(parent));
+			Assert.Throws<ArgumentNullException>(() => child.InheritsFrom(parent));
 		}
 
 		[Fact]
@@ -110,7 +110,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		{
 			INamedTypeSymbol child = GetClass("class Test { }");
 			INamedTypeSymbol parent = null!;
-			Assert.Throws<ArgumentNullException>(() => child.InheritsOrImplementsFrom(parent));
+			Assert.Throws<ArgumentNullException>(() => child.InheritsFrom(parent));
 		}
 
 		private INamedTypeSymbol GetClass(string source)

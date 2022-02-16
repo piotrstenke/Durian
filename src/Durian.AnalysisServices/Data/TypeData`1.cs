@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -11,17 +12,26 @@ namespace Durian.Analysis.Data
 {
 	/// <inheritdoc cref="ITypeData"/>
 	/// <typeparam name="TDeclaration">Specific type of the target <see cref="TypeDeclarationSyntax"/>.</typeparam>
-	public class TypeData<TDeclaration> : TypeData where TDeclaration : BaseTypeDeclarationSyntax
+	public abstract class TypeData<TDeclaration> : MemberData, ITypeData where TDeclaration : BaseTypeDeclarationSyntax
 	{
+		private SyntaxToken[]? _modifiers;
+
+		private TypeDeclarationSyntax[]? _partialDeclarations;
+
 		/// <summary>
-		/// Target <see cref="TypeDeclarationSyntax"/>.
+		/// Target <see cref="BaseTypeDeclarationSyntax"/>.
 		/// </summary>
 		public new TDeclaration Declaration => (base.Declaration as TDeclaration)!;
+
+		/// <inheritdoc/>
+		public SyntaxToken[] Modifiers => _modifiers ??= GetPartialDeclarations().GetModifiers().ToArray();
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
-		public new INamedTypeSymbol Symbol => base.Symbol!;
+		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
+
+		BaseTypeDeclarationSyntax ITypeData.Declaration => Declaration;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TypeData{TDeclaration}"/> class.
@@ -31,11 +41,11 @@ namespace Durian.Analysis.Data
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
-		public TypeData(TDeclaration declaration, ICompilationData compilation) : base(declaration, compilation)
+		protected TypeData(TDeclaration declaration, ICompilationData compilation) : base(declaration, compilation)
 		{
 		}
 
-		internal TypeData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		private protected TypeData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 
@@ -51,12 +61,12 @@ namespace Durian.Analysis.Data
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal TypeData(
+		protected TypeData(
 			TDeclaration declaration,
 			ICompilationData compilation,
 			INamedTypeSymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<TDeclaration>? partialDeclarations = null,
+			IEnumerable<BaseTypeDeclarationSyntax>? partialDeclarations = null,
 			IEnumerable<SyntaxToken>? modifiers = null,
 			IEnumerable<ITypeData>? containingTypes = null,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
@@ -66,21 +76,53 @@ namespace Durian.Analysis.Data
 			compilation,
 			symbol,
 			semanticModel,
-			partialDeclarations,
-			modifiers,
 			containingTypes,
 			containingNamespaces,
 			attributes
 		)
 		{
+			_partialDeclarations = partialDeclarations?.OfType<TypeDeclarationSyntax>().ToArray();
+
+			if (modifiers is not null)
+			{
+				_modifiers = modifiers.ToArray();
+			}
+		}
+
+		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.
+		/// </summary>
+		public IEnumerable<ITypeData> GetContainingTypes(bool includeSelf)
+		{
+			foreach (ITypeData parent in GetContainingTypes())
+			{
+				yield return parent;
+			}
+
+			if (includeSelf)
+			{
+				yield return this;
+			}
 		}
 
 		/// <summary>
 		/// If the type is partial, returns all declarations of the type (including <see cref="Declaration"/>), otherwise returns only <see cref="Declaration"/>.
 		/// </summary>
-		public new IEnumerable<TDeclaration> GetPartialDeclarations()
+		public virtual IEnumerable<TypeDeclarationSyntax> GetPartialDeclarations()
 		{
-			return base.GetPartialDeclarations().Cast<TDeclaration>();
+			if (_partialDeclarations is null)
+			{
+				if (Symbol.TypeKind == TypeKind.Enum)
+				{
+					_partialDeclarations = Array.Empty<TypeDeclarationSyntax>();
+				}
+				else
+				{
+					_partialDeclarations = Symbol.GetPartialDeclarations<TypeDeclarationSyntax>().ToArray();
+				}
+			}
+
+			return _partialDeclarations;
 		}
 	}
 }

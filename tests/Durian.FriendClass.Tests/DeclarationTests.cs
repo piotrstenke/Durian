@@ -37,36 +37,7 @@ class Test
 {
 }
 ";
-			CSharpCompilation dependency = RoslynUtilities
-				.CreateBaseCompilation()
-				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(external, encoding: Encoding.UTF8));
-
-			AddInitialSources(ref dependency);
-
-			using MemoryStream stream = new();
-
-			EmitResult emit = dependency.Emit(stream);
-
-			if (!emit.Success)
-			{
-				throw new InvalidOperationException("Emit failed!");
-			}
-
-			MetadataReference reference = MetadataReference.CreateFromImage(stream.ToArray());
-			CSharpCompilation current = RoslynUtilities
-				.CreateBaseCompilation()
-				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(input, encoding: Encoding.UTF8))
-				.AddReferences(reference);
-
-			AddInitialSources(ref current);
-
-			FriendClassDeclarationAnalyzer analyzer = new();
-
-			AnalysisResult result = await current
-				.WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(analyzer))
-				.GetAnalysisResultAsync(default);
-
-			Assert.Contains(result.GetAllDiagnostics(analyzer), d => d.Id == DUR0301_TargetTypeIsOutsideOfAssembly.Id);
+			Assert.Contains(await GetDiagnosticsFromDifferentAssembly(input, external), d => d.Id == DUR0301_TargetTypeIsOutsideOfAssembly.Id);
 		}
 
 		[Fact]
@@ -115,6 +86,94 @@ class Test
 		}
 
 		[Fact]
+		public async Task Error_When_IncludeInherited_And_DoesNotInherit()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+class Test
+{{
+	internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_IncludeInherited_And_OnlyImplementsInterfaces()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+class Test : IInterface
+{{
+	internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+
+interface IInterface
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_IncludeInheritedOnStaticClass()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+static class Test
+{{
+	internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_IncludeInheritedOnStruct()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+struct Test
+{{
+	internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
+		}
+
+		[Fact]
 		public async Task Success_When_ChildClassIsFriend()
 		{
 			string input =
@@ -128,6 +187,77 @@ class Test
 
 class Child : Test
 {{
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		[Fact]
+		public async Task Success_When_ChildTriesToAccessProtectedInternalMember()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+class Test
+{{
+	protected internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+
+class Child : Test
+{{
+	void M()
+	{{
+		Test.Name = "";
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		[Fact]
+		public async Task Success_When_ConfigurationValuesAreDefault()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowChildren} = false)]
+class Test
+{{
+	internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		[Fact]
+		public async Task Success_When_FriendTriesToAccessProtectedInternalMember()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+class Test
+{{
+	protected internal static string Name {{ get; }}
+}}
+
+class Other
+{{
+	void M()
+	{{
+		Test.Name = "";
+	}}
 }}
 ";
 			Assert.Empty(await RunAnalyzerAsync(input));
@@ -151,6 +281,109 @@ class Other
 }}
 
 class Another
+{{
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		[Fact]
+		public async Task Success_When_IncludeInherited_And_HasNoInternalMembers_And_ParentHasInternalInstanceMembers()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+class Test : Parent
+{{
+}}
+
+class Other
+{{
+}}
+
+class Parent
+{{
+	internal string Name {{ get; }}
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		[Fact]
+		public async Task Success_When_IncludeInherited_And_ParetIsInDifferentAssembly_And_HasInternalsAttribute()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+class Test : Parent
+{{
+	internal string Id {{ get; }}
+}}
+
+class Other
+{{
+}}
+";
+			string external =
+$@"using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo(""{RoslynUtilities.DefaultCompilationName}"")]
+public class Parent
+{{
+	internal string Name {{ get; }}
+}}
+";
+			Assert.Empty(await GetDiagnosticsFromDifferentAssembly(input, external));
+		}
+
+		[Fact]
+		public async Task Success_When_IncludeInheriteed_And_HasNoInternalMembers_And_ParentOfParentHasInternalInstanceMembers()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+class Test : Parent
+{{
+}}
+
+class Other
+{{
+}}
+
+class Parent : ParentParent
+{{
+}}
+
+class ParentParent
+{{
+	internal string Name {{ get; }}
+}}
+";
+			Assert.Empty(await RunAnalyzerAsync(input));
+		}
+
+		[Fact]
+		public async Task Success_When_IsClass_And_TargetsInterface()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(IOther))]
+class Test
+{{
+	internal static string Name {{ get; }}
+}}
+
+interface IOther
 {{
 }}
 ";
@@ -185,7 +418,7 @@ class Child
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowsChildren} = true)]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowChildren} = true)]
 class Test
 {{
 	internal static string Name {{ get; }}
@@ -202,7 +435,7 @@ class Test
 using {DurianStrings.ConfigurationNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
-[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowsChildren} = true)]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowChildren} = true)]
 sealed class Test
 {{
 	internal static string Name {{ get; }}
@@ -223,7 +456,7 @@ class Other
 using {DurianStrings.ConfigurationNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
-[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowsChildren} = true)]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowChildren} = true)]
 static class Test
 {{
 	internal static string Name {{ get; }}
@@ -244,7 +477,7 @@ class Other
 using {DurianStrings.ConfigurationNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
-[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowsChildren} = true)]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowChildren} = true)]
 struct Test
 {{
 	internal static string Name {{ get; }}
@@ -258,14 +491,14 @@ class Other
 		}
 
 		[Fact]
-		public async Task Warning_When_ConfigurationValuesAreDefault()
+		public async Task Warning_When_ConfigurationHasNoValues()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
-[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowsChildren} = false)]
+[{FriendClassConfigurationAttributeProvider.TypeName}]
 class Test
 {{
 	internal static string Name {{ get; }}
@@ -311,7 +544,6 @@ class Test
 	public static string Name {{ get {{ return _name; }} }}
 	protected void Method() {{ }}
 	private protected class Sub {{ }}
-	protected internal class Child : Test {{ }}
 }}
 
 class Other
@@ -319,6 +551,134 @@ class Other
 }}
 ";
 			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0305_TypeDoesNotDeclareInternalMembers.Id);
+		}
+
+		[Fact]
+		public async Task Warning_When_HasNoInternalMembers_And_InheritsInternalMembers()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+class Test : Parent
+{{
+}}
+
+class Parent
+{{
+	internal string Name {{ get; }}
+}}
+
+class Other
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0305_TypeDoesNotDeclareInternalMembers.Id);
+		}
+
+		[Fact]
+		public async Task Warning_When_IncludeInherited_And_InheritedDoesNotHaveInternalMembers()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+class Test : Parent
+{{
+	internal string Id {{ get; }}
+}}
+
+class Other
+{{
+}}
+
+class Parent
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
+		}
+
+		[Fact]
+		public async Task Warning_When_IncludeInherited_And_InheritedHasOnlyInternalConstructor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+class Test : Parent
+{{
+	internal string Id {{ get; }}
+}}
+
+class Other
+{{
+}}
+
+class Parent
+{{
+	internal Parent()
+	{{
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
+		}
+
+		[Fact]
+		public async Task Warning_When_IncludeInherited_And_ParentHasOnlyStaticInternalMembers()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+class Test : Parent
+{{
+	internal static string A {{ get; }}
+}}
+
+class Other
+{{
+}}
+
+class Parent
+{{
+	internal static string Name {{ get; }}
+}}
+";
+			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
+		}
+
+		[Fact]
+		public async Task Warning_When_IncludeInherited_And_ParetIsInDifferentAssembly_And_HasNoInternalsAttribute()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+[{FriendClassAttributeProvider.TypeName}(typeof(Other))]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.IncludeInherited} = true)]
+class Test : Parent
+{{
+}}
+
+class Other
+{{
+}}
+";
+			string external =
+$@"public class Parent
+{{
+	internal string Name {{ get; }}
+}}
+";
+			Assert.Contains(await GetDiagnosticsFromDifferentAssembly(input, external), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
 		}
 
 		[Fact]
@@ -369,7 +729,7 @@ class Other
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
-[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowsChildren} = false)]
+[{FriendClassConfigurationAttributeProvider.TypeName}({FriendClassConfigurationAttributeProvider.AllowChildren} = false)]
 class Test
 {{
 	internal static string Name {{ get; }}
@@ -381,6 +741,40 @@ class Test
 		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
 		{
 			return FriendClassGenerator.GetSourceProviders();
+		}
+
+		private async Task<ImmutableArray<Diagnostic>> GetDiagnosticsFromDifferentAssembly(string input, string external)
+		{
+			CSharpCompilation dependency = RoslynUtilities
+				.CreateBaseCompilation()
+				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(external, encoding: Encoding.UTF8));
+
+			AddInitialSources(ref dependency);
+
+			using MemoryStream stream = new();
+
+			EmitResult emit = dependency.Emit(stream);
+
+			if (!emit.Success)
+			{
+				throw new InvalidOperationException("Emit failed!");
+			}
+
+			MetadataReference reference = MetadataReference.CreateFromImage(stream.ToArray());
+			CSharpCompilation current = RoslynUtilities
+				.CreateBaseCompilation()
+				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(input, encoding: Encoding.UTF8))
+				.AddReferences(reference);
+
+			AddInitialSources(ref current);
+
+			FriendClassDeclarationAnalyzer analyzer = new();
+
+			AnalysisResult result = await current
+				.WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(analyzer))
+				.GetAnalysisResultAsync(default);
+
+			return result.GetAllDiagnostics(analyzer);
 		}
 	}
 }

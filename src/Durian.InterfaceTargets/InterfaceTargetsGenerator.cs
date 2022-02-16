@@ -23,7 +23,7 @@ namespace Durian.Analysis.InterfaceTargets
 		/// <summary>
 		/// Version of this source generator.
 		/// </summary>
-		public static string Version => "1.0.1";
+		public static string Version => "1.1.0";
 
 		/// <inheritdoc cref="InterfaceTargetsGenerator(in ConstructionContext, IHintNameProvider?)"/>
 		public InterfaceTargetsGenerator()
