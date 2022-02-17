@@ -32,7 +32,7 @@ public {memberType} Test : ITest
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0403_InterfaceIsNotDirectlyAccessible.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0403_InterfaceIsNotDirectlyAccessible.Id);
 		}
 
 		[Theory]
@@ -56,7 +56,7 @@ public {memberType} Test : ITest
 ";
 			string diag = GetDiagnosticId(memberType);
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == diag);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == diag);
 		}
 
 		[Theory]
@@ -80,7 +80,7 @@ public {memberType} Test : ITest
 ";
 			string diag = GetDiagnosticId(memberType);
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == diag);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == diag);
 		}
 
 		[Fact]
@@ -100,7 +100,7 @@ public record Test : ITest
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind.Id);
 		}
 
 		[Theory]
@@ -124,7 +124,7 @@ public {memberType} Test : ITest
 ";
 			string diag = GetDiagnosticId(memberType);
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == diag);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == diag);
 		}
 
 		[Theory]
@@ -148,7 +148,7 @@ public {memberType} Test : ITest
 ";
 			string diag = GetDiagnosticId(memberType);
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == diag);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == diag);
 		}
 
 		[Theory]
@@ -172,7 +172,7 @@ public {memberType} Test : ITest
 ";
 			string diag = GetDiagnosticId(memberType);
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == diag);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == diag);
 		}
 
 		[Theory]
@@ -196,7 +196,7 @@ public {memberType} Test : ITest
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0403_InterfaceIsNotDirectlyAccessible.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0403_InterfaceIsNotDirectlyAccessible.Id);
 		}
 
 		[Fact]
@@ -214,7 +214,7 @@ public class Test : ITest
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -232,7 +232,7 @@ public interface Test : ITest
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -252,7 +252,7 @@ public struct Test : ITest
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -270,7 +270,7 @@ public record Test : ITest
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -288,7 +288,7 @@ public record struct Test : ITest
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -306,7 +306,7 @@ public struct Test : ITest
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()

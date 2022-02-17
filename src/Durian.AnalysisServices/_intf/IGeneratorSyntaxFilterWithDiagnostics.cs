@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis
@@ -10,6 +11,11 @@ namespace Durian.Analysis
 	/// </summary>
 	public interface IGeneratorSyntaxFilterWithDiagnostics : IGeneratorSyntaxFilter, ISyntaxFilterWithDiagnostics
 	{
+		/// <summary>
+		/// <see cref="IHintNameProvider"/> that is used to create a hint name for the generated source.
+		/// </summary>
+		IHintNameProvider HintNameProvider { get; }
+
 		/// <summary>
 		/// <see cref="FilterMode"/> of this <see cref="IGeneratorSyntaxFilterWithDiagnostics"/>.
 		/// </summary>

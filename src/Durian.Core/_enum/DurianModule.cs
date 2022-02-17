@@ -36,6 +36,11 @@ namespace Durian.Info
 		/// <summary>
 		/// Represents the <c>Durian.InterfaceTargets</c> module.
 		/// </summary>
-		InterfaceTargets
+		InterfaceTargets,
+
+		/// <summary>
+		/// Represents the <c>Durian.CopyFrom</c> module.
+		/// </summary>
+		CopyFrom
 	}
 }

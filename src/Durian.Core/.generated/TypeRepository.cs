@@ -268,5 +268,28 @@ namespace Durian.Info
 				return type;
 			}
 		}
+
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.CopyFromAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity CopyFromAttribute
+		{
+			get
+			{
+				if(!IdentityPool.Types.TryGetValue("CopyFromAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "CopyFromAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.CopyFrom,
+						}
+					);
+				}
+
+				return type;
+			}
+		}
 	}
 }

@@ -37,7 +37,7 @@ class Test
 {
 }
 ";
-			Assert.Contains(await GetDiagnosticsFromDifferentAssembly(input, external), d => d.Id == DUR0301_TargetTypeIsOutsideOfAssembly.Id);
+			Assert.Contains(await RunAnalyzerWithDependency(input, external), d => d.Id == DUR0301_TargetTypeIsOutsideOfAssembly.Id);
 		}
 
 		[Fact]
@@ -52,7 +52,7 @@ class Test
 	internal static string Name {{ get; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0308_TypeIsNotValid.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0308_TypeIsNotValid.Id);
 		}
 
 		[Fact]
@@ -67,7 +67,7 @@ class Test
 	internal static string Name {{ get; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0308_TypeIsNotValid.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0308_TypeIsNotValid.Id);
 		}
 
 		[Fact]
@@ -82,7 +82,7 @@ class Test
 	internal static string Name {{ get; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0309_TypeCannotBeFriendOfItself.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0309_TypeCannotBeFriendOfItself.Id);
 		}
 
 		[Fact]
@@ -103,7 +103,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
 		}
 
 		[Fact]
@@ -128,7 +128,7 @@ interface IInterface
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
 		}
 
 		[Fact]
@@ -149,7 +149,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
 		}
 
 		[Fact]
@@ -170,7 +170,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0315_DoNotAllowInheritedOnTypeWithoutBaseType.Id);
 		}
 
 		[Fact]
@@ -189,7 +189,7 @@ class Child : Test
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -216,7 +216,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -237,7 +237,7 @@ class Other
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -260,7 +260,7 @@ class Other
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -284,7 +284,7 @@ class Another
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -309,7 +309,7 @@ class Parent
 	internal string Name {{ get; }}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -339,7 +339,7 @@ public class Parent
 	internal string Name {{ get; }}
 }}
 ";
-			Assert.Empty(await GetDiagnosticsFromDifferentAssembly(input, external));
+			Assert.Empty(await RunAnalyzerWithDependency(input, external));
 		}
 
 		[Fact]
@@ -368,7 +368,7 @@ class ParentParent
 	internal string Name {{ get; }}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -387,7 +387,7 @@ interface IOther
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -408,7 +408,7 @@ class Child
 	internal static string Name {{ get; }}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -424,7 +424,7 @@ class Test
 	internal static string Name {{ get; }}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -445,7 +445,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0311_DoNotAllowChildrenOnSealedType.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0311_DoNotAllowChildrenOnSealedType.Id);
 		}
 
 		[Fact]
@@ -466,7 +466,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0311_DoNotAllowChildrenOnSealedType.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0311_DoNotAllowChildrenOnSealedType.Id);
 		}
 
 		[Fact]
@@ -487,7 +487,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0311_DoNotAllowChildrenOnSealedType.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0311_DoNotAllowChildrenOnSealedType.Id);
 		}
 
 		[Fact]
@@ -508,7 +508,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0313_ConfigurationIsRedundant.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0313_ConfigurationIsRedundant.Id);
 		}
 
 		[Fact]
@@ -528,7 +528,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0306_FriendTypeSpecifiedByMultipleAttributes.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0306_FriendTypeSpecifiedByMultipleAttributes.Id);
 		}
 
 		[Fact]
@@ -550,7 +550,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0305_TypeDoesNotDeclareInternalMembers.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0305_TypeDoesNotDeclareInternalMembers.Id);
 		}
 
 		[Fact]
@@ -573,7 +573,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0305_TypeDoesNotDeclareInternalMembers.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0305_TypeDoesNotDeclareInternalMembers.Id);
 		}
 
 		[Fact]
@@ -598,7 +598,7 @@ class Parent
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
 		}
 
 		[Fact]
@@ -626,7 +626,7 @@ class Parent
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
 		}
 
 		[Fact]
@@ -652,7 +652,7 @@ class Parent
 	internal static string Name {{ get; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
 		}
 
 		[Fact]
@@ -678,7 +678,7 @@ $@"public class Parent
 	internal string Name {{ get; }}
 }}
 ";
-			Assert.Contains(await GetDiagnosticsFromDifferentAssembly(input, external), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
+			Assert.Contains(await RunAnalyzerWithDependency(input, external), d => d.Id == DUR0316_BaseTypeHasNoInternalInstanceMembers.Id);
 		}
 
 		[Fact]
@@ -697,7 +697,7 @@ class Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0312_InnerTypeIsImplicitFriend.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0312_InnerTypeIsImplicitFriend.Id);
 		}
 
 		[Fact]
@@ -719,7 +719,7 @@ class Other
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0304_ValueOfFriendClassCannotAccessTargetType.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0304_ValueOfFriendClassCannotAccessTargetType.Id);
 		}
 
 		[Fact]
@@ -735,46 +735,12 @@ class Test
 	internal static string Name {{ get; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends.Id);
 		}
 
 		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
 		{
 			return FriendClassGenerator.GetSourceProviders();
-		}
-
-		private async Task<ImmutableArray<Diagnostic>> GetDiagnosticsFromDifferentAssembly(string input, string external)
-		{
-			CSharpCompilation dependency = RoslynUtilities
-				.CreateBaseCompilation()
-				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(external, encoding: Encoding.UTF8));
-
-			AddInitialSources(ref dependency);
-
-			using MemoryStream stream = new();
-
-			EmitResult emit = dependency.Emit(stream);
-
-			if (!emit.Success)
-			{
-				throw new InvalidOperationException("Emit failed!");
-			}
-
-			MetadataReference reference = MetadataReference.CreateFromImage(stream.ToArray());
-			CSharpCompilation current = RoslynUtilities
-				.CreateBaseCompilation()
-				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(input, encoding: Encoding.UTF8))
-				.AddReferences(reference);
-
-			AddInitialSources(ref current);
-
-			FriendClassDeclarationAnalyzer analyzer = new();
-
-			AnalysisResult result = await current
-				.WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(analyzer))
-				.GetAnalysisResultAsync(default);
-
-			return result.GetAllDiagnostics(analyzer);
 		}
 	}
 }

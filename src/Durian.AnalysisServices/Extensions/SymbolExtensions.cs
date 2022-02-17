@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -66,21 +67,6 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return false;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is an inner type.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is an inner type.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static bool IsInnerType(this INamedTypeSymbol type)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			return type.ContainingType is not null;
 		}
 
 		/// <inheritdoc cref="GetAllMembers(INamedTypeSymbol, string)"/>
@@ -254,7 +240,7 @@ namespace Durian.Analysis.Extensions
 
 			IEnumerable<INamedTypeSymbol> Yield()
 			{
-				if(includeSelf)
+				if (includeSelf)
 				{
 					yield return type;
 				}
@@ -431,7 +417,7 @@ namespace Durian.Analysis.Extensions
 
 			IEnumerable<INamedTypeSymbol> GetTypes()
 			{
-				if(includeSelf && symbol is INamedTypeSymbol t)
+				if (includeSelf && symbol is INamedTypeSymbol t)
 				{
 					yield return t;
 				}
@@ -448,6 +434,21 @@ namespace Durian.Analysis.Extensions
 					}
 				}
 			}
+		}
+
+		/// <summary>
+		/// Returns the default constructor of the specified <paramref name="type"/> if it has one.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the default constructor of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static IMethodSymbol? GetDefaultConstructor(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.InstanceConstructors.FirstOrDefault(ctor => ctor.IsImplicitlyDeclared && ctor.Parameters.Length == 0);
 		}
 
 		/// <summary>
@@ -848,28 +849,13 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns the default constructor of the specified <paramref name="type"/> if it has one.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the default constructor of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static IMethodSymbol? GetDefaultConstructor(this INamedTypeSymbol type)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			return type.InstanceConstructors.FirstOrDefault(ctor => ctor.IsImplicitlyDeclared && ctor.Parameters.Length == 0);
-		}
-
-		/// <summary>
 		/// Returns the parameterless constructor of the specified <paramref name="type"/> if it has one.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the parameterless constructor of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 		public static IMethodSymbol? GetParameterlessConstructor(this INamedTypeSymbol type)
 		{
-			if(type is null)
+			if (type is null)
 			{
 				throw new ArgumentNullException(nameof(type));
 			}
@@ -953,6 +939,36 @@ namespace Durian.Analysis.Extensions
 		public static INamespaceSymbol? GetRootNamespace(this ISymbol symbol, bool includeGlobal = false)
 		{
 			return GetContainingNamespaces(symbol, includeGlobal).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Returns a <see cref="CSharpSyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="method"/>.
+		/// </summary>
+		/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to return.</typeparam>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the <see cref="CSharpSyntaxNode"/> associated with.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException"><paramref name="method"/> is not associated with a syntax node of type <typeparamref name="T"/>.</exception>
+		public static T? GetSyntax<T>(this IMethodSymbol method, CancellationToken cancellationToken = default) where T : CSharpSyntaxNode
+		{
+			if (!method.TryGetSyntax<T>(out T? declaration, cancellationToken))
+			{
+				throw new InvalidOperationException($"Method '{method}' is not associated with a syntax node of type '{typeof(T).Name}'");
+			}
+
+			return declaration;
+		}
+
+		/// <summary>
+		/// Returns a <see cref="MethodDeclarationSyntax"/> associated with the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the <see cref="MethodDeclarationSyntax"/> associated with.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException"><paramref name="method"/> is not associated with a <see cref="MethodDeclarationSyntax"/>.</exception>
+		public static MethodDeclarationSyntax? GetSyntax(this IMethodSymbol method, CancellationToken cancellationToken = default)
+		{
+			return method.GetSyntax<MethodDeclarationSyntax>(cancellationToken);
 		}
 
 		/// <summary>
@@ -1044,7 +1060,7 @@ namespace Durian.Analysis.Extensions
 			{
 				name = q;
 			}
-			else if(namespaces.FirstOrDefault() is INamespaceSymbol first)
+			else if (namespaces.FirstOrDefault() is INamespaceSymbol first)
 			{
 				name = SyntaxFactory.IdentifierName(first.Name);
 			}
@@ -1117,6 +1133,32 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return true;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> has an explicitly specified base type.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if has an explicit base type.</param>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> that provides a <see cref="INamedTypeSymbol"/> for the <see langword="object"/> type.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+		public static bool HasExplicitBaseType(this INamedTypeSymbol type, CSharpCompilation compilation)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			if (type.BaseType is null || type.TypeKind != TypeKind.Class)
+			{
+				return false;
+			}
+
+			return !SymbolEqualityComparer.Default.Equals(type.BaseType, compilation.ObjectType);
 		}
 
 		/// <summary>
@@ -1313,6 +1355,21 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> is an inner type.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is an inner type.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool IsInnerType(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.ContainingType is not null;
+		}
+
+		/// <summary>
 		/// Checks if the specified <paramref name="type"/> is the <paramref name="typeParameter"/> or if it uses it as its element type (for <see cref="IArrayTypeSymbol"/>) or pointed at type (for <see cref="IPointerTypeSymbol"/>).
 		/// </summary>
 		/// <param name="type"><see cref="ITypeSymbol"/> to check.</param>
@@ -1370,39 +1427,116 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Determines whether the <paramref name="method"/> is partial.
+		/// Determines whether the specified <paramref name="type"/> is <see langword="partial"/>.
 		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static bool IsPartial(this IMethodSymbol method, CancellationToken cancellationToken = default)
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is <see langword="partial"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool IsPartial(this INamedTypeSymbol type)
 		{
-			return IsPartial(method, (method?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as MethodDeclarationSyntax)!);
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			if (type.Locations.Length > 1)
+			{
+				return true;
+			}
+
+			if (type.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is TypeDeclarationSyntax syntax)
+			{
+				return syntax.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+			}
+
+			return false;
 		}
 
 		/// <summary>
-		/// Determines whether the <paramref name="method"/> is partial.
+		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/>.
 		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
-		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="declaration"/> is <see langword="null"/>.</exception>
-		public static bool IsPartial(this IMethodSymbol method, MethodDeclarationSyntax declaration)
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
+		/// <param name="declarationRetriever">Function that returns a <see cref="MethodDeclarationSyntax"/> of the specified <paramref name="method"/> if it is needed.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="declarationRetriever"/> is <see langword="null"/>.</exception>
+		public static bool IsPartial(this IMethodSymbol method, Func<MethodDeclarationSyntax?> declarationRetriever)
 		{
 			if (method is null)
 			{
 				throw new ArgumentNullException(nameof(method));
 			}
 
-			if (declaration is null)
+			if (declarationRetriever is null)
 			{
-				throw new ArgumentNullException(nameof(declaration));
+				throw new ArgumentNullException(nameof(declarationRetriever));
 			}
 
-			return
-				method.DeclaringSyntaxReferences.Length > 1 ||
+			if (method.IsPartialDefinition)
+			{
+				return true;
+			}
+
+			if (method.MethodKind != MethodKind.Ordinary)
+			{
+				return false;
+			}
+
+			if (method.DeclaringSyntaxReferences.Length > 1 ||
 				method.PartialImplementationPart is not null ||
-				method.PartialDefinitionPart is not null ||
-				declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+				method.PartialDefinitionPart is not null)
+			{
+				return true;
+			}
+
+			if (declarationRetriever() is MethodDeclarationSyntax declaration)
+			{
+				return declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
+		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
+		/// <remarks>If <paramref name="declaration"/> is <see langword="null"/>, a <see cref="MethodDeclarationSyntax"/> is retrieved using the <see cref="ISymbol.DeclaringSyntaxReferences"/> property.</remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool IsPartial(this IMethodSymbol method, MethodDeclarationSyntax? declaration = default)
+		{
+			return method.IsPartial(() => declaration ?? method?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as MethodDeclarationSyntax);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is <see langword="partial"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool IsPartialContext(this INamedTypeSymbol type)
+		{
+			return type.IsPartial() && type.GetContainingTypeSymbols().All(t => t.IsPartial());
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="method"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
+		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
+		/// <remarks>If <paramref name="declaration"/> is <see langword="null"/>, a <see cref="MethodDeclarationSyntax"/> is retrieved using the <see cref="ISymbol.DeclaringSyntaxReferences"/> property.</remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool IsPartialContext(this IMethodSymbol method, MethodDeclarationSyntax? declaration = default)
+		{
+			return method.IsPartial(declaration) && method.GetContainingTypeSymbols().All(t => t.IsPartial());
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>..
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
+		/// <param name="declarationRetriever">Function that returns a <see cref="MethodDeclarationSyntax"/> of the specified <paramref name="method"/> if it is needed.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="declarationRetriever"/> is <see langword="null"/>.</exception>
+		public static bool IsPartialContext(this IMethodSymbol method, Func<MethodDeclarationSyntax?> declarationRetriever)
+		{
+			return method.IsPartial(declarationRetriever) && method.GetContainingTypeSymbols().All(t => t.IsPartial());
 		}
 
 		/// <summary>
@@ -1423,7 +1557,8 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return
-				type.SpecialType is SpecialType.System_Void or
+				type.SpecialType is
+				SpecialType.System_Void or
 				SpecialType.System_String or
 				SpecialType.System_Int32 or
 				SpecialType.System_Int64 or
@@ -1482,38 +1617,12 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 		public static bool IsSealedKind(this INamedTypeSymbol type)
 		{
-			if(type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			return type.IsSealed || type.IsValueType || type.IsStatic;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> has an explicitly specified base type.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if has an explicit base type.</param>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> that provides a <see cref="INamedTypeSymbol"/> for the <see langword="object"/> type.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static bool HasExplicitBaseType(this INamedTypeSymbol type, CSharpCompilation compilation)
-		{
 			if (type is null)
 			{
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			if(type.BaseType is null || type.TypeKind != TypeKind.Class)
-			{
-				return false;
-			}
-
-			return !SymbolEqualityComparer.Default.Equals(type.BaseType, compilation.ObjectType);
+			return type.IsSealed || type.IsValueType || type.IsStatic;
 		}
 
 		/// <summary>
@@ -1667,6 +1776,75 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return sb.ToString().TrimEnd('.');
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is overrides the <paramref name="other"/> symbol either directly or through additional child types.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if overrides the <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="IMethodSymbol"/> to check if is overridden by the specified <paramref name="method"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="other"/> is <see langword="null"/>.</exception>
+		public static bool Overrides(this IMethodSymbol method, IMethodSymbol other)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			if (other is null)
+			{
+				throw new ArgumentNullException(nameof(other));
+			}
+
+			if (SymbolEqualityComparer.Default.Equals(method, other))
+			{
+				return false;
+			}
+
+			IMethodSymbol? baseMethod = method.OverriddenMethod;
+
+			while (baseMethod is not null)
+			{
+				if (SymbolEqualityComparer.Default.Equals(other, baseMethod))
+				{
+					return true;
+				}
+
+				baseMethod = baseMethod.OverriddenMethod;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Attempts to return a <see cref="CSharpSyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="method"/>.
+		/// </summary>
+		/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to return.</typeparam>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the <see cref="CSharpSyntaxNode"/> associated with.</param>
+		/// <param name="syntax"><see cref="CSharpSyntaxNode"/> associated with the specified <paramref name="method"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool TryGetSyntax<T>(this IMethodSymbol method, [NotNullWhen(true)] out T? syntax, CancellationToken cancellationToken = default) where T : CSharpSyntaxNode
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			syntax = method.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as T;
+			return syntax is not null;
+		}
+
+		/// <summary>
+		/// Attempts to return a <see cref="MethodDeclarationSyntax"/> associated with the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the <see cref="MethodDeclarationSyntax"/> associated with.</param>
+		/// <param name="syntax"><see cref="CSharpSyntaxNode"/> associated with the specified <paramref name="method"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool TryGetSyntax(this IMethodSymbol method, [NotNullWhen(true)] out MethodDeclarationSyntax? syntax, CancellationToken cancellationToken = default)
+		{
+			return method.TryGetSyntax<MethodDeclarationSyntax>(out syntax, cancellationToken);
 		}
 
 		private static IEnumerable<INamedTypeSymbol> GetInnerTypesInternal(INamedTypeSymbol symbol)

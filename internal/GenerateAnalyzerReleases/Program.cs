@@ -18,6 +18,15 @@ internal static class Program
 	private static readonly Regex _severityRegex = new(@"defaultSeverity\s*:\s*DiagnosticSeverity\s*.\s*(\w+)", RegexOptions.Singleline);
 	private static readonly Regex _titleRegex = new(@"title\s*:\s*""\s*(.*?)\s*""", RegexOptions.Singleline);
 
+	internal static void Main(string[] args)
+	{
+		for (int i = 0; i < args.Length; i++)
+		{
+			string configFile = args[i];
+			HandleConfigFile(configFile);
+		}
+	}
+
 	private static string[] GetDiagnosticFiles(string content)
 	{
 		string attribute = _diagnosticAttributeRegex.Match(content).Groups[1].ToString();
@@ -119,15 +128,6 @@ internal static class Program
 		}
 
 		File.WriteAllText(currentDirectory + @"\AnalyzerReleases.Shipped.md", builder.ToString(), Encoding.UTF8);
-	}
-
-	private static void Main(string[] args)
-	{
-		for (int i = 0; i < args.Length; i++)
-		{
-			string configFile = args[i];
-			HandleConfigFile(configFile);
-		}
 	}
 
 	private static DiagnosticData? RetrieveDiagnosticData(string match)

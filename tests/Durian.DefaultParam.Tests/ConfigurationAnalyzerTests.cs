@@ -32,7 +32,7 @@ partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
 		}
 
@@ -48,7 +48,7 @@ public sealed class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
 		}
 
@@ -64,7 +64,7 @@ public static class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
 		}
 
@@ -80,7 +80,7 @@ public struct Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>(
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
 		}
 
@@ -99,7 +99,7 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor.Id));
 		}
 
@@ -123,7 +123,7 @@ class Test : ITest
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
 		}
 
@@ -140,7 +140,7 @@ partial interface ITest
 	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
 		}
 
@@ -157,7 +157,7 @@ partial class Test
 	public delegate void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -175,7 +175,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -190,7 +190,7 @@ partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -208,7 +208,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -223,7 +223,7 @@ partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -238,7 +238,7 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -253,7 +253,7 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -268,7 +268,7 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -283,7 +283,7 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -299,7 +299,7 @@ partial class Test
 	public delegate void Method<T>();
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
 		}
 
@@ -318,7 +318,7 @@ partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
 		}
 
@@ -334,7 +334,7 @@ partial class Test<T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
 		}
 
@@ -350,7 +350,7 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType.Id));
 		}
 
@@ -367,7 +367,7 @@ partial class Test
 	public delegate void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods.Id));
 		}
 
@@ -383,7 +383,7 @@ partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods.Id));
 		}
 
@@ -402,7 +402,7 @@ public class Parent
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0128_DoNotSpecifyTargetNamespaceForNestedMembers.Id));
 		}
 
@@ -418,7 +418,7 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
 		}
 
@@ -434,7 +434,7 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
 		}
 
@@ -450,7 +450,7 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
 		}
 
@@ -466,7 +466,7 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
 		}
 
@@ -483,7 +483,7 @@ partial class Test
 	public delegate void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes.Id));
 		}
 
@@ -502,7 +502,7 @@ partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes.Id));
 		}
 

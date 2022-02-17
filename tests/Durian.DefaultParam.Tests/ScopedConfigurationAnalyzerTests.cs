@@ -29,7 +29,7 @@ public partial class Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -47,7 +47,7 @@ public partial class Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -65,7 +65,7 @@ public partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(strin
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -83,7 +83,7 @@ public partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(strin
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -101,7 +101,7 @@ public partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(strin
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -116,7 +116,7 @@ public class Test
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers.Id));
 		}
 
@@ -135,7 +135,7 @@ public partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
 		}
 
@@ -154,7 +154,7 @@ public partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
 		}
 
@@ -173,7 +173,7 @@ public partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
 		}
 
@@ -192,7 +192,7 @@ public partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzerAsync(input);
+			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
 			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
 		}
 

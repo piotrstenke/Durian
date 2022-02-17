@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Durian.Analysis.Cache;
-using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -20,11 +19,6 @@ namespace Durian.Analysis.DefaultParam
 		/// <see cref="DefaultParamGenerator"/> that created this filter.
 		/// </summary>
 		new DefaultParamGenerator Generator { get; }
-
-		/// <summary>
-		/// <see cref="IHintNameProvider"/> that is used to create a hint name for the generated source.
-		/// </summary>
-		IHintNameProvider HintNameProvider { get; }
 
 		/// <summary>
 		/// Specifies, if the <see cref="SemanticModel"/>, <see cref="ISymbol"/> and <see cref="TypeParameterContainer"/> can be created from the given <paramref name="node"/>.

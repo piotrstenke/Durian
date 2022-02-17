@@ -11,37 +11,37 @@ namespace Durian.Info
 		/// <summary>
 		/// Specifies the maximal valid value of the <see cref="DurianModule"/> enum.
 		/// </summary>
-		public const DurianModule ModuleMax = DurianModule.InterfaceTargets;
+		public static DurianModule ModuleMax => DurianModule.CopyFrom;
 
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianModule"/> enum.
 		/// </summary>
-		public const DurianModule ModuleMin = DurianModule.Core;
+		public static DurianModule ModuleMin => DurianModule.Core;
 
 		/// <summary>
 		/// Number of published Durian analyzer or source generator packages, excluding <c>Durian.Manager</c>.
 		/// </summary>
-		public const int NumAnalyzerPackages = 5;
+		public static int NumAnalyzerPackages => 6;
 
 		/// <summary>
 		/// Number of published Durian modules.
 		/// </summary>
-		public const int NumModules = 5;
+		public static int NumModules => 6;
 
 		/// <summary>
 		/// Number of published Durian packages.
 		/// </summary>
-		public const int NumPackages = 9;
+		public static int NumPackages => 10;
 
 		/// <summary>
 		/// Specifies the maximal valid value of the <see cref="DurianPackage"/> enum.
 		/// </summary>
-		public const DurianPackage PackageMax = DurianPackage.InterfaceTargets;
+		public static DurianPackage PackageMax => DurianPackage.CopyFrom;
 
 		/// <summary>
 		/// Specifies the minimal valid value of the <see cref="DurianPackage"/> enum.
 		/// </summary>
-		public const DurianPackage PackageMin = DurianPackage.Main;
+		public static DurianPackage PackageMin => DurianPackage.Main;
 
 		/// <summary>
 		/// A <see cref="string"/> that represents the three-letter prefix of each diagnostic id.

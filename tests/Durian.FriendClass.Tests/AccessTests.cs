@@ -36,7 +36,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -65,7 +65,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -92,7 +92,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -119,7 +119,7 @@ class Child : Other
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0310_MemberCannotBeAccessedByChildClassOfFriend.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0310_MemberCannotBeAccessedByChildClassOfFriend.Id);
 		}
 
 		[Fact]
@@ -148,7 +148,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -177,7 +177,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -206,7 +206,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -231,7 +231,7 @@ class Child : Test
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -263,7 +263,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -297,7 +297,7 @@ class Child : Test
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -332,7 +332,7 @@ class Child : Test
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -366,7 +366,7 @@ class Child : Test
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -400,7 +400,7 @@ class Child : Test
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -440,7 +440,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -475,7 +475,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -512,7 +512,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -547,7 +547,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -585,7 +585,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -623,7 +623,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		public async Task Error_When_IsRecord_And_HasInternalConstructor_And_ChildCallsConstructorInRecordDeclaration()
@@ -640,7 +640,7 @@ class Other
 
 record Child(string Name) : Test(Name);
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		public async Task Error_When_IsRecord_And_HasInternalConstructor_And_ChildImpliciltyTriesToAccessParameterlessConstructor()
@@ -662,7 +662,7 @@ class Other
 
 record Child(string Name) : Test;
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -693,7 +693,7 @@ class Other
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -730,7 +730,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -761,7 +761,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -790,7 +790,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -818,7 +818,7 @@ class NotFriend
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -847,7 +847,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -871,7 +871,7 @@ class Child : Test
 	internal override string this[int index] => null;
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -899,7 +899,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -923,7 +923,7 @@ class Child : Test
 	internal override string Name {{ get; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
 		[Fact]
@@ -954,7 +954,7 @@ class Other
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -983,7 +983,7 @@ class Parent
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -1008,7 +1008,7 @@ class NotFriend : Test.Inner
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
 		[Fact]
@@ -1039,7 +1039,7 @@ class Other
 }}
 ";
 
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1070,7 +1070,7 @@ class Child : Other
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1103,7 +1103,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1130,7 +1130,7 @@ class Parent
 }}
 ";
 
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1162,7 +1162,7 @@ class Another
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1195,7 +1195,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1228,7 +1228,7 @@ class Other
 }}
 ";
 
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1262,7 +1262,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1296,7 +1296,7 @@ class Child : Test
 }}
 ";
 
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1330,7 +1330,7 @@ class Other
 }}
 ";
 
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1361,7 +1361,7 @@ class Child
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1393,7 +1393,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1421,7 +1421,7 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1454,7 +1454,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1489,7 +1489,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1512,7 +1512,7 @@ class Other
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1535,7 +1535,7 @@ class Other
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1561,7 +1561,7 @@ class Other
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1590,7 +1590,7 @@ class NotFriend
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1615,7 +1615,7 @@ interface IOther
 }}
 ";
 
-			Assert.Empty(await RunAnalyzerAsync(input));
+			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1649,7 +1649,7 @@ class Child : Test
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
 		}
 
 		[Fact]
@@ -1683,7 +1683,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
 		}
 
 		[Fact]
@@ -1715,7 +1715,7 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzerAsync(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
 		}
 
 		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()

@@ -125,6 +125,30 @@
         "src/Durian.InterfaceTargets/InterfaceTargetsDiagnostics.cs"
       ],
       "documentation": "https://github.com/piotrstenke/Durian/tree/master/docs/InterfaceTargets"
+    },
+    {
+      "name": "CopyFrom",
+      "packages": [
+        {
+          "name": "CopyFrom",
+          "version": "1.0.0",
+          "type": [
+            "Analyzer",
+            "StaticGenerator",
+            "SyntaxBasedGenerator",
+            "CodeFixLibrary"
+          ]
+        }
+      ],
+      "includedTypes": [
+        "Durian.CopyFromTypeAttribute",
+        "Durian.CopyFromMethodAttribute"
+      ],
+      "diagnosticIdPrefix": "02",
+      "diagnosticFiles": [
+        "src/Durian.CopyFrom/CopyFromDiagnostics.cs"
+      ],
+      "documentation": "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom"
     }
   ]
 }

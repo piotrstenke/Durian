@@ -609,5 +609,75 @@ namespace Durian.Info
 				return module;
 			}
 		}
+
+		/// <summary>
+		/// Returns a <see cref="ModuleIdentity"/> for the <see cref="DurianModule.CopyFrom"/> module.
+		/// </summary>
+		public static ModuleIdentity CopyFrom
+		{
+			get
+			{
+				if(!IdentityPool.Modules.TryGetValue("CopyFrom", out ModuleIdentity module))
+				{
+					module = new(
+						module: DurianModule.CopyFrom,
+						id: 02,
+						packages: new DurianPackage[]
+						{
+							DurianPackage.CopyFrom,
+						},
+						docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom",
+						diagnostics: new DiagnosticData[]
+						{
+							new DiagnosticData(
+								title: "Containing type of a member with the CopyFromAttribute must be partial",
+								id: 01,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0201.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Method marked with the CopyFromAttribute must be partial",
+								id: 02,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0202.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Methods cannot be marked with multiple CopyFromAttributes",
+								id: 03,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0203.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Target member cannot be resolved",
+								id: 04,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0204.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Target member is not compatible",
+								id: 05,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0205.md",
+								fatal: true,
+								hasLocation: true
+							),
+						},
+						types: new TypeIdentity[]
+						{
+							TypeRepository.CopyFromAttribute,
+						}
+					);
+				}
+
+				return module;
+			}
+		}
 	}
 }

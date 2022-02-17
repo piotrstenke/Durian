@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Immutable;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Emit;
 
 namespace Durian.TestServices
 {
@@ -47,7 +49,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="input">Input for the analyzer.</param>
 		/// <param name="addToCompilation">Determines whether to add the <see cref="CSharpSyntaxTree"/> created from the <paramref name="input"/> to the <see cref="CompilationTest.Compilation"/>.</param>
-		public async Task<ImmutableArray<Diagnostic>> RunAnalyzerAsync(string? input, bool addToCompilation = false)
+		protected async Task<ImmutableArray<Diagnostic>> RunAnalyzer(string? input, bool addToCompilation = false)
 		{
 			if (input is null)
 			{
@@ -55,7 +57,7 @@ namespace Durian.TestServices
 			}
 
 			T analyzer = new();
-			return await RunAnalyzerAsync(analyzer, input, addToCompilation).ConfigureAwait(false);
+			return await RunAnalyzer(analyzer, input, addToCompilation).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -64,7 +66,7 @@ namespace Durian.TestServices
 		/// <param name="analyzer"><see cref="DiagnosticAnalyzer"/> to execute.</param>
 		/// <param name="input">Input for the analyzer.</param>
 		/// <param name="addToCompilation">Determines whether to add the <see cref="CSharpSyntaxTree"/> created from the <paramref name="input"/> to the <see cref="CompilationTest.Compilation"/>.</param>
-		public async Task<ImmutableArray<Diagnostic>> RunAnalyzerAsync(T analyzer, string? input, bool addToCompilation = false)
+		protected async Task<ImmutableArray<Diagnostic>> RunAnalyzer(T analyzer, string? input, bool addToCompilation = false)
 		{
 			if (analyzer is null || input is null)
 			{
@@ -85,6 +87,47 @@ namespace Durian.TestServices
 			}
 
 			AnalysisResult result = await compilation.WithAnalyzers(collection).GetAnalysisResultAsync(default).ConfigureAwait(false);
+			return result.GetAllDiagnostics(analyzer);
+		}
+
+		/// <summary>
+		/// Performs analysis on a <see cref="CSharpCompilation"/> with the <paramref name="input"/> text with a dependency on a <see cref="CSharpCompilation"/> with the <paramref name="external"/> text.
+		/// </summary>
+		/// <param name="input">Input for the analyzer.</param>
+		/// <param name="external">Text representing code in an external assembly.</param>
+		/// <exception cref="InvalidOperationException">Emit failed.</exception>
+		protected async Task<ImmutableArray<Diagnostic>> RunAnalyzerWithDependency(string input, string external)
+		{
+			CSharpCompilation dependency = RoslynUtilities
+				.CreateBaseCompilation()
+				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(external, encoding: Encoding.UTF8));
+
+			AddInitialSources(ref dependency);
+
+			using MemoryStream stream = new();
+
+			EmitResult emit = dependency.Emit(stream);
+
+			if (!emit.Success)
+			{
+				throw new InvalidOperationException("Emit failed!");
+			}
+
+			MetadataReference reference = MetadataReference.CreateFromImage(stream.ToArray());
+			CSharpCompilation current = RoslynUtilities
+				.CreateBaseCompilation()
+				.AddSyntaxTrees(CSharpSyntaxTree.ParseText(input, encoding: Encoding.UTF8))
+				.AddReferences(reference);
+
+			AddInitialSources(ref current);
+
+			T analyzer = new();
+
+			AnalysisResult result = await current
+				.WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(analyzer))
+				.GetAnalysisResultAsync(default)
+				.ConfigureAwait(false);
+
 			return result.GetAllDiagnostics(analyzer);
 		}
 	}

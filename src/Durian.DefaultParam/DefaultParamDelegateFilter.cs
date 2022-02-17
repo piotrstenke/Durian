@@ -44,7 +44,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="DefaultParamSyntaxReceiver"/> class.
+		/// Initializes a new instance of the <see cref="DefaultParamDelegateFilter"/> class.
 		/// </summary>
 		/// <param name="generator"><see cref="DefaultParamGenerator"/> that created this filter.</param>
 		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that is used to create a hint name for the generated source.</param>
