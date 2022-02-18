@@ -36,6 +36,21 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> has an implementation in code.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if has implementation.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool HasImplementation(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return !(method.IsExtern || method.IsAbstract || method.IsImplicitlyDeclared || method.IsPartialDefinition);
+		}
+
+		/// <summary>
 		/// Determines whether the <paramref name="child"/> is contained withing the <paramref name="parent"/> at any nesting level.
 		/// </summary>
 		/// <param name="parent">Parent <see cref="ISymbol"/>.</param>

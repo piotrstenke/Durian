@@ -217,23 +217,6 @@ partial class Test
 		}
 
 		[Fact]
-		public async Task Error_When_CopiesFromMethodWithoutImplementationWithErrorDiagnostic()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
-	partial void Method();
-
-	virtual void Target();
-}}
-";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0209_CannotCopyFromMethodWithoutImplementation.Id);
-		}
-
-		[Fact]
 		public async Task Error_When_CopiesFromNonMethodMember()
 		{
 			string input =
@@ -256,9 +239,9 @@ partial class Test
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+partial class Test : Parent
 {{
-	[{CopyFromMethodAttributeProvider.TypeName}(""base.Method"")]
+	[{CopyFromMethodAttributeProvider.TypeName}(""Parent.Method"")]
 	public override partial void Method();
 }}
 
@@ -278,9 +261,9 @@ class Parent
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+partial class Test : Parent
 {{
-	[{CopyFromMethodAttributeProvider.TypeName}(""base.Method<int>"")]
+	[{CopyFromMethodAttributeProvider.TypeName}(""Parent.Method<int>"")]
 	public override partial void Method<T>();
 }}
 
@@ -974,7 +957,7 @@ partial record Test
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-partial Test
+partial class Test
 {{
 	[{CopyFromMethodAttributeProvider.TypeName}(""Test()"")]
 	partial void Method();
@@ -1037,14 +1020,14 @@ partial class Test
 		}
 
 		[Fact]
-		public async Task Success_When_TargetIsOperator_And_HasBracketParamList()
+		public async Task Success_When_TargetIsOperator()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	[{CopyFromMethodAttributeProvider.TypeName}(""operator +[Test, Test]"")]
+	[{CopyFromMethodAttributeProvider.TypeName}(""operator +(Test, Test)"")]
 	partial void Method();
 
 	public static int operator +(Test a, Test b) => 2;
@@ -1068,25 +1051,6 @@ partial class Test
 }}
 ";
 			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0203_MemberCannotBeResolved.Id);
-		}
-
-		[Fact]
-		public async Task Error_When_TargetIsOperator_And_HasNoParamList_And_HasSameOperatorWithDifferentParameters()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""operator +"")]
-	partial void Method();
-
-	public static int operator +(Test a, Test b) => 2;
-
-	public static int operator +(Test a, int b) => 2;
-}}
-";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0208_MemberConflict.Id);
 		}
 
 		[Fact]
@@ -1405,23 +1369,6 @@ class Parent
 }}
 ";
 			Assert.Empty(await RunAnalyzer(input));
-		}
-
-		[Fact]
-		public async Task Error_When_TargetIsOperator_And_HasParenthesisParamList()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""operator +(Test, Test)"")]
-	partial void Method();
-
-	public static int operator +(Test a, Test b) => 2;
-}}
-";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0203_MemberCannotBeResolved.Id);
 		}
 
 		[Fact]

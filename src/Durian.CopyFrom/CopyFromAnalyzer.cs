@@ -134,12 +134,11 @@ namespace Durian.Analysis.CopyFrom
 
 		private static bool IsValidTarget(IMethodSymbol symbol)
 		{
-			return symbol.MethodKind is MethodKind.Ordinary or MethodKind.Constructor;
-		}
-
-		private static bool HasImplementation(IMethodSymbol symbol)
-		{
-			return !symbol.IsAbstract && !symbol.IsExtern && !symbol.IsImplicitlyDeclared;
+			return symbol.MethodKind is
+				MethodKind.Ordinary or
+				MethodKind.Constructor or
+				MethodKind.UserDefinedOperator or
+				MethodKind.Conversion;
 		}
 
 		/// <inheritdoc cref="Analyze(IMethodSymbol, CopyFromCompilationData, SemanticModel, IDiagnosticReceiver, MethodDeclarationSyntax)"/>
@@ -673,7 +672,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				if (symbol is IMethodSymbol named && IsValidTarget(named))
 				{
-					if(!HasImplementation(named))
+					if(!named.HasImplementation())
 					{
 						diagnostic = DUR0209_CannotCopyFromMethodWithoutImplementation;
 						return null;
@@ -719,7 +718,7 @@ namespace Durian.Analysis.CopyFrom
 
 		private static bool TryParseName(string text, [NotNullWhen(true)]out CSharpSyntaxNode? name)
 		{
-			if(text.IndexOf('(') == -1)
+			if(text.IndexOf('(') == -1 && text.IndexOf('[') == -1)
 			{
 				name = SyntaxFactory.ParseName(text);
 				return true;
