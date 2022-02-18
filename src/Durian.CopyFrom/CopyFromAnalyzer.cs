@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -22,6 +23,8 @@ namespace Durian.Analysis.CopyFrom
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	public sealed class CopyFromAnalyzer : DurianAnalyzer<CopyFromCompilationData>
 	{
+		private const string _annotation = "copyFrom - inheritdoc";
+
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 			DUR0201_ContainingTypeMustBePartial,
@@ -149,7 +152,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			AttributeData[] attributes = method.GetAttributes(compilation.CopyFromMethodAttribute!).ToArray();
 
-			if (attributes.Length == 0 || !InitDeclaration(method, ref declaration) || !ValidateMarkedMethod(method, declaration))
+			if (attributes.Length == 0 || !ValidateMarkedMethod(method, ref declaration))
 			{
 				return false;
 			}
@@ -221,43 +224,43 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			if (!InitDeclaration(method, ref declaration))
+			bool isValid = ValidateMarkedMethod(method, ref declaration, diagnosticReceiver);
+
+			if(declaration is not null)
 			{
-				return false;
-			}
-
-			bool isValid = ValidateMarkedMethod(method, declaration, diagnosticReceiver);
-			isValid &= ValidateTargetMethods(method, semanticModel, compilation, declaration, attributes, out _, diagnosticReceiver);
-
-			return isValid;
-		}
-
-		private static bool InitDeclaration(IMethodSymbol method, [NotNullWhen(true)]ref MethodDeclarationSyntax? declaration)
-		{
-			return declaration is not null || method.TryGetSyntax(out declaration);
-		}
-
-		private static bool ValidateMarkedMethod(IMethodSymbol method, MethodDeclarationSyntax? declaration, IDiagnosticReceiver diagnosticReceiver)
-		{
-			bool isValid = EnsureIsInPartialContext(method, declaration, diagnosticReceiver);
-
-			if(!EnsureIsValidMethodType(method, out DiagnosticDescriptor? diagnostic))
-			{
-				diagnosticReceiver.ReportDiagnostic(diagnostic, method);
-				isValid = false;
+				isValid &= ValidateTargetMethods(method, semanticModel, compilation, declaration, attributes, out _, diagnosticReceiver);
 			}
 
 			return isValid;
 		}
 
-		private static bool ValidateMarkedMethod(IMethodSymbol method, MethodDeclarationSyntax? declaration)
+		private static bool ValidateMarkedMethod(IMethodSymbol method, [NotNullWhen(true)] ref MethodDeclarationSyntax? declaration, IDiagnosticReceiver diagnosticReceiver)
 		{
-			if(!EnsureIsInPartialContext(method, declaration))
+			bool isValid = EnsureIsValidMethodType(method, out DiagnosticDescriptor? diagnostic);
+
+			if (!isValid)
+			{
+				diagnosticReceiver.ReportDiagnostic(diagnostic!, method);
+
+				if (method.MethodKind != MethodKind.Ordinary)
+				{
+					return false;
+				}
+			}
+
+			isValid &= EnsureIsInPartialContext(method, ref declaration, diagnosticReceiver);
+
+			return isValid;
+		}
+
+		private static bool ValidateMarkedMethod(IMethodSymbol method, [NotNullWhen(true)] ref MethodDeclarationSyntax? declaration)
+		{
+			if (!IsValidMethodType(method))
 			{
 				return false;
 			}
 
-			if(!EnsureIsValidMethodType(method, out _))
+			if (!EnsureIsInPartialContext(method, ref declaration))
 			{
 				return false;
 			}
@@ -315,6 +318,8 @@ namespace Durian.Analysis.CopyFrom
 
 			bool isValid = true;
 
+			string assembly = method.ContainingAssembly.ToString();
+
 			foreach (AttributeData attribute in attributes)
 			{
 				if (GetTargetMethod(attribute, semanticModel, compilation.Compilation, declaration, out DiagnosticDescriptor? diagnostic, out object? value) is IMethodSymbol target)
@@ -329,7 +334,8 @@ namespace Durian.Analysis.CopyFrom
 						diagnosticReceiver.ReportDiagnostic(DUR0206_EquivalentAttributes, attribute.GetLocation(), method);
 						isValid = false;
 					}
-					else if (!SymbolEqualityComparer.Default.Equals(method.ContainingAssembly, target.ContainingAssembly))
+					// Assembly is checked as string, because the symbol returned by GetTargetMethod might come from a different SemanticModel.
+					else if (target.ContainingAssembly.ToString() != assembly)
 					{
 						diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, attribute.GetLocation(), method, target);
 					}
@@ -469,9 +475,14 @@ namespace Durian.Analysis.CopyFrom
 			return false;
 		}
 
+		private static bool IsValidMethodType(IMethodSymbol method)
+		{
+			return !method.IsAbstract && !method.IsExtern && method.MethodKind == MethodKind.Ordinary;
+		}
+
 		private static bool EnsureIsValidMethodType(IMethodSymbol method, [NotNullWhen(false)]out DiagnosticDescriptor? diagnostic)
 		{
-			if(method.IsAbstract || method.IsExtern || method.MethodKind != MethodKind.Ordinary)
+			if(!IsValidMethodType(method))
 			{
 				diagnostic = DUR0210_InvalidMethodKind;
 				return false;
@@ -481,9 +492,14 @@ namespace Durian.Analysis.CopyFrom
 			return true;
 		}
 
-		private static bool EnsureIsInPartialContext(IMethodSymbol method, MethodDeclarationSyntax? declaration)
+		private static bool EnsureIsInPartialContext(IMethodSymbol method, [NotNullWhen(true)] ref MethodDeclarationSyntax? declaration)
 		{
 			if(!method.IsPartialDefinition || method.PartialImplementationPart is not null)
+			{
+				return false;
+			}
+
+			if(declaration is null && !method.TryGetSyntax(out declaration))
 			{
 				return false;
 			}
@@ -491,8 +507,13 @@ namespace Durian.Analysis.CopyFrom
 			return method.IsPartialContext(declaration);
 		}
 
-		private static bool EnsureIsInPartialContext(IMethodSymbol method, MethodDeclarationSyntax? declaration, IDiagnosticReceiver diagnosticReceiver)
+		private static bool EnsureIsInPartialContext(IMethodSymbol method, [NotNullWhen(true)]ref MethodDeclarationSyntax? declaration, IDiagnosticReceiver diagnosticReceiver)
 		{
+			if(method.MethodKind != MethodKind.Ordinary)
+			{
+				return false;
+			}
+
 			bool success = true;
 
 			if(method.IsPartialDefinition)
@@ -505,9 +526,21 @@ namespace Durian.Analysis.CopyFrom
 			}
 			else
 			{
-				if (method.PartialDefinitionPart is null && !method.IsPartial(declaration))
+				if (method.PartialDefinitionPart is null)
 				{
-					diagnosticReceiver.ReportDiagnostic(DUR0202_MemberMustBePartial, method);
+					if(declaration is null && !method.TryGetSyntax(out declaration))
+					{
+						return false;
+					}
+
+					if(!method.IsPartial(declaration))
+					{
+						diagnosticReceiver.ReportDiagnostic(DUR0202_MemberMustBePartial, method);
+					}
+					else
+					{
+						diagnosticReceiver.ReportDiagnostic(DUR0211_MethodAlreadyHasImplementation);
+					}
 				}
 				else
 				{
@@ -581,27 +614,33 @@ namespace Durian.Analysis.CopyFrom
 				return null;
 			}
 
+			text = text.Trim();
+
 			value = text;
 
-			if(BuildMethodSyntax(text, out bool buildCref) is not CSharpSyntaxNode syntax)
-			{
-				diagnostic = DUR0203_MemberCannotBeResolved;
-				return null;
-			}
-
+			bool toString = false;
 			SymbolInfo info;
 
-			if (buildCref)
+			if (TryParseName(text, out CSharpSyntaxNode? syntax))
 			{
-				info = GetSymbolFromCrefSyntax(compilation, declaration, (syntax as XmlNodeSyntax)!);
+				info = semanticModel.GetSpeculativeSymbolInfo(declaration.SpanStart, syntax, SpeculativeBindingOption.BindAsExpression);
 			}
 			else
 			{
-				info = semanticModel.GetSpeculativeSymbolInfo(declaration.SpanStart, syntax, SpeculativeBindingOption.BindAsExpression);
+				info = GetSymbolFromCrefSyntax(text, compilation, declaration, out syntax);
+				toString = true;
 			}
 
 			if (info.Symbol is not null)
 			{
+				if(toString)
+				{
+					if(text.StartsWith("operator"))
+					{
+
+					}
+				}
+
 				return EnsureIsValidTarget(info.Symbol, out diagnostic);
 			}
 			else if(info.CandidateReason == CandidateReason.OverloadResolutionFailure)
@@ -649,57 +688,45 @@ namespace Durian.Analysis.CopyFrom
 			}
 		}
 
-		private static SymbolInfo GetSymbolFromCrefSyntax(CSharpCompilation compilation, MemberDeclarationSyntax declaration, XmlNodeSyntax createdNode)
+		private static SymbolInfo GetSymbolFromCrefSyntax(
+			string text,
+			CSharpCompilation compilation,
+			MemberDeclarationSyntax declaration,
+			out CSharpSyntaxNode cref
+		)
 		{
-			SyntaxTree currentTree = declaration.SyntaxTree;
+			text = AnalysisUtilities.ConvertFullyQualifiedNameToXml(text);
+			string parse = $"/// <inheritdoc cref=\"{text}\"/>";
 
-			DocumentationCommentTriviaSyntax inheritdoc = SyntaxFactory.DocumentationComment(
-				SyntaxFactory.XmlText(),
-				SyntaxFactory.XmlEmptyElement("inheritdoc"),
-				createdNode);
+			SyntaxNode root = CSharpSyntaxTree.ParseText(parse, encoding: Encoding.UTF8).GetRoot();
+			DocumentationCommentTriviaSyntax trivia = root.DescendantNodes(descendIntoTrivia: true).OfType<DocumentationCommentTriviaSyntax>().First();
 
-			MemberDeclarationSyntax createdDeclaration = declaration.WithLeadingTrivia(SyntaxFactory.Trivia(inheritdoc));
-			compilation = compilation.ReplaceSyntaxTree(currentTree, createdDeclaration.SyntaxTree);
+			trivia = trivia.WithAdditionalAnnotations(new SyntaxAnnotation(_annotation));
+
+			root = declaration.SyntaxTree.GetRoot();
+			root = root.ReplaceNode(declaration, declaration.WithLeadingTrivia(SyntaxFactory.Trivia(trivia)));
+			compilation = compilation.ReplaceSyntaxTree(declaration.SyntaxTree, root.SyntaxTree);
 
 #pragma warning disable RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
-			SemanticModel createdSemanticModel = compilation.GetSemanticModel(createdDeclaration.SyntaxTree, true);
+			SemanticModel createdSemanticModel = compilation.GetSemanticModel(root.SyntaxTree, true);
 #pragma warning restore RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
 
-			return createdSemanticModel.GetSymbolInfo(createdNode);
+			trivia = (DocumentationCommentTriviaSyntax)root.GetAnnotatedNodes(_annotation).First();
+
+			cref = trivia.DescendantNodes().OfType<CrefSyntax>().First();
+			return createdSemanticModel.GetSymbolInfo(cref);
 		}
 
-		private static CSharpSyntaxNode? BuildMethodSyntax(string text, out bool buildCref)
+		private static bool TryParseName(string text, [NotNullWhen(true)]out CSharpSyntaxNode? name)
 		{
-			int paramListIndex = text.IndexOf('(');
-
-			if (paramListIndex == -1)
+			if(text.IndexOf('(') == -1)
 			{
-				buildCref = false;
-				return SyntaxFactory.ParseName(text);
+				name = SyntaxFactory.ParseName(text);
+				return true;
 			}
 
-			string paramList = text.Substring(paramListIndex).Trim();
-
-			string[] parameters = paramList.Split(',');
-
-			NameMemberCrefSyntax cref = SyntaxFactory.NameMemberCref(
-				SyntaxFactory.IdentifierName(text.Substring(0, paramListIndex).Trim()));
-
-			if (parameters.Length == 1)
-			{
-				buildCref = true;
-				return cref.WithParameters(SyntaxFactory.CrefParameterList());
-			}
-
-			for (int i = 0; i < parameters.Length; i++)
-			{
-				parameters[i] = parameters[i].Trim();
-			}
-
-			buildCref = true;
-			return cref.WithParameters(SyntaxFactory.CrefParameterList(SyntaxFactory.SeparatedList(parameters.Select(p =>
-				SyntaxFactory.CrefParameter(
-					SyntaxFactory.IdentifierName(p))))));
+			name = default;
+			return false;
 		}
 
 		private static INamedTypeSymbol? GetTargetType(

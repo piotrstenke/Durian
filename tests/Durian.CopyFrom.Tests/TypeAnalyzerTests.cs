@@ -734,6 +734,24 @@ class Outer<T, U>
 		}
 
 		[Fact]
+		public async Task Success_When_TargetIsNullableReferenceType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target?"")]
+partial class Test
+{{
+}}
+
+class Target
+{{
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
 		public async Task Success_When_TargetIsSpecifiedUsingFullyQualifiedName()
 		{
 			string input =

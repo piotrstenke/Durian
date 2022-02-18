@@ -1469,6 +1469,11 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(declarationRetriever));
 			}
 
+			if(method.MethodKind != MethodKind.Ordinary)
+			{
+				return false;
+			}
+
 			if (method.IsPartialDefinition)
 			{
 				return true;

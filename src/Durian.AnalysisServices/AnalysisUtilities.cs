@@ -325,15 +325,16 @@ namespace Durian.Analysis
 		/// Converts the type keyword to its proper .NET type (<see langword="int"/> to <c>Int32</c>, <see langword="float"/> to <c>Single</c> etc.).
 		/// </summary>
 		/// <param name="keyword">C# keyword to convert.</param>
+		/// <param name="applyNamespace">Determines whether to apply the <c>System</c> namespace in the returned type name.</param>
 		/// <returns>Name of the type behind the given <paramref name="keyword"/>. -or- <paramref name="keyword"/> if it's not a C# type keyword. -or- <see cref="string.Empty"/> of the <paramref name="keyword"/> is <see langword="null"/> or empty.</returns>
-		public static string KeywordToType(string? keyword)
+		public static string KeywordToType(string? keyword, bool applyNamespace = false)
 		{
 			if (string.IsNullOrWhiteSpace(keyword))
 			{
 				return string.Empty;
 			}
 
-			return keyword switch
+			string? value = keyword switch
 			{
 				"int" => "Int32",
 				"string" => "String",
@@ -353,8 +354,20 @@ namespace Durian.Analysis
 				"nuint" => "UIntPtr",
 				"object" => "Object",
 				"void" => "Void",
-				_ => keyword!,
+				_ => default
 			};
+
+			if(value is null)
+			{
+				return keyword!;
+			}
+
+			if(applyNamespace)
+			{
+				value = "System." + value;
+			}
+
+			return value;
 		}
 
 		/// <summary>
