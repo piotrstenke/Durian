@@ -77,12 +77,12 @@ namespace Durian.Analysis.CopyFrom
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that two <c>Durian.CopyFromTypeAttribute</c>s are equivalent.
+		/// Provides diagnostic message indicating that two <c>Durian.CopyFromTypeAttribute</c>s or <c>Durian.CopyFromMethodAttribute</c>s are equivalent.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0206_EquivalentAttributes = new(
 			id: "DUR0206",
-			title: "Equivalent CopyFromTypeAttribute already specified",
-			messageFormat: "'{0}': Equivalent CopyFromTypeAttribute already specified",
+			title: "Equivalent CopyFromTypeAttribute or CopyFromMethodAttribute already specified",
+			messageFormat: "'{0}': Equivalent CopyFromTypeAttribute or CopyFromMethodAttribute already specified",
 			category: "Durian.CopyFrom",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + "/DUR0206.md",
@@ -94,10 +94,10 @@ namespace Durian.Analysis.CopyFrom
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0207_MemberCannotCopyFromItselfOrItsParent = new(
 			id: "DUR0207",
-			title: "Member cannot copy from itself or its parent, child or outer type",
+			title: "Member cannot copy from itself, parent, child or outer type",
 			messageFormat: "'{0}': Member cannot copy from itself or its parent, child or outer type",
 			category: "Durian.CopyFrom",
-			defaultSeverity: DiagnosticSeverity.Warning,
+			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0207.md",
 			isEnabledByDefault: true
 		);
@@ -177,6 +177,19 @@ namespace Durian.Analysis.CopyFrom
 			category: "Durian.CopyFrom",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0213.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that a <c>Durian.CopyFromTypeAttribute.Replacement</c> or <c>Durian.CopyFromMethodAttribute.Replacement</c> should be specified.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0214_SpecifyReplacement = new(
+			id: "DUR0214",
+			title: "Replacement should be specified for the regex pattern",
+			messageFormat: "'{0}': Replacement should be specified for the regex pattern",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0214.md",
 			isEnabledByDefault: true
 		);
 

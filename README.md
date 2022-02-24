@@ -123,7 +123,41 @@ public class B
 
 Experimental modules include packages that are almost ready to be released, but still need some more polishing.
 
-Currently, there are no modules in the experimental stage.
+### [CopyFrom](src/Durian.CopyFrom/README.md)
+
+CopyFrom allows to copy implementations of members to other members, without the need for inheritance. A regex pattern can be provided to customize the copied implementation.
+
+```csharp
+using Durian;
+
+[CopyFromType(typeof(Other)), Pattern("text", "name")]
+public partial class Test
+{
+}
+
+public class Other
+{
+    private string _text;
+
+    void Set(string text)
+    {
+        _text = text;
+    }
+}
+
+// Generated
+
+partial class Test
+{
+    private string _name;
+
+    void Set(string name)
+    {
+        _name = name;
+    }
+}
+
+```
 
 ##
 

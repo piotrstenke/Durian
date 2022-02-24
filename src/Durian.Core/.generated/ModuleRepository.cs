@@ -670,7 +670,7 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Equivalent CopyFromTypeAttribute already specified",
+								title: "Equivalent CopyFromTypeAttribute or CopyFromMethodAttribute already specified",
 								id: 06,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0206.md",
 								fatal: false,
@@ -678,10 +678,10 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Member cannot copy from itself or its parent, child or outer type",
+								title: "Member cannot copy from itself, parent, child or outer type",
 								id: 07,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0207.md",
-								fatal: false,
+								fatal: true,
 								hasLocation: true
 							),
 
@@ -730,6 +730,14 @@ namespace Durian.Info
 								id: 13,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0213.md",
 								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Replacement should be specified for the regex pattern",
+								id: 14,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0214.md",
+								fatal: false,
 								hasLocation: true
 							),
 						},

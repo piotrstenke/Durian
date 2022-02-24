@@ -833,6 +833,24 @@ class Target<T, U>
 		}
 
 		[Fact]
+		public async Task Warning_When_HasPattern_And_ReplacementIsNull()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", ""\w+"", null)]
+partial class Test
+{{
+}}
+
+class Target
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0214_SpecifyReplacement.Id);
+		}
+
+		[Fact]
 		public async Task Warning_When_IdenticalAttributesSpecified()
 		{
 			string input =

@@ -39,7 +39,8 @@ namespace Durian.Analysis.CopyFrom
 			DUR0210_InvalidMethodKind,
 			DUR0211_MethodAlreadyHasImplementation,
 			DUR0212_TargetDoesNotHaveReturnType,
-			DUR0213_TargetCannotHaveReturnType
+			DUR0213_TargetCannotHaveReturnType,
+			DUR0214_SpecifyReplacement
 		);
 
 		/// <summary>
@@ -409,7 +410,7 @@ namespace Durian.Analysis.CopyFrom
 
 					if (property.IsAutoProperty())
 					{
-						diagnostic = DUR0205_ImplementationNotAccessible;
+						diagnostic = DUR0209_CannotCopyFromMethodWithoutImplementation;
 						return null;
 					}
 
@@ -733,6 +734,24 @@ namespace Durian.Analysis.CopyFrom
 			return null;
 		}
 
+		private static bool HasValidRegexPattern(AttributeData attribute)
+		{
+			if (!attribute.TryGetConstructorArgumentValue(1, out string? value) || value is null)
+			{
+				return true;
+			}
+
+			return attribute.TryGetConstructorArgumentValue(2, out value) && value is not null;
+		}
+
+		private static void InitLocation([NotNull] ref Location? location, AttributeData attribute)
+		{
+			if (location is null)
+			{
+				location = attribute.GetLocation()!;
+			}
+		}
+
 		private static bool IsValidMethodType(IMethodSymbol method)
 		{
 			return !method.IsAbstract && !method.IsExtern && method.MethodKind == MethodKind.Ordinary;
@@ -850,20 +869,31 @@ namespace Durian.Analysis.CopyFrom
 
 			foreach (AttributeData attribute in attributes)
 			{
+				Location? location = default;
+
+				if (!HasValidRegexPattern(attribute))
+				{
+					location = attribute.GetLocation();
+					diagnosticReceiver.ReportDiagnostic(DUR0214_SpecifyReplacement, location);
+				}
+
 				if (GetTargetMethod(method, attribute, semanticModel, compilation.Compilation, declaration, out DiagnosticDescriptor? diagnostic, out object? value) is IMethodSymbol target)
 				{
 					if (CopiesFromItself(method, target))
 					{
+						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0207_MemberCannotCopyFromItselfOrItsParent, attribute.GetLocation(), method);
 						isValid = false;
 					}
 					else if (copyFromMethods.Contains(target, SymbolEqualityComparer.Default))
 					{
+						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0206_EquivalentAttributes, attribute.GetLocation(), method);
 						isValid = false;
 					}
 					else if (compilation.Compilation.Assembly.GetTypeByMetadataName(target.ContainingType.ToString()) is null)
 					{
+						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, attribute.GetLocation(), method, target);
 					}
 					else
@@ -873,6 +903,7 @@ namespace Durian.Analysis.CopyFrom
 				}
 				else if (diagnostic is not null)
 				{
+					InitLocation(ref location, attribute);
 					diagnosticReceiver.ReportDiagnostic(diagnostic, attribute.GetLocation(), method, value);
 					isValid = false;
 				}
@@ -930,20 +961,31 @@ namespace Durian.Analysis.CopyFrom
 
 			foreach (AttributeData attribute in attributes)
 			{
+				Location? location = default;
+
+				if(!HasValidRegexPattern(attribute))
+				{
+					location = attribute.GetLocation();
+					diagnosticReceiver.ReportDiagnostic(DUR0214_SpecifyReplacement, location);
+				}
+
 				if (GetTargetType(attribute, semanticModel, out DiagnosticDescriptor? diagnostic, out object? value) is INamedTypeSymbol target)
 				{
 					if (CopiesFromItself(type, target))
 					{
+						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0207_MemberCannotCopyFromItselfOrItsParent, attribute.GetLocation(), type);
 						isValid = false;
 					}
 					else if (copyFromTypes.Contains(target, SymbolEqualityComparer.Default))
 					{
+						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0206_EquivalentAttributes, attribute.GetLocation(), type);
 						isValid = false;
 					}
 					else if (!SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, target.ContainingAssembly))
 					{
+						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, attribute.GetLocation(), type, target);
 					}
 					else
@@ -953,6 +995,7 @@ namespace Durian.Analysis.CopyFrom
 				}
 				else if (diagnostic is not null)
 				{
+					InitLocation(ref location, attribute);
 					diagnosticReceiver.ReportDiagnostic(diagnostic, attribute.GetLocation(), type, value);
 					isValid = false;
 				}

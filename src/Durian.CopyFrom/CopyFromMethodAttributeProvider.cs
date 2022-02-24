@@ -29,6 +29,11 @@ namespace Durian.Analysis.CopyFrom
 		public const string Pattern = "Pattern";
 
 		/// <summary>
+		/// Name of the 'Replacement' property.
+		/// </summary>
+		public const string Replacement = "Replacement";
+
+		/// <summary>
 		/// Name of the 'Source' property.
 		/// </summary>
 		public const string Source = "Source";
@@ -81,6 +86,11 @@ namespace {Namespace}
 		public string? {Pattern} {{ get; }}
 
 		/// <summary>
+		/// Value to replace matched text with.
+		/// </summary>
+		public string? {Replacement} {{ get; }}
+
+		/// <summary>
 		/// Source of the copied implementation.
 		/// </summary>
 		public string? {Source} {{ get; }}
@@ -94,8 +104,9 @@ namespace {Namespace}
 		/// Initializes a new instance of the <see cref=""{TypeName}""/>.
 		/// </summary>
 		/// <param name=""source"">Source of the copied implementation.</param>
-		public {TypeName}(string source) : this(source, null)
+		public {TypeName}(string source)
 		{{
+			{Source} = source;
 		}}
 
 		/// <summary>
@@ -103,10 +114,12 @@ namespace {Namespace}
 		/// </summary>
 		/// <param name=""source"">Source of the copied implementation.</param>
 		/// <param name=""pattern"">Regex pattern that is used when copying implementation from other source.</param>
-		public {TypeName}(string source, string? pattern)
+		/// <param name=""replacement"">Value to replace matched text with.</param>
+		public {TypeName}(string source, string? pattern, string? replacement)
 		{{
 			{Source} = source;
 			{Pattern} = pattern;
+			{Replacement} = replacement;
 		}}
 	}}
 }}

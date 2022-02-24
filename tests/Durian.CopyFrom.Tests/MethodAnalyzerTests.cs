@@ -998,7 +998,7 @@ partial class Test
 	string Property {{ get; set; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0205_ImplementationNotAccessible.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0209_CannotCopyFromMethodWithoutImplementation.Id);
 		}
 
 		[Fact]
@@ -1015,7 +1015,7 @@ partial class Test
 	string Property {{ get; set; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0205_ImplementationNotAccessible.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0209_CannotCopyFromMethodWithoutImplementation.Id);
 		}
 
 		[Fact]
@@ -2079,6 +2079,25 @@ static partial class Test
 }}
 ";
 			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Warning_When_HasPattern_And_ReplacementIsNull()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", ""\w+"", null)]
+	partial void Method();
+
+	void Target()
+	{{
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0214_SpecifyReplacement.Id);
 		}
 
 		[Fact]

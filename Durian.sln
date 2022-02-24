@@ -159,7 +159,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.CopyFrom", "src\Durian.CopyFrom\Durian.CopyFrom.csproj", "{BC30614D-F0C9-4DA5-9DAE-A55730EE3916}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Durian.CopyFrom.Tests", "tests\Durian.CopyFrom.Tests\Durian.CopyFrom.Tests.csproj", "{99672AD8-65D0-4F8F-95D1-ADF6839F5584}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.CopyFrom.Tests", "tests\Durian.CopyFrom.Tests\Durian.CopyFrom.Tests.csproj", "{99672AD8-65D0-4F8F-95D1-ADF6839F5584}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CopyFrom", "CopyFrom", "{072AEE81-1199-4446-B2D5-54384D23DAE0}"
+	ProjectSection(SolutionItems) = preProject
+		docs\CopyFrom\DUR0201.md = docs\CopyFrom\DUR0201.md
+		docs\CopyFrom\DUR0202.md = docs\CopyFrom\DUR0202.md
+		docs\CopyFrom\DUR0203.md = docs\CopyFrom\DUR0203.md
+		docs\CopyFrom\DUR0204.md = docs\CopyFrom\DUR0204.md
+		docs\CopyFrom\DUR0205.md = docs\CopyFrom\DUR0205.md
+		docs\CopyFrom\DUR0206.md = docs\CopyFrom\DUR0206.md
+		docs\CopyFrom\DUR0207.md = docs\CopyFrom\DUR0207.md
+		docs\CopyFrom\DUR0208.md = docs\CopyFrom\DUR0208.md
+		docs\CopyFrom\DUR0209.md = docs\CopyFrom\DUR0209.md
+		docs\CopyFrom\DUR0210.md = docs\CopyFrom\DUR0210.md
+		docs\CopyFrom\DUR0211.md = docs\CopyFrom\DUR0211.md
+		docs\CopyFrom\DUR0212.md = docs\CopyFrom\DUR0212.md
+		docs\CopyFrom\DUR0213.md = docs\CopyFrom\DUR0213.md
+		docs\CopyFrom\DUR0214.md = docs\CopyFrom\DUR0214.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -442,6 +460,7 @@ Global
 		{508BEDA0-0AE7-455C-A432-37575FEBA0F3} = {2C1EE0FE-BA67-4CD0-88B8-6DCAFC9806F1}
 		{BC30614D-F0C9-4DA5-9DAE-A55730EE3916} = {74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}
 		{99672AD8-65D0-4F8F-95D1-ADF6839F5584} = {F6EC89D8-4343-42A1-B6D6-B0022D3004A0}
+		{072AEE81-1199-4446-B2D5-54384D23DAE0} = {BA3DE2E2-7B32-4612-8219-24FBCF850813}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {09524C45-0D6D-4456-B89D-9673853B9FA0}
