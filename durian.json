@@ -142,7 +142,8 @@
       ],
       "includedTypes": [
         "Durian.CopyFromTypeAttribute",
-        "Durian.CopyFromMethodAttribute"
+        "Durian.CopyFromMethodAttribute",
+        "Durian.PatternAttribute"
       ],
       "diagnosticIdPrefix": "02",
       "diagnosticFiles": [

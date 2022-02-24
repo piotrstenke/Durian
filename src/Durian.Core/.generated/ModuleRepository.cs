@@ -734,9 +734,17 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Replacement should be specified for the regex pattern",
+								title: "Invalid PatternAttribute specified",
 								id: 14,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0214.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "PatternAttribute is redundant",
+								id: 15,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0215.md",
 								fatal: false,
 								hasLocation: true
 							),
@@ -745,6 +753,7 @@ namespace Durian.Info
 						{
 							TypeRepository.CopyFromTypeAttribute,
 							TypeRepository.CopyFromMethodAttribute,
+							TypeRepository.PatternAttribute,
 						}
 					);
 				}

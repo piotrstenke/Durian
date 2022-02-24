@@ -16,4 +16,5 @@ DUR0210 | Durian.CopyFrom | Error |  CopyFromMethodAttribute is not valid on thi
 DUR0211 | Durian.CopyFrom | Error |  Method marked with the CopyFromMethodAttribute already has a declaration. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0211.md)]
 DUR0212 | Durian.CopyFrom | Error |  Target member cannot have a return type. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0212.md)]
 DUR0213 | Durian.CopyFrom | Error |  Method marked with the CopyFromMethodAttribute already has a declaration. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0213.md)]
-DUR0214 | Durian.CopyFrom | Warning |  Replacement should be specified for the regex pattern. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0214.md)]
+DUR0214 | Durian.CopyFrom | Warning |  Invalid PatternAttribute specified. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0214.md)]
+DUR0215 | Durian.CopyFrom | Warning |  PatternAttribute is redundant. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0215.md)]

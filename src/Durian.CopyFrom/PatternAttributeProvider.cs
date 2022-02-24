@@ -4,9 +4,9 @@
 namespace Durian.Analysis.CopyFrom
 {
 	/// <summary>
-	/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.CopyFromTypeAttribute</c> class.
+	/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.PatternAttribute</c> class.
 	/// </summary>
-	public sealed class CopyFromTypeAttributeProvider : SourceTextProvider
+	public sealed class PatternAttributeProvider : SourceTextProvider
 	{
 		/// <summary>
 		/// Full name of the provided type.
@@ -21,27 +21,27 @@ namespace Durian.Analysis.CopyFrom
 		/// <summary>
 		/// Name of the 'Order' property.
 		/// </summary>
-		public const string Order = CopyFromMethodAttributeProvider.Order;
+		public const string Order = "Order";
 
 		/// <summary>
-		/// Name of the 'Source' property.
+		/// Name of the 'Pattern' property.
 		/// </summary>
-		public const string Source = CopyFromMethodAttributeProvider.Source;
+		public const string Pattern = "Pattern";
 
 		/// <summary>
-		/// Name of the 'SourceType' property.
+		/// Name of the 'Replacement' property.
 		/// </summary>
-		public const string SourceType = "SourceType";
+		public const string Replacement = "Replacement";
 
 		/// <summary>
 		/// Name of the provided type.
 		/// </summary>
-		public const string TypeName = "CopyFromTypeAttribute";
+		public const string TypeName = "PatternAttribute";
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CopyFromTypeAttributeProvider"/> class.
+		/// Initializes a new instance of the <see cref="PatternAttributeProvider"/> class.
 		/// </summary>
-		public CopyFromTypeAttributeProvider()
+		public PatternAttributeProvider()
 		{
 		}
 
@@ -71,41 +71,34 @@ namespace {Namespace}
 	/// <summary>
 	/// Specifies that implementation of a specific member should be copied from an external source.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, Inherited = false, AllowMultiple = true)]
+	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct, Inherited = false, AllowMultiple = true)]
 	[Conditional(""DEBUG"")]
 	public sealed class {TypeName} : Attribute
 	{{
 		/// <summary>
-		/// Source of the copied implementation.
-		/// </summary>
-		public string? {Source} {{ get; }}
-
-		/// <summary>
-		/// Source type of the copied implementation.
-		/// </summary>
-		public Type? {SourceType} {{ get; }}
-
-		/// <summary>
 		/// Order in which multiple <see cref=""{TypeName}""/>s are applied.
 		/// </summary>
-		public int {Order} {{ get; set; }}
+		public int Order {{ get; set; }}
+
+		/// <summary>
+		/// Regex pattern that is used when copying implementation from other source.
+		/// </summary>
+		public string? {Pattern} {{ get; }}
+
+		/// <summary>
+		/// Value to replace matched text with.
+		/// </summary>
+		public string? {Replacement} {{ get; }}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref=""{TypeName}""/>.
 		/// </summary>
-		/// <param name=""sourceType"">Source type of the copied implementation.</param>
-		public {TypeName}(Type sourceType)
+		/// <param name=""pattern"">Regex pattern that is used when copying implementation from other source.</param>
+		/// <param name=""replacement"">Value to replace matched text with.</param>
+		public {TypeName}(string pattern, string replacement)
 		{{
-			{SourceType} = sourceType;
-		}}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref=""{TypeName}""/>.
-		/// </summary>
-		/// <param name=""source"">Source of the copied implementation.</param>
-		public {TypeName}(string source)
-		{{
-			{Source} = source;
+			{Pattern} = pattern;
+			{Replacement} = replacement;
 		}}
 	}}
 }}

@@ -25,12 +25,17 @@ namespace Durian.Analysis.CopyFrom
 		public INamedTypeSymbol? CopyFromTypeAttribute { get; private set; }
 
 		/// <inheritdoc/>
-		[MemberNotNullWhen(false, nameof(CopyFromTypeAttribute), nameof(CopyFromTypeAttribute))]
+		[MemberNotNullWhen(false, nameof(CopyFromTypeAttribute), nameof(CopyFromMethodAttribute), nameof(PatternAttribute))]
 		public override bool HasErrors
 		{
 			get => base.HasErrors;
 			protected set => base.HasErrors = value;
 		}
+
+		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> representing the <c>Durian.PatternAttribute</c> class.
+		/// </summary>
+		public INamedTypeSymbol? PatternAttribute { get; private set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromCompilationData"/> class.
@@ -48,8 +53,9 @@ namespace Durian.Analysis.CopyFrom
 
 			CopyFromTypeAttribute = Compilation.GetTypeByMetadataName(CopyFromTypeAttributeProvider.FullName);
 			CopyFromMethodAttribute = Compilation.GetTypeByMetadataName(CopyFromMethodAttributeProvider.FullName);
+			PatternAttribute = Compilation.GetTypeByMetadataName(PatternAttributeProvider.FullName);
 
-			HasErrors = base.HasErrors || CopyFromTypeAttribute is null || CopyFromMethodAttribute is null;
+			HasErrors = base.HasErrors || CopyFromTypeAttribute is null || CopyFromMethodAttribute is null || PatternAttribute is null;
 		}
 	}
 }

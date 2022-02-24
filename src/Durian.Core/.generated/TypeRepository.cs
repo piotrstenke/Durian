@@ -314,5 +314,28 @@ namespace Durian.Info
 				return type;
 			}
 		}
+
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.PatternAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity PatternAttribute
+		{
+			get
+			{
+				if(!IdentityPool.Types.TryGetValue("PatternAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "PatternAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.CopyFrom,
+						}
+					);
+				}
+
+				return type;
+			}
+		}
 	}
 }

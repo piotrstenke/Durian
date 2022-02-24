@@ -40,7 +40,8 @@ namespace Durian.Analysis.CopyFrom
 			DUR0211_MethodAlreadyHasImplementation,
 			DUR0212_TargetDoesNotHaveReturnType,
 			DUR0213_TargetCannotHaveReturnType,
-			DUR0214_SpecifyReplacement
+			DUR0214_InvalidPatternAttributeSpecified,
+			DUR0215_RedundantPatternAttribute
 		);
 
 		/// <summary>
@@ -95,7 +96,12 @@ namespace Durian.Analysis.CopyFrom
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			AttributeData[] attributes = type.GetAttributes(compilation.CopyFromTypeAttribute!).ToArray();
+			if (compilation.HasErrors)
+			{
+				return false;
+			}
+
+			AttributeData[] attributes = GetAttributes(type, compilation.CopyFromMethodAttribute, compilation.PatternAttribute, diagnosticReceiver).ToArray();
 
 			if (attributes.Length == 0)
 			{
@@ -125,7 +131,12 @@ namespace Durian.Analysis.CopyFrom
 			MethodDeclarationSyntax? declaration = default
 		)
 		{
-			AttributeData[] attributes = method.GetAttributes(compilation.CopyFromMethodAttribute!).ToArray();
+			if (compilation.HasErrors)
+			{
+				return false;
+			}
+
+			AttributeData[] attributes = GetAttributes(method, compilation.CopyFromMethodAttribute, compilation.PatternAttribute, diagnosticReceiver).ToArray();
 
 			if (attributes.Length == 0)
 			{
@@ -496,6 +507,48 @@ namespace Durian.Analysis.CopyFrom
 			return null;
 		}
 
+		private static AttributeData[] GetAttributes(
+																															ISymbol symbol,
+			INamedTypeSymbol attributeSymbol,
+			INamedTypeSymbol patternAttribute,
+			IDiagnosticReceiver diagnosticReceiver
+		)
+		{
+			ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
+			List<AttributeData> copyFromAttributes = new(attributes.Length);
+			List<(AttributeData attr, Location? location)> patternAttributes = new(attributes.Length);
+
+			foreach (AttributeData attr in attributes)
+			{
+				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attributeSymbol))
+				{
+					copyFromAttributes.Add(attr);
+				}
+				else if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, patternAttribute))
+				{
+					Location? location = null;
+
+					if (!HasValidRegexPattern(attr))
+					{
+						location = attr.GetLocation();
+						diagnosticReceiver.ReportDiagnostic(DUR0214_InvalidPatternAttributeSpecified, location, symbol);
+					}
+
+					patternAttributes.Add((attr, location));
+				}
+			}
+
+			if (patternAttributes.Count > 0 && copyFromAttributes.Count == 0)
+			{
+				foreach ((AttributeData attr, Location? location) in patternAttributes)
+				{
+					diagnosticReceiver.ReportDiagnostic(DUR0215_RedundantPatternAttribute, location ?? attr.GetLocation(), symbol);
+				}
+			}
+
+			return copyFromAttributes.ToArray();
+		}
+
 		private static SymbolInfo GetSymbolFromCrefSyntax(
 			string text,
 			CSharpCompilation compilation,
@@ -736,20 +789,24 @@ namespace Durian.Analysis.CopyFrom
 
 		private static bool HasValidRegexPattern(AttributeData attribute)
 		{
-			if (!attribute.TryGetConstructorArgumentValue(1, out string? value) || value is null)
+			ImmutableArray<TypedConstant> arguments = attribute.ConstructorArguments;
+
+			if (arguments.Length < 2)
 			{
-				return true;
+				return false;
 			}
 
-			return attribute.TryGetConstructorArgumentValue(2, out value) && value is not null;
-		}
-
-		private static void InitLocation([NotNull] ref Location? location, AttributeData attribute)
-		{
-			if (location is null)
+			if (string.IsNullOrEmpty(arguments[0].Value as string))
 			{
-				location = attribute.GetLocation()!;
+				return false;
 			}
+
+			if (arguments[1].Value is not string)
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		private static bool IsValidMethodType(IMethodSymbol method)
@@ -869,31 +926,20 @@ namespace Durian.Analysis.CopyFrom
 
 			foreach (AttributeData attribute in attributes)
 			{
-				Location? location = default;
-
-				if (!HasValidRegexPattern(attribute))
-				{
-					location = attribute.GetLocation();
-					diagnosticReceiver.ReportDiagnostic(DUR0214_SpecifyReplacement, location);
-				}
-
 				if (GetTargetMethod(method, attribute, semanticModel, compilation.Compilation, declaration, out DiagnosticDescriptor? diagnostic, out object? value) is IMethodSymbol target)
 				{
 					if (CopiesFromItself(method, target))
 					{
-						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0207_MemberCannotCopyFromItselfOrItsParent, attribute.GetLocation(), method);
 						isValid = false;
 					}
 					else if (copyFromMethods.Contains(target, SymbolEqualityComparer.Default))
 					{
-						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0206_EquivalentAttributes, attribute.GetLocation(), method);
 						isValid = false;
 					}
 					else if (compilation.Compilation.Assembly.GetTypeByMetadataName(target.ContainingType.ToString()) is null)
 					{
-						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, attribute.GetLocation(), method, target);
 					}
 					else
@@ -903,7 +949,6 @@ namespace Durian.Analysis.CopyFrom
 				}
 				else if (diagnostic is not null)
 				{
-					InitLocation(ref location, attribute);
 					diagnosticReceiver.ReportDiagnostic(diagnostic, attribute.GetLocation(), method, value);
 					isValid = false;
 				}
@@ -961,31 +1006,20 @@ namespace Durian.Analysis.CopyFrom
 
 			foreach (AttributeData attribute in attributes)
 			{
-				Location? location = default;
-
-				if(!HasValidRegexPattern(attribute))
-				{
-					location = attribute.GetLocation();
-					diagnosticReceiver.ReportDiagnostic(DUR0214_SpecifyReplacement, location);
-				}
-
 				if (GetTargetType(attribute, semanticModel, out DiagnosticDescriptor? diagnostic, out object? value) is INamedTypeSymbol target)
 				{
 					if (CopiesFromItself(type, target))
 					{
-						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0207_MemberCannotCopyFromItselfOrItsParent, attribute.GetLocation(), type);
 						isValid = false;
 					}
 					else if (copyFromTypes.Contains(target, SymbolEqualityComparer.Default))
 					{
-						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0206_EquivalentAttributes, attribute.GetLocation(), type);
 						isValid = false;
 					}
 					else if (!SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, target.ContainingAssembly))
 					{
-						InitLocation(ref location, attribute);
 						diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, attribute.GetLocation(), type, target);
 					}
 					else
@@ -995,7 +1029,6 @@ namespace Durian.Analysis.CopyFrom
 				}
 				else if (diagnostic is not null)
 				{
-					InitLocation(ref location, attribute);
 					diagnosticReceiver.ReportDiagnostic(diagnostic, attribute.GetLocation(), type, value);
 					isValid = false;
 				}

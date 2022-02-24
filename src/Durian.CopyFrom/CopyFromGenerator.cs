@@ -18,7 +18,7 @@ namespace Durian.Analysis.CopyFrom
 		/// <summary>
 		/// Number of trees generated statically by this generator.
 		/// </summary>
-		public const int NumStaticTrees = 2;
+		public const int NumStaticTrees = 3;
 
 		private FilterContainer<IGeneratorSyntaxFilterWithDiagnostics>? _filters;
 
@@ -73,7 +73,8 @@ namespace Durian.Analysis.CopyFrom
 			return new ISourceTextProvider[]
 			{
 				new CopyFromTypeAttributeProvider(),
-				new CopyFromMethodAttributeProvider()
+				new CopyFromMethodAttributeProvider(),
+				new PatternAttributeProvider(),
 			};
 		}
 

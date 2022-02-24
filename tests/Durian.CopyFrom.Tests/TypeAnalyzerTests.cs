@@ -833,12 +833,12 @@ class Target<T, U>
 		}
 
 		[Fact]
-		public async Task Warning_When_HasPattern_And_ReplacementIsNull()
+		public async Task Warning_When_HasPattern_And_PatternIsNull()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", ""\w+"", null)]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target""), {PatternAttributeProvider.TypeName}(null, """")]
 partial class Test
 {{
 }}
@@ -847,7 +847,25 @@ class Target
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0214_SpecifyReplacement.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0214_InvalidPatternAttributeSpecified.Id);
+		}
+
+		[Fact]
+		public async Task Warning_When_HasPattern_And_ReplacementIsNull()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target""), {PatternAttributeProvider.TypeName}(""\w+"", null)]
+partial class Test
+{{
+}}
+
+class Target
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0214_InvalidPatternAttributeSpecified.Id);
 		}
 
 		[Fact]
@@ -867,6 +885,20 @@ class Target
 }}
 ";
 			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0206_EquivalentAttributes.Id);
+		}
+
+		[Fact]
+		public async Task Warning_When_PatternIsRedundant()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{PatternAttributeProvider.TypeName}(""\w+"", """")]
+partial class Test
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0215_RedundantPatternAttribute.Id);
 		}
 
 		[Fact]

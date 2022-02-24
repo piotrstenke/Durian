@@ -181,15 +181,28 @@ namespace Durian.Analysis.CopyFrom
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that a <c>Durian.CopyFromTypeAttribute.Replacement</c> or <c>Durian.CopyFromMethodAttribute.Replacement</c> should be specified.
+		/// Provides diagnostic message indicating that a specified <c>Durian.PatternAttribute</c> has invalid values.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0214_SpecifyReplacement = new(
+		public static readonly DiagnosticDescriptor DUR0214_InvalidPatternAttributeSpecified = new(
 			id: "DUR0214",
-			title: "Replacement should be specified for the regex pattern",
-			messageFormat: "'{0}': Replacement should be specified for the regex pattern",
+			title: "Invalid PatternAttribute specified",
+			messageFormat: "'{0}': Invalid PatternAttribute specified",
 			category: "Durian.CopyFrom",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + "/DUR0214.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that a <c>Durian.PatternAttribute</c> is redundant.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0215_RedundantPatternAttribute = new(
+			id: "DUR0215",
+			title: "PatternAttribute is redundant",
+			messageFormat: "'{0}': PatternAttribute is redundant",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0215.md",
 			isEnabledByDefault: true
 		);
 
