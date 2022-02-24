@@ -109,6 +109,26 @@ partial static class Test
 		}
 
 		[Fact]
+		public async Task Error_When_CopiesFromIndexerAccessor_And_AccessorDoesNotExist()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]_set"")]
+	partial void Method();
+
+	int this[int index]
+	{{
+		get => 2;
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0203_MemberCannotBeResolved.Id);
+		}
+
+		[Fact]
 		public async Task Error_When_CopiesFromIndexerWithoutParamList()
 		{
 			string input =
@@ -292,6 +312,194 @@ partial class Test
 }}
 ";
 			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0209_CannotCopyFromMethodWithoutImplementation.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_HasReturnType_And_TargetIsEventProperty_AndUsesAddAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Event_add"")]
+	private partial string Method();
+
+	event System.Action Event
+	{{
+		add {{ }}
+		remove {{ }}
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0212_TargetDoesNotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_HasReturnType_And_TargetIsEventProperty_AndUsesRemoveAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Event_remove"")]
+	private partial string Method();
+
+	event System.Action Event
+	{{
+		add {{ }}
+		remove {{ }}
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0212_TargetDoesNotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_HasReturnType_And_TargetIsImplementedPropertyWithoutGetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property"")]
+	private partial string Method();
+
+	private string _property;
+	string Property
+	{{
+		set => _property = value;
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0212_TargetDoesNotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_HasReturnType_And_TargetIsIndexerInitAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]_set"")]
+	private partial string Method();
+
+	private string _property;
+	string this[int i]
+	{{
+		init => _property = value;
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0212_TargetDoesNotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_HasReturnType_And_TargetIsIndexerSetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]_set"")]
+	private partial string Method();
+
+	private string _property;
+	string this[int i]
+	{{
+		set => _property = value;
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0212_TargetDoesNotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_HasReturnType_And_TargetIsIndexerWithoutGetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]"")]
+	private partial string Method();
+
+	private string _property;
+	string this[int i]
+	{{
+		set => _property = value;
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0212_TargetDoesNotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_HasReturnType_And_TargetIsInitAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property_set"")]
+	private partial string Method();
+
+	private string _property;
+	string Property
+	{{
+		init => _property = value;
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0212_TargetDoesNotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_HasReturnType_And_TargetIsSetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property_set"")]
+	private partial string Method();
+
+	private string _property;
+	string Property
+	{{
+		set => _property = value;
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0212_TargetDoesNotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_HasReturnType_And_TargetIsVoid()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
+	private partial string Method();
+
+	void Target()
+	{{
+	}}
+}}
+";
+
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0212_TargetDoesNotHaveReturnType.Id);
 		}
 
 		[Fact]
@@ -637,6 +845,108 @@ partial class Test
 		}
 
 		[Fact]
+		public async Task Error_When_IsVoid_And_TargetHasReturnType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
+	partial void Method();
+
+	string Target()
+	{{
+		return string.Empty;
+	}}
+}}
+";
+
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0213_TargetCannotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_IsVoid_And_TargetIsGetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property_get"")]
+	partial void Method();
+
+	private string _property;
+	string Property
+	{{
+		get => _property;
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0213_TargetCannotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_IsVoid_And_TargetIsImplementedPropertyWithoutSetOrInitAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property"")]
+	partial void Method();
+
+	private string _property;
+	string Property => _property;
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0213_TargetCannotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_IsVoid_And_TargetIsIndexerGetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]_get"")]
+	partial void Method();
+
+	private string _property;
+	string this[int i]
+	{{
+		get => _property;
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0213_TargetCannotHaveReturnType.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_IsVoid_And_TargetIsIndexerWithoutSetOrInitAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]"")]
+	partial void Method();
+
+	private string _property;
+	string this[int i]
+	{{
+		get => _property;
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0213_TargetCannotHaveReturnType.Id);
+		}
+
+		[Fact]
 		public async Task Error_When_MemberDoesNotExist()
 		{
 			string input =
@@ -692,6 +1002,42 @@ partial class Test
 		}
 
 		[Fact]
+		public async Task Error_When_TargetIsAutoPropertyAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property_set"")]
+	partial void Method();
+
+	string Property {{ get; set; }}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0205_ImplementationNotAccessible.Id);
+		}
+
+		[Fact]
+		public async Task Error_When_TargetIsDestructor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""~Test()"")]
+	partial void Method();
+
+	~Test()
+	{{
+	}}
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0203_MemberCannotBeResolved.Id);
+		}
+
+		[Fact]
 		public async Task Error_When_TargetIsEventField()
 		{
 			string input =
@@ -727,163 +1073,6 @@ partial class Test
 }}
 ";
 			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0204_WrongTargetMemberKind.Id);
-		}
-
-		[Fact]
-		public async Task Success_When_TargetIsEventProperty_And_UsesAddAccessor()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Event_add"")]
-	partial void Method();
-
-	event System.Action Event
-	{{
-		add {{ }}
-		remove {{ }}
-	}}
-}}
-";
-			Assert.Empty(await RunAnalyzer(input));
-		}
-
-		[Fact]
-		public async Task Success_When_TargetIsEventProperty_And_UsesRemoveAccessor()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Event_remove"")]
-	partial void Method();
-
-	event System.Action Event
-	{{
-		add {{ }}
-		remove {{ }}
-	}}
-}}
-";
-			Assert.Empty(await RunAnalyzer(input));
-		}
-
-		[Fact]
-		public async Task Error_When_TargetIsInDifferentAssembly()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Other.Method"")]
-	partial void Method();
-}}
-";
-			string external =
-$@"class Other
-{{
-	public void Method()
-	{{
-	}}
-}}";
-			Assert.Contains(await RunAnalyzerWithDependency(input, external), d => d.Id == DUR0205_ImplementationNotAccessible.Id);
-		}
-
-		[Fact]
-		public async Task Success_When_TargetIsInDifferentNamespace()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-namespace N1
-{{
-	partial class Test
-	{{
-		[{CopyFromMethodAttributeProvider.TypeName}(""N2.Other.Method"")]
-		partial void Method();
-	}}
-}}
-
-namespace N2
-{{
-	class Other
-	{{
-		void Method()
-		{{
-		}}
-	}}
-}}
-";
-			Assert.Empty(await RunAnalyzer(input));
-		}
-
-		[Fact]
-		public async Task Success_When_TargetIsInAliasedType()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-using A = N2.Other;
-
-namespace N1
-{{
-	partial class Test
-	{{
-		[{CopyFromMethodAttributeProvider.TypeName}(""A.Method"")]
-		partial void Method();
-	}}
-}}
-
-namespace N2
-{{
-	class Other
-	{{
-		void Method()
-		{{
-		}}
-	}}
-}}
-";
-			Assert.Empty(await RunAnalyzer(input));
-		}
-
-		[Fact]
-		public async Task Error_When_TargetIsAutoPropertyAccessor()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Property_set"")]
-	partial void Method();
-
-	string Property {{ get; set; }}
-}}
-";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0205_ImplementationNotAccessible.Id);
-		}
-
-		[Fact]
-		public async Task Error_When_TargetIsDestructor()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""~Test()"")]
-	partial void Method();
-
-	~Test()
-	{{
-	}}
-}}
-";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0203_MemberCannotBeResolved.Id);
 		}
 
 		[Fact]
@@ -984,6 +1173,28 @@ partial class Test
 		}
 
 		[Fact]
+		public async Task Error_When_TargetIsInDifferentAssembly()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Other.Method"")]
+	partial void Method();
+}}
+";
+			string external =
+$@"class Other
+{{
+	public void Method()
+	{{
+	}}
+}}";
+			Assert.Contains(await RunAnalyzerWithDependency(input, external), d => d.Id == DUR0205_ImplementationNotAccessible.Id);
+		}
+
+		[Fact]
 		public async Task Error_When_TargetIsLambda()
 		{
 			string input =
@@ -1017,23 +1228,6 @@ partial class Test
 }}
 ";
 			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0203_MemberCannotBeResolved.Id);
-		}
-
-		[Fact]
-		public async Task Success_When_TargetIsOperator()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""operator +(Test, Test)"")]
-	partial void Method();
-
-	public static int operator +(Test a, Test b) => 2;
-}}
-";
-			Assert.Empty(await RunAnalyzer(input));
 		}
 
 		[Fact]
@@ -1096,6 +1290,176 @@ partial class Test
 		}
 
 		[Fact]
+		public async Task Success_When_CopiesFromPrivateMethod()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Other.Method"")]
+	partial void Method();
+}}
+
+class Other
+{{
+	private void Method()
+	{{
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_HasReturnType_And_TargetHasReturnType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
+	private partial string Method();
+
+	string Target()
+	{{
+		return string.Empty;
+	}}
+}}
+";
+
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_HasReturnType_And_TargetIsGetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property_get"")]
+	private partial string Method();
+
+	private string _property;
+	string Property => _property;
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_HasReturnType_And_TargetIsImplementedPropertyWithInitAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property"")]
+	private partial string Method();
+
+	private string _property;
+	string Property
+	{{
+		get => _property;
+		init => _property = value;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_HasReturnType_And_TargetIsImplementedPropertyWithSetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property"")]
+	private partial string Method();
+
+	private string _property;
+	string Property
+	{{
+		get => _property;
+		set => _property = value;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_HasReturnType_And_TargetIsIndexerGetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]_get"")]
+	private partial string Method();
+
+	private string _property;
+	string this[int i]
+	{{
+		get => _property;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_HasReturnType_And_TargetIsIndexerWithInitAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]"")]
+	private partial string Method();
+
+	private string _property;
+	string this[int i]
+	{{
+		get => _property;
+		init => _property = value;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_HasReturnType_And_TargetIsIndexerWithSetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]"")]
+	private partial string Method();
+
+	private string _property;
+	string this[int i]
+	{{
+		get => _property;
+		set => _property = value;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
 		public async Task Success_When_IsGeneric()
 		{
 			string input =
@@ -1111,6 +1475,154 @@ partial class Test
 	}}
 }}
 ";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_IsVoid_And_TargetIsImplementedPropertyWithGetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property"")]
+	partial void Method();
+
+	private string _property;
+	string Property
+	{{
+		get => _property;
+		set => _property = value;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_IsVoid_And_TargetIsIndexerInitAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]_set"")]
+	partial void Method();
+
+	private string _property;
+	string this[int i]
+	{{
+		init => _property = value;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_IsVoid_And_TargetIsIndexerSetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]_set"")]
+	partial void Method();
+
+	private string _property;
+	string this[int i]
+	{{
+		set => _property = value;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_IsVoid_And_TargetIsIndexerWithGetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]"")]
+	partial void Method();
+
+	private string _property;
+	string this[int i]
+	{{
+		get => _property;
+		set => _property = value;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_IsVoid_And_TargetIsInitAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property_set"")]
+	partial void Method();
+
+	private string _property;
+	string Property
+	{{
+		init => _property = value;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_IsVoid_And_TargetIsSetAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Property_set"")]
+	partial void Method();
+
+	private string _property;
+	string Property
+	{{
+		set => _property = value;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_IsVoid_And_TargetIsVoid()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
+	partial void Method();
+
+	void Target()
+	{{
+	}}
+}}
+";
+
 			Assert.Empty(await RunAnalyzer(input));
 		}
 
@@ -1211,6 +1723,48 @@ partial interface ITest
 		}
 
 		[Fact]
+		public async Task Success_When_TargetIsEventProperty_And_UsesAddAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Event_add"")]
+	partial void Method();
+
+	event System.Action Event
+	{{
+		add {{ }}
+		remove {{ }}
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_TargetIsEventProperty_And_UsesRemoveAccessor()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Event_remove"")]
+	partial void Method();
+
+	event System.Action Event
+	{{
+		add {{ }}
+		remove {{ }}
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
 		public async Task Success_When_TargetIsExplicitConversionOperatorWithParamList()
 		{
 			string input =
@@ -1219,7 +1773,7 @@ $@"using {DurianStrings.MainNamespace};
 partial class Test
 {{
 	[{CopyFromMethodAttributeProvider.TypeName}(""explicit operator int(Test)"")]
-	partial void Method();
+	private partial int Method();
 
 	public static explicit operator int(Test t) => 2;
 }}
@@ -1287,51 +1841,6 @@ partial class Test
 			Assert.Empty(await RunAnalyzer(input));
 		}
 
-
-		[Fact]
-		public async Task Success_When_TargetIsImplementedProperty()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Property"")]
-	partial void Method();
-
-	private string _property;
-	string Property
-	{{
-		get => _property;
-		set => _property = value;
-	}}
-}}
-";
-			Assert.Empty(await RunAnalyzer(input));
-		}
-
-		[Fact]
-		public async Task Success_When_TargetIsImplementedPropertyAccessor()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Property_set"")]
-	partial void Method();
-
-	private string _property;
-	string Property
-	{{
-		get => _property;
-		set => _property = value;
-	}}
-}}
-";
-			Assert.Empty(await RunAnalyzer(input));
-		}
-
 		[Fact]
 		public async Task Success_When_TargetIsImplicitConversionOperatorWithParamList()
 		{
@@ -1341,9 +1850,66 @@ $@"using {DurianStrings.MainNamespace};
 partial class Test
 {{
 	[{CopyFromMethodAttributeProvider.TypeName}(""implicit operator int(Test)"")]
-	partial void Method();
+	private partial int Method();
 
 	public static implicit operator int(Test t) => 2;
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_TargetIsInAliasedType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using A = N2.Other;
+
+namespace N1
+{{
+	partial class Test
+	{{
+		[{CopyFromMethodAttributeProvider.TypeName}(""A.Method"")]
+		partial void Method();
+	}}
+}}
+
+namespace N2
+{{
+	class Other
+	{{
+		void Method()
+		{{
+		}}
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_TargetIsInDifferentNamespace()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+namespace N1
+{{
+	partial class Test
+	{{
+		[{CopyFromMethodAttributeProvider.TypeName}(""N2.Other.Method"")]
+		partial void Method();
+	}}
+}}
+
+namespace N2
+{{
+	class Other
+	{{
+		void Method()
+		{{
+		}}
+	}}
 }}
 ";
 			Assert.Empty(await RunAnalyzer(input));
@@ -1366,6 +1932,23 @@ class Parent
 	public void Target()
 	{{
 	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_TargetIsOperator()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""operator +(Test, Test)"")]
+	private partial int Method();
+
+	public static int operator +(Test a, Test b) => 2;
 }}
 ";
 			Assert.Empty(await RunAnalyzer(input));
@@ -1480,66 +2063,6 @@ class Parent
 		}
 
 		[Fact]
-		public async Task Sucess_When_CopiesFromIndexer()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]"")]
-	partial void Method();
-
-	int this[int index] => 2;
-}}
-";
-			Assert.Empty(await RunAnalyzer(input));
-		}
-
-		[Fact]
-		public async Task Sucess_When_CopiesFromIndexerAccessor()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]_set"")]
-	partial void Method();
-
-	int this[int index] 
-	{{
-		get => 2;
-		set
-		{{
-		}}
-	}}
-}}
-";
-			Assert.Empty(await RunAnalyzer(input));
-		}
-
-		[Fact]
-		public async Task Error_When_CopiesFromIndexerAccessor_And_AccessorDoesNotExist()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""this[int]_set"")]
-	partial void Method();
-
-	int this[int index] 
-	{{
-		get => 2;
-	}}
-}}
-";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0203_MemberCannotBeResolved.Id);
-		}
-
-		[Fact]
 		public async Task Sucess_When_IsExtensionMethod()
 		{
 			string input =
@@ -1583,55 +2106,12 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
-using Test = A;
+using A = Test;
 
 partial class Test
 {{
 	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
 	[{CopyFromMethodAttributeProvider.TypeName}(""A.Target"")]
-	partial void Method();
-
-	public void Target()
-	{{
-	}}
-}}
-";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0206_EquivalentAttributes.Id);
-		}
-
-		[Fact]
-		public async Task Warning_When_ResolvedToSameMemberThroughBaseKeyword()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test : Parent
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
-	[{CopyFromMethodAttributeProvider.TypeName}(""base.Target"")]
-	partial void Method();
-}}
-
-class Parent
-{{
-	public void Target()
-	{{
-	}}
-}}
-";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0206_EquivalentAttributes.Id);
-		}
-
-		[Fact]
-		public async Task Warning_When_ResolvedToSameMemberThroughThisKeyword()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
-	[{CopyFromMethodAttributeProvider.TypeName}(""this.Target"")]
 	partial void Method();
 
 	public void Target()

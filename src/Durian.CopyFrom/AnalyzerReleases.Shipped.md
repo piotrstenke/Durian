@@ -14,3 +14,5 @@ DUR0208 | Durian.CopyFrom | Error |  Two or more members were resolved. [[DOC](h
 DUR0209 | Durian.CopyFrom | Error |  Cannot copy from a method without implementation. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0209.md)]
 DUR0210 | Durian.CopyFrom | Error |  CopyFromMethodAttribute is not valid on this kind of method. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0210.md)]
 DUR0211 | Durian.CopyFrom | Error |  Method marked with the CopyFromMethodAttribute already has a declaration. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0211.md)]
+DUR0212 | Durian.CopyFrom | Error |  Target member cannot have a return type. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0212.md)]
+DUR0213 | Durian.CopyFrom | Error |  Method marked with the CopyFromMethodAttribute already has a declaration. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0213.md)]

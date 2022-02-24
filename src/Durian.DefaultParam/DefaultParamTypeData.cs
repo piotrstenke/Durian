@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
-	/// <see cref="TypeData"/> that contains additional information needed by the <see cref="DefaultParamGenerator"/>.
+	/// <see cref="TypeData{TDeclaration}"/> that contains additional information needed by the <see cref="DefaultParamGenerator"/>.
 	/// </summary>
 	public class DefaultParamTypeData : TypeData<TypeDeclarationSyntax>, IDefaultParamTarget
 	{
@@ -103,7 +103,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Returns a new instance of <see cref="TypeDeclarationBuilder"/> with <see cref="TypeDeclarationBuilder.OriginalDeclaration"/> set to this member's <see cref="TypeData.Declaration"/>.
+		/// Returns a new instance of <see cref="TypeDeclarationBuilder"/> with <see cref="TypeDeclarationBuilder.OriginalDeclaration"/> set to this member's <see cref="TypeData{TDeclaration}.Declaration"/>.
 		/// </summary>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public TypeDeclarationBuilder GetDeclarationBuilder(CancellationToken cancellationToken = default)

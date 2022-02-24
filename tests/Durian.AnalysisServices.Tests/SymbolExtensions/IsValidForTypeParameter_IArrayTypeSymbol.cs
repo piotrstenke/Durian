@@ -89,7 +89,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsTrue_When_HasNotNullConstraint_And_ArrayIsNullable()
 		{
-			NullableTypeSyntax id = GetNode<NullableTypeSyntax>("class Parent { void Method() { int[]? test = new { 1, 2 }); } }");
+			NullableTypeSyntax id = GetNode<NullableTypeSyntax>("class Parent { void Method() { int[]? test = new { 1, 2 }); } }")!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(id.SyntaxTree);
 			TypeInfo info = semanticModel.GetTypeInfo(id);
 
@@ -117,7 +117,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsTrue_When_HasNullableReferenceTypeConstraint_And_ArrayIsNullable()
 		{
-			NullableTypeSyntax id = GetNode<NullableTypeSyntax>("class Parent { void Method() { int[]? test = { 0, 1 }; } }");
+			NullableTypeSyntax id = GetNode<NullableTypeSyntax>("class Parent { void Method() { int[]? test = { 0, 1 }; } }")!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(id.SyntaxTree);
 			TypeInfo info = semanticModel.GetTypeInfo(id);
 
@@ -186,7 +186,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private IArrayTypeSymbol GetSymbol()
 		{
-			return GetSymbol<IArrayTypeSymbol, ArrayTypeSyntax>("class Test { void Method(int[] a) { } }");
+			return GetSymbol<IArrayTypeSymbol, ArrayTypeSyntax>("class Test { void Method(int[] a) { } }")!;
 		}
 	}
 }

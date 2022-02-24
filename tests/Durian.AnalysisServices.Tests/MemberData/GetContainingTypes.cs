@@ -14,7 +14,7 @@ namespace Durian.Analysis.Tests.MemberData
 		[Fact]
 		public void CanReturnMultipleTypes()
 		{
-			Data.MemberData data = GetMember("class Test { class Parent { class Child { } } }", 2);
+			Data.MemberData data = GetMember("class Test { class Parent { class Child { } } }", 2)!;
 			ITypeData[] containingTypes = data.GetContainingTypes().ToArray();
 			Assert.True(containingTypes.Length == 2 && containingTypes.Any(t => t.Symbol.Name == "Parent") && containingTypes.Any(t => t.Symbol.Name == "Test"));
 		}
@@ -22,7 +22,7 @@ namespace Durian.Analysis.Tests.MemberData
 		[Fact]
 		public void CanReturnSingleType()
 		{
-			Data.MemberData data = GetMember("class Parent { class Child { } }", 1);
+			Data.MemberData data = GetMember("class Parent { class Child { } }", 1)!;
 			ITypeData[] containingTypes = data.GetContainingTypes().ToArray();
 			Assert.True(containingTypes.Length == 1 && containingTypes[0].Symbol.Name == "Parent");
 		}
@@ -30,7 +30,7 @@ namespace Durian.Analysis.Tests.MemberData
 		[Fact]
 		public void ReturnsEmpty_When_IsNotNestedType()
 		{
-			Data.MemberData data = GetMember("class Test { }");
+			Data.MemberData data = GetMember("class Test { }")!;
 			ITypeData[] containingTypes = data.GetContainingTypes().ToArray();
 			Assert.True(containingTypes.Length == 0);
 		}
@@ -38,7 +38,7 @@ namespace Durian.Analysis.Tests.MemberData
 		[Fact]
 		public void ReturnsTypesInParentFirstOrder()
 		{
-			Data.MemberData data = GetMember("class Test { class Parent { class Child { } } }", 2);
+			Data.MemberData data = GetMember("class Test { class Parent { class Child { } } }", 2)!;
 			ITypeData[] containingTypes = data.GetContainingTypes().ToArray();
 			Assert.True(containingTypes.Length == 2 && containingTypes[0].Symbol.Name == "Test" && containingTypes[1].Symbol.Name == "Parent");
 		}

@@ -155,6 +155,32 @@ namespace Durian.Analysis.CopyFrom
 		);
 
 		/// <summary>
+		/// Provides diagnostic message indicating that a target member does not have a return type.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0212_TargetDoesNotHaveReturnType = new(
+			id: "DUR0212",
+			title: "Target member does not have a return type",
+			messageFormat: "'{0}': Target member '{1}' does not have a return type",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + "/DUR0212.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that a target member cannot have a return type.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0213_TargetCannotHaveReturnType = new(
+			id: "DUR0213",
+			title: "Target member cannot have a return type",
+			messageFormat: "'{0}': Target member cannot have a return type",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + "/DUR0213.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
 		/// Documentation directory of the <c>DefaultParam</c> module.
 		/// </summary>
 		public static string DocsPath => GlobalInfo.Repository + "/tree/master/docs/CopyFrom";

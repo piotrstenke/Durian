@@ -36,21 +36,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> has an implementation in code.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if has implementation.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static bool HasImplementation(this IMethodSymbol method)
-		{
-			if (method is null)
-			{
-				throw new ArgumentNullException(nameof(method));
-			}
-
-			return !(method.IsExtern || method.IsAbstract || method.IsImplicitlyDeclared || method.IsPartialDefinition);
-		}
-
-		/// <summary>
 		/// Determines whether the <paramref name="child"/> is contained withing the <paramref name="parent"/> at any nesting level.
 		/// </summary>
 		/// <param name="parent">Parent <see cref="ISymbol"/>.</param>
@@ -211,6 +196,24 @@ namespace Durian.Analysis.Extensions
 					}
 				}
 			}
+		}
+
+		/// <summary>
+		/// Returns the backing field of the specified <paramref name="property"/> or <see langword="null"/> if the <paramref name="property"/> is not auto-implemented.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to get the backing field of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
+		public static IFieldSymbol? GetBackingField(this IPropertySymbol property)
+		{
+			if (property is null)
+			{
+				throw new ArgumentNullException(nameof(property));
+			}
+
+			return property.ContainingType?
+				.GetMembers()
+				.OfType<IFieldSymbol>()
+				.FirstOrDefault(f => SymbolEqualityComparer.Default.Equals(f.AssociatedSymbol, property));
 		}
 
 		/// <summary>
@@ -405,11 +408,7 @@ namespace Durian.Analysis.Extensions
 					}
 
 					default:
-					{
-						TypeData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
-						parentList.Add(data);
-						return data;
-					}
+						throw new InvalidOperationException($"Invalid type kind of '{parent}'");
 				}
 			});
 		}
@@ -785,7 +784,7 @@ namespace Durian.Analysis.Extensions
 					TypeKind.Interface => new InterfaceData(type, compilation),
 					TypeKind.Delegate => new DelegateData(type, compilation),
 					TypeKind.Enum => new EnumData(type, compilation),
-					_ => new TypeData(type, compilation),
+					_ => throw new InvalidOperationException($"Invalid type kind of '{type}")
 				};
 			}
 			else if (symbol is IMethodSymbol method)
@@ -1177,6 +1176,21 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> has an implementation in code.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if has implementation.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool HasImplementation(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return !(method.IsExtern || method.IsAbstract || method.IsImplicitlyDeclared || method.IsPartialDefinition);
+		}
+
+		/// <summary>
 		/// Determines whether the target <paramref name="type"/> inherits the <paramref name="baseType"/>.
 		/// </summary>
 		/// <param name="type">Type to check if inherits the <paramref name="baseType"/>.</param>
@@ -1234,6 +1248,63 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is an accessor of the given <paramref name="event"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an accessor of the given <paramref name="event"/>.</param>
+		/// <param name="event"><see cref="IEventSymbol"/> to check if the <paramref name="method"/> is an accessor of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="event"/> is <see langword="null"/>.</exception>
+		public static bool IsAccessor(this IMethodSymbol method, IEventSymbol @event)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			if (@event is null)
+			{
+				throw new ArgumentNullException(nameof(@event));
+			}
+
+			return SymbolEqualityComparer.Default.Equals(method.AssociatedSymbol, @event);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is an accessor of the given <paramref name="property"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an accessor of the given <paramref name="property"/>.</param>
+		/// <param name="property"><see cref="IEventSymbol"/> to check if the <paramref name="method"/> is an accessor of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="property"/> is <see langword="null"/>.</exception>
+		public static bool IsAccessor(this IMethodSymbol method, IPropertySymbol property)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			if (property is null)
+			{
+				throw new ArgumentNullException(nameof(property));
+			}
+
+			return SymbolEqualityComparer.Default.Equals(method.AssociatedSymbol, property);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is a property or event accessor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is a property or event accessor.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool IsAccessor(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return method.AssociatedSymbol is not null && method.AssociatedSymbol is IPropertySymbol or IEventSymbol;
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="symbol"/> is an attribute type.
 		/// </summary>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is an attribute type.</param>
@@ -1253,6 +1324,72 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return symbol.InheritsFrom(attr);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> is auto-implemented.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to check if is auto-implemented.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
+		public static bool IsAutoProperty(this IPropertySymbol property)
+		{
+			if (property is null)
+			{
+				throw new ArgumentNullException(nameof(property));
+			}
+
+			return !property.IsIndexer && property.GetBackingField() is not null;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is an accessor of an auto-implemented property.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an accessor of an auto-implemented property.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool IsAutoPropertyAccessor(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return method.AssociatedSymbol is IPropertySymbol property && property.GetBackingField() is not null;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="field"/> is a backing field of a property.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to check if is a backing field.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>.</exception>
+		public static bool IsBackingField(this IFieldSymbol field)
+		{
+			if (field is null)
+			{
+				throw new ArgumentNullException(nameof(field));
+			}
+
+			return field.AssociatedSymbol is not null;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="field"/> is a backing field of the given <paramref name="property"/>.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to check if is a backing field of the given <paramref name="property"/>.</param>
+		/// <param name="property"><see cref="IParameterSymbol"/> to check if the specified <paramref name="field"/> is a backing field of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>. -or- <paramref name="property"/> is <see langword="null"/>.</exception>
+		public static bool IsBackingField(this IFieldSymbol field, IPropertySymbol property)
+		{
+			if (field is null)
+			{
+				throw new ArgumentNullException(nameof(field));
+			}
+
+			if (property is null)
+			{
+				throw new ArgumentNullException(nameof(property));
+			}
+
+			return SymbolEqualityComparer.Default.Equals(field.AssociatedSymbol, property);
 		}
 
 		/// <summary>
@@ -1284,6 +1421,21 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return true;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is an event accessor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an event accessor.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool IsEventAccessor(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return method.AssociatedSymbol is IEventSymbol;
 		}
 
 		/// <summary>
@@ -1484,7 +1636,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(declarationRetriever));
 			}
 
-			if(method.MethodKind != MethodKind.Ordinary)
+			if (method.MethodKind != MethodKind.Ordinary)
 			{
 				return false;
 			}
@@ -1628,6 +1780,21 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return IsPredefined(type) || SymbolEqualityComparer.Default.Equals(type, compilation.DynamicType);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is a property accessor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is a property accessor.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool IsPropertyAccessor(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return method.AssociatedSymbol is IPropertySymbol;
 		}
 
 		/// <summary>

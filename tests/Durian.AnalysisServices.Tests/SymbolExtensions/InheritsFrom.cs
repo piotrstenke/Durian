@@ -115,12 +115,12 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private INamedTypeSymbol GetClass(string source)
 		{
-			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source);
+			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source)!;
 		}
 
 		private INamedTypeSymbol GetInterface(string source)
 		{
-			return GetSymbol<INamedTypeSymbol, InterfaceDeclarationSyntax>(source);
+			return GetSymbol<INamedTypeSymbol, InterfaceDeclarationSyntax>(source)!;
 		}
 	}
 }

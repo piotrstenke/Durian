@@ -17,7 +17,7 @@ namespace Durian.Analysis.Tests.MemberData
 		[Fact]
 		public void CanReturnMultipleAttributes()
 		{
-			Data.MemberData data = GetMember("[Test][Other]class Test { }");
+			Data.MemberData data = GetMember("[Test][Other]class Test { }")!;
 			AttributeData[] attributes = data.GetAttributes().ToArray();
 
 			Assert.True(
@@ -30,7 +30,7 @@ namespace Durian.Analysis.Tests.MemberData
 		[Fact]
 		public void CanReturnSingleAttribute()
 		{
-			Data.MemberData data = GetMember("[Test]class Test { }");
+			Data.MemberData data = GetMember("[Test]class Test { }")!;
 			AttributeData[] attributes = data.GetAttributes().ToArray();
 			Assert.True(attributes.Length == 1 && SymbolEqualityComparer.Default.Equals(attributes[0].AttributeClass, Compilation.CurrentCompilation.GetTypeByMetadataName("TestAttribute")!));
 		}
@@ -38,7 +38,7 @@ namespace Durian.Analysis.Tests.MemberData
 		[Fact]
 		public void ReturnsEmpty_When_HasNoAttributes()
 		{
-			Data.MemberData data = GetMember("class Test { }");
+			Data.MemberData data = GetMember("class Test { }")!;
 			Assert.Empty(data.GetAttributes());
 		}
 	}

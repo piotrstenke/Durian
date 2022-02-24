@@ -14,7 +14,7 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 		[Fact]
 		public void ReturnsSemanticModelAndSymbol_When_InputIsValid()
 		{
-			ClassDeclarationSyntax node = GetNode<ClassDeclarationSyntax>("class Test { }");
+			ClassDeclarationSyntax node = GetNode<ClassDeclarationSyntax>("class Test { }")!;
 			SemanticModel oldSemanticModel = Compilation.CurrentCompilation.GetSemanticModel(node.SyntaxTree);
 			ISymbol oldSymbol = oldSemanticModel.GetDeclaredSymbol(node)!;
 			(SemanticModel newSemanticModel, ISymbol newSymbol) = Analysis.AnalysisUtilities.GetSymbolAndSemanticModel<INamedTypeSymbol>(node, Compilation);
@@ -30,21 +30,21 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 		[Fact]
 		public void ThrowsArgumentException_When_SyntaxNodeDoesNotRepresentAnySymbols()
 		{
-			BlockSyntax node = GetNode<BlockSyntax>("class Test { void Method() { } }");
+			BlockSyntax node = GetNode<BlockSyntax>("class Test { void Method() { } }")!;
 			Assert.Throws<ArgumentException>(() => Analysis.AnalysisUtilities.GetSymbolAndSemanticModel<IMethodSymbol>(node, Compilation));
 		}
 
 		[Fact]
 		public void ThrowsArgumentException_When_SyntaxNodeIsNotCompatibleWithTargetSymbolType()
 		{
-			ClassDeclarationSyntax node = GetNode<ClassDeclarationSyntax>("class Test { }");
+			ClassDeclarationSyntax node = GetNode<ClassDeclarationSyntax>("class Test { }")!;
 			Assert.Throws<ArgumentException>(() => Analysis.AnalysisUtilities.GetSymbolAndSemanticModel<IMethodSymbol>(node, Compilation));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_CompilationIsNull()
 		{
-			ClassDeclarationSyntax node = GetNode<ClassDeclarationSyntax>("class Test { }");
+			ClassDeclarationSyntax node = GetNode<ClassDeclarationSyntax>("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => Analysis.AnalysisUtilities.GetSymbolAndSemanticModel<INamedTypeSymbol>(node, null!));
 		}
 

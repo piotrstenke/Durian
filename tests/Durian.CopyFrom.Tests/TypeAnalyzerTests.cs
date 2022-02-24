@@ -752,6 +752,27 @@ class Target
 		}
 
 		[Fact]
+		public async Task Success_When_TargetIsPrivate()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(typeof(Outer.Target))]
+partial class Test
+{{
+}}
+
+class Outer
+{{
+	private class Target
+	{{
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
 		public async Task Success_When_TargetIsSpecifiedUsingFullyQualifiedName()
 		{
 			string input =

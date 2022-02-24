@@ -17,7 +17,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void CanReturnMultipleModifiers()
 		{
-			StructDeclarationSyntax decl = GetNode<StructDeclarationSyntax>("class Parent { protected internal unsafe readonly ref partial struct Test { }}");
+			StructDeclarationSyntax decl = GetNode<StructDeclarationSyntax>("class Parent { protected internal unsafe readonly ref partial struct Test { }}")!;
 			SyntaxToken[] tokens = new TypeDeclarationSyntax[] { decl }.GetModifiers().ToArray();
 
 			Assert.True(
@@ -33,7 +33,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void CanReturnSingleModifier()
 		{
-			ClassDeclarationSyntax decl = GetNode<ClassDeclarationSyntax>("internal class Test { }");
+			ClassDeclarationSyntax decl = GetNode<ClassDeclarationSyntax>("internal class Test { }")!;
 			SyntaxToken[] tokens = new TypeDeclarationSyntax[] { decl }.GetModifiers().ToArray();
 
 			Assert.True(tokens.Length == 1 && tokens[0].IsKind(SyntaxKind.InternalKeyword));
@@ -42,8 +42,8 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void DoesNotReturnIdenticalModifiers()
 		{
-			ClassDeclarationSyntax decl1 = GetNode<ClassDeclarationSyntax>("public sealed partial class Test { }");
-			ClassDeclarationSyntax decl2 = GetNode<ClassDeclarationSyntax>("public sealed partial class Test { }");
+			ClassDeclarationSyntax decl1 = GetNode<ClassDeclarationSyntax>("public sealed partial class Test { }")!;
+			ClassDeclarationSyntax decl2 = GetNode<ClassDeclarationSyntax>("public sealed partial class Test { }")!;
 			SyntaxToken[] tokens = new TypeDeclarationSyntax[] { decl1, decl2 }.GetModifiers().ToArray();
 
 			Assert.True(
@@ -57,8 +57,8 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsAllModifiers_When_IsPartial()
 		{
-			ClassDeclarationSyntax decl1 = GetNode<ClassDeclarationSyntax>("public partial class Test { }");
-			ClassDeclarationSyntax decl2 = GetNode<ClassDeclarationSyntax>("partial sealed class Test { }");
+			ClassDeclarationSyntax decl1 = GetNode<ClassDeclarationSyntax>("public partial class Test { }")!;
+			ClassDeclarationSyntax decl2 = GetNode<ClassDeclarationSyntax>("partial sealed class Test { }")!;
 			SyntaxToken[] tokens = new TypeDeclarationSyntax[] { decl1, decl2 }.GetModifiers().ToArray();
 
 			Assert.True(
@@ -71,7 +71,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsEmpty_When_DeclHasNoModifiers()
 		{
-			ClassDeclarationSyntax decl = GetNode<ClassDeclarationSyntax>("class Test { }");
+			ClassDeclarationSyntax decl = GetNode<ClassDeclarationSyntax>("class Test { }")!;
 			SyntaxToken[] tokens = new TypeDeclarationSyntax[] { decl }.GetModifiers().ToArray();
 			Assert.True(tokens.Length == 0);
 		}

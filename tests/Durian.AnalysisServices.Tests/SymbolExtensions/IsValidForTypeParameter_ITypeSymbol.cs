@@ -17,7 +17,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void CanHandleArrayType()
 		{
-			ITypeSymbol type = GetSymbol<IArrayTypeSymbol, ArrayTypeSyntax>("class Test { void Method(int[] a) { } }");
+			ITypeSymbol type = GetSymbol<IArrayTypeSymbol, ArrayTypeSyntax>("class Test { void Method(int[] a) { } }")!;
 
 			Assert.True(type.IsValidForTypeParameter(GetTypeParameter()));
 		}
@@ -33,7 +33,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void CanHandleNamedType()
 		{
-			ITypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }");
+			ITypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }")!;
 
 			Assert.True(type.IsValidForTypeParameter(GetTypeParameter()));
 		}
@@ -41,7 +41,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void CanHandleTypeParameter()
 		{
-			ITypeSymbol type = GetSymbol<ITypeParameterSymbol, TypeParameterSyntax>("class Test<T> { }");
+			ITypeSymbol type = GetSymbol<ITypeParameterSymbol, TypeParameterSyntax>("class Test<T> { }")!;
 
 			Assert.True(type.IsValidForTypeParameter(GetTypeParameter()));
 		}
@@ -49,7 +49,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ThrowsArgumentNullException_When_ParameterIsNull()
 		{
-			ITypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }");
+			ITypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }")!;
 
 			Assert.Throws<ArgumentNullException>(() => type.IsValidForTypeParameter(null!));
 		}

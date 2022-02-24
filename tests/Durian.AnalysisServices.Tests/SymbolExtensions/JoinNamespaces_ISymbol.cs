@@ -44,7 +44,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private INamedTypeSymbol GetSymbol(string source)
 		{
-			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source);
+			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source)!;
 		}
 	}
 }

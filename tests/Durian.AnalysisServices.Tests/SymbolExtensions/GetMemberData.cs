@@ -36,7 +36,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsValidEventData_When_HasMultipleEventFieldsInSingleDeclaration()
 		{
-			EventFieldDeclarationSyntax e = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action OnInit, OnExit; }");
+			EventFieldDeclarationSyntax e = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action OnInit, OnExit; }")!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(e.SyntaxTree);
 			IEventSymbol symbol1 = (semanticModel.GetDeclaredSymbol(e.Declaration.Variables[0]) as IEventSymbol)!;
 			IEventSymbol symbol2 = (semanticModel.GetDeclaredSymbol(e.Declaration.Variables[1]) as IEventSymbol)!;
@@ -56,7 +56,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsValidEventData_When_IsSingleEventField()
 		{
-			EventFieldDeclarationSyntax e = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action OnInit; }");
+			EventFieldDeclarationSyntax e = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action OnInit; }")!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(e.SyntaxTree);
 			IEventSymbol symbol = (semanticModel.GetDeclaredSymbol(e.Declaration.Variables[0]) as IEventSymbol)!;
 			Data.EventData? data = symbol.GetMemberData(Compilation) as Data.EventData;
@@ -67,7 +67,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsValidFieldData_When_HasMultipleFieldsInSingleDeclaration()
 		{
-			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int Age = 0, Index = 2 }");
+			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int Age = 0, Index = 2 }")!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(field.SyntaxTree);
 			IFieldSymbol symbol1 = (semanticModel.GetDeclaredSymbol(field.Declaration.Variables[0]) as IFieldSymbol)!;
 			IFieldSymbol symbol2 = (semanticModel.GetDeclaredSymbol(field.Declaration.Variables[1]) as IFieldSymbol)!;
@@ -81,7 +81,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsValidFieldData_When_IsSingleField()
 		{
-			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int Age = 0; }");
+			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int Age = 0; }")!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(field.SyntaxTree);
 			IFieldSymbol symbol = (semanticModel.GetDeclaredSymbol(field.Declaration.Variables[0]) as IFieldSymbol)!;
 			Data.FieldData? data = symbol.GetMemberData(Compilation) as Data.FieldData;
@@ -128,7 +128,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ThrowsArgumentNullException_When_CompilationIsNull()
 		{
-			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }");
+			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => symbol.GetMemberData(null!));
 		}
 
@@ -143,7 +143,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			where TData : class, IMemberData
 			where TDeclaration : MemberDeclarationSyntax
 		{
-			TDeclaration decl = GetNode<TDeclaration>(src);
+			TDeclaration decl = GetNode<TDeclaration>(src)!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(decl.SyntaxTree, true);
 			ISymbol symbol = semanticModel.GetDeclaredSymbol(decl)!;
 			TData? data = symbol.GetMemberData(Compilation) as TData;

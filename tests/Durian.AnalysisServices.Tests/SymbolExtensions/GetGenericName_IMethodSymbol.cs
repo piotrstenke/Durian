@@ -92,7 +92,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private IMethodSymbol GetSymbolForArgument(string source)
 		{
-			InvocationExpressionSyntax inv = GetNode<InvocationExpressionSyntax>(source);
+			InvocationExpressionSyntax inv = GetNode<InvocationExpressionSyntax>(source)!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(inv.SyntaxTree);
 			SymbolInfo info = semanticModel.GetSymbolInfo(inv);
 			return (info.Symbol as IMethodSymbol)!;
@@ -100,7 +100,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private IMethodSymbol GetSymbolForParameter(string source)
 		{
-			return GetSymbol<IMethodSymbol, MethodDeclarationSyntax>(source);
+			return GetSymbol<IMethodSymbol, MethodDeclarationSyntax>(source)!;
 		}
 	}
 }

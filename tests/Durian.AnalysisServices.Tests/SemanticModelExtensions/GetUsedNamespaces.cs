@@ -121,42 +121,42 @@ skipQualifiedNames: true);
 		[Fact]
 		public void ThrowsArgumentException_When_GlobalNamespaceIsNotActuallyGlobal()
 		{
-			IMemberData member = GetClass("namespace N { class Test { } }");
+			IMemberData member = GetClass("namespace N { class Test { } }")!;
 			Assert.Throws<ArgumentException>(() => member.SemanticModel.GetUsedNamespaces(member.Declaration, member.Symbol.ContainingNamespace));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_AssemblySymbolIsNull()
 		{
-			IMemberData member = GetClass("class Test { }");
+			IMemberData member = GetClass("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetUsedNamespaces(member.Declaration, assembly: null!));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_CompilationDataIsNull()
 		{
-			IMemberData member = GetClass("class Test { }");
+			IMemberData member = GetClass("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetUsedNamespaces(member.Declaration, compilationData: null!));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_CompilationIsNull()
 		{
-			IMemberData member = GetClass("class Test { }");
+			IMemberData member = GetClass("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetUsedNamespaces(member.Declaration, compilation: null!));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_GlobalNamespaceIsNull()
 		{
-			IMemberData member = GetClass("class Test { }");
+			IMemberData member = GetClass("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetUsedNamespaces(member.Declaration, globalNamespace: null!));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_SemanticModelIsNull()
 		{
-			IMemberData member = GetClass("class Test { }");
+			IMemberData member = GetClass("class Test { }")!;
 			SemanticModel? semanticModel = null;
 			Assert.Throws<ArgumentNullException>(() => semanticModel!.GetUsedNamespaces(member.Declaration, Compilation));
 		}
@@ -164,13 +164,13 @@ skipQualifiedNames: true);
 		[Fact]
 		public void ThrowsArgumentNullException_When_SyntaxNodeIsNull()
 		{
-			IMemberData member = GetClass("class Test { }");
+			IMemberData member = GetClass("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetUsedNamespaces(null!, Compilation));
 		}
 
 		private string[] Execute(string src, int index = 0, bool skipQualifiedNames = false)
 		{
-			IMemberData member = GetClass(src, index);
+			IMemberData member = GetClass(src, index)!;
 			return member.SemanticModel.GetUsedNamespaces(member.Declaration, Compilation, skipQualifiedNames).ToArray();
 		}
 	}

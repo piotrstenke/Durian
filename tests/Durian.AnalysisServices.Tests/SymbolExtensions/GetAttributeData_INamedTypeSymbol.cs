@@ -19,7 +19,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsAttributeData_When_HasTargetAttribute()
 		{
-			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Test]class Test { }");
+			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Test]class Test { }")!;
 			INamedTypeSymbol attr = GetAttr();
 			AttributeData? data = type.GetAttribute(attr);
 
@@ -29,7 +29,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsAttributeData_When_HasTargetAttributeAndOtherAttribute()
 		{
-			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Other][Test]class Test { }");
+			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Other][Test]class Test { }")!;
 			INamedTypeSymbol attr = GetAttr();
 			AttributeData? data = type.GetAttribute(attr);
 
@@ -39,7 +39,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsNull_When_HasNoTargetAttribute()
 		{
-			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Other]class Test { }");
+			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Other]class Test { }")!;
 			INamedTypeSymbol attr = GetAttr();
 			AttributeData? data = type.GetAttribute(attr);
 
@@ -56,7 +56,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ThrowsArgumentNullException_When_SyntaxIsNull()
 		{
-			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Test]class Test { }");
+			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Test]class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => type.GetAttribute(syntax: null!));
 		}
 

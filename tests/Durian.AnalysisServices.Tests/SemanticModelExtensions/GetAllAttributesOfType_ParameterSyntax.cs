@@ -81,7 +81,7 @@ namespace Durian.Analysis.Tests.SemanticModelExtensions
 		[Fact]
 		public void ThrowsArgumentNullException_When_SemanticModelIsNull()
 		{
-			ParameterSyntax parameter = GetNode<ParameterSyntax>("class Test { void Method([Test]int a) { } }");
+			ParameterSyntax parameter = GetNode<ParameterSyntax>("class Test { void Method([Test]int a) { } }")!;
 			SemanticModel? semanticModel = null;
 			Assert.Throws<ArgumentNullException>(() => semanticModel!.GetAllAttributesOfType(parameter, AttributeSymbol));
 		}
@@ -101,7 +101,7 @@ namespace Durian.Analysis.Tests.SemanticModelExtensions
 
 		private (ParameterSyntax syntax, SemanticModel semanticModel) GetParameter(string src)
 		{
-			ParameterSyntax parameter = GetNode<ParameterSyntax>(src);
+			ParameterSyntax parameter = GetNode<ParameterSyntax>(src)!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(parameter.SyntaxTree, true);
 			return (parameter, semanticModel);
 		}

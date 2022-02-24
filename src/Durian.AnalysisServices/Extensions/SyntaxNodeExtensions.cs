@@ -301,9 +301,6 @@ namespace Durian.Analysis.Extensions
 				OperatorDeclarationSyntax => new OperatorData((OperatorDeclarationSyntax)member, compilation),
 				ConversionOperatorDeclarationSyntax => new ConversionOperatorData((ConversionOperatorDeclarationSyntax)member, compilation),
 
-				// Fallbacks
-				TypeDeclarationSyntax => new TypeData((TypeDeclarationSyntax)member, compilation),
-
 				_ => new MemberData(member, compilation),
 			};
 		}

@@ -42,35 +42,35 @@ namespace Durian.Analysis.Tests.SemanticModelExtensions
 		[Fact]
 		public void ThrowsArgumentException_When_GlobalNamespaceIsNotActuallyGlobal()
 		{
-			IMemberData member = GetClass("namespace N { class Test { } }");
+			IMemberData member = GetClass("namespace N { class Test { } }")!;
 			Assert.Throws<ArgumentException>(() => member.SemanticModel.GetContainingNamespace(member.Declaration, member.Symbol.ContainingNamespace));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_AssemblySymbolIsNull()
 		{
-			IMemberData member = GetClass("class Test { }");
+			IMemberData member = GetClass("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespace(member.Declaration, assembly: null!));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_CompilationDataIsNull()
 		{
-			IMemberData member = GetClass("class Test { }");
+			IMemberData member = GetClass("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespace(member.Declaration, compilationData: null!));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_CompilationIsNull()
 		{
-			IMemberData member = GetClass("class Test { }");
+			IMemberData member = GetClass("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespace(member.Declaration, compilation: null!));
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_GlobalNamespaceIsNull()
 		{
-			IMemberData member = GetClass("class Test { }");
+			IMemberData member = GetClass("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespace(member.Declaration, globalNamespace: null!));
 		}
 
@@ -85,13 +85,13 @@ namespace Durian.Analysis.Tests.SemanticModelExtensions
 		[Fact]
 		public void ThrowsArgumentNullException_When_SyntaxNodeIsNull()
 		{
-			IMemberData member = GetClass("class Test { }");
+			IMemberData member = GetClass("class Test { }")!;
 			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespace(null!, Compilation));
 		}
 
 		private INamespaceSymbol Execute(string src, int index = 0)
 		{
-			IMemberData member = GetClass(src, index);
+			IMemberData member = GetClass(src, index)!;
 			return member.SemanticModel.GetContainingNamespace(member.Declaration, Compilation);
 		}
 	}

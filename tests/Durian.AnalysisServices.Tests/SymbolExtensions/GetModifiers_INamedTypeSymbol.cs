@@ -17,7 +17,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void CanReturnMultipleModifiers()
 		{
-			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, StructDeclarationSyntax>("class Parent { protected internal unsafe readonly ref partial struct Test { }}");
+			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, StructDeclarationSyntax>("class Parent { protected internal unsafe readonly ref partial struct Test { }}")!;
 			SyntaxToken[] tokens = symbol.GetModifiers().ToArray();
 
 			Assert.True(
@@ -33,7 +33,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void CanReturnSingleModifier()
 		{
-			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("internal class Test { }");
+			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("internal class Test { }")!;
 			SyntaxToken[] tokens = symbol.GetModifiers().ToArray();
 			Assert.True(tokens.Length == 1 && tokens[0].IsKind(SyntaxKind.InternalKeyword));
 		}
@@ -41,7 +41,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void DoesNotReturnIdenticalModifiers()
 		{
-			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("public sealed partial class Test { } public sealed partial class Test { }");
+			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("public sealed partial class Test { } public sealed partial class Test { }")!;
 			SyntaxToken[] tokens = symbol.GetModifiers().ToArray();
 
 			Assert.True(
@@ -55,7 +55,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsAllModifiers_When_IsPartial()
 		{
-			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("public partial class Test { } partial sealed class Test { } ", 1);
+			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("public partial class Test { } partial sealed class Test { } ", 1)!;
 			SyntaxToken[] tokens = symbol.GetModifiers().ToArray();
 
 			Assert.True(
@@ -68,7 +68,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsEmpty_When_TypeHasNoModifiers()
 		{
-			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }");
+			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }")!;
 			SyntaxToken[] tokens = symbol.GetModifiers().ToArray();
 			Assert.True(tokens.Length == 0);
 		}

@@ -185,7 +185,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private IMethodSymbol GetSymbol(string source)
 		{
-			return GetSymbol<IMethodSymbol, MethodDeclarationSyntax>(source);
+			return GetSymbol<IMethodSymbol, MethodDeclarationSyntax>(source)!;
 		}
 	}
 }

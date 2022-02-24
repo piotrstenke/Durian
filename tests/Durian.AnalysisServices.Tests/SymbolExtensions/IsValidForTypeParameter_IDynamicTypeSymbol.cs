@@ -89,7 +89,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsTrue_When_HasNotNullConstraint_And_DynamicIsNullable()
 		{
-			NullableTypeSyntax id = GetNode<NullableTypeSyntax>("class Parent { void Method() { dynamic? test = 2)}); } }");
+			NullableTypeSyntax id = GetNode<NullableTypeSyntax>("class Parent { void Method() { dynamic? test = 2)}); } }")!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(id.SyntaxTree);
 			TypeInfo info = semanticModel.GetTypeInfo(id);
 
@@ -117,7 +117,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsTrue_When_HasNullableReferenceTypeConstraint_And_DynamicIsNullable()
 		{
-			NullableTypeSyntax id = GetNode<NullableTypeSyntax>("class Parent { void Method() { dynamic? test = 2; } }");
+			NullableTypeSyntax id = GetNode<NullableTypeSyntax>("class Parent { void Method() { dynamic? test = 2; } }")!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(id.SyntaxTree);
 			TypeInfo info = semanticModel.GetTypeInfo(id);
 

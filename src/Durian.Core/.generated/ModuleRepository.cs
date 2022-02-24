@@ -630,7 +630,7 @@ namespace Durian.Info
 						diagnostics: new DiagnosticData[]
 						{
 							new DiagnosticData(
-								title: "Containing type of a member with the CopyFromAttribute must be partial",
+								title: "Containing type of a member with the CopyFromTypeAttribute or CopyFromMethodAttribute must be partial",
 								id: 01,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0201.md",
 								fatal: true,
@@ -638,7 +638,7 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Method marked with the CopyFromAttribute must be partial",
+								title: "Member marked with the CopyFromTypeAttribute or CopyFromMethodAttribute must be partial",
 								id: 02,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0202.md",
 								fatal: true,
@@ -646,7 +646,7 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Methods cannot be marked with multiple CopyFromAttributes",
+								title: "Target member cannot be resolved",
 								id: 03,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0203.md",
 								fatal: true,
@@ -654,7 +654,7 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Target member cannot be resolved",
+								title: "Target member is not compatible",
 								id: 04,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0204.md",
 								fatal: true,
@@ -662,16 +662,81 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Target member is not compatible",
+								title: "Implementation of the target member is not accessible",
 								id: 05,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0205.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Equivalent CopyFromTypeAttribute already specified",
+								id: 06,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0206.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Member cannot copy from itself or its parent, child or outer type",
+								id: 07,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0207.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Two or more members were resolved",
+								id: 08,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0208.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Cannot copy from a method without implementation",
+								id: 09,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0209.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "CopyFromMethodAttribute is not valid on this kind of method",
+								id: 10,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0210.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Method marked with the CopyFromMethodAttribute already has a declaration",
+								id: 11,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0211.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Target member does not have a return type",
+								id: 12,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0212.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Target member cannot have a return type",
+								id: 13,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0213.md",
 								fatal: true,
 								hasLocation: true
 							),
 						},
 						types: new TypeIdentity[]
 						{
-							TypeRepository.CopyFromAttribute,
+							TypeRepository.CopyFromTypeAttribute,
+							TypeRepository.CopyFromMethodAttribute,
 						}
 					);
 				}

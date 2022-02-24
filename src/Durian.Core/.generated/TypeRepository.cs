@@ -270,16 +270,39 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.CopyFromAttribute</c> type.
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.CopyFromTypeAttribute</c> type.
 		/// </summary>
-		public static TypeIdentity CopyFromAttribute
+		public static TypeIdentity CopyFromTypeAttribute
 		{
 			get
 			{
-				if(!IdentityPool.Types.TryGetValue("CopyFromAttribute", out TypeIdentity type))
+				if(!IdentityPool.Types.TryGetValue("CopyFromTypeAttribute", out TypeIdentity type))
 				{
 					type = new(
-						name: "CopyFromAttribute",
+						name: "CopyFromTypeAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.CopyFrom,
+						}
+					);
+				}
+
+				return type;
+			}
+		}
+
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.CopyFromMethodAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity CopyFromMethodAttribute
+		{
+			get
+			{
+				if(!IdentityPool.Types.TryGetValue("CopyFromMethodAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "CopyFromMethodAttribute",
 						@namespace: "Durian",
 						modules: new DurianModule[]
 						{

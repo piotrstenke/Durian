@@ -15,12 +15,12 @@ namespace Durian.Analysis.CopyFrom
 	/// </summary>
 	public sealed class CopyFromGenerator : DurianGenerator<CopyFromCompilationData, CopyFromSyntaxReceiver>
 	{
-		private FilterContainer<IGeneratorSyntaxFilterWithDiagnostics>? _filters;
-
 		/// <summary>
 		/// Number of trees generated statically by this generator.
 		/// </summary>
 		public const int NumStaticTrees = 2;
+
+		private FilterContainer<IGeneratorSyntaxFilterWithDiagnostics>? _filters;
 
 		/// <summary>
 		/// Name of this source generator.
@@ -84,39 +84,6 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		protected override CopyFromCompilationData? CreateCompilationData(CSharpCompilation compilation)
-		{
-			return new CopyFromCompilationData(compilation);
-		}
-
-		/// <inheritdoc/>
-		protected override DurianModule[] GetRequiredModules()
-		{
-			return new DurianModule[]
-			{
-				DurianModule.CopyFrom
-			};
-		}
-
-		/// <inheritdoc/>
-		protected override string? GetGeneratorVersion()
-		{
-			return Version;
-		}
-
-		/// <inheritdoc/>
-		protected override string? GetGeneratorName()
-		{
-			return GeneratorName;
-		}
-
-		/// <inheritdoc/>
-		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
-		{
-			return GetSourceProviders();
-		}
-
-		/// <inheritdoc/>
 		public override FilterContainer<IGeneratorSyntaxFilterWithDiagnostics> GetFilters(in GeneratorExecutionContext context)
 		{
 			return GetFilters(new SymbolNameToFile());
@@ -141,9 +108,42 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
+		protected override CopyFromCompilationData? CreateCompilationData(CSharpCompilation compilation)
+		{
+			return new CopyFromCompilationData(compilation);
+		}
+
+		/// <inheritdoc/>
 		protected override bool Generate(IMemberData member, string hintName, in GeneratorExecutionContext context)
 		{
 			return true;
+		}
+
+		/// <inheritdoc/>
+		protected override string? GetGeneratorName()
+		{
+			return GeneratorName;
+		}
+
+		/// <inheritdoc/>
+		protected override string? GetGeneratorVersion()
+		{
+			return Version;
+		}
+
+		/// <inheritdoc/>
+		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
+		{
+			return GetSourceProviders();
+		}
+
+		/// <inheritdoc/>
+		protected override DurianModule[] GetRequiredModules()
+		{
+			return new DurianModule[]
+			{
+				DurianModule.CopyFrom
+			};
 		}
 	}
 }

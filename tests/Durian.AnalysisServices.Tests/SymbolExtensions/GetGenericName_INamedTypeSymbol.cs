@@ -57,7 +57,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private INamedTypeSymbol GetSymbolForArgument(string source)
 		{
-			BaseTypeSyntax b = GetNode<BaseTypeSyntax>(source);
+			BaseTypeSyntax b = GetNode<BaseTypeSyntax>(source)!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(b.SyntaxTree);
 			TypeInfo info = semanticModel.GetTypeInfo(b.Type);
 			return (info.Type as INamedTypeSymbol)!;
@@ -65,7 +65,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private INamedTypeSymbol GetSymbolForParameter(string source)
 		{
-			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source);
+			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source)!;
 		}
 	}
 }

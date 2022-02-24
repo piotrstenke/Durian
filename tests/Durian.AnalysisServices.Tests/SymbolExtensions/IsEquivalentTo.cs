@@ -102,7 +102,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private IParameterSymbol GetSymbol(string input)
 		{
-			return GetSymbol<IParameterSymbol, ParameterSyntax>(input);
+			return GetSymbol<IParameterSymbol, ParameterSyntax>(input)!;
 		}
 	}
 }

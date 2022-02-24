@@ -97,7 +97,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Returns a new instance of <see cref="MethodDeclarationBuilder"/> with <see cref="MethodDeclarationBuilder.OriginalDeclaration"/> set to this member's <see cref="MethodData.Declaration"/>.
+		/// Returns a new instance of <see cref="MethodDeclarationBuilder"/> with <see cref="MethodDeclarationBuilder.OriginalDeclaration"/> set to this member's <see cref="MethodData{TDeclaration}.Declaration"/>.
 		/// </summary>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public MethodDeclarationBuilder GetDeclarationBuilder(CancellationToken cancellationToken = default)

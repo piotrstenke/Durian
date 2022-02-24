@@ -121,7 +121,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void ReturnsSymbolName_When_SymbolIsNotMethodOrNamedType()
 		{
-			ISymbol symbol = GetSymbol<IPropertySymbol, PropertyDeclarationSyntax>("class Test { string Name { get; } }");
+			ISymbol symbol = GetSymbol<IPropertySymbol, PropertyDeclarationSyntax>("class Test { string Name { get; } }")!;
 			Assert.True(symbol.GetGenericName(true) == "Name");
 		}
 
@@ -134,7 +134,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private IMethodSymbol GetMethodSymbolForArgument(string source)
 		{
-			InvocationExpressionSyntax inv = GetNode<InvocationExpressionSyntax>(source);
+			InvocationExpressionSyntax inv = GetNode<InvocationExpressionSyntax>(source)!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(inv.SyntaxTree);
 			SymbolInfo info = semanticModel.GetSymbolInfo(inv);
 			return (info.Symbol as IMethodSymbol)!;
@@ -142,12 +142,12 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private IMethodSymbol GetMethodSymbolForParameter(string source)
 		{
-			return GetSymbol<IMethodSymbol, MethodDeclarationSyntax>(source);
+			return GetSymbol<IMethodSymbol, MethodDeclarationSyntax>(source)!;
 		}
 
 		private INamedTypeSymbol GetTypeSymbolForArgument(string source)
 		{
-			BaseTypeSyntax b = GetNode<BaseTypeSyntax>(source);
+			BaseTypeSyntax b = GetNode<BaseTypeSyntax>(source)!;
 			SemanticModel semanticModel = Compilation.CurrentCompilation.GetSemanticModel(b.SyntaxTree);
 			TypeInfo info = semanticModel.GetTypeInfo(b.Type);
 			return (info.Type as INamedTypeSymbol)!;
@@ -155,7 +155,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 		private INamedTypeSymbol GetTypeSymbolForParameter(string source)
 		{
-			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source);
+			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source)!;
 		}
 	}
 }

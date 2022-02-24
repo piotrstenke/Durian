@@ -15,14 +15,14 @@ namespace Durian.Analysis.CopyFrom
 	public sealed class CopyFromSyntaxReceiver : IDurianSyntaxReceiver
 	{
 		/// <summary>
-		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <c>Durian.CopyFromAttribute</c> applied.
-		/// </summary>
-		public List<TypeDeclarationSyntax> CandidateTypes { get; }
-
-		/// <summary>
 		/// <see cref="MethodDeclarationSyntax"/>es that potentially have the <c>Durian.CopyFromAttribute</c> applied.
 		/// </summary>
 		public List<MethodDeclarationSyntax> CandidateMethods { get; }
+
+		/// <summary>
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <c>Durian.CopyFromAttribute</c> applied.
+		/// </summary>
+		public List<TypeDeclarationSyntax> CandidateTypes { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromSyntaxReceiver"/> class.
@@ -42,16 +42,16 @@ namespace Durian.Analysis.CopyFrom
 		/// <inheritdoc/>
 		public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
 		{
-			if(syntaxNode is MethodDeclarationSyntax method)
+			if (syntaxNode is MethodDeclarationSyntax method)
 			{
-				if(method.AttributeLists.Any())
+				if (method.AttributeLists.Any())
 				{
 					CandidateMethods.Add(method);
 				}
 			}
-			else if(syntaxNode is TypeDeclarationSyntax type)
+			else if (syntaxNode is TypeDeclarationSyntax type)
 			{
-				if(type.AttributeLists.Any())
+				if (type.AttributeLists.Any())
 				{
 					CandidateTypes.Add(type);
 				}

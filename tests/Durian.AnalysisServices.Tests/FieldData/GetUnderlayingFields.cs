@@ -13,7 +13,7 @@ namespace Durian.Analysis.Tests.FieldData
 		[Fact]
 		public void CanReturnMultipleFields()
 		{
-			Data.FieldData data = GetField("class Test { int field1, field2; }");
+			Data.FieldData data = GetField("class Test { int field1, field2; }")!;
 			Data.FieldData[] other = data.GetUnderlayingFields().ToArray();
 
 			Assert.True(other.Length == 2 && other.Any(d => d.Name == "field1") && other.Any(d => d.Name == "field2"));
@@ -22,7 +22,7 @@ namespace Durian.Analysis.Tests.FieldData
 		[Fact]
 		public void ReturnsItselfAmongOtherFields()
 		{
-			Data.FieldData data = GetField("class Test { int field1, field2; }");
+			Data.FieldData data = GetField("class Test { int field1, field2; }")!;
 			Data.FieldData[] other = data.GetUnderlayingFields().ToArray();
 
 			Assert.True(other.Length == 2 && other.Any(d => d == data) && other.Any(d => d.Name == "field2"));
@@ -31,7 +31,7 @@ namespace Durian.Analysis.Tests.FieldData
 		[Fact]
 		public void ReturnsSelf_When_HasNoOtherFieldsOnDeclaration()
 		{
-			Data.FieldData data = GetField("class Test { int field; }");
+			Data.FieldData data = GetField("class Test { int field; }")!;
 			Data.FieldData[] other = data.GetUnderlayingFields().ToArray();
 
 			Assert.True(other.Length == 1 && data == other[0]);

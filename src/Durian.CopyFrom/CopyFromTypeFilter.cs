@@ -17,11 +17,6 @@ namespace Durian.Analysis.CopyFrom
 	public sealed class CopyFromTypeFilter : IGeneratorSyntaxFilterWithDiagnostics
 	{
 		/// <summary>
-		/// <see cref="FilterMode"/> of this <see cref="CopyFromTypeFilter"/>.
-		/// </summary>
-		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
-
-		/// <summary>
 		/// <see cref="CopyFromGenerator"/> that creates this filter.
 		/// </summary>
 		public CopyFromGenerator Generator { get; }
@@ -29,10 +24,15 @@ namespace Durian.Analysis.CopyFrom
 		/// <inheritdoc/>
 		public IHintNameProvider HintNameProvider { get; }
 
-		IDurianGenerator IGeneratorSyntaxFilter.Generator => Generator;
-
 		/// <inheritdoc/>
 		public bool IncludeGeneratedSymbols => true;
+
+		/// <summary>
+		/// <see cref="FilterMode"/> of this <see cref="CopyFromTypeFilter"/>.
+		/// </summary>
+		public FilterMode Mode => Generator.LoggingConfiguration.CurrentFilterMode;
+
+		IDurianGenerator IGeneratorSyntaxFilter.Generator => Generator;
 
 		/// <inheritdoc cref="CopyFromTypeFilter(CopyFromGenerator, IHintNameProvider)"/>
 		public CopyFromTypeFilter(CopyFromGenerator generator) : this(generator, new SymbolNameToFile())
