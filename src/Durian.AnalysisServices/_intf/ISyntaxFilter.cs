@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// Filtrates the <see cref="CSharpSyntaxNode"/>s collected by a <see cref="IDurianSyntaxReceiver"/>.
+	/// Filtrates <see cref="CSharpSyntaxNode"/>s collected by a <see cref="IDurianSyntaxReceiver"/>.
 	/// </summary>
 	public interface ISyntaxFilter
 	{

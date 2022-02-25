@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Threading;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -21,17 +21,10 @@ namespace Durian.Analysis.Cache
 	{
 		internal readonly CachedData<T> _cache;
 
-		private readonly CSharpSyntaxNode[] _nodes;
-
-		private int _index;
+		private readonly IEnumerator<CSharpSyntaxNode> _nodes;
 
 		/// <inheritdoc cref="FilterEnumerator{T}.Compilation"/>
 		public readonly ICompilationData Compilation { get; }
-
-		/// <summary>
-		/// Number of <see cref="CSharpSyntaxNode"/>s in the collection that this enumerator enumerates on.
-		/// </summary>
-		public readonly int Count => _nodes.Length;
 
 		/// <inheritdoc cref="FilterEnumerator{T}.Current"/>
 		public T? Current { readonly get; private set; }
@@ -45,11 +38,16 @@ namespace Durian.Analysis.Cache
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FilterEnumerator{T}"/> struct.
 		/// </summary>
-		/// <param name="nodes">An array of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
 		/// <param name="validator"><see cref="INodeValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
-		public CachedFilterEnumerator(CSharpSyntaxNode[] nodes, ICompilationData compilation, INodeValidator<T> validator, in CachedData<T> cache) : this(nodes, compilation, validator, in cache, default)
+		public CachedFilterEnumerator(
+			IEnumerable<CSharpSyntaxNode> nodes,
+			ICompilationData compilation,
+			INodeValidator<T> validator,
+			in CachedData<T> cache
+		) : this(nodes.GetEnumerator(), compilation, validator, in cache)
 		{
 		}
 
@@ -60,18 +58,22 @@ namespace Durian.Analysis.Cache
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
 		/// <param name="validator"><see cref="INodeValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
-		public CachedFilterEnumerator(INodeProvider provider, ICompilationData compilation, INodeValidator<T> validator, in CachedData<T> cache) : this(provider.GetNodes().ToArray(), compilation, validator, in cache, default)
+		public CachedFilterEnumerator(
+			INodeProvider provider,
+			ICompilationData compilation,
+			INodeValidator<T> validator,
+			in CachedData<T> cache
+		) : this(provider.GetNodes().GetEnumerator(), compilation, validator, in cache)
 		{
 		}
 
 #pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
 
-		internal CachedFilterEnumerator(CSharpSyntaxNode[] nodes, ICompilationData compilation, INodeValidator<T> validator, in CachedData<T> cache, int index)
+		internal CachedFilterEnumerator(IEnumerator<CSharpSyntaxNode> nodes, ICompilationData compilation, INodeValidator<T> validator, in CachedData<T> cache)
 		{
 			Validator = validator;
 			Compilation = compilation;
 			_nodes = nodes;
-			_index = index;
 			Current = default;
 			_cache = cache;
 		}
@@ -79,37 +81,31 @@ namespace Durian.Analysis.Cache
 		/// <inheritdoc/>
 		public static explicit operator CachedFilterEnumerator<T>(in FilterEnumerator<T> a)
 		{
-			return new CachedFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, CachedData<T>.Empty, a._index);
+			return new CachedFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, CachedData<T>.Empty);
 		}
 
 		/// <inheritdoc/>
 		public static explicit operator FilterEnumerator<T>(in CachedFilterEnumerator<T> a)
 		{
-			return new FilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, a._index);
+			return new FilterEnumerator<T>(a._nodes, a.Compilation, a.Validator);
 		}
 
 #pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 
-		/// <summary>
-		/// Creates and validates the next <see cref="IMemberData"/>.
-		/// </summary>
-		/// <returns><see langword="true"/> is the <see cref="IMemberData"/> is valid, <see langword="false"/> otherwise.</returns>
+		/// <inheritdoc cref="FilterEnumerator{T}.MoveNext(CancellationToken)"/>
 		[MemberNotNullWhen(true, nameof(Current))]
-		public bool MoveNext()
+		public bool MoveNext(CancellationToken cancellationToken = default)
 		{
-			int length = _nodes.Length;
-
-			while (_index < length)
+			while (_nodes.MoveNext())
 			{
-				CSharpSyntaxNode node = _nodes[_index];
-				_index++;
+				CSharpSyntaxNode node = _nodes.Current;
 
 				if (node is null)
 				{
 					continue;
 				}
 
-				if (_cache.TryGetCachedValue(node.GetLocation().GetLineSpan(), out T? data) || Validator.ValidateAndCreate(node, Compilation, out data))
+				if (_cache.TryGetCachedValue(node.GetLocation().GetLineSpan(), out T? data) || Validator.ValidateAndCreate(node, Compilation, out data, cancellationToken))
 				{
 					Current = data!;
 					return true;
@@ -120,12 +116,17 @@ namespace Durian.Analysis.Cache
 			return false;
 		}
 
+		bool IEnumerator.MoveNext()
+		{
+			return MoveNext();
+		}
+
 		/// <summary>
 		/// Resets the enumerator.
 		/// </summary>
 		public void Reset()
 		{
-			_index = 0;
+			_nodes.Reset();
 			Current = default;
 		}
 

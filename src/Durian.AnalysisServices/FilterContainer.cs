@@ -13,7 +13,7 @@ namespace Durian.Analysis
 	/// A collection of <see cref="ISyntaxFilter"/>s that binds its elements into separate <see cref="FilterGroup{TFilter}"/>s.
 	/// </summary>
 	/// <typeparam name="TFilter">Type of <see cref="ISyntaxFilter"/> that can be stored in this list.</typeparam>
-	[DebuggerDisplay("NumGroups = {NumGroups}, IsSealed = {IsSealed}")]
+	[DebuggerDisplay("NumGroups = {_filterGropus?.Count ?? 0}, IsSealed = {IsSealed}")]
 	public class FilterContainer<TFilter> : ICollection<FilterGroup<TFilter>> where TFilter : ISyntaxFilter
 	{
 		private readonly List<FilterGroup<TFilter>> _filterGroups;
@@ -50,7 +50,7 @@ namespace Durian.Analysis
 		bool ICollection<FilterGroup<TFilter>>.IsReadOnly => IsSealed;
 
 		/// <inheritdoc cref="GetFilterGroup(int)"/>
-		public FilterGroup<TFilter> this[int index] => _filterGroups[index];
+		public FilterGroup<TFilter> this[int index] => GetFilterGroup(index);
 
 		/// <inheritdoc cref="GetFilterGroup(string)"/>
 		public FilterGroup<TFilter> this[string name] => GetFilterGroup(name);

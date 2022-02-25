@@ -18,6 +18,88 @@ using static Durian.Analysis.DefaultParam.DefaultParamMethodAnalyzer;
 namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
+	/// <c>DefaultParam</c>-specific <see cref="SyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>.
+	/// </summary>
+	/// <typeparam name="TData">Type of <see cref="IMemberData"/> this <see cref="DefaultParamFilter{TData, TSyntax, TSymbol}"/> uses.</typeparam>
+	/// <typeparam name="TSyntax">Type of <see cref="CSharpSyntaxNode"/> this <see cref="DefaultParamFilter{TData, TSyntax, TSymbol}"/> uses.</typeparam>
+	/// <typeparam name="TSymbol">Type of <see cref="ISyntaxFilter"/> this <see cref="DefaultParamFilter{TData, TSyntax, TSymbol}"/> uses.</typeparam>
+	public abstract class DefaultParamFilter<TData, TSyntax, TSymbol> : SyntaxFilterValidator<TData, DefaultParamCompilationData, DefaultParamSyntaxReceiver, DefaultParamGenerator, TSyntax, TSymbol>.WithDiagnostics, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>
+		where TData : IMemberData
+		where TSyntax : CSharpSyntaxNode
+		where TSymbol : ISymbol
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamFilter{TData, TSyntax, TSymbol}"/> class.
+		/// </summary>
+		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+		protected DefaultParamFilter(DefaultParamGenerator generator) : base(generator)
+		{
+		}
+	}
+
+	/// <summary>
+	/// Filtrates and validates <see cref="MethodDeclarationSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
+	/// </summary>
+	public class DefaultParamMethodFilter2 : DefaultParamFilter<DefaultParamMethodData, MethodDeclarationSyntax, IMethodSymbol>
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefaultParamMethodFilter2"/> class.
+		/// </summary>
+		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+		protected DefaultParamMethodFilter2(DefaultParamGenerator generator) : base(generator)
+		{
+		}
+
+		public override IEnumerable<DefaultParamMethodData> Filtrate(
+			DefaultParamCompilationData compilation,
+			DefaultParamSyntaxReceiver syntaxReceiver,
+			IDiagnosticReceiver diagnosticReceiver,
+			CancellationToken cancellationToken = default
+		)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override IEnumerable<DefaultParamMethodData> Filtrate(DefaultParamCompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, IDiagnosticReceiver diagnosticReceiver, CancellationToken cancellationToken = default)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override IEnumerable<DefaultParamMethodData> Filtrate(in GeneratorExecutionContext context)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override IEnumerable<DefaultParamMethodData> Filtrate(DefaultParamCompilationData compilation, DefaultParamSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken = default)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override IEnumerable<DefaultParamMethodData> Filtrate(DefaultParamCompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken = default)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override bool GetValidationData(MethodDeclarationSyntax node, DefaultParamCompilationData compilation, [NotNullWhen(true)] out SemanticModel? semanticModel, [NotNullWhen(true)] out IMethodSymbol? symbol, CancellationToken cancellationToken = default)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override bool ValidateAndCreate(MethodDeclarationSyntax node, DefaultParamCompilationData compilation, SemanticModel semanticModel, IMethodSymbol symbol, [NotNullWhen(true)] out DefaultParamMethodData? data, IDiagnosticReceiver diagnosticReceiver, CancellationToken cancellationToken = default)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override bool ValidateAndCreate(MethodDeclarationSyntax node, DefaultParamCompilationData compilation, SemanticModel semanticModel, IMethodSymbol symbol, [NotNullWhen(true)] out DefaultParamMethodData? data, CancellationToken cancellationToken = default)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+
+	/// <summary>
 	/// Filtrates and validates <see cref="MethodDeclarationBuilder"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
 	/// </summary>
 	public partial class DefaultParamMethodFilter : IDefaultParamFilter<DefaultParamMethodData>, IDefaultParamFilter, INodeProvider<MethodDeclarationSyntax>

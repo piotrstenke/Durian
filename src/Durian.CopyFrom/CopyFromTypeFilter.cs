@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using Durian.Analysis.Data;
@@ -50,38 +51,37 @@ namespace Durian.Analysis.CopyFrom
 			HintNameProvider = hintNameProvider;
 		}
 
-		/// <inheritdoc/>
 		public IEnumerable<IMemberData> Filtrate(in GeneratorExecutionContext context)
 		{
 			throw new System.NotImplementedException();
 		}
 
-		/// <inheritdoc/>
-		public IEnumerable<IMemberData> Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken = default)
+		public IEnumerator<IMemberData> GetEnumerator()
 		{
 			throw new System.NotImplementedException();
 		}
 
-		/// <inheritdoc/>
-		public IEnumerable<IMemberData> Filtrate(IDiagnosticReceiver diagnosticReceiver, ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken = default)
+		IEnumerator IEnumerable.GetEnumerator()
 		{
 			throw new System.NotImplementedException();
 		}
 
-		/// <inheritdoc/>
+		public IEnumerable<IMemberData> Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, IDiagnosticReceiver diagnosticReceiver, CancellationToken cancellationToken = default)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public IEnumerable<IMemberData> Filtrate(ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, IDiagnosticReceiver diagnosticReceiver, CancellationToken cancellationToken = default)
+		{
+			throw new System.NotImplementedException();
+		}
+
 		public IEnumerable<IMemberData> Filtrate(ICompilationData compilation, IDurianSyntaxReceiver syntaxReceiver, CancellationToken cancellationToken = default)
 		{
 			throw new System.NotImplementedException();
 		}
 
-		/// <inheritdoc/>
 		public IEnumerable<IMemberData> Filtrate(ICompilationData compilation, IEnumerable<CSharpSyntaxNode> collectedNodes, CancellationToken cancellationToken = default)
-		{
-			throw new System.NotImplementedException();
-		}
-
-		/// <inheritdoc/>
-		public IEnumerator<IMemberData> GetEnumerator()
 		{
 			throw new System.NotImplementedException();
 		}

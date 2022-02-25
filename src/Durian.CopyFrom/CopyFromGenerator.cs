@@ -100,6 +100,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				FilterContainer<IGeneratorSyntaxFilterWithDiagnostics> list = new();
 
+				//list.RegisterFilterGroup("Methods", new CopyFromMethodFilter(this, fileNameProvider));
 				list.RegisterFilterGroup("Types", new CopyFromTypeFilter(this, fileNameProvider));
 
 				_filters = list;

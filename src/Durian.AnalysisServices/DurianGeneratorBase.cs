@@ -20,7 +20,7 @@ namespace Durian.Analysis
 	/// </summary>
 	public abstract class DurianGeneratorBase : LoggableGenerator
 	{
-		private Analysis.ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? _diagnosticReceiver;
+		private DiagnosticReceiver.ReadonlyContextual<GeneratorExecutionContext>? _diagnosticReceiver;
 
 		private IHintNameProvider _fileNameProvider;
 
@@ -66,7 +66,7 @@ namespace Durian.Analysis
 		/// <see cref="DiagnosticReceiver"/> cannot be set if <see cref="SupportsDiagnostics"/> is <see langword="false"/>. -or-
 		/// <see cref="DiagnosticReceiver"/> cannot be set to <see langword="null"/> if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.
 		/// </exception>
-		public new Analysis.ReadonlyContextualDiagnosticReceiver<GeneratorExecutionContext>? DiagnosticReceiver
+		public DiagnosticReceiver.ReadonlyContextual<GeneratorExecutionContext>? DiagnosticReceiver
 		{
 			get => _diagnosticReceiver;
 			set
@@ -76,12 +76,9 @@ namespace Durian.Analysis
 					throw new InvalidOperationException($"{nameof(DiagnosticReceiver)} cannot be set if {nameof(SupportsDiagnostics)} is false!");
 				}
 
-				if (value is null)
+				if (value is null && SupportsDiagnostics)
 				{
-					if (SupportsDiagnostics)
-					{
-						throw new InvalidOperationException($"{nameof(DiagnosticReceiver)} cannot be set to null if {nameof(SupportsDiagnostics)} is true!");
-					}
+					throw new InvalidOperationException($"{nameof(DiagnosticReceiver)} cannot be set to null if {nameof(SupportsDiagnostics)} is true!");
 				}
 
 				_diagnosticReceiver = value;
@@ -131,7 +128,7 @@ namespace Durian.Analysis
 		/// <summary>
 		/// A <see cref="IDiagnosticReceiver"/> that is used to create log files outside of this <see cref="ISourceGenerator"/>.
 		/// </summary>
-		public DiagnosticReceiver LogReceiver { get; }
+		public LoggableDiagnosticReceiver LogReceiver { get; }
 
 		/// <inheritdoc cref="LoggingConfiguration.SupportsDiagnostics"/>
 		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
@@ -160,7 +157,7 @@ namespace Durian.Analysis
 		{
 			if (SupportsDiagnostics)
 			{
-				_diagnosticReceiver = Analysis.DiagnosticReceiverFactory.SourceGenerator();
+				_diagnosticReceiver = Analysis.DiagnosticReceiver.Factory.SourceGenerator();
 			}
 
 			_fileNameProvider = fileNameProvider ?? new SymbolNameToFile();
@@ -181,7 +178,7 @@ namespace Durian.Analysis
 		{
 			if (SupportsDiagnostics)
 			{
-				_diagnosticReceiver = Analysis.DiagnosticReceiverFactory.SourceGenerator();
+				_diagnosticReceiver = Analysis.DiagnosticReceiver.Factory.SourceGenerator();
 			}
 
 			_fileNameProvider = fileNameProvider ?? new SymbolNameToFile();

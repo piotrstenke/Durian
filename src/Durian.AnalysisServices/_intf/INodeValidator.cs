@@ -33,7 +33,7 @@ namespace Durian.Analysis
 			CancellationToken cancellationToken = default
 		);
 
-		/// <inheritdoc cref="INodeValidatorWithDiagnostics{T}.ValidateAndCreateWithDiagnostics(IDiagnosticReceiver, CSharpSyntaxNode, ICompilationData, SemanticModel, ISymbol, out T, CancellationToken)"/>
+		/// <inheritdoc cref="INodeValidatorWithDiagnostics{T}.ValidateAndCreate(CSharpSyntaxNode, ICompilationData, SemanticModel, ISymbol, out T, IDiagnosticReceiver, CancellationToken)"/>
 		bool ValidateAndCreate(
 			CSharpSyntaxNode node,
 			ICompilationData compilation,
@@ -41,7 +41,7 @@ namespace Durian.Analysis
 			CancellationToken cancellationToken = default
 		);
 
-		/// <inheritdoc cref="INodeValidatorWithDiagnostics{T}.ValidateAndCreateWithDiagnostics(IDiagnosticReceiver, CSharpSyntaxNode, ICompilationData, SemanticModel, ISymbol, out T, CancellationToken)"/>
+		/// <inheritdoc cref="INodeValidatorWithDiagnostics{T}.ValidateAndCreate(CSharpSyntaxNode, ICompilationData, SemanticModel, ISymbol, out T, IDiagnosticReceiver, CancellationToken)"/>
 		bool ValidateAndCreate(
 			CSharpSyntaxNode node,
 			ICompilationData compilation,

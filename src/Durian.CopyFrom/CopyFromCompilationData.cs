@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.Analysis.CopyFrom
 {
 	/// <summary>
-	/// <see cref="CompilationData"/> that contains all <see cref="ISymbol"/>s needed to properly analyze types marked with the <c>Durian.CopyFromAttribute</c>.
+	/// <see cref="CompilationData"/> that contains all <see cref="ISymbol"/>s needed to properly analyze types marked with the <c>Durian.CopyFromTypeAttribute</c> or <c>Durian.CopyFromMethodAttribute</c>.
 	/// </summary>
 	public sealed class CopyFromCompilationData : CompilationDataWithSymbols
 	{

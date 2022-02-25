@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
@@ -11,7 +11,7 @@ namespace Durian.Analysis.Logging
 {
 	public sealed partial class LoggingConfiguration
 	{
-		private static readonly Dictionary<Assembly, LoggingConfiguration> _assemblyConfigurations = new();
+		private static readonly ConcurrentDictionary<Assembly, LoggingConfiguration> _assemblyConfigurations = new();
 
 		/// <summary>
 		/// Creates a new instance of the <see cref="LoggingConfiguration"/> class with its values set to default.
@@ -145,18 +145,15 @@ namespace Durian.Analysis.Logging
 				throw new ArgumentNullException(nameof(assembly));
 			}
 
-			lock (_assemblyConfigurations)
+			if (_assemblyConfigurations.TryGetValue(assembly, out LoggingConfiguration config))
 			{
-				if (_assemblyConfigurations.TryGetValue(assembly, out LoggingConfiguration config))
-				{
-					return config;
-				}
-				else
-				{
-					config = CreateConfigurationForAssembly(assembly);
-					_assemblyConfigurations.Add(assembly, config);
-					return config;
-				}
+				return config;
+			}
+			else
+			{
+				config = CreateConfigurationForAssembly(assembly);
+				_assemblyConfigurations.TryAdd(assembly, config);
+				return config;
 			}
 		}
 

@@ -16,7 +16,7 @@ namespace Durian.Analysis.Cache
 	/// <typeparam name="TCompilation">Type of <see cref="ICompilationData"/> this <see cref="DurianAnalyzer"/> uses.</typeparam>
 	public abstract class CachedAnalyzer<TTarget, TCompilation> : DurianAnalyzer<TCompilation>, ICachedAnalyzer<TTarget> where TCompilation : class, ICompilationData
 	{
-		private static readonly IDiagnosticReceiver _diagnosticReceiver = DiagnosticReceiverFactory.Empty();
+		private static readonly IDiagnosticReceiver _diagnosticReceiver = DiagnosticReceiver.Factory.Empty();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CachedAnalyzer{TTarget, TCompilation}"/> class.

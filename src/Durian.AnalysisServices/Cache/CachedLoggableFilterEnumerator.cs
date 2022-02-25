@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
@@ -23,19 +24,12 @@ namespace Durian.Analysis.Cache
 	{
 		internal readonly CachedData<T> _cache;
 
-		private readonly CSharpSyntaxNode[] _nodes;
-
-		private int _index;
+		private readonly IEnumerator<CSharpSyntaxNode> _nodes;
 
 		/// <summary>
 		/// Parent <see cref="ICompilationData"/> of the provided <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
 		public readonly ICompilationData Compilation { get; }
-
-		/// <summary>
-		/// Number of <see cref="CSharpSyntaxNode"/>s in the collection that this enumerator enumerates on.
-		/// </summary>
-		public readonly int Count => _nodes.Length;
 
 		/// <summary>
 		/// Current <see cref="IMemberData"/>.
@@ -63,13 +57,20 @@ namespace Durian.Analysis.Cache
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{T}"/> struct.
 		/// </summary>
-		/// <param name="nodes">An array of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
 		/// <param name="validator"><see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
 		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <paramref name="nodes"/>.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
-		public CachedLoggableFilterEnumerator(CSharpSyntaxNode[] nodes, ICompilationData compilation, INodeValidatorWithDiagnostics<T> validator, INodeDiagnosticReceiver logReceiver, IHintNameProvider hintNameProvider, in CachedData<T> cache) : this(nodes, compilation, validator, logReceiver, hintNameProvider, in cache, default)
+		public CachedLoggableFilterEnumerator(
+			IEnumerable<CSharpSyntaxNode> nodes,
+			ICompilationData compilation,
+			INodeValidatorWithDiagnostics<T> validator,
+			INodeDiagnosticReceiver logReceiver,
+			IHintNameProvider hintNameProvider,
+			in CachedData<T> cache
+		) : this(nodes.GetEnumerator(), compilation, validator, logReceiver, hintNameProvider, in cache)
 		{
 		}
 
@@ -82,48 +83,58 @@ namespace Durian.Analysis.Cache
 		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
 		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
-		public CachedLoggableFilterEnumerator(INodeProvider provider, ICompilationData compilation, INodeValidatorWithDiagnostics<T> validator, INodeDiagnosticReceiver logReceiver, IHintNameProvider hintNameProvider, in CachedData<T> cache) : this(provider.GetNodes().ToArray(), compilation, validator, logReceiver, hintNameProvider, in cache, default)
+		public CachedLoggableFilterEnumerator(
+			INodeProvider provider,
+			ICompilationData compilation,
+			INodeValidatorWithDiagnostics<T> validator,
+			INodeDiagnosticReceiver logReceiver,
+			IHintNameProvider hintNameProvider,
+			in CachedData<T> cache
+		) : this(provider.GetNodes().GetEnumerator(), compilation, validator, logReceiver, hintNameProvider, in cache)
 		{
 		}
 
 #pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
 
-		internal CachedLoggableFilterEnumerator(CSharpSyntaxNode[] nodes, ICompilationData compilation, INodeValidatorWithDiagnostics<T> validator, INodeDiagnosticReceiver logReceiver, IHintNameProvider hintNameProvider, in CachedData<T> cache, int index)
+		internal CachedLoggableFilterEnumerator(
+			IEnumerator<CSharpSyntaxNode> nodes,
+			ICompilationData compilation,
+			INodeValidatorWithDiagnostics<T> validator,
+			INodeDiagnosticReceiver logReceiver,
+			IHintNameProvider hintNameProvider,
+			in CachedData<T> cache
+		)
 		{
 			Validator = validator;
 			Compilation = compilation;
 			LogReceiver = logReceiver;
 			HintNameProvider = hintNameProvider;
 			_nodes = nodes;
-			_index = index;
 			_cache = cache;
 			Current = default;
 		}
 
 		/// <inheritdoc/>
-		public static explicit operator CachedLoggableFilterEnumerator<T>(in LoggableFilterEnumerator<T> a)
+		public static implicit operator CachedLoggableFilterEnumerator<T>(in LoggableFilterEnumerator<T> a)
 		{
-			return new CachedLoggableFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, a.LogReceiver, a.HintNameProvider, CachedData<T>.Empty, a._index);
+			return new CachedLoggableFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, a.LogReceiver, a.HintNameProvider, CachedData<T>.Empty);
 		}
 
 		/// <inheritdoc/>
 		public static explicit operator LoggableFilterEnumerator<T>(in CachedLoggableFilterEnumerator<T> a)
 		{
-			return new LoggableFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, a.LogReceiver, a.HintNameProvider, a._index);
+			return new LoggableFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, a.LogReceiver, a.HintNameProvider);
 		}
 
 #pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 
 		/// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>
 		[MemberNotNullWhen(true, nameof(Current))]
-		public bool MoveNext()
+		public bool MoveNext(CancellationToken cancellationToken = default)
 		{
-			int length = _nodes.Length;
-
-			while (_index < length)
+			while (_nodes.MoveNext())
 			{
-				CSharpSyntaxNode node = _nodes[_index];
-				_index++;
+				CSharpSyntaxNode node = _nodes.Current;
 
 				if (node is null)
 				{
@@ -136,14 +147,14 @@ namespace Durian.Analysis.Cache
 					return true;
 				}
 
-				if (!Validator.GetValidationData(node, Compilation, out SemanticModel? semanticModel, out ISymbol? symbol))
+				if (!Validator.GetValidationData(node, Compilation, out SemanticModel? semanticModel, out ISymbol? symbol, cancellationToken))
 				{
 					continue;
 				}
 
 				string fileName = HintNameProvider.GetFileName(symbol);
 				LogReceiver.SetTargetNode(node, fileName);
-				bool isValid = Validator.ValidateAndCreateWithDiagnostics(LogReceiver, node, Compilation, semanticModel, symbol, out data);
+				bool isValid = Validator.ValidateAndCreate(node, Compilation, semanticModel, symbol, out data, LogReceiver, cancellationToken);
 
 				if (LogReceiver.Count > 0)
 				{
@@ -162,10 +173,15 @@ namespace Durian.Analysis.Cache
 			return false;
 		}
 
+		bool IEnumerator.MoveNext()
+		{
+			return MoveNext();
+		}
+
 		/// <inheritdoc cref="FilterEnumerator{T}.Reset"/>
 		public void Reset()
 		{
-			_index = 0;
+			_nodes.Reset();
 			Current = default;
 		}
 
@@ -174,7 +190,7 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		public readonly CachedFilterEnumerator<T> ToBasicCachedEnumerator()
 		{
-			return new CachedFilterEnumerator<T>(_nodes, Compilation, Validator, in _cache, _index);
+			return new CachedFilterEnumerator<T>(_nodes, Compilation, Validator, in _cache);
 		}
 
 		/// <summary>
@@ -182,15 +198,12 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		public readonly FilterEnumerator<T> ToBasicEnumerator()
 		{
-			return new FilterEnumerator<T>(_nodes, Compilation, Validator, _index);
+			return new FilterEnumerator<T>(_nodes, Compilation, Validator);
 		}
 
 		readonly void IDisposable.Dispose()
 		{
 			// Do nothing.
 		}
-
-#pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
-#pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 	}
 }

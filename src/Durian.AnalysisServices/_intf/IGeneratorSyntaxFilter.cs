@@ -11,7 +11,7 @@ namespace Durian.Analysis
 	/// <summary>
 	/// <see cref="ISyntaxFilter"/> that filtrates <see cref="CSharpSyntaxNode"/>s for the specified <see cref="IDurianGenerator"/>.
 	/// </summary>
-	public interface IGeneratorSyntaxFilter : ISyntaxFilter
+	public interface IGeneratorSyntaxFilter : ISyntaxFilter, IEnumerable<IMemberData>
 	{
 		/// <summary>
 		/// <see cref="IDurianGenerator"/> this <see cref="IGeneratorSyntaxFilter"/> takes the <see cref="CSharpSyntaxNode"/>s from.
@@ -28,10 +28,5 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> that is used when filtrating the <see cref="IMemberData"/>s.</param>
 		IEnumerable<IMemberData> Filtrate(in GeneratorExecutionContext context);
-
-		/// <summary>
-		/// Returns an <see cref="IEnumerator{T}"/> that allows to manually iterate through the filtrated <see cref="IMemberData"/>s.
-		/// </summary>
-		IEnumerator<IMemberData> GetEnumerator();
 	}
 }

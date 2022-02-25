@@ -7,17 +7,17 @@ using Microsoft.CodeAnalysis;
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// A <see cref="IDirectDiagnosticReceiver"/> that invokes a <see cref="DirectReportAction"/> when the <see cref="ReportDiagnostic(Diagnostic)"/> method is called.
+	/// A <see cref="IDirectDiagnosticReceiver"/> that invokes a <see cref="ReportAction.Direct"/> when the <see cref="ReportDiagnostic(Diagnostic)"/> method is called.
 	/// </summary>
-	public sealed class DiagnosticReceiver : IDirectDiagnosticReceiver
+	public sealed partial class DiagnosticReceiver : IDirectDiagnosticReceiver
 	{
-		private readonly DirectReportAction _action;
+		private readonly ReportAction.Direct _action;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ReadonlyContextualDiagnosticReceiver{T}"/> class.
+		/// Initializes a new instance of the <see cref="DiagnosticReceiver"/> class.
 		/// </summary>
 		/// <exception cref="ArgumentNullException"><paramref name="action"/> is <see langword="null"/>.</exception>
-		public DiagnosticReceiver(DirectReportAction action)
+		public DiagnosticReceiver(ReportAction.Direct action)
 		{
 			if (action is null)
 			{

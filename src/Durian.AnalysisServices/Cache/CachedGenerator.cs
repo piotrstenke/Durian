@@ -19,9 +19,10 @@ namespace Durian.Analysis.Cache
 	/// <typeparam name="TSyntaxReceiver">User-defined type of <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="CSharpSyntaxNode"/>s to perform the generation on.</typeparam>
 	/// <typeparam name="TFilter">User-defined type of <see cref="ISyntaxFilter"/> that decides what <see cref="CSharpSyntaxNode"/>s collected by the <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SyntaxReceiver"/> are valid for generation.</typeparam>
 	public abstract class CachedGenerator<TData, TCompilationData, TSyntaxReceiver, TFilter> : DurianGeneratorWithBuilder<TCompilationData, TSyntaxReceiver, TFilter>, ICachedGenerator<TData>
-		where TCompilationData : class, ICompilationDataWithSymbols
-		where TSyntaxReceiver : class, IDurianSyntaxReceiver
-		where TFilter : notnull, ICachedGeneratorSyntaxFilter<TData>, IGeneratorSyntaxFilterWithDiagnostics
+		where TData : IMemberData
+		where TCompilationData : ICompilationDataWithSymbols
+		where TSyntaxReceiver : IDurianSyntaxReceiver
+		where TFilter : ICachedGeneratorSyntaxFilter<TData>, IGeneratorSyntaxFilterWithDiagnostics
 	{
 		/// <inheritdoc cref="CachedGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
 		protected CachedGenerator()
@@ -183,6 +184,123 @@ namespace Durian.Analysis.Cache
 
 			filterGroup.Unseal();
 			AfterExecutionOfGroup(filterGroup, in originalContext);
+		}
+	}
+
+	/// <inheritdoc cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/>
+	public abstract class CachedGenerator<TData, TCompilationData, TSyntaxReceiver> : CachedGenerator<TData, TCompilationData, TSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
+		where TData : IMemberData
+		where TCompilationData : ICompilationDataWithSymbols
+		where TSyntaxReceiver : IDurianSyntaxReceiver
+	{
+		/// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		protected CachedGenerator()
+		{
+		}
+
+		/// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		protected CachedGenerator(in ConstructionContext context) : base(in context)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver}"/> class.
+		/// </summary>
+		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		protected CachedGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
+		{
+		}
+
+		/// <inheritdoc cref="CachedGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
+		protected CachedGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver}"/> class.
+		/// </summary>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		protected CachedGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		{
+		}
+	}
+
+	/// <inheritdoc cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/>
+	public abstract class CachedGenerator<TData, TCompilationData> : CachedGenerator<TData, TCompilationData, IDurianSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
+		where TData : IMemberData
+		where TCompilationData : ICompilationDataWithSymbols
+	{
+		/// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		protected CachedGenerator()
+		{
+		}
+
+		/// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		protected CachedGenerator(in ConstructionContext context) : base(in context)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData, TCompilationData}"/> class.
+		/// </summary>
+		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		protected CachedGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
+		{
+		}
+
+		/// <inheritdoc cref="CachedGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
+		protected CachedGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData, TCompilationData}"/> class.
+		/// </summary>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		protected CachedGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		{
+		}
+	}
+
+	/// <inheritdoc cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/>
+	public abstract class CachedGenerator<TData> : CachedGenerator<TData, ICompilationDataWithSymbols, IDurianSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
+		where TData : IMemberData
+	{
+		/// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		protected CachedGenerator()
+		{
+		}
+
+		/// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		protected CachedGenerator(in ConstructionContext context) : base(in context)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData}"/> class.
+		/// </summary>
+		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		protected CachedGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
+		{
+		}
+
+		/// <inheritdoc cref="CachedGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
+		protected CachedGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData}"/> class.
+		/// </summary>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		protected CachedGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		{
 		}
 	}
 }

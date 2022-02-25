@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Threading;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -20,19 +20,12 @@ namespace Durian.Analysis
 	[DebuggerDisplay("Current = {Current}")]
 	public struct FilterEnumeratorWithDiagnostics<T> : IEnumerator<T> where T : IMemberData
 	{
-		internal readonly CSharpSyntaxNode[] _nodes;
-
-		internal int _index;
+		internal readonly IEnumerator<CSharpSyntaxNode> _nodes;
 
 		/// <summary>
 		/// Parent <see cref="ICompilationData"/> of the provided <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
 		public readonly ICompilationData Compilation { get; }
-
-		/// <summary>
-		/// Number of <see cref="CSharpSyntaxNode"/>s in the collection that this enumerator enumerates on.
-		/// </summary>
-		public readonly int Count => _nodes.Length;
 
 		/// <summary>
 		/// Current <see cref="IMemberData"/>.
@@ -55,52 +48,63 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FilterEnumeratorWithDiagnostics{T}"/> struct.
 		/// </summary>
-		/// <param name="nodes">An array of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
 		/// <param name="validator"><see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-		public FilterEnumeratorWithDiagnostics(CSharpSyntaxNode[] nodes, ICompilationData compilation, INodeValidatorWithDiagnostics<T> validator, IDiagnosticReceiver diagnosticReceiver) : this(nodes, compilation, validator, diagnosticReceiver, default)
+		public FilterEnumeratorWithDiagnostics(
+			IEnumerable<CSharpSyntaxNode> nodes,
+			ICompilationData compilation,
+			INodeValidatorWithDiagnostics<T> validator,
+			IDiagnosticReceiver diagnosticReceiver
+		) : this(nodes.GetEnumerator(), compilation, validator, diagnosticReceiver)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FilterEnumeratorWithDiagnostics{T}"/> struct.
 		/// </summary>
-		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
+		/// <param name="nodeProvider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="nodeProvider"/>.</param>
 		/// <param name="validator"><see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-		public FilterEnumeratorWithDiagnostics(INodeProvider provider, ICompilationData compilation, INodeValidatorWithDiagnostics<T> validator, IDiagnosticReceiver diagnosticReceiver) : this(provider.GetNodes().ToArray(), compilation, validator, diagnosticReceiver, default)
+		public FilterEnumeratorWithDiagnostics(
+			INodeProvider nodeProvider,
+			ICompilationData compilation,
+			INodeValidatorWithDiagnostics<T> validator,
+			IDiagnosticReceiver diagnosticReceiver
+		) : this(nodeProvider.GetNodes().GetEnumerator(), compilation, validator, diagnosticReceiver)
 		{
 		}
 
-		internal FilterEnumeratorWithDiagnostics(CSharpSyntaxNode[] nodes, ICompilationData compilation, INodeValidatorWithDiagnostics<T> validator, IDiagnosticReceiver diagnosticReceiver, int index)
+		internal FilterEnumeratorWithDiagnostics(
+			IEnumerator<CSharpSyntaxNode> nodes,
+			ICompilationData compilation,
+			INodeValidatorWithDiagnostics<T> validator,
+			IDiagnosticReceiver diagnosticReceiver
+		)
 		{
 			Validator = validator;
 			_nodes = nodes;
 			Compilation = compilation;
-			_index = index;
 			DiagnosticReceiver = diagnosticReceiver;
 			Current = default;
 		}
 
 		/// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>
 		[MemberNotNullWhen(true, nameof(Current))]
-		public bool MoveNext()
+		public bool MoveNext(CancellationToken cancellationToken = default)
 		{
-			int length = _nodes.Length;
-
-			while (_index < length)
+			while (_nodes.MoveNext())
 			{
-				CSharpSyntaxNode node = _nodes[_index];
-				_index++;
+				CSharpSyntaxNode node = _nodes.Current;
 
 				if (node is null)
 				{
 					continue;
 				}
 
-				if (Validator.ValidateAndCreateWithDiagnostics(DiagnosticReceiver, node, Compilation, out T? data))
+				if (Validator.ValidateAndCreate(node, Compilation, out T? data, DiagnosticReceiver, cancellationToken))
 				{
 					Current = data;
 					return true;
@@ -111,10 +115,15 @@ namespace Durian.Analysis
 			return false;
 		}
 
+		bool IEnumerator.MoveNext()
+		{
+			return MoveNext();
+		}
+
 		/// <inheritdoc cref="FilterEnumerator{T}.Reset"/>
 		public void Reset()
 		{
-			_index = 0;
+			_nodes.Reset();
 			Current = default;
 		}
 
@@ -123,7 +132,7 @@ namespace Durian.Analysis
 		/// </summary>
 		public readonly FilterEnumerator<T> ToBasicEnumerator()
 		{
-			return new FilterEnumerator<T>(_nodes, Compilation, Validator, _index);
+			return new FilterEnumerator<T>(_nodes, Compilation, Validator);
 		}
 
 		void IDisposable.Dispose()
