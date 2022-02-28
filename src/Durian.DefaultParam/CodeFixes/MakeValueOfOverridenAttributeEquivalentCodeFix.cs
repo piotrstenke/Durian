@@ -79,14 +79,14 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 
 			if (method is null ||
 				semanticModel.GetDeclaredSymbol(method, cancellationToken) is not IMethodSymbol symbol ||
-				symbol.OverriddenMethod is not IMethodSymbol
+				symbol.OverriddenMethod is null
 			)
 			{
 				return null;
 			}
 
 			Compilation compilation = semanticModel.Compilation;
-			INamedTypeSymbol? attribute = compilation.GetTypeByMetadataName(MemberNames.DefaultParamAttribute);
+			INamedTypeSymbol? attribute = compilation.GetTypeByMetadataName(DefaultParamAttributeProvider.TypeName);
 
 			if (attribute is null)
 			{

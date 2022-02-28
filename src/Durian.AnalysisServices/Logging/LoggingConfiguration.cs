@@ -22,27 +22,9 @@ namespace Durian.Analysis.Logging
 		private bool _supportsDiagnostics;
 
 		/// <summary>
-		/// Gets the <see cref="FilterMode"/> the current configuration is valid for.
+		/// Returns a <see cref="FilterMode"/> associated with the current configuration.
 		/// </summary>
-		public FilterMode CurrentFilterMode
-		{
-			get
-			{
-				FilterMode mode = FilterMode.None;
-
-				if (EnableDiagnostics)
-				{
-					mode += (int)FilterMode.Diagnostics;
-				}
-
-				if (EnableLogging)
-				{
-					mode += (int)FilterMode.Logs;
-				}
-
-				return mode;
-			}
-		}
+		public FilterMode CurrentFilterMode => Extensions.GeneratorExtensions.GetFilterMode(EnableDiagnostics, EnableLogging);
 
 		/// <summary>
 		/// Determines whether this <see cref="IDurianGenerator"/> allows to report any <see cref="Diagnostic"/>s during the current execution pass.

@@ -3,6 +3,8 @@
 
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace Durian.Analysis.Cache
 {

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -62,7 +63,7 @@ namespace Durian.Analysis
 
 		IEnumerator<IMemberData> IEnumerable<IMemberData>.GetEnumerator()
 		{
-			using IEnumerator<TData> enumerator = GetEnumerator();
+			IEnumerator<TData> enumerator = GetEnumerator();
 
 			return Yield();
 
@@ -72,6 +73,8 @@ namespace Durian.Analysis
 				{
 					yield return enumerator.Current;
 				}
+
+				enumerator.Dispose();
 			}
 		}
 
@@ -89,18 +92,7 @@ namespace Durian.Analysis
 			public IHintNameProvider HintNameProvider { get; }
 
 			/// <inheritdoc/>
-			public virtual FilterMode Mode
-			{
-				get
-				{
-					if(Generator is ILoggableGenerator loggable)
-					{
-						return loggable.LoggingConfiguration.CurrentFilterMode;
-					}
-
-					return FilterMode.None;
-				}
-			}
+			public FilterMode Mode => Generator.GetFilterMode();
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="WithDiagnostics"/> class.

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Cache
@@ -78,6 +79,26 @@ namespace Durian.Analysis.Cache
 			}
 
 			return _data.TryGetCachedValue(position, out value);
+		}
+
+		/// <summary>
+		/// Casts the underlaying data of a <see cref="CachedGeneratorExecutionContext{T}"/> to other type.
+		/// </summary>
+		/// <typeparam name="TTo">Target type of cached data.</typeparam>
+		public CachedGeneratorExecutionContext<TTo> CastContext<TTo>()
+		{
+			ConcurrentDictionary<FileLinePositionSpan, T> old = _data._cached;
+			ConcurrentDictionary<FileLinePositionSpan, TTo> dict = new();
+
+			foreach (KeyValuePair<FileLinePositionSpan, T> item in old)
+			{
+				if (item.Value is TTo to)
+				{
+					dict.TryAdd(item.Key, to);
+				}
+			}
+
+			return new CachedGeneratorExecutionContext<TTo>(_context, dict);
 		}
 	}
 }

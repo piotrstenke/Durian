@@ -102,7 +102,7 @@ namespace Durian.Analysis.DefaultParam
 
 		private static Diagnostic? GetDiagnosticIfInvalidTargetNamespace(ISymbol symbol, AttributeSyntax node)
 		{
-			const string propertyName = MemberNames.Config_TargetNamespace;
+			const string propertyName = DefaultParamConfigurationAttributeProvider.TargetNamespace;
 
 			if (node.ArgumentList is null || !node.ArgumentList.Arguments.Any())
 			{

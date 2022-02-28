@@ -40,7 +40,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 				return;
 			}
 
-			INamedTypeSymbol? attribute = data.SemanticModel.Compilation.GetTypeByMetadataName(MemberNames.DefaultParamConfigurationAttribute);
+			INamedTypeSymbol? attribute = data.SemanticModel.Compilation.GetTypeByMetadataName(DefaultParamConfigurationAttributeProvider.FullName);
 
 			if (attribute is null)
 			{
@@ -99,7 +99,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 								SyntaxFactory.IdentifierName(nameof(TypeConvention.Copy))))
 						.WithNameEquals(
 							SyntaxFactory.NameEquals(
-								SyntaxFactory.IdentifierName(MemberNames.Config_TypeConvention),
+								SyntaxFactory.IdentifierName(DefaultParamConfigurationAttributeProvider.TypeName),
 								SyntaxFactory.Token(SyntaxKind.EqualsToken).WithTrailingTrivia(SyntaxFactory.Space)))))))));
 
 			context.RegisterChange(context.Node, type);

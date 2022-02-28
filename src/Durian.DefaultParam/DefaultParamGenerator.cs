@@ -229,7 +229,7 @@ namespace Durian.Analysis.DefaultParam
 
 				case FilterMode.Both:
 				{
-					DefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, LoggableDiagnosticReceiverFactory.SourceGenerator(this, DiagnosticReceiver!));
+					DefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, LoggableDiagnosticReceiver.Factory.SourceGenerator(this, DiagnosticReceiver!));
 
 					while (enumerator.MoveNext())
 					{
@@ -287,7 +287,7 @@ namespace Durian.Analysis.DefaultParam
 
 				case FilterMode.Both:
 				{
-					CachedDefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, LoggableDiagnosticReceiverFactory.SourceGenerator(this, DiagnosticReceiver!), in cache);
+					CachedDefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, LoggableDiagnosticReceiver.Factory.SourceGenerator(this, DiagnosticReceiver!), in cache);
 
 					while (enumerator.MoveNext())
 					{

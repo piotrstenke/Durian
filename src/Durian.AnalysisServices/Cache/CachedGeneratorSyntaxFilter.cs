@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -47,7 +48,7 @@ namespace Durian.Analysis.Cache
 
 		IEnumerator<IMemberData> ICachedGeneratorSyntaxFilter<TData>.GetEnumerator(in CachedGeneratorExecutionContext<TData> context)
 		{
-			using IEnumerator<TData> enumerator = GetEnumerator(in context);
+			IEnumerator<TData> enumerator = GetEnumerator(in context);
 
 			return Yield();
 
@@ -57,6 +58,8 @@ namespace Durian.Analysis.Cache
 				{
 					yield return enumerator.Current;
 				}
+
+				enumerator.Dispose();
 			}
 		}
 
@@ -69,18 +72,7 @@ namespace Durian.Analysis.Cache
 			public IHintNameProvider HintNameProvider { get; }
 
 			/// <inheritdoc/>
-			public virtual FilterMode Mode
-			{
-				get
-				{
-					if (Generator is ILoggableGenerator loggable)
-					{
-						return loggable.LoggingConfiguration.CurrentFilterMode;
-					}
-
-					return FilterMode.None;
-				}
-			}
+			public virtual FilterMode Mode => Generator.GetFilterMode();
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="WithDiagnostics"/> class.

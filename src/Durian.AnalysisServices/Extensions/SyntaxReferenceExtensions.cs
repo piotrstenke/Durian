@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Extensions
 {
-	/// <summary>
-	/// Contains various extension methods for <see cref="SyntaxReference"/> classes.
-	/// </summary>
-	public static class SyntaxReferenceExtensions
+    /// <summary>
+    /// Contains various extension methods for <see cref="SyntaxReference"/> classes.
+    /// </summary>
+    public static class SyntaxReferenceExtensions
 	{
 		/// <summary>
 		/// Checks if the specified <paramref name="reference"/> points to the given <paramref name="node"/>.

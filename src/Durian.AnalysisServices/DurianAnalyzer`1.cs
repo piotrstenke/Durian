@@ -39,7 +39,7 @@ namespace Durian.Analysis
 					return;
 				}
 
-				DiagnosticBag diagnosticReceiver = DiagnosticReceiverFactory.Bag();
+				DiagnosticBag diagnosticReceiver = DiagnosticReceiver.Factory.Bag();
 				TCompilation data = CreateCompilation(compilation, diagnosticReceiver);
 				IDurianAnalysisContext durianContext = new DurianCompilationStartAnalysisContext(context);
 
@@ -78,7 +78,7 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		protected sealed override void Register(IDurianAnalysisContext context, CSharpCompilation compilation)
 		{
-			DiagnosticBag diagnosticReceiver = DiagnosticReceiverFactory.Bag();
+			DiagnosticBag diagnosticReceiver = DiagnosticReceiver.Factory.Bag();
 			TCompilation data = CreateCompilation(compilation, diagnosticReceiver);
 
 			if (!data.HasErrors)

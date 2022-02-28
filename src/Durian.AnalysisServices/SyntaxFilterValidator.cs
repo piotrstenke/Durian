@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,7 +25,7 @@ namespace Durian.Analysis
 	/// <typeparam name="TSymbol">Type of <see cref="ISyntaxFilter"/> this <see cref="SyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/> uses.</typeparam>
 	public abstract class SyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol> : GeneratorSyntaxFilter<TData, TCompilation, TSyntaxReceiver, TGenerator>, INodeProvider<TSyntax>, INodeValidator<TData>
 		where TData : IMemberData
-		where TCompilation : ICompilationData
+		where TCompilation : class, ICompilationData
 		where TSyntaxReceiver : IDurianSyntaxReceiver
 		where TGenerator : IDurianGenerator
 		where TSyntax : CSharpSyntaxNode
@@ -42,12 +43,134 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Returns a collection of <typeparamref name="TSyntax"/>es collected by the <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}.Generator"/>'s <see cref="IDurianSyntaxReceiver"/> that can be filtrated by this filter.
 		/// </summary>
-		public virtual IEnumerable<TSyntax> GetCandidateNodes()
+		public IEnumerable<TSyntax> GetCandidateNodes()
 		{
-			return Generator.SyntaxReceiver?.GetNodes().OfType<TSyntax>() ?? Array.Empty<TSyntax>();
+			if(Generator.SyntaxReceiver is not TSyntaxReceiver syntaxReceiver || GetCandidateNodes(syntaxReceiver) is not IEnumerable<TSyntax> list)
+			{
+				return Array.Empty<TSyntax>();
+			}
+
+			return list;
 		}
 
-		/// <inheritdoc cref="INodeValidator{T}.GetValidationData(CSharpSyntaxNode, ICompilationData, out SemanticModel?, out ISymbol?, CancellationToken)"/>
+		/// <summary>
+		/// If the <see cref="IDurianGenerator.TargetCompilation"/> of <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}.Generator"/> is <see langword="null"/>, throws a <see cref="InvalidOperationException"/>.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Target generator is not initialized.</exception>
+		protected void EnsureInitialized()
+		{
+			if (Generator.TargetCompilation is null)
+			{
+				throw new InvalidOperationException("Target generator is not initialized!");
+			}
+		}
+
+		/// <inheritdoc/>
+		public sealed override IEnumerable<TData> Filtrate(
+			TCompilation compilation,
+			TSyntaxReceiver syntaxReceiver,
+			CancellationToken cancellationToken = default
+		)
+		{
+			if (GetCandidateNodes(syntaxReceiver) is not IEnumerable<TSyntax> list)
+			{
+				return Array.Empty<TData>();
+			}
+
+			return Filtrate_Internal(compilation, list, cancellationToken);
+		}
+
+		/// <inheritdoc/>
+		/// <exception cref="InvalidOperationException">Target <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}.Generator"/> is not initialized.</exception>
+		public override IEnumerator<TData> GetEnumerator()
+        {
+			EnsureInitialized();
+
+			return new FilterEnumerator<TData>(this, Generator.TargetCompilation, this);
+        }
+
+        /// <inheritdoc/>
+        public sealed override IEnumerable<TData> Filtrate(
+			TCompilation compilation,
+			IEnumerable<CSharpSyntaxNode> collectedNodes,
+			CancellationToken cancellationToken = default
+		)
+		{
+			if(collectedNodes is not IEnumerable<TSyntax> list)
+            {
+				list = collectedNodes.OfType<TSyntax>();
+            }
+
+			return Filtrate_Internal(compilation, list, cancellationToken);
+		}
+
+		internal TCompilation? GetCompilation(in GeneratorExecutionContext context)
+		{
+			if (context.Compilation is not null &&
+				context.Compilation == Generator.TargetCompilation.Compilation &&
+				Generator.TargetCompilation is TCompilation compilation
+			)
+			{
+				return compilation;
+			}
+
+			return CreateCompilation(in context);
+		}
+
+		/// <summary>
+		/// Creates a new <typeparamref name="TCompilation"/> from the specified <paramref name="context"/> if <see cref="GeneratorExecutionContext.Compilation"/>
+		/// is not equivalent to <see cref="ICompilationData.Compilation"/> retrieved from the <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}.Generator"/> property.
+		/// </summary>
+		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
+		protected virtual TCompilation? CreateCompilation(in GeneratorExecutionContext context)
+		{
+			return null;
+		}
+
+		/// <inheritdoc/>
+		public sealed override IEnumerable<TData> Filtrate(in GeneratorExecutionContext context)
+		{
+			if (GetCompilation(in context) is not TCompilation compilation ||
+				context.SyntaxReceiver is not TSyntaxReceiver syntaxReceiver ||
+				GetCandidateNodes(syntaxReceiver) is not IEnumerable<TSyntax> list
+			)
+			{
+				return Array.Empty<TData>();
+			}
+
+			return Filtrate_Internal(compilation, list, context.CancellationToken);
+		}
+
+		private IEnumerable<TData> Filtrate_Internal(
+			TCompilation compilation,
+			IEnumerable<TSyntax> collectedNodes,
+			CancellationToken cancellationToken
+		)
+		{
+			foreach (TSyntax decl in collectedNodes)
+			{
+				if (decl is null)
+				{
+					continue;
+				}
+
+				if (ValidateAndCreate(decl, compilation, out TData? data, cancellationToken))
+				{
+					yield return data;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns a collection of candidate <typeparamref name="TSyntax"/> collected by the specified <paramref name="syntaxReceiver"/>.
+		/// </summary>
+		/// <param name="syntaxReceiver"><typeparamref name="TSyntaxReceiver"/> to get the candidate <typeparamref name="TSyntax"/>es from.</param>
+		protected virtual IEnumerable<TSyntax>? GetCandidateNodes(TSyntaxReceiver syntaxReceiver)
+		{
+			return syntaxReceiver.GetNodes().OfType<TSyntax>();
+		}
+
+		/// <inheritdoc cref="IValidationDataProvider.GetValidationData(CSharpSyntaxNode, ICompilationData, out SemanticModel?, out ISymbol?, CancellationToken)"/>
 		public abstract bool GetValidationData(
 			TSyntax node,
 			TCompilation compilation,
@@ -93,7 +216,7 @@ namespace Durian.Analysis
 			return GetCandidateNodes();
 		}
 
-		bool INodeValidator<TData>.GetValidationData(
+		bool IValidationDataProvider.GetValidationData(
 			CSharpSyntaxNode node,
 			ICompilationData compilation,
 			[NotNullWhen(true)] out SemanticModel? semanticModel,
@@ -170,18 +293,7 @@ namespace Durian.Analysis
 			public IHintNameProvider HintNameProvider { get; }
 
 			/// <inheritdoc/>
-			public virtual FilterMode Mode
-			{
-				get
-				{
-					if (Generator is ILoggableGenerator loggable)
-					{
-						return loggable.LoggingConfiguration.CurrentFilterMode;
-					}
-
-					return FilterMode.None;
-				}
-			}
+			public FilterMode Mode => Generator.GetFilterMode();
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="WithDiagnostics"/> class.
@@ -209,19 +321,57 @@ namespace Durian.Analysis
 			}
 
 			/// <inheritdoc cref="ISyntaxFilterWithDiagnostics.Filtrate(ICompilationData, IDurianSyntaxReceiver, IDiagnosticReceiver, CancellationToken)"/>
-			public abstract IEnumerable<TData> Filtrate(
+			public IEnumerable<TData> Filtrate(
 				TCompilation compilation,
 				TSyntaxReceiver syntaxReceiver,
 				IDiagnosticReceiver diagnosticReceiver,
 				CancellationToken cancellationToken = default
-			);
+			)
+            {
+				if (GetCandidateNodes(syntaxReceiver) is not IEnumerable<TSyntax> list)
+				{
+					return Array.Empty<TData>();
+				}
+
+				return Filtrate_Internal(compilation, list, diagnosticReceiver, cancellationToken);
+			}
 
 			/// <inheritdoc cref="ISyntaxFilterWithDiagnostics.Filtrate(ICompilationData, IEnumerable{CSharpSyntaxNode}, IDiagnosticReceiver, CancellationToken)"/>
-			public abstract IEnumerable<TData> Filtrate(TCompilation compilation,
+			public IEnumerable<TData> Filtrate(
+				TCompilation compilation,
 				IEnumerable<CSharpSyntaxNode> collectedNodes,
 				IDiagnosticReceiver diagnosticReceiver,
 				CancellationToken cancellationToken = default
-			);
+			)
+            {
+				if (collectedNodes is not IEnumerable<TSyntax> list)
+				{
+					list = collectedNodes.OfType<TSyntax>();
+				}
+
+				return Filtrate_Internal(compilation, list, diagnosticReceiver, cancellationToken);
+			}
+
+			private IEnumerable<TData> Filtrate_Internal(
+				TCompilation compilation,
+				IEnumerable<TSyntax> collectedNodes,
+				IDiagnosticReceiver diagnosticReceiver,
+				CancellationToken cancellationToken
+			)
+			{
+				foreach (TSyntax decl in collectedNodes)
+				{
+					if (decl is null)
+					{
+						continue;
+					}
+
+					if (ValidateAndCreate(decl, compilation, out TData? data, diagnosticReceiver, cancellationToken))
+					{
+						yield return data;
+					}
+				}
+			}
 
 			/// <inheritdoc cref="INodeValidatorWithDiagnostics{T}.ValidateAndCreate(CSharpSyntaxNode, ICompilationData, out T, IDiagnosticReceiver, CancellationToken)"/>
 			public virtual bool ValidateAndCreate(
@@ -256,10 +406,7 @@ namespace Durian.Analysis
 			/// <exception cref="InvalidOperationException">Target <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}.Generator"/> is not initialized.</exception>
 			public override IEnumerator<TData> GetEnumerator()
 			{
-				if(Generator.TargetCompilation is null)
-				{
-					throw new InvalidOperationException("Target generator is not initialized!");
-				}
+				EnsureInitialized();
 
 				return Mode switch
 				{
@@ -389,7 +536,7 @@ namespace Durian.Analysis
 	/// <inheritdoc cref="SyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>
 	public abstract class SyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax> : SyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, ISymbol>
 		where TData : IMemberData
-		where TCompilation : ICompilationData
+		where TCompilation : class, ICompilationData
 		where TSyntaxReceiver : IDurianSyntaxReceiver
 		where TGenerator : IDurianGenerator
 		where TSyntax : CSharpSyntaxNode
@@ -407,7 +554,7 @@ namespace Durian.Analysis
 	/// <inheritdoc cref="SyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>
 	public abstract class SyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator> : SyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator, CSharpSyntaxNode, ISymbol>
 		where TData : IMemberData
-		where TCompilation : ICompilationData
+		where TCompilation : class, ICompilationData
 		where TSyntaxReceiver : IDurianSyntaxReceiver
 		where TGenerator : IDurianGenerator
 	{
@@ -424,7 +571,7 @@ namespace Durian.Analysis
 	/// <inheritdoc cref="SyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>
 	public abstract class SyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver> : SyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, IDurianGenerator, CSharpSyntaxNode, ISymbol>
 		where TData : IMemberData
-		where TCompilation : ICompilationData
+		where TCompilation : class, ICompilationData
 		where TSyntaxReceiver : IDurianSyntaxReceiver
 	{
 		/// <summary>
@@ -440,7 +587,7 @@ namespace Durian.Analysis
 	/// <inheritdoc cref="SyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>
 	public abstract class SyntaxFilterValidator<TData, TCompilation> : SyntaxFilterValidator<TData, TCompilation, IDurianSyntaxReceiver, IDurianGenerator, CSharpSyntaxNode, ISymbol>
 		where TData : IMemberData
-		where TCompilation : ICompilationData
+		where TCompilation : class, ICompilationData
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SyntaxFilterValidator{TData, TCompilation}"/> class.

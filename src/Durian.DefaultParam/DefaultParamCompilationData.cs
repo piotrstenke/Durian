@@ -80,7 +80,7 @@ namespace Durian.Analysis.DefaultParam
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			INamedTypeSymbol? configurationAttribute = compilation.GetTypeByMetadataName(MemberNames.DefaultParamScopedConfigurationAttribute);
+			INamedTypeSymbol? configurationAttribute = compilation.GetTypeByMetadataName(DefaultParamScopedConfigurationAttributeProvider.FullName);
 			return GetConfiguration(compilation, configurationAttribute);
 		}
 
@@ -89,11 +89,11 @@ namespace Durian.Analysis.DefaultParam
 		{
 			base.Reset();
 
-			DefaultParamAttribute = Compilation.GetTypeByMetadataName(MemberNames.DefaultParamAttribute);
-			DefaultParamConfigurationAttribute = Compilation.GetTypeByMetadataName(MemberNames.DefaultParamConfigurationAttribute);
-			DefaultParamScopedConfigurationAttribute = Compilation.GetTypeByMetadataName(MemberNames.DefaultParamScopedConfigurationAttribute);
-			DPTypeConvention = Compilation.GetTypeByMetadataName(MemberNames.DPTypeConvention);
-			DPMethodConvention = Compilation.GetTypeByMetadataName(MemberNames.DPMethodConvention);
+			DefaultParamAttribute = Compilation.GetTypeByMetadataName(DefaultParamAttributeProvider.FullName);
+			DefaultParamConfigurationAttribute = Compilation.GetTypeByMetadataName(DefaultParamConfigurationAttributeProvider.FullName);
+			DefaultParamScopedConfigurationAttribute = Compilation.GetTypeByMetadataName(DefaultParamScopedConfigurationAttributeProvider.FullName);
+			DPTypeConvention = Compilation.GetTypeByMetadataName(DPTypeConventionProvider.FullName);
+			DPMethodConvention = Compilation.GetTypeByMetadataName(DPMethodConventionProvider.FullName);
 
 			HasErrors =
 				base.HasErrors ||
@@ -107,17 +107,17 @@ namespace Durian.Analysis.DefaultParam
 		private static DefaultParamConfiguration BuildConfiguration(AttributeData attribute)
 		{
 			bool applyNewModififer = !attribute.TryGetNamedArgumentValue(
-				MemberNames.Config_ApplyNewModifierWhenPossible,
+				DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible,
 				out bool value)
 				|| value;
 
 			MethodConvention methodCon = (MethodConvention)GetValidConventionEnumValue(
-				attribute.GetNamedArgumentValue<int>(MemberNames.Config_MethodConvention));
+				attribute.GetNamedArgumentValue<int>(DefaultParamConfigurationAttributeProvider.MethodConvention));
 
 			TypeConvention typeCon = (TypeConvention)GetValidConventionEnumValue(
-				attribute.GetNamedArgumentValue<int>(MemberNames.Config_TypeConvention));
+				attribute.GetNamedArgumentValue<int>(DefaultParamConfigurationAttributeProvider.TypeConvention));
 
-			string? @namespace = attribute.GetNamedArgumentValue<string>(MemberNames.Config_TargetNamespace);
+			string? @namespace = attribute.GetNamedArgumentValue<string>(DefaultParamConfigurationAttributeProvider.TargetNamespace);
 
 			return new()
 			{

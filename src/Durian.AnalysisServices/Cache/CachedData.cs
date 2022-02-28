@@ -13,7 +13,7 @@ namespace Durian.Analysis.Cache
 	/// <typeparam name="T">Type of values this <see cref="CachedData{T}"/> can store.</typeparam>
 	public readonly struct CachedData<T>
 	{
-		private readonly ConcurrentDictionary<FileLinePositionSpan, T> _cached;
+		internal readonly ConcurrentDictionary<FileLinePositionSpan, T> _cached;
 
 		/// <summary>
 		/// Returns an instance of <see cref="CachedData{T}"/> that does not contain any data.

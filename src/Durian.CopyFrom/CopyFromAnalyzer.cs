@@ -215,7 +215,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				if (context.SemanticModel.GetDeclaredSymbol(member) is INamedTypeSymbol typeSymbol && ShouldAnalyze(typeSymbol))
 				{
-					ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiverFactory.SyntaxNode(context);
+					DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
 					Analyze(typeSymbol, compilation, context.SemanticModel, diagnosticReceiver);
 				}
 			}
@@ -227,7 +227,7 @@ namespace Durian.Analysis.CopyFrom
 
 				if (methodSymbol is not null && ShouldAnalyze(methodSymbol))
 				{
-					ContextualDiagnosticReceiver<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiverFactory.SyntaxNode(context);
+					DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
 					Analyze(methodSymbol, compilation, context.SemanticModel, diagnosticReceiver, member as MethodDeclarationSyntax);
 				}
 			}
