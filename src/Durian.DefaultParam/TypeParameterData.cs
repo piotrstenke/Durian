@@ -47,9 +47,9 @@ namespace Durian.Analysis.DefaultParam
 		public readonly string Name => Symbol.Name;
 
 		/// <summary>
-		/// Parent <see cref="MemberDeclarationSyntax"/> of the <see cref="Syntax"/>.
+		/// Parent <see cref="CSharpSyntaxNode"/> of the <see cref="Syntax"/>.
 		/// </summary>
-		public readonly MemberDeclarationSyntax Parent { get; }
+		public readonly CSharpSyntaxNode Parent { get; }
 
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="Syntax"/>.
@@ -90,7 +90,7 @@ namespace Durian.Analysis.DefaultParam
 			Symbol = symbol;
 			Attribute = attribute;
 			TargetType = targetType;
-			Parent = (MemberDeclarationSyntax)syntax.Parent!.Parent!;
+			Parent = (CSharpSyntaxNode)syntax.Parent!.Parent!;
 			SemanticModel = semanticModel;
 		}
 
@@ -215,7 +215,7 @@ namespace Durian.Analysis.DefaultParam
 			int hashCode = -2050731313;
 			hashCode = (hashCode * -1521134295) + EqualityComparer<AttributeSyntax?>.Default.GetHashCode(Attribute);
 			hashCode = (hashCode * -1521134295) + EqualityComparer<TypeParameterSyntax>.Default.GetHashCode(Syntax);
-			hashCode = (hashCode * -1521134295) + EqualityComparer<MemberDeclarationSyntax>.Default.GetHashCode(Parent);
+			hashCode = (hashCode * -1521134295) + EqualityComparer<CSharpSyntaxNode>.Default.GetHashCode(Parent);
 			hashCode = (hashCode * -1521134295) + EqualityComparer<ITypeSymbol?>.Default.GetHashCode(TargetType);
 			hashCode = (hashCode * -1521134295) + EqualityComparer<ITypeParameterSymbol>.Default.GetHashCode(Symbol);
 			return hashCode;

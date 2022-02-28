@@ -101,9 +101,9 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			AttributeData[] attributes = GetAttributes(type, compilation.CopyFromMethodAttribute, compilation.PatternAttribute, diagnosticReceiver).ToArray();
+			AttributeData[]? attributes = type.GetAttributes(compilation.CopyFromTypeAttribute).ToArray();
 
-			if (attributes.Length == 0)
+			if (attributes is null || attributes.Length == 0)
 			{
 				return false;
 			}
@@ -136,9 +136,9 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			AttributeData[] attributes = GetAttributes(method, compilation.CopyFromMethodAttribute, compilation.PatternAttribute, diagnosticReceiver).ToArray();
+			AttributeData[]? attributes = method.GetAttributes(compilation.CopyFromMethodAttribute).ToArray();
 
-			if (attributes.Length == 0)
+			if (attributes is null || attributes.Length == 0)
 			{
 				return false;
 			}
@@ -231,6 +231,14 @@ namespace Durian.Analysis.CopyFrom
 					Analyze(methodSymbol, compilation, context.SemanticModel, diagnosticReceiver, member as MethodDeclarationSyntax);
 				}
 			}
+			else if(SymbolEqualityComparer.Default.Equals(attributeSymbol.ContainingType, compilation.PatternAttribute))
+            {
+				if(context.SemanticModel.GetDeclaredSymbol(member) is ISymbol symbol)
+                {
+					DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
+					AnalyzePattern(symbol, attr, compilation, diagnosticReceiver);
+                }
+            }
 		}
 
 		private static bool CopiesFromItself(IMethodSymbol method, IMethodSymbol target)
@@ -507,47 +515,51 @@ namespace Durian.Analysis.CopyFrom
 			return null;
 		}
 
-		private static AttributeData[] GetAttributes(
-																															ISymbol symbol,
-			INamedTypeSymbol attributeSymbol,
-			INamedTypeSymbol patternAttribute,
-			IDiagnosticReceiver diagnosticReceiver
-		)
-		{
-			ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
-			List<AttributeData> copyFromAttributes = new(attributes.Length);
-			List<(AttributeData attr, Location? location)> patternAttributes = new(attributes.Length);
+		private static bool AnalyzePattern(ISymbol symbol, AttributeSyntax attrSyntax, CopyFromCompilationData compilation, IDiagnosticReceiver diagnosticReceiver)
+        {
+			AttributeData? currentData = null;
+			bool hasCopyFrom = false;
 
-			foreach (AttributeData attr in attributes)
-			{
-				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attributeSymbol))
+            foreach (AttributeData attribute in symbol.GetAttributes())
+            {
+				if (currentData is null &&
+					SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.PatternAttribute) &&
+					attribute.ApplicationSyntaxReference?.Span == attrSyntax.Span
+				)
+                {
+					currentData = attribute;
+                }
+
+				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.CopyFromMethodAttribute) ||
+					SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.CopyFromTypeAttribute))
 				{
-					copyFromAttributes.Add(attr);
-				}
-				else if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, patternAttribute))
-				{
-					Location? location = null;
+					hasCopyFrom = true;
 
-					if (!HasValidRegexPattern(attr))
-					{
-						location = attr.GetLocation();
-						diagnosticReceiver.ReportDiagnostic(DUR0214_InvalidPatternAttributeSpecified, location, symbol);
-					}
-
-					patternAttributes.Add((attr, location));
+					if (currentData is not null)
+                    {
+						break;
+                    }
 				}
 			}
 
-			if (patternAttributes.Count > 0 && copyFromAttributes.Count == 0)
-			{
-				foreach ((AttributeData attr, Location? location) in patternAttributes)
-				{
-					diagnosticReceiver.ReportDiagnostic(DUR0215_RedundantPatternAttribute, location ?? attr.GetLocation(), symbol);
-				}
+			Location? location = null;
+			bool isValid = true;
+
+			if(!hasCopyFrom)
+            {
+				location = attrSyntax.GetLocation();
+				diagnosticReceiver.ReportDiagnostic(DUR0215_RedundantPatternAttribute, location, symbol);
+				isValid = false;
 			}
 
-			return copyFromAttributes.ToArray();
-		}
+			if(currentData is not null && !HasValidRegexPattern(currentData))
+            {
+				diagnosticReceiver.ReportDiagnostic(DUR0214_InvalidPatternAttributeSpecified, location ?? attrSyntax.GetLocation(), symbol);
+				isValid = false;
+			}
+
+			return isValid;
+        }
 
 		private static SymbolInfo GetSymbolFromCrefSyntax(
 			string text,
