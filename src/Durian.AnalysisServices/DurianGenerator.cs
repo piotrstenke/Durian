@@ -492,7 +492,7 @@ namespace Durian.Analysis
 				}
 				else
 				{
-					foreach (IMemberData data in Filtrate(filter, in context))
+					foreach (IMemberData data in filter.Filtrate(in context))
 					{
 						GenerateFromData(data, in context);
 					}
@@ -506,16 +506,6 @@ namespace Durian.Analysis
 			filterGroup.Unseal();
 			AfterExecutionOfGroup(filterGroup, in context);
 		}
-
-		/// <summary>
-		/// Performs syntax filtration on the specified <paramref name="context"/> using the given <paramref name="filter"/>.
-		/// </summary>
-		/// <param name="filter"><see cref="ISyntaxFilter"/> to perform the filtration with.</param>
-		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-		protected virtual IEnumerable<IMemberData> Filtrate(TFilter filter, in GeneratorExecutionContext context)
-        {
-			return filter.Filtrate(in context);
-        }
 	}
 
 	/// <inheritdoc cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/>

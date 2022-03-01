@@ -1522,6 +1522,45 @@ partial class Test
 		}
 
 		[Fact]
+		public async Task Success_When_HasRefOutInParameters()
+        {
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target(in string, ref string, out string)"")]
+	partial void Method();
+
+	void Target(in string a, ref string b, out string c)
+	{{
+		c = string.Empty;
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Sucess_When_HasArglist()
+        {
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target(__arglist)"")]
+	partial void Method();
+
+	static void Target(__arglist)
+	{{
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+        [Fact]
 		public async Task Success_When_IsVoid_And_TargetIsIndexerSetAccessor()
 		{
 			string input =

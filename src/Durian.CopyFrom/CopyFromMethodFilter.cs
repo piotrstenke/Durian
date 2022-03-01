@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Durian.Analysis.Cache;
+using Durian.Analysis.Data;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -17,7 +18,7 @@ namespace Durian.Analysis.CopyFrom
     /// <summary>
     /// Filtrates and validates <see cref="MethodDeclarationSyntax"/>es collected by a <see cref="CopyFromSyntaxReceiver"/>.
     /// </summary>
-    public sealed class CopyFromMethodFilter : CachedSyntaxFilterValidator<CopyFromCompilationData, CopyFromSyntaxReceiver, MethodDeclarationSyntax, IMethodSymbol, CopyFromMethodData>.WithDiagnostics
+    public sealed class CopyFromMethodFilter : CachedSyntaxFilterValidator<CopyFromCompilationData, CopyFromSyntaxReceiver, MethodDeclarationSyntax, IMethodSymbol, CopyFromMethodData>.WithDiagnostics, ICopyFromFilter
     {
         /// <summary>
         /// <see cref="CopyFromGenerator"/> that created this filter.
@@ -152,6 +153,16 @@ namespace Durian.Analysis.CopyFrom
             );
 
             return true;
+        }
+
+        IEnumerable<IMemberData> ICachedGeneratorSyntaxFilter<ICopyFromMember>.Filtrate(in CachedGeneratorExecutionContext<ICopyFromMember> context)
+        {
+            return ((ICachedGeneratorSyntaxFilter<CopyFromMethodData>)this).Filtrate(context.CastContext<CopyFromMethodData>());
+        }
+
+        IEnumerator<IMemberData> ICachedGeneratorSyntaxFilter<ICopyFromMember>.GetEnumerator(in CachedGeneratorExecutionContext<ICopyFromMember> context)
+        {
+            return ((ICachedGeneratorSyntaxFilter<CopyFromMethodData>)this).GetEnumerator(context.CastContext<CopyFromMethodData>());
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Durian.Analysis.CopyFrom
     /// <summary>
     /// Filtrates and validates <see cref="TypeDeclarationSyntax"/>es collected by a <see cref="CopyFromSyntaxReceiver"/>.
     /// </summary>
-    public sealed class CopyFromTypeFilter : CachedSyntaxFilterValidator<CopyFromCompilationData, CopyFromSyntaxReceiver, TypeDeclarationSyntax, INamedTypeSymbol, CopyFromTypeData>.WithDiagnostics
+    public sealed class CopyFromTypeFilter : CachedSyntaxFilterValidator<CopyFromCompilationData, CopyFromSyntaxReceiver, TypeDeclarationSyntax, INamedTypeSymbol, CopyFromTypeData>.WithDiagnostics, ICopyFromFilter
 	{
 		/// <summary>
 		/// <see cref="CopyFromGenerator"/> that created this filter.
@@ -156,5 +156,15 @@ namespace Durian.Analysis.CopyFrom
 
             return true;
 		}
+
+        IEnumerable<IMemberData> ICachedGeneratorSyntaxFilter<ICopyFromMember>.Filtrate(in CachedGeneratorExecutionContext<ICopyFromMember> context)
+        {
+            return ((ICachedGeneratorSyntaxFilter<CopyFromTypeData>)this).Filtrate(context.CastContext<CopyFromTypeData>());
+        }
+
+        IEnumerator<IMemberData> ICachedGeneratorSyntaxFilter<ICopyFromMember>.GetEnumerator(in CachedGeneratorExecutionContext<ICopyFromMember> context)
+        {
+            return ((ICachedGeneratorSyntaxFilter<CopyFromTypeData>)this).GetEnumerator(context.CastContext<CopyFromTypeData>());
+        }
     }
 }

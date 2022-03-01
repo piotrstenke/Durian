@@ -22,7 +22,7 @@ namespace Durian.Analysis.Cache
 		where TData : IMemberData
 		where TCompilationData : ICompilationDataWithSymbols
 		where TSyntaxReceiver : IDurianSyntaxReceiver
-		where TFilter : ICachedGeneratorSyntaxFilter<TData>, IGeneratorSyntaxFilterWithDiagnostics
+		where TFilter : ICachedGeneratorSyntaxFilterWithDiagnostics<TData>
 	{
 		/// <inheritdoc cref="CachedGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
 		protected CachedGenerator()

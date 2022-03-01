@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
+using System.Linq;
+using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
 using Durian.Analysis.Logging;
 using Durian.Info;
@@ -10,17 +12,19 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.CopyFrom
 {
-	/// <summary>
-	/// Main class of the <c>CopyFrom</c> module. Generates source code of members marked with the <c>Durian.CopyFromAttribute</c>.
-	/// </summary>
-	public sealed class CopyFromGenerator : DurianGenerator<CopyFromCompilationData, CopyFromSyntaxReceiver>
+    /// <summary>
+    /// Main class of the <c>CopyFrom</c> module. Generates source code of members marked with the <c>Durian.CopyFromAttribute</c>.
+    /// </summary>
+    [Generator(LanguageNames.CSharp)]
+	[LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "CopyFrom", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
+	public sealed class CopyFromGenerator : CachedGenerator<ICopyFromMember, CopyFromCompilationData, CopyFromSyntaxReceiver, ICopyFromFilter>
 	{
+		private FilterContainer<ICopyFromFilter>? _filters;
+
 		/// <summary>
 		/// Number of trees generated statically by this generator.
 		/// </summary>
 		public const int NumStaticTrees = 3;
-
-		private FilterContainer<IGeneratorSyntaxFilterWithDiagnostics>? _filters;
 
 		/// <summary>
 		/// Name of this source generator.
@@ -85,22 +89,22 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		public override FilterContainer<IGeneratorSyntaxFilterWithDiagnostics> GetFilters(in GeneratorExecutionContext context)
+		public override FilterContainer<ICopyFromFilter> GetFilters(in GeneratorExecutionContext context)
 		{
 			return GetFilters(new SymbolNameToFile());
 		}
 
-		/// <summary>
-		/// Returns a <see cref="FilterContainer{TFilter}"/> to be used during the current generation pass.
-		/// </summary>
-		/// <param name="fileNameProvider">Creates name for the generated files.</param>
-		public FilterContainer<IGeneratorSyntaxFilterWithDiagnostics> GetFilters(IHintNameProvider fileNameProvider)
+        /// <summary>
+        /// Returns a <see cref="FilterContainer{TFilter}"/> to be used during the current generation pass.
+        /// </summary>
+        /// <param name="fileNameProvider">Creates name for the generated files.</param>
+        public FilterContainer<ICopyFromFilter> GetFilters(IHintNameProvider fileNameProvider)
 		{
 			if (_filters is null)
 			{
-				FilterContainer<IGeneratorSyntaxFilterWithDiagnostics> list = new();
+				FilterContainer<ICopyFromFilter> list = new();
 
-				//list.RegisterFilterGroup("Methods", new CopyFromMethodFilter(this, fileNameProvider));
+				list.RegisterFilterGroup("Methods", new CopyFromMethodFilter(this, fileNameProvider));
 				list.RegisterFilterGroup("Types", new CopyFromTypeFilter(this, fileNameProvider));
 
 				_filters = list;
@@ -109,8 +113,8 @@ namespace Durian.Analysis.CopyFrom
 			return _filters;
 		}
 
-		/// <inheritdoc/>
-		protected override CopyFromCompilationData? CreateCompilationData(CSharpCompilation compilation)
+        /// <inheritdoc/>
+        protected override CopyFromCompilationData? CreateCompilationData(CSharpCompilation compilation)
 		{
 			return new CopyFromCompilationData(compilation);
 		}
@@ -118,6 +122,15 @@ namespace Durian.Analysis.CopyFrom
 		/// <inheritdoc/>
 		protected override bool Generate(IMemberData member, string hintName, in GeneratorExecutionContext context)
 		{
+			if(member is not ICopyFromMember target)
+            {
+				return false;
+            }
+
+			CodeBuilder.WriteDeclarationLead(target, member.Declaration.SyntaxTree.GetCompilationUnitRoot().Usings.Select(u => u.Name.ToString()), GeneratorName, Version);
+			CodeBuilder.EndAllBlocks();
+			AddSourceWithOriginal(target.Declaration, hintName, in context);
+
 			return true;
 		}
 
