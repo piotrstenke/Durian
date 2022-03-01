@@ -10,13 +10,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
 {
-	/// <inheritdoc cref="ITypeData"/>
-	/// <typeparam name="TDeclaration">Specific type of the target <see cref="TypeDeclarationSyntax"/>.</typeparam>
-	public abstract class TypeData<TDeclaration> : MemberData, ITypeData where TDeclaration : BaseTypeDeclarationSyntax
+    /// <inheritdoc cref="ITypeData"/>
+    /// <typeparam name="TDeclaration">Specific type of the target <see cref="TypeDeclarationSyntax"/>.</typeparam>
+    public abstract class TypeData<TDeclaration> : MemberData, ITypeData where TDeclaration : BaseTypeDeclarationSyntax
 	{
 		private SyntaxToken[]? _modifiers;
 
-		private TypeDeclarationSyntax[]? _partialDeclarations;
+		private TDeclaration[]? _partialDeclarations;
 
 		/// <summary>
 		/// Target <see cref="BaseTypeDeclarationSyntax"/>.
@@ -66,7 +66,7 @@ namespace Durian.Analysis.Data
 			ICompilationData compilation,
 			INamedTypeSymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<BaseTypeDeclarationSyntax>? partialDeclarations = null,
+			IEnumerable<TDeclaration>? partialDeclarations = null,
 			IEnumerable<SyntaxToken>? modifiers = null,
 			IEnumerable<ITypeData>? containingTypes = null,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
@@ -81,7 +81,7 @@ namespace Durian.Analysis.Data
 			attributes
 		)
 		{
-			_partialDeclarations = partialDeclarations?.OfType<TypeDeclarationSyntax>().ToArray();
+			_partialDeclarations = partialDeclarations?.OfType<TDeclaration>().ToArray();
 
 			if (modifiers is not null)
 			{
@@ -108,21 +108,26 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// If the type is partial, returns all declarations of the type (including <see cref="Declaration"/>), otherwise returns only <see cref="Declaration"/>.
 		/// </summary>
-		public virtual IEnumerable<TypeDeclarationSyntax> GetPartialDeclarations()
+		public virtual IEnumerable<TDeclaration> GetPartialDeclarations()
 		{
 			if (_partialDeclarations is null)
 			{
 				if (Symbol.TypeKind == TypeKind.Enum)
 				{
-					_partialDeclarations = Array.Empty<TypeDeclarationSyntax>();
+					_partialDeclarations = Array.Empty<TDeclaration>();
 				}
 				else
 				{
-					_partialDeclarations = Symbol.GetPartialDeclarations<TypeDeclarationSyntax>().ToArray();
+					_partialDeclarations = Symbol.DeclaringSyntaxReferences.Select(e => e.GetSyntax()).OfType<TDeclaration>().ToArray();
 				}
 			}
 
 			return _partialDeclarations;
 		}
-	}
+
+        IEnumerable<TypeDeclarationSyntax> ITypeData.GetPartialDeclarations()
+        {
+			return GetPartialDeclarations().Cast<TypeDeclarationSyntax>();
+        }
+    }
 }

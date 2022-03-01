@@ -17,30 +17,26 @@ namespace Durian.Analysis
 	/// <summary>
 	/// <see cref="ISyntaxFilter"/> that filtrates <see cref="CSharpSyntaxNode"/>s for the specified <see cref="IDurianGenerator"/>.
 	/// </summary>
-	/// <typeparam name="TData">Type of <see cref="IMemberData"/> this <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}"/> returns.</typeparam>
-	/// <typeparam name="TCompilation">Type of <see cref="ICompilationData"/> this <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}"/> uses.</typeparam>
-	/// <typeparam name="TSyntaxReceiver">Type of <see cref="IDurianSyntaxReceiver"/> this <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}"/> uses.</typeparam>
-	/// <typeparam name="TGenerator">Type of <see cref="IDurianGenerator"/> that is the target of this <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}"/>.</typeparam>
-	public abstract class GeneratorSyntaxFilter<TData, TCompilation, TSyntaxReceiver, TGenerator> : SyntaxFilter<TData, TCompilation, TSyntaxReceiver>, IGeneratorSyntaxFilter
-		where TData : IMemberData
+	/// <typeparam name="TCompilation">Type of <see cref="ICompilationData"/> this <see cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> uses.</typeparam>
+	/// <typeparam name="TSyntaxReceiver">Type of <see cref="IDurianSyntaxReceiver"/> this <see cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> uses.</typeparam>
+	/// <typeparam name="TData">Type of <see cref="IMemberData"/> this <see cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> returns.</typeparam>
+	public abstract class GeneratorSyntaxFilter<TCompilation, TSyntaxReceiver, TData> : SyntaxFilter<TCompilation, TSyntaxReceiver, TData>, IGeneratorSyntaxFilter
 		where TCompilation : ICompilationData
 		where TSyntaxReceiver : IDurianSyntaxReceiver
-		where TGenerator : IDurianGenerator
+		where TData : IMemberData
 	{
 		/// <inheritdoc/>
 		public virtual bool IncludeGeneratedSymbols { get; } = true;
 
 		/// <inheritdoc cref="IGeneratorSyntaxFilter.Generator"/>
-		public TGenerator Generator { get; }
-
-		IDurianGenerator IGeneratorSyntaxFilter.Generator => Generator;
+		public IDurianGenerator Generator { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}"/> class.
+		/// Initializes a new instance of the <see cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> class.
 		/// </summary>
 		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		protected GeneratorSyntaxFilter(TGenerator generator)
+		protected GeneratorSyntaxFilter(IDurianGenerator generator)
 		{
 			if (generator is null)
 			{
@@ -84,9 +80,9 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}"/> that reports diagnostics during filtration.
+		/// <see cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> that reports diagnostics during filtration.
 		/// </summary>
-		public new abstract class WithDiagnostics : GeneratorSyntaxFilter<TData, TCompilation, TSyntaxReceiver, TGenerator>, IGeneratorSyntaxFilterWithDiagnostics
+		public new abstract class WithDiagnostics : GeneratorSyntaxFilter<TCompilation, TSyntaxReceiver, TData>, IGeneratorSyntaxFilterWithDiagnostics
 		{
 			/// <inheritdoc/>
 			public IHintNameProvider HintNameProvider { get; }
@@ -99,7 +95,7 @@ namespace Durian.Analysis
 			/// </summary>
 			/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
 			/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-			protected WithDiagnostics(TGenerator generator) : this(generator, new SymbolNameToFile())
+			protected WithDiagnostics(IDurianGenerator generator) : this(generator, new SymbolNameToFile())
 			{
 			}
 
@@ -109,7 +105,7 @@ namespace Durian.Analysis
 			/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
 			/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that is used to create a hint name for the generated source.</param>
 			/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="hintNameProvider"/> is <see langword="null"/>.</exception>
-			protected WithDiagnostics(TGenerator generator, IHintNameProvider hintNameProvider) : base(generator)
+			protected WithDiagnostics(IDurianGenerator generator, IHintNameProvider hintNameProvider) : base(generator)
 			{
 				if(hintNameProvider is null)
 				{
@@ -157,14 +153,13 @@ namespace Durian.Analysis
 		}
 	}
 
-	/// <inheritdoc cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}"/>
-	public abstract class GeneratorSyntaxFilter<TData, TCompilation, TSyntaxReceiver> : GeneratorSyntaxFilter<TData, TCompilation, TSyntaxReceiver, IDurianGenerator>
-		where TData : IMemberData
+	/// <inheritdoc cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/>
+	public abstract class GeneratorSyntaxFilter<TCompilation, TSyntaxReceiver> : GeneratorSyntaxFilter<TCompilation, TSyntaxReceiver, IMemberData>
 		where TCompilation : ICompilationData
 		where TSyntaxReceiver : IDurianSyntaxReceiver
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver}"/> class.
+		/// Initializes a new instance of the <see cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver}"/> class.
 		/// </summary>
 		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
@@ -173,13 +168,12 @@ namespace Durian.Analysis
 		}
 	}
 
-	/// <inheritdoc cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}"/>
-	public abstract class GeneratorSyntaxFilter<TData, TCompilation> : GeneratorSyntaxFilter<TData, TCompilation, IDurianSyntaxReceiver, IDurianGenerator>
-		where TData : IMemberData
+	/// <inheritdoc cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/>
+	public abstract class GeneratorSyntaxFilter<TCompilation> : GeneratorSyntaxFilter<TCompilation, IDurianSyntaxReceiver, IMemberData>
 		where TCompilation : ICompilationData
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="GeneratorSyntaxFilter{TData, TCompilation}"/> class.
+		/// Initializes a new instance of the <see cref="GeneratorSyntaxFilter{TCompilation}"/> class.
 		/// </summary>
 		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
@@ -188,22 +182,8 @@ namespace Durian.Analysis
 		}
 	}
 
-	/// <inheritdoc cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}"/>
-	public abstract class GeneratorSyntaxFilter<TData> : GeneratorSyntaxFilter<TData, ICompilationData, IDurianSyntaxReceiver, IDurianGenerator>
-		where TData : IMemberData
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GeneratorSyntaxFilter{TData}"/> class.
-		/// </summary>
-		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		protected GeneratorSyntaxFilter(IDurianGenerator generator) : base(generator)
-		{
-		}
-	}
-
-	/// <inheritdoc cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}"/>
-	public abstract class GeneratorSyntaxFilter : GeneratorSyntaxFilter<IMemberData, ICompilationData, IDurianSyntaxReceiver, IDurianGenerator>
+	/// <inheritdoc cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/>
+	public abstract class GeneratorSyntaxFilter : GeneratorSyntaxFilter<ICompilationData, IDurianSyntaxReceiver, IMemberData>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorSyntaxFilter"/> class.

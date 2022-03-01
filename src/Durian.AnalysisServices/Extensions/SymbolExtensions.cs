@@ -830,7 +830,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="decl">Collection of <see cref="TypeDeclarationSyntax"/>es to get the modifiers from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="decl"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<SyntaxToken> GetModifiers(this IEnumerable<TypeDeclarationSyntax> decl)
+		public static IEnumerable<SyntaxToken> GetModifiers(this IEnumerable<MemberDeclarationSyntax> decl)
 		{
 			if (decl is null)
 			{

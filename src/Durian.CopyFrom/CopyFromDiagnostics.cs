@@ -77,12 +77,12 @@ namespace Durian.Analysis.CopyFrom
 		);
 
 		/// <summary>
-		/// Provides diagnostic message indicating that two <c>Durian.CopyFromTypeAttribute</c>s or <c>Durian.CopyFromMethodAttribute</c>s are equivalent.
+		/// Provides diagnostic message indicating that two <c>Durian.CopyFromTypeAttribute</c>s are equivalent.
 		/// </summary>
 		public static readonly DiagnosticDescriptor DUR0206_EquivalentAttributes = new(
 			id: "DUR0206",
-			title: "Equivalent CopyFromTypeAttribute or CopyFromMethodAttribute already specified",
-			messageFormat: "'{0}': Equivalent CopyFromTypeAttribute or CopyFromMethodAttribute already specified",
+			title: "Equivalent CopyFromTypeAttribute already specified",
+			messageFormat: "'{0}': Equivalent CopyFromTypeAttribute already specified",
 			category: "Durian.CopyFrom",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + "/DUR0206.md",
@@ -203,6 +203,19 @@ namespace Durian.Analysis.CopyFrom
 			category: "Durian.CopyFrom",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			helpLinkUri: DocsPath + "/DUR0215.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides diagnostic message indicating that two <c>Durian.PatternAttribute</c>s are equivalent.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0216_EquivalentPatternAttribute = new(
+			id: "DUR0216",
+			title: "PatternAttribute with equivalent pattern already specified",
+			messageFormat: "'{0}': PatternAttribute with equivalent pattern already specified",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0216.md",
 			isEnabledByDefault: true
 		);
 

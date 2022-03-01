@@ -20,7 +20,7 @@ namespace Durian.Analysis.DefaultParam
 	/// <summary>
 	/// Filtrates and validates <see cref="DelegateDeclarationSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
 	/// </summary>
-	public sealed class DefaultParamDelegateFilter : DefaultParamFilter<DefaultParamDelegateData, DelegateDeclarationSyntax, INamedTypeSymbol>
+	public sealed class DefaultParamDelegateFilter : DefaultParamFilter<DelegateDeclarationSyntax, INamedTypeSymbol, DefaultParamDelegateData>
     {
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamDelegateFilter"/> class.

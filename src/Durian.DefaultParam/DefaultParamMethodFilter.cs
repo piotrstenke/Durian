@@ -21,7 +21,7 @@ namespace Durian.Analysis.DefaultParam
     /// <summary>
     /// Filtrates and validates <see cref="MethodDeclarationSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
     /// </summary>
-    public sealed class DefaultParamMethodFilter : DefaultParamFilter<DefaultParamMethodData, MethodDeclarationSyntax, IMethodSymbol>
+    public sealed class DefaultParamMethodFilter : DefaultParamFilter<MethodDeclarationSyntax, IMethodSymbol, DefaultParamMethodData>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamMethodFilter"/> class.

@@ -18,26 +18,24 @@ namespace Durian.Analysis.Cache
 	/// <see cref="ISyntaxFilter"/> that validates the filtrated nodes.
 	/// If the value associated with a <see cref="CSharpSyntaxNode"/> is present in the <see cref="CachedGeneratorExecutionContext{T}"/>, it is re-used instead of creating a new one.
 	/// </summary>
-	/// <typeparam name="TData">Type of <see cref="IMemberData"/> this <see cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/> returns.</typeparam>
-	/// <typeparam name="TCompilation">Type of <see cref="ICompilationData"/> this <see cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/> uses.</typeparam>
-	/// <typeparam name="TSyntaxReceiver">Type of <see cref="IDurianSyntaxReceiver"/> this <see cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/> uses.</typeparam>
-	/// <typeparam name="TGenerator">Type of <see cref="IDurianGenerator"/> that is the target of this <see cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>.</typeparam>
-	/// <typeparam name="TSyntax">Type of <see cref="CSharpSyntaxNode"/> this <see cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/> uses.</typeparam>
-	/// <typeparam name="TSymbol">Type of <see cref="ISyntaxFilter"/> this <see cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/> uses.</typeparam>
-	public abstract class CachedSyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol> : SyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol>, ICachedGeneratorSyntaxFilter<TData>
-		where TData : IMemberData
+	/// <typeparam name="TCompilation">Type of <see cref="ICompilationData"/> this <see cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/> uses.</typeparam>
+	/// <typeparam name="TSyntaxReceiver">Type of <see cref="IDurianSyntaxReceiver"/> this <see cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/> uses.</typeparam>
+	/// <typeparam name="TSyntax">Type of <see cref="CSharpSyntaxNode"/> this <see cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/> uses.</typeparam>
+	/// <typeparam name="TSymbol">Type of <see cref="ISyntaxFilter"/> this <see cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/> uses.</typeparam>
+	/// <typeparam name="TData">Type of <see cref="IMemberData"/> this <see cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/> returns.</typeparam>
+	public abstract class CachedSyntaxFilterValidator<TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData> : SyntaxFilterValidator<TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData>, ICachedGeneratorSyntaxFilter<TData>
 		where TCompilation : class, ICompilationData
 		where TSyntaxReceiver : IDurianSyntaxReceiver
-		where TGenerator : IDurianGenerator
 		where TSyntax : CSharpSyntaxNode
 		where TSymbol : ISymbol
+		where TData : IMemberData
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		protected CachedSyntaxFilterValidator(TGenerator generator) : base(generator)
+		protected CachedSyntaxFilterValidator(IDurianGenerator generator) : base(generator)
 		{
 		}
 
@@ -75,7 +73,7 @@ namespace Durian.Analysis.Cache
 		}
 
 		/// <inheritdoc cref="ICachedGeneratorSyntaxFilter{T}.Filtrate(in CachedGeneratorExecutionContext{T})"/>
-		/// <exception cref="InvalidOperationException">Target <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}.Generator"/> is not initialized.</exception>
+		/// <exception cref="InvalidOperationException">Target <see cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}.Generator"/> is not initialized.</exception>
 		public virtual IEnumerator<TData> GetEnumerator(in CachedGeneratorExecutionContext<TData> context)
         {
 			EnsureInitialized();
@@ -106,9 +104,9 @@ namespace Durian.Analysis.Cache
 		}
 
 		/// <summary>
-		/// <see cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/> that reports diagnostics during filtration.
+		/// <see cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/> that reports diagnostics during filtration.
 		/// </summary>
-		public new abstract class WithDiagnostics : CachedSyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol>, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>, INodeValidatorWithDiagnostics<TData>
+		public new abstract class WithDiagnostics : CachedSyntaxFilterValidator<TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData>, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>, INodeValidatorWithDiagnostics<TData>
 		{
 			/// <inheritdoc/>
 			public IHintNameProvider HintNameProvider { get; }
@@ -121,7 +119,7 @@ namespace Durian.Analysis.Cache
 			/// </summary>
 			/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
 			/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-			protected WithDiagnostics(TGenerator generator) : this(generator, new SymbolNameToFile())
+			protected WithDiagnostics(IDurianGenerator generator) : this(generator, new SymbolNameToFile())
 			{
 			}
 
@@ -131,7 +129,7 @@ namespace Durian.Analysis.Cache
 			/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
 			/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that is used to create a hint name for the generated source.</param>
 			/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="hintNameProvider"/> is <see langword="null"/>.</exception>
-			protected WithDiagnostics(TGenerator generator, IHintNameProvider hintNameProvider) : base(generator)
+			protected WithDiagnostics(IDurianGenerator generator, IHintNameProvider hintNameProvider) : base(generator)
 			{
 				if (hintNameProvider is null)
 				{
@@ -244,7 +242,7 @@ namespace Durian.Analysis.Cache
 			);
 
 			/// <inheritdoc/>
-			/// <exception cref="InvalidOperationException">Target <see cref="GeneratorSyntaxFilter{TData, TCompilation, TSyntaxReceiver, TGenerator}.Generator"/> is not initialized.</exception>
+			/// <exception cref="InvalidOperationException">Target <see cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}.Generator"/> is not initialized.</exception>
 			public override IEnumerator<TData> GetEnumerator()
 			{
 				EnsureInitialized();
@@ -368,49 +366,46 @@ namespace Durian.Analysis.Cache
 		}
 	}
 
-	/// <inheritdoc cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>
-	public abstract class CachedSyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax> : CachedSyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, ISymbol>
-		where TData : IMemberData
+	/// <inheritdoc cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/>
+	public abstract class CachedSyntaxFilterValidator<TCompilation, TSyntaxReceiver, TSyntax, TSymbol> : CachedSyntaxFilterValidator<TCompilation, TSyntaxReceiver, TSyntax, TSymbol, IMemberData>
 		where TCompilation : class, ICompilationData
 		where TSyntaxReceiver : IDurianSyntaxReceiver
-		where TGenerator : IDurianGenerator
+		where TSyntax : CSharpSyntaxNode
+		where TSymbol : ISymbol
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol}"/> class.
+		/// </summary>
+		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+		protected CachedSyntaxFilterValidator(IDurianGenerator generator) : base(generator)
+		{
+		}
+	}
+
+	/// <inheritdoc cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/>
+	public abstract class CachedSyntaxFilterValidator<TCompilation, TSyntaxReceiver, TSyntax> : CachedSyntaxFilterValidator<TCompilation, TSyntaxReceiver, TSyntax, ISymbol, IMemberData>
+		where TCompilation : class, ICompilationData
+		where TSyntaxReceiver : IDurianSyntaxReceiver
 		where TSyntax : CSharpSyntaxNode
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax}"/> class.
+		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax}"/> class.
 		/// </summary>
 		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		protected CachedSyntaxFilterValidator(TGenerator generator) : base(generator)
+		protected CachedSyntaxFilterValidator(IDurianGenerator generator) : base(generator)
 		{
 		}
 	}
 
-	/// <inheritdoc cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>
-	public abstract class CachedSyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator> : CachedSyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, TGenerator, CSharpSyntaxNode, ISymbol>
-		where TData : IMemberData
-		where TCompilation : class, ICompilationData
-		where TSyntaxReceiver : IDurianSyntaxReceiver
-		where TGenerator : IDurianGenerator
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator}"/> class.
-		/// </summary>
-		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		protected CachedSyntaxFilterValidator(TGenerator generator) : base(generator)
-		{
-		}
-	}
-
-	/// <inheritdoc cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>
-	public abstract class CachedSyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver> : CachedSyntaxFilterValidator<TData, TCompilation, TSyntaxReceiver, IDurianGenerator, CSharpSyntaxNode, ISymbol>
-		where TData : IMemberData
+	/// <inheritdoc cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/>
+	public abstract class CachedSyntaxFilterValidator<TCompilation, TSyntaxReceiver> : CachedSyntaxFilterValidator<TCompilation, TSyntaxReceiver, CSharpSyntaxNode, ISymbol, IMemberData>
 		where TCompilation : class, ICompilationData
 		where TSyntaxReceiver : IDurianSyntaxReceiver
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver}"/> class.
+		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver}"/> class.
 		/// </summary>
 		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
@@ -419,13 +414,12 @@ namespace Durian.Analysis.Cache
 		}
 	}
 
-	/// <inheritdoc cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>
-	public abstract class CachedSyntaxFilterValidator<TData, TCompilation> : CachedSyntaxFilterValidator<TData, TCompilation, IDurianSyntaxReceiver, IDurianGenerator, CSharpSyntaxNode, ISymbol>
-		where TData : IMemberData
+	/// <inheritdoc cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/>
+	public abstract class CachedSyntaxFilterValidator<TCompilation> : CachedSyntaxFilterValidator<TCompilation, IDurianSyntaxReceiver, CSharpSyntaxNode, ISymbol, IMemberData>
 		where TCompilation : class, ICompilationData
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator{TData, TCompilation}"/> class.
+		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator{TCompilation}"/> class.
 		/// </summary>
 		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
@@ -434,22 +428,8 @@ namespace Durian.Analysis.Cache
 		}
 	}
 
-	/// <inheritdoc cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>
-	public abstract class CachedSyntaxFilterValidator<TData> : CachedSyntaxFilterValidator<TData, ICompilationData, IDurianSyntaxReceiver, IDurianGenerator, CSharpSyntaxNode, ISymbol>
-		where TData : IMemberData
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator{TData}"/> class.
-		/// </summary>
-		/// <param name="generator"><see cref="IDurianGenerator"/> that is the target of this filter.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		protected CachedSyntaxFilterValidator(IDurianGenerator generator) : base(generator)
-		{
-		}
-	}
-
-	/// <inheritdoc cref="CachedSyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>
-	public abstract class CachedSyntaxFilterValidator : CachedSyntaxFilterValidator<IMemberData, ICompilationData, IDurianSyntaxReceiver, IDurianGenerator, CSharpSyntaxNode, ISymbol>
+	/// <inheritdoc cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/>
+	public abstract class CachedSyntaxFilterValidator : CachedSyntaxFilterValidator<ICompilationData, IDurianSyntaxReceiver, CSharpSyntaxNode, ISymbol, IMemberData>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CachedSyntaxFilterValidator"/> class.

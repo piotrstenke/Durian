@@ -920,6 +920,22 @@ class Target
 			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0206_EquivalentAttributes.Id);
 		}
 
+		[Fact]
+		public async Task Warning_When_SamePatternAlreadySpecified()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
+[{PatternAttributeProvider.TypeName}(""\w+"", """")]
+[{PatternAttributeProvider.TypeName}(""\w+"", ""xyz"")]
+partial class Test
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0216_EquivalentPatternAttribute.Id);
+		}
+
 		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
 		{
 			return CopyFromGenerator.GetSourceProviders();

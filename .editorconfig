@@ -1,4 +1,4 @@
 ﻿[*.cs]
 
-# RCS1146: Use conditional access.
-dotnet_diagnostic.RCS1146.severity = none
+# RCS1096: Convert 'HasFlag' call to bitwise operation (or vice versa).
+dotnet_diagnostic.RCS1096.severity = none

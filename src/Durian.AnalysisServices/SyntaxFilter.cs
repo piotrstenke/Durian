@@ -12,16 +12,16 @@ namespace Durian.Analysis
 	/// <summary>
 	/// Filtrates <see cref="CSharpSyntaxNode"/>s collected by a <see cref="IDurianSyntaxReceiver"/>.
 	/// </summary>
-	/// <typeparam name="TData">Type of <see cref="IMemberData"/> this <see cref="SyntaxFilter{TData, TCompilation, TSyntaxReceiver}"/> returns.</typeparam>
-	/// <typeparam name="TCompilation">Type of <see cref="ICompilationData"/> this <see cref="SyntaxFilter{TData, TCompilation, TSyntaxReceiver}"/> uses.</typeparam>
-	/// <typeparam name="TSyntaxReceiver">Type of <see cref="IDurianSyntaxReceiver"/> this <see cref="SyntaxFilter{TData, TCompilation, TSyntaxReceiver}"/> uses.</typeparam>
-	public abstract class SyntaxFilter<TData, TCompilation, TSyntaxReceiver> : ISyntaxFilter
-		where TData : IMemberData
+	/// <typeparam name="TCompilation">Type of <see cref="ICompilationData"/> this <see cref="SyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> uses.</typeparam>
+	/// <typeparam name="TSyntaxReceiver">Type of <see cref="IDurianSyntaxReceiver"/> this <see cref="SyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> uses.</typeparam>
+	/// <typeparam name="TData">Type of <see cref="IMemberData"/> this <see cref="SyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> returns.</typeparam>
+	public abstract class SyntaxFilter<TCompilation, TSyntaxReceiver, TData> : ISyntaxFilter
 		where TCompilation : ICompilationData
 		where TSyntaxReceiver : IDurianSyntaxReceiver
+		where TData : IMemberData
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SyntaxFilter{TData, TCompilation, TSyntaxReceiver}"/> class.
+		/// Initializes a new instance of the <see cref="SyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> class.
 		/// </summary>
 		protected SyntaxFilter()
 		{
@@ -44,9 +44,9 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// <see cref="SyntaxFilter{TData, TCompilation, TSyntaxReceiver}"/> that reports diagnostics during filtration.
+		/// <see cref="SyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> that reports diagnostics during filtration.
 		/// </summary>
-		public abstract class WithDiagnostics : SyntaxFilter<TData, TCompilation, TSyntaxReceiver>, ISyntaxFilterWithDiagnostics
+		public abstract class WithDiagnostics : SyntaxFilter<TCompilation, TSyntaxReceiver, TData>, ISyntaxFilterWithDiagnostics
 		{
 			/// <summary>
 			/// Initializes a new instance of the <see cref="WithDiagnostics"/> class.
@@ -73,33 +73,33 @@ namespace Durian.Analysis
 		}
 	}
 
-	/// <inheritdoc cref="SyntaxFilter{TData, TCompilation, TSyntaxReceiver}"/>
-	public abstract class SyntaxFilter<TData, TCompilation> : SyntaxFilter<TData, TCompilation, IDurianSyntaxReceiver>
-		where TData : IMemberData
+	/// <inheritdoc cref="SyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/>
+	public abstract class SyntaxFilter<TCompilation, TSyntaxReceiver> : SyntaxFilter<TCompilation, TSyntaxReceiver, IMemberData>
+		where TCompilation : ICompilationData
+		where TSyntaxReceiver : IDurianSyntaxReceiver
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SyntaxFilter{TCompilation, TSyntaxReceiver}"/> class.
+		/// </summary>
+		protected SyntaxFilter()
+		{
+		}
+	}
+
+	/// <inheritdoc cref="SyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/>
+	public abstract class SyntaxFilter<TCompilation> : SyntaxFilter<TCompilation, IDurianSyntaxReceiver, IMemberData>
 		where TCompilation : ICompilationData
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SyntaxFilter{TData, TCompilation}"/> class.
+		/// Initializes a new instance of the <see cref="SyntaxFilter{TCompilation}"/> class.
 		/// </summary>
 		protected SyntaxFilter()
 		{
 		}
 	}
 
-	/// <inheritdoc cref="SyntaxFilter{TData, TCompilation, TSyntaxReceiver}"/>
-	public abstract class SyntaxFilter<TData> : SyntaxFilter<TData, ICompilationData, IDurianSyntaxReceiver>
-		where TData : IMemberData
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SyntaxFilter{TData}"/> class.
-		/// </summary>
-		protected SyntaxFilter()
-		{
-		}
-	}
-
-	/// <inheritdoc cref="SyntaxFilter{TData, TCompilation, TSyntaxReceiver}"/>
-	public abstract class SyntaxFilter : SyntaxFilter<IMemberData, ICompilationData, IDurianSyntaxReceiver>
+	/// <inheritdoc cref="SyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/>
+	public abstract class SyntaxFilter : SyntaxFilter<ICompilationData, IDurianSyntaxReceiver, IMemberData>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SyntaxFilter"/> class.

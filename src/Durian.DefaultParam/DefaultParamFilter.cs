@@ -16,18 +16,21 @@ using System.Threading;
 namespace Durian.Analysis.DefaultParam
 {
     /// <summary>
-    /// <c>DefaultParam</c>-specific <see cref="SyntaxFilterValidator{TData, TCompilation, TSyntaxReceiver, TGenerator, TSyntax, TSymbol}"/>.
+    /// <c>DefaultParam</c>-specific <see cref="SyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/>.
     /// </summary>
-    /// <typeparam name="TData">Type of <see cref="IMemberData"/> this <see cref="DefaultParamFilter{TData, TSyntax, TSymbol}"/> uses.</typeparam>
-    /// <typeparam name="TSyntax">Type of <see cref="CSharpSyntaxNode"/> this <see cref="DefaultParamFilter{TData, TSyntax, TSymbol}"/> uses.</typeparam>
-    /// <typeparam name="TSymbol">Type of <see cref="ISyntaxFilter"/> this <see cref="DefaultParamFilter{TData, TSyntax, TSymbol}"/> uses.</typeparam>
-    public abstract class DefaultParamFilter<TData, TSyntax, TSymbol> : CachedSyntaxFilterValidator<TData, DefaultParamCompilationData, DefaultParamSyntaxReceiver, DefaultParamGenerator, TSyntax, TSymbol>.WithDiagnostics, IDefaultParamFilter
-        where TData : IDefaultParamTarget
+    /// <typeparam name="TSyntax">Type of <see cref="CSharpSyntaxNode"/> this <see cref="DefaultParamFilter{TSyntax, TSymbol, TData}"/> uses.</typeparam>
+    /// <typeparam name="TSymbol">Type of <see cref="ISyntaxFilter"/> this <see cref="DefaultParamFilter{TSyntax, TSymbol, TData}"/> uses.</typeparam>
+    /// <typeparam name="TData">Type of <see cref="IMemberData"/> this <see cref="DefaultParamFilter{TSyntax, TSymbol, TData}"/> uses.</typeparam>
+    public abstract class DefaultParamFilter<TSyntax, TSymbol, TData> : CachedSyntaxFilterValidator<DefaultParamCompilationData, DefaultParamSyntaxReceiver, TSyntax, TSymbol, TData>.WithDiagnostics, IDefaultParamFilter
         where TSyntax : CSharpSyntaxNode
         where TSymbol : class, ISymbol
+        where TData : IDefaultParamTarget
     {
+        /// <inheritdoc/>
+        public new DefaultParamGenerator Generator => (base.Generator as DefaultParamGenerator)!;
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultParamFilter{TData, TSyntax, TSymbol}"/> class.
+        /// Initializes a new instance of the <see cref="DefaultParamFilter{TSyntax, TSymbol, TData}"/> class.
         /// </summary>
         /// <param name="generator"><see cref="DefaultParamGenerator"/> that is the target of this filter.</param>
         /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
@@ -36,7 +39,7 @@ namespace Durian.Analysis.DefaultParam
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultParamFilter{TData, TSyntax, TSymbol}"/> class.
+        /// Initializes a new instance of the <see cref="DefaultParamFilter{TSyntax, TSymbol, TData}"/> class.
         /// </summary>
         /// <param name="generator"><see cref="DefaultParamGenerator"/> that is the target of this filter.</param>
         /// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that is used to create a hint name for the generated source.</param>
@@ -100,18 +103,23 @@ namespace Durian.Analysis.DefaultParam
             CancellationToken cancellationToken = default
         )
         {
-            semanticModel = compilation.Compilation.GetSemanticModel(node.SyntaxTree);
+            SemanticModel s = compilation.Compilation.GetSemanticModel(node.SyntaxTree);
             TypeParameterListSyntax? parameterList = GetTypeParameterList(node);
-            typeParameters = GetTypeParameters(parameterList, semanticModel, compilation, cancellationToken);
+            typeParameters = GetTypeParameters(parameterList, s, compilation, cancellationToken);
 
             if (TypeParametersAreValid(in typeParameters, node))
             {
-                symbol = semanticModel.GetDeclaredSymbol(node, cancellationToken) as TSymbol;
+                symbol = s.GetDeclaredSymbol(node, cancellationToken) as TSymbol;
 
-                return symbol is not null;
+                if(symbol is not null)
+                {
+                    semanticModel = s;
+                    return true;
+                }
             }
 
-            symbol = null!;
+            symbol = default;
+            semanticModel = default;
             return false;
         }
 

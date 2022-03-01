@@ -20,7 +20,7 @@ namespace Durian.Analysis.DefaultParam
 	/// <summary>
 	/// Filtrates and validates <see cref="TypeDeclarationSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
 	/// </summary>
-	public sealed class DefaultParamTypeFilter : DefaultParamFilter<DefaultParamTypeData, TypeDeclarationSyntax, INamedTypeSymbol>
+	public sealed class DefaultParamTypeFilter : DefaultParamFilter<TypeDeclarationSyntax, INamedTypeSymbol, DefaultParamTypeData>
     {
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamTypeFilter"/> class.

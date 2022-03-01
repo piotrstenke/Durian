@@ -18,7 +18,7 @@ namespace Durian.Analysis.DefaultParam
 	/// <summary>
 	/// Filtrates and validates <see cref="LocalFunctionStatementSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
 	/// </summary>
-	public class DefaultParamLocalFunctionFilter : DefaultParamFilter<IDefaultParamTarget, LocalFunctionStatementSyntax, IMethodSymbol>
+	public class DefaultParamLocalFunctionFilter : DefaultParamFilter<LocalFunctionStatementSyntax, IMethodSymbol, IDefaultParamTarget>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamLocalFunctionFilter"/> class.

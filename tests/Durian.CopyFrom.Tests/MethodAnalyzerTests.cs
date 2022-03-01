@@ -2120,26 +2120,6 @@ partial class Test
 		}
 
 		[Fact]
-		public async Task Warning_When_IdenticalAttributesSpecified()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
-	partial void Method();
-
-	void Target()
-	{{
-	}}
-}}
-";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0206_EquivalentAttributes.Id);
-		}
-
-		[Fact]
 		public async Task Warning_When_PatternIsRedundant()
 		{
 			string input =
@@ -2147,7 +2127,7 @@ $@"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	[{PatternAttributeProvider.TypeName}(null, """")]
+	[{PatternAttributeProvider.TypeName}(""\w+"", """")]
 	partial void Method();
 }}
 ";
@@ -2155,24 +2135,20 @@ partial class Test
 		}
 
 		[Fact]
-		public async Task Warning_When_ResolvedToSameMemberThroughAlias()
-		{
+		public async Task Warning_When_SamePatternAlreadySpecified()
+        {
 			string input =
 $@"using {DurianStrings.MainNamespace};
-using A = Test;
 
 partial class Test
 {{
 	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
-	[{CopyFromMethodAttributeProvider.TypeName}(""A.Target"")]
+	[{PatternAttributeProvider.TypeName}(""\w+"", """")]
+	[{PatternAttributeProvider.TypeName}(""\w+"", ""xyz"")]
 	partial void Method();
-
-	public void Target()
-	{{
-	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0206_EquivalentAttributes.Id);
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0216_EquivalentPatternAttribute.Id);
 		}
 
 		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()

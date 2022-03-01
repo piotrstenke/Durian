@@ -62,7 +62,7 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Looks for all <see cref="AttributeSyntax"/>ex that correspond to the <paramref name="attrSymbol"/> and are defined on the specified <paramref name="syntaxNode"/>.
+		/// Looks for all <see cref="AttributeSyntax"/>es that correspond to the <paramref name="attrSymbol"/> and are defined on the specified <paramref name="syntaxNode"/>.
 		/// </summary>
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
 		/// <param name="syntaxNode"><see cref="ParameterSyntax"/> the attributes are declared on.</param>
