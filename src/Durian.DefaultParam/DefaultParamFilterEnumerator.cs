@@ -1,148 +1,137 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using Durian.Analysis.Data;
-using Durian.Analysis.Logging;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using System.Threading;
 
 namespace Durian.Analysis.DefaultParam
 {
-	/// <summary>
-	/// Enumerates through <see cref="IDefaultParamTarget"/> s returned by a <see cref="IDefaultParamFilter{T}"/>.
-	/// </summary>
-	/// <typeparam name="T">Type of <see cref="IDefaultParamTarget"/> this enumerator supports.</typeparam>
-	[DebuggerDisplay("Current = {Current}")]
-	public struct DefaultParamFilterEnumerator<T> : IEnumerator<T> where T : class, IDefaultParamTarget
-	{
-		internal readonly CSharpSyntaxNode[] _nodes;
+    /// <summary>
+    /// Enumerates through <see cref="IDefaultParamTarget"/> s returned by a <see cref="IDefaultParamFilter"/>.
+    /// </summary>
+    /// <typeparam name="T">Type of <see cref="IDefaultParamTarget"/> this enumerator supports.</typeparam>
+    [DebuggerDisplay("Current = {Current}")]
+    public struct DefaultParamFilterEnumerator<T> : IEnumerator<T> where T : IDefaultParamTarget
+    {
+        internal readonly IEnumerator<CSharpSyntaxNode> _nodes;
 
-		internal int _index;
+        /// <summary>
+        /// Parent <see cref="DefaultParamCompilationData"/> of the provided <see
+        /// cref="CSharpSyntaxNode"/> s.
+        /// </summary>
+        public readonly DefaultParamCompilationData Compilation => Filter.Generator.TargetCompilation!;
 
-		/// <summary>
-		/// Parent <see cref="DefaultParamCompilationData"/> of the provided <see
-		/// cref="CSharpSyntaxNode"/> s.
-		/// </summary>
-		public readonly DefaultParamCompilationData Compilation => Filter.Generator.TargetCompilation!;
+        /// <summary>
+        /// Current <see cref="IDefaultParamTarget"/>.
+        /// </summary>
+        public T? Current { readonly get; private set; }
 
-		/// <summary>
-		/// Number of <see cref="CSharpSyntaxNode"/> s in the collection that this enumerator
-		/// enumerates on.
-		/// </summary>
-		public readonly int Count => _nodes.Length;
+        /// <summary>
+        /// <see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>
+        /// s into a log file or buffer.
+        /// </summary>
+        public readonly INodeDiagnosticReceiver DiagnosticReceiver { get; }
 
-		/// <summary>
-		/// Current <see cref="IDefaultParamTarget"/>.
-		/// </summary>
-		public T? Current { readonly get; private set; }
+        /// <summary>
+        /// <see cref="IDefaultParamFilter"/> that is used to validate and create the <see
+        /// cref="IMemberData"/> s to enumerate through.
+        /// </summary>
+        public readonly IDefaultParamFilter Filter { get; }
 
-		/// <summary>
-		/// <see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>
-		/// s into a log file or buffer.
-		/// </summary>
-		public readonly INodeDiagnosticReceiver DiagnosticReceiver { get; }
+        /// <summary>
+        /// <see cref="IHintNameProvider"/> that creates hint names for the <see
+        /// cref="CSharpSyntaxNode"/> s.
+        /// </summary>
+        public readonly IHintNameProvider HintNameProvider => Filter.HintNameProvider;
 
-		/// <summary>
-		/// <see cref="IDefaultParamFilter{T}"/> that is used to validate and create the <see
-		/// cref="IMemberData"/> s to enumerate through.
-		/// </summary>
-		public readonly IDefaultParamFilter<T> Filter { get; }
+        readonly T IEnumerator<T>.Current => Current!;
+        readonly object IEnumerator.Current => Current!;
 
-		/// <summary>
-		/// <see cref="IHintNameProvider"/> that creates hint names for the <see
-		/// cref="CSharpSyntaxNode"/> s.
-		/// </summary>
-		public readonly IHintNameProvider HintNameProvider => Filter.HintNameProvider;
+        /// <inheritdoc cref="DefaultParamFilterEnumerator(IDefaultParamFilter, INodeDiagnosticReceiver)"/>
+        public DefaultParamFilterEnumerator(IDefaultParamFilter filter) : this(filter, filter.Generator.LogReceiver)
+        {
+        }
 
-		readonly T IEnumerator<T>.Current => Current!;
-		readonly object IEnumerator.Current => Current!;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultParamFilterEnumerator{T}"/> struct.
+        /// </summary>
+        /// <param name="filter">
+        /// <see cref="IDefaultParamFilter"/> that creates the <see cref="IDefaultParamTarget"/>
+        /// s to enumerate through.
+        /// </param>
+        /// <param name="diagnosticReceiver">
+        /// <see cref="INodeDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/> s.
+        /// </param>
+        public DefaultParamFilterEnumerator(IDefaultParamFilter filter, INodeDiagnosticReceiver diagnosticReceiver)
+        {
+            Filter = filter;
+            DiagnosticReceiver = diagnosticReceiver;
+            _nodes = filter.GetNodes().GetEnumerator();
+            Current = default;
+        }
 
-		/// <inheritdoc cref="DefaultParamFilterEnumerator(IDefaultParamFilter{T}, INodeDiagnosticReceiver)"/>
-		public DefaultParamFilterEnumerator(IDefaultParamFilter<T> filter) : this(filter, filter.Generator.LogReceiver, default)
-		{
-		}
+        /// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>
+        [MemberNotNullWhen(true, nameof(Current))]
+        public bool MoveNext(CancellationToken cancellationToken = default)
+        {
+            while (_nodes.MoveNext())
+            {
+                CSharpSyntaxNode node = _nodes.Current;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="DefaultParamFilterEnumerator{T}"/> struct.
-		/// </summary>
-		/// <param name="filter">
-		/// <see cref="IDefaultParamFilter{T}"/> that creates the <see cref="IDefaultParamTarget"/>
-		/// s to enumerate through.
-		/// </param>
-		/// <param name="diagnosticReceiver">
-		/// <see cref="INodeDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/> s.
-		/// </param>
-		public DefaultParamFilterEnumerator(IDefaultParamFilter<T> filter, INodeDiagnosticReceiver diagnosticReceiver) : this(filter, diagnosticReceiver, default)
-		{
-		}
+                if (node is null)
+                {
+                    continue;
+                }
 
-		internal DefaultParamFilterEnumerator(IDefaultParamFilter<T> filter, INodeDiagnosticReceiver diagnosticReceiver, int index)
-		{
-			Filter = filter;
-			DiagnosticReceiver = diagnosticReceiver;
-			_nodes = filter.GetNodes().ToArray();
-			_index = index;
-			Current = default;
-		}
+                if (!Filter.GetValidationData(node, Compilation, out SemanticModel? semanticModel, out ISymbol? symbol, out TypeParameterContainer typeParameters, cancellationToken))
+                {
+                    continue;
+                }
 
-		/// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>
-		[MemberNotNullWhen(true, nameof(Current))]
-		public bool MoveNext()
-		{
-			int length = _nodes.Length;
+                string fileName = HintNameProvider.GetFileName(symbol);
+                DiagnosticReceiver.SetTargetNode(node, fileName);
+                bool isValid = Filter.ValidateAndCreate(node, Compilation, semanticModel, symbol, in typeParameters, out IDefaultParamTarget? data, DiagnosticReceiver, cancellationToken);
 
-			while (_index < length)
-			{
-				CSharpSyntaxNode node = _nodes[_index];
-				_index++;
+                if (DiagnosticReceiver.Count > 0)
+                {
+                    DiagnosticReceiver.Push();
+                    HintNameProvider.Success();
+                }
 
-				if (node is null)
-				{
-					continue;
-				}
+                if (isValid && data is T t)
+                {
+                    Current = t;
+                    return true;
+                }
+            }
 
-				if (!Filter.GetValidationData(node, Compilation, out SemanticModel? semanticModel, out ISymbol? symbol, out TypeParameterContainer typeParameters))
-				{
-					continue;
-				}
+            Current = default;
+            return false;
+        }
 
-				string fileName = HintNameProvider.GetFileName(symbol);
-				DiagnosticReceiver.SetTargetNode(node, fileName);
-				bool isValid = Filter.ValidateAndCreateWithDiagnostics(DiagnosticReceiver, node, Compilation, semanticModel, symbol, in typeParameters, out T? data);
+        /// <inheritdoc cref="FilterEnumerator{T}.Reset"/>
+        public void Reset()
+        {
+            _nodes.Reset();
+            Current = default;
+        }
 
-				if (DiagnosticReceiver.Count > 0)
-				{
-					DiagnosticReceiver.Push();
-					HintNameProvider.Success();
-				}
+        readonly void IDisposable.Dispose()
+        {
+            // Do nothing.
+        }
 
-				if (isValid)
-				{
-					Current = data!;
-					return true;
-				}
-			}
-
-			Current = default;
-			return false;
-		}
-
-		/// <inheritdoc cref="FilterEnumerator{T}.Reset"/>
-		public void Reset()
-		{
-			_index = 0;
-			Current = default;
-		}
-
-		readonly void IDisposable.Dispose()
-		{
-			// Do nothing.
-		}
-	}
+        bool IEnumerator.MoveNext()
+        {
+            return MoveNext();
+        }
+    }
 }

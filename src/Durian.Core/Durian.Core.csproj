@@ -16,10 +16,37 @@
     
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
     
-    <Compile Include="..\NullableAttributes.cs" Link="NullableAttributes.cs" />
     <Compile Include=".generated\ModuleRepository.cs" />
     <Compile Include=".generated\PackageRepository.cs" />
     <Compile Include=".generated\TypeRepository.cs" />
+
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+        <_Parameter1>Durian.TestServices</_Parameter1>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+        <_Parameter1>Durian.CopyFrom</_Parameter1>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+        <_Parameter1>Durian.DefaultParam</_Parameter1>
+    </AssemblyAttribute>
+      
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+        <_Parameter1>Durian.InterfaceTargets</_Parameter1>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+        <_Parameter1>Durian.AnalysisServices</_Parameter1>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+        <_Parameter1>Durian.Core.Analyzer</_Parameter1>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+        <_Parameter1>Durian.FriendClass</_Parameter1>
+    </AssemblyAttribute>
     
   </ItemGroup>
 

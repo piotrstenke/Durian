@@ -609,5 +609,157 @@ namespace Durian.Info
 				return module;
 			}
 		}
+
+		/// <summary>
+		/// Returns a <see cref="ModuleIdentity"/> for the <see cref="DurianModule.CopyFrom"/> module.
+		/// </summary>
+		public static ModuleIdentity CopyFrom
+		{
+			get
+			{
+				if(!IdentityPool.Modules.TryGetValue("CopyFrom", out ModuleIdentity module))
+				{
+					module = new(
+						module: DurianModule.CopyFrom,
+						id: 02,
+						packages: new DurianPackage[]
+						{
+							DurianPackage.CopyFrom,
+						},
+						docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom",
+						diagnostics: new DiagnosticData[]
+						{
+							new DiagnosticData(
+								title: "Containing type of a member with the CopyFromTypeAttribute or CopyFromMethodAttribute must be partial",
+								id: 01,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0201.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Member marked with the CopyFromTypeAttribute or CopyFromMethodAttribute must be partial",
+								id: 02,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0202.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Target member cannot be resolved",
+								id: 03,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0203.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Target member is not compatible",
+								id: 04,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0204.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Implementation of the target member is not accessible",
+								id: 05,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0205.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Equivalent CopyFromTypeAttribute or CopyFromMethodAttribute already specified",
+								id: 06,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0206.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Member cannot copy from itself, parent, child or outer type",
+								id: 07,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0207.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Two or more members were resolved",
+								id: 08,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0208.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Cannot copy from a method without implementation",
+								id: 09,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0209.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "CopyFromMethodAttribute is not valid on this kind of method",
+								id: 10,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0210.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Method marked with the CopyFromMethodAttribute already has a declaration",
+								id: 11,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0211.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Target member does not have a return type",
+								id: 12,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0212.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Target member cannot have a return type",
+								id: 13,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0213.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Invalid PatternAttribute specified",
+								id: 14,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0214.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "PatternAttribute is redundant",
+								id: 15,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0215.md",
+								fatal: false,
+								hasLocation: true
+							),
+						},
+						types: new TypeIdentity[]
+						{
+							TypeRepository.CopyFromTypeAttribute,
+							TypeRepository.CopyFromMethodAttribute,
+							TypeRepository.PatternAttribute,
+						}
+					);
+				}
+
+				return module;
+			}
+		}
 	}
 }

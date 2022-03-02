@@ -205,5 +205,29 @@ namespace Durian.Info
 				return package;
 			}
 		}
+
+		/// <summary>
+		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.CopyFrom"/> package.
+		/// </summary>
+		public static PackageIdentity CopyFrom
+		{
+			get
+			{
+				if(!IdentityPool.Packages.TryGetValue("CopyFrom", out PackageIdentity package))
+				{
+					package = new(
+						enumValue: DurianPackage.CopyFrom,
+						version: "1.0.0",
+						type: PackageType.Analyzer | PackageType.StaticGenerator | PackageType.SyntaxBasedGenerator | PackageType.CodeFixLibrary,
+						modules: new DurianModule[]
+						{
+							DurianModule.CopyFrom
+						}
+					);
+				}
+
+				return package;
+			}
+		}
 	}
 }

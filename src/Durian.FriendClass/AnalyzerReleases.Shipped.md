@@ -17,7 +17,9 @@ DUR0311 | Durian.FriendClass | Warning | Do not use FriendClassConfigurationAttr
 DUR0312 | Durian.FriendClass | Warning | Inner types don't need to be specified as friends explicitly. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0312.md)]
 DUR0313 | Durian.FriendClass | Warning | FriendClassConfigurationAttribute is redundant. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/FriendClass/DUR0313.md)]
 
-# Release 1.1.0
+## Release 1.1.0
+
+### New Rules
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-----------------------------------------

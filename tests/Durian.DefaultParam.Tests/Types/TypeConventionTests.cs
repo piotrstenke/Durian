@@ -6,12 +6,12 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Types
 {
-	public sealed class TypeConventionTests : DefaultParamGeneratorTestBase
-	{
-		[Fact]
-		public void Copies_When_GloballyTrue_And_LocallyFalse()
-		{
-			string input =
+    public sealed class TypeConventionTests : DefaultParamGeneratorTestBase
+    {
+        [Fact]
+        public void Copies_When_GloballyTrue_And_LocallyFalse()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -25,7 +25,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
@@ -35,13 +35,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void Copies_When_InTypeTrue_And_LocallyFalse()
-		{
-			string input =
+        [Fact]
+        public void Copies_When_InTypeTrue_And_LocallyFalse()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -55,7 +55,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
@@ -65,13 +65,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void GeneratesConstructorsOfBaseType()
-		{
-			string input =
+        [Fact]
+        public void GeneratesConstructorsOfBaseType()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -94,7 +94,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
@@ -114,13 +114,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void Inherits_When_AppliedGlobally()
-		{
-			string input =
+        [Fact]
+        public void Inherits_When_AppliedGlobally()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -133,7 +133,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
@@ -142,13 +142,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void Inherits_When_AppliedLocally()
-		{
-			string input =
+        [Fact]
+        public void Inherits_When_AppliedLocally()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -161,7 +161,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
@@ -170,13 +170,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void Inherits_When_GloballyFalse_And_InTypeTrue()
-		{
-			string input =
+        [Fact]
+        public void Inherits_When_GloballyFalse_And_InTypeTrue()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -190,7 +190,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
@@ -199,13 +199,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void Inherits_When_GlobalyFalse_And_LocallyTrue()
-		{
-			string input =
+        [Fact]
+        public void Inherits_When_GlobalyFalse_And_LocallyTrue()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -219,7 +219,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
@@ -228,13 +228,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void Inherits_When_InTypeFalse_And_LocallyTrue()
-		{
-			string input =
+        [Fact]
+        public void Inherits_When_InTypeFalse_And_LocallyTrue()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -248,7 +248,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
@@ -257,13 +257,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void PreservesAttributes_When_IsInherit()
-		{
-			string input =
+        [Fact]
+        public void PreservesAttributes_When_IsInherit()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 using System;
@@ -278,7 +278,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"using System;
 
 partial class Parent
@@ -290,13 +290,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void ProperlyHandlesConstraints_When_IsInherit()
-		{
-			string input =
+        [Fact]
+        public void ProperlyHandlesConstraints_When_IsInherit()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -309,7 +309,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
@@ -323,13 +323,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void ProperlyWritesAllTypeArguments()
-		{
-			string input =
+        [Fact]
+        public void ProperlyWritesAllTypeArguments()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -343,7 +343,7 @@ partial class Parent
 }}
 ";
 
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U, V>")}
@@ -362,13 +362,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void RemovesBaseList_When_IsInherit()
-		{
-			string input =
+        [Fact]
+        public void RemovesBaseList_When_IsInherit()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 using System;
@@ -382,7 +382,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"using System;
 
 partial class Parent
@@ -393,13 +393,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void RemovesBaseListAndProperlyHandlesConstraints_When_IsInherit()
-		{
-			string input =
+        [Fact]
+        public void RemovesBaseListAndProperlyHandlesConstraints_When_IsInherit()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 using System;
@@ -413,7 +413,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"using System;
 
 partial class Parent
@@ -429,13 +429,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void SkipsConstructorsWithSameParameters()
-		{
-			string input =
+        [Fact]
+        public void SkipsConstructorsWithSameParameters()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -454,7 +454,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
@@ -466,13 +466,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void SkipsPrivateConstructors()
-		{
-			string input =
+        [Fact]
+        public void SkipsPrivateConstructors()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -491,7 +491,7 @@ partial class Parent
 	}}
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
@@ -503,13 +503,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void Warning_And_GeneratesAsCopy_When_IsScopedInherit_And_HasNoAccessibleConstructors()
-		{
-			string input =
+        [Fact]
+        public void Warning_And_GeneratesAsCopy_When_IsScopedInherit_And_HasNoAccessibleConstructors()
+        {
+            string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -523,7 +523,7 @@ class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	}}
 }}
 ";
-			string expected =
+            string expected =
 $@"{GetCodeGenerationAttributes("Test<T>", 0)}
 class Test
 {{
@@ -534,15 +534,15 @@ class Test
 	}}
 }}
 ";
-			SingletonGeneratorTestResult result = RunGenerator(input);
-			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
-			Assert.True(result.Compare(expected));
-		}
+            SingletonGeneratorTestResult result = RunGenerator(input);
+            Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
+            Assert.True(result.Compare(expected));
+        }
 
-		[Fact]
-		public void Warning_And_GeneratesAsCopy_When_IsScopedInherit_And_IsSealedType()
-		{
-			string input =
+        [Fact]
+        public void Warning_And_GeneratesAsCopy_When_IsScopedInherit_And_IsSealedType()
+        {
+            string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -552,22 +552,22 @@ sealed class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	int value;
 }}
 ";
-			string expected =
+            string expected =
 $@"{GetCodeGenerationAttributes("Test<T>", 0)}
 sealed class Test
 {{
 	int value;
 }}
 ";
-			SingletonGeneratorTestResult result = RunGenerator(input);
-			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
-			Assert.True(result.Compare(expected));
-		}
+            SingletonGeneratorTestResult result = RunGenerator(input);
+            Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
+            Assert.True(result.Compare(expected));
+        }
 
-		[Fact]
-		public void Warning_And_GeneratesAsCopy_When_IsScopedInherit_And_IsStatic()
-		{
-			string input =
+        [Fact]
+        public void Warning_And_GeneratesAsCopy_When_IsScopedInherit_And_IsStatic()
+        {
+            string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -577,22 +577,22 @@ static class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	int value;
 }}
 ";
-			string expected =
+            string expected =
 $@"{GetCodeGenerationAttributes("Test<T>", 0)}
 static class Test
 {{
 	int value;
 }}
 ";
-			SingletonGeneratorTestResult result = RunGenerator(input);
-			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
-			Assert.True(result.Compare(expected));
-		}
+            SingletonGeneratorTestResult result = RunGenerator(input);
+            Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
+            Assert.True(result.Compare(expected));
+        }
 
-		[Fact]
-		public void Warning_And_GeneratesAsCopy_When_IsScopedInherit_And_IsStruct()
-		{
-			string input =
+        [Fact]
+        public void Warning_And_GeneratesAsCopy_When_IsScopedInherit_And_IsStruct()
+        {
+            string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -602,16 +602,16 @@ struct Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	int value;
 }}
 ";
-			string expected =
+            string expected =
 $@"{GetCodeGenerationAttributes("Test<T>", 0)}
 struct Test
 {{
 	int value;
 }}
 ";
-			SingletonGeneratorTestResult result = RunGenerator(input);
-			Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
-			Assert.True(result.Compare(expected));
-		}
-	}
+            SingletonGeneratorTestResult result = RunGenerator(input);
+            Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
+            Assert.True(result.Compare(expected));
+        }
+    }
 }

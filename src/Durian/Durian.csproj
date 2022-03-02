@@ -14,7 +14,7 @@
 
   <ItemGroup>
 
-    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj"/>
+    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
     <ProjectReference Include="..\Durian.DefaultParam\Durian.DefaultParam.csproj">
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
       <IncludeAssets>Durian.DefaultParam.dll</IncludeAssets>
@@ -38,6 +38,7 @@
     <None Include="$(OutputPath)\Durian.DefaultParam.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.FriendClass.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\Durian.InterfaceTargets.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\..\.editorconfig" Link=".editorconfig" />
 
   </ItemGroup>
   

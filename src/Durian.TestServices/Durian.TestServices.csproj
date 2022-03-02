@@ -19,8 +19,6 @@
     <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" />
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
     
-    <Compile Include="..\NullableAttributes.cs" />
-    
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Debug'">
