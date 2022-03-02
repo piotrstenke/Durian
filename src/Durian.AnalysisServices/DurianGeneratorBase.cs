@@ -61,7 +61,7 @@ namespace Durian.Analysis
         /// <see cref="DiagnosticReceiver"/> cannot be set if <see cref="SupportsDiagnostics"/> is <see langword="false"/>. -or-
         /// <see cref="DiagnosticReceiver"/> cannot be set to <see langword="null"/> if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.
         /// </exception>
-        public DiagnosticReceiver.ReadonlyContextual<GeneratorExecutionContext>? DiagnosticReceiver
+        public virtual DiagnosticReceiver.ReadonlyContextual<GeneratorExecutionContext>? DiagnosticReceiver
         {
             get => _diagnosticReceiver;
             set
@@ -106,7 +106,7 @@ namespace Durian.Analysis
         /// Creates names for generated files.
         /// </summary>
         /// <exception cref="ArgumentNullException"><see cref="FileNameProvider"/> cannot be <see langword="null"/>.</exception>
-        public IHintNameProvider FileNameProvider
+        public virtual IHintNameProvider FileNameProvider
         {
             get => _fileNameProvider;
             set
@@ -151,14 +151,16 @@ namespace Durian.Analysis
         /// </summary>
         /// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
         /// <param name="fileNameProvider">Creates names for generated files.</param>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         protected DurianGeneratorBase(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             if (SupportsDiagnostics)
             {
-                _diagnosticReceiver = Analysis.DiagnosticReceiver.Factory.SourceGenerator();
+                DiagnosticReceiver = Analysis.DiagnosticReceiver.Factory.SourceGenerator();
             }
 
-            _fileNameProvider = fileNameProvider ?? new SymbolNameToFile();
+            FileNameProvider = fileNameProvider ?? new SymbolNameToFile();
             LogReceiver = new(this);
         }
 
@@ -172,14 +174,16 @@ namespace Durian.Analysis
         /// </summary>
         /// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
         /// <param name="fileNameProvider">Creates names for generated files.</param>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         protected DurianGeneratorBase(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             if (SupportsDiagnostics)
             {
-                _diagnosticReceiver = Analysis.DiagnosticReceiver.Factory.SourceGenerator();
+                DiagnosticReceiver = Analysis.DiagnosticReceiver.Factory.SourceGenerator();
             }
 
-            _fileNameProvider = fileNameProvider ?? new SymbolNameToFile();
+            FileNameProvider = fileNameProvider ?? new SymbolNameToFile();
             LogReceiver = new(this);
         }
 

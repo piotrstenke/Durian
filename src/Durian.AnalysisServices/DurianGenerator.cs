@@ -28,28 +28,28 @@ namespace Durian.Analysis
         private bool _isFilterWithGeneratedSymbols;
 
         /// <inheritdoc/>
-        public CancellationToken CancellationToken { get; private set; }
+        public CancellationToken CancellationToken { get; private protected set; }
 
         /// <summary>
         /// Determines whether data of this <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> was successfully initialized by the last call to the <see cref="Execute(in GeneratorExecutionContext)"/> method.
         /// </summary>
         [MemberNotNullWhen(true, nameof(TargetCompilation), nameof(SyntaxReceiver), nameof(ParseOptions))]
-        public bool HasValidData { get; private set; }
+        public bool HasValidData { get; internal set; }
 
         /// <summary>
         /// Determines whether the last execution of the <see cref="Execute(in GeneratorExecutionContext)"/> method was a success.
         /// </summary>
         [MemberNotNullWhen(true, nameof(TargetCompilation), nameof(SyntaxReceiver), nameof(ParseOptions))]
-        public bool IsSuccess { get; private protected set; }
+        public bool IsSuccess { get; internal set; }
 
         /// <inheritdoc cref="IDurianGenerator.ParseOptions"/>
-        public CSharpParseOptions? ParseOptions { get; private set; }
+        public CSharpParseOptions? ParseOptions { get; private protected set; }
 
         /// <inheritdoc cref="IDurianGenerator.SyntaxReceiver"/>
-        public TSyntaxReceiver? SyntaxReceiver { get; private set; }
+        public TSyntaxReceiver? SyntaxReceiver { get; private protected set; }
 
         /// <inheritdoc cref="IDurianGenerator.TargetCompilation"/>
-        public TCompilationData? TargetCompilation { get; private set; }
+        public TCompilationData? TargetCompilation { get; private protected set; }
 
         string? IDurianGenerator.GeneratorName => GetGeneratorName();
         string? IDurianGenerator.GeneratorVersion => GetGeneratorVersion();
@@ -107,38 +107,7 @@ namespace Durian.Analysis
         /// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
         public override sealed void Execute(in GeneratorExecutionContext context)
         {
-            ResetData();
-
-            if (!InitializeCompilation(in context, out CSharpCompilation? compilation) ||
-                context.SyntaxReceiver is not TSyntaxReceiver receiver ||
-                !ValidateSyntaxReceiver(receiver)
-            )
-            {
-                return;
-            }
-
-            try
-            {
-                InitializeExecutionData(compilation, receiver, in context);
-
-                if (!HasValidData)
-                {
-                    return;
-                }
-
-                Filtrate(in context);
-                IsSuccess = true;
-            }
-            catch (Exception e)
-            {
-                LogException(e);
-                IsSuccess = false;
-
-                if (EnableExceptions)
-                {
-                    throw;
-                }
-            }
+            Execute_Internal(in context);
         }
 
         /// <summary>
@@ -221,6 +190,74 @@ namespace Durian.Analysis
             return ValidateSyntaxReceiver((TSyntaxReceiver)syntaxReceiver);
         }
 
+        internal static void ResetData(DurianGenerator<TCompilationData, TSyntaxReceiver, TFilter> generator)
+        {
+            generator.SyntaxReceiver = default;
+            generator.TargetCompilation = default;
+            generator.ParseOptions = null!;
+            generator.CancellationToken = default;
+            generator.IsSuccess = false;
+            generator.HasValidData = false;
+            generator.FileNameProvider.Reset();
+        }
+
+        internal virtual void Execute_Internal(in GeneratorExecutionContext context)
+        {
+            ResetData(this);
+
+            if (!InitializeCompilation(in context, out CSharpCompilation? compilation) ||
+                context.SyntaxReceiver is not TSyntaxReceiver receiver ||
+                !ValidateSyntaxReceiver(receiver)
+            )
+            {
+                return;
+            }
+
+            try
+            {
+                InitializeExecutionData(compilation, receiver, in context);
+
+                if (!HasValidData)
+                {
+                    return;
+                }
+
+                Filtrate(in context);
+                IsSuccess = true;
+            }
+            catch (Exception e)
+            {
+                LogException(e);
+                IsSuccess = false;
+
+                if (EnableExceptions)
+                {
+                    throw;
+                }
+            }
+        }
+
+        internal virtual void InitializeExecutionData(CSharpCompilation currentCompilation, TSyntaxReceiver syntaxReceiver, in GeneratorExecutionContext context)
+        {
+            TCompilationData? data = CreateCompilationData(currentCompilation);
+
+            if (data is null || data.HasErrors)
+            {
+                return;
+            }
+
+            TargetCompilation = data;
+            ParseOptions = context.ParseOptions as CSharpParseOptions ?? CSharpParseOptions.Default;
+            SyntaxReceiver = syntaxReceiver;
+            CancellationToken = context.CancellationToken;
+            HasValidData = true;
+
+            if (EnableDiagnostics)
+            {
+                DiagnosticReceiver.SetContext(in context);
+            }
+        }
+
         /// <inheritdoc/>
         protected override sealed void AddSource(CSharpSyntaxTree syntaxTree, string hintName, in GeneratorPostInitializationContext context)
         {
@@ -259,44 +296,6 @@ namespace Durian.Analysis
         {
             ThrowIfHasNoValidData();
             AddSource_Internal(tree, hintName, in context);
-        }
-
-        private protected void AddSource_Internal(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
-        {
-            context.AddSource(hintName, tree.GetText(context.CancellationToken));
-
-            if (_isFilterWithGeneratedSymbols)
-            {
-                TargetCompilation!.UpdateCompilation(tree);
-            }
-            else
-            {
-                _generatedDuringCurrentPass.Add(tree);
-            }
-
-            if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
-            {
-                LogNode_Internal(tree.GetRoot(context.CancellationToken), hintName);
-            }
-        }
-
-        private protected void AddSource_Internal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
-        {
-            context.AddSource(hintName, tree.GetText(context.CancellationToken));
-
-            if (_isFilterWithGeneratedSymbols)
-            {
-                TargetCompilation!.UpdateCompilation(tree);
-            }
-            else
-            {
-                _generatedDuringCurrentPass.Add(tree);
-            }
-
-            if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput))
-            {
-                LogInputOutput_Internal(original, tree.GetRoot(context.CancellationToken), hintName);
-            }
         }
 
         /// <summary>
@@ -395,16 +394,6 @@ namespace Durian.Analysis
             // Do nothing by default.
         }
 
-        private protected void BeginIterationOfFiltersWithGeneratedSymbols()
-        {
-            _isFilterWithGeneratedSymbols = true;
-        }
-
-        private protected void EndIterationOfFiltersWithGeneratedSymbols()
-        {
-            _isFilterWithGeneratedSymbols = false;
-        }
-
         /// <inheritdoc/>
         protected abstract bool Generate(IMemberData member, string hintName, in GeneratorExecutionContext context);
 
@@ -423,27 +412,6 @@ namespace Durian.Analysis
             }
         }
 
-        private protected void InitializeExecutionData(CSharpCompilation currentCompilation, TSyntaxReceiver syntaxReceiver, in GeneratorExecutionContext context)
-        {
-            TCompilationData? data = CreateCompilationData(currentCompilation);
-
-            if (data is null || data.HasErrors)
-            {
-                return;
-            }
-
-            TargetCompilation = data;
-            ParseOptions = context.ParseOptions as CSharpParseOptions ?? CSharpParseOptions.Default;
-            SyntaxReceiver = syntaxReceiver;
-            CancellationToken = context.CancellationToken;
-            HasValidData = true;
-
-            if (EnableDiagnostics)
-            {
-                DiagnosticReceiver.SetContext(in context);
-            }
-        }
-
         /// <summary>
         /// Manually iterates through a <typeparamref name="TFilter"/> that has the <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> property set to <see langword="true"/>.
         /// </summary>
@@ -459,15 +427,51 @@ namespace Durian.Analysis
             }
         }
 
-        private protected void ResetData()
+        /// <summary>
+        /// Validates the <paramref name="syntaxReceiver"/>.
+        /// </summary>
+        /// <param name="syntaxReceiver"><typeparamref name="TSyntaxReceiver"/> to validate.</param>
+        protected virtual bool ValidateSyntaxReceiver(TSyntaxReceiver syntaxReceiver)
         {
-            SyntaxReceiver = default;
-            TargetCompilation = default;
-            ParseOptions = null!;
-            CancellationToken = default;
-            IsSuccess = false;
-            HasValidData = false;
-            FileNameProvider.Reset();
+            return !syntaxReceiver.IsEmpty();
+        }
+
+        private protected void AddSource_Internal(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+        {
+            context.AddSource(hintName, tree.GetText(context.CancellationToken));
+
+            if (_isFilterWithGeneratedSymbols)
+            {
+                TargetCompilation!.UpdateCompilation(tree);
+            }
+            else
+            {
+                _generatedDuringCurrentPass.Add(tree);
+            }
+
+            if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
+            {
+                LogNode_Internal(tree.GetRoot(context.CancellationToken), hintName);
+            }
+        }
+
+        private protected void AddSource_Internal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+        {
+            context.AddSource(hintName, tree.GetText(context.CancellationToken));
+
+            if (_isFilterWithGeneratedSymbols)
+            {
+                TargetCompilation!.UpdateCompilation(tree);
+            }
+            else
+            {
+                _generatedDuringCurrentPass.Add(tree);
+            }
+
+            if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput))
+            {
+                LogInputOutput_Internal(original, tree.GetRoot(context.CancellationToken), hintName);
+            }
         }
 
         private protected void ThrowIfHasNoValidData()
@@ -492,13 +496,14 @@ namespace Durian.Analysis
             }
         }
 
-        /// <summary>
-        /// Validates the <paramref name="syntaxReceiver"/>.
-        /// </summary>
-        /// <param name="syntaxReceiver"><typeparamref name="TSyntaxReceiver"/> to validate.</param>
-        protected virtual bool ValidateSyntaxReceiver(TSyntaxReceiver syntaxReceiver)
+        private protected void BeginIterationOfFiltersWithGeneratedSymbols()
         {
-            return !syntaxReceiver.IsEmpty();
+            _isFilterWithGeneratedSymbols = true;
+        }
+
+        private protected void EndIterationOfFiltersWithGeneratedSymbols()
+        {
+            _isFilterWithGeneratedSymbols = false;
         }
 
         private void Filtrate(in GeneratorExecutionContext context)

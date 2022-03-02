@@ -60,7 +60,7 @@ namespace Durian.Analysis.Cache
         /// <inheritdoc/>
         public void Execute(in CachedGeneratorExecutionContext<TData> context)
         {
-            ResetData();
+            ResetData(this);
 
             ref readonly GeneratorExecutionContext c = ref context.GetContext();
 

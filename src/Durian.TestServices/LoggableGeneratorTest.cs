@@ -29,10 +29,19 @@ namespace Durian.TestServices
         /// Initializes a new instance of the <see cref="LoggableGeneratorTest{T}"/> class.
         /// </summary>
         /// <param name="enableDiagnostics">Determines whether to enable diagnostics for the created <see cref="ILoggableGenerator"/> if it supports any.</param>
-        protected LoggableGeneratorTest(bool enableDiagnostics)
+        protected LoggableGeneratorTest(bool enableDiagnostics) : this(enableDiagnostics, typeof(T))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoggableGeneratorTest{T}"/> class.
+        /// </summary>
+        /// <param name="enableDiagnostics">Determines whether to enable diagnostics for the created <see cref="ILoggableGenerator"/> if it supports any.</param>
+        /// <param name="generatorType"><see cref="Type"/> to get the <see cref="LoggingConfiguration"/> from.</param>
+        protected LoggableGeneratorTest(bool enableDiagnostics, Type generatorType)
         {
             string typeName = GetType().Name;
-            _configuration = LoggingConfiguration.CreateConfigurationForGenerator<T>();
+            _configuration = LoggingConfiguration.CreateConfigurationForGenerator(generatorType);
             _configuration.LogDirectory += $"/{typeName}";
             _enableDiagnostics = enableDiagnostics;
         }

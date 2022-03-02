@@ -4,9 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}"
-	ProjectSection(SolutionItems) = preProject
-		src\NullableAttributes.cs = src\NullableAttributes.cs
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian", "src\Durian\Durian.csproj", "{F0846B2D-38D1-4A3C-8772-1851C0FA8508}"
 EndProject

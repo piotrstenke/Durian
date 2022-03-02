@@ -30,7 +30,7 @@ namespace Durian.TestServices
         /// Initializes a new instance of the <see cref="DurianGeneratorTest{T}"/> class.
         /// </summary>
         /// <param name="enableDiagnostics">Determines whether to enable diagnostics for the created <see cref="ILoggableGenerator"/> if it supports any.</param>
-        protected DurianGeneratorTest(bool enableDiagnostics) : base(enableDiagnostics)
+        protected DurianGeneratorTest(bool enableDiagnostics) : base(enableDiagnostics, typeof(T))
         {
             Generator = CreateUnderlayingGenerator(_configuration);
         }

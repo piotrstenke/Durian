@@ -16,7 +16,7 @@ namespace Durian.Analysis.Logging
         /// <summary>
         /// Creates a new instance of the <see cref="LoggingConfiguration"/> class with its values set to default.
         /// </summary>
-        public static LoggingConfiguration Default => new()
+        public static LoggingConfiguration Default { get; } = new()
         {
             EnableLogging = false,
             EnableDiagnostics = false,

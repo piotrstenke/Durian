@@ -24,7 +24,26 @@ namespace Durian.TestServices
         where TFilter : IGeneratorSyntaxFilterWithDiagnostics
     {
         private int _analyzerCounter;
+        private DiagnosticReceiver.ReadonlyContextual<GeneratorExecutionContext>? _diagnosticReceiver;
+        private IHintNameProvider? _fileNameProvider;
         private int _generatorCounter;
+
+        /// <inheritdoc/>
+        public override DiagnosticReceiver.ReadonlyContextual<GeneratorExecutionContext>? DiagnosticReceiver
+        {
+            get => UnderlayingGenerator.DiagnosticReceiver;
+            set
+            {
+                if (UnderlayingGenerator is null)
+                {
+                    _diagnosticReceiver = value;
+                }
+                else
+                {
+                    UnderlayingGenerator.DiagnosticReceiver = value;
+                }
+            }
+        }
 
         /// <inheritdoc/>
         public override bool EnableDiagnostics
@@ -45,6 +64,23 @@ namespace Durian.TestServices
         {
             get => UnderlayingGenerator.EnableLogging;
             set => UnderlayingGenerator.EnableLogging = value;
+        }
+
+        /// <inheritdoc/>
+        public override IHintNameProvider FileNameProvider
+        {
+            get => UnderlayingGenerator.FileNameProvider;
+            set
+            {
+                if (UnderlayingGenerator is null)
+                {
+                    _fileNameProvider = value;
+                }
+                else
+                {
+                    UnderlayingGenerator.FileNameProvider = value;
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -73,6 +109,7 @@ namespace Durian.TestServices
             }
 
             UnderlayingGenerator = generator;
+            SetInitData();
         }
 
         /// <inheritdoc/>
@@ -132,6 +169,22 @@ namespace Durian.TestServices
         public override void Initialize(GeneratorInitializationContext context)
         {
             UnderlayingGenerator.Initialize(context);
+        }
+
+        internal override void Execute_Internal(in GeneratorExecutionContext context)
+        {
+            ResetData(UnderlayingGenerator);
+            base.Execute_Internal(context);
+            UnderlayingGenerator.IsSuccess = IsSuccess;
+            UnderlayingGenerator.HasValidData = HasValidData;
+        }
+
+        internal override void InitializeExecutionData(CSharpCompilation currentCompilation, TSyntaxReceiver syntaxReceiver, in GeneratorExecutionContext context)
+        {
+            UnderlayingGenerator.InitializeExecutionData(currentCompilation, syntaxReceiver, context);
+            SetDataFromUnderlaying();
+            HasValidData = UnderlayingGenerator.HasValidData;
+            IsSuccess = UnderlayingGenerator.IsSuccess;
         }
 
         /// <inheritdoc/>
@@ -217,6 +270,14 @@ namespace Durian.TestServices
             t.Counter = _analyzerCounter;
         }
 
+        private void SetDataFromUnderlaying()
+        {
+            CancellationToken = UnderlayingGenerator.CancellationToken;
+            ParseOptions = UnderlayingGenerator.ParseOptions;
+            SyntaxReceiver = UnderlayingGenerator.SyntaxReceiver;
+            TargetCompilation = UnderlayingGenerator.TargetCompilation;
+        }
+
         private void SetGeneratorMode()
         {
             if (FileNameProvider is not TestNameToFile t)
@@ -226,6 +287,15 @@ namespace Durian.TestServices
 
             _analyzerCounter = t.Counter;
             t.Counter = _generatorCounter;
+        }
+
+        private void SetInitData()
+        {
+            UnderlayingGenerator.FileNameProvider = _fileNameProvider!;
+            UnderlayingGenerator.DiagnosticReceiver = _diagnosticReceiver!;
+
+            _fileNameProvider = default;
+            _diagnosticReceiver = default;
         }
     }
 
