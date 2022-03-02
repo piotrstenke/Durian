@@ -3,35 +3,35 @@
 
 namespace Durian.Samples.FriendClass
 {
-	internal class Program
-	{
-		private static void Main()
-		{
-		}
-	}
+    internal class Friend
+    {
+        public static string Test()
+        {
+            // Success!
+            return Target.Name;
+        }
+    }
 
-	// Only 'Friend' can access this type's internal members.
-	[FriendClass(typeof(Friend))]
-	internal class Target
-	{
-		internal static string Name => nameof(Target);
-	}
+    internal class Other
+    {
+        //public static string Test()
+        //{
+        //	// Error!
+        //	return Target.Name;
+        //}
+    }
 
-	internal class Friend
-	{
-		public static string Test()
-		{
-			// Success!
-			return Target.Name;
-		}
-	}
+    internal class Program
+    {
+        private static void Main()
+        {
+        }
+    }
 
-	internal class Other
-	{
-		//public static string Test()
-		//{
-		//	// Error!
-		//	return Target.Name;
-		//}
-	}
+    // Only 'Friend' can access this type's internal members.
+    [FriendClass(typeof(Friend))]
+    internal class Target
+    {
+        internal static string Name => nameof(Target);
+    }
 }

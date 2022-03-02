@@ -7,12 +7,12 @@ using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Analysis.DefaultParam.Tests.Delegates
 {
-	public sealed class DelegateNewModifierConfigurationTests : DefaultParamGeneratorTestBase
-	{
-		[Fact]
-		public void AppliesNewModifier_When_GeneratedGenericNameAlreadyExistsInBaseClass()
-		{
-			string input =
+    public sealed class DelegateNewModifierConfigurationTests : DefaultParamGeneratorTestBase
+    {
+        [Fact]
+        public void AppliesNewModifier_When_GeneratedGenericNameAlreadyExistsInBaseClass()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 
 class Parent
@@ -28,20 +28,20 @@ partial class Test : Parent
 }}
 ";
 
-			string expected =
+            string expected =
 @$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U>")}
 	new delegate void Del<T>(int value);
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void AppliesNewModifier_When_GeneratedNonGenericNameAlreadyExistsInBaseClass()
-		{
-			string input =
+        [Fact]
+        public void AppliesNewModifier_When_GeneratedNonGenericNameAlreadyExistsInBaseClass()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 
 class Parent
@@ -55,20 +55,20 @@ partial class Test : Parent
 }}
 ";
 
-			string expected =
+            string expected =
 @$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	new delegate void Del(int value);
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void AppliesNewModifier_When_GloballyFalse_And_InTypeTrue()
-		{
-			string input =
+        [Fact]
+        public void AppliesNewModifier_When_GloballyFalse_And_InTypeTrue()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -84,20 +84,20 @@ partial class Test : Parent
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	new delegate void Del(int value);
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void AppliesNewModifier_When_GloballyFalse_And_LocallyFalse()
-		{
-			string input =
+        [Fact]
+        public void AppliesNewModifier_When_GloballyFalse_And_LocallyFalse()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -113,20 +113,20 @@ partial class Test : Parent
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	new delegate void Del(int value);
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void AppliesNewModifier_When_HasMultipleNonDefaultParamParameters()
-		{
-			string input =
+        [Fact]
+        public void AppliesNewModifier_When_HasMultipleNonDefaultParamParameters()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -144,20 +144,20 @@ partial class Test : Parent
 }}
 ";
 
-			string expected =
+            string expected =
 @$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U, V>")}
 	new delegate void Del<T, U>(int value);
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void AppliesNewModifier_When_HasNonDefaultParamParameters()
-		{
-			string input =
+        [Fact]
+        public void AppliesNewModifier_When_HasNonDefaultParamParameters()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -173,20 +173,20 @@ partial class Test : Parent
 }}
 ";
 
-			string expected =
+            string expected =
 @$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U>")}
 	new delegate void Del<T>(int value);
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void AppliesNewModifier_When_InTypeFalse_LocallyTrue()
-		{
-			string input =
+        [Fact]
+        public void AppliesNewModifier_When_InTypeFalse_LocallyTrue()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -202,20 +202,20 @@ partial class Test : Parent
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
-			string expected =
+            string expected =
 @$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	new delegate void Del(int value);
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void AppliesNewModifier_When_IsInInterface_And_GeneratedNameAlreadyExistsInBaseInterface()
-		{
-			string input =
+        [Fact]
+        public void AppliesNewModifier_When_IsInInterface_And_GeneratedNameAlreadyExistsInBaseInterface()
+        {
+            string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -230,20 +230,20 @@ partial interface IChild : IParent
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-			string expected =
+            string expected =
 $@"partial interface IChild
 {{
 	{GetCodeGenerationAttributes("IChild.Del<T>")}
 	new delegate void Del();
 }}";
 
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
 
-		[Fact]
-		public void DoesNotApplyNewModifer_When_GloballyTrue_And_InTypeFalse()
-		{
-			string input =
+        [Fact]
+        public void DoesNotApplyNewModifer_When_GloballyTrue_And_InTypeFalse()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -259,13 +259,13 @@ partial class Test : Parent
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-		}
+            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+        }
 
-		[Fact]
-		public void DoesNotApplyNewModifer_When_GloballyTrue_And_LocallyFalse()
-		{
-			string input =
+        [Fact]
+        public void DoesNotApplyNewModifer_When_GloballyTrue_And_LocallyFalse()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -281,13 +281,13 @@ partial class Test : Parent
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-		}
+            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+        }
 
-		[Fact]
-		public void DoesNotApplyNewModifer_When_InTypeTrue_LocallyFalse()
-		{
-			string input =
+        [Fact]
+        public void DoesNotApplyNewModifer_When_InTypeTrue_LocallyFalse()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -303,13 +303,13 @@ partial class Test : Parent
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-		}
+            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+        }
 
-		[Fact]
-		public void Error_When_GeneratedGenericNameAlreadyExistsInBaseClass_And_ConfigurationIsFalse()
-		{
-			string input =
+        [Fact]
+        public void Error_When_GeneratedGenericNameAlreadyExistsInBaseClass_And_ConfigurationIsFalse()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -327,13 +327,13 @@ partial class Test : Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-		}
+            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+        }
 
-		[Fact]
-		public void Error_When_GeneratedGenericNameAlreadyExistsInSameClass_And_ConfigurationIsFalse()
-		{
-			string input =
+        [Fact]
+        public void Error_When_GeneratedGenericNameAlreadyExistsInSameClass_And_ConfigurationIsFalse()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -348,13 +348,13 @@ partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-		}
+            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+        }
 
-		[Fact]
-		public void Error_When_GeneratedMethodExistsInBaseInterface_And_ApplyNewModifierIsFalse()
-		{
-			string input =
+        [Fact]
+        public void Error_When_GeneratedMethodExistsInBaseInterface_And_ApplyNewModifierIsFalse()
+        {
+            string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -370,13 +370,13 @@ partial interface IChild : IParent
 }}
 ";
 
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-		}
+            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+        }
 
-		[Fact]
-		public void Error_When_GeneratedNonGenericNameAlreadyExistsInBaseClass_And_ConfigurationIsFalse()
-		{
-			string input =
+        [Fact]
+        public void Error_When_GeneratedNonGenericNameAlreadyExistsInBaseClass_And_ConfigurationIsFalse()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -392,13 +392,13 @@ partial class Test : Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-		}
+            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+        }
 
-		[Fact]
-		public void Error_When_GeneratedNonGenericNameAlreadyExistsInSameClass()
-		{
-			string input =
+        [Fact]
+        public void Error_When_GeneratedNonGenericNameAlreadyExistsInSameClass()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -411,13 +411,13 @@ partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-		}
+            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+        }
 
-		[Fact]
-		public void Error_When_IsGlobal_AndGeneratedNonGenericNameAlreadyExists()
-		{
-			string input =
+        [Fact]
+        public void Error_When_IsGlobal_AndGeneratedNonGenericNameAlreadyExists()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 
 class Del
@@ -426,13 +426,13 @@ class Del
 
 delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T>(T value);
 ";
-			Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
-		}
+            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
+        }
 
-		[Fact]
-		public void IgnoresPrivateMembersInBaseType()
-		{
-			string input =
+        [Fact]
+        public void IgnoresPrivateMembersInBaseType()
+        {
+            string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -448,14 +448,14 @@ partial class Test : Parent
 }}
 ";
 
-			string expected =
+            string expected =
 @$"partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	delegate void Del();
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-	}
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
+    }
 }

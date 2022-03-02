@@ -10,9 +10,9 @@ namespace Durian.Analysis.CopyFrom
     /// </summary>
     public interface ICopyFromFilter : ICachedGeneratorSyntaxFilterWithDiagnostics<ICopyFromMember>
     {
-		/// <summary>
-		/// <see cref="CopyFromGenerator"/> that created this filter.
-		/// </summary>
-		new CopyFromGenerator Generator { get; }
-	}
+        /// <summary>
+        /// <see cref="CopyFromGenerator"/> that created this filter.
+        /// </summary>
+        new CopyFromGenerator Generator { get; }
+    }
 }

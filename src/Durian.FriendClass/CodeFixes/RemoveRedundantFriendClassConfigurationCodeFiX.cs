@@ -9,34 +9,34 @@ using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 
 namespace Durian.Analysis.FriendClass.CodeFixes
 {
-	/// <summary>
-	/// Code fox for the <see cref="DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends"/>
-	/// and <see cref="DUR0313_ConfigurationIsRedundant"/> diagnostics.
-	/// </summary>
-	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveRedundantFriendClassConfigurationCodeFiX))]
-	public sealed class RemoveRedundantFriendClassConfigurationCodeFiX : RemoveNodeCodeFix<AttributeSyntax>
-	{
-		/// <inheritdoc/>
-		public override string Id => $"{Title} [{nameof(FriendClass)}]";
+    /// <summary>
+    /// Code fox for the <see cref="DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends"/>
+    /// and <see cref="DUR0313_ConfigurationIsRedundant"/> diagnostics.
+    /// </summary>
+    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveRedundantFriendClassConfigurationCodeFiX))]
+    public sealed class RemoveRedundantFriendClassConfigurationCodeFiX : RemoveNodeCodeFix<AttributeSyntax>
+    {
+        /// <inheritdoc/>
+        public override string Id => $"{Title} [{nameof(FriendClass)}]";
 
-		/// <inheritdoc/>
-		public override string Title => $"Remove redundant {FriendClassConfigurationAttributeProvider.TypeName}";
+        /// <inheritdoc/>
+        public override string Title => $"Remove redundant {FriendClassConfigurationAttributeProvider.TypeName}";
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="RemoveRedundantFriendClassConfigurationCodeFiX"/> class.
-		/// </summary>
-		public RemoveRedundantFriendClassConfigurationCodeFiX()
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoveRedundantFriendClassConfigurationCodeFiX"/> class.
+        /// </summary>
+        public RemoveRedundantFriendClassConfigurationCodeFiX()
+        {
+        }
 
-		/// <inheritdoc/>
-		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
-		{
-			return new[]
-			{
-				DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends,
-				DUR0313_ConfigurationIsRedundant
-			};
-		}
-	}
+        /// <inheritdoc/>
+        protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
+        {
+            return new[]
+            {
+                DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends,
+                DUR0313_ConfigurationIsRedundant
+            };
+        }
+    }
 }

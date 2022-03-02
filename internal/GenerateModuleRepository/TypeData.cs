@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 [JsonObject]
 internal sealed class TypeData
 {
-	[JsonProperty("name", Required = Required.Always)]
-	public string? Name { get; set; }
+    [JsonProperty("modules", Required = Required.Always)]
+    public List<string>? Modules { get; set; }
 
-	[JsonProperty("namespace", Required = Required.Always)]
-	public string? Namespace { get; set; }
+    [JsonProperty("name", Required = Required.Always)]
+    public string? Name { get; set; }
 
-	[JsonProperty("modules", Required = Required.Always)]
-	public List<string>? Modules { get; set; }
+    [JsonProperty("namespace", Required = Required.Always)]
+    public string? Namespace { get; set; }
 }

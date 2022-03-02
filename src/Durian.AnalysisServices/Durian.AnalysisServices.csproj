@@ -19,10 +19,12 @@
 
     <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
     
-    <Compile Include="..\NullableAttributes.cs" />
-        
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>Durian.AnalysisServices.Tests</_Parameter1>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+        <_Parameter1>Durian.TestServices</_Parameter1>
     </AssemblyAttribute>
     
   </ItemGroup>

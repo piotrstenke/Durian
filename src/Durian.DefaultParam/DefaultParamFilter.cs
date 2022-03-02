@@ -111,7 +111,7 @@ namespace Durian.Analysis.DefaultParam
             {
                 symbol = s.GetDeclaredSymbol(node, cancellationToken) as TSymbol;
 
-                if(symbol is not null)
+                if (symbol is not null)
                 {
                     semanticModel = s;
                     return true;

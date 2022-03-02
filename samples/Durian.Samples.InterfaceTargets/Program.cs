@@ -3,26 +3,26 @@
 
 namespace Durian.Samples.InterfaceTargets
 {
-	internal class Program
-	{
-		private static void Main()
-		{
-		}
-	}
+    // Success!
+    public class Class : IInterface
+    {
+    }
 
-	// This interface can only be implemented by classes.
-	[InterfaceTargets(Durian.InterfaceTargets.Class)]
-	public interface IInterface
-	{
-	}
+    internal class Program
+    {
+        private static void Main()
+        {
+        }
+    }
 
-	// Success!
-	public class Class : IInterface
-	{
-	}
+    // This interface can only be implemented by classes.
+    [InterfaceTargets(Durian.InterfaceTargets.Class)]
+    public interface IInterface
+    {
+    }
 
-	// Error!
-	//public struct Struct : IInterface
-	//{
-	//}
+    // Error!
+    //public struct Struct : IInterface
+    //{
+    //}
 }
