@@ -7,7 +7,7 @@ using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Analysis.DefaultParam.Tests.Types
 {
-    public sealed class TypeNewModifierConfigurationTests : DefaultParamGeneratorTestBase
+    public sealed class TypeNewModifierConfigurationTests : DefaultParamGeneratorTest
     {
         [Fact]
         public void AppliesNewModifier_When_GeneratedGenericNameAlreadyExistsInBaseClass()

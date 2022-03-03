@@ -2,8 +2,10 @@
 // Licensed under the MIT license.
 
 using Durian.Analysis.Data;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System;
 using System.Threading;
 
 namespace Durian.Analysis
@@ -27,6 +29,12 @@ namespace Durian.Analysis
         /// Determines whether this <see cref="IDurianGenerator"/> allows to create log files during the current execution pass.
         /// </summary>
         bool EnableLogging { get; set; }
+
+        /// <summary>
+        /// Creates names for generated files.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value cannot be <see langword="null"/>.</exception>
+        IHintNameProvider FileNameProvider { get; set; }
 
         /// <summary>
         /// Name of this <see cref="IDurianGenerator"/>.

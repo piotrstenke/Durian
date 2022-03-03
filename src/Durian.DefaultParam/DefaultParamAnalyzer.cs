@@ -966,7 +966,11 @@ namespace Durian.Analysis.DefaultParam
             {
                 symbols = symbols
                     .Concat(containingType.GetBaseTypes()
-                        .SelectMany(t => t.GetMembers(name))
+                        .SelectMany(t =>
+                        {
+                            ImmutableArray<ISymbol> members = t.GetMembers(name);
+                            return members;
+                        })
                         .Where(s => s.DeclaredAccessibility > Accessibility.Private));
             }
 

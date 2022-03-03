@@ -56,7 +56,7 @@ namespace Durian.Analysis.Data
         {
         }
 
-        protected MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+        internal MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
         {
         }
 

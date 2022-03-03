@@ -549,7 +549,7 @@ namespace Durian.Analysis.DefaultParam
         }
 
         private static bool AnalyzeCollidingMembers(
-                    IMethodSymbol symbol,
+            IMethodSymbol symbol,
             in TypeParameterContainer typeParameters,
             CollidingMember[] collidingMembers,
             IParameterSymbol[] symbolParameters,

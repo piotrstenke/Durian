@@ -221,7 +221,7 @@ namespace Durian.Analysis
             }
 
             private IEnumerable<TData> Filtrate_Internal(
-                                                                                                                TCompilation compilation,
+                TCompilation compilation,
                 IEnumerable<TSyntax> collectedNodes,
                 IDiagnosticReceiver diagnosticReceiver,
                 CancellationToken cancellationToken

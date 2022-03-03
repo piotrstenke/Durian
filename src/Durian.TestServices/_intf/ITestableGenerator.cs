@@ -3,17 +3,18 @@
 
 using Durian.Analysis;
 using Durian.Analysis.Logging;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.TestServices
 {
     /// <summary>
-    /// <see cref="IDurianGenerator"/> that provides better test-related logging experience.
+    /// A wrapper for <see cref="ISourceGenerator"/> that offers better logging experience.
     /// </summary>
-    public interface ITestableGenerator : IDurianGenerator, ILoggableGenerator
+    public interface ITestableGenerator : ILoggableGenerator
     {
         /// <summary>
-        /// <see cref="IDurianGenerator"/> that is used to actually generate sources.
+        /// <see cref="ISourceGenerator"/> that is used to actually generate sources.
         /// </summary>
-        IDurianGenerator UnderlayingGenerator { get; }
+        ILoggableGenerator UnderlayingGenerator { get; }
     }
 }

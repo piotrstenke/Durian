@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Types
 {
-    public sealed class TypeConventionTests : DefaultParamGeneratorTestBase
+    public sealed class TypeConventionTests : DefaultParamGeneratorTest
     {
         [Fact]
         public void Copies_When_GloballyTrue_And_LocallyFalse()

@@ -18,38 +18,40 @@ namespace Durian.Analysis
     /// <typeparam name="TCompilationData">User-defined type of <see cref="ICompilationData"/> this <see cref="IDurianGenerator"/> operates on.</typeparam>
     /// <typeparam name="TSyntaxReceiver">User-defined type of <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="CSharpSyntaxNode"/>s to perform the generation on.</typeparam>
     /// <typeparam name="TFilter">User-defined type of <see cref="ISyntaxFilter"/> that decides what <see cref="CSharpSyntaxNode"/>s collected by the <see cref="SyntaxReceiver"/> are valid for generation.</typeparam>
-    public abstract class DurianGenerator<TCompilationData, TSyntaxReceiver, TFilter> : DurianGeneratorBase, IDurianGenerator, IGeneratorExecutionFlow
+    public abstract class DurianGenerator<TCompilationData, TSyntaxReceiver, TFilter> : GeneratorWithFilters<TFilter>, IDurianGenerator
         where TCompilationData : ICompilationDataWithSymbols
         where TSyntaxReceiver : IDurianSyntaxReceiver
         where TFilter : IGeneratorSyntaxFilterWithDiagnostics
     {
         private readonly List<CSharpSyntaxTree> _generatedDuringCurrentPass = new(16);
 
-        private bool _isFilterWithGeneratedSymbols;
-
         /// <inheritdoc/>
-        public CancellationToken CancellationToken { get; private protected set; }
+        public CancellationToken CancellationToken { get; private set; }
 
         /// <summary>
         /// Determines whether data of this <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> was successfully initialized by the last call to the <see cref="Execute(in GeneratorExecutionContext)"/> method.
         /// </summary>
         [MemberNotNullWhen(true, nameof(TargetCompilation), nameof(SyntaxReceiver), nameof(ParseOptions))]
-        public bool HasValidData { get; internal set; }
+        public bool HasValidData { get; set; }
 
         /// <summary>
         /// Determines whether the last execution of the <see cref="Execute(in GeneratorExecutionContext)"/> method was a success.
         /// </summary>
         [MemberNotNullWhen(true, nameof(TargetCompilation), nameof(SyntaxReceiver), nameof(ParseOptions))]
-        public bool IsSuccess { get; internal set; }
+        public new bool IsSuccess
+        {
+            get => base.IsSuccess;
+            private protected set => base.IsSuccess = value;
+        }
 
         /// <inheritdoc cref="IDurianGenerator.ParseOptions"/>
-        public CSharpParseOptions? ParseOptions { get; private protected set; }
+        public CSharpParseOptions? ParseOptions { get; private set; }
 
         /// <inheritdoc cref="IDurianGenerator.SyntaxReceiver"/>
-        public TSyntaxReceiver? SyntaxReceiver { get; private protected set; }
+        public TSyntaxReceiver? SyntaxReceiver { get; private set; }
 
         /// <inheritdoc cref="IDurianGenerator.TargetCompilation"/>
-        public TCompilationData? TargetCompilation { get; private protected set; }
+        public TCompilationData? TargetCompilation { get; private set; }
 
         string? IDurianGenerator.GeneratorName => GetGeneratorName();
         string? IDurianGenerator.GeneratorVersion => GetGeneratorVersion();
@@ -107,103 +109,7 @@ namespace Durian.Analysis
         /// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
         public override sealed void Execute(in GeneratorExecutionContext context)
         {
-            Execute_Internal(in context);
-        }
-
-        /// <summary>
-        /// Returns a <see cref="FilterContainer{TFilter}"/> to be used during the current generation pass.
-        /// </summary>
-        /// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-        public virtual FilterContainer<TFilter>? GetFilters(in GeneratorExecutionContext context)
-        {
-            return GetFilters(FileNameProvider);
-        }
-
-        /// <summary>
-        /// Returns a <see cref="FilterContainer{TFilter}"/> to be used during the current generation pass.
-        /// </summary>
-        /// <param name="fileNameProvider">Creates name for the generated files.</param>
-        public abstract FilterContainer<TFilter> GetFilters(IHintNameProvider fileNameProvider);
-
-        /// <summary>
-        /// Initializes the source generator.
-        /// </summary>
-        /// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
-        public override void Initialize(GeneratorInitializationContext context)
-        {
-            base.Initialize(context);
-            context.RegisterForSyntaxNotifications(() => CreateSyntaxReceiver());
-        }
-
-        void IGeneratorExecutionFlow.AfterExecution(in GeneratorExecutionContext context)
-        {
-            AfterExecution(in context);
-        }
-
-        void IGeneratorExecutionFlow.AfterExecutionOfGroup(IFilterGroup filterGroup, in GeneratorExecutionContext context)
-        {
-            AfterExecutionOfGroup((FilterGroup<TFilter>)filterGroup, in context);
-        }
-
-        void IGeneratorExecutionFlow.BeforeExecution(in GeneratorExecutionContext context)
-        {
-            BeforeExecution(in context);
-        }
-
-        void IGeneratorExecutionFlow.BeforeExecutionOfGroup(IFilterGroup filterGroup, in GeneratorExecutionContext context)
-        {
-            BeforeExecutionOfGroup((FilterGroup<TFilter>)filterGroup, in context);
-        }
-
-        void IGeneratorExecutionFlow.BeforeFiltrationOfGroup(IFilterGroup filterGroup, in GeneratorExecutionContext context)
-        {
-            BeforeFiltrationOfGroup((FilterGroup<TFilter>)filterGroup, in context);
-        }
-
-        void IGeneratorExecutionFlow.BeforeGeneratedSymbolFiltration(IFilterGroup filterGroup, in GeneratorExecutionContext context)
-        {
-            BeforeGeneratedSymbolFiltration((FilterGroup<TFilter>)filterGroup, in context);
-        }
-
-        IDurianSyntaxReceiver IDurianGenerator.CreateSyntaxReceiver()
-        {
-            return CreateSyntaxReceiver();
-        }
-
-        bool IGeneratorExecutionFlow.Generate(IMemberData member, string hintName, in GeneratorExecutionContext context)
-        {
-            return Generate(member, hintName, in context);
-        }
-
-        void IGeneratorExecutionFlow.IterateThroughFilter(ISyntaxFilter filter, in GeneratorExecutionContext context)
-        {
-            IterateThroughFilter((TFilter)filter, in context);
-        }
-
-        bool IGeneratorExecutionFlow.ValidateCompilation(CSharpCompilation compilation, in GeneratorExecutionContext context)
-        {
-            return ValidateCompilation(compilation, in context);
-        }
-
-        bool IGeneratorExecutionFlow.ValidateSyntaxReceiver(IDurianSyntaxReceiver syntaxReceiver)
-        {
-            return ValidateSyntaxReceiver((TSyntaxReceiver)syntaxReceiver);
-        }
-
-        internal static void ResetData(DurianGenerator<TCompilationData, TSyntaxReceiver, TFilter> generator)
-        {
-            generator.SyntaxReceiver = default;
-            generator.TargetCompilation = default;
-            generator.ParseOptions = null!;
-            generator.CancellationToken = default;
-            generator.IsSuccess = false;
-            generator.HasValidData = false;
-            generator.FileNameProvider.Reset();
-        }
-
-        internal virtual void Execute_Internal(in GeneratorExecutionContext context)
-        {
-            ResetData(this);
+            ResetData();
 
             if (!InitializeCompilation(in context, out CSharpCompilation? compilation) ||
                 context.SyntaxReceiver is not TSyntaxReceiver receiver ||
@@ -237,25 +143,19 @@ namespace Durian.Analysis
             }
         }
 
-        internal virtual void InitializeExecutionData(CSharpCompilation currentCompilation, TSyntaxReceiver syntaxReceiver, in GeneratorExecutionContext context)
+        /// <summary>
+        /// Initializes the source generator.
+        /// </summary>
+        /// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
+        public override void Initialize(GeneratorInitializationContext context)
         {
-            TCompilationData? data = CreateCompilationData(currentCompilation);
+            base.Initialize(context);
+            context.RegisterForSyntaxNotifications(() => CreateSyntaxReceiver());
+        }
 
-            if (data is null || data.HasErrors)
-            {
-                return;
-            }
-
-            TargetCompilation = data;
-            ParseOptions = context.ParseOptions as CSharpParseOptions ?? CSharpParseOptions.Default;
-            SyntaxReceiver = syntaxReceiver;
-            CancellationToken = context.CancellationToken;
-            HasValidData = true;
-
-            if (EnableDiagnostics)
-            {
-                DiagnosticReceiver.SetContext(in context);
-            }
+        IDurianSyntaxReceiver IDurianGenerator.CreateSyntaxReceiver()
+        {
+            return CreateSyntaxReceiver();
         }
 
         /// <inheritdoc/>
@@ -328,106 +228,6 @@ namespace Durian.Analysis
         }
 
         /// <summary>
-        /// Method called after all code is generated.
-        /// </summary>
-        /// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-        protected virtual void AfterExecution(in GeneratorExecutionContext context)
-        {
-            // Do nothing by default.
-        }
-
-        /// <summary>
-        /// Method called after the <paramref name="filterGroup"/> is done executing.
-        /// </summary>
-        /// <remarks>The <paramref name="filterGroup"/> is unsealed, so it is possible to change its state.</remarks>
-        /// <param name="filterGroup">Current filter group. The group is unsealed, so it is possible to change its contents.</param>
-        /// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-        /// <exception cref="InvalidOperationException">Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
-        protected virtual void AfterExecutionOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
-        {
-            // Do nothing by default.
-        }
-
-        /// <summary>
-        /// Method called before any generation takes places.
-        /// </summary>
-        /// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-        protected virtual void BeforeExecution(in GeneratorExecutionContext context)
-        {
-            // Do nothing by default.
-        }
-
-        /// <summary>
-        /// Method called after <typeparamref name="TFilter"/>s with <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> set to <see langword="false"/> are filtrated, but before actual generation.
-        /// </summary>
-        /// <remarks>The <paramref name="filterGroup"/> is sealed, so it is not possible to change its state.</remarks>
-        /// <param name="filterGroup">Current <see cref="FilterGroup{TFilter}"/>.</param>
-        /// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-        /// <exception cref="InvalidOperationException"><see cref="FilterGroup{TFilter}"/> is sealed. -or- Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
-        protected virtual void BeforeExecutionOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
-        {
-            // Do nothing by default.
-        }
-
-        /// <summary>
-        /// Method called before the filtration of <paramref name="filterGroup"/> is started.
-        /// </summary>
-        /// <remarks>The <paramref name="filterGroup"/> is unsealed, so it is possible to change its state.</remarks>
-        /// <param name="filterGroup">Current <see cref="FilterGroup{TFilter}"/>.</param>
-        /// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-        /// <exception cref="InvalidOperationException">Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
-        protected virtual void BeforeFiltrationOfGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
-        {
-            // Do nothing by default.
-        }
-
-        /// <summary>
-        /// Method called after <typeparamref name="TFilter"/>s with <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> set to <see langword="false"/> generated their code,
-        /// but before <typeparamref name="TFilter"/>s with <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> set to <see langword="true"/> are filtrated and executed.
-        /// </summary>
-        /// <remarks>The <paramref name="filterGroup"/> is sealed, so it is not possible to change its state.</remarks>
-        /// <param name="filterGroup">Current <see cref="FilterGroup{TFilter}"/>.</param>
-        /// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-        /// <exception cref="InvalidOperationException"><see cref="FilterGroup{TFilter}"/> is sealed. -or- Parent <see cref="FilterContainer{TFilter}"/> is sealed.</exception>
-        protected virtual void BeforeGeneratedSymbolFiltration(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
-        {
-            // Do nothing by default.
-        }
-
-        /// <inheritdoc/>
-        protected abstract bool Generate(IMemberData member, string hintName, in GeneratorExecutionContext context);
-
-        /// <summary>
-        /// Performs the generation for the specified <paramref name="data"/>.
-        /// </summary>
-        /// <param name="data"><see cref="IMemberData"/> to perform the generation for.</param>
-        /// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-        protected void GenerateFromData(IMemberData data, in GeneratorExecutionContext context)
-        {
-            string name = FileNameProvider.GetFileName(data.Symbol);
-
-            if (Generate(data, name, in context))
-            {
-                FileNameProvider.Success();
-            }
-        }
-
-        /// <summary>
-        /// Manually iterates through a <typeparamref name="TFilter"/> that has the <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> property set to <see langword="true"/>.
-        /// </summary>
-        /// <param name="filter"><typeparamref name="TFilter"/> to iterate through.</param>
-        /// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-        protected virtual void IterateThroughFilter(TFilter filter, in GeneratorExecutionContext context)
-        {
-            IEnumerator<IMemberData> iter = filter.GetEnumerator();
-
-            while (iter.MoveNext())
-            {
-                GenerateFromData(iter.Current, in context);
-            }
-        }
-
-        /// <summary>
         /// Validates the <paramref name="syntaxReceiver"/>.
         /// </summary>
         /// <param name="syntaxReceiver"><typeparamref name="TSyntaxReceiver"/> to validate.</param>
@@ -436,11 +236,26 @@ namespace Durian.Analysis
             return !syntaxReceiver.IsEmpty();
         }
 
+        /// <inheritdoc/>
+        protected override sealed void BeforeFiltersWithGeneratedSymbols()
+        {
+            if (_generatedDuringCurrentPass.Count > 0)
+            {
+                // Generated sources should be added AFTER all filters that don't include generated symbols were executed to avoid conflicts with SemanticModels.
+                foreach (CSharpSyntaxTree generatedTree in _generatedDuringCurrentPass)
+                {
+                    TargetCompilation!.UpdateCompilation(generatedTree);
+                }
+
+                _generatedDuringCurrentPass.Clear();
+            }
+        }
+
         private protected void AddSource_Internal(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
         {
             context.AddSource(hintName, tree.GetText(context.CancellationToken));
 
-            if (_isFilterWithGeneratedSymbols)
+            if (IsFilterWithGeneratedSymbols)
             {
                 TargetCompilation!.UpdateCompilation(tree);
             }
@@ -459,7 +274,7 @@ namespace Durian.Analysis
         {
             context.AddSource(hintName, tree.GetText(context.CancellationToken));
 
-            if (_isFilterWithGeneratedSymbols)
+            if (IsFilterWithGeneratedSymbols)
             {
                 TargetCompilation!.UpdateCompilation(tree);
             }
@@ -474,6 +289,27 @@ namespace Durian.Analysis
             }
         }
 
+        private protected void InitializeExecutionData(CSharpCompilation currentCompilation, TSyntaxReceiver syntaxReceiver, in GeneratorExecutionContext context)
+        {
+            TCompilationData? data = CreateCompilationData(currentCompilation);
+
+            if (data is null || data.HasErrors)
+            {
+                return;
+            }
+
+            TargetCompilation = data;
+            ParseOptions = context.ParseOptions as CSharpParseOptions ?? CSharpParseOptions.Default;
+            SyntaxReceiver = syntaxReceiver;
+            CancellationToken = context.CancellationToken;
+            HasValidData = true;
+
+            if (EnableDiagnostics)
+            {
+                DiagnosticReceiver.SetContext(in context);
+            }
+        }
+
         private protected void ThrowIfHasNoValidData()
         {
             if (!HasValidData && EnableExceptions)
@@ -482,93 +318,15 @@ namespace Durian.Analysis
             }
         }
 
-        private protected void UpdateCompilationBeforeFiltersWithGeneratedSymbols()
+        private protected void ResetData()
         {
-            if (_generatedDuringCurrentPass.Count > 0)
-            {
-                // Generated sources should be added AFTER all filters that don't include generated symbols were executed to avoid conflicts with SemanticModels.
-                foreach (CSharpSyntaxTree generatedTree in _generatedDuringCurrentPass)
-                {
-                    TargetCompilation!.UpdateCompilation(generatedTree);
-                }
-
-                _generatedDuringCurrentPass.Clear();
-            }
-        }
-
-        private protected void BeginIterationOfFiltersWithGeneratedSymbols()
-        {
-            _isFilterWithGeneratedSymbols = true;
-        }
-
-        private protected void EndIterationOfFiltersWithGeneratedSymbols()
-        {
-            _isFilterWithGeneratedSymbols = false;
-        }
-
-        private void Filtrate(in GeneratorExecutionContext context)
-        {
-            FilterContainer<TFilter>? filters = GetFilters(in context);
-
-            if (filters is null || filters.NumGroups == 0)
-            {
-                return;
-            }
-
-            BeforeExecution(in context);
-
-            foreach (FilterGroup<TFilter> filterGroup in filters)
-            {
-                HandleFilterGroup(filterGroup, in context);
-            }
-
-            AfterExecution(in context);
-        }
-
-        private void GenerateFromFiltersWithGeneratedSymbols(FilterGroup<TFilter> filterGroup, List<TFilter> filtersWithGeneratedSymbols, in GeneratorExecutionContext context)
-        {
-            UpdateCompilationBeforeFiltersWithGeneratedSymbols();
-            BeforeGeneratedSymbolFiltration(filterGroup, in context);
-            BeginIterationOfFiltersWithGeneratedSymbols();
-
-            foreach (TFilter filter in filtersWithGeneratedSymbols)
-            {
-                IterateThroughFilter(filter, in context);
-            }
-
-            EndIterationOfFiltersWithGeneratedSymbols();
-        }
-
-        private void HandleFilterGroup(FilterGroup<TFilter> filterGroup, in GeneratorExecutionContext context)
-        {
-            int numFilters = filterGroup.Count;
-            List<TFilter> filtersWithGeneratedSymbols = new(numFilters);
-
-            filterGroup.Unseal();
-            BeforeFiltrationOfGroup(filterGroup, in context);
-            filterGroup.Seal();
-
-            foreach (TFilter filter in filterGroup)
-            {
-                if (filter.IncludeGeneratedSymbols)
-                {
-                    filtersWithGeneratedSymbols.Add(filter);
-                }
-                else
-                {
-                    foreach (IMemberData data in filter.Filtrate(in context))
-                    {
-                        GenerateFromData(data, in context);
-                    }
-                }
-            }
-
-            BeforeExecutionOfGroup(filterGroup, in context);
-
-            GenerateFromFiltersWithGeneratedSymbols(filterGroup, filtersWithGeneratedSymbols, in context);
-
-            filterGroup.Unseal();
-            AfterExecutionOfGroup(filterGroup, in context);
+            SyntaxReceiver = default;
+            TargetCompilation = default;
+            ParseOptions = null!;
+            CancellationToken = default;
+            IsSuccess = false;
+            HasValidData = false;
+            FileNameProvider.Reset();
         }
     }
 

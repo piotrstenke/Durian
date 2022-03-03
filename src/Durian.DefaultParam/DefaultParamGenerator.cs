@@ -165,9 +165,10 @@ namespace Durian.Analysis.DefaultParam
         }
 
         /// <inheritdoc/>
-        protected override void BeforeExecution(in GeneratorExecutionContext context)
+        protected override void OnBeforeExecution(in GeneratorExecutionContext context)
         {
             _rewriter.ParentCompilation = TargetCompilation;
+            base.OnBeforeExecution(in context);
         }
 
         /// <inheritdoc/>

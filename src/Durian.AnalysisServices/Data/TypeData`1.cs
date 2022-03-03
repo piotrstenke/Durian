@@ -45,7 +45,7 @@ namespace Durian.Analysis.Data
         {
         }
 
-        protected TypeData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+        internal TypeData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
         {
         }
 

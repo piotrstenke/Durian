@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Methods
 {
-    public sealed class MethodSignatureTests : DefaultParamGeneratorTestBase
+    public sealed class MethodSignatureTests : DefaultParamGeneratorTest
     {
         [Fact]
         public void Error_When_HasOnlyNonTypeArgumentParameters_And_SignatureAlreadyExists()

@@ -60,7 +60,7 @@ namespace Durian.Analysis.Cache
         /// <inheritdoc/>
         public void Execute(in CachedGeneratorExecutionContext<TData> context)
         {
-            ResetData(this);
+            ResetData();
 
             ref readonly GeneratorExecutionContext c = ref context.GetContext();
 
@@ -130,20 +130,20 @@ namespace Durian.Analysis.Cache
                 return;
             }
 
-            BeforeExecution(in originalContext);
+            OnBeforeExecution(in originalContext);
 
             foreach (FilterGroup<TFilter> filterGroup in filters)
             {
                 HandleFilterGroup(filterGroup, in cachedContext, in originalContext);
             }
 
-            AfterExecution(in originalContext);
+            OnAfterExecution(in originalContext);
         }
 
         private void GenerateFromFiltersWithGeneratedSymbols(FilterGroup<TFilter> filterGroup, List<TFilter> filtersWithGeneratedSymbols, in CachedGeneratorExecutionContext<TData> cachedContext, in GeneratorExecutionContext originalContext)
         {
-            UpdateCompilationBeforeFiltersWithGeneratedSymbols();
-            BeforeGeneratedSymbolFiltration(filterGroup, in originalContext);
+            BeforeFiltersWithGeneratedSymbols();
+            OnBeforeFiltrationOfGeneratedSymbols(filterGroup, in originalContext);
             BeginIterationOfFiltersWithGeneratedSymbols();
 
             foreach (TFilter filter in filtersWithGeneratedSymbols)
@@ -160,7 +160,7 @@ namespace Durian.Analysis.Cache
             List<TFilter> filtersWithGeneratedSymbols = new(numFilters);
 
             filterGroup.Unseal();
-            BeforeFiltrationOfGroup(filterGroup, in originalContext);
+            OnBeforeFiltrationOfGroup(filterGroup, in originalContext);
             filterGroup.Seal();
 
             foreach (TFilter filter in filterGroup)
@@ -178,12 +178,12 @@ namespace Durian.Analysis.Cache
                 }
             }
 
-            BeforeExecutionOfGroup(filterGroup, in originalContext);
+            OnBeforeExecutionOfGroup(filterGroup, in originalContext);
 
             GenerateFromFiltersWithGeneratedSymbols(filterGroup, filtersWithGeneratedSymbols, in cachedContext, in originalContext);
 
             filterGroup.Unseal();
-            AfterExecutionOfGroup(filterGroup, in originalContext);
+            OnAfterExecutionOfGroup(filterGroup, in originalContext);
         }
     }
 

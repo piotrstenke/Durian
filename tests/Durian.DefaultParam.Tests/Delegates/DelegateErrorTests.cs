@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Delegates
 {
-    public sealed class DelegateErrorTests : DefaultParamGeneratorTestBase
+    public sealed class DelegateErrorTests : DefaultParamGeneratorTest
     {
         [Fact]
         public void Error_When_ContainingTypeIsDefaultParam()

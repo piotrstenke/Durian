@@ -6,9 +6,9 @@ using Durian.TestServices;
 
 namespace Durian.Analysis.DefaultParam.Tests
 {
-    public abstract class DefaultParamGeneratorTestBase : DurianGeneratorTest<DefaultParamGenerator>
+    public abstract class DefaultParamGeneratorTest : DurianGeneratorTest<DefaultParamGenerator>
     {
-        public DefaultParamGeneratorTestBase() : base(true)
+        public DefaultParamGeneratorTest() : base(true)
         {
         }
 

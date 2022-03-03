@@ -7,7 +7,7 @@ using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Analysis.DefaultParam.Tests
 {
-    public sealed class DefaultParamArgumentTests : DefaultParamGeneratorTestBase
+    public sealed class DefaultParamArgumentTests : DefaultParamGeneratorTest
     {
         [Fact]
         public void Error_When_IsArraySymbol_And_IsConstraint()

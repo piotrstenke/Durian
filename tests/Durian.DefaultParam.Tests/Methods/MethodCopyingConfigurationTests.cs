@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Methods
 {
-    public sealed class MethodCopyingConfigurationTests : DefaultParamGeneratorTestBase
+    public sealed class MethodCopyingConfigurationTests : DefaultParamGeneratorTest
     {
         [Fact]
         public void AppliesReturn_When_MethodIsNotVoid()

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Methods
 {
-    public sealed class MethodNewModifierConfigurationTests : DefaultParamGeneratorTestBase
+    public sealed class MethodNewModifierConfigurationTests : DefaultParamGeneratorTest
     {
         [Fact]
         public void AppliesNewModifier_When_GenericMemberOtherThanMethodIsPresentInBaseClass()

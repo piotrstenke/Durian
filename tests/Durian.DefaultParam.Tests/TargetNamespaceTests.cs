@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests
 {
-    public sealed class TargetNamespaceTests : DefaultParamGeneratorTestBase
+    public sealed class TargetNamespaceTests : DefaultParamGeneratorTest
     {
         [Fact]
         public void CanUseGlobalNamespace()
