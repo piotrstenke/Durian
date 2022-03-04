@@ -4,18 +4,18 @@
 using Durian.Analysis.Logging;
 using Durian.TestServices;
 
-namespace Durian.Analysis.DefaultParam.Tests
+namespace Durian.Analysis.CopyFrom.Tests
 {
-    public abstract class DefaultParamGeneratorTest : DurianGeneratorTest<DefaultParamGenerator>
+    public abstract class CopyFromGeneratorTest : DurianGeneratorTest<CopyFromGenerator>
     {
         protected override ITestableGenerator CreateTestableGenerator(string testName)
         {
             return Generator.CreateTestable(testName);
         }
 
-        protected override DefaultParamGenerator CreateUnderlayingGenerator(LoggingConfiguration configuration)
+        protected override CopyFromGenerator CreateUnderlayingGenerator(LoggingConfiguration configuration)
         {
-            return new DefaultParamGenerator(configuration);
+            return new CopyFromGenerator(configuration);
         }
     }
 }

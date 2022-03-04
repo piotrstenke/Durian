@@ -4,10 +4,8 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Immutable;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -91,33 +89,18 @@ namespace Durian.TestServices
         }
 
         /// <summary>
-        /// Performs analysis on a <see cref="CSharpCompilation"/> with the <paramref name="input"/> text with a dependency on a <see cref="CSharpCompilation"/> with the <paramref name="external"/> text.
+        /// Performs analysis on a <see cref="CSharpCompilation"/> containing the specified <paramref name="input"/> text and a reference to assembly containing  the given <paramref name="external"/> text.
         /// </summary>
         /// <param name="input">Input for the analyzer.</param>
         /// <param name="external">Text representing code in an external assembly.</param>
         /// <exception cref="InvalidOperationException">Emit failed.</exception>
         protected async Task<ImmutableArray<Diagnostic>> RunAnalyzerWithDependency(string input, string external)
         {
-            CSharpCompilation dependency = RoslynUtilities
-                .CreateBaseCompilation()
-                .AddSyntaxTrees(CSharpSyntaxTree.ParseText(external, encoding: Encoding.UTF8));
+            CSharpCompilation dependency = RoslynUtilities.CreateCompilation(external);
 
             AddInitialSources(ref dependency);
 
-            using MemoryStream stream = new();
-
-            EmitResult emit = dependency.Emit(stream);
-
-            if (!emit.Success)
-            {
-                throw new InvalidOperationException("Emit failed!");
-            }
-
-            MetadataReference reference = MetadataReference.CreateFromImage(stream.ToArray());
-            CSharpCompilation current = RoslynUtilities
-                .CreateBaseCompilation()
-                .AddSyntaxTrees(CSharpSyntaxTree.ParseText(input, encoding: Encoding.UTF8))
-                .AddReferences(reference);
+            CSharpCompilation current = RoslynUtilities.CreateCompilationWithDependency(input, dependency);
 
             AddInitialSources(ref current);
 

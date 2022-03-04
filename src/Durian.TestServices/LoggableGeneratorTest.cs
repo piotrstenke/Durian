@@ -54,7 +54,7 @@ namespace Durian.TestServices
         /// <exception cref="InvalidOperationException"><see cref="CreateGenerator(LoggingConfiguration, string)"/> returned <see langword="null"/>.</exception>
         public virtual SingletonGeneratorTestResult RunGenerator(string? input, [CallerMemberName] string testName = "")
         {
-            return GeneratorTest.RunGenerator(input, GetGeneratorAndTryEnableDiagnostics(testName));
+            return RunGenerator(input, 0, testName);
         }
 
         /// <summary>
@@ -66,7 +66,32 @@ namespace Durian.TestServices
         /// <exception cref="InvalidOperationException"><see cref="CreateGenerator(LoggingConfiguration, string)"/> returned <see langword="null"/>.</exception>
         public virtual SingletonGeneratorTestResult RunGenerator(string? input, int index, [CallerMemberName] string testName = "")
         {
-            return GeneratorTest.RunGenerator(input, GetGeneratorAndTryEnableDiagnostics(testName), index);
+            return GeneratorTest.RunGenerator(GetGeneratorAndTryEnableDiagnostics(testName), input, index);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="ILoggableGenerator"/>.
+        /// </summary>
+        /// <param name="input">Input for the generator.</param>
+        /// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
+        /// <param name="testName">Name of the test that is currently performed.</param>
+        /// <exception cref="InvalidOperationException"><see cref="CreateGenerator(LoggingConfiguration, string)"/> returned <see langword="null"/>.</exception>
+        public virtual SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, [CallerMemberName]string testName = "")
+        {
+            return RunGeneratorWithDependency(input, external, 0, testName);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="ILoggableGenerator"/>.
+        /// </summary>
+        /// <param name="input">Input for the generator.</param>
+        /// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
+        /// <param name="index">Index of the source in the generator's output.</param>
+        /// <param name="testName">Name of the test that is currently performed.</param>
+        /// <exception cref="InvalidOperationException"><see cref="CreateGenerator(LoggingConfiguration, string)"/> returned <see langword="null"/>.</exception>
+        public virtual SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, int index, [CallerMemberName] string testName = "")
+        {
+            return GeneratorTest.RunGeneratorWithDependency(GetGeneratorAndTryEnableDiagnostics(testName), input, external, index);
         }
 
         /// <summary>

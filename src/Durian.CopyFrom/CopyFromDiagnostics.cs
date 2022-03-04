@@ -220,6 +220,19 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
+        /// Provides diagnostic message indicating that two <c>Durian.PatternAttribute</c>s are equivalent.
+        /// </summary>
+        public static readonly DiagnosticDescriptor DUR0217_TypeParameterIsNotValid = new(
+            id: "DUR0217",
+            title: "Type is not a valid type argument",
+            messageFormat: "'{0}': Type '{1}' is not a valid type argument",
+            category: "Durian.CopyFrom",
+            defaultSeverity: DiagnosticSeverity.Error,
+            helpLinkUri: DocsPath + "/DUR0217.md",
+            isEnabledByDefault: true
+        );
+
+        /// <summary>
         /// Documentation directory of the <c>DefaultParam</c> module.
         /// </summary>
         public static string DocsPath => GlobalInfo.Repository + "/tree/master/docs/CopyFrom";

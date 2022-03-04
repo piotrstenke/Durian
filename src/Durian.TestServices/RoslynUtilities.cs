@@ -5,6 +5,7 @@ using Durian.Analysis;
 using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -34,7 +35,12 @@ namespace Durian.TestServices
         public static CSharpCompilation CreateBaseCompilation(bool includeDurianCore = true)
         {
             MetadataReference[] references = GetBaseReferences(includeDurianCore);
-            return CreateCompilationWithReferences(sources: null, references);
+
+            return CSharpCompilation.Create(
+                assemblyName: DefaultCompilationName,
+                references: references,
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+            );
         }
 
         /// <inheritdoc cref="CreateCompilation(string?, IEnumerable{Type}?)"/>
@@ -51,7 +57,7 @@ namespace Durian.TestServices
         /// <param name="types">A collection of <see cref="Type"/>s to get the assemblies to reference to.</param>
         public static CSharpCompilation CreateCompilation(string? source, IEnumerable<Type>? types)
         {
-            IEnumerable<MetadataReference> references = GetReferences(types);
+            IEnumerable<MetadataReference>? references = types is null ? GetReferences(types) : null;
             return CreateCompilationWithReferences(source, references);
         }
 
@@ -253,6 +259,33 @@ namespace Durian.TestServices
             return CreateCompilationWithReferences(sourceTexts, references);
         }
 
+        /// <summary>
+        /// Creates a <see cref="CSharpCompilation"/> with the specified <paramref name="input"/> text and a reference compilation containing the given <paramref name="external"/> text.
+        /// </summary>
+        /// <param name="input">Input text.</param>
+        /// <param name="external">Text representing code in an external assembly.</param>
+        /// <exception cref="InvalidOperationException">Emit failed.</exception>
+        public static CSharpCompilation CreateCompilationWithDependency(string input, string external)
+        {
+            CSharpCompilation dependency = CreateCompilation(external);
+
+            return CreateCompilationWithDependency(input, dependency);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="CSharpCompilation"/> with the specified <paramref name="input"/> text and reference to the given <paramref name="dependency"/>.
+        /// </summary>
+        /// <param name="input">Input text.</param>
+        /// <param name="dependency"><see cref="CSharpCompilation"/> that should be a dependency of a compilation containing the <paramref name="input"/> text.</param>
+        /// <exception cref="InvalidOperationException">Emit failed.</exception>
+        public static CSharpCompilation CreateCompilationWithDependency(string input, CSharpCompilation dependency)
+        {
+            MetadataReference reference = CreateReference(dependency);
+
+            return CreateCompilation(input)
+                .AddReferences(reference);
+        }
+
         /// <inheritdoc cref="CreateCompilationWithReferences(string?, IEnumerable{MetadataReference}?)"/>
         public static CSharpCompilation CreateCompilationWithReferences(string? source, params MetadataReference[]? references)
         {
@@ -320,12 +353,19 @@ namespace Durian.TestServices
         /// <param name="references">A collection of <see cref="MetadataReference"/> to be added to the output <see cref="CSharpCompilation"/>.</param>
         public static CSharpCompilation CreateCompilationWithReferences(IEnumerable<CSharpSyntaxTree>? syntaxTrees, IEnumerable<MetadataReference>? references)
         {
-            return CSharpCompilation.Create(
-                assemblyName: DefaultCompilationName,
-                syntaxTrees: syntaxTrees,
-                references: references,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-            );
+            CSharpCompilation compilation = CreateBaseCompilation(true);
+
+            if(references is not null)
+            {
+                compilation = compilation.AddReferences(references);
+            }
+
+            if(syntaxTrees is not null)
+            {
+                compilation = compilation.AddSyntaxTrees(syntaxTrees);
+            }
+
+            return compilation;
         }
 
         /// <inheritdoc cref="CreateCompilationWithReferences(ISourceTextProvider?, IEnumerable{MetadataReference}?)"/>
@@ -419,6 +459,36 @@ namespace Durian.TestServices
                 args: new object[] { default(CancellationToken) },
                 culture: CultureInfo.InvariantCulture
             )!;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="MetadataReference"/> to assembly containing the specified <paramref name="input"/> text.
+        /// </summary>
+        /// <param name="input">Input text.</param>
+        /// <exception cref="InvalidOperationException">Emit failed.</exception>
+        public static MetadataReference CreateReference(string? input)
+        {
+            CSharpCompilation compilation = CreateCompilation(input);
+            return CreateReference(compilation);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="MetadataReference"/> to the specified <paramref name="compilation"/>.
+        /// </summary>
+        /// <param name="compilation"><see cref="CSharpCompilation"/> to create the <see cref="MetadataReference"/> to.</param>
+        /// <exception cref="InvalidOperationException">Emit failed.</exception>
+        public static MetadataReference CreateReference(CSharpCompilation compilation)
+        {
+            using MemoryStream stream = new();
+
+            EmitResult emit = compilation.Emit(stream);
+
+            if (!emit.Success)
+            {
+                throw new InvalidOperationException("Emit failed!");
+            }
+
+            return MetadataReference.CreateFromImage(stream.ToArray());
         }
 
         /// <summary>

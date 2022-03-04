@@ -1107,6 +1107,63 @@ partial class Test
         }
 
         [Fact]
+        public async Task Error_When_TargetIsGeneric_And_TypeArgumentIsNotValid()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target<int>"")]
+	partial void Method();
+
+    void Target<T>() where T : class
+    {{
+    }}
+}}
+";
+            Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0217_TypeParameterIsNotValid.Id);
+        }
+
+        [Fact]
+        public async Task Error_When_TargetIsGenericWithMultipleParameters_And_AtLeastOneArgumentIsNotValid()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target<string, int, char>"")]
+	partial void Method();
+
+    void Target<T, U, V>() where T : class where U : struct where V : T
+    {{
+    }}
+}}
+";
+            Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0217_TypeParameterIsNotValid.Id);
+        }
+
+        [Fact]
+        public async Task Error_When_TargetIsGenericWithMutlipleParameters_And_ParameterHasWrongName()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target<TType, UType>"")]
+	partial void Method();
+
+    void Target<T, U>()
+    {{
+    }}
+}}
+";
+            Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0217_TypeParameterIsNotValid.Id);
+        }
+
+        [Fact]
         public async Task Error_When_TargetIsImplementedPropertyAccessor_And_AccessorDoesNotExist()
         {
             string input =
@@ -1263,6 +1320,25 @@ partial class Test
 }}
 ";
             Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0203_MemberCannotBeResolved.Id);
+        }
+
+        [Fact]
+        public async Task Error_When_TargetIsUnboundGeneric()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target<,>"")]
+	partial void Method();
+
+	void Target<T, U>()
+	{{
+	}}
+}}
+";
+            Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0217_TypeParameterIsNotValid.Id);
         }
 
         public async Task Success_When_CopiesFromPartialMethodWithImplementation()
@@ -1861,6 +1937,25 @@ partial class Test
         }
 
         [Fact]
+        public async Task Success_When_TargetIsGenericWithMutlipleParameters()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target<T, U>"")]
+	partial void Method();
+
+    void Target<T, U>()
+    {{
+    }}
+}}
+";
+            Assert.Empty(await RunAnalyzer(input));
+        }
+
+        [Fact]
         public async Task Success_When_TargetIsImplicitConversionOperatorWithParamList()
         {
             string input =
@@ -1968,25 +2063,6 @@ partial class Test
 	private partial int Method();
 
 	public static int operator +(Test a, Test b) => 2;
-}}
-";
-            Assert.Empty(await RunAnalyzer(input));
-        }
-
-        [Fact]
-        public async Task Success_When_TargetIsUnboundGeneric()
-        {
-            string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target<,>"")]
-	partial void Method();
-
-	void Target<T, U>()
-	{{
-	}}
 }}
 ";
             Assert.Empty(await RunAnalyzer(input));

@@ -1393,6 +1393,78 @@ namespace Durian.Analysis.Extensions
         }
 
         /// <summary>
+        /// Determines whether the specified <paramref name="type"/> is constructed from a generic type.
+        /// </summary>
+        /// <param name="type"><see cref="INamedTypeSymbol"/> to check if is constructed from a generic type.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+        public static bool IsConstructed(this INamedTypeSymbol type)
+        {
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            return type.ConstructedFrom is not null && !SymbolEqualityComparer.Default.Equals(type, type.ConstructedFrom);
+        }
+
+        /// <summary>
+        /// Determines whether the specified <paramref name="method"/> is constructed from a generic type.
+        /// </summary>
+        /// <param name="method"><see cref="INamedTypeSymbol"/> to check if is constructed from a generic type.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+        public static bool IsConstructed(this IMethodSymbol method)
+        {
+            if (method is null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
+            return method.ConstructedFrom is not null && !SymbolEqualityComparer.Default.Equals(method, method.ConstructedFrom);
+        }
+
+        /// <summary>
+        /// Determines whether the specified <paramref name="type"/> was constructed from the <paramref name="target"/> type.
+        /// </summary>
+        /// <param name="type"><see cref="INamedTypeSymbol"/> to check if is constructed from the <paramref name="target"/> type.</param>
+        /// <param name="target"><see cref="INamedTypeSymbol"/> to check if the <paramref name="type"/> is constructed from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="target"/> is <see langword="null"/></exception>
+        public static bool IsConstructedFrom(this INamedTypeSymbol type, INamedTypeSymbol target)
+        {
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (target is null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            return type.ConstructedFrom is not null && SymbolEqualityComparer.Default.Equals(type.ConstructedFrom, target);
+        }
+
+        /// <summary>
+        /// Determines whether the specified <paramref name="method"/> was constructed from the <paramref name="target"/> method.
+        /// </summary>
+        /// <param name="method"><see cref="IMethodSymbol"/> to check if is constructed from the <paramref name="target"/> method.</param>
+        /// <param name="target"><see cref="IMethodSymbol"/> to check if the <paramref name="method"/> is constructed from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="target"/> is <see langword="null"/></exception>
+        public static bool IsConstructedFrom(this IMethodSymbol method, IMethodSymbol target)
+        {
+            if (method is null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
+            if (target is null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            return method.ConstructedFrom is not null && SymbolEqualityComparer.Default.Equals(method.ConstructedFrom, target);
+        }
+
+        /// <summary>
         /// Determines whether the <paramref name="first"/> <see cref="IParameterSymbol"/> is equivalent to the <paramref name="second"/> <see cref="IParameterSymbol"/>.
         /// </summary>
         /// <param name="first">First <see cref="IParameterSymbol"/>.</param>

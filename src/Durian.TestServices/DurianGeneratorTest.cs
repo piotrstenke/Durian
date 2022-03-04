@@ -21,7 +21,7 @@ namespace Durian.TestServices
         /// <summary>
         /// Initializes a new instance of the <see cref="DurianGeneratorTest{T}"/> class.
         /// </summary>
-        protected DurianGeneratorTest()
+        protected DurianGeneratorTest() : this(true)
         {
             Generator = CreateUnderlayingGenerator(_configuration);
         }
@@ -55,6 +55,18 @@ namespace Durian.TestServices
         public override sealed SingletonGeneratorTestResult RunGenerator(string? input, [CallerMemberName] string testName = "")
         {
             return base.RunGenerator(input, Generator.NumStaticTrees, testName);
+        }
+
+        /// <inheritdoc/>
+        public override sealed SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, int index, [CallerMemberName] string testName = "")
+        {
+            return base.RunGeneratorWithDependency(input, external, Generator.NumStaticTrees + index, testName);
+        }
+
+        /// <inheritdoc/>
+        public override sealed SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, [CallerMemberName] string testName = "")
+        {
+            return base.RunGeneratorWithDependency(input, external, Generator.NumStaticTrees, testName);
         }
 
         /// <inheritdoc/>

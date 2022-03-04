@@ -176,6 +176,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CopyFrom", "CopyFrom", "{07
 		docs\CopyFrom\DUR0214.md = docs\CopyFrom\DUR0214.md
 		docs\CopyFrom\DUR0215.md = docs\CopyFrom\DUR0215.md
 		docs\CopyFrom\DUR0216.md = docs\CopyFrom\DUR0216.md
+		docs\CopyFrom\DUR0217.md = docs\CopyFrom\DUR0217.md
 	EndProjectSection
 EndProject
 Global

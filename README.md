@@ -119,13 +119,13 @@ public class B
 }
 ```
 
-## Experimental
+## In Progress
 
-Experimental modules include packages that are almost ready to be released, but still need some more polishing.
+The following modules are still in active development and are yet to be released in a not-yet-specified future.
 
 ### [CopyFrom](src/Durian.CopyFrom/README.md)
 
-CopyFrom allows to copy implementations of members to other members, without the need for inheritance. A regex pattern can be provided to customize the copied implementation.
+*CopyFrom* allows to copy implementations of members to other members, without the need for inheritance. A regex pattern can be provided to customize the copied implementation.
 
 ```csharp
 using Durian;
@@ -154,6 +154,72 @@ partial class Test
     void Set(string name)
     {
         _name = name;
+    }
+}
+
+```
+
+## Experimental
+
+Experimental stage is a playground of sorts - modules included here are very early in development and there in no guarantee that they will be ever actually released.
+
+### [ConstExpr](src/Durian.ConstExpr/README.md)
+
+*ConstExpr* allows a method to be executed at compile-time, producing actual constants.
+
+```csharp
+using Durian;
+
+public static class Utility
+{
+    [ConstExpr]
+    public static int Sum(params int[] values)
+    {
+        int sum = 0;
+
+        for(int i = 0; i < values.Length; i++)
+        {
+            sum += values[i];
+        }
+
+        return sum;
+    }
+}
+
+[ConstExprSource("Utility.Sum", "Sum_10", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)]
+public static partial class Constants
+{
+}
+
+// Generated
+
+public static partial class Constants
+{
+    public const int Sum_10 = 55;
+}
+
+```
+
+### [ConstParam](src/Durian.ConstExpr/README.md)
+
+*ConstParam* allows to specify that a value of a parameter cannot be modified, event if it's a reference type.
+
+
+```csharp
+using Durian;
+
+public class Test
+{
+    public class Data
+    {
+        public string Name { get; set; }
+        public int Id { get; set; }
+    }
+
+    public void Method([ConstParam]Data data)
+    {
+        // Error! Parameter cannot be modified.
+        data.Name = "";
     }
 }
 

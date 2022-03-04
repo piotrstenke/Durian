@@ -42,36 +42,72 @@ namespace Durian.TestServices
         }
 
         /// <summary>
-        /// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <paramref name="sourceGenerator"/>.
+        /// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <paramref name="generator"/>.
         /// </summary>
+        /// <param name="generator"><see cref="ISourceGenerator"/> to perform the test on.</param>
         /// <param name="input">Input for the generator.</param>
-        /// <param name="sourceGenerator"><see cref="ISourceGenerator"/> to perform the test on.</param>
-        public static SingletonGeneratorTestResult RunGenerator(string? input, ISourceGenerator sourceGenerator)
+        public static SingletonGeneratorTestResult RunGenerator(ISourceGenerator generator, string? input)
         {
-            if (sourceGenerator is null)
+            if (generator is null)
             {
                 return default;
             }
 
-            return sourceGenerator.RunTest(SingletonGeneratorTestResult.Create, input);
+            return generator.RunTest(SingletonGeneratorTestResult.Create, input);
         }
 
         /// <summary>
-        /// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <paramref name="sourceGenerator"/>.
+        /// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <paramref name="generator"/>.
         /// </summary>
+        /// <param name="generator"><see cref="ISourceGenerator"/> to perform the test on.</param>
         /// <param name="input">Input for the generator.</param>
-        /// <param name="sourceGenerator"><see cref="ISourceGenerator"/> to perform the test on.</param>
         /// <param name="index">Index of the source in the generator's output.</param>
-        public static SingletonGeneratorTestResult RunGenerator(string? input, ISourceGenerator sourceGenerator, int index)
+        public static SingletonGeneratorTestResult RunGenerator(ISourceGenerator generator, string? input, int index)
         {
-            if (sourceGenerator is null)
+            if (generator is null)
             {
                 return default;
             }
 
-            return sourceGenerator.RunTest(
+            return generator.RunTest(
                 (CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
                     => new SingletonGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation, index), input);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <paramref name="generator"/>.
+        /// </summary>
+        /// <param name="generator"><see cref="ISourceGenerator"/> to perform the test on.</param>
+        /// <param name="input">Input for the generator.</param>
+        /// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
+        public static SingletonGeneratorTestResult RunGeneratorWithDependency(ISourceGenerator generator, string? input, string? external)
+        {
+            if (generator is null)
+            {
+                return default;
+            }
+
+            MetadataReference reference = RoslynUtilities.CreateReference(external);
+            return generator.RunTest(SingletonGeneratorTestResult.Create, input, reference);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <paramref name="generator"/>.
+        /// </summary>
+        /// <param name="generator"><see cref="ISourceGenerator"/> to perform the test on.</param>
+        /// <param name="input">Input for the generator.</param>
+        /// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
+        /// <param name="index">Index of the source in the generator's output.</param>
+        public static SingletonGeneratorTestResult RunGeneratorWithDependency(ISourceGenerator generator, string? input, string? external, int index)
+        {
+            if (generator is null)
+            {
+                return default;
+            }
+
+            MetadataReference reference = RoslynUtilities.CreateReference(external);
+            return generator.RunTest((CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
+                    => new SingletonGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation, index), input, reference);
         }
 
         /// <summary>
@@ -80,7 +116,7 @@ namespace Durian.TestServices
         /// <param name="input">Input for the generator.</param>
         public virtual SingletonGeneratorTestResult RunGenerator(string? input)
         {
-            return RunGenerator(input, Generator);
+            return RunGenerator(Generator, input);
         }
 
         /// <summary>
@@ -90,7 +126,28 @@ namespace Durian.TestServices
         /// <param name="index">Index of the source in the generator's output.</param>
         public virtual SingletonGeneratorTestResult RunGenerator(string? input, int index)
         {
-            return RunGenerator(input, Generator, index);
+            return RunGenerator(Generator, input, index);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+        /// </summary>
+        /// <param name="input">Input for the generator.</param>
+        /// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
+        public virtual SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string? external)
+        {
+            return RunGeneratorWithDependency(Generator, input, external);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+        /// </summary>
+        /// <param name="input">Input for the generator.</param>
+        /// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
+        /// <param name="index">Index of the source in the generator's output.</param>
+        public virtual SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string? external, int index)
+        {
+            return RunGeneratorWithDependency(Generator, input, external, index);
         }
 
         /// <summary>
