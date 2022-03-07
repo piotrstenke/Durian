@@ -266,7 +266,7 @@ namespace Durian.Analysis
 
             if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
             {
-                LogNode_Internal(tree.GetRoot(context.CancellationToken), hintName);
+                LogNode_Internal(tree.GetRoot(context.CancellationToken), hintName, NodeOutput.Node);
             }
         }
 
@@ -285,7 +285,7 @@ namespace Durian.Analysis
 
             if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput))
             {
-                LogInputOutput_Internal(original, tree.GetRoot(context.CancellationToken), hintName);
+                LogInputOutput_Internal(original, tree.GetRoot(context.CancellationToken), hintName, default);
             }
         }
 

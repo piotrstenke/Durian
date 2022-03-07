@@ -21,7 +21,8 @@ namespace Durian.Analysis.Logging
         /// <param name="node"><see cref="SyntaxNode"/> the diagnostics were created for.</param>
         /// <param name="hintName">Name of the log file to log to.</param>
         /// <param name="diagnostics">A collection of <see cref="Diagnostic"/>s that were created for this <paramref name="node"/>.</param>
-        void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics);
+        /// <param name="nodeOutput">Determines what to output when the <see cref="SyntaxNode"/> is being logged.</param>
+        void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics, NodeOutput nodeOutput = default);
 
         /// <summary>
         /// Logs an <see cref="Exception"/>.
@@ -35,13 +36,15 @@ namespace Durian.Analysis.Logging
         /// <param name="input">Input <see cref="SyntaxNode"/>.</param>
         /// <param name="output">Output <see cref="SyntaxNode"/>.</param>
         /// <param name="hintName">Name of the log file to log to.</param>
-        void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName);
+        /// <param name="nodeOutput">Determines what to output when a <see cref="SyntaxNode"/> is being logged.</param>
+        void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput = default);
 
         /// <summary>
         /// Logs a generated <see cref="SyntaxNode"/>.
         /// </summary>
         /// <param name="node"><see cref="SyntaxNode"/> to log.</param>
         /// <param name="hintName">Name of the log file to log to.</param>
-        void LogNode(SyntaxNode node, string hintName);
+        /// <param name="nodeOutput">Determines what to output when the <see cref="SyntaxNode"/> is being logged.</param>
+        void LogNode(SyntaxNode node, string hintName, NodeOutput nodeOutput = default);
     }
 }

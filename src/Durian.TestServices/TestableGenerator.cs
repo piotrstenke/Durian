@@ -76,9 +76,9 @@ namespace Durian.TestServices
         }
 
         /// <inheritdoc/>
-        public void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics)
+        public void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics, NodeOutput nodeOutput = default)
         {
-            UnderlayingGenerator.LogDiagnostics(node, hintName, diagnostics);
+            UnderlayingGenerator.LogDiagnostics(node, hintName, diagnostics, nodeOutput);
         }
 
         /// <inheritdoc/>
@@ -88,15 +88,15 @@ namespace Durian.TestServices
         }
 
         /// <inheritdoc/>
-        public void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName)
+        public void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput = default)
         {
-            UnderlayingGenerator.LogInputOutput(input, output, hintName);
+            UnderlayingGenerator.LogInputOutput(input, output, hintName, nodeOutput);
         }
 
         /// <inheritdoc/>
-        public void LogNode(SyntaxNode node, string hintName)
+        public void LogNode(SyntaxNode node, string hintName, NodeOutput nodeOutput = default)
         {
-            UnderlayingGenerator.LogNode(node, hintName);
+            UnderlayingGenerator.LogNode(node, hintName, nodeOutput);
         }
 
         void ISourceGenerator.Execute(GeneratorExecutionContext context)

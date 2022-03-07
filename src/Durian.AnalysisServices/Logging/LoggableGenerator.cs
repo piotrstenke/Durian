@@ -94,7 +94,7 @@ namespace Durian.Analysis.Logging
         public abstract void Initialize(GeneratorInitializationContext context);
 
         /// <inheritdoc/>
-        public void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics)
+        public void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics, NodeOutput nodeOutput = default)
         {
             if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Diagnostics) && diagnostics is not null)
             {
@@ -102,7 +102,7 @@ namespace Durian.Analysis.Logging
 
                 if (array.Length > 0)
                 {
-                    LogDiagnostics_Internal(node, hintName, array);
+                    LogDiagnostics_Internal(node, hintName, array, nodeOutput);
                 }
             }
         }
@@ -117,20 +117,20 @@ namespace Durian.Analysis.Logging
         }
 
         /// <inheritdoc/>
-        public void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName)
+        public void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput = default)
         {
             if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput) && !(input is null && output is null))
             {
-                LogInputOutput_Internal(input!, output, hintName);
+                LogInputOutput_Internal(input!, output, hintName, nodeOutput);
             }
         }
 
         /// <inheritdoc/>
-        public void LogNode(SyntaxNode node, string hintName)
+        public void LogNode(SyntaxNode node, string hintName, NodeOutput nodeOutput = default)
         {
             if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node) && node is not null)
             {
-                LogNode_Internal(node, hintName);
+                LogNode_Internal(node, hintName, nodeOutput);
             }
         }
 
@@ -139,14 +139,14 @@ namespace Durian.Analysis.Logging
             Execute(in context);
         }
 
-        internal void LogDiagnostics_Internal(SyntaxNode node, string hintName, Diagnostic[] diagnostics)
+        private protected void LogDiagnostics_Internal(SyntaxNode node, string hintName, Diagnostic[] diagnostics, NodeOutput nodeOutput)
         {
             StringBuilder sb = new();
 
             if (node is not null)
             {
                 AppendSection(sb, "input");
-                sb.AppendLine(node.ToFullString());
+                sb.AppendLine(GetNodeOutput(node, nodeOutput));
             }
 
             AppendSection(sb, "diagnostics");
@@ -167,7 +167,7 @@ namespace Durian.Analysis.Logging
             TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString() + "\n\n");
         }
 
-        private protected void LogInputOutput_Internal(SyntaxNode input, SyntaxNode output, string hintName)
+        private protected void LogInputOutput_Internal(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput)
         {
             StringBuilder sb = new();
 
@@ -175,26 +175,26 @@ namespace Durian.Analysis.Logging
             {
                 AppendSection(sb, "input");
 
-                sb.AppendLine(input.ToFullString());
+                sb.AppendLine(GetNodeOutput(input, nodeOutput));
                 sb.AppendLine();
             }
 
             if (output is not null)
             {
                 AppendSection(sb, "output");
-                sb.AppendLine(output.ToFullString());
+                sb.AppendLine(GetNodeOutput(output, nodeOutput));
             }
 
             WriteToFile(hintName, sb, ".generated");
         }
 
-        private protected void LogNode_Internal(SyntaxNode node, string hintName)
+        private protected void LogNode_Internal(SyntaxNode node, string hintName, NodeOutput nodeOutput)
         {
             StringBuilder sb = new();
 
             AppendSection(sb, "generated");
 
-            sb.AppendLine(node.ToFullString());
+            sb.AppendLine(GetNodeOutput(node, nodeOutput));
             sb.AppendLine();
 
             WriteToFile(hintName, sb, ".generated");
@@ -217,6 +217,17 @@ namespace Durian.Analysis.Logging
 
             sb.AppendLine();
             sb.AppendLine();
+        }
+
+        private string GetNodeOutput(SyntaxNode node, NodeOutput nodeOutput)
+        {
+            return nodeOutput switch
+            {
+                NodeOutput.Node => node.ToFullString(),
+                NodeOutput.Containing => node.Parent?.ToFullString() ?? node.ToFullString(),
+                NodeOutput.SyntaxTree => node.SyntaxTree.ToString(),
+                _ => GetNodeOutput(node, LoggingConfiguration.DefaultNodeOutput),
+            };
         }
 
         private static void TryAppendAllText(string file, string text)

@@ -12,7 +12,12 @@ namespace Durian.Analysis.FriendClass
     /// Generates syntax tree of types required by the <c>FriendClass</c> module.
     /// </summary>
     [Generator(LanguageNames.CSharp)]
-    [LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "FriendClass", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
+    [LoggingConfiguration(
+        SupportedLogs = GeneratorLogs.All,
+        LogDirectory = "FriendClass",
+        SupportsDiagnostics = true,
+        RelativeToGlobal = true,
+        EnableExceptions = true)]
     public sealed class FriendClassGenerator : DurianGeneratorBase
     {
         /// <summary>

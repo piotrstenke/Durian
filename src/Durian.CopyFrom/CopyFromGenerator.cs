@@ -16,7 +16,13 @@ namespace Durian.Analysis.CopyFrom
     /// Main class of the <c>CopyFrom</c> module. Generates source code of members marked with the <c>Durian.CopyFromAttribute</c>.
     /// </summary>
     [Generator(LanguageNames.CSharp)]
-    [LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "CopyFrom", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
+    [LoggingConfiguration(
+        SupportedLogs = GeneratorLogs.All,
+        LogDirectory = "CopyFrom",
+        SupportsDiagnostics = true,
+        RelativeToGlobal = true,
+        EnableExceptions = true,
+        DefaultNodeOutput = NodeOutput.SyntaxTree)]
     public sealed class CopyFromGenerator : CachedGenerator<ICopyFromMember, CopyFromCompilationData, CopyFromSyntaxReceiver, ICopyFromFilter>
     {
         private FilterContainer<ICopyFromFilter>? _filters;

@@ -476,7 +476,7 @@ partial class Test
             string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(typeof(Inner))]
+[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
 partial class Test
 {{
 }}

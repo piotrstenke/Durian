@@ -420,7 +420,7 @@ namespace Durian.Analysis
         {
             if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
             {
-                LogNode_Internal(syntaxTree.GetRoot(cancellationToken), hintName);
+                LogNode_Internal(syntaxTree.GetRoot(cancellationToken), hintName, NodeOutput.Node);
             }
         }
 

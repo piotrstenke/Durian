@@ -10,10 +10,15 @@ namespace Durian.Analysis.Logging
     /// <summary>
     /// Determines the behavior of the target <see cref="ISourceGenerator"/> when creating log files.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = false, Inherited = true)]
     public sealed class LoggingConfigurationAttribute : Attribute
     {
         private string? _validatedDirectory;
+
+        /// <summary>
+        /// Determines what to output when a <see cref="SyntaxNode"/> is being logged and no other <see cref="NodeOutput"/> is specified.
+        /// </summary>
+        public NodeOutput DefaultNodeOutput { get; set; }
 
         /// <summary>
         /// Determines whether to enable the <see cref="ISourceGenerator"/> can throw <see cref="Exception"/>s. Defaults to <see langword="false"/>
@@ -32,7 +37,7 @@ namespace Durian.Analysis.Logging
         public bool RelativeToDefault { get; set; }
 
         /// <summary>
-        /// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="DefaultLoggingConfigurationAttribute.LogDirectory"/>. Defaults to <see langword="true"/>.
+        /// Determines whether the <see cref="LogDirectory"/> is relative to the global <see cref="LogDirectory"/>. Defaults to <see langword="true"/>.
         /// </summary>
         public bool RelativeToGlobal { get; set; } = true;
 
@@ -55,12 +60,67 @@ namespace Durian.Analysis.Logging
         /// Gets the full <see cref="LogDirectory"/> and checks if its valid.
         /// </summary>
         /// <exception cref="ArgumentException">
+        /// <see cref="LogDirectory"/> of the <see cref="LoggingConfigurationAttribute"/> cannot be empty or whitespace only. -or-
+        /// <see cref="LogDirectory"/> must be specified if <see cref="RelativeToDefault"/> is set to <see langword="false"/>. -or-
+        /// <see cref="LogDirectory"/> contains one or more of invalid characters defined in the <see cref="Path.GetInvalidPathChars"/>.
+        /// </exception>
+        public string GetFullDirectoryForAssembly()
+        {
+            if (_validatedDirectory is not null)
+            {
+                return _validatedDirectory;
+            }
+
+            if (LogDirectory is null)
+            {
+                if (!RelativeToDefault)
+                {
+                    throw new ArgumentException($"{nameof(LogDirectory)} must be specified if {nameof(RelativeToDefault)} is set to false!");
+                }
+
+                return LoggingConfiguration.DefaultLogDirectory;
+            }
+
+            if (string.IsNullOrWhiteSpace(LogDirectory))
+            {
+                throw new ArgumentException($"{nameof(LogDirectory)} of the {nameof(LoggingConfigurationAttribute)} cannot be empty or whitespace only!", nameof(LogDirectory));
+            }
+
+            string? dir;
+
+            if (RelativeToDefault)
+            {
+                if (LogDirectory![0] == '/')
+                {
+                    dir = LoggingConfiguration.DefaultLogDirectory + LogDirectory;
+                }
+                else
+                {
+                    dir = LoggingConfiguration.DefaultLogDirectory + "/" + LogDirectory;
+                }
+            }
+            else
+            {
+                dir = LogDirectory;
+            }
+
+            // Checks if the directory is valid.
+            Path.GetFullPath(dir);
+
+            _validatedDirectory = dir;
+            return dir;
+        }
+
+        /// <summary>
+        /// Gets the full <see cref="LogDirectory"/> and checks if its valid.
+        /// </summary>
+        /// <exception cref="ArgumentException">
         /// <see cref="LogDirectory"/> of the <see cref="LoggingConfigurationAttribute"/> cannot be empty or white space only. -or-
         /// <paramref name="globalConfiguration"/> must be specified if <see cref="RelativeToGlobal"/> is set to <see langword="true"/> -or-
         /// <see cref="LogDirectory"/> must be specified if both <see cref="RelativeToDefault"/> and <see cref="RelativeToGlobal"/> are set to <see langword="false"/>. -or-
         /// <see cref="LogDirectory"/> contains one or more of invalid characters defined in the <see cref="Path.GetInvalidPathChars"/>.
         /// </exception>
-        public string GetAndValidateFullLogDirectory(LoggingConfiguration? globalConfiguration)
+        public string GetFullDirectoryForType(LoggingConfiguration? globalConfiguration)
         {
             if (_validatedDirectory is not null)
             {

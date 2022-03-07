@@ -35,8 +35,7 @@ namespace Durian.Analysis.Logging
             public static ConstructionContext Runtime => new();
 
             /// <summary>
-            /// Determines whether to try to create a <see cref="Logging.LoggingConfiguration"/> based on one of the logging attributes.
-            /// <para>See: <see cref="LoggingConfigurationAttribute"/>, <see cref="DefaultLoggingConfigurationAttribute"/></para>
+            /// Determines whether to try to create a <see cref="Logging.LoggingConfiguration"/> based on one of the <see cref="LoggingConfigurationAttribute"/>.
             /// </summary>
             public bool CheckForConfigurationAttribute { get; }
 
@@ -58,10 +57,10 @@ namespace Durian.Analysis.Logging
             /// <summary>
             /// Initializes a new instance of the <see cref="ConstructionContext"/> struct.
             /// </summary>
-            /// <param name="checkForConfigurationAttribute"></param>
-            /// <param name="enableDiagnosticsIfSupported"></param>
-            /// <param name="enableLoggingIfSupported"></param>
-            /// <param name="enableExceptions"></param>
+            /// <param name="checkForConfigurationAttribute">Determines whether to try to create a <see cref="Logging.LoggingConfiguration"/> based on one of the <see cref="LoggingConfigurationAttribute"/>.</param>
+            /// <param name="enableDiagnosticsIfSupported">Determines whether to set <see cref="LoggingConfiguration.EnableDiagnostics"/> to <see langword="true"/> if <see cref="LoggingConfiguration.SupportsDiagnostics"/> is <see langword="true"/>.</param>
+            /// <param name="enableLoggingIfSupported">Determines whether to enable logging for this <see cref="LoggableGenerator"/> instance if logging is supported.</param>
+            /// <param name="enableExceptions">Determines whether to set enable exceptions to be thrown.</param>
             public ConstructionContext(
                 bool checkForConfigurationAttribute = false,
                 bool enableDiagnosticsIfSupported = false,

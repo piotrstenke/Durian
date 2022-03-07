@@ -17,7 +17,13 @@ namespace Durian.Analysis.DefaultParam
     /// Main class of the <c>DefaultParam</c> module. Generates source code of members marked with the <c>Durian.DefaultParamAttribute</c>.
     /// </summary>
     [Generator(LanguageNames.CSharp)]
-    [LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "DefaultParam", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
+    [LoggingConfiguration(
+        SupportedLogs = GeneratorLogs.All,
+        LogDirectory = "DefaultParam",
+        SupportsDiagnostics = true,
+        RelativeToGlobal = true,
+        EnableExceptions = true,
+        DefaultNodeOutput = NodeOutput.Containing)]
     public class DefaultParamGenerator : CachedGenerator<IDefaultParamTarget, DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>
     {
         private readonly DefaultParamRewriter _rewriter = new();

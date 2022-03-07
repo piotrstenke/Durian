@@ -23,6 +23,11 @@ namespace Durian.Analysis.Logging
         public ILoggableGenerator Generator { get; }
 
         /// <summary>
+        /// Determines what to output when a <see cref="SyntaxNode"/> is being logged.
+        /// </summary>
+        public NodeOutput NodeOutput { get; set; }
+
+        /// <summary>
         /// Name of the log file to log to.
         /// </summary>
         public string? HintName { get; private set; }
@@ -32,10 +37,7 @@ namespace Durian.Analysis.Logging
         /// </summary>
         public CSharpSyntaxNode? Node { get; private set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LoggableGenerator"/> class.
-        /// </summary>
-        /// <param name="generator"><see cref="LoggableGenerator"/> that will log the received <see cref="Diagnostic"/>s.</param>
+        /// <inheritdoc cref="LoggableDiagnosticReceiver(ILoggableGenerator, NodeOutput)"/>
         public LoggableDiagnosticReceiver(ILoggableGenerator generator)
         {
             if (generator is null)
@@ -45,6 +47,17 @@ namespace Durian.Analysis.Logging
 
             _bag = new();
             Generator = generator;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoggableGenerator"/> class.
+        /// </summary>
+        /// <param name="generator"><see cref="LoggableGenerator"/> that will log the received <see cref="Diagnostic"/>s.</param>
+        /// <param name="nodeOutput">Determines what to output when a <see cref="SyntaxNode"/> is being logged.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+        public LoggableDiagnosticReceiver(ILoggableGenerator generator, NodeOutput nodeOutput) : this(generator)
+        {
+            NodeOutput = nodeOutput;
         }
 
         /// <summary>
@@ -62,7 +75,7 @@ namespace Durian.Analysis.Logging
         {
             if (_bag.Count > 0)
             {
-                Generator.LogDiagnostics(Node!, HintName!, _bag.GetDiagnostics());
+                Generator.LogDiagnostics(Node!, HintName!, _bag.GetDiagnostics(), NodeOutput);
                 Clear();
             }
         }

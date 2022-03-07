@@ -17,6 +17,8 @@ namespace Durian.Analysis.Logging
 
         private bool _enableLogging;
 
+        private NodeOutput _nodeOutput;
+
         private string? _logDirectory;
 
         private bool _supportsDiagnostics;
@@ -25,6 +27,31 @@ namespace Durian.Analysis.Logging
         /// Returns a <see cref="FilterMode"/> associated with the current configuration.
         /// </summary>
         public FilterMode CurrentFilterMode => Extensions.GeneratorExtensions.GetFilterMode(EnableDiagnostics, EnableLogging);
+
+        /// <summary>
+        /// Determines what to output when a <see cref="SyntaxNode"/> is being logged and no other <see cref="NodeOutput"/> is specified.
+        /// </summary>
+        /// <exception cref="ArgumentException">Value cannot be equal to <see cref="NodeOutput.Default"/>. -or- Invalid <see cref="NodeOutput"/> value.</exception>
+        public NodeOutput DefaultNodeOutput
+        {
+            get => _nodeOutput;
+            set
+            {
+                if(value == NodeOutput.Default)
+                {
+                    throw new ArgumentException($"{nameof(DefaultNodeOutput)} cannot be equal to {nameof(NodeOutput)}.{nameof(NodeOutput.Default)}", nameof(DefaultNodeOutput));
+                }
+
+                if(value is NodeOutput.Node or NodeOutput.Containing or NodeOutput.SyntaxTree)
+                {
+                    _nodeOutput = value;
+                }
+                else
+                {
+                    throw new ArgumentException($"Invalid '{nameof(NodeOutput)}' value", nameof(DefaultNodeOutput));
+                }
+            }
+        }
 
         /// <summary>
         /// Determines whether this <see cref="IDurianGenerator"/> allows to report any <see cref="Diagnostic"/>s during the current execution pass.
@@ -139,10 +166,10 @@ namespace Durian.Analysis.Logging
                 a._supportsDiagnostics == b._supportsDiagnostics &&
                 a._enableLogging == b._enableLogging &&
                 a._enableDiagnostics == b._enableDiagnostics &&
+                a._logDirectory == b._logDirectory &&
                 a.EnableExceptions == b.EnableExceptions &&
-                a.EnableLogging == b.EnableLogging &&
-                a.LogDirectory == b.LogDirectory &&
-                a.SupportedLogs == b.SupportedLogs;
+                a.SupportedLogs == b.SupportedLogs &&
+                a.DefaultNodeOutput == b.DefaultNodeOutput;
         }
 
         /// <inheritdoc cref="ICloneable.Clone"/>
@@ -150,13 +177,13 @@ namespace Durian.Analysis.Logging
         {
             return new LoggingConfiguration()
             {
-                _enableDiagnostics = _enableDiagnostics,
-                _enableLogging = _enableLogging,
-                _logDirectory = _logDirectory,
-                _supportsDiagnostics = _supportsDiagnostics,
+                _enableDiagnostics = EnableDiagnostics,
+                _enableLogging = EnableLogging,
+                _supportsDiagnostics = SupportsDiagnostics,
                 SupportedLogs = SupportedLogs,
-                SupportsDiagnostics = SupportsDiagnostics,
-                EnableExceptions = EnableExceptions
+                _logDirectory = LogDirectory,
+                EnableExceptions = EnableExceptions,
+                DefaultNodeOutput = DefaultNodeOutput
             };
         }
 
@@ -182,11 +209,12 @@ namespace Durian.Analysis.Logging
         {
             int hashCode = -604981020;
             hashCode = (hashCode * -1521134295) + LogDirectory.GetHashCode();
-            hashCode = (hashCode * -1521134295) + _enableLogging.GetHashCode();
-            hashCode = (hashCode * -1521134295) + _enableDiagnostics.GetHashCode();
+            hashCode = (hashCode * -1521134295) + EnableLogging.GetHashCode();
+            hashCode = (hashCode * -1521134295) + EnableDiagnostics.GetHashCode();
             hashCode = (hashCode * -1521134295) + SupportedLogs.GetHashCode();
             hashCode = (hashCode * -1521134295) + SupportsDiagnostics.GetHashCode();
             hashCode = (hashCode * -1521134295) + EnableExceptions.GetHashCode();
+            hashCode = (hashCode * -1521134295) + DefaultNodeOutput.GetHashCode();
             return hashCode;
         }
 

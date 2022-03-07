@@ -18,12 +18,12 @@ namespace Durian.Analysis.Logging
         /// </summary>
         public static LoggingConfiguration Default { get; } = new()
         {
-            EnableLogging = false,
-            EnableDiagnostics = false,
+            _enableLogging = false,
+            _enableDiagnostics = false,
             EnableExceptions = false,
-            LogDirectory = DefaultLogDirectory,
+            _logDirectory = DefaultLogDirectory,
             SupportedLogs = GeneratorLogs.None,
-            SupportsDiagnostics = false,
+            _supportsDiagnostics = false,
         };
 
         /// <summary>
@@ -45,8 +45,8 @@ namespace Durian.Analysis.Logging
         /// </summary>
         /// <param name="assembly"><see cref="Assembly"/> to get the <see cref="LoggingConfiguration"/> for.</param>
         /// <exception cref="ArgumentException">
-        /// <see cref="DefaultLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only. -or-
-        /// <see cref="DefaultLoggingConfigurationAttribute.LogDirectory"/> must be specified if <see cref="DefaultLoggingConfigurationAttribute.RelativeToDefault"/> is set to <see langword="false"/>.
+        /// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only. -or-
+        /// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> is set to <see langword="false"/>.
         /// </exception>
         /// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
         public static LoggingConfiguration CreateConfigurationForAssembly(Assembly assembly)
@@ -56,7 +56,7 @@ namespace Durian.Analysis.Logging
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            DefaultLoggingConfigurationAttribute? attr = assembly.GetCustomAttribute<DefaultLoggingConfigurationAttribute>();
+            LoggingConfigurationAttribute? attr = assembly.GetCustomAttribute<LoggingConfigurationAttribute>();
 
             if (attr is null)
             {
@@ -66,12 +66,13 @@ namespace Durian.Analysis.Logging
             {
                 return new LoggingConfiguration()
                 {
-                    LogDirectory = attr.GetAndValidateFullLogDirectory(),
+                    LogDirectory = attr.GetFullDirectoryForAssembly(),
                     SupportedLogs = attr.SupportedLogs,
                     EnableLogging = IsEnabled && !Attribute.IsDefined(assembly, typeof(DisableLoggingAttribute)),
                     SupportsDiagnostics = attr.SupportsDiagnostics,
                     EnableDiagnostics = attr.SupportsDiagnostics,
-                    EnableExceptions = attr.EnableExceptions
+                    EnableExceptions = attr.EnableExceptions,
+                    DefaultNodeOutput = attr.DefaultNodeOutput
                 };
             }
         }
@@ -82,7 +83,7 @@ namespace Durian.Analysis.Logging
         /// <typeparam name="T">Type of <see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</typeparam>
         /// <exception cref="ArgumentException">
         /// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
-        /// <see cref="DefaultLoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+        /// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
         /// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
         /// </exception>
         public static LoggingConfiguration CreateConfigurationForGenerator<T>() where T : ISourceGenerator
@@ -97,7 +98,7 @@ namespace Durian.Analysis.Logging
         /// <exception cref="ArgumentException">
         /// <paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface. -or-
         /// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
-        /// <see cref="DefaultLoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+        /// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
         /// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
         /// </exception>
         /// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
@@ -118,7 +119,7 @@ namespace Durian.Analysis.Logging
         /// <param name="generator"><see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</param>
         /// <exception cref="ArgumentException">
         /// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
-        /// <see cref="DefaultLoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+        /// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
         /// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
         /// </exception>
         /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
@@ -136,7 +137,7 @@ namespace Durian.Analysis.Logging
         /// Returns a reference to the <see cref="LoggingConfiguration"/> for the specified <paramref name="assembly"/>.
         /// </summary>
         /// <param name="assembly"><see cref="Assembly"/> to get the <see cref="LoggingConfiguration"/> for.</param>
-        /// <exception cref="ArgumentException"><see cref="DefaultLoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only.</exception>
+        /// <exception cref="ArgumentException"><see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
         public static LoggingConfiguration GetConfigurationForAssembly(Assembly assembly)
         {
@@ -332,12 +333,13 @@ namespace Durian.Analysis.Logging
             {
                 return new LoggingConfiguration()
                 {
-                    LogDirectory = attr.GetAndValidateFullLogDirectory(GetConfigurationForAssembly(type.Assembly)),
+                    _logDirectory = attr.GetFullDirectoryForType(GetConfigurationForAssembly(type.Assembly)),
                     SupportedLogs = attr.SupportedLogs,
-                    EnableLogging = IsEnabled && !HasDisableAttribute_Internal(type),
-                    SupportsDiagnostics = attr.SupportsDiagnostics,
-                    EnableDiagnostics = attr.SupportsDiagnostics,
-                    EnableExceptions = attr.EnableExceptions
+                    _enableLogging = IsEnabled && !HasDisableAttribute_Internal(type),
+                    _supportsDiagnostics = attr.SupportsDiagnostics,
+                    _enableDiagnostics = attr.SupportsDiagnostics,
+                    EnableExceptions = attr.EnableExceptions,
+                    DefaultNodeOutput = attr.DefaultNodeOutput
                 };
             }
         }
