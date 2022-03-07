@@ -29,7 +29,7 @@ partial class Child : Parent
 }}
 ";
 
-            Assert.True(RunGenerator(input, 1).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters.Id));
+            Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters.Id));
         }
 
         [Fact]
@@ -54,7 +54,7 @@ partial class Child : Parent
 }}
 ";
 
-            Assert.True(RunGenerator(input, 1).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase.Id));
+            Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase.Id));
         }
 
         [Fact]
@@ -77,7 +77,7 @@ partial class Child : Parent
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods.Id));
         }
 
         [Fact]
@@ -100,7 +100,7 @@ partial class Child : Parent
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods.Id));
         }
 
         [Fact]
@@ -312,7 +312,7 @@ $@"partial class Child
 ";
             SingletonGeneratorTestResult result = RunGenerator(input, 1);
 
-            Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
+            Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
             Assert.True(result.Compare(expected));
         }
 
@@ -357,7 +357,7 @@ $@"partial class Child
 
             SingletonGeneratorTestResult result = RunGenerator(input, 2);
 
-            Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
+            Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
             Assert.True(result.Compare(expected));
         }
 
@@ -401,7 +401,7 @@ $@"partial class Child
 
             SingletonGeneratorTestResult result = RunGenerator(input, 1);
 
-            Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
+            Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
             Assert.True(result.Compare(expected));
         }
     }

@@ -23,7 +23,7 @@ partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 }}
 ";
 
-            Assert.True(RunGenerator(input, 1).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested.Id));
+            Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested.Id));
         }
 
         [Fact]
@@ -39,7 +39,7 @@ class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
         }
 
         [Fact]
@@ -55,7 +55,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
         }
 
         [Fact]
@@ -71,7 +71,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
         }
 
         [Fact]
@@ -88,7 +88,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
         }
 
         [Fact]
@@ -105,7 +105,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
         }
 
         [Fact]
@@ -124,7 +124,7 @@ partial class Test
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
         }
 
         [Fact]
@@ -145,7 +145,7 @@ partial class Test : ITest
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod.Id));
         }
 
         [Fact]
@@ -159,7 +159,7 @@ partial class Test
 	public static extern void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
         }
 
         [Fact]
@@ -173,7 +173,7 @@ partial interface ITest
 	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod.Id));
         }
 
         [Fact]
@@ -192,7 +192,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod.Id));
         }
 
         [Fact]
@@ -214,7 +214,7 @@ partial class Test
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
         }
 
         [Fact]
@@ -236,7 +236,7 @@ partial class Test
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
         }
 
         [Fact]
@@ -250,7 +250,7 @@ partial class Test
 	partial void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0102_MethodCannotBePartialOrExtern.Id));
         }
 
         [Fact]
@@ -269,7 +269,7 @@ class Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
         }
 
         [Fact]
@@ -285,7 +285,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
         }
 
         [Fact]
@@ -302,7 +302,7 @@ partial class Test
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
         }
     }
 }

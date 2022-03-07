@@ -28,7 +28,7 @@ class Target
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0201_ContainingTypeMustBePartial.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0201_ContainingTypeMustBePartial.Id));
         }
 
         [Fact]
@@ -42,7 +42,7 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0204_WrongTargetMemberKind.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
         }
 
         [Fact]
@@ -60,7 +60,7 @@ enum Target
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0204_WrongTargetMemberKind.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
         }
 
         [Fact]
@@ -81,7 +81,7 @@ class Target
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0203_MemberCannotBeResolved.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
         }
 
         [Fact]
@@ -99,7 +99,7 @@ class Child : Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
         }
 
         [Fact]
@@ -116,7 +116,7 @@ partial class Outer
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
         }
 
         [Fact]
@@ -132,7 +132,7 @@ partial class Test
 
 delegate void Delegate();
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0204_WrongTargetMemberKind.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
         }
 
         [Fact]
@@ -146,7 +146,7 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
         }
 
         [Fact]
@@ -164,7 +164,7 @@ class Parent
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
         }
 
         [Fact]
@@ -195,7 +195,7 @@ namespace N2
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0208_MemberConflict.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0208_MemberConflict.Id));
         }
 
         [Fact]
@@ -213,7 +213,7 @@ class Target
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0202_MemberMustBePartial.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0202_MemberMustBePartial.Id));
         }
 
         [Fact]
@@ -227,7 +227,7 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0204_WrongTargetMemberKind.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
         }
 
         [Fact]
@@ -241,7 +241,7 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0204_WrongTargetMemberKind.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
         }
 
         [Fact]
@@ -259,7 +259,7 @@ class Other<T> where T : class
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0217_TypeParameterIsNotValid.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid.Id));
         }
 
         [Fact]
@@ -277,7 +277,7 @@ class Other<T, U, V> where T : class where U : struct where V : T
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0217_TypeParameterIsNotValid.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid.Id));
         }
 
         [Fact]
@@ -295,7 +295,7 @@ class Target<T, U>
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0217_TypeParameterIsNotValid.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid.Id));
         }
 
         [Fact]
@@ -314,7 +314,7 @@ $@"class Target
 {{
 }}
 ";
-            Assert.True(RunGeneratorWithDependency(input, external).HasFailedAndContainsDiagnosticIDs(DUR0205_ImplementationNotAccessible.Id));
+            Assert.True(RunGeneratorWithDependency(input, external).FailedAndContainsDiagnostics(DUR0205_ImplementationNotAccessible.Id));
         }
 
         [Fact]
@@ -333,7 +333,7 @@ $@"class Target
 {{
 }}
 ";
-            Assert.True(RunGeneratorWithDependency(input, external).HasFailedAndContainsDiagnosticIDs(DUR0205_ImplementationNotAccessible.Id));
+            Assert.True(RunGeneratorWithDependency(input, external).FailedAndContainsDiagnostics(DUR0205_ImplementationNotAccessible.Id));
         }
 
         [Fact]
@@ -347,7 +347,7 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0204_WrongTargetMemberKind.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
         }
 
         [Fact]
@@ -361,7 +361,7 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0204_WrongTargetMemberKind.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
         }
 
         [Fact]
@@ -375,7 +375,7 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0203_MemberCannotBeResolved.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
         }
 
         [Fact]
@@ -390,7 +390,7 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0203_MemberCannotBeResolved.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
         }
 
         [Fact]
@@ -404,7 +404,7 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0204_WrongTargetMemberKind.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
         }
 
         [Fact]
@@ -421,7 +421,7 @@ partial class Outer<T>
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0204_WrongTargetMemberKind.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
         }
 
         [Fact]
@@ -435,7 +435,7 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0203_MemberCannotBeResolved.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
         }
 
         [Fact]
@@ -1313,7 +1313,7 @@ class Target
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasSucceededAndContainsDiagnosticIDs(DUR0214_InvalidPatternAttributeSpecified.Id));
+            Assert.True(RunGenerator(input).SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified.Id));
         }
 
         [Fact]
@@ -1331,7 +1331,7 @@ class Target
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasSucceededAndContainsDiagnosticIDs(DUR0214_InvalidPatternAttributeSpecified.Id));
+            Assert.True(RunGenerator(input).SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified.Id));
         }
 
         [Fact]
@@ -1350,37 +1350,7 @@ class Target
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasSucceededAndContainsDiagnosticIDs(DUR0206_EquivalentAttributes.Id));
-        }
-
-        [Fact]
-        public void Warning_When_PatternIsRedundant()
-        {
-            string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{PatternAttributeProvider.TypeName}(""\w+"", """")]
-partial class Test
-{{
-}}
-";
-            Assert.True(RunGenerator(input).HasSucceededAndContainsDiagnosticIDs(DUR0215_RedundantPatternAttribute.Id));
-        }
-
-        [Fact]
-        public void Warning_When_SamePatternAlreadySpecified()
-        {
-            string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
-[{PatternAttributeProvider.TypeName}(""\w+"", """")]
-[{PatternAttributeProvider.TypeName}(""\w+"", ""xyz"")]
-partial class Test
-{{
-}}
-";
-            Assert.True(RunGenerator(input).HasSucceededAndContainsDiagnosticIDs(DUR0216_EquivalentPatternAttribute.Id));
+            Assert.True(RunGenerator(input).SucceededAndContainsDiagnostics(DUR0206_EquivalentAttributes.Id));
         }
 
         [Fact]
@@ -1399,7 +1369,7 @@ class Target
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasSucceededAndContainsDiagnosticIDs(DUR0206_EquivalentAttributes.Id));
+            Assert.True(RunGenerator(input).SucceededAndContainsDiagnostics(DUR0206_EquivalentAttributes.Id));
         }
 
         [Fact]

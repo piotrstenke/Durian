@@ -19,7 +19,7 @@
 2. [Setup](#setup)
 3. [Basics](#basics)
 4. [Member rules](#member-rules)
-    1. [Allowed members](#allowed-members]
+    1. [Allowed members](#allowed-members)
     2. [Accessibility](#accessibility)
     3. [Inner types](#inner-types)
 5. [Inheritance](#inheritance)

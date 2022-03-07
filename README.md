@@ -21,9 +21,22 @@
 
 **Durian is a collection of Roslyn-based analyzers, source generators and utility libraries that bring many extensions to C#, with heavy emphasis on features that can be found in other existing languages. It's main goal is to make C# easier and more pleasant to use through reducing necessary boilerplate code, while at the same time providing additional layers of flexibility.**
 
-## Current state
+## Table of Contents
 
-Durian is at an early stage of its evolution - many core features are still missing, being either in early development or planning phase. As for now, three fully-fledged modules are completed - *DefaultParam*, *InterfaceTargets* and *FriendClass*.
+1. [Current State](#current-state)
+2. [Features](#features)
+    1. [DefaultParam](#defaultparam)
+    2. [InterfaceTargets](#interfacetargets)
+    3. [FriendClass](#friendclass)
+3. [In Progress](#in-progress)
+   1. [CopyFrom](#copyfrom)
+4. [Experimental](#experimental) 
+   1. [ConstExpr](#constexpr)
+   2. [ConstParam](#constparam)
+
+## Current State
+
+Durian is at an early stage of its evolution - many core features are still missing, being either in early development or planning phase. As for now, three fully-fledged modules are ready - *DefaultParam*, *InterfaceTargets* and *FriendClass*.
 
 ## Features
 

@@ -5,6 +5,7 @@ using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
@@ -153,6 +154,23 @@ namespace Durian.Analysis.CopyFrom
             );
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        protected override IEnumerable<MethodDeclarationSyntax>? GetCandidateNodes(CopyFromSyntaxReceiver syntaxReceiver)
+        {
+            return syntaxReceiver.CandidateMethods;
+        }
+
+        /// <inheritdoc/>
+        protected override CopyFromCompilationData? CreateCompilation(in GeneratorExecutionContext context)
+        {
+            if (context.Compilation is not CSharpCompilation compilation)
+            {
+                return null;
+            }
+
+            return new CopyFromCompilationData(compilation);
         }
 
         IEnumerable<IMemberData> ICachedGeneratorSyntaxFilter<ICopyFromMember>.Filtrate(in CachedGeneratorExecutionContext<ICopyFromMember> context)

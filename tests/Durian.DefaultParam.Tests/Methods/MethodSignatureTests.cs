@@ -25,7 +25,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
         }
 
         [Fact]
@@ -45,7 +45,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
         }
 
         [Fact]
@@ -65,7 +65,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
         }
 
         [Fact]
@@ -86,7 +86,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
         }
 
         [Fact]
@@ -106,7 +106,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
         }
 
         [Fact]
@@ -126,7 +126,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
         }
 
         [Fact]
@@ -149,7 +149,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.False(RunGenerator(input).ContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+            Assert.False(RunGenerator(input).ContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
         }
 
         [Fact]
@@ -165,7 +165,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.False(RunGenerator(input).ContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+            Assert.False(RunGenerator(input).ContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
         }
 
         [Fact]
@@ -188,7 +188,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.False(RunGenerator(input).ContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+            Assert.False(RunGenerator(input).ContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
         }
     }
 }

@@ -259,7 +259,7 @@ partial class Test : Parent
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
         }
 
         [Fact]
@@ -281,7 +281,7 @@ partial class Test : Parent
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
         }
 
         [Fact]
@@ -303,7 +303,7 @@ partial class Test : Parent
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>(T value);
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
         }
 
         [Fact]
@@ -327,7 +327,7 @@ partial class Test : Parent
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
         }
 
         [Fact]
@@ -348,7 +348,7 @@ partial class Test
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
         }
 
         [Fact]
@@ -370,7 +370,7 @@ partial interface IChild : IParent
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
         }
 
         [Fact]
@@ -392,7 +392,7 @@ partial class Test : Parent
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
         }
 
         [Fact]
@@ -411,7 +411,7 @@ partial class Test
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
         }
 
         [Fact]
@@ -426,7 +426,7 @@ class Del
 
 delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T>(T value);
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
         }
 
         [Fact]

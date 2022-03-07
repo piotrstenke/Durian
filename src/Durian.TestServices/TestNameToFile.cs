@@ -86,7 +86,7 @@ namespace Durian.TestServices
         }
 
         /// <inheritdoc/>
-        public string GetFileName()
+        public string GetHintName()
         {
             return _current;
         }
@@ -107,9 +107,9 @@ namespace Durian.TestServices
             _current = $"{_testName}_{_counter}";
         }
 
-        string IHintNameProvider.GetFileName(ISymbol symbol)
+        string IHintNameProvider.GetHintName(ISymbol symbol)
         {
-            return GetFileName();
+            return GetHintName();
         }
     }
 }

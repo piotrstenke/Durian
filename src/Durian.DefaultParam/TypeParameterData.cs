@@ -243,7 +243,7 @@ namespace Durian.Analysis.DefaultParam
             }
             else
             {
-                AttributeData? attrData = symbol.GetAttribute(attrSyntax, cancellationToken);
+                AttributeData? attrData = symbol.GetAttribute(attrSyntax);
 
                 if (attrData is null || attrData.ConstructorArguments.Length == 0)
                 {

@@ -21,7 +21,12 @@ namespace Durian.Analysis.CopyFrom
         /// <summary>
         /// Name of the 'Order' property.
         /// </summary>
-        public const string Order = CopyFromMethodAttributeProvider.Order;
+        public const string Order = "Order";
+
+        /// <summary>
+        /// Name of the 'PartialPart' property.
+        /// </summary>
+        public const string PartialPart = "PartialPart";
 
         /// <summary>
         /// Name of the 'Source' property.
@@ -76,6 +81,16 @@ namespace {Namespace}
 	public sealed class {TypeName} : Attribute
 	{{
 		/// <summary>
+		/// Partial part of the source type to copy the implementation from.
+		/// </summary>
+        public string? {PartialPart} {{ get; set; }}
+
+		/// <summary>
+		/// Order in which multiple <see cref=""{TypeName}""/>s are applied.
+		/// </summary>
+		public int {Order} {{ get; set; }}
+
+		/// <summary>
 		/// Source of the copied implementation.
 		/// </summary>
 		public string? {Source} {{ get; }}
@@ -84,11 +99,6 @@ namespace {Namespace}
 		/// Source type of the copied implementation.
 		/// </summary>
 		public Type? {SourceType} {{ get; }}
-
-		/// <summary>
-		/// Order in which multiple <see cref=""{TypeName}""/>s are applied.
-		/// </summary>
-		public int {Order} {{ get; set; }}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref=""{TypeName}""/>.

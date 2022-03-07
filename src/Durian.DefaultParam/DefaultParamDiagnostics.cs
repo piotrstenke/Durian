@@ -13,7 +13,7 @@ namespace Durian.Analysis.DefaultParam
     public static class DefaultParamDiagnostics
     {
         /// <summary>
-        /// Provides diagnostic message indicating that a containing type of a member marked with the <c>Durian.DefaultParamAttribute</c> must be <see langword="partial"/>.
+        /// Provides a diagnostic message indicating that a containing type of a member marked with the <c>Durian.DefaultParamAttribute</c> must be <see langword="partial"/>.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0101_ContainingTypeMustBePartial = new(
             id: "DUR0101",
@@ -26,7 +26,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a method with the <c>Durian.DefaultParamAttribute</c> cannot be <see langword="partial"/> or <see langword="extern"/>.
+        /// Provides a diagnostic message indicating that a method with the <c>Durian.DefaultParamAttribute</c> cannot be <see langword="partial"/> or <see langword="extern"/>.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0102_MethodCannotBePartialOrExtern = new(
             id: "DUR0102",
@@ -39,7 +39,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a method with the <c>Durian.DefaultParamAttribute</c> is not valid on this type of method.
+        /// Provides a diagnostic message indicating that a method with the <c>Durian.DefaultParamAttribute</c> is not valid on this type of method.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod = new(
             id: "DUR0103",
@@ -52,7 +52,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a method with the <c>Durian.DefaultParamAttribute</c> cannot be applied to members with the <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/> or <see cref="DurianGeneratedAttribute"/>.
+        /// Provides a diagnostic message indicating that a method with the <c>Durian.DefaultParamAttribute</c> cannot be applied to members with the <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/> or <see cref="DurianGeneratedAttribute"/>.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent = new(
             id: "DUR0104",
@@ -65,7 +65,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a method with the <c>Durian.DefaultParamAttribute</c> must be placed on the right-most type parameter or right to the left-most DefaultParam type parameter.
+        /// Provides a diagnostic message indicating that a method with the <c>Durian.DefaultParamAttribute</c> must be placed on the right-most type parameter or right to the left-most DefaultParam type parameter.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0105_DefaultParamMustBeLast = new(
             id: "DUR0105",
@@ -78,7 +78,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the value of DefaultParamAttribute does not satisfy the type constraint.
+        /// Provides a diagnostic message indicating that the value of DefaultParamAttribute does not satisfy the type constraint.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0106_TargetTypeDoesNotSatisfyConstraint = new(
             id: "DUR0106",
@@ -91,7 +91,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the user should not override methods generated using the <c>Durian.DefaultParamAttribute</c>.
+        /// Provides a diagnostic message indicating that the user should not override methods generated using the <c>Durian.DefaultParamAttribute</c>.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0107_DoNotOverrideGeneratedMethods = new(
             id: "DUR0107",
@@ -104,7 +104,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that value of <c>Durian.DefaultParamAttribute</c> of overriding method must match the base method.
+        /// Provides a diagnostic message indicating that value of <c>Durian.DefaultParamAttribute</c> of overriding method must match the base method.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase = new(
             id: "DUR0108",
@@ -117,7 +117,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the user should not add the <c>Durian.DefaultParamAttribute</c> on overridden type parameters that are not DefaultParam.
+        /// Provides a diagnostic message indicating that the user should not add the <c>Durian.DefaultParamAttribute</c> on overridden type parameters that are not DefaultParam.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters = new(
             id: "DUR0109",
@@ -130,7 +130,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the <c>Durian.DefaultParamAttribute</c> of overridden type parameter should be added for clarity.
+        /// Provides a diagnostic message indicating that the <c>Durian.DefaultParamAttribute</c> of overridden type parameter should be added for clarity.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity = new(
             id: "DUR0110",
@@ -143,7 +143,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c>  is not valid on members without the <c>Durian.DefaultParamAttribute</c>.
+        /// Provides a diagnostic message indicating that the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c>  is not valid on members without the <c>Durian.DefaultParamAttribute</c>.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute = new(
             id: "DUR0111",
@@ -156,7 +156,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the <c>Durian.Configuration.DefaultParamConfigurationAttribute.TypeConvention</c> should not be used on members other than types.
+        /// Provides a diagnostic message indicating that the <c>Durian.Configuration.DefaultParamConfigurationAttribute.TypeConvention</c> should not be used on members other than types.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes = new(
             id: "DUR0112",
@@ -169,7 +169,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the <c>Durian.Configuration.DefaultParamConfigurationAttribute.MethodConvention</c> should not be used on members other than methods.
+        /// Provides a diagnostic message indicating that the <c>Durian.Configuration.DefaultParamConfigurationAttribute.MethodConvention</c> should not be used on members other than methods.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods = new(
             id: "DUR0113",
@@ -182,7 +182,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a method generated using the <c>Durian.DefaultParamAttribute</c> already exists.
+        /// Provides a diagnostic message indicating that a method generated using the <c>Durian.DefaultParamAttribute</c> already exists.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0114_MethodWithSignatureAlreadyExists = new(
             id: "DUR0114",
@@ -195,7 +195,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a method with the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c> is not valid on this type method.
+        /// Provides a diagnostic message indicating that a method with the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c> is not valid on this type method.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod = new(
             id: "DUR0115",
@@ -208,7 +208,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a member with name the same as the one generated using the <c>Durian.DefaultParamAttribute</c> already exists.
+        /// Provides a diagnostic message indicating that a member with name the same as the one generated using the <c>Durian.DefaultParamAttribute</c> already exists.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0116_MemberWithNameAlreadyExists = new(
             id: "DUR0116",
@@ -221,7 +221,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that <see cref="TypeConvention.Inherit"/> cannot be used on a struct or a <see langword="sealed"/> type.
+        /// Provides a diagnostic message indicating that <see cref="TypeConvention.Inherit"/> cannot be used on a struct or a <see langword="sealed"/> type.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType = new(
             id: "DUR0117",
@@ -234,7 +234,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that <see cref="TypeConvention.Copy"/> or <see cref="TypeConvention.Default"/> should be applied for the struct/sealed type.
+        /// Provides a diagnostic message indicating that <see cref="TypeConvention.Copy"/> or <see cref="TypeConvention.Default"/> should be applied for the struct/sealed type.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor = new(
             id: "DUR0118",
@@ -248,7 +248,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that value of <c>Durian.DefaultParamAttribute</c> cannot be less accessible than the target member.
+        /// Provides a diagnostic message indicating that value of <c>Durian.DefaultParamAttribute</c> cannot be less accessible than the target member.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember = new(
             id: "DUR0119",
@@ -261,7 +261,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the target type is invalid <c>Durian.DefaultParamAttribute</c> value when there is a type parameter constrained to the target type parameter.
+        /// Provides a diagnostic message indicating that the target type is invalid <c>Durian.DefaultParamAttribute</c> value when there is a type parameter constrained to the target type parameter.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0120_TypeCannotBeUsedWithConstraint = new(
             id: "DUR0120",
@@ -274,7 +274,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the target type is invalid <c>Durian.DefaultParamAttribute</c> value.
+        /// Provides a diagnostic message indicating that the target type is invalid <c>Durian.DefaultParamAttribute</c> value.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0121_TypeIsNotValidDefaultParamValue = new(
             id: "DUR0121",
@@ -287,7 +287,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a <c>Durian.DefaultParamAttribute</c> cannot be used on a <see langword="partial"/> type.
+        /// Provides a diagnostic message indicating that a <c>Durian.DefaultParamAttribute</c> cannot be used on a <see langword="partial"/> type.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0122_DoNotUseDefaultParamOnPartialType = new(
             id: "DUR0122",
@@ -300,7 +300,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the <see cref="TypeConvention.Inherit"/> cannot be used on a type without accessible constructor.
+        /// Provides a diagnostic message indicating that the <see cref="TypeConvention.Inherit"/> cannot be used on a type without accessible constructor.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor = new(
             id: "DUR0123",
@@ -313,7 +313,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the <c>Durian.Configuration.DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible</c> should not be used when target is not a child type.
+        /// Provides a diagnostic message indicating that the <c>Durian.Configuration.DefaultParamConfigurationAttribute.ApplyNewModifierWhenPossible</c> should not be used when target is not a child type.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType = new(
             id: "DUR0124",
@@ -326,7 +326,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> should not be used on types with no DefaultParam members
+        /// Provides a diagnostic message indicating that the <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> should not be used on types with no DefaultParam members
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers = new(
             id: "DUR0125",
@@ -339,7 +339,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that members with the <c>Durian.DefaultParamAttribute</c> cannot be nested within other DefaultParam members.
+        /// Provides a diagnostic message indicating that members with the <c>Durian.DefaultParamAttribute</c> cannot be nested within other DefaultParam members.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0126_DefaultParamMembersCannotBeNested = new(
             id: "DUR0126",
@@ -352,7 +352,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the specified <c>Durian.Configuration.DefaultParamConfigurationAttribute.TargetNamespace</c> or <c>Durian.Configuration.DefaultParamConfigurationAttribute.TargetNamespace</c> is not a valid identifier.
+        /// Provides a diagnostic message indicating that the specified <c>Durian.Configuration.DefaultParamConfigurationAttribute.TargetNamespace</c> or <c>Durian.Configuration.DefaultParamConfigurationAttribute.TargetNamespace</c> is not a valid identifier.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0127_InvalidTargetNamespace = new(
             id: "DUR0127",
@@ -365,7 +365,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the user should not specify target namespace for a nested member.
+        /// Provides a diagnostic message indicating that the user should not specify target namespace for a nested member.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0128_DoNotSpecifyTargetNamespaceForNestedMembers = new(
             id: "DUR0128",
@@ -378,7 +378,7 @@ namespace Durian.Analysis.DefaultParam
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the namespace specified in the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c> or <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> already contains member with the generated name.
+        /// Provides a diagnostic message indicating that the namespace specified in the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c> or <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> already contains member with the generated name.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0129_TargetNamespaceAlreadyContainsMemberWithName = new(
             id: "DUR0129",

@@ -21,7 +21,7 @@ partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 }}
 ";
 
-            Assert.True(RunGenerator(input, 1).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested.Id));
+            Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested.Id));
         }
 
         [Fact]
@@ -35,7 +35,7 @@ class Test
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>();
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
         }
 
         [Fact]
@@ -49,7 +49,7 @@ partial class Test
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>() where T : class;
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
         }
 
         [Fact]
@@ -63,7 +63,7 @@ partial class Test
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T, U>();
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
         }
 
         [Fact]
@@ -78,7 +78,7 @@ partial class Test
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>();
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
         }
 
         [Fact]
@@ -93,7 +93,7 @@ partial class Test
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>();
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace N1
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace N1
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
         }
 
         [Fact]
@@ -157,7 +157,7 @@ namespace N1
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
         }
 
         [Fact]
@@ -174,7 +174,7 @@ class Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
         }
 
         [Fact]
@@ -188,7 +188,7 @@ partial class Test
 	delegate void Del<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T, [{DefaultParamAttributeProvider.TypeName}(typeof(string))]>() where T : class where U : class;
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
         }
 
         [Fact]
@@ -203,7 +203,7 @@ partial class Test
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
         }
     }
 }

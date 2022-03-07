@@ -191,7 +191,7 @@ namespace Durian.Analysis
         /// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
         protected internal void GenerateFromData(IMemberData data, in GeneratorExecutionContext context)
         {
-            string name = FileNameProvider.GetFileName(data.Symbol);
+            string name = FileNameProvider.GetHintName(data.Symbol);
 
             if (Generate(data, name, in context))
             {

@@ -22,7 +22,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_TypeCannotBeUsedWithConstraint.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
         }
 
         [Fact]
@@ -39,7 +39,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_TypeCannotBeUsedWithConstraint.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
         }
 
         [Fact]
@@ -55,7 +55,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
         }
 
         [Fact]
@@ -75,7 +75,7 @@ public partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
         }
 
         [Fact]
@@ -95,7 +95,7 @@ public partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
         }
 
         [Fact]
@@ -115,7 +115,7 @@ public partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
         }
 
         [Fact]
@@ -135,7 +135,7 @@ public partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
         }
 
         [Fact]
@@ -152,7 +152,7 @@ partial class Test
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
         }
 
         [Fact]
@@ -168,7 +168,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_TypeCannotBeUsedWithConstraint.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
         }
 
         [Fact]
@@ -184,7 +184,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
         }
 
         [Fact]
@@ -200,7 +200,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
         }
 
         [Fact]
@@ -216,7 +216,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
         }
 
         [Fact]
@@ -232,7 +232,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_TypeCannotBeUsedWithConstraint.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
         }
 
         [Fact]
@@ -248,7 +248,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0120_TypeCannotBeUsedWithConstraint.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
         }
 
         [Fact]
@@ -265,7 +265,7 @@ partial class Test
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
         }
 
         [Fact]
@@ -281,7 +281,7 @@ partial class Test
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
         }
 
         [Fact]
@@ -298,7 +298,7 @@ partial class Test
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
         }
     }
 }

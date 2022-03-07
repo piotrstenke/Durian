@@ -110,7 +110,7 @@ namespace Durian.Analysis.DefaultParam
                     continue;
                 }
 
-                string fileName = HintNameProvider.GetFileName(symbol);
+                string fileName = HintNameProvider.GetHintName(symbol);
                 DiagnosticReceiver.SetTargetNode(node, fileName);
                 bool isValid = Filter.ValidateAndCreate(node, Compilation, semanticModel, symbol, in typeParameters, out IDefaultParamTarget? target, DiagnosticReceiver, cancellationToken);
 

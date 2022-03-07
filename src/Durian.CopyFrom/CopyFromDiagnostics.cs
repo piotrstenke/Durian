@@ -12,7 +12,7 @@ namespace Durian.Analysis.CopyFrom
     public static class CopyFromDiagnostics
     {
         /// <summary>
-        /// Provides diagnostic message indicating that a containing type of a member marked with the <c>Durian.CopyFromTypeAttribute</c> or <c>Durian.CopyFromMethodAttribute</c> must be <see langword="partial"/>.
+        /// Provides a diagnostic message indicating that a containing type of a member marked with the <c>Durian.CopyFromTypeAttribute</c> or <c>Durian.CopyFromMethodAttribute</c> must be <see langword="partial"/>.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0201_ContainingTypeMustBePartial = new(
             id: "DUR0201",
@@ -25,7 +25,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a member marked with the <c>Durian.CopyFromTypeAttribute</c> or <c>Durian.CopyFromMethodAttribute</c> must be <see langword="partial"/>.
+        /// Provides a diagnostic message indicating that a member marked with the <c>Durian.CopyFromTypeAttribute</c> or <c>Durian.CopyFromMethodAttribute</c> must be <see langword="partial"/>.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0202_MemberMustBePartial = new(
             id: "DUR0202",
@@ -38,7 +38,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the value of <c>Durian.CopyFromTypeAttribute.Source</c> or <c>Durian.CopyFromMethodAttribute.Source</c> property cannot be resolved.
+        /// Provides a diagnostic message indicating that the value of <c>Durian.CopyFromTypeAttribute.Source</c> or <c>Durian.CopyFromMethodAttribute.Source</c> property cannot be resolved.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0203_MemberCannotBeResolved = new(
             id: "DUR0203",
@@ -51,7 +51,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a member resolved from the value of <c>Durian.CopyFromTypeAttribute.Source</c> or <c>Durian.CopyFromMethodAttribute.Source</c> property is not compatible with the current member kind.
+        /// Provides a diagnostic message indicating that a member resolved from the value of <c>Durian.CopyFromTypeAttribute.Source</c> or <c>Durian.CopyFromMethodAttribute.Source</c> property is not compatible with the current member kind.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0204_WrongTargetMemberKind = new(
             id: "DUR0204",
@@ -64,7 +64,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the target implementation is not accessible.
+        /// Provides a diagnostic message indicating that the target implementation is not accessible.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0205_ImplementationNotAccessible = new(
             id: "DUR0205",
@@ -77,7 +77,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that two <c>Durian.CopyFromTypeAttribute</c>s are equivalent.
+        /// Provides a diagnostic message indicating that two <c>Durian.CopyFromTypeAttribute</c>s are equivalent.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0206_EquivalentAttributes = new(
             id: "DUR0206",
@@ -90,7 +90,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a member cannot specify itself or its parent as an argument for either the <c>Durian.CopyFromTypeAttribute</c> or <c>Durian.CopyFromMethodAttribute</c>.
+        /// Provides a diagnostic message indicating that a member cannot specify itself or its parent as an argument for either the <c>Durian.CopyFromTypeAttribute</c> or <c>Durian.CopyFromMethodAttribute</c>.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0207_MemberCannotCopyFromItselfOrItsParent = new(
             id: "DUR0207",
@@ -103,7 +103,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a two or more members were resolved using the specified name.
+        /// Provides a diagnostic message indicating that a two or more members were resolved using the specified name.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0208_MemberConflict = new(
             id: "DUR0208",
@@ -116,7 +116,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that only methods with implementation are valid targets of the <c>Durian.CopyFromMethodAttribute</c>.
+        /// Provides a diagnostic message indicating that only methods with implementation are valid targets of the <c>Durian.CopyFromMethodAttribute</c>.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0209_CannotCopyFromMethodWithoutImplementation = new(
             id: "DUR0209",
@@ -129,7 +129,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a <c>Durian.CopyFromMethodAttribute</c> was specified on an invalid method kind.
+        /// Provides a diagnostic message indicating that a <c>Durian.CopyFromMethodAttribute</c> was specified on an invalid method kind.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0210_InvalidMethodKind = new(
             id: "DUR0210",
@@ -142,7 +142,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a method marked with the <c>Durian.CopyFromMethodAttribute</c> already has a declaration.
+        /// Provides a diagnostic message indicating that a method marked with the <c>Durian.CopyFromMethodAttribute</c> already has a declaration.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0211_MethodAlreadyHasImplementation = new(
             id: "DUR0211",
@@ -155,7 +155,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a target member does not have a return type.
+        /// Provides a diagnostic message indicating that a target member does not have a return type.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0212_TargetDoesNotHaveReturnType = new(
             id: "DUR0212",
@@ -168,7 +168,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a target member cannot have a return type.
+        /// Provides a diagnostic message indicating that a target member cannot have a return type.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0213_TargetCannotHaveReturnType = new(
             id: "DUR0213",
@@ -181,7 +181,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a specified <c>Durian.PatternAttribute</c> has invalid values.
+        /// Provides a diagnostic message indicating that a specified <c>Durian.PatternAttribute</c> has invalid values.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0214_InvalidPatternAttributeSpecified = new(
             id: "DUR0214",
@@ -194,7 +194,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a <c>Durian.PatternAttribute</c> is redundant.
+        /// Provides a diagnostic message indicating that a <c>Durian.PatternAttribute</c> is redundant.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0215_RedundantPatternAttribute = new(
             id: "DUR0215",
@@ -207,7 +207,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that two <c>Durian.PatternAttribute</c>s are equivalent.
+        /// Provides a diagnostic message indicating that two <c>Durian.PatternAttribute</c>s are equivalent.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0216_EquivalentPatternAttribute = new(
             id: "DUR0216",
@@ -220,7 +220,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that two <c>Durian.PatternAttribute</c>s are equivalent.
+        /// Provides a diagnostic message indicating that two <c>Durian.PatternAttribute</c>s are equivalent.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0217_TypeParameterIsNotValid = new(
             id: "DUR0217",

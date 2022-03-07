@@ -34,7 +34,7 @@ namespace Durian.Analysis.Extensions
         /// <paramref name="syntaxNode"/> is <see langword="null"/>.
         /// <paramref name="attrSymbol"/> is <see langword="null"/>.
         /// </exception>
-        public static IEnumerable<AttributeSyntax> GetAllAttributesOfType(this SemanticModel semanticModel, MemberDeclarationSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
+        public static IEnumerable<AttributeSyntax> GetAttributes(this SemanticModel semanticModel, MemberDeclarationSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
         {
             ValidateGetAttributesParameters(semanticModel, syntaxNode, attrSymbol);
             return GetAllAttributes_Internal(semanticModel, attrSymbol, () => syntaxNode.AttributeLists, cancellationToken);
@@ -55,7 +55,7 @@ namespace Durian.Analysis.Extensions
         /// <paramref name="syntaxNode"/> is <see langword="null"/>.
         /// <paramref name="attrSymbol"/> is <see langword="null"/>.
         /// </exception>
-        public static IEnumerable<AttributeSyntax> GetAllAttributesOfType(this SemanticModel semanticModel, TypeParameterSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
+        public static IEnumerable<AttributeSyntax> GetAttributes(this SemanticModel semanticModel, TypeParameterSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
         {
             ValidateGetAttributesParameters(semanticModel, syntaxNode, attrSymbol);
             return GetAllAttributes_Internal(semanticModel, attrSymbol, () => syntaxNode.AttributeLists, cancellationToken);
@@ -76,7 +76,7 @@ namespace Durian.Analysis.Extensions
         /// <paramref name="syntaxNode"/> is <see langword="null"/>.
         /// <paramref name="attrSymbol"/> is <see langword="null"/>.
         /// </exception>
-        public static IEnumerable<AttributeSyntax> GetAllAttributesOfType(this SemanticModel semanticModel, ParameterSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
+        public static IEnumerable<AttributeSyntax> GetAttributes(this SemanticModel semanticModel, ParameterSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
         {
             ValidateGetAttributesParameters(semanticModel, syntaxNode, attrSymbol);
             return GetAllAttributes_Internal(semanticModel, attrSymbol, () => syntaxNode.AttributeLists, cancellationToken);

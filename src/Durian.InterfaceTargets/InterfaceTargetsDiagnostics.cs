@@ -12,7 +12,7 @@ namespace Durian.Analysis.InterfaceTargets
     public static class InterfaceTargetsDiagnostics
     {
         /// <summary>
-        /// Provides diagnostic message indicating that the target interface cannot be implemented by members of specified kind.
+        /// Provides a diagnostic message indicating that the target interface cannot be implemented by members of specified kind.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind = new(
             id: "DUR0401",
@@ -25,7 +25,7 @@ namespace Durian.Analysis.InterfaceTargets
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the target interface cannot be a base of another interface.
+        /// Provides a diagnostic message indicating that the target interface cannot be a base of another interface.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0402_InterfaceCannotBeBaseOfAnotherInterface = new(
             id: "DUR0402",
@@ -38,7 +38,7 @@ namespace Durian.Analysis.InterfaceTargets
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the target interface is not accessible directly in code.
+        /// Provides a diagnostic message indicating that the target interface is not accessible directly in code.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0403_InterfaceIsNotDirectlyAccessible = new(
             id: "DUR0403",

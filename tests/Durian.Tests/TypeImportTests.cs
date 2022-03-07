@@ -12,6 +12,8 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Xunit;
 
+using static Durian.Analysis.DurianDiagnostics;
+
 namespace Durian.Tests
 {
     public sealed class TypeImportTests
@@ -27,7 +29,7 @@ $@"namespace Durian.Generator
 	}}
 }}
 ";
-            Assert.Contains(await RunAnalyzer(new CustomTypesInGeneratorNamespaceAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0005_DoNotAddTypesToGeneratorNamespace.Id);
+            Assert.Contains(await RunAnalyzer(new CustomTypesInGeneratorNamespaceAnalyzer(), input), d => d.Id == DUR0005_DoNotAddTypesToGeneratorNamespace.Id);
         }
 
         [Fact]
@@ -41,7 +43,7 @@ class Test
 {{
 }}
 ";
-            Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
+            Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
         }
 
         [Fact]
@@ -55,7 +57,7 @@ class Test
 {{
 }}
 ";
-            Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
+            Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
         }
 
         [Fact]
@@ -67,7 +69,7 @@ class Test
 {{
 }}
 ";
-            Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
+            Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
         }
 
         [Fact]
@@ -85,7 +87,7 @@ class Test
 	}}
 }}
 ";
-            Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DurianDiagnostics.DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
+            Assert.Contains(await RunAnalyzer(new TypeImportAnalyzer(), input), d => d.Id == DUR0003_DoNotUseTypeFromDurianGeneratorNamespace.Id);
         }
 
         [Fact]

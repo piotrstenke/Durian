@@ -151,7 +151,7 @@ namespace Durian.Analysis.Cache
                     continue;
                 }
 
-                string fileName = HintNameProvider.GetFileName(symbol);
+                string fileName = HintNameProvider.GetHintName(symbol);
                 LogReceiver.SetTargetNode(node, fileName);
                 bool isValid = Validator.ValidateAndCreate(node, Compilation, semanticModel, symbol, out data, LogReceiver, cancellationToken);
 

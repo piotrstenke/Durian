@@ -12,11 +12,11 @@ namespace Durian.Analysis.Logging
     public interface IHintNameProvider
     {
         /// <summary>
-        /// Returns a name of the log file for the specified <paramref name="symbol"/>.
+        /// Returns a hint name for the specified <paramref name="symbol"/>.
         /// </summary>
-        /// <param name="symbol"><see cref="ISymbol"/> to get the file name for.</param>
+        /// <param name="symbol"><see cref="ISymbol"/> to get the hint name for.</param>
         /// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-        string GetFileName(ISymbol symbol);
+        string GetHintName(ISymbol symbol);
 
         /// <summary>
         /// Resets the <see cref="IHintNameProvider"/> to its original state.

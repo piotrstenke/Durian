@@ -133,10 +133,9 @@ namespace Durian.Analysis.Extensions
         /// </summary>
         /// <param name="symbol">Target <see cref="ISymbol"/>.</param>
         /// <param name="syntax"><see cref="AttributeSyntax"/> to get the data of.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
         /// <returns>The <see cref="AttributeData"/> associated with the <paramref name="syntax"/>. -or- <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="syntax"/> is <see langword="null"/>.</exception>
-        public static AttributeData? GetAttribute(this ISymbol symbol, AttributeSyntax syntax, CancellationToken cancellationToken = default)
+        public static AttributeData? GetAttribute(this ISymbol symbol, AttributeSyntax syntax)
         {
             if (symbol is null)
             {
@@ -157,7 +156,7 @@ namespace Durian.Analysis.Extensions
                     continue;
                 }
 
-                if (reference.GetSyntax(cancellationToken).IsEquivalentTo(syntax))
+                if (reference.Span == syntax.Span)
                 {
                     return attr;
                 }

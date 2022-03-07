@@ -535,7 +535,7 @@ class Test
 }}
 ";
             SingletonGeneratorTestResult result = RunGenerator(input);
-            Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
+            Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
             Assert.True(result.Compare(expected));
         }
 
@@ -560,7 +560,7 @@ sealed class Test
 }}
 ";
             SingletonGeneratorTestResult result = RunGenerator(input);
-            Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
+            Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
             Assert.True(result.Compare(expected));
         }
 
@@ -585,7 +585,7 @@ static class Test
 }}
 ";
             SingletonGeneratorTestResult result = RunGenerator(input);
-            Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
+            Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
             Assert.True(result.Compare(expected));
         }
 
@@ -610,7 +610,7 @@ struct Test
 }}
 ";
             SingletonGeneratorTestResult result = RunGenerator(input);
-            Assert.True(result.HasSucceededAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
+            Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
             Assert.True(result.Compare(expected));
         }
     }

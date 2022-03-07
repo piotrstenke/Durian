@@ -12,7 +12,7 @@ namespace Durian.Analysis
     public static class DurianDiagnostics
     {
         /// <summary>
-        /// Provides diagnostic message indicating that the target project must reference the
+        /// Provides a diagnostic message indicating that the target project must reference the
         /// <c>Durian.Core</c> package.
         /// </summary>
         [WithoutLocation]
@@ -27,7 +27,7 @@ namespace Durian.Analysis
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the target type cannot be accessed, because
+        /// Provides a diagnostic message indicating that the target type cannot be accessed, because
         /// its module is not imported.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0002_ModuleOfTypeIsNotImported = new(
@@ -41,7 +41,7 @@ namespace Durian.Analysis
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the user should not use types from the
+        /// Provides a diagnostic message indicating that the user should not use types from the
         /// Durian.Generator namespace.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0003_DoNotUseTypeFromDurianGeneratorNamespace = new(
@@ -55,7 +55,7 @@ namespace Durian.Analysis
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that Durian modules can be used only in C#.
+        /// Provides a diagnostic message indicating that Durian modules can be used only in C#.
         /// </summary>
         [WithoutLocation]
         public static readonly DiagnosticDescriptor DUR0004_DurianModulesAreValidOnlyInCSharp = new(
@@ -69,7 +69,7 @@ namespace Durian.Analysis
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that Durian modules can be used only in CSharp.
+        /// Provides a diagnostic message indicating that Durian modules can be used only in CSharp.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0005_DoNotAddTypesToGeneratorNamespace = new(
             id: "DUR0005",
@@ -82,7 +82,20 @@ namespace Durian.Analysis
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that a Durian package containing analyzers should not be referenced if the main Durian package is present.
+        /// Provides a diagnostic message indicating that the <see cref="PartialNameAttribute"/> should be applied to a partial type.
+        /// </summary>
+        public static readonly DiagnosticDescriptor DUR0006_PartialNameAttributeNotOnPartial = new(
+           id: "DUR0006",
+           title: "PartialNameAttribute should be applied to a partial type",
+           messageFormat: "'{0}': PartialNameAttribute should be applied to a partial type",
+           category: "Durian",
+           defaultSeverity: DiagnosticSeverity.Warning,
+           helpLinkUri: DocsPath + "/DUR0006.md",
+           isEnabledByDefault: true
+       );
+
+        /// <summary>
+        /// Provides a diagnostic message indicating that a Durian package containing analyzers should not be referenced if the main Durian package is present.
         /// </summary>
         [WithoutLocation]
         public static readonly DiagnosticDescriptor DUR0007_DoNotReferencePackageIfManagerIsPresent = new(
@@ -96,7 +109,7 @@ namespace Durian.Analysis
         );
 
         /// <summary>
-        /// Provides diagnostic message indicating that the project references multiple Durian analyzers, and should reference the main Durian package instead.
+        /// Provides a diagnostic message indicating that the project references multiple Durian analyzers, and should reference the main Durian package instead.
         /// </summary>
         [WithoutLocation]
         public static readonly DiagnosticDescriptor DUR0008_MultipleAnalyzers = new(
@@ -108,6 +121,19 @@ namespace Durian.Analysis
             helpLinkUri: DocsPath + "/DUR0008.md",
             isEnabledByDefault: true
         );
+
+        /// <summary>
+        /// Provides a diagnostic message indicating that the same <see cref="PartialNameAttribute"/> is applied to the type multiple times.
+        /// </summary>
+        public static readonly DiagnosticDescriptor DUR0009_DuplicatePartialPart = new(
+           id: "DUR0009",
+           title: "Type already has a PartialNameAttribute with same value",
+           messageFormat: "'{0}': Type already has a PartialNameAttribute with same value",
+           category: "Durian",
+           defaultSeverity: DiagnosticSeverity.Warning,
+           helpLinkUri: DocsPath + "/DUR0009.md",
+           isEnabledByDefault: true
+       );
 
         /// <summary>
         /// Documentation directory of the <c>Core</c> module.

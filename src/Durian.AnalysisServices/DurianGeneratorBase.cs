@@ -423,5 +423,40 @@ namespace Durian.Analysis
                 LogNode_Internal(syntaxTree.GetRoot(cancellationToken), hintName);
             }
         }
+
+        internal static IDiagnosticReceiver? GetDiagnosticReceiver(IDurianGenerator generator)
+        {
+            if (generator is DurianGeneratorBase durian && durian.DiagnosticReceiver is not null)
+            {
+                return durian.DiagnosticReceiver;
+            }
+
+            return null;
+        }
+
+        internal static INodeDiagnosticReceiver? GetLogReceiver(IDurianGenerator generator, bool includeDiagnostics)
+        {
+            if (includeDiagnostics)
+            {
+                if (generator is DurianGeneratorBase durian && durian.DiagnosticReceiver is not null)
+                {
+                    return LoggableDiagnosticReceiver.Factory.SourceGenerator(durian, durian.DiagnosticReceiver);
+                }
+            }
+            else
+            {
+                if (generator is DurianGeneratorBase durian)
+                {
+                    return durian.LogReceiver;
+                }
+
+                if (generator is ILoggableGenerator loggable)
+                {
+                    return LoggableDiagnosticReceiver.Factory.Basic(loggable);
+                }
+            }
+
+            return null;
+        }
     }
 }

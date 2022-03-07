@@ -20,6 +20,7 @@ namespace Durian.Analysis.CopyFrom
     public sealed class CopyFromGenerator : CachedGenerator<ICopyFromMember, CopyFromCompilationData, CopyFromSyntaxReceiver, ICopyFromFilter>
     {
         private FilterContainer<ICopyFromFilter>? _filters;
+        private const int _numStaticTrees = 4;
 
         /// <summary>
         /// Name of this source generator.
@@ -32,7 +33,7 @@ namespace Durian.Analysis.CopyFrom
         public static string Version => "1.0.0";
 
         /// <inheritdoc/>
-        public override int NumStaticTrees => 3;
+        public override int NumStaticTrees => _numStaticTrees;
 
         /// <inheritdoc cref="CopyFromGenerator(in ConstructionContext, IHintNameProvider?)"/>
         public CopyFromGenerator()
@@ -72,7 +73,7 @@ namespace Durian.Analysis.CopyFrom
         /// </summary>
         public static IEnumerable<ISourceTextProvider> GetSourceProviders()
         {
-            return new ISourceTextProvider[]
+            return new ISourceTextProvider[_numStaticTrees - 1]
             {
                 new CopyFromTypeAttributeProvider(),
                 new CopyFromMethodAttributeProvider(),

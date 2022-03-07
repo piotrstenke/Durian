@@ -75,11 +75,11 @@ namespace Durian.Analysis.DefaultParam
 
             if (symbol is INamedTypeSymbol t)
             {
-                AnalyzeType(t, compilation, syntax, diagnosticReceiver, context.CancellationToken);
+                AnalyzeType(t, compilation, syntax, diagnosticReceiver);
             }
             else if (symbol is IMethodSymbol m)
             {
-                AnalyzeMethod(m, compilation, syntax, diagnosticReceiver, context.CancellationToken);
+                AnalyzeMethod(m, compilation, syntax, diagnosticReceiver);
             }
             else
             {
@@ -87,7 +87,7 @@ namespace Durian.Analysis.DefaultParam
 
                 (AttributeArgumentSyntax syntax, string name)[] arguments = GetArguments(syntax);
 
-                ReportIfInvalidTargetNamespace(symbol, syntax, arguments, diagnosticReceiver, context.CancellationToken);
+                ReportIfInvalidTargetNamespace(symbol, syntax, arguments, diagnosticReceiver);
 
                 if (CheckArguments(arguments, DefaultParamConfigurationAttributeProvider.MethodConvention, out AttributeArgumentSyntax? arg))
                 {
@@ -105,8 +105,7 @@ namespace Durian.Analysis.DefaultParam
             IMethodSymbol method,
             DefaultParamCompilationData compilation,
             AttributeSyntax node,
-            DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver,
-            CancellationToken cancellationToken
+            DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver
         )
         {
             if (method.MethodKind != MethodKind.Ordinary || method.ContainingType.TypeKind == TypeKind.Interface)
@@ -142,7 +141,7 @@ namespace Durian.Analysis.DefaultParam
 
             (AttributeArgumentSyntax syntax, string name)[] arguments = GetArguments(node);
 
-            ReportIfInvalidTargetNamespace(method, node, arguments, diagnosticReceiver, cancellationToken);
+            ReportIfInvalidTargetNamespace(method, node, arguments, diagnosticReceiver);
 
             if (CheckArguments(arguments, DefaultParamConfigurationAttributeProvider.TypeConvention, out AttributeArgumentSyntax? arg))
             {
@@ -154,8 +153,7 @@ namespace Durian.Analysis.DefaultParam
             INamedTypeSymbol type,
             DefaultParamCompilationData compilation,
             AttributeSyntax node,
-            DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver,
-            CancellationToken cancellationToken
+            DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver
         )
         {
             if (!type.TypeParameters.Any(t => t.HasAttribute(compilation.DefaultParamAttribute!)))
@@ -170,7 +168,7 @@ namespace Durian.Analysis.DefaultParam
 
             (AttributeArgumentSyntax syntax, string name)[] arguments = GetArguments(node);
 
-            ReportIfInvalidTargetNamespace(type, node, arguments, diagnosticReceiver, cancellationToken);
+            ReportIfInvalidTargetNamespace(type, node, arguments, diagnosticReceiver);
 
             if (type.ContainingType is null && CheckArguments(arguments, DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible, out AttributeArgumentSyntax? arg))
             {
@@ -194,7 +192,7 @@ namespace Durian.Analysis.DefaultParam
             else if (type.TypeKind == TypeKind.Struct || type.IsSealed || type.IsStatic)
             {
                 if (CheckArguments(arguments, propertyName, out arg) &&
-                    type.GetAttribute(node, cancellationToken) is AttributeData attr &&
+                    type.GetAttribute(node) is AttributeData attr &&
                     attr.TryGetNamedArgumentValue(propertyName, out int value)
                 )
                 {
@@ -210,7 +208,7 @@ namespace Durian.Analysis.DefaultParam
             {
                 if (CheckArguments(arguments, propertyName, out arg) &&
                     !type.InstanceConstructors.Any(ctor => ctor.DeclaredAccessibility >= Accessibility.Protected) &&
-                    type.GetAttribute(node, cancellationToken) is AttributeData attr &&
+                    type.GetAttribute(node) is AttributeData attr &&
                     attr.TryGetNamedArgumentValue(propertyName, out int value)
                 )
                 {
@@ -260,14 +258,13 @@ namespace Durian.Analysis.DefaultParam
             ISymbol symbol,
             AttributeSyntax node,
             (AttributeArgumentSyntax, string)[] arguments,
-            DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver,
-            CancellationToken cancellationToken
+            DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver
         )
         {
             const string propertyName = DefaultParamConfigurationAttributeProvider.TargetNamespace;
 
             if (CheckArguments(arguments, propertyName, out AttributeArgumentSyntax? arg) &&
-                symbol.GetAttribute(node, cancellationToken) is AttributeData data &&
+                symbol.GetAttribute(node) is AttributeData data &&
                 data.TryGetNamedArgumentValue(propertyName, out string? value) &&
                 value is not null)
             {

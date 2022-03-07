@@ -75,7 +75,7 @@ namespace Durian.Analysis.Tests.SemanticModelExtensions
         public void ThrowsArgumentNullException_When_AttributeSymbolIsNull()
         {
             (TypeParameterSyntax parameter, SemanticModel semanticModel) = GetTypeParameter("class Test<[Test]T> { }");
-            Assert.Throws<ArgumentNullException>(() => semanticModel.GetAllAttributesOfType(parameter, null!));
+            Assert.Throws<ArgumentNullException>(() => semanticModel.GetAttributes(parameter, null!));
         }
 
         [Fact]
@@ -83,20 +83,20 @@ namespace Durian.Analysis.Tests.SemanticModelExtensions
         {
             TypeParameterSyntax parameter = GetNode<TypeParameterSyntax>("class Test<[Test]T> { }")!;
             SemanticModel? semanticModel = null;
-            Assert.Throws<ArgumentNullException>(() => semanticModel!.GetAllAttributesOfType(parameter, AttributeSymbol));
+            Assert.Throws<ArgumentNullException>(() => semanticModel!.GetAttributes(parameter, AttributeSymbol));
         }
 
         [Fact]
         public void ThrowsArgumentNullException_When_SyntaxNodelIsNull()
         {
             (_, SemanticModel semanticModel) = GetTypeParameter("class Test<[Test]T> { }");
-            Assert.Throws<ArgumentNullException>(() => semanticModel.GetAllAttributesOfType((TypeParameterSyntax)null!, AttributeSymbol));
+            Assert.Throws<ArgumentNullException>(() => semanticModel.GetAttributes((TypeParameterSyntax)null!, AttributeSymbol));
         }
 
         private AttributeSyntax[] Execute(string src)
         {
             (TypeParameterSyntax parameter, SemanticModel semanticModel) = GetTypeParameter(src);
-            return semanticModel.GetAllAttributesOfType(parameter, AttributeSymbol).ToArray();
+            return semanticModel.GetAttributes(parameter, AttributeSymbol).ToArray();
         }
 
         private (TypeParameterSyntax syntax, SemanticModel semanticModel) GetTypeParameter(string src)

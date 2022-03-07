@@ -227,16 +227,28 @@ namespace Durian.Analysis.Cache
             }
 
             /// <summary>
-            /// Returns a new <see cref="INodeDiagnosticReceiver"/> if it couldn't be created automatically.
+            /// Returns a <see cref="IDiagnosticReceiver"/> that will be used during enumeration of the filter when <see cref="Mode"/> is equal to <see cref="FilterMode.Diagnostics"/>.
             /// </summary>
-            /// <param name="includeDiagnostics">Determines whether diagnostics should be reported separately from log files.</param>
-            protected virtual INodeDiagnosticReceiver GetNodeDiagnosticReceiverFallback(bool includeDiagnostics)
+            protected virtual IDiagnosticReceiver GetDiagnosticReceiver()
             {
-                return new DiagnosticReceiver.Empty();
+                return DurianGeneratorBase.GetDiagnosticReceiver(Generator) ?? DiagnosticReceiver.Factory.Empty();
+            }
+
+            /// <summary>
+            /// Returns a <see cref="INodeDiagnosticReceiver"/> that will be used enumeration of the filter when <see cref="Mode"/> is equal to <see cref="FilterMode.Logs"/> or <see cref="FilterMode.Both"/>.
+            /// </summary>
+            /// <param name="includeDiagnostics">
+            /// Determines whether to include diagnostics other than log files.
+            /// <para>If <see cref="Mode"/> is equal to <see cref="FilterMode.Both"/>,
+            /// <paramref name="includeDiagnostics"/> is <see langword="true"/>, otherwise <see langword="false"/>.</para>
+            /// </param>
+            protected virtual INodeDiagnosticReceiver GetLogReceiver(bool includeDiagnostics)
+            {
+                return DurianGeneratorBase.GetLogReceiver(Generator, includeDiagnostics) ?? DiagnosticReceiver.Factory.Empty();
             }
 
             private IEnumerable<TData> Filtrate_Internal(
-                                                                                                                            TCompilation compilation,
+                TCompilation compilation,
                 IEnumerable<TSyntax> collectedNodes,
                 IDiagnosticReceiver diagnosticReceiver,
                 CancellationToken cancellationToken
@@ -254,41 +266,6 @@ namespace Durian.Analysis.Cache
                         yield return data;
                     }
                 }
-            }
-
-            private IDiagnosticReceiver GetDiagnosticReceiver()
-            {
-                if (Generator is DurianGeneratorBase durian)
-                {
-                    return durian.DiagnosticReceiver!;
-                }
-
-                return DiagnosticReceiver.Factory.SourceGenerator();
-            }
-
-            private INodeDiagnosticReceiver GetLogReceiver(bool includeDiagnostics)
-            {
-                if (includeDiagnostics)
-                {
-                    if (Generator is ILoggableGenerator loggable)
-                    {
-                        return LoggableDiagnosticReceiver.Factory.SourceGenerator(loggable);
-                    }
-                }
-                else
-                {
-                    if (Generator is DurianGeneratorBase durian)
-                    {
-                        return durian.LogReceiver;
-                    }
-
-                    if (Generator is ILoggableGenerator loggable)
-                    {
-                        return LoggableDiagnosticReceiver.Factory.Basic(loggable);
-                    }
-                }
-
-                return GetNodeDiagnosticReceiverFallback(includeDiagnostics);
             }
         }
 

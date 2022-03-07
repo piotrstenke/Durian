@@ -43,7 +43,7 @@ namespace Durian.Analysis.Logging
         }
 
         /// <inheritdoc/>
-        public string GetFileName(ISymbol symbol)
+        public string GetHintName(ISymbol symbol)
         {
             if (symbol is null)
             {

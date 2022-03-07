@@ -19,11 +19,6 @@ namespace Durian.Analysis.CopyFrom
         public const string Namespace = DurianStrings.MainNamespace;
 
         /// <summary>
-        /// Name of the 'Order' property.
-        /// </summary>
-        public const string Order = "Order";
-
-        /// <summary>
         /// Name of the 'Source' property.
         /// </summary>
         public const string Source = "Source";
@@ -74,11 +69,6 @@ namespace {Namespace}
 		/// Source of the copied implementation.
 		/// </summary>
 		public string? {Source} {{ get; }}
-
-		/// <summary>
-		/// Order in which multiple <see cref=""{TypeName}""/>s are applied.
-		/// </summary>
-		public int {Order} {{ get; set; }}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref=""{TypeName}""/>.
