@@ -220,7 +220,7 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides a diagnostic message indicating that two <c>Durian.PatternAttribute</c>s are equivalent.
+        /// Provides a diagnostic message indicating that a type parameter is not valid for the target type.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0217_TypeParameterIsNotValid = new(
             id: "DUR0217",
@@ -229,6 +229,19 @@ namespace Durian.Analysis.CopyFrom
             category: "Durian.CopyFrom",
             defaultSeverity: DiagnosticSeverity.Error,
             helpLinkUri: DocsPath + "/DUR0217.md",
+            isEnabledByDefault: true
+        );
+
+        /// <summary>
+        /// Provides a diagnostic message indicating that two <c>Durian.PatternAttribute</c>s are equivalent.
+        /// </summary>
+        public static readonly DiagnosticDescriptor DUR0218_UnknownPartialPartName = new(
+            id: "DUR0218",
+            title: "Partial part does not exist",
+            messageFormat: "'{0}': Partial part '{1}' of type '{2}' does not exist",
+            category: "Durian.CopyFrom",
+            defaultSeverity: DiagnosticSeverity.Error,
+            helpLinkUri: DocsPath + "/DUR0218.md",
             isEnabledByDefault: true
         );
 

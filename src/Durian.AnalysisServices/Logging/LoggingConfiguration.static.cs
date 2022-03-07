@@ -72,7 +72,7 @@ namespace Durian.Analysis.Logging
                     SupportsDiagnostics = attr.SupportsDiagnostics,
                     EnableDiagnostics = attr.SupportsDiagnostics,
                     EnableExceptions = attr.EnableExceptions,
-                    DefaultNodeOutput = attr.DefaultNodeOutput
+                    DefaultNodeOutput = attr.DefaultNodeOutput == NodeOutput.Default ? NodeOutput.Node : attr.DefaultNodeOutput
                 };
             }
         }
@@ -339,7 +339,7 @@ namespace Durian.Analysis.Logging
                     _supportsDiagnostics = attr.SupportsDiagnostics,
                     _enableDiagnostics = attr.SupportsDiagnostics,
                     EnableExceptions = attr.EnableExceptions,
-                    DefaultNodeOutput = attr.DefaultNodeOutput
+                    DefaultNodeOutput = attr.DefaultNodeOutput == NodeOutput.Default ? NodeOutput.Node : attr.DefaultNodeOutput
                 };
             }
         }

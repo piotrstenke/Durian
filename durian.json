@@ -32,7 +32,9 @@
       "documentation": "https://github.com/piotrstenke/Durian/tree/master/docs/Core",
       "includedTypes": [
         "Durian.Generator.EnableModuleAttribute",
-        "Durian.Generator.DurianGeneratedAttribute"
+        "Durian.Generator.DurianGeneratedAttribute",
+        "Durian.PartialNameAttribute",
+        "Durian.UsingsAttribute"
       ]
     },
     {
@@ -144,7 +146,8 @@
         "Durian.CopyFromTypeAttribute",
         "Durian.CopyFromMethodAttribute",
         "Durian.PatternAttribute",
-        "Durian.PartialNameAttribute"
+        "Durian.PartialNameAttribute",
+        "Durian.UsingsAttribute"
       ],
       "diagnosticIdPrefix": "02",
       "diagnosticFiles": [

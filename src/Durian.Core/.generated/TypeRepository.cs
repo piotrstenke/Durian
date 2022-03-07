@@ -63,6 +63,54 @@ namespace Durian.Info
 		}
 
 		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.PartialNameAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity PartialNameAttribute
+		{
+			get
+			{
+				if(!IdentityPool.Types.TryGetValue("PartialNameAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "PartialNameAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.Core,
+							DurianModule.CopyFrom,
+						}
+					);
+				}
+
+				return type;
+			}
+		}
+
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.UsingsAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity UsingsAttribute
+		{
+			get
+			{
+				if(!IdentityPool.Types.TryGetValue("UsingsAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "UsingsAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.Core,
+							DurianModule.CopyFrom,
+						}
+					);
+				}
+
+				return type;
+			}
+		}
+
+		/// <summary>
 		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.DefaultParamAttribute</c> type.
 		/// </summary>
 		public static TypeIdentity DefaultParamAttribute

@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Xunit;
 using Durian.TestServices;
-
+using Xunit;
 using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
 
 namespace Durian.Analysis.CopyFrom.Tests
@@ -425,6 +424,38 @@ partial class Outer<T>
         }
 
         [Fact]
+        public void Error_When_TargetPartialPartDoesNotExist()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.PartialPart} = ""Part2"")]
+partial class Test
+{{
+}}
+
+[{nameof(PartialNameAttribute)}(""Part1"")]
+partial class Target
+{{
+    void Method()
+    {{
+        string b = string.Empty;
+    }}
+}}
+
+partial class Target
+{{
+    void Other()
+    {{
+        int a = 2;
+    }}
+}}
+";
+
+            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0218_UnknownPartialPartName.Id));
+        }
+
+        [Fact]
         public void Error_When_TypeDoesNotExist()
         {
             string input =
@@ -436,38 +467,6 @@ partial class Test
 }}
 ";
             Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
-        }
-
-        [Fact]
-        public void Success_When_TargetIsInnerType()
-        {
-            string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{CopyFromTypeAttributeProvider.TypeName}(typeof(Inner))]
-partial class Test
-{{
-	class Inner
-	{{
-        void Method()
-        {{
-            string b = """";
-        }}
-	}}
-}}
-";
-            string expected =
-$@"
-partial class Test
-{{
-    {GetCodeGenerationAttributes("Test.Inner.Method()")}
-    void Method()
-    {{
-        string b = """";
-    }}
-}}
-";
-            Assert.True(RunGenerator(input).Compare(expected));
         }
 
         [Fact]
@@ -512,6 +511,48 @@ partial class Test
     {GetCodeGenerationAttributes("Target.Method(string)")}
     void Method(string a)
     {{
+    }}
+}}
+";
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
+
+        [Fact]
+        public void Success_When_SpecifiesPartialPart()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.PartialPart} = ""Part2"")]
+partial class Test
+{{
+}}
+
+[{nameof(PartialNameAttribute)}(""Part1"")]
+partial class Target
+{{
+    void Method()
+    {{
+        string b = string.Empty;
+    }}
+}}
+
+[{nameof(PartialNameAttribute)}(""Part2"")]
+partial class Target
+{{
+    void Other()
+    {{
+        int a = 2;
+    }}
+}}
+";
+            string expected =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Other()")}
+    void Other()
+    {{
+        int a = 2;
     }}
 }}
 ";
@@ -1013,6 +1054,38 @@ $@"partial class Test
         }
 
         [Fact]
+        public void Success_When_TargetIsInnerType()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(typeof(Inner))]
+partial class Test
+{{
+	class Inner
+	{{
+        void Method()
+        {{
+            string b = """";
+        }}
+	}}
+}}
+";
+            string expected =
+$@"
+partial class Test
+{{
+    {GetCodeGenerationAttributes("Test.Inner.Method()")}
+    void Method()
+    {{
+        string b = """";
+    }}
+}}
+";
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
+
+        [Fact]
         public void Success_When_TargetIsInSameNamespace()
         {
             string input =
@@ -1160,6 +1233,59 @@ $@"partial class Test
         }
 
         [Fact]
+        public void Success_When_TargetIsPartial()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
+partial class Test
+{{
+}}
+
+partial class Target
+{{
+    void Method()
+    {{
+        string b = string.Empty;
+    }}
+}}
+
+partial class Target
+{{
+    void Method(string a)
+    {{
+        while(true)
+        {{
+            break;
+        }}
+    }}
+}}
+";
+
+            string expected =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Method()")}
+    void Method()
+    {{
+        string b = string.Empty;
+    }}
+
+    {GetCodeGenerationAttributes("Target.Method(string)")}
+    void Method(string a)
+    {{
+        while(true)
+        {{
+            break;
+        }}
+    }}
+}}
+";
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
+
+        [Fact]
         public void Success_When_TargetIsPrivate()
         {
             string input =
@@ -1299,6 +1425,158 @@ $@"partial class Test
         }
 
         [Fact]
+        public void Suceess_When_TargetHasAllPossibleMemberTypes()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
+partial class Test
+{{
+}}
+
+class Target : System.IDisposable
+{{
+    public Target()
+    {{
+    }}
+
+    static Target()
+    {{
+    }}
+
+    ~Target()
+    {{
+    }}
+
+    public delegate void Delegate();
+
+    event Delegate Event;
+
+    event System.Action Event2 {{ add {{ }} remove {{ }}}}
+
+    int _field;
+
+    const float cos = 2;
+
+    public int Field => _field;
+
+    public string Name {{ get; set; }}
+
+    public int this[int index] => 2;
+
+    string Method(dynamic a) => string.Empty;
+
+    void Method<T>(ref T t1, in T t2, out T t2)
+    {{
+        string b = string.Empty;
+    }}
+
+    void IDisposable.Dispose()
+    {{
+    }}
+
+    public static int operator +(Target a, Target b) => 2;
+    public static implicit operator bool(Target a) => a is not null;
+
+    class Inner
+    {{
+        string field;
+    }}
+
+    enum Values
+    {{
+        A = 1,
+        B
+    }}
+}}
+";
+            string expected =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Target()")}
+    public Target()
+    {{
+    }}
+
+    {GetCodeGenerationAttributes("Target.static Target()")}
+    static Target()
+    {{
+    }}
+
+    {GetCodeGenerationAttributes("Target.~Target()")}
+    ~Target()
+    {{
+    }}
+
+    {GetCodeGenerationAttributes("Target.Delegate")}
+    public delegate void Delegate();
+
+    {GetCodeGenerationAttributes("Target.Event")}
+    event Delegate Event;
+
+    {GetCodeGenerationAttributes("Target.Event2")}
+    event System.Action Event2 {{ add {{ }} remove {{ }}}}
+
+    {GetCodeGenerationAttributes("Target._field")}
+    int _field;
+
+    {GetCodeGenerationAttributes("Target.cos")}
+    const float cos = 2;
+
+    {GetCodeGenerationAttributes("Target.Field")}
+    public int Field => _field;
+
+    {GetCodeGenerationAttributes("Target.Name")}
+    public string Name {{ get; set; }}
+
+    {GetCodeGenerationAttributes("Target.this[int]")}
+    public int this[int index] => 2;
+
+    {GetCodeGenerationAttributes("Target.Method(dynamic)")}
+    string Method(dynamic a) => string.Empty;
+
+    {GetCodeGenerationAttributes("Target.Method(ref T, in T, out T)")}
+    void Method<T>(ref T t1, in T t2, out T t2)
+    {{
+        string b = string.Empty;
+
+        void O()
+        {{
+        }}
+    }}
+
+    {GetCodeGenerationAttributes("(IDisposable)Target.Dispose()")}
+    void IDisposable.Dispose()
+    {{
+    }}
+
+    {GetCodeGenerationAttributes("Target.operator +(Target, Target)")}
+    public static int operator +(Target a, Target b) => 2;
+
+    {GetCodeGenerationAttributes("Target.implicit operator bool(Target)")}
+    public static implicit operator bool(Target a) => a is not null;
+
+    {GetCodeGenerationAttributes("Target.Inner")}
+    class Inner
+    {{
+        {GetCodeGenerationAttributes("Target.Inner.field")}
+        string field;
+    }}
+
+    {GetCodeGenerationAttributes("Target.Values")}
+    enum Values
+    {{
+        A = 1,
+        B
+    }}
+}}
+";
+
+            Assert.True(RunGenerator(input).Compare(expected));
+        }
+
+        [Fact]
         public void Warning_When_HasPattern_And_PatternIsNull()
         {
             string input =
@@ -1370,211 +1648,6 @@ class Target
 }}
 ";
             Assert.True(RunGenerator(input).SucceededAndContainsDiagnostics(DUR0206_EquivalentAttributes.Id));
-        }
-
-        [Fact]
-        public void Success_When_TargetIsPartial()
-        {
-            string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
-partial class Test
-{{
-}}
-
-partial class Target
-{{
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
-}}
-
-partial class Target
-{{
-    void Method(string a)
-    {{
-        while(true)
-        {{
-            break;
-        }}
-    }}
-}}
-";
-
-            string expected =
-$@"partial class Test
-{{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
-
-    {GetCodeGenerationAttributes("Target.Method(string)")}
-    void Method(string a)
-    {{
-        while(true)
-        {{
-            break;
-        }}
-    }}
-}}
-";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
-
-        [Fact]
-        public void Suceess_When_TargetHasAllPossibleMemberTypes()
-        {
-            string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
-partial class Test
-{{
-}}
-
-class Target : System.IDisposable
-{{
-    public Target()
-    {{
-    }}
-
-    static Target()
-    {{
-    }}
-
-    ~Target()
-    {{
-    }}
-
-    public delegate void Delegate();
-
-    event Delegate Event;
-
-    event System.Action Event2 {{ add {{ }} remove {{ }}}}
-
-    int _field;
-
-    const float cos = 2;
-    
-    public int Field => _field;
-
-    public string Name {{ get; set; }}
-
-    public int this[int index] => 2;
-
-    string Method(dynamic a) => string.Empty;
-
-    void Method<T>(ref T t1, in T t2, out T t2)
-    {{
-        string b = string.Empty;
-    }}
-
-    void IDisposable.Dispose()
-    {{
-    }}
-
-    public static int operator +(Target a, Target b) => 2;
-    public static implicit operator bool(Target a) => a is not null;
-
-    class Inner
-    {{
-        string field;
-    }}
-
-    enum Values
-    {{
-        A = 1,
-        B
-    }}
-}}
-";
-            string expected =
-$@"partial class Test
-{{
-    {GetCodeGenerationAttributes("Target.Target()")}
-    public Target()
-    {{
-    }}
-    
-    {GetCodeGenerationAttributes("Target.static Target()")}
-    static Target()
-    {{
-    }}
-
-    {GetCodeGenerationAttributes("Target.~Target()")}
-    ~Target()
-    {{
-    }}
-
-    {GetCodeGenerationAttributes("Target.Delegate")}
-    public delegate void Delegate();
-
-    {GetCodeGenerationAttributes("Target.Event")}
-    event Delegate Event;
-
-    {GetCodeGenerationAttributes("Target.Event2")}
-    event System.Action Event2 {{ add {{ }} remove {{ }}}}
-
-    {GetCodeGenerationAttributes("Target._field")}
-    int _field;
-
-    {GetCodeGenerationAttributes("Target.cos")}
-    const float cos = 2;
-    
-    {GetCodeGenerationAttributes("Target.Field")}
-    public int Field => _field;
-
-    {GetCodeGenerationAttributes("Target.Name")}
-    public string Name {{ get; set; }}
-
-    {GetCodeGenerationAttributes("Target.this[int]")}
-    public int this[int index] => 2;
-
-    {GetCodeGenerationAttributes("Target.Method(dynamic)")}
-    string Method(dynamic a) => string.Empty;
-
-    {GetCodeGenerationAttributes("Target.Method(ref T, in T, out T)")}
-    void Method<T>(ref T t1, in T t2, out T t2)
-    {{
-        string b = string.Empty;
-
-        void O()
-        {{
-        }}
-    }}
-
-    {GetCodeGenerationAttributes("(IDisposable)Target.Dispose()")}
-    void IDisposable.Dispose()
-    {{
-    }}
-
-    {GetCodeGenerationAttributes("Target.operator +(Target, Target)")}
-    public static int operator +(Target a, Target b) => 2;
-
-    {GetCodeGenerationAttributes("Target.implicit operator bool(Target)")}
-    public static implicit operator bool(Target a) => a is not null;
-
-    {GetCodeGenerationAttributes("Target.Inner")}
-    class Inner
-    {{
-        {GetCodeGenerationAttributes("Target.Inner.field")}
-        string field;
-    }}
-
-    {GetCodeGenerationAttributes("Target.Values")}
-    enum Values
-    {{
-        A = 1,
-        B
-    }}
-}}
-";
-
-            Assert.True(RunGenerator(input).Compare(expected));
         }
     }
 }

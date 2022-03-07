@@ -24,7 +24,7 @@ namespace Durian.Analysis.DefaultParam
         RelativeToGlobal = true,
         EnableExceptions = true,
         DefaultNodeOutput = NodeOutput.Containing)]
-    public class DefaultParamGenerator : CachedGenerator<IDefaultParamTarget, DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>
+    public sealed class DefaultParamGenerator : CachedGenerator<IDefaultParamTarget, DefaultParamCompilationData, DefaultParamSyntaxReceiver, IDefaultParamFilter>
     {
         private readonly DefaultParamRewriter _rewriter = new();
 
@@ -147,13 +147,13 @@ namespace Durian.Analysis.DefaultParam
         }
 
         /// <inheritdoc/>
-        public override sealed string GetGeneratorName()
+        public override string GetGeneratorName()
         {
             return GeneratorName;
         }
 
         /// <inheritdoc/>
-        public override sealed string GetGeneratorVersion()
+        public override string GetGeneratorVersion()
         {
             return Version;
         }
@@ -178,7 +178,7 @@ namespace Durian.Analysis.DefaultParam
         }
 
         /// <inheritdoc/>
-        protected override sealed bool Generate(IMemberData data, string hintName, in GeneratorExecutionContext context)
+        protected override bool Generate(IMemberData data, string hintName, in GeneratorExecutionContext context)
         {
             if (data is not IDefaultParamTarget target)
             {

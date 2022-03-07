@@ -42,7 +42,8 @@ namespace Durian.Analysis.CopyFrom
             DUR0214_InvalidPatternAttributeSpecified,
             DUR0215_RedundantPatternAttribute,
             DUR0216_EquivalentPatternAttribute,
-            DUR0217_TypeParameterIsNotValid
+            DUR0217_TypeParameterIsNotValid,
+            DUR0218_UnknownPartialPartName
         );
 
         /// <summary>

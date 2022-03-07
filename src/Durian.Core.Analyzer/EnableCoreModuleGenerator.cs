@@ -11,7 +11,12 @@ namespace Durian.Analysis
     /// Enables the <see cref="DurianModule.Core"/> module.
     /// </summary>
     [Generator(LanguageNames.CSharp)]
-    [LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "Core", SupportsDiagnostics = false, RelativeToGlobal = true, EnableExceptions = true)]
+    [LoggingConfiguration(
+        SupportedLogs = GeneratorLogs.All,
+        LogDirectory = "Core",
+        SupportsDiagnostics = false,
+        RelativeToGlobal = true,
+        EnableExceptions = true)]
     public sealed class EnableCoreModuleGenerator : DurianGeneratorBase
     {
         /// <inheritdoc cref="EnableCoreModuleGenerator(in ConstructionContext, IHintNameProvider?)"/>

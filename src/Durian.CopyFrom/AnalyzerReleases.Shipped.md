@@ -20,3 +20,4 @@ DUR0214 | Durian.CopyFrom | Warning |  Invalid PatternAttribute specified. [[DOC
 DUR0215 | Durian.CopyFrom | Warning |  PatternAttribute is redundant. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0215.md)]
 DUR0216 | Durian.CopyFrom | Warning |  PatternAttribute with equivalent pattern already specified. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0216.md)]
 DUR0217 | Durian.CopyFrom | Error |  Type is not a valid type argument. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0217.md)]
+DUR0218 | Durian.CopyFrom | Error |  Partial part does not exist. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0218.md)]

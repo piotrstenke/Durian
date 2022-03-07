@@ -76,6 +76,14 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
+								title: "PartialNameAttribute should be applied to a partial type",
+								id: 06,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/Core/DUR0006.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
 								title: "Do not reference Durian analyzer package if the main Durian package is already included",
 								id: 07,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/Core/DUR0007.md",
@@ -90,11 +98,21 @@ namespace Durian.Info
 								fatal: false,
 								hasLocation: true
 							),
+
+							new DiagnosticData(
+								title: "Type already has a PartialNameAttribute with same value",
+								id: 09,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/Core/DUR0009.md",
+								fatal: false,
+								hasLocation: true
+							),
 						},
 						types: new TypeIdentity[]
 						{
 							TypeRepository.EnableModuleAttribute,
 							TypeRepository.DurianGeneratedAttribute,
+							TypeRepository.PartialNameAttribute,
+							TypeRepository.UsingsAttribute,
 						}
 					);
 				}
@@ -670,7 +688,7 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Equivalent CopyFromTypeAttribute or CopyFromMethodAttribute already specified",
+								title: "Equivalent CopyFromTypeAttribute already specified",
 								id: 06,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0206.md",
 								fatal: false,
@@ -748,12 +766,38 @@ namespace Durian.Info
 								fatal: false,
 								hasLocation: true
 							),
+
+							new DiagnosticData(
+								title: "PatternAttribute with equivalent pattern already specified",
+								id: 16,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0216.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Type is not a valid type argument",
+								id: 17,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0217.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Partial part does not exist",
+								id: 18,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0218.md",
+								fatal: true,
+								hasLocation: true
+							),
 						},
 						types: new TypeIdentity[]
 						{
 							TypeRepository.CopyFromTypeAttribute,
 							TypeRepository.CopyFromMethodAttribute,
 							TypeRepository.PatternAttribute,
+							TypeRepository.PartialNameAttribute,
+							TypeRepository.UsingsAttribute,
 						}
 					);
 				}
