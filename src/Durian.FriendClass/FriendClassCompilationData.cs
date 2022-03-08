@@ -42,21 +42,11 @@ namespace Durian.Analysis.FriendClass
             Reset();
         }
 
-        /// <inheritdoc cref="ICompilationDataWithSymbols.Reset"/>
-        public void Reset()
+        /// <inheritdoc/>
+        public override void Reset()
         {
-            FriendClassAttribute = Compilation.GetTypeByMetadataName(FriendClassAttributeProvider.FullName);
-            FriendClassConfigurationAttribute = Compilation.GetTypeByMetadataName(FriendClassConfigurationAttributeProvider.FullName);
-
-            HasErrors =
-                FriendClassConfigurationAttribute is null ||
-                FriendClassAttribute is null;
-        }
-
-        /// <inheritdoc/>s
-        protected override void OnUpdate(CSharpCompilation oldCompilation)
-        {
-            Reset();
+            FriendClassAttribute = IncludeType(FriendClassAttributeProvider.FullName);
+            FriendClassConfigurationAttribute = IncludeType(FriendClassConfigurationAttributeProvider.FullName);
         }
     }
 }

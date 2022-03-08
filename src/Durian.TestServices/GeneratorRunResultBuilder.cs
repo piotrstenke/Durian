@@ -204,10 +204,7 @@ namespace Durian.TestServices
 
             GeneratorRunResult result = GeneratorResultFactory.CreateGeneratorResult(_generator, _sources, _diagnostics, _exception);
 
-            if (_parent is not null)
-            {
-                _parent.AddResult(in result);
-            }
+            _parent?.AddResult(in result);
 
             return result;
         }

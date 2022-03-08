@@ -22,7 +22,12 @@ namespace Durian.Analysis.CopyFrom
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CopyFromAnalyzer : DurianAnalyzer<CopyFromCompilationData>
     {
-        private const string _annotation = "copyFrom - inheritdoc";
+        private enum TargetAccessor
+        {
+            None,
+            GetOrRemove,
+            SetOrAdd
+        }
 
         /// <inheritdoc/>
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
@@ -31,7 +36,7 @@ namespace Durian.Analysis.CopyFrom
             DUR0203_MemberCannotBeResolved,
             DUR0204_WrongTargetMemberKind,
             DUR0205_ImplementationNotAccessible,
-            DUR0206_EquivalentAttributes,
+            DUR0206_EquivalentTarget,
             DUR0207_MemberCannotCopyFromItselfOrItsParent,
             DUR0208_MemberConflict,
             DUR0209_CannotCopyFromMethodWithoutImplementation,
@@ -91,7 +96,7 @@ namespace Durian.Analysis.CopyFrom
                 return false;
             }
 
-            return ValidateTargetTypes(type, semanticModel, attributes, out _, true);
+            return ValidateTargetTypes(type, semanticModel, compilation, attributes, out _, true);
         }
 
         /// <summary>
@@ -113,12 +118,12 @@ namespace Durian.Analysis.CopyFrom
                 return false;
             }
 
-            bool isValid = AnalyzeWithoutPattern(
+            bool isValid = AnalyzeTypeWithoutPattern(
                 type,
                 compilation,
                 semanticModel,
                 out ImmutableArray<AttributeData> attributes,
-                out List<INamedTypeSymbol>? targetTypes,
+                out List<TargetData>? targetTypes,
                 diagnosticReceiver
             );
 
@@ -148,7 +153,7 @@ namespace Durian.Analysis.CopyFrom
                 return false;
             }
 
-            bool isValid = AnalyzeWithoutPattern(
+            bool isValid = AnalyzeMethodWithoutPattern(
                 method,
                 compilation,
                 semanticModel,
@@ -192,6 +197,70 @@ namespace Durian.Analysis.CopyFrom
             context.RegisterSyntaxNodeAction(c => AnalyzeAttributeSyntax(c, compilation), SyntaxKind.Attribute);
         }
 
+        /// <inheritdoc/>
+        protected override CopyFromCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
+        {
+            return new CopyFromCompilationData(compilation);
+        }
+
+        internal static bool AnalyzeMethodWithoutPattern(
+            IMethodSymbol method,
+            CopyFromCompilationData compilation,
+            SemanticModel semanticModel,
+            MethodDeclarationSyntax? declaration,
+            out ImmutableArray<AttributeData> attributes,
+            [NotNullWhen(true)] out IMethodSymbol? targetMethod,
+            IDiagnosticReceiver diagnosticReceiver
+        )
+        {
+            AttributeData? copyFrom = GetAttribute(method, compilation, out attributes);
+
+            if (copyFrom is null)
+            {
+                targetMethod = default;
+                return false;
+            }
+
+            bool isValid = ValidateMarkedMethod(method, ref declaration, diagnosticReceiver);
+
+            if (declaration is null)
+            {
+                targetMethod = default;
+            }
+            else
+            {
+                isValid &= ValidateTargetMethod(method, semanticModel, compilation, declaration, copyFrom, out targetMethod, diagnosticReceiver);
+            }
+
+            return isValid;
+        }
+
+        internal static bool AnalyzeMethodWithoutPattern(
+            IMethodSymbol method,
+            CopyFromCompilationData compilation,
+            SemanticModel semanticModel,
+            MethodDeclarationSyntax? declaration,
+            out ImmutableArray<AttributeData> attributes,
+            [NotNullWhen(true)] out IMethodSymbol? targetMethod
+        )
+        {
+            AttributeData? copyFrom = GetAttribute(method, compilation, out attributes);
+
+            if (copyFrom is null)
+            {
+                targetMethod = default;
+                return false;
+            }
+
+            if (ValidateMarkedMethod(method, ref declaration))
+            {
+                return ValidateTargetMethod(method, semanticModel, compilation, declaration, copyFrom, out targetMethod);
+            }
+
+            targetMethod = default;
+            return false;
+        }
+
         internal static bool AnalyzePattern(
             ISymbol symbol,
             AttributeData patternAttribute,
@@ -229,12 +298,12 @@ namespace Durian.Analysis.CopyFrom
             return isValid;
         }
 
-        internal static bool AnalyzeWithoutPattern(
+        internal static bool AnalyzeTypeWithoutPattern(
             INamedTypeSymbol type,
             CopyFromCompilationData compilation,
             SemanticModel semanticModel,
             out ImmutableArray<AttributeData> attributes,
-            [NotNullWhen(true)] out List<INamedTypeSymbol>? targetTypes,
+            [NotNullWhen(true)] out List<TargetData>? targetTypes,
             IDiagnosticReceiver diagnosticReceiver
         )
         {
@@ -247,17 +316,17 @@ namespace Durian.Analysis.CopyFrom
             }
 
             bool isValid = EnsureIsInPartialContext(type, diagnosticReceiver);
-            isValid &= ValidateTargetTypes(type, semanticModel, copyFroms, out targetTypes, diagnosticReceiver);
+            isValid &= ValidateTargetTypes(type, semanticModel, compilation, copyFroms, out targetTypes, diagnosticReceiver);
 
             return isValid;
         }
 
-        internal static bool AnalyzeWithoutPattern(
+        internal static bool AnalyzeTypeWithoutPattern(
             INamedTypeSymbol type,
             CopyFromCompilationData compilation,
             SemanticModel semanticModel,
             out ImmutableArray<AttributeData> attributes,
-            [NotNullWhen(true)] out List<INamedTypeSymbol>? targetTypes
+            [NotNullWhen(true)] out List<TargetData>? targetTypes
         )
         {
             AttributeData[]? copyFroms = GetAttributes(type, compilation, out attributes);
@@ -270,68 +339,10 @@ namespace Durian.Analysis.CopyFrom
 
             if (EnsureIsInPartialContext(type))
             {
-                return ValidateTargetTypes(type, semanticModel, copyFroms, out targetTypes, true);
+                return ValidateTargetTypes(type, semanticModel, compilation, copyFroms, out targetTypes, true);
             }
 
             targetTypes = default;
-            return false;
-        }
-
-        internal static bool AnalyzeWithoutPattern(
-            IMethodSymbol method,
-            CopyFromCompilationData compilation,
-            SemanticModel semanticModel,
-            MethodDeclarationSyntax? declaration,
-            out ImmutableArray<AttributeData> attributes,
-            [NotNullWhen(true)] out IMethodSymbol? targetMethod,
-            IDiagnosticReceiver diagnosticReceiver
-        )
-        {
-            AttributeData? copyFrom = GetAttribute(method, compilation, out attributes);
-
-            if (copyFrom is null)
-            {
-                targetMethod = default;
-                return false;
-            }
-
-            bool isValid = ValidateMarkedMethod(method, ref declaration, diagnosticReceiver);
-
-            if (declaration is null)
-            {
-                targetMethod = default;
-            }
-            else
-            {
-                isValid &= ValidateTargetMethod(method, semanticModel, compilation, declaration, copyFrom, out targetMethod, diagnosticReceiver);
-            }
-
-            return isValid;
-        }
-
-        internal static bool AnalyzeWithoutPattern(
-            IMethodSymbol method,
-            CopyFromCompilationData compilation,
-            SemanticModel semanticModel,
-            MethodDeclarationSyntax? declaration,
-            out ImmutableArray<AttributeData> attributes,
-            [NotNullWhen(true)] out IMethodSymbol? targetMethod
-        )
-        {
-            AttributeData? copyFrom = GetAttribute(method, compilation, out attributes);
-
-            if (copyFrom is null)
-            {
-                targetMethod = default;
-                return false;
-            }
-
-            if (ValidateMarkedMethod(method, ref declaration))
-            {
-                return ValidateTargetMethod(method, semanticModel, compilation, declaration, copyFrom, out targetMethod);
-            }
-
-            targetMethod = default;
             return false;
         }
 
@@ -360,12 +371,6 @@ namespace Durian.Analysis.CopyFrom
             diagnosticReceiver.ReportDiagnostic(DUR0216_EquivalentPatternAttribute, location, symbol);
         }
 
-        /// <inheritdoc/>
-        protected override CopyFromCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
-        {
-            return new CopyFromCompilationData(compilation);
-        }
-
         private static void AnalyzeAttributeSyntax(SyntaxNodeAnalysisContext context, CopyFromCompilationData compilation)
         {
             if (context.Node is not AttributeSyntax attr || attr.ArgumentList is null || attr.Parent?.Parent is not CSharpSyntaxNode member)
@@ -390,36 +395,33 @@ namespace Durian.Analysis.CopyFrom
 
             if (SymbolEqualityComparer.Default.Equals(attributeSymbol.ContainingType, compilation.CopyFromTypeAttribute))
             {
-                if (context.SemanticModel.GetDeclaredSymbol(member) is INamedTypeSymbol typeSymbol && ShouldAnalyze(typeSymbol))
-                {
-                    DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
-                    AnalyzeWithoutPattern(typeSymbol, compilation, context.SemanticModel, attr, diagnosticReceiver);
-                }
+                AnalyzeTypeAttribute(context, compilation, attr, member);
             }
             else if (SymbolEqualityComparer.Default.Equals(attributeSymbol.ContainingType, compilation.CopyFromMethodAttribute))
             {
-                IMethodSymbol? methodSymbol = member is LambdaExpressionSyntax
-                    ? context.SemanticModel.GetSymbolInfo(member).Symbol as IMethodSymbol
-                    : context.SemanticModel.GetDeclaredSymbol(member) as IMethodSymbol;
-
-                if (methodSymbol is not null && ShouldAnalyze(methodSymbol))
-                {
-                    DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
-                    AnalyzeWithoutPattern(methodSymbol, compilation, context.SemanticModel, member as MethodDeclarationSyntax, out _, out _, diagnosticReceiver);
-                }
+                AnalyzeMethodAttribute(context, compilation, member);
             }
             else if (SymbolEqualityComparer.Default.Equals(attributeSymbol.ContainingType, compilation.PatternAttribute))
             {
-                if (context.SemanticModel.GetDeclaredSymbol(member) is ISymbol symbol)
-                {
-                    DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
-                    AnalyzePattern(symbol, attr, compilation, diagnosticReceiver);
-                }
+                AnalyzePatternAttribute(context, compilation, attr, member);
+            }
+        }
+
+        private static void AnalyzeMethodAttribute(SyntaxNodeAnalysisContext context, CopyFromCompilationData compilation, CSharpSyntaxNode member)
+        {
+            IMethodSymbol? methodSymbol = member is LambdaExpressionSyntax
+                ? context.SemanticModel.GetSymbolInfo(member).Symbol as IMethodSymbol
+                : context.SemanticModel.GetDeclaredSymbol(member) as IMethodSymbol;
+
+            if (methodSymbol is not null && ShouldAnalyze(methodSymbol))
+            {
+                DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
+                AnalyzeMethodWithoutPattern(methodSymbol, compilation, context.SemanticModel, member as MethodDeclarationSyntax, out _, out _, diagnosticReceiver);
             }
         }
 
         private static void AnalyzePattern(
-            ISymbol symbol,
+                    ISymbol symbol,
             ImmutableArray<AttributeData> attributes,
             CopyFromCompilationData compilation,
             bool hasTarget,
@@ -482,7 +484,25 @@ namespace Durian.Analysis.CopyFrom
             return AnalyzePattern(symbol, currentData, patterns, hasCopyFrom, out _, out _, diagnosticReceiver);
         }
 
-        private static bool AnalyzeWithoutPattern(
+        private static void AnalyzePatternAttribute(SyntaxNodeAnalysisContext context, CopyFromCompilationData compilation, AttributeSyntax attr, CSharpSyntaxNode member)
+        {
+            if (context.SemanticModel.GetDeclaredSymbol(member) is ISymbol symbol)
+            {
+                DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
+                AnalyzePattern(symbol, attr, compilation, diagnosticReceiver);
+            }
+        }
+
+        private static void AnalyzeTypeAttribute(SyntaxNodeAnalysisContext context, CopyFromCompilationData compilation, AttributeSyntax attr, CSharpSyntaxNode member)
+        {
+            if (context.SemanticModel.GetDeclaredSymbol(member) is INamedTypeSymbol typeSymbol && ShouldAnalyze(typeSymbol))
+            {
+                DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
+                AnalyzeTypeWithoutPattern(typeSymbol, compilation, context.SemanticModel, attr, diagnosticReceiver);
+            }
+        }
+
+        private static bool AnalyzeTypeWithoutPattern(
             INamedTypeSymbol type,
             CopyFromCompilationData compilation,
             SemanticModel semanticModel,
@@ -508,10 +528,10 @@ namespace Durian.Analysis.CopyFrom
             Array.Copy(copyFroms, 0, targets, 0, index);
             Array.Copy(copyFroms, index + 1, targets, index, targets.Length - index);
 
-            ValidateTargetTypes(type, semanticModel, targets, out List<INamedTypeSymbol>? targetTypes, false);
+            ValidateTargetTypes(type, semanticModel, compilation, targets, out List<TargetData>? targetTypes, false);
 
             bool isValid = EnsureIsInPartialContext(type, diagnosticReceiver);
-            isValid &= ValidateTargetType(type, semanticModel, copyFroms[index], targetTypes!);
+            isValid &= ValidateTargetType(type, semanticModel, copyFroms[index], compilation, targetTypes!);
 
             return isValid;
         }
@@ -554,6 +574,19 @@ namespace Durian.Analysis.CopyFrom
             }
 
             return false;
+        }
+
+        private static TargetData CreateTargetData(AttributeData attribute, INamedTypeSymbol target)
+        {
+            return CreateTargetData(attribute, target, default, default);
+        }
+
+        private static TargetData CreateTargetData(AttributeData attribute, INamedTypeSymbol target, TypeDeclarationSyntax? partialPart, string? partialPartName)
+        {
+            int order = GetOrder(attribute);
+            string[]? usings = GetUsings(attribute);
+
+            return new(target, order, partialPart, partialPartName, usings);
         }
 
         private static bool EnsureIsInPartialContext(IMethodSymbol method, [NotNullWhen(true)] ref MethodDeclarationSyntax? declaration)
@@ -665,7 +698,12 @@ namespace Durian.Analysis.CopyFrom
             return true;
         }
 
-        private static IMethodSymbol? EnsureIsValidTarget(IMethodSymbol currentMethod, ISymbol symbol, bool? accessor, out DiagnosticDescriptor? diagnostic)
+        private static IMethodSymbol? EnsureIsValidTarget(
+            IMethodSymbol currentMethod,
+            ISymbol symbol,
+            TargetAccessor accessor,
+            out DiagnosticDescriptor? diagnostic
+        )
         {
             switch (symbol)
             {
@@ -708,9 +746,9 @@ namespace Durian.Analysis.CopyFrom
                         return null;
                     }
 
-                    if (accessor.HasValue)
+                    if (accessor != TargetAccessor.None)
                     {
-                        if (accessor.Value)
+                        if (accessor == TargetAccessor.SetOrAdd)
                         {
                             if (property.SetMethod is null)
                             {
@@ -757,7 +795,7 @@ namespace Durian.Analysis.CopyFrom
 
                 case IEventSymbol @event:
 
-                    if (accessor.HasValue)
+                    if (accessor != TargetAccessor.None)
                     {
                         if (!currentMethod.ReturnsVoid)
                         {
@@ -765,7 +803,7 @@ namespace Durian.Analysis.CopyFrom
                             return null;
                         }
 
-                        if (accessor.Value)
+                        if (accessor == TargetAccessor.SetOrAdd)
                         {
                             if (@event.AddMethod is not null)
                             {
@@ -826,6 +864,11 @@ namespace Durian.Analysis.CopyFrom
             return attributes.Where(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol)).ToArray();
         }
 
+        private static int GetOrder(AttributeData attribute)
+        {
+            return attribute.GetNamedArgumentValue<int>(CopyFromTypeAttributeProvider.Order);
+        }
+
         private static SymbolInfo GetSymbolFromCrefSyntax(
             string text,
             CSharpCompilation compilation,
@@ -833,13 +876,15 @@ namespace Durian.Analysis.CopyFrom
             out CSharpSyntaxNode cref
         )
         {
+            const string annotation = "copyFrom - inheritdoc";
+
             text = AnalysisUtilities.ConvertFullyQualifiedNameToXml(text);
             string parse = $"/// <inheritdoc cref=\"{text}\"/>";
 
             SyntaxNode root = CSharpSyntaxTree.ParseText(parse, encoding: Encoding.UTF8).GetRoot();
             DocumentationCommentTriviaSyntax trivia = root.DescendantNodes(descendIntoTrivia: true).OfType<DocumentationCommentTriviaSyntax>().First();
 
-            trivia = trivia.WithAdditionalAnnotations(new SyntaxAnnotation(_annotation));
+            trivia = trivia.WithAdditionalAnnotations(new SyntaxAnnotation(annotation));
 
             root = declaration.SyntaxTree.GetRoot();
             root = root.ReplaceNode(declaration, declaration.WithLeadingTrivia(SyntaxFactory.Trivia(trivia)));
@@ -849,10 +894,40 @@ namespace Durian.Analysis.CopyFrom
             SemanticModel createdSemanticModel = compilation.GetSemanticModel(root.SyntaxTree, true);
 #pragma warning restore RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
 
-            trivia = (DocumentationCommentTriviaSyntax)root.GetAnnotatedNodes(_annotation).First();
+            trivia = (DocumentationCommentTriviaSyntax)root.GetAnnotatedNodes(annotation).First();
 
             cref = trivia.DescendantNodes().OfType<CrefSyntax>().First();
             return createdSemanticModel.GetSymbolInfo(cref);
+        }
+
+        private static TargetAccessor GetTargetAccessor(ref string text)
+        {
+            if (text.Length < 5)
+            {
+                return TargetAccessor.None;
+            }
+
+            if (text[text.Length - 4] == '_')
+            {
+                if (text.EndsWith("get"))
+                {
+                    text = text.Substring(0, text.Length - 4);
+                    return TargetAccessor.GetOrRemove;
+                }
+
+                if (text.EndsWith("set") || text.EndsWith("add"))
+                {
+                    text = text.Substring(0, text.Length - 4);
+                    return TargetAccessor.SetOrAdd;
+                }
+            }
+            else if (text.EndsWith("_remove"))
+            {
+                text = text.Substring(0, text.Length - 7);
+                return TargetAccessor.GetOrRemove;
+            }
+
+            return TargetAccessor.None;
         }
 
         private static IMethodSymbol? GetTargetMethod(
@@ -882,7 +957,7 @@ namespace Durian.Analysis.CopyFrom
             }
 
             text = text.Trim();
-            bool? accessor = HasTargetAccessor(ref text);
+            TargetAccessor accessor = GetTargetAccessor(ref text);
             value = text;
 
             SymbolInfo info;
@@ -1030,38 +1105,9 @@ namespace Durian.Analysis.CopyFrom
             return null;
         }
 
-        private static bool? HasTargetAccessor(ref string text)
+        private static string[]? GetUsings(AttributeData attribute)
         {
-            // null <-- no accessor
-            // false <-- get or remove
-            // true <-- set or add
-
-            if (text.Length < 5)
-            {
-                return null;
-            }
-
-            if (text[text.Length - 4] == '_')
-            {
-                if (text.EndsWith("get"))
-                {
-                    text = text.Substring(0, text.Length - 4);
-                    return false;
-                }
-
-                if (text.EndsWith("set") || text.EndsWith("add"))
-                {
-                    text = text.Substring(0, text.Length - 4);
-                    return true;
-                }
-            }
-            else if (text.EndsWith("_remove"))
-            {
-                text = text.Substring(0, text.Length - 7);
-                return false;
-            }
-
-            return null;
+            return attribute.GetNamedArgumentValue<string[]>(CopyFromTypeAttributeProvider.Usings);
         }
 
         private static bool HasValidTypeArguments(INamedTypeSymbol type, out List<ITypeSymbol>? invalidArguments)
@@ -1150,6 +1196,37 @@ namespace Durian.Analysis.CopyFrom
                 MethodKind.Conversion;
         }
 
+        private static bool TryGetPartialPart(
+            INamedTypeSymbol target,
+            CopyFromCompilationData compilation,
+            string? partialPartName,
+            [NotNullWhen(true)] out TypeDeclarationSyntax? partialPart
+        )
+        {
+            partialPart = default;
+
+            if (partialPartName is null)
+            {
+                return false;
+            }
+
+            foreach (AttributeData attr in target.GetAttributes(compilation.PartialNameAttribute!))
+            {
+                if (attr.GetConstructorArgumentValue<string>(0) == partialPartName)
+                {
+                    partialPart = attr.ApplicationSyntaxReference?.GetSyntax()?.Parent?.Parent as TypeDeclarationSyntax;
+                    break;
+                }
+            }
+
+            return partialPart is not null;
+        }
+
+        private static bool TryGetPartialPartName(AttributeData attribute, out string? partialPartName)
+        {
+            return attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.PartialPart, out partialPartName);
+        }
+
         private static bool TryParseName(string text, [NotNullWhen(true)] out CSharpSyntaxNode? name)
         {
             if (text.IndexOf('(') == -1 && text.IndexOf('[') == -1)
@@ -1194,6 +1271,49 @@ namespace Durian.Analysis.CopyFrom
             }
 
             return true;
+        }
+
+        private static bool ValidatePartialNameAndAddTarget(
+            AttributeData attribute,
+            INamedTypeSymbol type,
+            INamedTypeSymbol target,
+            CopyFromCompilationData compilation,
+            List<TargetData> copyFromTypes,
+            bool isValid,
+            ref Location? location,
+            IDiagnosticReceiver diagnosticReceiver
+        )
+        {
+            if (TryGetPartialPartName(attribute, out string? partialPartName))
+            {
+                if (!TryGetPartialPart(target, compilation, partialPartName, out TypeDeclarationSyntax? partialPart))
+                {
+                    location ??= attribute.GetLocation();
+                    diagnosticReceiver.ReportDiagnostic(DUR0218_UnknownPartialPartName, location, type);
+                    return false;
+                }
+
+                if (copyFromTypes.Any(t => SymbolEqualityComparer.Default.Equals(t.Symbol, target) && t.PartialPartName == partialPartName))
+                {
+                    location ??= attribute.GetLocation();
+                    diagnosticReceiver.ReportDiagnostic(DUR0206_EquivalentTarget, location, type);
+                }
+                else if (isValid)
+                {
+                    copyFromTypes.Add(CreateTargetData(attribute, target, partialPart, partialPartName));
+                }
+            }
+            else if (copyFromTypes.Any(t => SymbolEqualityComparer.Default.Equals(t.Symbol, target)))
+            {
+                location ??= attribute.GetLocation();
+                diagnosticReceiver.ReportDiagnostic(DUR0206_EquivalentTarget, location, type);
+            }
+            else if (isValid)
+            {
+                copyFromTypes.Add(CreateTargetData(attribute, target));
+            }
+
+            return isValid;
         }
 
         private static bool ValidateTargetMethod(
@@ -1282,100 +1402,111 @@ namespace Durian.Analysis.CopyFrom
             INamedTypeSymbol type,
             SemanticModel semanticModel,
             AttributeData attribute,
-            List<INamedTypeSymbol> copyFromTypes
+            CopyFromCompilationData compilation,
+            List<TargetData> copyFromTypes
         )
         {
-            if (GetTargetType(attribute, semanticModel, out _, out _) is INamedTypeSymbol target &&
-                !CopiesFromItself(type, target) &&
-                !copyFromTypes.Contains(target, SymbolEqualityComparer.Default) &&
-                !IsInDifferentAssembly(type, target) &&
-                HasValidTypeArguments(target, out _)
-            )
+            if (GetTargetType(attribute, semanticModel, out _, out _) is not INamedTypeSymbol target ||
+                CopiesFromItself(type, target) ||
+                IsInDifferentAssembly(type, target) ||
+                !HasValidTypeArguments(target, out _))
             {
-                copyFromTypes.Add(target);
+                return false;
+            }
+
+            if (TryGetPartialPartName(attribute, out string? partialPartName))
+            {
+                if (!TryGetPartialPart(target, compilation, partialPartName, out TypeDeclarationSyntax? partialPart))
+                {
+                    return false;
+                }
+
+                if (copyFromTypes.Any(t => SymbolEqualityComparer.Default.Equals(t.Symbol, target) && t.PartialPartName == partialPartName))
+                {
+                    return true;
+                }
+
+                copyFromTypes.Add(CreateTargetData(attribute, target, partialPart, partialPartName));
                 return true;
             }
 
-            return false;
+            if (!copyFromTypes.Any(t => SymbolEqualityComparer.Default.Equals(t.Symbol, target)))
+            {
+                copyFromTypes.Add(CreateTargetData(attribute, target));
+            }
+
+            return true;
         }
 
         private static bool ValidateTargetType(
             INamedTypeSymbol type,
             SemanticModel semanticModel,
             AttributeData attribute,
-            List<INamedTypeSymbol> copyFromTypes,
+            CopyFromCompilationData compilation,
+            List<TargetData> copyFromTypes,
             IDiagnosticReceiver diagnosticReceiver
         )
         {
-            if (GetTargetType(attribute, semanticModel, out DiagnosticDescriptor? diagnostic, out object? value) is INamedTypeSymbol target)
+            if (GetTargetType(attribute, semanticModel, out DiagnosticDescriptor? diagnostic, out object? value) is not INamedTypeSymbol target)
             {
-                bool isValid = true;
-                Location? location = default;
-
-                if (CopiesFromItself(type, target))
+                if (diagnostic is not null)
                 {
-                    location ??= attribute.GetLocation();
-                    diagnosticReceiver.ReportDiagnostic(DUR0207_MemberCannotCopyFromItselfOrItsParent, location, type);
-                    isValid = false;
+                    diagnosticReceiver.ReportDiagnostic(diagnostic, attribute.GetLocation(), type, value);
                 }
 
-                if (copyFromTypes.Contains(target, SymbolEqualityComparer.Default))
+                return false;
+            }
+
+            bool isValid = true;
+            Location? location = default;
+
+            if (CopiesFromItself(type, target))
+            {
+                location ??= attribute.GetLocation();
+                diagnosticReceiver.ReportDiagnostic(DUR0207_MemberCannotCopyFromItselfOrItsParent, location, type);
+                isValid = false;
+            }
+
+            if (IsInDifferentAssembly(type, target))
+            {
+                location ??= attribute.GetLocation();
+                diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, location, type, target);
+                isValid = false;
+            }
+
+            if (!HasValidTypeArguments(target, out List<ITypeSymbol>? invalidTypeArguments))
+            {
+                isValid = false;
+
+                if (invalidTypeArguments is not null)
                 {
                     location ??= attribute.GetLocation();
-                    diagnosticReceiver.ReportDiagnostic(DUR0206_EquivalentAttributes, location, type);
-                }
 
-                if (IsInDifferentAssembly(type, target))
-                {
-                    location ??= attribute.GetLocation();
-                    diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, location, type, target);
-                    isValid = false;
-                }
-
-                if (!HasValidTypeArguments(target, out List<ITypeSymbol>? invalidTypeArguments))
-                {
-                    isValid = false;
-
-                    if (invalidTypeArguments is not null)
+                    foreach (ITypeSymbol typeArgument in invalidTypeArguments)
                     {
-                        location ??= attribute.GetLocation();
-
-                        foreach (ITypeSymbol typeArgument in invalidTypeArguments)
-                        {
-                            diagnosticReceiver.ReportDiagnostic(DUR0217_TypeParameterIsNotValid, location, type, typeArgument);
-                        }
+                        diagnosticReceiver.ReportDiagnostic(DUR0217_TypeParameterIsNotValid, location, type, typeArgument);
                     }
                 }
-
-                if (isValid)
-                {
-                    copyFromTypes.Add(target);
-                }
-
-                return isValid;
-            }
-            else if (diagnostic is not null)
-            {
-                diagnosticReceiver.ReportDiagnostic(diagnostic, attribute.GetLocation(), type, value);
             }
 
-            return false;
+            return ValidatePartialNameAndAddTarget(attribute, type, target, compilation, copyFromTypes, isValid, ref location, diagnosticReceiver);
         }
 
         private static bool ValidateTargetTypes(
             INamedTypeSymbol type,
             SemanticModel semanticModel,
+            CopyFromCompilationData compilation,
             AttributeData[] attributes,
-            [NotNullWhen(true)] out List<INamedTypeSymbol>? targetTypes,
+            [NotNullWhen(true)] out List<TargetData>? targetTypes,
             bool returnIfInvalid
         )
         {
-            List<INamedTypeSymbol> copyFromTypes = new();
+            List<TargetData> copyFromTypes = new();
             bool isValid = true;
 
             foreach (AttributeData attribute in attributes)
             {
-                if (!ValidateTargetType(type, semanticModel, attribute, copyFromTypes))
+                if (!ValidateTargetType(type, semanticModel, attribute, compilation, copyFromTypes))
                 {
                     if (returnIfInvalid)
                     {
@@ -1394,18 +1525,19 @@ namespace Durian.Analysis.CopyFrom
         private static bool ValidateTargetTypes(
             INamedTypeSymbol type,
             SemanticModel semanticModel,
+            CopyFromCompilationData compilation,
             AttributeData[] attributes,
-            [NotNullWhen(true)] out List<INamedTypeSymbol>? targetTypes,
+            [NotNullWhen(true)] out List<TargetData>? targetTypes,
             IDiagnosticReceiver diagnosticReceiver
         )
         {
-            List<INamedTypeSymbol> copyFromTypes = new();
+            List<TargetData> copyFromTypes = new();
 
             bool isValid = true;
 
             foreach (AttributeData attribute in attributes)
             {
-                if (!ValidateTargetType(type, semanticModel, attribute, copyFromTypes, diagnosticReceiver))
+                if (!ValidateTargetType(type, semanticModel, attribute, compilation, copyFromTypes, diagnosticReceiver))
                 {
                     isValid = false;
                 }

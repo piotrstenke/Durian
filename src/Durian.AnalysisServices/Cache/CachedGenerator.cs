@@ -20,7 +20,7 @@ namespace Durian.Analysis.Cache
     /// <typeparam name="TFilter">User-defined type of <see cref="ISyntaxFilter"/> that decides what <see cref="CSharpSyntaxNode"/>s collected by the <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SyntaxReceiver"/> are valid for generation.</typeparam>
     public abstract class CachedGenerator<TData, TCompilationData, TSyntaxReceiver, TFilter> : DurianGeneratorWithBuilder<TCompilationData, TSyntaxReceiver, TFilter>, ICachedGenerator<TData>
         where TData : IMemberData
-        where TCompilationData : ICompilationDataWithSymbols
+        where TCompilationData : ICompilationData
         where TSyntaxReceiver : IDurianSyntaxReceiver
         where TFilter : ICachedGeneratorSyntaxFilterWithDiagnostics<TData>
     {
@@ -190,7 +190,7 @@ namespace Durian.Analysis.Cache
     /// <inheritdoc cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/>
     public abstract class CachedGenerator<TData, TCompilationData, TSyntaxReceiver> : CachedGenerator<TData, TCompilationData, TSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
         where TData : IMemberData
-        where TCompilationData : ICompilationDataWithSymbols
+        where TCompilationData : ICompilationData
         where TSyntaxReceiver : IDurianSyntaxReceiver
     {
         /// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
@@ -230,7 +230,7 @@ namespace Durian.Analysis.Cache
     /// <inheritdoc cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/>
     public abstract class CachedGenerator<TData, TCompilationData> : CachedGenerator<TData, TCompilationData, IDurianSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
         where TData : IMemberData
-        where TCompilationData : ICompilationDataWithSymbols
+        where TCompilationData : ICompilationData
     {
         /// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
         protected CachedGenerator()
@@ -267,7 +267,7 @@ namespace Durian.Analysis.Cache
     }
 
     /// <inheritdoc cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/>
-    public abstract class CachedGenerator<TData> : CachedGenerator<TData, ICompilationDataWithSymbols, IDurianSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
+    public abstract class CachedGenerator<TData> : CachedGenerator<TData, ICompilationData, IDurianSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
         where TData : IMemberData
     {
         /// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>

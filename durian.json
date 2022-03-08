@@ -146,8 +146,7 @@
         "Durian.CopyFromTypeAttribute",
         "Durian.CopyFromMethodAttribute",
         "Durian.PatternAttribute",
-        "Durian.PartialNameAttribute",
-        "Durian.UsingsAttribute"
+        "Durian.PartialNameAttribute"
       ],
       "diagnosticIdPrefix": "02",
       "diagnosticFiles": [

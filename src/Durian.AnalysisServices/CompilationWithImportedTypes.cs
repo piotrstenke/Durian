@@ -56,7 +56,7 @@ namespace Durian.Analysis
         /// </summary>
         /// <param name="compilation"><see cref="CSharpCompilation"/> to get the <see cref="INamedTypeSymbol"/>s from.</param>
         /// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-        public CompilationWithImportedTypes(CSharpCompilation compilation) : base(compilation)
+        public CompilationWithImportedTypes(CSharpCompilation compilation) : base(compilation, false)
         {
             _allTypes = TypeIdentity.GetAllTypes().ToArray();
             _entries = new(_allTypes.Length);
@@ -370,7 +370,7 @@ namespace Durian.Analysis
         /// Resets <see cref="INamedTypeSymbol"/>s from the Durian.Generator namespace.
         /// </summary>
         [MemberNotNull(nameof(_enabledModules))]
-        public void Reset()
+        public override void Reset()
         {
             EnableModuleAttribute = Compilation.GetTypeByMetadataName(_enableModuleAttributeName);
 

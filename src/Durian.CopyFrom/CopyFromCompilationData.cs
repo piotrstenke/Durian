@@ -12,7 +12,7 @@ namespace Durian.Analysis.CopyFrom
     /// <summary>
     /// <see cref="CompilationData"/> that contains all <see cref="ISymbol"/>s needed to properly analyze types marked with the <c>Durian.CopyFromTypeAttribute</c> or <c>Durian.CopyFromMethodAttribute</c>.
     /// </summary>
-    public sealed class CopyFromCompilationData : CompilationDataWithSymbols
+    public sealed class CopyFromCompilationData : CompilationData
     {
         /// <summary>
         /// <see cref="INamedTypeSymbol"/> representing the <c>Durian.CopyFromMethodAttribute</c> class.
@@ -25,7 +25,11 @@ namespace Durian.Analysis.CopyFrom
         public INamedTypeSymbol? CopyFromTypeAttribute { get; private set; }
 
         /// <inheritdoc/>
-        [MemberNotNullWhen(false, nameof(CopyFromTypeAttribute), nameof(CopyFromMethodAttribute), nameof(PatternAttribute))]
+        [MemberNotNullWhen(false,
+            nameof(CopyFromTypeAttribute),
+            nameof(CopyFromMethodAttribute),
+            nameof(PatternAttribute),
+            nameof(PartialNameAttribute))]
         public override bool HasErrors
         {
             get => base.HasErrors;
@@ -36,6 +40,11 @@ namespace Durian.Analysis.CopyFrom
         /// <see cref="INamedTypeSymbol"/> representing the <c>Durian.PatternAttribute</c> class.
         /// </summary>
         public INamedTypeSymbol? PatternAttribute { get; private set; }
+
+        /// <summary>
+        /// <see cref="INamedTypeSymbol"/> representing the <see cref="Durian.PartialNameAttribute"/> class.
+        /// </summary>
+        public INamedTypeSymbol? PartialNameAttribute { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CopyFromCompilationData"/> class.
@@ -51,11 +60,10 @@ namespace Durian.Analysis.CopyFrom
         {
             base.Reset();
 
-            CopyFromTypeAttribute = Compilation.GetTypeByMetadataName(CopyFromTypeAttributeProvider.FullName);
-            CopyFromMethodAttribute = Compilation.GetTypeByMetadataName(CopyFromMethodAttributeProvider.FullName);
-            PatternAttribute = Compilation.GetTypeByMetadataName(PatternAttributeProvider.FullName);
-
-            HasErrors = base.HasErrors || CopyFromTypeAttribute is null || CopyFromMethodAttribute is null || PatternAttribute is null;
+            CopyFromTypeAttribute = IncludeType(CopyFromTypeAttributeProvider.FullName);
+            CopyFromMethodAttribute = IncludeType(CopyFromMethodAttributeProvider.FullName);
+            PatternAttribute = IncludeType(PatternAttributeProvider.FullName);
+            PartialNameAttribute = IncludeType(typeof(PartialNameAttribute).ToString());
         }
     }
 }

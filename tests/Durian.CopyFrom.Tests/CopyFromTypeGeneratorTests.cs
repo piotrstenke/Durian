@@ -470,6 +470,63 @@ partial class Test
         }
 
         [Fact]
+        public void Success_When_IsPartial_And_TargetIsPartialPart()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target), PartialPart = ""Part1"")]
+partial class Test
+{{
+}}
+
+[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target), PartialPart = ""Part2"")]
+partial class Test
+{{
+}}
+
+[{nameof(PartialNameAttribute)}(""Part1"")]
+partial class Target
+{{
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+
+[{nameof(PartialNameAttribute)}(""Part2"")]
+partial class Target
+{{
+    void Other()
+    {{
+        int a = default(int);
+    }}
+}}
+";
+            string expected1 =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Method()")}
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+";
+            string expected2 =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Other()")}
+    void Other()
+    {{
+        int a = default(int);
+    }}
+}}
+";
+            Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
+        }
+
+        [Fact]
         public void Success_When_MemberOfTargetHasXmlComment()
         {
             string input =
@@ -515,6 +572,59 @@ partial class Test
 }}
 ";
             Assert.True(RunGenerator(input).Compare(expected));
+        }
+
+        [Fact]
+        public void Success_When_SameTargetButDifferentPartialPart()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target), PartialPart = ""Part1"")]
+[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target), PartialPart = ""Part2"")]
+partial class Test
+{{
+}}
+
+[{nameof(PartialNameAttribute)}(""Part1"")]
+partial class Target
+{{
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+
+[{nameof(PartialNameAttribute)}(""Part2"")]
+partial class Target
+{{
+    void Other()
+    {{
+        int a = default(int);
+    }}
+}}
+";
+            string expected1 =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Method()")}
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+";
+            string expected2 =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Other()")}
+    void Other()
+    {{
+        int a = default(int);
+    }}
+}}
+";
+            Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
         }
 
         [Fact]
@@ -1589,9 +1699,26 @@ partial class Test
 
 class Target
 {{
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
 }}
 ";
-            Assert.True(RunGenerator(input).SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified.Id));
+            string expected =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Method()")}
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+";
+            SingletonGeneratorTestResult runResult = RunGenerator(input);
+
+            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified.Id));
+            Assert.True(runResult.Compare(expected));
         }
 
         [Fact]
@@ -1607,9 +1734,26 @@ partial class Test
 
 class Target
 {{
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
 }}
 ";
-            Assert.True(RunGenerator(input).SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified.Id));
+            string expected =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Method()")}
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+";
+            SingletonGeneratorTestResult runResult = RunGenerator(input);
+
+            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified.Id));
+            Assert.True(runResult.Compare(expected));
         }
 
         [Fact]
@@ -1626,9 +1770,26 @@ partial class Test
 
 class Target
 {{
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
 }}
 ";
-            Assert.True(RunGenerator(input).SucceededAndContainsDiagnostics(DUR0206_EquivalentAttributes.Id));
+            string expected =
+ $@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Method()")}
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+";
+            MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
+
+            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
+            Assert.True(runResult.Compare(expected));
         }
 
         [Fact]
@@ -1645,9 +1806,100 @@ partial class Test
 
 class Target
 {{
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
 }}
 ";
-            Assert.True(RunGenerator(input).SucceededAndContainsDiagnostics(DUR0206_EquivalentAttributes.Id));
+            string expected =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Method()")}
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+";
+            MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
+
+            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
+            Assert.True(runResult.Compare(expected));
+        }
+
+        [Fact]
+        public void Warning_When_TwoAttributesHaveSameTarget_And_OneHasPartialPart()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", PartialPart = ""A"")]
+partial class Test
+{{
+}}
+
+[{nameof(PartialNameAttribute)}(""A"")]
+partial class Target
+{{
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+";
+            string expected =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Method()")}
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+";
+            MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
+
+            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
+            Assert.True(runResult.Compare(expected));
+        }
+
+        [Fact]
+        public void Warning_When_TwoAttributesHaveSameTarget_And_SamePartialPart()
+        {
+            string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", PartialPart = ""A"")]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", PartialPart = ""A"")]
+partial class Test
+{{
+}}
+
+[{nameof(PartialNameAttribute)}(""A"")]
+partial class Target
+{{
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+";
+            string expected =
+$@"partial class Test
+{{
+    {GetCodeGenerationAttributes("Target.Method()")}
+    void Method()
+    {{
+        string a = string.Empty;
+    }}
+}}
+";
+            MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
+
+            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
+            Assert.True(runResult.Compare(expected));
         }
     }
 }

@@ -22,9 +22,7 @@ namespace Durian.Analysis.CopyFrom
         /// <summary>
         /// A collection of target types.
         /// </summary>
-        public INamedTypeSymbol[] Targets { get; }
-
-        IEnumerable<ISymbol> ICopyFromMember.Targets => Targets;
+        public TargetData[] Targets { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CopyFromTypeData"/> class.
@@ -36,7 +34,12 @@ namespace Durian.Analysis.CopyFrom
         /// <exception cref="ArgumentNullException">
         /// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
         /// </exception>
-        public CopyFromTypeData(TypeDeclarationSyntax declaration, ICompilationData compilation, INamedTypeSymbol[] targets, PatternData[]? patterns = default) : base(declaration, compilation)
+        public CopyFromTypeData(
+            TypeDeclarationSyntax declaration,
+            ICompilationData compilation,
+            TargetData[] targets,
+            PatternData[]? patterns = default
+        ) : base(declaration, compilation)
         {
             Targets = targets;
             Patterns = patterns;
@@ -61,7 +64,7 @@ namespace Durian.Analysis.CopyFrom
             ICompilationData compilation,
             INamedTypeSymbol symbol,
             SemanticModel semanticModel,
-            INamedTypeSymbol[] targets,
+            TargetData[] targets,
             PatternData[]? patterns = default,
             IEnumerable<TypeDeclarationSyntax>? partialDeclarations = null,
             IEnumerable<SyntaxToken>? modifiers = null,

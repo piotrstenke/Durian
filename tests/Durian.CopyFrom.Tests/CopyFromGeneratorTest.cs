@@ -10,7 +10,7 @@ namespace Durian.Analysis.CopyFrom.Tests
     {
         protected override ITestableGenerator CreateTestableGenerator(string testName)
         {
-            return Generator.CreateTestable(testName);
+            return UnderlayingGenerator.CreateTestable(testName);
         }
 
         protected override CopyFromGenerator CreateUnderlayingGenerator(LoggingConfiguration configuration)

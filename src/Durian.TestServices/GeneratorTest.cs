@@ -4,6 +4,7 @@
 using Durian.Analysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System;
 
 namespace Durian.TestServices
 {
@@ -46,13 +47,9 @@ namespace Durian.TestServices
         /// </summary>
         /// <param name="generator"><see cref="ISourceGenerator"/> to perform the test on.</param>
         /// <param name="input">Input for the generator.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
         public static SingletonGeneratorTestResult RunGenerator(ISourceGenerator generator, string? input)
         {
-            if (generator is null)
-            {
-                return default;
-            }
-
             return generator.RunTest(SingletonGeneratorTestResult.Create, input);
         }
 
@@ -62,16 +59,37 @@ namespace Durian.TestServices
         /// <param name="generator"><see cref="ISourceGenerator"/> to perform the test on.</param>
         /// <param name="input">Input for the generator.</param>
         /// <param name="index">Index of the source in the generator's output.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
         public static SingletonGeneratorTestResult RunGenerator(ISourceGenerator generator, string? input, int index)
         {
-            if (generator is null)
-            {
-                return default;
-            }
-
             return generator.RunTest(
                 (CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
-                    => new SingletonGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation, index), input);
+                    => SingletonGeneratorTestResult.Create(generatorDriver, inputCompilation, outputCompilation, index), input);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <paramref name="generator"/>.
+        /// </summary>
+        /// <param name="generator"><see cref="ISourceGenerator"/> to perform the test on.</param>
+        /// <param name="input">Input for the generator.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+        public static MultiOutputGeneratorTestResult RunGeneratorWithMultipleOutputs(ISourceGenerator generator, string? input)
+        {
+            return generator.RunTest(MultiOutputGeneratorTestResult.Create, input);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <paramref name="generator"/>.
+        /// </summary>
+        /// <param name="generator"><see cref="ISourceGenerator"/> to perform the test on.</param>
+        /// <param name="input">Input for the generator.</param>
+        /// <param name="startIndex">Number of generated sources to skip.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+        public static MultiOutputGeneratorTestResult RunGeneratorWithMultipleOutputs(ISourceGenerator generator, string? input, int startIndex)
+        {
+            return generator.RunTest(
+                (CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
+                    => MultiOutputGeneratorTestResult.Create(generatorDriver, inputCompilation, outputCompilation, startIndex), input);
         }
 
         /// <summary>
@@ -82,11 +100,6 @@ namespace Durian.TestServices
         /// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
         public static SingletonGeneratorTestResult RunGeneratorWithDependency(ISourceGenerator generator, string? input, string? external)
         {
-            if (generator is null)
-            {
-                return default;
-            }
-
             MetadataReference reference = RoslynUtilities.CreateReference(external);
             return generator.RunTest(SingletonGeneratorTestResult.Create, input, reference);
         }
@@ -100,14 +113,9 @@ namespace Durian.TestServices
         /// <param name="index">Index of the source in the generator's output.</param>
         public static SingletonGeneratorTestResult RunGeneratorWithDependency(ISourceGenerator generator, string? input, string? external, int index)
         {
-            if (generator is null)
-            {
-                return default;
-            }
-
             MetadataReference reference = RoslynUtilities.CreateReference(external);
             return generator.RunTest((CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
-                    => new SingletonGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation, index), input, reference);
+                    => SingletonGeneratorTestResult.Create(generatorDriver, inputCompilation, outputCompilation, index), input, reference);
         }
 
         /// <summary>
@@ -127,6 +135,25 @@ namespace Durian.TestServices
         public virtual SingletonGeneratorTestResult RunGenerator(string? input, int index)
         {
             return RunGenerator(Generator, input, index);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+        /// </summary>
+        /// <param name="input">Input for the generator.</param>
+        public virtual MultiOutputGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input)
+        {
+            return RunGeneratorWithMultipleOutputs(Generator, input);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+        /// </summary>
+        /// <param name="input">Input for the generator.</param>
+        /// <param name="startIndex">Number of generated sources to skip.</param>
+        public virtual MultiOutputGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, int startIndex)
+        {
+            return RunGeneratorWithMultipleOutputs(Generator, input, startIndex);
         }
 
         /// <summary>

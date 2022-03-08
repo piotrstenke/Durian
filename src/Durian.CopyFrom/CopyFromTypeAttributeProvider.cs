@@ -44,6 +44,11 @@ namespace Durian.Analysis.CopyFrom
         public const string TypeName = "CopyFromTypeAttribute";
 
         /// <summary>
+        /// Name of the 'Usings' property.
+        /// </summary>
+        public const string Usings = "Usings";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CopyFromTypeAttributeProvider"/> class.
         /// </summary>
         public CopyFromTypeAttributeProvider()
@@ -99,6 +104,11 @@ namespace {Namespace}
 		/// Source type of the copied implementation.
 		/// </summary>
 		public Type? {SourceType} {{ get; }}
+
+        /// <summary>
+		/// Specifies, which namespaces should be imported for the generated code.
+		/// </summary>
+        public string[]? {Usings} {{ get; set; }}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref=""{TypeName}""/>.

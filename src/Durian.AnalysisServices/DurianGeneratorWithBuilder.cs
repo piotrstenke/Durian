@@ -18,7 +18,7 @@ namespace Durian.Analysis
     /// <typeparam name="TSyntaxReceiver">User-defined type of <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="CSharpSyntaxNode"/>s to perform the generation on.</typeparam>
     /// <typeparam name="TFilter">User-defined type of <see cref="ISyntaxFilter"/> that decides what <see cref="CSharpSyntaxNode"/>s collected by the <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SyntaxReceiver"/> are valid for generation.</typeparam>
     public abstract class DurianGeneratorWithBuilder<TCompilationData, TSyntaxReceiver, TFilter> : DurianGenerator<TCompilationData, TSyntaxReceiver, TFilter>
-        where TCompilationData : ICompilationDataWithSymbols
+        where TCompilationData : ICompilationData
         where TSyntaxReceiver : IDurianSyntaxReceiver
         where TFilter : IGeneratorSyntaxFilterWithDiagnostics
     {
@@ -231,7 +231,7 @@ namespace Durian.Analysis
 
     /// <inheritdoc cref="DurianGeneratorWithBuilder{TCompilationData, TSyntaxReceiver, TFilter}"/>
     public abstract class DurianGeneratorWithBuilder<TCompilationData, TSyntaxReceiver> : DurianGeneratorWithBuilder<TCompilationData, TSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
-        where TCompilationData : ICompilationDataWithSymbols
+        where TCompilationData : ICompilationData
         where TSyntaxReceiver : IDurianSyntaxReceiver
     {
         /// <inheritdoc cref="DurianGeneratorWithBuilder{TCompilationData, TSyntaxReceiver}.DurianGeneratorWithBuilder(in ConstructionContext, IHintNameProvider?)"/>
@@ -270,7 +270,7 @@ namespace Durian.Analysis
 
     /// <inheritdoc cref="DurianGeneratorWithBuilder{TCompilationData, TSyntaxReceiver, TFilter}"/>
     public abstract class DurianGeneratorWithBuilder<TCompilationData> : DurianGeneratorWithBuilder<TCompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
-        where TCompilationData : ICompilationDataWithSymbols
+        where TCompilationData : ICompilationData
     {
         /// <inheritdoc cref="DurianGeneratorWithBuilder{TCompilationData}.DurianGeneratorWithBuilder(in ConstructionContext, IHintNameProvider?)"/>
         protected DurianGeneratorWithBuilder()
@@ -307,7 +307,7 @@ namespace Durian.Analysis
     }
 
     /// <inheritdoc cref="DurianGeneratorWithBuilder{TCompilationData, TSyntaxReceiver, TFilter}"/>
-    public abstract class DurianGeneratorWithBuilder : DurianGeneratorWithBuilder<ICompilationDataWithSymbols, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
+    public abstract class DurianGeneratorWithBuilder : DurianGeneratorWithBuilder<ICompilationData, IDurianSyntaxReceiver, IGeneratorSyntaxFilterWithDiagnostics>
     {
         /// <inheritdoc cref="DurianGeneratorWithBuilder(in ConstructionContext, IHintNameProvider?)"/>
         protected DurianGeneratorWithBuilder()

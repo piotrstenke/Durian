@@ -45,25 +45,14 @@ namespace Durian.Analysis.Data
         /// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
         public CompilationDataWithSymbols(CSharpCompilation compilation) : base(compilation)
         {
-            Reset();
-        }
-
-        /// <summary>
-        /// Resets all collected <see cref="ISymbol"/>s.
-        /// </summary>
-        public virtual void Reset()
-        {
-            DurianGeneratedAttribute = Compilation.GetTypeByMetadataName(typeof(DurianGeneratedAttribute).ToString());
-            GeneratedCodeAttribute = Compilation.GetTypeByMetadataName(typeof(GeneratedCodeAttribute).ToString());
-            EnableModuleAttribute = Compilation.GetTypeByMetadataName(typeof(EnableModuleAttribute).ToString());
-
-            HasErrors = DurianGeneratedAttribute is null || GeneratedCodeAttribute is null || EnableModuleAttribute is null;
         }
 
         /// <inheritdoc/>
-        protected override void OnUpdate(CSharpCompilation oldCompilation)
+        public override void Reset()
         {
-            Reset();
+            DurianGeneratedAttribute = IncludeType(typeof(DurianGeneratedAttribute).ToString());
+            GeneratedCodeAttribute = IncludeType(typeof(GeneratedCodeAttribute).ToString());
+            EnableModuleAttribute = IncludeType(typeof(EnableModuleAttribute).ToString());
         }
     }
 }

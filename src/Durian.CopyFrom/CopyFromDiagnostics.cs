@@ -79,7 +79,7 @@ namespace Durian.Analysis.CopyFrom
         /// <summary>
         /// Provides a diagnostic message indicating that two <c>Durian.CopyFromTypeAttribute</c>s are equivalent.
         /// </summary>
-        public static readonly DiagnosticDescriptor DUR0206_EquivalentAttributes = new(
+        public static readonly DiagnosticDescriptor DUR0206_EquivalentTarget = new(
             id: "DUR0206",
             title: "Equivalent CopyFromTypeAttribute already specified",
             messageFormat: "'{0}': Equivalent CopyFromTypeAttribute already specified",
@@ -233,12 +233,12 @@ namespace Durian.Analysis.CopyFrom
         );
 
         /// <summary>
-        /// Provides a diagnostic message indicating that two <c>Durian.PatternAttribute</c>s are equivalent.
+        /// Provides a diagnostic message indicating that a partial part name is unknown.
         /// </summary>
         public static readonly DiagnosticDescriptor DUR0218_UnknownPartialPartName = new(
             id: "DUR0218",
-            title: "Partial part does not exist",
-            messageFormat: "'{0}': Partial part '{1}' of type '{2}' does not exist",
+            title: "Unknown partial part",
+            messageFormat: "'{0}': Unknown partial part '{1}' of type '{2}'",
             category: "Durian.CopyFrom",
             defaultSeverity: DiagnosticSeverity.Error,
             helpLinkUri: DocsPath + "/DUR0218.md",

@@ -40,9 +40,8 @@ namespace Durian.TestServices
         /// <param name="generatorType"><see cref="Type"/> to get the <see cref="LoggingConfiguration"/> from.</param>
         protected LoggableGeneratorTest(bool enableDiagnostics, Type generatorType)
         {
-            string typeName = GetType().Name;
             _configuration = LoggingConfiguration.CreateConfigurationForGenerator(generatorType);
-            _configuration.LogDirectory += $"/{typeName}";
+            _configuration.LogDirectory += $"/{GetType().Name}";
             _enableDiagnostics = enableDiagnostics;
         }
 
@@ -67,6 +66,27 @@ namespace Durian.TestServices
         public virtual SingletonGeneratorTestResult RunGenerator(string? input, int index, [CallerMemberName] string testName = "")
         {
             return GeneratorTest.RunGenerator(GetGeneratorAndTryEnableDiagnostics(testName), input, index);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="ILoggableGenerator"/>.
+        /// </summary>
+        /// <param name="input">Input for the generator.</param>
+        /// <param name="testName">Name of the test that is currently performed.</param>
+        public virtual MultiOutputGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, [CallerMemberName] string testName = "")
+        {
+            return RunGeneratorWithMultipleOutputs(input, 0, testName);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="ILoggableGenerator"/>.
+        /// </summary>
+        /// <param name="input">Input for the generator.</param>
+        /// <param name="startIndex">Number of generated sources to skip.</param>
+        /// <param name="testName">Name of the test that is currently performed.</param>
+        public virtual MultiOutputGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, int startIndex, [CallerMemberName] string testName = "")
+        {
+            return GeneratorTest.RunGeneratorWithMultipleOutputs(GetGeneratorAndTryEnableDiagnostics(testName), input, startIndex);
         }
 
         /// <summary>

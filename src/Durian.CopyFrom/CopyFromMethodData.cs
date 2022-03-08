@@ -14,6 +14,8 @@ namespace Durian.Analysis.CopyFrom
     /// </summary>
     public sealed class CopyFromMethodData : MethodData, ICopyFromMember
     {
+        private readonly TargetData[] _targets;
+
         /// <summary>
         /// A collection of patterns applied to the method using <c>Durian.PatternAttribute</c>.
         /// </summary>
@@ -24,7 +26,7 @@ namespace Durian.Analysis.CopyFrom
         /// </summary>
         public IMethodSymbol Target { get; }
 
-        IEnumerable<ISymbol> ICopyFromMember.Targets => new IMethodSymbol[] { Target };
+        TargetData[] ICopyFromMember.Targets => _targets;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CopyFromMethodData"/> class.
@@ -40,6 +42,7 @@ namespace Durian.Analysis.CopyFrom
         {
             Target = target;
             Patterns = patterns;
+            _targets = new TargetData[] { new TargetData(Target) };
         }
 
         /// <summary>
@@ -76,6 +79,7 @@ namespace Durian.Analysis.CopyFrom
         {
             Target = target;
             Patterns = patterns;
+            _targets = new TargetData[] { new TargetData(Target) };
         }
     }
 }

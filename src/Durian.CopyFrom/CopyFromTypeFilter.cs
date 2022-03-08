@@ -55,12 +55,12 @@ namespace Durian.Analysis.CopyFrom
             CancellationToken cancellationToken = default
         )
         {
-            bool isValid = AnalyzeWithoutPattern(
+            bool isValid = AnalyzeTypeWithoutPattern(
                 symbol,
                 compilation,
                 semanticModel,
                 out ImmutableArray<AttributeData> attributes,
-                out List<INamedTypeSymbol>? targetTypes
+                out List<TargetData>? targetTypes
             );
 
             bool hasTarget = targetTypes?.Count > 0;
@@ -112,12 +112,12 @@ namespace Durian.Analysis.CopyFrom
             CancellationToken cancellationToken = default
         )
         {
-            bool isValid = AnalyzeWithoutPattern(
+            bool isValid = AnalyzeTypeWithoutPattern(
                 symbol,
                 compilation,
                 semanticModel,
                 out ImmutableArray<AttributeData> attributes,
-                out List<INamedTypeSymbol>? targetTypes,
+                out List<TargetData>? targetTypes,
                 diagnosticReceiver
             );
 

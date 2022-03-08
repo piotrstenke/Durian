@@ -32,6 +32,36 @@ namespace Durian.Analysis.Data
             }
 
             Compilation = compilation;
+            Reset();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompilationData"/> class.
+        /// </summary>
+        /// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
+        /// <param name="reset">Determines whether to call <see cref="Reset"/>().</param>
+        /// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
+        protected CompilationData(CSharpCompilation compilation, bool reset)
+        {
+            if(compilation is null)
+            {
+                throw new ArgumentNullException(nameof(compilation));
+            }
+
+            Compilation = compilation;
+
+            if(reset)
+            {
+                Reset();
+            }
+        }
+
+        /// <summary>
+        /// Resets all collected <see cref="ISymbol"/>s.
+        /// </summary>
+        public virtual void Reset()
+        {
+            // Do nothing by default.
         }
 
         /// <inheritdoc/>
@@ -105,12 +135,27 @@ namespace Durian.Analysis.Data
         }
 
         /// <summary>
+        /// Returns a <see cref="INamedTypeSymbol"/> by the specified <paramref name="metadataName"/> and sets <see cref="HasErrors"/> to <see langword="true"/> if the <see cref="INamedTypeSymbol"/> could not be found.
+        /// </summary>
+        /// <param name="metadataName">Metadata name of <see cref="INamedTypeSymbol"/> to include.</param>
+        protected INamedTypeSymbol? IncludeType(string metadataName)
+        {
+            if (Compilation.GetTypeByMetadataName(metadataName) is not INamedTypeSymbol t)
+            {
+                HasErrors = true;
+                return default;
+            }
+
+            return t;
+        }
+
+        /// <summary>
         /// Methods executed when the <see cref="Compilation"/> has changed using one of the <c>Update...</c> methods.
         /// </summary>
         /// <param name="oldCompilation"><see cref="CSharpCompilation"/> that was updated.</param>
         protected virtual void OnUpdate(CSharpCompilation oldCompilation)
         {
-            // Do nothing by default.
+            Reset();
         }
     }
 }

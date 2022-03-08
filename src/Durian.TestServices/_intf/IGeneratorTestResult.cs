@@ -16,7 +16,6 @@ namespace Durian.TestServices
         /// <summary>
         /// A collection of <see cref="Diagnostic"/>s that was produced during the <see cref="ISourceGenerator"/> pass.
         /// </summary>
-        /// <value></value>
         ImmutableArray<Diagnostic> Diagnostics { get; }
 
         /// <summary>

@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 
 using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
 
 namespace Durian.Analysis.CopyFrom
 {
@@ -15,11 +13,11 @@ namespace Durian.Analysis.CopyFrom
         /// <summary>
         /// A collection of patterns applied to the member using <c>Durian.PatternAttribute</c>.
         /// </summary>
-        public PatternData[]? Patterns { get; }
+        PatternData[]? Patterns { get; }
 
         /// <summary>
         /// Target members.
         /// </summary>
-        public IEnumerable<ISymbol> Targets { get; }
+        TargetData[] Targets { get; }
     }
 }

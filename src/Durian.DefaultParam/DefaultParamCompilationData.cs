@@ -89,19 +89,11 @@ namespace Durian.Analysis.DefaultParam
         {
             base.Reset();
 
-            DefaultParamAttribute = Compilation.GetTypeByMetadataName(DefaultParamAttributeProvider.FullName);
-            DefaultParamConfigurationAttribute = Compilation.GetTypeByMetadataName(DefaultParamConfigurationAttributeProvider.FullName);
-            DefaultParamScopedConfigurationAttribute = Compilation.GetTypeByMetadataName(DefaultParamScopedConfigurationAttributeProvider.FullName);
-            DPTypeConvention = Compilation.GetTypeByMetadataName(DPTypeConventionProvider.FullName);
-            DPMethodConvention = Compilation.GetTypeByMetadataName(DPMethodConventionProvider.FullName);
-
-            HasErrors =
-                base.HasErrors ||
-                DefaultParamAttribute is null ||
-                DefaultParamConfigurationAttribute is null ||
-                DefaultParamScopedConfigurationAttribute is null ||
-                DPTypeConvention is null ||
-                DPMethodConvention is null;
+            DefaultParamAttribute = IncludeType(DefaultParamAttributeProvider.FullName);
+            DefaultParamConfigurationAttribute = IncludeType(DefaultParamConfigurationAttributeProvider.FullName);
+            DefaultParamScopedConfigurationAttribute = IncludeType(DefaultParamScopedConfigurationAttributeProvider.FullName);
+            DPTypeConvention = IncludeType(DPTypeConventionProvider.FullName);
+            DPMethodConvention = IncludeType(DPMethodConventionProvider.FullName);
         }
 
         private static DefaultParamConfiguration BuildConfiguration(AttributeData attribute)

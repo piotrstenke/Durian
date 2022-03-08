@@ -55,7 +55,7 @@ namespace Durian.Analysis.CopyFrom
             CancellationToken cancellationToken = default
         )
         {
-            bool isValid = AnalyzeWithoutPattern(
+            bool isValid = AnalyzeMethodWithoutPattern(
                 symbol,
                 compilation,
                 semanticModel,
@@ -113,7 +113,7 @@ namespace Durian.Analysis.CopyFrom
             CancellationToken cancellationToken = default
         )
         {
-            bool isValid = AnalyzeWithoutPattern(
+            bool isValid = AnalyzeMethodWithoutPattern(
                 symbol,
                 compilation,
                 semanticModel,
