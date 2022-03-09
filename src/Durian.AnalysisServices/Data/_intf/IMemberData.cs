@@ -8,44 +8,44 @@ using System.Collections.Immutable;
 
 namespace Durian.Analysis.Data
 {
-    /// <summary>
-    /// Encapsulates data associated with a single <see cref="MemberDeclarationSyntax"/>.
-    /// </summary>
-    public interface IMemberData
-    {
-        /// <summary>
-        /// Target <see cref="MemberDeclarationSyntax"/>.
-        /// </summary>
-        MemberDeclarationSyntax Declaration { get; }
+	/// <summary>
+	/// Encapsulates data associated with a single <see cref="MemberDeclarationSyntax"/>.
+	/// </summary>
+	public interface IMemberData
+	{
+		/// <summary>
+		/// Target <see cref="MemberDeclarationSyntax"/>.
+		/// </summary>
+		MemberDeclarationSyntax Declaration { get; }
 
-        /// <summary>
-        /// Parent compilation of this <see cref="IMemberData"/>.
-        /// </summary>
-        ICompilationData ParentCompilation { get; }
+		/// <summary>
+		/// Parent compilation of this <see cref="IMemberData"/>.
+		/// </summary>
+		ICompilationData ParentCompilation { get; }
 
-        /// <summary>
-        /// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="Declaration"/>.
-        /// </summary>
-        SemanticModel SemanticModel { get; }
+		/// <summary>
+		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="Declaration"/>.
+		/// </summary>
+		SemanticModel SemanticModel { get; }
 
-        /// <summary>
-        /// <see cref="ISymbol"/> associated with the <see cref="Declaration"/>.
-        /// </summary>
-        ISymbol Symbol { get; }
+		/// <summary>
+		/// <see cref="ISymbol"/> associated with the <see cref="Declaration"/>.
+		/// </summary>
+		ISymbol Symbol { get; }
 
-        /// <summary>
-        /// Returns data of all attributes applied to the <see cref="Symbol"/>.
-        /// </summary>
-        ImmutableArray<AttributeData> GetAttributes();
+		/// <summary>
+		/// Returns data of all attributes applied to the <see cref="Symbol"/>.
+		/// </summary>
+		ImmutableArray<AttributeData> GetAttributes();
 
-        /// <summary>
-        /// Returns all <see cref="INamespaceSymbol"/>s that contain the <see cref="Symbol"/>.
-        /// </summary>
-        IEnumerable<INamespaceSymbol> GetContainingNamespaces();
+		/// <summary>
+		/// Returns all <see cref="INamespaceSymbol"/>s that contain the <see cref="Symbol"/>.
+		/// </summary>
+		IEnumerable<INamespaceSymbol> GetContainingNamespaces();
 
-        /// <summary>
-        /// Returns all <see cref="ITypeData"/>s that contain the <see cref="Symbol"/>.
-        /// </summary>
-        IEnumerable<ITypeData> GetContainingTypes();
-    }
+		/// <summary>
+		/// Returns all <see cref="ITypeData"/>s that contain the <see cref="Symbol"/>.
+		/// </summary>
+		IEnumerable<ITypeData> GetContainingTypes();
+	}
 }

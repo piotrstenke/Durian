@@ -1,8 +1,8 @@
 {
   "profiles": {
-    "GenerateAnalyzerReleases": {
-      "commandName": "Project",
-      "commandLineArgs": "\"$(SolutionDir)src/Durian.CopyFrom/CopyFromDiagnostics\""
-    }
+	"GenerateAnalyzerReleases": {
+	  "commandName": "Project",
+	  "commandLineArgs": "\"$(SolutionDir)src/Durian.CopyFrom/CopyFromDiagnostics\""
+	}
   }
 }

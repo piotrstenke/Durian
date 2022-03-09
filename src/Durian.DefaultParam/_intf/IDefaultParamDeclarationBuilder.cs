@@ -8,74 +8,74 @@ using System.Collections.Generic;
 
 namespace Durian.Analysis.DefaultParam
 {
-    /// <summary>
-    /// Builds a new member declaration based on the value specified in the <c>Durian.DefaultParamAttribute</c>.
-    /// </summary>
-    public interface IDefaultParamDeclarationBuilder
-    {
-        /// <summary>
-        /// <see cref="OriginalNode"/> after modification.
-        /// </summary>
-        CSharpSyntaxNode CurrentNode { get; }
+	/// <summary>
+	/// Builds a new member declaration based on the value specified in the <c>Durian.DefaultParamAttribute</c>.
+	/// </summary>
+	public interface IDefaultParamDeclarationBuilder
+	{
+		/// <summary>
+		/// <see cref="OriginalNode"/> after modification.
+		/// </summary>
+		CSharpSyntaxNode CurrentNode { get; }
 
-        /// <summary>
-        /// Original <see cref="CSharpSyntaxNode"/>.
-        /// </summary>
-        CSharpSyntaxNode OriginalNode { get; }
+		/// <summary>
+		/// Original <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
+		CSharpSyntaxNode OriginalNode { get; }
 
-        /// <summary>
-        /// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="OriginalNode"/>.
-        /// </summary>
-        SemanticModel SemanticModel { get; }
+		/// <summary>
+		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="OriginalNode"/>.
+		/// </summary>
+		SemanticModel SemanticModel { get; }
 
-        /// <summary>
-        /// Determines whether to visit the body of this member's declaration when collecting or replacing type parameters.
-        /// </summary>
-        bool VisitDeclarationBody { get; }
+		/// <summary>
+		/// Determines whether to visit the body of this member's declaration when collecting or replacing type parameters.
+		/// </summary>
+		bool VisitDeclarationBody { get; }
 
-        /// <summary>
-        /// Begins the process of type parameter replacing using the specified <paramref name="replacer"/>.
-        /// </summary>
-        /// <param name="replacer"><see cref="TypeParameterReplacer"/> to use.</param>
-        void AcceptTypeParameterReplacer(TypeParameterReplacer replacer);
+		/// <summary>
+		/// Begins the process of type parameter replacing using the specified <paramref name="replacer"/>.
+		/// </summary>
+		/// <param name="replacer"><see cref="TypeParameterReplacer"/> to use.</param>
+		void AcceptTypeParameterReplacer(TypeParameterReplacer replacer);
 
-        /// <summary>
-        /// Sets the specified <paramref name="node"/> as the <see cref="CurrentNode"/> without changing the <see cref="OriginalNode"/>.
-        /// </summary>
-        /// <param name="node"><see cref="CSharpSyntaxNode"/> to set as <see cref="CurrentNode"/>.</param>
-        void Emplace(CSharpSyntaxNode node);
+		/// <summary>
+		/// Sets the specified <paramref name="node"/> as the <see cref="CurrentNode"/> without changing the <see cref="OriginalNode"/>.
+		/// </summary>
+		/// <param name="node"><see cref="CSharpSyntaxNode"/> to set as <see cref="CurrentNode"/>.</param>
+		void Emplace(CSharpSyntaxNode node);
 
-        /// <summary>
-        /// Returns the <see cref="TypeParameterConstraintClauseSyntax"/> at the specified <paramref name="index"/> in the <see cref="CurrentNode"/>.
-        /// </summary>
-        /// <param name="index">Index of the <see cref="TypeParameterConstraintClauseSyntax"/> to get.</param>
-        TypeParameterConstraintClauseSyntax GetCurrentConstraintClause(int index);
+		/// <summary>
+		/// Returns the <see cref="TypeParameterConstraintClauseSyntax"/> at the specified <paramref name="index"/> in the <see cref="CurrentNode"/>.
+		/// </summary>
+		/// <param name="index">Index of the <see cref="TypeParameterConstraintClauseSyntax"/> to get.</param>
+		TypeParameterConstraintClauseSyntax GetCurrentConstraintClause(int index);
 
-        /// <summary>
-        /// Returns a <see cref="SyntaxList{TNode}"/> of the <see cref="OriginalNode"/>'s <see cref="TypeParameterConstraintClauseSyntax"/>es.
-        /// </summary>
-        SyntaxList<TypeParameterConstraintClauseSyntax> GetOriginalConstraintClauses();
+		/// <summary>
+		/// Returns a <see cref="SyntaxList{TNode}"/> of the <see cref="OriginalNode"/>'s <see cref="TypeParameterConstraintClauseSyntax"/>es.
+		/// </summary>
+		SyntaxList<TypeParameterConstraintClauseSyntax> GetOriginalConstraintClauses();
 
-        /// <summary>
-        /// Returns number of type parameters in the <see cref="OriginalNode"/>.
-        /// </summary>
-        int GetOriginalTypeParameterCount();
+		/// <summary>
+		/// Returns number of type parameters in the <see cref="OriginalNode"/>.
+		/// </summary>
+		int GetOriginalTypeParameterCount();
 
-        /// <summary>
-        /// Sets the value of <see cref="CurrentNode"/> to the value of <see cref="OriginalNode"/>.
-        /// </summary>
-        void Reset();
+		/// <summary>
+		/// Sets the value of <see cref="CurrentNode"/> to the value of <see cref="OriginalNode"/>.
+		/// </summary>
+		void Reset();
 
-        /// <summary>
-        /// Replaces <see cref="TypeParameterConstraintClauseSyntax"/>es of the <see cref="CurrentNode"/> with the specified collection of <see cref="TypeParameterConstraintClauseSyntax"/>es.
-        /// </summary>
-        /// <param name="constraintClauses">Collection of <see cref="TypeParameterConstraintClauseSyntax"/> to apply to the <see cref="CurrentNode"/>.</param>
-        void WithConstraintClauses(IEnumerable<TypeParameterConstraintClauseSyntax> constraintClauses);
+		/// <summary>
+		/// Replaces <see cref="TypeParameterConstraintClauseSyntax"/>es of the <see cref="CurrentNode"/> with the specified collection of <see cref="TypeParameterConstraintClauseSyntax"/>es.
+		/// </summary>
+		/// <param name="constraintClauses">Collection of <see cref="TypeParameterConstraintClauseSyntax"/> to apply to the <see cref="CurrentNode"/>.</param>
+		void WithConstraintClauses(IEnumerable<TypeParameterConstraintClauseSyntax> constraintClauses);
 
-        /// <summary>
-        /// Determines how many type parameters of the <see cref="OriginalNode"/> should the <see cref="CurrentNode"/> have.
-        /// </summary>
-        /// <param name="count">Number of type parameters to take.</param>
-        void WithTypeParameters(int count);
-    }
+		/// <summary>
+		/// Determines how many type parameters of the <see cref="OriginalNode"/> should the <see cref="CurrentNode"/> have.
+		/// </summary>
+		/// <param name="count">Number of type parameters to take.</param>
+		void WithTypeParameters(int count);
+	}
 }

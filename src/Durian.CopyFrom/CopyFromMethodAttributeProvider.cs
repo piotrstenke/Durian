@@ -3,54 +3,54 @@
 
 namespace Durian.Analysis.CopyFrom
 {
-    /// <summary>
-    /// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.CopyFromMethodAttribute</c> class.
-    /// </summary>
-    public sealed class CopyFromMethodAttributeProvider : SourceTextProvider
-    {
-        /// <summary>
-        /// Full name of the provided type.
-        /// </summary>
-        public const string FullName = Namespace + "." + TypeName;
+	/// <summary>
+	/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.CopyFromMethodAttribute</c> class.
+	/// </summary>
+	public sealed class CopyFromMethodAttributeProvider : SourceTextProvider
+	{
+		/// <summary>
+		/// Full name of the provided type.
+		/// </summary>
+		public const string FullName = Namespace + "." + TypeName;
 
-        /// <summary>
-        /// Namespace the provided type is located in.
-        /// </summary>
-        public const string Namespace = DurianStrings.MainNamespace;
+		/// <summary>
+		/// Namespace the provided type is located in.
+		/// </summary>
+		public const string Namespace = DurianStrings.MainNamespace;
 
-        /// <summary>
-        /// Name of the 'Source' property.
-        /// </summary>
-        public const string Source = "Source";
+		/// <summary>
+		/// Name of the 'Source' property.
+		/// </summary>
+		public const string Source = "Source";
 
-        /// <summary>
-        /// Name of the provided type.
-        /// </summary>
-        public const string TypeName = "CopyFromMethodAttribute";
+		/// <summary>
+		/// Name of the provided type.
+		/// </summary>
+		public const string TypeName = "CopyFromMethodAttribute";
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CopyFromMethodAttributeProvider"/> class.
-        /// </summary>
-        public CopyFromMethodAttributeProvider()
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CopyFromMethodAttributeProvider"/> class.
+		/// </summary>
+		public CopyFromMethodAttributeProvider()
+		{
+		}
 
-        /// <inheritdoc/>
-        public override string GetFullName()
-        {
-            return FullName;
-        }
+		/// <inheritdoc/>
+		public override string GetFullName()
+		{
+			return FullName;
+		}
 
-        /// <inheritdoc/>
-        public override string GetNamespace()
-        {
-            return Namespace;
-        }
+		/// <inheritdoc/>
+		public override string GetNamespace()
+		{
+			return Namespace;
+		}
 
-        /// <inheritdoc/>
-        public override string GetText()
-        {
-            return
+		/// <inheritdoc/>
+		public override string GetText()
+		{
+			return
 @$"using System;
 using System.Diagnostics;
 
@@ -81,12 +81,12 @@ namespace {Namespace}
 	}}
 }}
 ";
-        }
+		}
 
-        /// <inheritdoc/>
-        public override string GetTypeName()
-        {
-            return TypeName;
-        }
-    }
+		/// <inheritdoc/>
+		public override string GetTypeName()
+		{
+			return TypeName;
+		}
+	}
 }

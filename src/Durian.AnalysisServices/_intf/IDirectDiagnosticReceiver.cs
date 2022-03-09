@@ -6,16 +6,16 @@ using System;
 
 namespace Durian.Analysis
 {
-    /// <summary>
-    /// Provides a method for reporting a <see cref="Diagnostic"/>.
-    /// </summary>
-    public interface IDirectDiagnosticReceiver : IDiagnosticReceiver
-    {
-        /// <summary>
-        /// Reports a <see cref="Diagnostic"/>.
-        /// </summary>
-        /// <param name="diagnostic"><see cref="Diagnostic"/> to report.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
-        void ReportDiagnostic(Diagnostic diagnostic);
-    }
+	/// <summary>
+	/// Provides a method for reporting a <see cref="Diagnostic"/>.
+	/// </summary>
+	public interface IDirectDiagnosticReceiver : IDiagnosticReceiver
+	{
+		/// <summary>
+		/// Reports a <see cref="Diagnostic"/>.
+		/// </summary>
+		/// <param name="diagnostic"><see cref="Diagnostic"/> to report.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
+		void ReportDiagnostic(Diagnostic diagnostic);
+	}
 }

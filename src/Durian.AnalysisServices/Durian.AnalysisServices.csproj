@@ -2,38 +2,58 @@
 
   <PropertyGroup>
 
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>Durian.AnalysisServices is the base package for all Durian analyzers and source generators, offering solutions for most features a Roslyn-based service could require, such as logging, code generation, node filtration, member data containers, and much more.</Description>
-    <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Service;Utility</PackageTags>
-    <PackageVersion>2.1.0</PackageVersion>
-    <AssemblyVersion>2.1.0</AssemblyVersion>
-    <Version>2.1.0</Version>
-    <RootNamespace>Durian.Analysis</RootNamespace>
+	<TargetFramework>netstandard2.0</TargetFramework>
+	<Description>Durian.AnalysisServices is the base package for all Durian analyzers and source generators, offering solutions for most features a Roslyn-based service could require, such as logging, code generation, node filtration, member data containers, and much more.</Description>
+	<PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Service;Utility</PackageTags>
+	<PackageVersion>2.1.0</PackageVersion>
+	<AssemblyVersion>2.1.0</AssemblyVersion>
+	<Version>2.1.0</Version>
+	<RootNamespace>Durian.Analysis</RootNamespace>
 
   </PropertyGroup>
 
   <ItemGroup>
 
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" />
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" />
 
-    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
-    
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>Durian.AnalysisServices.Tests</_Parameter1>
-    </AssemblyAttribute>
+	<ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
+	
+	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+		<_Parameter1>Durian.AnalysisServices.Tests</_Parameter1>
+	</AssemblyAttribute>
 
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-        <_Parameter1>Durian.TestServices</_Parameter1>
-    </AssemblyAttribute>
-    
+	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+		<_Parameter1>Durian.TestServices</_Parameter1>
+	</AssemblyAttribute>
+
+	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+		<_Parameter1>Durian.CopyFrom</_Parameter1>
+	</AssemblyAttribute>
+
+	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+		<_Parameter1>Durian.DefaultParam</_Parameter1>
+	</AssemblyAttribute>
+
+	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+		<_Parameter1>Durian.InterfaceTargets</_Parameter1>
+	</AssemblyAttribute>
+
+	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+		<_Parameter1>Durian.Core.Analyzer</_Parameter1>
+	</AssemblyAttribute>
+
+	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+		<_Parameter1>Durian.FriendClass</_Parameter1>
+	</AssemblyAttribute>
+
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Debug'">
 
-    <PackageReference Include="Roslynator.Analyzers" Version="3.2.2" PrivateAssets="all" />
-    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="1.1.1" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
+	<PackageReference Include="Roslynator.Analyzers" Version="3.2.2" PrivateAssets="all" />
+	<PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="1.1.1" PrivateAssets="all" />
+	<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
 
   </ItemGroup>
 

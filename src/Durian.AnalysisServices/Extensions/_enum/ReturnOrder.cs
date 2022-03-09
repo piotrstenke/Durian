@@ -3,19 +3,19 @@
 
 namespace Durian.Analysis.Extensions
 {
-    /// <summary>
-    /// Specifies order at which members should be returned.
-    /// </summary>
-    public enum ReturnOrder
-    {
-        /// <summary>
-        /// Root is returned first.
-        /// </summary>
-        Root = 0,
+	/// <summary>
+	/// Specifies order at which members should be returned.
+	/// </summary>
+	public enum ReturnOrder
+	{
+		/// <summary>
+		/// Root is returned first.
+		/// </summary>
+		Root = 0,
 
-        /// <summary>
-        /// Root is returned last.
-        /// </summary>
-        Parent = 1
-    }
+		/// <summary>
+		/// Root is returned last.
+		/// </summary>
+		Parent = 1
+	}
 }

@@ -3,74 +3,79 @@
 
 namespace Durian.Analysis.CopyFrom
 {
-    /// <summary>
-    /// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.CopyFromTypeAttribute</c> class.
-    /// </summary>
-    public sealed class CopyFromTypeAttributeProvider : SourceTextProvider
-    {
-        /// <summary>
-        /// Full name of the provided type.
-        /// </summary>
-        public const string FullName = Namespace + "." + TypeName;
+	/// <summary>
+	/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.CopyFromTypeAttribute</c> class.
+	/// </summary>
+	public sealed class CopyFromTypeAttributeProvider : SourceTextProvider
+	{
+		/// <summary>
+		/// Name of the 'AddUsings' property.
+		/// </summary>
+		public const string AddUsings = "AddUsings";
 
-        /// <summary>
-        /// Namespace the provided type is located in.
-        /// </summary>
-        public const string Namespace = DurianStrings.MainNamespace;
+		/// <summary>
+		/// Name of the 'CopyUsings' property.
+		/// </summary>
+		public const string CopyUsings = "CopyUsings";
 
-        /// <summary>
-        /// Name of the 'Order' property.
-        /// </summary>
-        public const string Order = "Order";
+		/// <summary>
+		/// Full name of the provided type.
+		/// </summary>
+		public const string FullName = Namespace + "." + TypeName;
 
-        /// <summary>
-        /// Name of the 'PartialPart' property.
-        /// </summary>
-        public const string PartialPart = "PartialPart";
+		/// <summary>
+		/// Namespace the provided type is located in.
+		/// </summary>
+		public const string Namespace = DurianStrings.MainNamespace;
 
-        /// <summary>
-        /// Name of the 'Source' property.
-        /// </summary>
-        public const string Source = CopyFromMethodAttributeProvider.Source;
+		/// <summary>
+		/// Name of the 'Order' property.
+		/// </summary>
+		public const string Order = "Order";
 
-        /// <summary>
-        /// Name of the 'SourceType' property.
-        /// </summary>
-        public const string SourceType = "SourceType";
+		/// <summary>
+		/// Name of the 'PartialPart' property.
+		/// </summary>
+		public const string PartialPart = "PartialPart";
 
-        /// <summary>
-        /// Name of the provided type.
-        /// </summary>
-        public const string TypeName = "CopyFromTypeAttribute";
+		/// <summary>
+		/// Name of the 'Source' property.
+		/// </summary>
+		public const string Source = CopyFromMethodAttributeProvider.Source;
 
-        /// <summary>
-        /// Name of the 'Usings' property.
-        /// </summary>
-        public const string Usings = "Usings";
+		/// <summary>
+		/// Name of the 'SourceType' property.
+		/// </summary>
+		public const string SourceType = "SourceType";
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CopyFromTypeAttributeProvider"/> class.
-        /// </summary>
-        public CopyFromTypeAttributeProvider()
-        {
-        }
+		/// <summary>
+		/// Name of the provided type.
+		/// </summary>
+		public const string TypeName = "CopyFromTypeAttribute";
 
-        /// <inheritdoc/>
-        public override string GetFullName()
-        {
-            return FullName;
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CopyFromTypeAttributeProvider"/> class.
+		/// </summary>
+		public CopyFromTypeAttributeProvider()
+		{
+		}
 
-        /// <inheritdoc/>
-        public override string GetNamespace()
-        {
-            return Namespace;
-        }
+		/// <inheritdoc/>
+		public override string GetFullName()
+		{
+			return FullName;
+		}
 
-        /// <inheritdoc/>
-        public override string GetText()
-        {
-            return
+		/// <inheritdoc/>
+		public override string GetNamespace()
+		{
+			return Namespace;
+		}
+
+		/// <inheritdoc/>
+		public override string GetText()
+		{
+			return
 @$"using System;
 using System.Diagnostics;
 
@@ -86,9 +91,19 @@ namespace {Namespace}
 	public sealed class {TypeName} : Attribute
 	{{
 		/// <summary>
+		/// Specifies, which namespaces should be imported for the generated code.
+		/// </summary>
+		public string[]? {AddUsings} {{ get; set; }}
+
+		/// <summary>
+		/// Determines whether to copy usings from the target type's source file. Defaults to <see langword=""true""/>.
+		/// </summary>
+		public bool {CopyUsings} {{ get; set; }} = true;
+
+		/// <summary>
 		/// Partial part of the source type to copy the implementation from.
 		/// </summary>
-        public string? {PartialPart} {{ get; set; }}
+		public string? {PartialPart} {{ get; set; }}
 
 		/// <summary>
 		/// Order in which multiple <see cref=""{TypeName}""/>s are applied.
@@ -104,11 +119,6 @@ namespace {Namespace}
 		/// Source type of the copied implementation.
 		/// </summary>
 		public Type? {SourceType} {{ get; }}
-
-        /// <summary>
-		/// Specifies, which namespaces should be imported for the generated code.
-		/// </summary>
-        public string[]? {Usings} {{ get; set; }}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref=""{TypeName}""/>.
@@ -130,12 +140,12 @@ namespace {Namespace}
 	}}
 }}
 ";
-        }
+		}
 
-        /// <inheritdoc/>
-        public override string GetTypeName()
-        {
-            return TypeName;
-        }
-    }
+		/// <inheritdoc/>
+		public override string GetTypeName()
+		{
+			return TypeName;
+		}
+	}
 }

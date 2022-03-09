@@ -3,47 +3,47 @@
 
 namespace Durian.Analysis.InterfaceTargets
 {
-    /// <summary>
-    /// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.InterfaceTargetsAttribute</c> class.
-    /// </summary>
-    public sealed class InterfaceTargetsAttributeProvider : SourceTextProvider
-    {
-        /// <summary>
-        /// Full name of the provided type.
-        /// </summary>
-        public const string FullName = Namespace + "." + TypeName;
+	/// <summary>
+	/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.InterfaceTargetsAttribute</c> class.
+	/// </summary>
+	public sealed class InterfaceTargetsAttributeProvider : SourceTextProvider
+	{
+		/// <summary>
+		/// Full name of the provided type.
+		/// </summary>
+		public const string FullName = Namespace + "." + TypeName;
 
-        /// <summary>
-        /// Namespace the provided type is located in.
-        /// </summary>
-        public const string Namespace = DurianStrings.MainNamespace;
+		/// <summary>
+		/// Namespace the provided type is located in.
+		/// </summary>
+		public const string Namespace = DurianStrings.MainNamespace;
 
-        /// <summary>
-        /// Name of the 'Targets' property.
-        /// </summary>
-        public const string Targets = "Targets";
+		/// <summary>
+		/// Name of the 'Targets' property.
+		/// </summary>
+		public const string Targets = "Targets";
 
-        /// <summary>
-        /// Name of the provided type.
-        /// </summary>
-        public const string TypeName = "InterfaceTargetsAttribute";
+		/// <summary>
+		/// Name of the provided type.
+		/// </summary>
+		public const string TypeName = "InterfaceTargetsAttribute";
 
-        /// <inheritdoc/>
-        public override string GetFullName()
-        {
-            return FullName;
-        }
+		/// <inheritdoc/>
+		public override string GetFullName()
+		{
+			return FullName;
+		}
 
-        /// <inheritdoc/>
-        public override string GetNamespace()
-        {
-            return Namespace;
-        }
+		/// <inheritdoc/>
+		public override string GetNamespace()
+		{
+			return Namespace;
+		}
 
-        /// <inheritdoc/>
-        public override string GetText()
-        {
-            return
+		/// <inheritdoc/>
+		public override string GetText()
+		{
+			return
 $@"using System;
 
 namespace {Namespace}
@@ -70,12 +70,12 @@ namespace {Namespace}
 	}}
 }}
 ";
-        }
+		}
 
-        /// <inheritdoc/>
-        public override string GetTypeName()
-        {
-            return TypeName;
-        }
-    }
+		/// <inheritdoc/>
+		public override string GetTypeName()
+		{
+			return TypeName;
+		}
+	}
 }

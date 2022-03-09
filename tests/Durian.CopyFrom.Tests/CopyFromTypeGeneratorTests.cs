@@ -7,12 +7,12 @@ using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
 
 namespace Durian.Analysis.CopyFrom.Tests
 {
-    public sealed class CopyFromTypeGeneratorTests : CopyFromGeneratorTest
-    {
-        [Fact]
-        public void Error_When_ContainingTypeIsNotPartial()
-        {
-            string input =
+	public sealed class CopyFromTypeGeneratorTests : CopyFromGeneratorTest
+	{
+		[Fact]
+		public void Error_When_ContainingTypeIsNotPartial()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 class Parent
@@ -27,13 +27,13 @@ class Target
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0201_ContainingTypeMustBePartial.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0201_ContainingTypeMustBePartial.Id));
+		}
 
-        [Fact]
-        public void Error_When_CopiedFromDynamic()
-        {
-            string input =
+		[Fact]
+		public void Error_When_CopiedFromDynamic()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(dynamic))]
@@ -41,13 +41,13 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
+		}
 
-        [Fact]
-        public void Error_When_CopiedFromEnum()
-        {
-            string input =
+		[Fact]
+		public void Error_When_CopiedFromEnum()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
@@ -59,13 +59,13 @@ enum Target
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
+		}
 
-        [Fact]
-        public void Error_When_CopiedFromNonType()
-        {
-            string input =
+		[Fact]
+		public void Error_When_CopiedFromNonType()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target.Method"")]
@@ -80,13 +80,13 @@ class Target
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
+		}
 
-        [Fact]
-        public void Error_When_CopiesFromChildType()
-        {
-            string input =
+		[Fact]
+		public void Error_When_CopiesFromChildType()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Child))]
@@ -98,13 +98,13 @@ class Child : Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
+		}
 
-        [Fact]
-        public void Error_When_CopiesFromContainingType()
-        {
-            string input =
+		[Fact]
+		public void Error_When_CopiesFromContainingType()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Outer
@@ -115,13 +115,13 @@ partial class Outer
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
+		}
 
-        [Fact]
-        public void Error_When_CopiesFromDelegate()
-        {
-            string input =
+		[Fact]
+		public void Error_When_CopiesFromDelegate()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Delegate))]
@@ -131,13 +131,13 @@ partial class Test
 
 delegate void Delegate();
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
+		}
 
-        [Fact]
-        public void Error_When_CopiesFromItself()
-        {
-            string input =
+		[Fact]
+		public void Error_When_CopiesFromItself()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Test))]
@@ -145,13 +145,13 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
+		}
 
-        [Fact]
-        public void Error_When_CopiesFromParentType()
-        {
-            string input =
+		[Fact]
+		public void Error_When_CopiesFromParentType()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Parent))]
@@ -163,13 +163,13 @@ class Parent
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent.Id));
+		}
 
-        [Fact]
-        public void Error_When_HasConflictingMemberNamesFromDifferentNamespaces()
-        {
-            string input =
+		[Fact]
+		public void Error_When_HasConflictingMemberNamesFromDifferentNamespaces()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 using N1;
@@ -194,13 +194,13 @@ namespace N2
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0208_MemberConflict.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0208_MemberConflict.Id));
+		}
 
-        [Fact]
-        public void Error_When_IsNotPartial()
-        {
-            string input =
+		[Fact]
+		public void Error_When_IsNotPartial()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
@@ -212,13 +212,13 @@ class Target
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0202_MemberMustBePartial.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0202_MemberMustBePartial.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsArray()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsArray()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(string[]))]
@@ -226,13 +226,13 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsFunctionPointer()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsFunctionPointer()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(delegate*<int>))]
@@ -240,13 +240,13 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsGeneric_And_TypeArgumentIsNotValid()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsGeneric_And_TypeArgumentIsNotValid()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Other<int>"")]
@@ -258,13 +258,13 @@ class Other<T> where T : class
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsGenericWithMultipleArguments_And_AtLeastOneArgumentIsNotValid()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsGenericWithMultipleArguments_And_AtLeastOneArgumentIsNotValid()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Other<string, int, char>"")]
@@ -276,13 +276,13 @@ class Other<T, U, V> where T : class where U : struct where V : T
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsGenericWithMutlipleParameters_And_ParameterHasWrongName()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsGenericWithMutlipleParameters_And_ParameterHasWrongName()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target<TType, UType>"")]
@@ -294,13 +294,13 @@ class Target<T, U>
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsInDifferentAssembly()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsInDifferentAssembly()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
@@ -308,18 +308,18 @@ partial class Test
 {{
 }}
 ";
-            string external =
+			string external =
 $@"class Target
 {{
 }}
 ";
-            Assert.True(RunGeneratorWithDependency(input, external).FailedAndContainsDiagnostics(DUR0205_ImplementationNotAccessible.Id));
-        }
+			Assert.True(RunGeneratorWithDependency(input, external).FailedAndContainsDiagnostics(DUR0205_ImplementationNotAccessible.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsInDifferentAssembly_And_GetsByString()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsInDifferentAssembly_And_GetsByString()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
@@ -327,18 +327,18 @@ partial class Test
 {{
 }}
 ";
-            string external =
+			string external =
 $@"class Target
 {{
 }}
 ";
-            Assert.True(RunGeneratorWithDependency(input, external).FailedAndContainsDiagnostics(DUR0205_ImplementationNotAccessible.Id));
-        }
+			Assert.True(RunGeneratorWithDependency(input, external).FailedAndContainsDiagnostics(DUR0205_ImplementationNotAccessible.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsMultidimensionalArray()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsMultidimensionalArray()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(string[,]))]
@@ -346,13 +346,13 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsNestedArray()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsNestedArray()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(string[][]))]
@@ -360,13 +360,13 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsNullAsString()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsNullAsString()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}((string)null)]
@@ -374,13 +374,13 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsNullAsType()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsNullAsType()
+		{
+			string input =
 $@"using System;
 using {DurianStrings.MainNamespace};
 
@@ -389,13 +389,13 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsPointer()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsPointer()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(int*))]
@@ -403,13 +403,13 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetIsTypeParameter()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetIsTypeParameter()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Outer<T>
@@ -420,13 +420,13 @@ partial class Outer<T>
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind.Id));
+		}
 
-        [Fact]
-        public void Error_When_TargetPartialPartDoesNotExist()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TargetPartialPartDoesNotExist()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.PartialPart} = ""Part2"")]
@@ -437,28 +437,28 @@ partial class Test
 [{nameof(PartialNameAttribute)}(""Part1"")]
 partial class Target
 {{
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 
 partial class Target
 {{
-    void Other()
-    {{
-        int a = 2;
-    }}
+	void Other()
+	{{
+		int a = 2;
+	}}
 }}
 ";
 
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0218_UnknownPartialPartName.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0218_UnknownPartialPartName.Id));
+		}
 
-        [Fact]
-        public void Error_When_TypeDoesNotExist()
-        {
-            string input =
+		[Fact]
+		public void Error_When_TypeDoesNotExist()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
@@ -466,13 +466,13 @@ partial class Test
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved.Id));
+		}
 
-        [Fact]
-        public void Success_When_IsPartial_And_TargetIsPartialPart()
-        {
-            string input =
+		[Fact]
+		public void Success_When_IsPartial_And_TargetIsPartialPart()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Target), PartialPart = ""Part1"")]
@@ -488,48 +488,48 @@ partial class Test
 [{nameof(PartialNameAttribute)}(""Part1"")]
 partial class Target
 {{
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 
 [{nameof(PartialNameAttribute)}(""Part2"")]
 partial class Target
 {{
-    void Other()
-    {{
-        int a = default(int);
-    }}
+	void Other()
+	{{
+		int a = default(int);
+	}}
 }}
 ";
-            string expected1 =
+			string expected1 =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            string expected2 =
+			string expected2 =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Other()")}
-    void Other()
-    {{
-        int a = default(int);
-    }}
+	{GetCodeGenerationAttributes("Target.Other()")}
+	void Other()
+	{{
+		int a = default(int);
+	}}
 }}
 ";
-            Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
-        }
+			Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
+		}
 
-        [Fact]
-        public void Success_When_MemberOfTargetHasXmlComment()
-        {
-            string input =
+		[Fact]
+		public void Success_When_MemberOfTargetHasXmlComment()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
@@ -539,45 +539,45 @@ partial class Test
 
 class Target
 {{
-    /// <summary>
-    /// Hello there
-    /// </summary>
-    void Method()
-    {{
-        string b = """";
-    }}
+	/// <summary>
+	/// Hello there
+	/// </summary>
+	void Method()
+	{{
+		string b = """";
+	}}
 
-    void Method(string a)
-    {{
-    }}
+	void Method(string a)
+	{{
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"
 partial class Test
 {{
-    /// <summary>
-    /// Hello there
-    /// </summary>
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string b = """";
-    }}
+	/// <summary>
+	/// Hello there
+	/// </summary>
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string b = """";
+	}}
 
-    {GetCodeGenerationAttributes("Target.Method(string)")}
-    void Method(string a)
-    {{
-    }}
+	{GetCodeGenerationAttributes("Target.Method(string)")}
+	void Method(string a)
+	{{
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_SameTargetButDifferentPartialPart()
-        {
-            string input =
+		[Fact]
+		public void Success_When_SameTargetButDifferentPartialPart()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Target), PartialPart = ""Part1"")]
@@ -589,48 +589,48 @@ partial class Test
 [{nameof(PartialNameAttribute)}(""Part1"")]
 partial class Target
 {{
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 
 [{nameof(PartialNameAttribute)}(""Part2"")]
 partial class Target
 {{
-    void Other()
-    {{
-        int a = default(int);
-    }}
+	void Other()
+	{{
+		int a = default(int);
+	}}
 }}
 ";
-            string expected1 =
+			string expected1 =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            string expected2 =
+			string expected2 =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Other()")}
-    void Other()
-    {{
-        int a = default(int);
-    }}
+	{GetCodeGenerationAttributes("Target.Other()")}
+	void Other()
+	{{
+		int a = default(int);
+	}}
 }}
 ";
-            Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
-        }
+			Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
+		}
 
-        [Fact]
-        public void Success_When_SpecifiesPartialPart()
-        {
-            string input =
+		[Fact]
+		public void Success_When_SpecifiesPartialPart()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.PartialPart} = ""Part2"")]
@@ -641,38 +641,38 @@ partial class Test
 [{nameof(PartialNameAttribute)}(""Part1"")]
 partial class Target
 {{
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 
 [{nameof(PartialNameAttribute)}(""Part2"")]
 partial class Target
 {{
-    void Other()
-    {{
-        int a = 2;
-    }}
+	void Other()
+	{{
+		int a = 2;
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Other()")}
-    void Other()
-    {{
-        int a = 2;
-    }}
+	{GetCodeGenerationAttributes("Target.Other()")}
+	void Other()
+	{{
+		int a = 2;
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsAccessible()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsAccessible()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
@@ -682,29 +682,29 @@ partial class Test
 
 class Target
 {{
-    void Method()
-    {{
-        string b = """";
-    }}
+	void Method()
+	{{
+		string b = """";
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string b = """";
-    }}
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string b = """";
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsAliased()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsAliased()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 using T = N2.Target;
@@ -721,34 +721,34 @@ namespace N2
 {{
 	class Target
 	{{
-        void Method()
-        {{
-            string b = """";
-        }}
+		void Method()
+		{{
+			string b = """";
+		}}
 	}}
 }}
 ";
 
-            string expected =
+			string expected =
 $@"namespace N1
 {{
-    partial class Test
-    {{
-        {GetCodeGenerationAttributes("N2.Target.Method()", 2)}
-        void Method()
-        {{
-            string b = """";
-        }}
-    }}
+	partial class Test
+	{{
+		{GetCodeGenerationAttributes("N2.Target.Method()", 2)}
+		void Method()
+		{{
+			string b = """";
+		}}
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsGeneric()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsGeneric()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target<int>"")]
@@ -758,29 +758,29 @@ partial class Test
 
 class Target<T>
 {{
-    void Method(T value)
-    {{
-        T b = default(T);
-    }}
+	void Method(T value)
+	{{
+		T b = default(T);
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target<T>.Method(T)")}
-    void Method(int value)
-    {{
-        int b = default(int);
-    }}
+	{GetCodeGenerationAttributes("Target<T>.Method(T)")}
+	void Method(int value)
+	{{
+		int b = default(int);
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsGeneric_And_IsNestedTypeOfUnboundGeneric()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsGeneric_And_IsNestedTypeOfUnboundGeneric()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Outer<,>.Target<int>"")]
@@ -792,34 +792,34 @@ class Outer<T, U>
 {{
 	public class Target<X>
 	{{
-        void Method(T a, U b, X c)
-        {{
-            T a1 = default(T);
-            U b2 = b;
-            X[] c3 = new X[] {{ c }}
-        }}
+		void Method(T a, U b, X c)
+		{{
+			T a1 = default(T);
+			U b2 = b;
+			X[] c3 = new X[] {{ c }}
+		}}
 	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Outer<T, U>.Method(T, U, C)")}
-    void Method(T a, U b, X c)
-    {{
-        T a1 = default(T);
-        U b2 = b;
-        X[] c3 = new X[] {{ c }}
-    }}
+	{GetCodeGenerationAttributes("Outer<T, U>.Method(T, U, C)")}
+	void Method(T a, U b, X c)
+	{{
+		T a1 = default(T);
+		U b2 = b;
+		X[] c3 = new X[] {{ c }}
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsGenericWithMutlipleParameters()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsGenericWithMutlipleParameters()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target<T, U>"")]
@@ -829,75 +829,75 @@ partial class Test
 
 class Target<T, U>
 {{
-    void Method(T t)
-    {{
-    }}
+	void Method(T t)
+	{{
+	}}
 
-    void Method(T t, U u)
-    {{
-    }}
+	void Method(T t, U u)
+	{{
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target<T, U>.Method(T)")}
-    void Method(T t)
-    {{
-    }}
+	{GetCodeGenerationAttributes("Target<T, U>.Method(T)")}
+	void Method(T t)
+	{{
+	}}
 
-    {GetCodeGenerationAttributes("Target<T, U>.Method(T, U)")}
-    void Method(T t, U u)
-    {{
-    }}
+	{GetCodeGenerationAttributes("Target<T, U>.Method(T, U)")}
+	void Method(T t, U u)
+	{{
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsGlobalNamespace_And_CurrentInIsNormalNamespace()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsGlobalNamespace_And_CurrentInIsNormalNamespace()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 namespace N1
 {{
-    [{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
-    partial class Test
-    {{
-    }}
+	[{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
+	partial class Test
+	{{
+	}}
 }}
 
 class Target
 {{
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 ";
 
-            string expected =
+			string expected =
 $@"namespace N1
 {{
-    partial class Test
-    {{
-        {GetCodeGenerationAttributes("Target.Method()", 2)}
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	partial class Test
+	{{
+		{GetCodeGenerationAttributes("Target.Method()", 2)}
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsGlobalNamespace_And_CurrentTypeIsInGlobalNamespace()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsGlobalNamespace_And_CurrentTypeIsInGlobalNamespace()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
@@ -907,151 +907,151 @@ partial class Test
 
 class Target
 {{
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()", 2)}
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Target.Method()", 2)}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsGlobalNamespace_And_UsedGlobaKeyword()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsGlobalNamespace_And_UsedGlobaKeyword()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 namespace N1
 {{
-    [{CopyFromTypeAttributeProvider.TypeName}(""global::Target"")]
-    partial class Test
-    {{
-    }}
+	[{CopyFromTypeAttributeProvider.TypeName}(""global::Target"")]
+	partial class Test
+	{{
+	}}
 }}
 
 class Target
 {{
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"namespace N1
 {{
-    partial class Test
-    {{
-        {GetCodeGenerationAttributes("Target.Method()", 2)}
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	partial class Test
+	{{
+		{GetCodeGenerationAttributes("Target.Method()", 2)}
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsInDifferentNamespace_And_HasUsings()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsInDifferentNamespace_And_HasUsings()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 using N2;
 
 namespace N1
 {{
-    [{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
-    partial class Test
-    {{
-    }}
+	[{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
+	partial class Test
+	{{
+	}}
 }}
 
 namespace N2
 {{
-    class Target
-    {{
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	class Target
+	{{
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"namespace N1
 {{
-    partial class Test
-    {{
-        {GetCodeGenerationAttributes("N2.Target.Method()", 2)}
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	partial class Test
+	{{
+		{GetCodeGenerationAttributes("N2.Target.Method()", 2)}
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsInInnerNamespace()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsInInnerNamespace()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 namespace N1
 {{
-    [{CopyFromTypeAttributeProvider.TypeName}(""N2.Target"")]
-    partial class Test
-    {{
-    }}
+	[{CopyFromTypeAttributeProvider.TypeName}(""N2.Target"")]
+	partial class Test
+	{{
+	}}
 }}
 
 namespace N1.N2
 {{
-    class Target
-    {{
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	class Target
+	{{
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 
 ";
-            string expected =
+			string expected =
 $@"namespace N1
 {{
-    partial class Test
-    {{
-        {GetCodeGenerationAttributes("N1.N2.Target.Method()", 2)}
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	partial class Test
+	{{
+		{GetCodeGenerationAttributes("N1.N2.Target.Method()", 2)}
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsInnerClass()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsInnerClass()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Outer.Target"")]
@@ -1061,75 +1061,75 @@ partial class Test
 
 class Outer
 {{
-    public class Target
-    {{
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	public class Target
+	{{
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Outer.Target.Method()")}
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Outer.Target.Method()")}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsInnerClass_And_HasStaticUsing()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsInnerClass_And_HasStaticUsing()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 using static Outer;
 
 namespace N1
 {{
-    [{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
-    partial class Test
-    {{
-    }}
+	[{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
+	partial class Test
+	{{
+	}}
 }}
 
 class Outer
 {{
-    public class Target
-    {{
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	public class Target
+	{{
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"namespace N1
 {{
-    partial class Test
-    {{
-        {GetCodeGenerationAttributes("Outer.Target.Method()", 2)}
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	partial class Test
+	{{
+		{GetCodeGenerationAttributes("Outer.Target.Method()", 2)}
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsInnerClassOfAliasedType()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsInnerClassOfAliasedType()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 using O = Outer;
@@ -1141,32 +1141,32 @@ partial class Test
 
 class Outer
 {{
-    public class Target
-    {{
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	public class Target
+	{{
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Outer.Target.Method()")}
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Outer.Target.Method()")}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsInnerType()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsInnerType()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Inner))]
@@ -1174,72 +1174,72 @@ partial class Test
 {{
 	class Inner
 	{{
-        void Method()
-        {{
-            string b = """";
-        }}
+		void Method()
+		{{
+			string b = """";
+		}}
 	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"
 partial class Test
 {{
-    {GetCodeGenerationAttributes("Test.Inner.Method()")}
-    void Method()
-    {{
-        string b = """";
-    }}
+	{GetCodeGenerationAttributes("Test.Inner.Method()")}
+	void Method()
+	{{
+		string b = """";
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsInSameNamespace()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsInSameNamespace()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 namespace N1
 {{
-    [{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
-    partial class Test
-    {{
-    }}
+	[{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
+	partial class Test
+	{{
+	}}
 }}
 
 namespace N1
 {{
-    class Target
-    {{
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	class Target
+	{{
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"namespace N1
 {{
-    partial class Test
-    {{
-        {GetCodeGenerationAttributes("N1.Target.Method()", 2)}
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	partial class Test
+	{{
+		{GetCodeGenerationAttributes("N1.Target.Method()", 2)}
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsNestedTypeOfGeneric()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsNestedTypeOfGeneric()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Outer<int, string>.Target"")]
@@ -1249,34 +1249,34 @@ partial class Test
 
 class Outer<T, U>
 {{
-    public class Target
-    {{
-        void Method(T t, U u)
-        {{
-            T b = default(T);
-            new System.Collections.Generic.List<U>();
-        }}
-    }}
+	public class Target
+	{{
+		void Method(T t, U u)
+		{{
+			T b = default(T);
+			new System.Collections.Generic.List<U>();
+		}}
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Outer<T, U>.Target.Method(T, U)")}
-    void Method(int t, string u)
-    {{
-        int b = default(int);
-        new System.Collections.Generic.List<string>();
-    }}
+	{GetCodeGenerationAttributes("Outer<T, U>.Target.Method(T, U)")}
+	void Method(int t, string u)
+	{{
+		int b = default(int);
+		new System.Collections.Generic.List<string>();
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsNestedTypeOfUnboundGeneric()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsNestedTypeOfUnboundGeneric()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Outer<,>.Target"")]
@@ -1286,34 +1286,34 @@ partial class Test
 
 class Outer<T, U>
 {{
-    public class Target
-    {{
-        void Method(T t, U u)
-        {{
-            T b = default(T);
-            new System.Collections.Generic.List<U>();
-        }}
-    }}
+	public class Target
+	{{
+		void Method(T t, U u)
+		{{
+			T b = default(T);
+			new System.Collections.Generic.List<U>();
+		}}
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Outer<T, U>.Method()")}
-    void Method(T t, U u)
-    {{
-        T b = default(T);
-        new System.Collections.Generic.List<U>();
-    }}
+	{GetCodeGenerationAttributes("Outer<T, U>.Method()")}
+	void Method(T t, U u)
+	{{
+		T b = default(T);
+		new System.Collections.Generic.List<U>();
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsNullableReferenceType()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsNullableReferenceType()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target?"")]
@@ -1323,29 +1323,29 @@ partial class Test
 
 class Target
 {{
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsPartial()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsPartial()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
@@ -1355,50 +1355,50 @@ partial class Test
 
 partial class Target
 {{
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 
 partial class Target
 {{
-    void Method(string a)
-    {{
-        while(true)
-        {{
-            break;
-        }}
-    }}
+	void Method(string a)
+	{{
+		while(true)
+		{{
+			break;
+		}}
+	}}
 }}
 ";
 
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 
-    {GetCodeGenerationAttributes("Target.Method(string)")}
-    void Method(string a)
-    {{
-        while(true)
-        {{
-            break;
-        }}
-    }}
+	{GetCodeGenerationAttributes("Target.Method(string)")}
+	void Method(string a)
+	{{
+		while(true)
+		{{
+			break;
+		}}
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsPrivate()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsPrivate()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Outer.Target))]
@@ -1408,32 +1408,32 @@ partial class Test
 
 class Outer
 {{
-    private class Target
-    {{
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	private class Target
+	{{
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Outer.Target.Method()")}
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Outer.Target.Method()")}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsSpecifiedUsingFullyQualifiedName()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsSpecifiedUsingFullyQualifiedName()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""N1.N2.Target"")]
@@ -1443,32 +1443,32 @@ partial class Test
 
 namespace N1.N2
 {{
-    class Target
-    {{
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	class Target
+	{{
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("N1.N2.Target.Method()")}
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("N1.N2.Target.Method()")}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsSpecifiedUsingFullyQualifiedNameWithGlobalKeyword()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsSpecifiedUsingFullyQualifiedNameWithGlobalKeyword()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""global::N1.N2.Target"")]
@@ -1478,32 +1478,32 @@ partial class Test
 
 namespace N1.N2
 {{
-    class Target
-    {{
-        void Method()
-        {{
-            string b = string.Empty;
-        }}
-    }}
+	class Target
+	{{
+		void Method()
+		{{
+			string b = string.Empty;
+		}}
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("N1.N2.Target.Method()")}
-    void Method()
-    {{
-        string b = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("N1.N2.Target.Method()")}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Success_When_TargetIsUnboundGeneric()
-        {
-            string input =
+		[Fact]
+		public void Success_When_TargetIsUnboundGeneric()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target<,>"")]
@@ -1513,31 +1513,31 @@ partial class Test
 
 class Target<T, U>
 {{
-    void Method(T t, U u)
-    {{
-        T b = default(T);
-        new System.Collections.Generic.List<U>();
-    }}
+	void Method(T t, U u)
+	{{
+		T b = default(T);
+		new System.Collections.Generic.List<U>();
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target<T, U>.Method(T, U)")}
-    void Method(T t, U u)
-    {{
-        T b = default(T);
-        new System.Collections.Generic.List<U>();
-    }}
+	{GetCodeGenerationAttributes("Target<T, U>.Method(T, U)")}
+	void Method(T t, U u)
+	{{
+		T b = default(T);
+		new System.Collections.Generic.List<U>();
+	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Suceess_When_TargetHasAllPossibleMemberTypes()
-        {
-            string input =
+		[Fact]
+		public void Suceess_When_TargetHasAllPossibleMemberTypes()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
@@ -1547,149 +1547,149 @@ partial class Test
 
 class Target : System.IDisposable
 {{
-    public Target()
-    {{
-    }}
+	public Target()
+	{{
+	}}
 
-    static Target()
-    {{
-    }}
+	static Target()
+	{{
+	}}
 
-    ~Target()
-    {{
-    }}
+	~Target()
+	{{
+	}}
 
-    public delegate void Delegate();
+	public delegate void Delegate();
 
-    event Delegate Event;
+	event Delegate Event;
 
-    event System.Action Event2 {{ add {{ }} remove {{ }}}}
+	event System.Action Event2 {{ add {{ }} remove {{ }}}}
 
-    int _field;
+	int _field;
 
-    const float cos = 2;
+	const float cos = 2;
 
-    public int Field => _field;
+	public int Field => _field;
 
-    public string Name {{ get; set; }}
+	public string Name {{ get; set; }}
 
-    public int this[int index] => 2;
+	public int this[int index] => 2;
 
-    string Method(dynamic a) => string.Empty;
+	string Method(dynamic a) => string.Empty;
 
-    void Method<T>(ref T t1, in T t2, out T t2)
-    {{
-        string b = string.Empty;
-    }}
+	void Method<T>(ref T t1, in T t2, out T t2)
+	{{
+		string b = string.Empty;
+	}}
 
-    void IDisposable.Dispose()
-    {{
-    }}
+	void IDisposable.Dispose()
+	{{
+	}}
 
-    public static int operator +(Target a, Target b) => 2;
-    public static implicit operator bool(Target a) => a is not null;
+	public static int operator +(Target a, Target b) => 2;
+	public static implicit operator bool(Target a) => a is not null;
 
-    class Inner
-    {{
-        string field;
-    }}
+	class Inner
+	{{
+		string field;
+	}}
 
-    enum Values
-    {{
-        A = 1,
-        B
-    }}
+	enum Values
+	{{
+		A = 1,
+		B
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Target()")}
-    public Target()
-    {{
-    }}
+	{GetCodeGenerationAttributes("Target.Target()")}
+	public Target()
+	{{
+	}}
 
-    {GetCodeGenerationAttributes("Target.static Target()")}
-    static Target()
-    {{
-    }}
+	{GetCodeGenerationAttributes("Target.static Target()")}
+	static Target()
+	{{
+	}}
 
-    {GetCodeGenerationAttributes("Target.~Target()")}
-    ~Target()
-    {{
-    }}
+	{GetCodeGenerationAttributes("Target.~Target()")}
+	~Target()
+	{{
+	}}
 
-    {GetCodeGenerationAttributes("Target.Delegate")}
-    public delegate void Delegate();
+	{GetCodeGenerationAttributes("Target.Delegate")}
+	public delegate void Delegate();
 
-    {GetCodeGenerationAttributes("Target.Event")}
-    event Delegate Event;
+	{GetCodeGenerationAttributes("Target.Event")}
+	event Delegate Event;
 
-    {GetCodeGenerationAttributes("Target.Event2")}
-    event System.Action Event2 {{ add {{ }} remove {{ }}}}
+	{GetCodeGenerationAttributes("Target.Event2")}
+	event System.Action Event2 {{ add {{ }} remove {{ }}}}
 
-    {GetCodeGenerationAttributes("Target._field")}
-    int _field;
+	{GetCodeGenerationAttributes("Target._field")}
+	int _field;
 
-    {GetCodeGenerationAttributes("Target.cos")}
-    const float cos = 2;
+	{GetCodeGenerationAttributes("Target.cos")}
+	const float cos = 2;
 
-    {GetCodeGenerationAttributes("Target.Field")}
-    public int Field => _field;
+	{GetCodeGenerationAttributes("Target.Field")}
+	public int Field => _field;
 
-    {GetCodeGenerationAttributes("Target.Name")}
-    public string Name {{ get; set; }}
+	{GetCodeGenerationAttributes("Target.Name")}
+	public string Name {{ get; set; }}
 
-    {GetCodeGenerationAttributes("Target.this[int]")}
-    public int this[int index] => 2;
+	{GetCodeGenerationAttributes("Target.this[int]")}
+	public int this[int index] => 2;
 
-    {GetCodeGenerationAttributes("Target.Method(dynamic)")}
-    string Method(dynamic a) => string.Empty;
+	{GetCodeGenerationAttributes("Target.Method(dynamic)")}
+	string Method(dynamic a) => string.Empty;
 
-    {GetCodeGenerationAttributes("Target.Method(ref T, in T, out T)")}
-    void Method<T>(ref T t1, in T t2, out T t2)
-    {{
-        string b = string.Empty;
+	{GetCodeGenerationAttributes("Target.Method(ref T, in T, out T)")}
+	void Method<T>(ref T t1, in T t2, out T t2)
+	{{
+		string b = string.Empty;
 
-        void O()
-        {{
-        }}
-    }}
+		void O()
+		{{
+		}}
+	}}
 
-    {GetCodeGenerationAttributes("(IDisposable)Target.Dispose()")}
-    void IDisposable.Dispose()
-    {{
-    }}
+	{GetCodeGenerationAttributes("(IDisposable)Target.Dispose()")}
+	void IDisposable.Dispose()
+	{{
+	}}
 
-    {GetCodeGenerationAttributes("Target.operator +(Target, Target)")}
-    public static int operator +(Target a, Target b) => 2;
+	{GetCodeGenerationAttributes("Target.operator +(Target, Target)")}
+	public static int operator +(Target a, Target b) => 2;
 
-    {GetCodeGenerationAttributes("Target.implicit operator bool(Target)")}
-    public static implicit operator bool(Target a) => a is not null;
+	{GetCodeGenerationAttributes("Target.implicit operator bool(Target)")}
+	public static implicit operator bool(Target a) => a is not null;
 
-    {GetCodeGenerationAttributes("Target.Inner")}
-    class Inner
-    {{
-        {GetCodeGenerationAttributes("Target.Inner.field")}
-        string field;
-    }}
+	{GetCodeGenerationAttributes("Target.Inner")}
+	class Inner
+	{{
+		{GetCodeGenerationAttributes("Target.Inner.field")}
+		string field;
+	}}
 
-    {GetCodeGenerationAttributes("Target.Values")}
-    enum Values
-    {{
-        A = 1,
-        B
-    }}
+	{GetCodeGenerationAttributes("Target.Values")}
+	enum Values
+	{{
+		A = 1,
+		B
+	}}
 }}
 ";
 
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void Warning_When_HasPattern_And_PatternIsNull()
-        {
-            string input =
+		[Fact]
+		public void Warning_When_HasPattern_And_PatternIsNull()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target""), {PatternAttributeProvider.TypeName}(null, """")]
@@ -1699,32 +1699,32 @@ partial class Test
 
 class Target
 {{
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            SingletonGeneratorTestResult runResult = RunGenerator(input);
+			SingletonGeneratorTestResult runResult = RunGenerator(input);
 
-            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified.Id));
-            Assert.True(runResult.Compare(expected));
-        }
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified.Id));
+			Assert.True(runResult.Compare(expected));
+		}
 
-        [Fact]
-        public void Warning_When_HasPattern_And_ReplacementIsNull()
-        {
-            string input =
+		[Fact]
+		public void Warning_When_HasPattern_And_ReplacementIsNull()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target""), {PatternAttributeProvider.TypeName}(""\w+"", null)]
@@ -1734,32 +1734,32 @@ partial class Test
 
 class Target
 {{
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            SingletonGeneratorTestResult runResult = RunGenerator(input);
+			SingletonGeneratorTestResult runResult = RunGenerator(input);
 
-            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified.Id));
-            Assert.True(runResult.Compare(expected));
-        }
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified.Id));
+			Assert.True(runResult.Compare(expected));
+		}
 
-        [Fact]
-        public void Warning_When_IdenticalAttributesSpecified()
-        {
-            string input =
+		[Fact]
+		public void Warning_When_IdenticalAttributesSpecified()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
@@ -1770,32 +1770,32 @@ partial class Test
 
 class Target
 {{
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            string expected =
+			string expected =
  $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
+			MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
 
-            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
-            Assert.True(runResult.Compare(expected));
-        }
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
+			Assert.True(runResult.Compare(expected));
+		}
 
-        [Fact]
-        public void Warning_When_SourceAndSourceTypeOfTwoAttributesPointToTheSameMember()
-        {
-            string input =
+		[Fact]
+		public void Warning_When_SourceAndSourceTypeOfTwoAttributesPointToTheSameMember()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
@@ -1806,32 +1806,32 @@ partial class Test
 
 class Target
 {{
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
+			MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
 
-            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
-            Assert.True(runResult.Compare(expected));
-        }
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
+			Assert.True(runResult.Compare(expected));
+		}
 
-        [Fact]
-        public void Warning_When_TwoAttributesHaveSameTarget_And_OneHasPartialPart()
-        {
-            string input =
+		[Fact]
+		public void Warning_When_TwoAttributesHaveSameTarget_And_OneHasPartialPart()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
@@ -1843,32 +1843,32 @@ partial class Test
 [{nameof(PartialNameAttribute)}(""A"")]
 partial class Target
 {{
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
+			MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
 
-            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
-            Assert.True(runResult.Compare(expected));
-        }
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
+			Assert.True(runResult.Compare(expected));
+		}
 
-        [Fact]
-        public void Warning_When_TwoAttributesHaveSameTarget_And_SamePartialPart()
-        {
-            string input =
+		[Fact]
+		public void Warning_When_TwoAttributesHaveSameTarget_And_SamePartialPart()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", PartialPart = ""A"")]
@@ -1880,26 +1880,26 @@ partial class Test
 [{nameof(PartialNameAttribute)}(""A"")]
 partial class Target
 {{
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            string expected =
+			string expected =
 $@"partial class Test
 {{
-    {GetCodeGenerationAttributes("Target.Method()")}
-    void Method()
-    {{
-        string a = string.Empty;
-    }}
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
 }}
 ";
-            MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
+			MultiOutputGeneratorTestResult runResult = RunGeneratorWithMultipleOutputs(input);
 
-            Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
-            Assert.True(runResult.Compare(expected));
-        }
-    }
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0206_EquivalentTarget.Id));
+			Assert.True(runResult.Compare(expected));
+		}
+	}
 }

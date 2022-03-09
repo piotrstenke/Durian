@@ -13,330 +13,330 @@ using System.Threading;
 
 namespace Durian.Analysis.DefaultParam
 {
-    /// <summary>
-    /// Contains information about all type parameters of a member.
-    /// </summary>
-    [DebuggerDisplay("Length = {_parameters?.Length ?? 0}, NumDefaultParam = {NumDefaultParam}")]
-    public readonly struct TypeParameterContainer : IEquatable<TypeParameterContainer>, IEnumerable<TypeParameterData>
-    {
-        private readonly TypeParameterData[] _parameters;
+	/// <summary>
+	/// Contains information about all type parameters of a member.
+	/// </summary>
+	[DebuggerDisplay("Length = {_parameters?.Length ?? 0}, NumDefaultParam = {NumDefaultParam}")]
+	public readonly struct TypeParameterContainer : IEquatable<TypeParameterContainer>, IEnumerable<TypeParameterData>
+	{
+		private readonly TypeParameterData[] _parameters;
 
-        /// <summary>
-        /// Returns an index of the first <see cref="TypeParameterData"/> that has the <see cref="TypeParameterData.IsDefaultParam"/> property set to <see langword="true"/>.
-        /// </summary>
-        public readonly int FirstDefaultParamIndex { get; }
+		/// <summary>
+		/// Returns an index of the first <see cref="TypeParameterData"/> that has the <see cref="TypeParameterData.IsDefaultParam"/> property set to <see langword="true"/>.
+		/// </summary>
+		public readonly int FirstDefaultParamIndex { get; }
 
-        /// <summary>
-        /// Determines whether this <see cref="TypeParameterContainer"/> contains any <see cref="TypeParameterData"/> that has the <see cref="TypeParameterData.IsDefaultParam"/> property set to <see langword="true"/>.
-        /// </summary>
-        public readonly bool HasDefaultParams { get; }
+		/// <summary>
+		/// Determines whether this <see cref="TypeParameterContainer"/> contains any <see cref="TypeParameterData"/> that has the <see cref="TypeParameterData.IsDefaultParam"/> property set to <see langword="true"/>.
+		/// </summary>
+		public readonly bool HasDefaultParams { get; }
 
-        /// <summary>
-        /// Returns a number of all <see cref="TypeParameterData"/>s.
-        /// </summary>
-        public readonly int Length => _parameters.Length;
+		/// <summary>
+		/// Returns a number of all <see cref="TypeParameterData"/>s.
+		/// </summary>
+		public readonly int Length => _parameters.Length;
 
-        /// <summary>
-        /// Returns a number of <see cref="TypeParameterData"/>s with a valid <c>Durian.DefaultParamAttribute</c>.
-        /// </summary>
-        public readonly int NumDefaultParam { get; }
+		/// <summary>
+		/// Returns a number of <see cref="TypeParameterData"/>s with a valid <c>Durian.DefaultParamAttribute</c>.
+		/// </summary>
+		public readonly int NumDefaultParam { get; }
 
-        /// <summary>
-        /// Returns a number of <see cref="TypeParameterData"/>s that aren't DefaultParam.
-        /// </summary>
-        public readonly int NumNonDefaultParam => _parameters.Length - NumDefaultParam;
+		/// <summary>
+		/// Returns a number of <see cref="TypeParameterData"/>s that aren't DefaultParam.
+		/// </summary>
+		public readonly int NumNonDefaultParam => _parameters.Length - NumDefaultParam;
 
-        /// <summary>
-        /// Returns a <see cref="TypeParameterData"/> at the specified <paramref name="index"/>.
-        /// </summary>
-        /// <param name="index">Index to get the <see cref="TypeParameterData"/> at.</param>
-        /// <exception cref="IndexOutOfRangeException"><paramref name="index"/> is out of range.</exception>
-        public readonly ref readonly TypeParameterData this[int index] => ref _parameters[index];
+		/// <summary>
+		/// Returns a <see cref="TypeParameterData"/> at the specified <paramref name="index"/>.
+		/// </summary>
+		/// <param name="index">Index to get the <see cref="TypeParameterData"/> at.</param>
+		/// <exception cref="IndexOutOfRangeException"><paramref name="index"/> is out of range.</exception>
+		public readonly ref readonly TypeParameterData this[int index] => ref _parameters[index];
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TypeParameterContainer"/> struct.
-        /// </summary>
-        /// <param name="parameters">A collection of <see cref="TypeParameterData"/> this <see cref="TypeParameterContainer"/> is about to store.</param>
-        public TypeParameterContainer(IEnumerable<TypeParameterData>? parameters)
-        {
-            if (parameters is null)
-            {
-                _parameters = Array.Empty<TypeParameterData>();
-                FirstDefaultParamIndex = -1;
-                NumDefaultParam = 0;
-                HasDefaultParams = false;
-            }
-            else
-            {
-                _parameters = parameters.ToArray();
-                FirstDefaultParamIndex = FindFirstDefaultParamIndex(_parameters);
-                HasDefaultParams = FirstDefaultParamIndex > -1;
-                NumDefaultParam = HasDefaultParams ? _parameters.Length - FirstDefaultParamIndex : 0;
-            }
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TypeParameterContainer"/> struct.
+		/// </summary>
+		/// <param name="parameters">A collection of <see cref="TypeParameterData"/> this <see cref="TypeParameterContainer"/> is about to store.</param>
+		public TypeParameterContainer(IEnumerable<TypeParameterData>? parameters)
+		{
+			if (parameters is null)
+			{
+				_parameters = Array.Empty<TypeParameterData>();
+				FirstDefaultParamIndex = -1;
+				NumDefaultParam = 0;
+				HasDefaultParams = false;
+			}
+			else
+			{
+				_parameters = parameters.ToArray();
+				FirstDefaultParamIndex = FindFirstDefaultParamIndex(_parameters);
+				HasDefaultParams = FirstDefaultParamIndex > -1;
+				NumDefaultParam = HasDefaultParams ? _parameters.Length - FirstDefaultParamIndex : 0;
+			}
+		}
 
-        /// <summary>
-        /// Combines two <see cref="TypeParameterContainer"/> into one.
-        /// </summary>
-        /// <param name="first">First <see cref="TypeParameterContainer"/>.</param>
-        /// <param name="second">Second <see cref="TypeParameterContainer"/>.</param>
-        public static TypeParameterContainer Combine(in TypeParameterContainer first, in TypeParameterContainer second)
-        {
-            return first.Combine(in second);
-        }
+		/// <summary>
+		/// Combines two <see cref="TypeParameterContainer"/> into one.
+		/// </summary>
+		/// <param name="first">First <see cref="TypeParameterContainer"/>.</param>
+		/// <param name="second">Second <see cref="TypeParameterContainer"/>.</param>
+		public static TypeParameterContainer Combine(in TypeParameterContainer first, in TypeParameterContainer second)
+		{
+			return first.Combine(in second);
+		}
 
-        /// <summary>
-        /// Creates a new <see cref="TypeParameterContainer"/> for the specified <paramref name="member"/>.
-        /// </summary>
-        /// <param name="member"><see cref="MemberDeclarationSyntax"/> to create the <see cref="TypeParameterContainer"/> for.</param>
-        /// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="member"/>.</param>
-        /// <param name="defaultParamAttribute"><see cref="INamedTypeSymbol"/> representing the <c>Durian.DefaultParamAttribute</c>.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        public static TypeParameterContainer CreateFrom(MemberDeclarationSyntax member, SemanticModel semanticModel, INamedTypeSymbol defaultParamAttribute, CancellationToken cancellationToken = default)
-        {
-            TypeParameterListSyntax? list = member.GetTypeParameterList();
+		/// <summary>
+		/// Creates a new <see cref="TypeParameterContainer"/> for the specified <paramref name="member"/>.
+		/// </summary>
+		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to create the <see cref="TypeParameterContainer"/> for.</param>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="member"/>.</param>
+		/// <param name="defaultParamAttribute"><see cref="INamedTypeSymbol"/> representing the <c>Durian.DefaultParamAttribute</c>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static TypeParameterContainer CreateFrom(MemberDeclarationSyntax member, SemanticModel semanticModel, INamedTypeSymbol defaultParamAttribute, CancellationToken cancellationToken = default)
+		{
+			TypeParameterListSyntax? list = member.GetTypeParameterList();
 
-            if (list is not null)
-            {
-                return new TypeParameterContainer(list.Parameters.Select(p => TypeParameterData.CreateFrom(p, semanticModel, defaultParamAttribute, cancellationToken)));
-            }
+			if (list is not null)
+			{
+				return new TypeParameterContainer(list.Parameters.Select(p => TypeParameterData.CreateFrom(p, semanticModel, defaultParamAttribute, cancellationToken)));
+			}
 
-            return new TypeParameterContainer(null);
-        }
+			return new TypeParameterContainer(null);
+		}
 
-        /// <summary>
-        /// Creates a new <see cref="TypeParameterContainer"/> for the specified <paramref name="member"/>.
-        /// </summary>
-        /// <param name="member"><see cref="MemberDeclarationSyntax"/> to create the <see cref="TypeParameterContainer"/> for.</param>
-        /// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="member"/>.</param>
-        /// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        public static TypeParameterContainer CreateFrom(MemberDeclarationSyntax member, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-        {
-            return CreateFrom(member, semanticModel, compilation.DefaultParamAttribute!, cancellationToken);
-        }
+		/// <summary>
+		/// Creates a new <see cref="TypeParameterContainer"/> for the specified <paramref name="member"/>.
+		/// </summary>
+		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to create the <see cref="TypeParameterContainer"/> for.</param>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="member"/>.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static TypeParameterContainer CreateFrom(MemberDeclarationSyntax member, SemanticModel semanticModel, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			return CreateFrom(member, semanticModel, compilation.DefaultParamAttribute!, cancellationToken);
+		}
 
-        /// <summary>
-        /// Creates a new <see cref="TypeParameterContainer"/> for the specified <paramref name="member"/>.
-        /// </summary>
-        /// <param name="member"><see cref="MemberDeclarationSyntax"/> to create the <see cref="TypeParameterContainer"/> for.</param>
-        /// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        public static TypeParameterContainer CreateFrom(MemberDeclarationSyntax member, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-        {
-            return CreateFrom(member, compilation.Compilation.GetSemanticModel(member.SyntaxTree), compilation, cancellationToken);
-        }
+		/// <summary>
+		/// Creates a new <see cref="TypeParameterContainer"/> for the specified <paramref name="member"/>.
+		/// </summary>
+		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to create the <see cref="TypeParameterContainer"/> for.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static TypeParameterContainer CreateFrom(MemberDeclarationSyntax member, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			return CreateFrom(member, compilation.Compilation.GetSemanticModel(member.SyntaxTree), compilation, cancellationToken);
+		}
 
-        /// <summary>
-        /// Creates a new <see cref="TypeParameterContainer"/> for the specified <paramref name="symbol"/>.
-        /// </summary>
-        /// <param name="symbol"><see cref="IMethodSymbol"/> to create the <see cref="TypeParameterContainer"/> for.</param>
-        /// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        public static TypeParameterContainer CreateFrom(IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-        {
-            return new TypeParameterContainer(symbol.TypeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
-        }
+		/// <summary>
+		/// Creates a new <see cref="TypeParameterContainer"/> for the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="IMethodSymbol"/> to create the <see cref="TypeParameterContainer"/> for.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static TypeParameterContainer CreateFrom(IMethodSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			return new TypeParameterContainer(symbol.TypeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
+		}
 
-        /// <summary>
-        /// Creates a new <see cref="TypeParameterContainer"/> for the specified <paramref name="symbol"/>.
-        /// </summary>
-        /// <param name="symbol"><see cref="INamedTypeSymbol"/> to create the <see cref="TypeParameterContainer"/> for.</param>
-        /// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        public static TypeParameterContainer CreateFrom(INamedTypeSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-        {
-            return new TypeParameterContainer(symbol.TypeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
-        }
+		/// <summary>
+		/// Creates a new <see cref="TypeParameterContainer"/> for the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to create the <see cref="TypeParameterContainer"/> for.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static TypeParameterContainer CreateFrom(INamedTypeSymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			return new TypeParameterContainer(symbol.TypeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
+		}
 
-        /// <summary>
-        /// Creates a new <see cref="TypeParameterContainer"/> from the specified collection of <see cref="ITypeParameterSymbol"/>s.
-        /// </summary>
-        /// <param name="typeParameters">A collection of <see cref="ITypeParameterSymbol"/>s to create the <see cref="TypeParameterContainer"/> from.</param>
-        /// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        public static TypeParameterContainer CreateFrom(IEnumerable<ITypeParameterSymbol> typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-        {
-            return new TypeParameterContainer(typeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
-        }
+		/// <summary>
+		/// Creates a new <see cref="TypeParameterContainer"/> from the specified collection of <see cref="ITypeParameterSymbol"/>s.
+		/// </summary>
+		/// <param name="typeParameters">A collection of <see cref="ITypeParameterSymbol"/>s to create the <see cref="TypeParameterContainer"/> from.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static TypeParameterContainer CreateFrom(IEnumerable<ITypeParameterSymbol> typeParameters, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			return new TypeParameterContainer(typeParameters.Select(p => TypeParameterData.CreateFrom(p, compilation, cancellationToken)));
+		}
 
-        /// <inheritdoc/>
-        public static explicit operator TypeParameterContainer(TypeParameterData[] array)
-        {
-            return new TypeParameterContainer(array);
-        }
+		/// <inheritdoc/>
+		public static explicit operator TypeParameterContainer(TypeParameterData[] array)
+		{
+			return new TypeParameterContainer(array);
+		}
 
-        /// <inheritdoc/>
-        public static implicit operator TypeParameterData[](in TypeParameterContainer obj)
-        {
-            TypeParameterData[] parameters = new TypeParameterData[obj.Length];
-            Array.Copy(obj._parameters, parameters, obj.Length);
-            return parameters;
-        }
+		/// <inheritdoc/>
+		public static implicit operator TypeParameterData[](in TypeParameterContainer obj)
+		{
+			TypeParameterData[] parameters = new TypeParameterData[obj.Length];
+			Array.Copy(obj._parameters, parameters, obj.Length);
+			return parameters;
+		}
 
-        /// <summary>
-        /// Determines whether the <paramref name="first"/> <see cref="TypeParameterContainer"/> has equivalent <see cref="TypeParameterData"/>s to the <paramref name="second"/> <see cref="TypeParameterContainer"/>.
-        /// </summary>
-        /// <param name="first">First <see cref="TypeParameterContainer"/>.</param>
-        /// <param name="second">Second <see cref="TypeParameterContainer"/>.</param>
-        /// <param name="includeNonDefaultParam">Determines whether non-DefaultParam type parameters should be included as well.</param>
-        public static bool IsEquivalentTo(in TypeParameterContainer first, in TypeParameterContainer second, bool includeNonDefaultParam = false)
-        {
-            return first.IsEquivalentTo(in second, includeNonDefaultParam);
-        }
+		/// <summary>
+		/// Determines whether the <paramref name="first"/> <see cref="TypeParameterContainer"/> has equivalent <see cref="TypeParameterData"/>s to the <paramref name="second"/> <see cref="TypeParameterContainer"/>.
+		/// </summary>
+		/// <param name="first">First <see cref="TypeParameterContainer"/>.</param>
+		/// <param name="second">Second <see cref="TypeParameterContainer"/>.</param>
+		/// <param name="includeNonDefaultParam">Determines whether non-DefaultParam type parameters should be included as well.</param>
+		public static bool IsEquivalentTo(in TypeParameterContainer first, in TypeParameterContainer second, bool includeNonDefaultParam = false)
+		{
+			return first.IsEquivalentTo(in second, includeNonDefaultParam);
+		}
 
-        /// <inheritdoc/>
-        public static bool operator !=(in TypeParameterContainer first, in TypeParameterContainer second)
-        {
-            return !(first == second);
-        }
+		/// <inheritdoc/>
+		public static bool operator !=(in TypeParameterContainer first, in TypeParameterContainer second)
+		{
+			return !(first == second);
+		}
 
-        /// <inheritdoc/>
-        public static bool operator ==(in TypeParameterContainer first, in TypeParameterContainer second)
-        {
-            return first.IsEquivalentTo(second);
-        }
+		/// <inheritdoc/>
+		public static bool operator ==(in TypeParameterContainer first, in TypeParameterContainer second)
+		{
+			return first.IsEquivalentTo(second);
+		}
 
-        /// <summary>
-        /// Combines <see langword="this"/> <see cref="TypeParameterContainer"/> with the specified <paramref name="target"/>.
-        /// </summary>
-        /// <param name="target"><see cref="TypeParameterContainer"/> to combine with <see cref="this"/> <see cref="TypeParameterContainer"/>.</param>
-        public readonly TypeParameterContainer Combine(in TypeParameterContainer target)
-        {
-            if (Length != target.Length)
-            {
-                throw new InvalidOperationException($"Both {nameof(TypeParameterContainer)}s must be the same length!");
-            }
+		/// <summary>
+		/// Combines <see langword="this"/> <see cref="TypeParameterContainer"/> with the specified <paramref name="target"/>.
+		/// </summary>
+		/// <param name="target"><see cref="TypeParameterContainer"/> to combine with <see cref="this"/> <see cref="TypeParameterContainer"/>.</param>
+		public readonly TypeParameterContainer Combine(in TypeParameterContainer target)
+		{
+			if (Length != target.Length)
+			{
+				throw new InvalidOperationException($"Both {nameof(TypeParameterContainer)}s must be the same length!");
+			}
 
-            int length = Length;
+			int length = Length;
 
-            TypeParameterData[] parameters = new TypeParameterData[length];
+			TypeParameterData[] parameters = new TypeParameterData[length];
 
-            for (int i = 0; i < length; i++)
-            {
-                ref readonly TypeParameterData thisData = ref this[i];
+			for (int i = 0; i < length; i++)
+			{
+				ref readonly TypeParameterData thisData = ref this[i];
 
-                if (thisData.IsValidDefaultParam)
-                {
-                    parameters[i] = thisData;
-                }
-                else if (target[i].IsValidDefaultParam)
-                {
-                    ref readonly TypeParameterData targetData = ref target[i];
-                    parameters[i] = new(thisData.Syntax, thisData.Symbol, thisData.SemanticModel, targetData.Attribute, targetData.TargetType);
-                }
-                else
-                {
-                    parameters[i] = thisData;
-                }
-            }
+				if (thisData.IsValidDefaultParam)
+				{
+					parameters[i] = thisData;
+				}
+				else if (target[i].IsValidDefaultParam)
+				{
+					ref readonly TypeParameterData targetData = ref target[i];
+					parameters[i] = new(thisData.Syntax, thisData.Symbol, thisData.SemanticModel, targetData.Attribute, targetData.TargetType);
+				}
+				else
+				{
+					parameters[i] = thisData;
+				}
+			}
 
-            return new TypeParameterContainer(parameters);
-        }
+			return new TypeParameterContainer(parameters);
+		}
 
-        /// <inheritdoc/>
-        public override readonly bool Equals(object obj)
-        {
-            if (obj is TypeParameterContainer p)
-            {
-                return IsEquivalentTo(in p);
-            }
+		/// <inheritdoc/>
+		public override readonly bool Equals(object obj)
+		{
+			if (obj is TypeParameterContainer p)
+			{
+				return IsEquivalentTo(in p);
+			}
 
-            return false;
-        }
+			return false;
+		}
 
-        /// <summary>
-        /// Returns a <see cref="TypeParameterData"/> at the specified <paramref name="index"/> relative to the <see cref="FirstDefaultParamIndex"/>.
-        /// </summary>
-        /// <param name="index">Index relative to the <see cref="FirstDefaultParamIndex"/> to get the <see cref="TypeParameterData"/> at.</param>
-        public readonly ref readonly TypeParameterData GetDefaultParamAtIndex(int index)
-        {
-            return ref _parameters[FirstDefaultParamIndex + index];
-        }
+		/// <summary>
+		/// Returns a <see cref="TypeParameterData"/> at the specified <paramref name="index"/> relative to the <see cref="FirstDefaultParamIndex"/>.
+		/// </summary>
+		/// <param name="index">Index relative to the <see cref="FirstDefaultParamIndex"/> to get the <see cref="TypeParameterData"/> at.</param>
+		public readonly ref readonly TypeParameterData GetDefaultParamAtIndex(int index)
+		{
+			return ref _parameters[FirstDefaultParamIndex + index];
+		}
 
-        /// <inheritdoc/>
-        public readonly IEnumerator<TypeParameterData> GetEnumerator()
-        {
-            return ((IEnumerable<TypeParameterData>)_parameters).GetEnumerator();
-        }
+		/// <inheritdoc/>
+		public readonly IEnumerator<TypeParameterData> GetEnumerator()
+		{
+			return ((IEnumerable<TypeParameterData>)_parameters).GetEnumerator();
+		}
 
-        /// <inheritdoc/>
-        public override readonly int GetHashCode()
-        {
-            int hashCode = -1158322089;
-            hashCode = (hashCode * -1521134295) + EqualityComparer<TypeParameterData[]>.Default.GetHashCode(_parameters);
-            hashCode = (hashCode * -1521134295) + FirstDefaultParamIndex.GetHashCode();
-            return hashCode;
-        }
+		/// <inheritdoc/>
+		public override readonly int GetHashCode()
+		{
+			int hashCode = -1158322089;
+			hashCode = (hashCode * -1521134295) + EqualityComparer<TypeParameterData[]>.Default.GetHashCode(_parameters);
+			hashCode = (hashCode * -1521134295) + FirstDefaultParamIndex.GetHashCode();
+			return hashCode;
+		}
 
-        /// <summary>
-        /// Determines whether <see langword="this"/> <see cref="TypeParameterContainer"/> has equivalent <see cref="TypeParameterData"/>s to the specified <paramref name="target"/>.
-        /// </summary>
-        /// <param name="target"><see cref="TypeParameterContainer"/> to compare to <see langword="this"/> <see cref="TypeParameterContainer"/>,</param>
-        /// <param name="includeNonDefaultParam">Determines whether non-DefaultParam type parameters should be included as well.</param>
-        public readonly bool IsEquivalentTo(in TypeParameterContainer target, bool includeNonDefaultParam = false)
-        {
-            int i;
-            int length = Length;
+		/// <summary>
+		/// Determines whether <see langword="this"/> <see cref="TypeParameterContainer"/> has equivalent <see cref="TypeParameterData"/>s to the specified <paramref name="target"/>.
+		/// </summary>
+		/// <param name="target"><see cref="TypeParameterContainer"/> to compare to <see langword="this"/> <see cref="TypeParameterContainer"/>,</param>
+		/// <param name="includeNonDefaultParam">Determines whether non-DefaultParam type parameters should be included as well.</param>
+		public readonly bool IsEquivalentTo(in TypeParameterContainer target, bool includeNonDefaultParam = false)
+		{
+			int i;
+			int length = Length;
 
-            if (includeNonDefaultParam)
-            {
-                if (length != target.Length)
-                {
-                    return false;
-                }
+			if (includeNonDefaultParam)
+			{
+				if (length != target.Length)
+				{
+					return false;
+				}
 
-                i = 0;
-            }
-            else
-            {
-                i = FirstDefaultParamIndex;
-            }
+				i = 0;
+			}
+			else
+			{
+				i = FirstDefaultParamIndex;
+			}
 
-            if (FirstDefaultParamIndex != target.FirstDefaultParamIndex)
-            {
-                return false;
-            }
+			if (FirstDefaultParamIndex != target.FirstDefaultParamIndex)
+			{
+				return false;
+			}
 
-            for (; i < length; i++)
-            {
-                ref readonly TypeParameterData first = ref _parameters[i];
-                ref readonly TypeParameterData second = ref target._parameters[i];
+			for (; i < length; i++)
+			{
+				ref readonly TypeParameterData first = ref _parameters[i];
+				ref readonly TypeParameterData second = ref target._parameters[i];
 
-                if (first != second)
-                {
-                    return false;
-                }
-            }
+				if (first != second)
+				{
+					return false;
+				}
+			}
 
-            return true;
-        }
+			return true;
+		}
 
-        readonly bool IEquatable<TypeParameterContainer>.Equals(TypeParameterContainer other)
-        {
-            return IsEquivalentTo(in other);
-        }
+		readonly bool IEquatable<TypeParameterContainer>.Equals(TypeParameterContainer other)
+		{
+			return IsEquivalentTo(in other);
+		}
 
-        readonly IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _parameters.GetEnumerator();
-        }
+		readonly IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _parameters.GetEnumerator();
+		}
 
-        private static int FindFirstDefaultParamIndex(TypeParameterData[] parameters)
-        {
-            int length = parameters.Length;
+		private static int FindFirstDefaultParamIndex(TypeParameterData[] parameters)
+		{
+			int length = parameters.Length;
 
-            for (int i = 0; i < length; i++)
-            {
-                ref readonly TypeParameterData data = ref parameters[i];
+			for (int i = 0; i < length; i++)
+			{
+				ref readonly TypeParameterData data = ref parameters[i];
 
-                if (data.IsDefaultParam)
-                {
-                    return i;
-                }
-            }
+				if (data.IsDefaultParam)
+				{
+					return i;
+				}
+			}
 
-            return -1;
-        }
-    }
+			return -1;
+		}
+	}
 }
