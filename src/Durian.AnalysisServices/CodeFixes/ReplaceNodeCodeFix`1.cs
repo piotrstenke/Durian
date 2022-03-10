@@ -23,7 +23,7 @@ namespace Durian.Analysis.CodeFixes
 		}
 
 		/// <inheritdoc/>
-		protected override sealed Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
+		protected sealed override Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
 		{
 			SyntaxNode newNode = GetNewNode(context.Node, context.Compilation, context.SemanticModel, out INamespaceSymbol[]? requiredNamespaces);
 			CompilationUnitSyntax newRoot = context.Root.ReplaceNode(context.Node, newNode);

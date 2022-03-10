@@ -23,7 +23,7 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		public override sealed void Initialize(AnalysisContext context)
+		public sealed override void Initialize(AnalysisContext context)
 		{
 			if (Concurrent)
 			{
@@ -55,7 +55,7 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		[Obsolete("Implementation of this method was removed - use Register(IDurianAnalysisContext, TCompilation) instead.")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-		public override sealed void Register(IDurianAnalysisContext context)
+		public sealed override void Register(IDurianAnalysisContext context)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 		{
 			// Do nothing
@@ -76,7 +76,7 @@ namespace Durian.Analysis
 		protected abstract TCompilation CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver);
 
 		/// <inheritdoc/>
-		protected override sealed void Register(IDurianAnalysisContext context, CSharpCompilation compilation)
+		protected sealed override void Register(IDurianAnalysisContext context, CSharpCompilation compilation)
 		{
 			DiagnosticBag diagnosticReceiver = DiagnosticReceiver.Factory.Bag();
 			TCompilation data = CreateCompilation(compilation, diagnosticReceiver);

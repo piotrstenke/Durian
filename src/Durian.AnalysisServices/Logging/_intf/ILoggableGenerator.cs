@@ -31,6 +31,13 @@ namespace Durian.Analysis.Logging
 		void LogException(Exception exception);
 
 		/// <summary>
+		/// Logs an <see cref="Exception"/>.
+		/// </summary>
+		/// <param name="exception"><see cref="Exception"/> to log.</param>
+		/// <param name="source">Source of the <paramref name="exception"/>.</param>
+		void LogException(Exception exception, string source);
+
+		/// <summary>
 		/// Logs an input and output <see cref="SyntaxNode"/>.
 		/// </summary>
 		/// <param name="input">Input <see cref="SyntaxNode"/>.</param>

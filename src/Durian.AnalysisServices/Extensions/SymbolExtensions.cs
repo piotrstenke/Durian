@@ -726,6 +726,30 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns a keyword used to declare the specified <paramref name="type"/> ('class, 'record', 'struct', 'delegate', 'interface', 'enum').
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the keyword of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static string GetKeyword(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.TypeKind switch
+			{
+				TypeKind.Class => type.IsRecord ? "record" : "class",
+				TypeKind.Struct => type.IsRecord ? "record struct" : "struct",
+				TypeKind.Interface => "interface",
+				TypeKind.Enum => "enum",
+				TypeKind.Delegate => "delegate",
+				TypeKind.Module => "module",
+				_ => throw new ArgumentException($"Type '{type}' is not declared using a keyword", nameof(type))
+			};
+		}
+
+		/// <summary>
 		/// Returns a collection of all inner types of the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="INamespaceSymbol"/> to get the inner types of.</param>

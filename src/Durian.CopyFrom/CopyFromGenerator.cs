@@ -165,9 +165,88 @@ namespace Durian.Analysis.CopyFrom
 			return false;
 		}
 
+		private bool GenerateType(CopyFromTypeData type, string hintName, in GeneratorExecutionContext context)
+		{
+			TargetData[] targets = type.Targets;
+			SortByOrder(targets);
+
+			bool generated = false;
+			string keyword = type.Declaration.GetKeyword();
+
+			for (int i = 0; i < targets.Length; i++)
+			{
+				ref readonly TargetData target = ref targets[i];
+
+				TypeDeclarationSyntax[] partialDeclarations = GetPartialDeclarations(in target);
+
+				if(partialDeclarations.Length == 0)
+				{
+					continue;
+				}
+
+				hintName = partialDeclarations.Length > 1 ? hintName + "_partial" : hintName;
+				string partialName = hintName;
+
+				for (int j = 0; j < partialDeclarations.Length; j++)
+				{
+					TypeDeclarationSyntax partial = partialDeclarations[j];
+
+					CodeBuilder.WriteDeclarationLead(type, GetUsings(in target, partial), GeneratorName, Version);
+					CodeBuilder.Indent();
+					CodeBuilder.BeginDeclation($"partial {keyword} {type.Name}");
+
+					foreach (MemberDeclarationSyntax member in partial.Members)
+					{
+						if(type.SemanticModel.GetDeclaredSymbol(member) is not ISymbol symbol)
+						{
+							continue;
+						}
+
+						WriteGeneratedMember(member, symbol);
+					}
+
+					CodeBuilder.EndAllScopes();
+
+					AddSourceWithOriginal(type.Declaration, partialName, in context);
+					generated = true;
+					partialName = hintName + $"_{j}";
+				}
+			}
+
+			return generated;
+		}
+
+		private static TypeDeclarationSyntax[] GetPartialDeclarations(in TargetData target)
+		{
+			if(target.PartialPart is not null)
+			{
+				return new TypeDeclarationSyntax[] { target.PartialPart };
+			}
+
+			return target.Symbol.GetPartialDeclarations<TypeDeclarationSyntax>().ToArray();
+		}
+
+		private static IEnumerable<string> GetUsings(in TargetData target, TypeDeclarationSyntax partialDeclaration)
+		{
+			List<string> usings = new(24);
+			HashSet<string> set = new();
+
+			if(target.CopyUsings && partialDeclaration.FirstAncestorOrSelf<CompilationUnitSyntax>() is CompilationUnitSyntax root)
+			{
+				usings.AddRange(root.Usings.Select(u => u.Name.ToString()).Where(u => set.Add(u)));
+			}
+
+			if(target.Usings is not null && target.Usings.Length > 0)
+			{
+				usings.AddRange(target.Usings);
+			}
+
+			return usings;
+		}
+
 		private static void SortByOrder(TargetData[] targets)
 		{
-			if(targets.Length == 1)
+			if (targets.Length == 1)
 			{
 				return;
 			}
@@ -187,11 +266,6 @@ namespace Durian.Analysis.CopyFrom
 					return 0;
 				}
 			});
-		}
-
-		private static bool GenerateType(CopyFromTypeData type, string hintName, in GeneratorExecutionContext context)
-		{
-			return true;
 		}
 	}
 }

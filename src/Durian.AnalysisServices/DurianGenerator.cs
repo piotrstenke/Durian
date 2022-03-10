@@ -107,7 +107,7 @@ namespace Durian.Analysis
 		/// Begins the generation.
 		/// </summary>
 		/// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
-		public override sealed void Execute(in GeneratorExecutionContext context)
+		public sealed override void Execute(in GeneratorExecutionContext context)
 		{
 			ResetData();
 
@@ -159,13 +159,13 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		protected override sealed void AddSource(CSharpSyntaxTree syntaxTree, string hintName, in GeneratorPostInitializationContext context)
+		protected sealed override void AddSource(CSharpSyntaxTree syntaxTree, string hintName, in GeneratorPostInitializationContext context)
 		{
 			base.AddSource(syntaxTree, hintName, context);
 		}
 
 		/// <inheritdoc/>
-		protected override sealed void AddSource(string source, string hintName, in GeneratorPostInitializationContext context)
+		protected sealed override void AddSource(string source, string hintName, in GeneratorPostInitializationContext context)
 		{
 			base.AddSource(source, hintName, context);
 		}
@@ -177,7 +177,7 @@ namespace Durian.Analysis
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		/// <exception cref="InvalidOperationException"><see cref="HasValidData"/> must be <see langword="true"/> in order to add new source.</exception>
-		protected override sealed void AddSource(string source, string hintName, in GeneratorExecutionContext context)
+		protected sealed override void AddSource(string source, string hintName, in GeneratorExecutionContext context)
 		{
 			ThrowIfHasNoValidData();
 
@@ -192,7 +192,7 @@ namespace Durian.Analysis
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		/// <exception cref="InvalidOperationException"><see cref="HasValidData"/> must be <see langword="true"/> in order to add new source.</exception>
-		protected override sealed void AddSource(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+		protected sealed override void AddSource(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
 			ThrowIfHasNoValidData();
 			AddSource_Internal(tree, hintName, in context);
@@ -237,7 +237,7 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		protected override sealed void BeforeFiltersWithGeneratedSymbols()
+		protected sealed override void BeforeFiltersWithGeneratedSymbols()
 		{
 			if (_generatedDuringCurrentPass.Count > 0)
 			{

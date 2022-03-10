@@ -66,7 +66,18 @@ namespace Durian.TestServices
 		/// <inheritdoc/>
 		public void Execute(in GeneratorExecutionContext context)
 		{
-			UnderlayingGenerator.Execute(in context);
+			UnderlayingGenerator.LoggingConfiguration.SupportedLogs &= ~GeneratorLogs.Exception;
+
+			try
+			{
+				UnderlayingGenerator.Execute(in context);
+			}
+			catch(Exception e)
+			{
+				UnderlayingGenerator.LoggingConfiguration.SupportedLogs |= GeneratorLogs.Exception;
+				LogException(e, TestName);
+				throw;
+			}
 		}
 
 		/// <inheritdoc/>
@@ -85,6 +96,12 @@ namespace Durian.TestServices
 		public void LogException(Exception exception)
 		{
 			UnderlayingGenerator.LogException(exception);
+		}
+
+		/// <inheritdoc/>
+		public void LogException(Exception exception, string source)
+		{
+			UnderlayingGenerator.LogException(exception, source);
 		}
 
 		/// <inheritdoc/>

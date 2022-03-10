@@ -21,7 +21,7 @@ namespace Durian.Analysis.CodeFixes
 		}
 
 		/// <inheritdoc/>
-		protected override sealed Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
+		protected sealed override Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
 		{
 			SyntaxNode? newRoot = context.Root.RemoveNode(context.Node, SyntaxRemoveOptions.KeepEndOfLine | SyntaxRemoveOptions.KeepDirectives);
 

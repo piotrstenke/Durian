@@ -117,6 +117,15 @@ namespace Durian.Analysis.Logging
 		}
 
 		/// <inheritdoc/>
+		public void LogException(Exception exception, string source)
+		{
+			if(LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
+			{
+				LogException_Internal(exception, source);
+			}
+		}
+
+		/// <inheritdoc/>
 		public void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput = default)
 		{
 			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput) && !(input is null && output is null))
@@ -165,6 +174,12 @@ namespace Durian.Analysis.Logging
 		{
 			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
 			TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString() + "\n\n");
+		}
+
+		private protected void LogException_Internal(Exception exception, string source)
+		{
+			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
+			TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", source + "::\n\n" + exception.ToString() + "\n\n");
 		}
 
 		private protected void LogInputOutput_Internal(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput)

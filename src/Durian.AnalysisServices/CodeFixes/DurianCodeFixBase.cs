@@ -14,7 +14,7 @@ namespace Durian.Analysis.CodeFixes
 	public abstract class DurianCodeFixBase : CodeFixProvider
 	{
 		/// <inheritdoc/>
-		public override sealed ImmutableArray<string> FixableDiagnosticIds
+		public sealed override ImmutableArray<string> FixableDiagnosticIds
 		{
 			get
 			{

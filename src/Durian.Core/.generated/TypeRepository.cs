@@ -101,7 +101,6 @@ namespace Durian.Info
 						modules: new DurianModule[]
 						{
 							DurianModule.Core,
-							DurianModule.CopyFrom,
 						}
 					);
 				}

@@ -28,7 +28,7 @@ namespace Durian.Analysis
 		/// <summary>
 		/// <see cref="GeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> that reports diagnostics during filtration.
 		/// </summary>
-		public abstract new class WithDiagnostics : GeneratorSyntaxFilter<TCompilation, TSyntaxReceiver, TData>, IGeneratorSyntaxFilterWithDiagnostics
+		public new abstract class WithDiagnostics : GeneratorSyntaxFilter<TCompilation, TSyntaxReceiver, TData>, IGeneratorSyntaxFilterWithDiagnostics
 		{
 			/// <inheritdoc/>
 			public IHintNameProvider HintNameProvider { get; }

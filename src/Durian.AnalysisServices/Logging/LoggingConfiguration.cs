@@ -72,7 +72,7 @@ namespace Durian.Analysis.Logging
 		}
 
 		/// <summary>
-		/// Determines whether to enable the <see cref="ISourceGenerator"/> can throw <see cref="Exception"/>s.
+		/// Determines whether to allow the <see cref="ISourceGenerator"/> to throw <see cref="Exception"/>s.
 		/// </summary>
 		public bool EnableExceptions { get; set; }
 

@@ -27,7 +27,7 @@ namespace Durian.Analysis.Cache
 		/// <summary>
 		/// <see cref="CachedGeneratorSyntaxFilter{TCompilation, TSyntaxReceiver, TData}"/> that reports diagnostics during filtration.
 		/// </summary>
-		public abstract new class WithDiagnostics : CachedGeneratorSyntaxFilter<TCompilation, TSyntaxReceiver, TData>, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>
+		public new abstract class WithDiagnostics : CachedGeneratorSyntaxFilter<TCompilation, TSyntaxReceiver, TData>, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>
 		{
 			/// <inheritdoc/>
 			public IHintNameProvider HintNameProvider { get; }

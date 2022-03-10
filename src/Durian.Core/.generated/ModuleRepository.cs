@@ -784,7 +784,7 @@ namespace Durian.Info
 							),
 
 							new DiagnosticData(
-								title: "Partial part does not exist",
+								title: "Unknown partial part",
 								id: 18,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0218.md",
 								fatal: true,
@@ -797,7 +797,6 @@ namespace Durian.Info
 							TypeRepository.CopyFromMethodAttribute,
 							TypeRepository.PatternAttribute,
 							TypeRepository.PartialNameAttribute,
-							TypeRepository.UsingsAttribute,
 						}
 					);
 				}

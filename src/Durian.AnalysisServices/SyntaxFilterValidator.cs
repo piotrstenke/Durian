@@ -32,7 +32,7 @@ namespace Durian.Analysis
 		/// <summary>
 		/// <see cref="SyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/> that reports diagnostics during filtration.
 		/// </summary>
-		public abstract new class WithDiagnostics : SyntaxFilterValidator<TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData>, INodeValidatorWithDiagnostics<TData>, IGeneratorSyntaxFilterWithDiagnostics
+		public new abstract class WithDiagnostics : SyntaxFilterValidator<TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData>, INodeValidatorWithDiagnostics<TData>, IGeneratorSyntaxFilterWithDiagnostics
 		{
 			/// <inheritdoc/>
 			public IHintNameProvider HintNameProvider { get; }
@@ -264,7 +264,7 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		public override sealed IEnumerable<TData> Filtrate(
+		public sealed override IEnumerable<TData> Filtrate(
 			TCompilation compilation,
 			TSyntaxReceiver syntaxReceiver,
 			CancellationToken cancellationToken = default
@@ -279,7 +279,7 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		public override sealed IEnumerable<TData> Filtrate(
+		public sealed override IEnumerable<TData> Filtrate(
 			TCompilation compilation,
 			IEnumerable<CSharpSyntaxNode> collectedNodes,
 			CancellationToken cancellationToken = default
@@ -294,7 +294,7 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		public override sealed IEnumerable<TData> Filtrate(in GeneratorExecutionContext context)
+		public sealed override IEnumerable<TData> Filtrate(in GeneratorExecutionContext context)
 		{
 			if (GetCompilation(in context) is not TCompilation compilation ||
 				context.SyntaxReceiver is not TSyntaxReceiver syntaxReceiver ||

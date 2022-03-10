@@ -33,7 +33,7 @@ namespace Durian.Analysis.Cache
 		/// <summary>
 		/// <see cref="CachedSyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/> that reports diagnostics during filtration.
 		/// </summary>
-		public abstract new class WithDiagnostics : CachedSyntaxFilterValidator<TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData>, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>, INodeValidatorWithDiagnostics<TData>
+		public new abstract class WithDiagnostics : CachedSyntaxFilterValidator<TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData>, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>, INodeValidatorWithDiagnostics<TData>
 		{
 			/// <inheritdoc/>
 			public IHintNameProvider HintNameProvider { get; }
