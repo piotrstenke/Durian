@@ -337,9 +337,46 @@ namespace Durian.Analysis.Extensions
 					yield return s;
 				}
 
-				foreach (INamedTypeSymbol s in GetContainingTypeSymbols(symbol))
+				foreach (INamedTypeSymbol s in GetContainingTypes(symbol))
 				{
 					yield return s;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<INamedTypeSymbol> GetContainingTypes(this ISymbol symbol, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return AnalysisUtilities.ReturnByOrder(GetTypes(), order);
+
+			IEnumerable<INamedTypeSymbol> GetTypes()
+			{
+				if (includeSelf && symbol is INamedTypeSymbol t)
+				{
+					yield return t;
+				}
+
+				INamedTypeSymbol parent = symbol.ContainingType;
+
+				if (parent is not null)
+				{
+					yield return parent;
+
+					while ((parent = parent!.ContainingType) is not null)
+					{
+						yield return parent;
+					}
 				}
 			}
 		}
@@ -352,7 +389,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<ITypeData> GetContainingTypes(this ISymbol symbol, ICompilationData compilation, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
+		public static IEnumerable<ITypeData> GetContainingTypesAsData(this ISymbol symbol, ICompilationData compilation, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
 		{
 			if (symbol is null)
 			{
@@ -364,7 +401,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			INamedTypeSymbol[] parentSymbols = GetContainingTypeSymbols(symbol, includeSelf, order).ToArray();
+			INamedTypeSymbol[] parentSymbols = GetContainingTypes(symbol, includeSelf, order).ToArray();
 			List<ITypeData> parentList = new(parentSymbols.Length);
 
 			return parentSymbols.Select<INamedTypeSymbol, ITypeData>(parent =>
@@ -410,43 +447,6 @@ namespace Durian.Analysis.Extensions
 						throw new InvalidOperationException($"Invalid type kind of '{parent}'");
 				}
 			});
-		}
-
-		/// <summary>
-		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
-		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<INamedTypeSymbol> GetContainingTypeSymbols(this ISymbol symbol, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			return AnalysisUtilities.ReturnByOrder(GetTypes(), order);
-
-			IEnumerable<INamedTypeSymbol> GetTypes()
-			{
-				if (includeSelf && symbol is INamedTypeSymbol t)
-				{
-					yield return t;
-				}
-
-				INamedTypeSymbol parent = symbol.ContainingType;
-
-				if (parent is not null)
-				{
-					yield return parent;
-
-					while ((parent = parent!.ContainingType) is not null)
-					{
-						yield return parent;
-					}
-				}
-			}
 		}
 
 		/// <summary>
@@ -503,14 +503,9 @@ namespace Durian.Analysis.Extensions
 		/// Returns a <see cref="string"/> containing generic identifier of the specified <paramref name="symbol"/> -or- name of the <paramref name="symbol"/> if it is not an <see cref="IMethodSymbol"/> or <see cref="INamedTypeSymbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the generic name of.</param>
-		/// <param name="paramsOrArgs">
-		/// Determines whether to write the type parameters (e.g. "T") or the type arguments the parameters were substituted by;
-		/// <see langword="true"/> for parameters, <see langword="false"/> for arguments.
-		/// </param>
-		/// <param name="includeParameters">If the <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="symbol"/>'s type parameters.</param>
+		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this ISymbol symbol, bool paramsOrArgs, bool includeParameters = false, bool includeVariance = false)
+		public static string GetGenericName(this ISymbol symbol, GenericSubstitution substitution = default)
 		{
 			if (symbol is null)
 			{
@@ -519,18 +514,11 @@ namespace Durian.Analysis.Extensions
 
 			if (symbol is INamedTypeSymbol t)
 			{
-				if (paramsOrArgs)
-				{
-					return GetGenericName(t.TypeParameters, t.Name, includeVariance);
-				}
-				else
-				{
-					return GetGenericName(t.TypeArguments, t.Name);
-				}
+				return t.GetGenericName(substitution);
 			}
 			else if (symbol is IMethodSymbol m)
 			{
-				return GetGenericName(m, paramsOrArgs, includeParameters);
+				return m.GetGenericName(substitution);
 			}
 
 			return symbol.Name;
@@ -540,24 +528,22 @@ namespace Durian.Analysis.Extensions
 		/// Returns a <see cref="string"/> containing generic identifier of the specified <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the generic name of.</param>
-		/// <param name="paramsOrArgs">
-		/// Determines whether to write the type parameters (e.g. "T") or the type arguments the parameters were substituted by;
-		/// <see langword="true"/> for parameters, <see langword="false"/> for arguments.
-		/// </param>
-		/// <param name="includeParameters">Determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this IMethodSymbol method, bool paramsOrArgs, bool includeParameters = false)
+		public static string GetGenericName(this IMethodSymbol method, GenericSubstitution substitution = default)
 		{
 			if (method is null)
 			{
 				throw new ArgumentNullException(nameof(method));
 			}
 
-			string name = GetGenericName(paramsOrArgs ? method.TypeParameters : method.TypeArguments, method.Name);
+			string name = substitution.HasFlag(GenericSubstitution.Arguments)
+				? GetGenericName(method.TypeArguments, method.Name)
+				: GetGenericName(method.TypeParameters, method.Name, substitution.HasFlag(GenericSubstitution.Variance));
 
-			if (includeParameters)
+			if (substitution.HasFlag(GenericSubstitution.ParameterList))
 			{
-				name = $"{name}{GetParameterSignature(method)}";
+				name += GetParameterList(method);
 			}
 
 			return name;
@@ -567,27 +553,25 @@ namespace Durian.Analysis.Extensions
 		/// Returns a <see cref="string"/> containing generic identifier of the specified <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the generic name of.</param>
-		/// <param name="paramsOrArgs">
-		/// Determines whether to write the type parameters (e.g. "T") or the type arguments the parameters were substituted by;
-		/// <see langword="true"/> for parameters, <see langword="false"/> for arguments.
-		/// </param>
-		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="type"/>'s type parameters.</param>
+		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this INamedTypeSymbol type, bool paramsOrArgs, bool includeVariance = false)
+		public static string GetGenericName(this INamedTypeSymbol type, GenericSubstitution substitution = default)
 		{
 			if (type is null)
 			{
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			if (paramsOrArgs)
+			string name = substitution.HasFlag(GenericSubstitution.Arguments)
+				? GetGenericName(type.TypeArguments, type.Name)
+				: GetGenericName(type.TypeParameters, type.Name, substitution.HasFlag(GenericSubstitution.Variance));
+
+			if(substitution.HasFlag(GenericSubstitution.ParameterList) && type.DelegateInvokeMethod is not null)
 			{
-				return GetGenericName(type.TypeParameters, type.Name, includeVariance);
+				name += GetParameterList(type.DelegateInvokeMethod);
 			}
-			else
-			{
-				return GetGenericName(type.TypeArguments, type.Name);
-			}
+
+			return name;
 		}
 
 		/// <summary>
@@ -603,6 +587,37 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns a <see cref="string"/> containing generic identifier combined of the specified <paramref name="name"/> and the collection of <paramref name="typeParameters"/>.
+		/// </summary>
+		/// <param name="typeParameters">Type parameters.</param>
+		/// <param name="name">Actual member identifier.</param>
+		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="typeParameters"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <see langword="null"/>.</exception>
+		public static string GetGenericName(this IEnumerable<ITypeParameterSymbol> typeParameters, string? name, bool includeVariance = false)
+		{
+			if (typeParameters is null)
+			{
+				throw new ArgumentNullException(nameof(typeParameters));
+			}
+
+			if (includeVariance)
+			{
+				return AnalysisUtilities.GetGenericName(typeParameters.Select(p =>
+				{
+					if (p.Variance == VarianceKind.Out || p.Variance == VarianceKind.In)
+					{
+						return $"{p.Variance.ToString().ToLower()} {p.Name}";
+					}
+
+					return p.Name;
+				}),
+				name);
+			}
+
+			return AnalysisUtilities.GetGenericName(typeParameters.Select(p => p.Name), name);
+		}
+
+		/// <summary>
 		/// Returns a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeArguments"/>.
 		/// </summary>
 		/// <param name="typeArguments">Type arguments.</param>
@@ -615,9 +630,9 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(typeArguments));
 			}
 
-			if (typeArguments is IEnumerable<ITypeParameterSymbol> enumerable)
+			if (typeArguments is IEnumerable<ITypeParameterSymbol> parameters)
 			{
-				return GetGenericName(enumerable);
+				return GetGenericName(parameters);
 			}
 
 			ITypeSymbol[] symbols = typeArguments.ToArray();
@@ -654,37 +669,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns a <see cref="string"/> containing generic identifier combined of the specified <paramref name="name"/> and the collection of <paramref name="typeParameters"/>.
-		/// </summary>
-		/// <param name="typeParameters">Type parameters.</param>
-		/// <param name="name">Actual member identifier.</param>
-		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="typeParameters"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this IEnumerable<ITypeParameterSymbol> typeParameters, string? name, bool includeVariance = false)
-		{
-			if (typeParameters is null)
-			{
-				throw new ArgumentNullException(nameof(typeParameters));
-			}
-
-			if (includeVariance)
-			{
-				return AnalysisUtilities.GetGenericName(typeParameters.Select(p =>
-				{
-					if (p.Variance == VarianceKind.Out || p.Variance == VarianceKind.In)
-					{
-						return $"{p.Variance.ToString().ToLower()} {p.Name}";
-					}
-
-					return p.Name;
-				}),
-				name);
-			}
-
-			return AnalysisUtilities.GetGenericName(typeParameters.Select(p => p.Name), name);
-		}
-
-		/// <summary>
 		/// Returns a <see cref="string"/> containing generic identifier combined of the specified <paramref name="name"/> and the collection of <paramref name="typeArguments"/>.
 		/// </summary>
 		/// <param name="typeArguments">Type arguments.</param>
@@ -697,7 +681,33 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(typeArguments));
 			}
 
-			return $"{name ?? string.Empty}{GetGenericName(typeArguments)}";
+			if (typeArguments is IEnumerable<ITypeParameterSymbol> parameters)
+			{
+				return parameters.GetGenericName(name);
+			}
+
+			return (name ?? string.Empty) + typeArguments.GetGenericName();
+		}
+
+		/// <summary>
+		/// Creates an <c>&lt;inheritdoc/&gt;</c> tag from the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the <c>&lt;inheritdoc/&gt;</c> tag from.</param>
+		/// <returns>A <see cref="string"/> containing the created <c>&lt;inheritdoc/&gt;</c> tag -or- <see langword="null"/> if <paramref name="symbol"/> has no documentation comment.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static string? GetInheritdocIfHasDocumentation(this ISymbol symbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			if (string.IsNullOrEmpty(symbol.GetDocumentationCommentXml()))
+			{
+				return null;
+			}
+
+			return AutoGenerated.GetInheritdoc(symbol.GetXmlParentTypesString(true));
 		}
 
 		/// <summary>
@@ -877,12 +887,44 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns a <see cref="string"/> that contains all the parent types of the specified <paramref name="symbol"/> and the <paramref name="symbol"/>'s name separated by the dot ('.') character.
+		/// </summary>
+		/// <remarks>If the <paramref name="symbol"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="string"/> of.</param>
+		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static string GetParentTypesString(this ISymbol symbol, bool includeParameters = false)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			StringBuilder sb = new();
+
+			foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
+			{
+				sb.Append(type.GetGenericName()).Append('.');
+			}
+
+			sb.Append(symbol.GetGenericName());
+
+			if (includeParameters && symbol is IMethodSymbol m)
+			{
+				sb.Append(m.GetParameterList());
+			}
+
+			return sb.ToString();
+		}
+
+		/// <summary>
 		/// Returns a <see cref="string"/> that represents the parameter signature of the <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the signature of.</param>
+		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Function pointers are not supported.</exception>
-		public static string GetParameterSignature(this IMethodSymbol method)
+		public static string GetParameterList(this IMethodSymbol method, GenericSubstitution substitution = default)
 		{
 			if (method is null)
 			{
@@ -891,11 +933,15 @@ namespace Durian.Analysis.Extensions
 
 			StringBuilder sb = new();
 
+			ImmutableArray<IParameterSymbol> parameters = substitution.HasFlag(GenericSubstitution.Arguments) || method.ConstructedFrom is null
+				? method.Parameters
+				: method.ConstructedFrom.Parameters;
+
 			sb.Append('(');
 
 			if (method.Parameters.Length > 0)
 			{
-				foreach (IParameterSymbol parameter in method.Parameters)
+				foreach (IParameterSymbol parameter in parameters)
 				{
 					if (parameter.RefKind != RefKind.None)
 					{
@@ -1098,6 +1144,19 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return AnalysisUtilities.ConvertFullyQualifiedNameToXml(symbol.ToString());
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> that contains all the parent types of the specified <paramref name="symbol"/> and the <paramref name="symbol"/>'s separated by the dot ('.') character. Can be used in XML documentation.
+		/// </summary>
+		/// <param name="symbol"><see cref="IMemberData"/> to get the <see cref="string"/> of.</param>
+		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static string GetXmlParentTypesString(this ISymbol symbol, bool includeParameters = false)
+		{
+			string parentString = GetParentTypesString(symbol, includeParameters);
+
+			return AnalysisUtilities.ConvertFullyQualifiedNameToXml(parentString);
 		}
 
 		/// <summary>
@@ -1756,7 +1815,7 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 		public static bool IsPartialContext(this INamedTypeSymbol type)
 		{
-			return type.IsPartial() && type.GetContainingTypeSymbols().All(t => t.IsPartial());
+			return type.IsPartial() && type.GetContainingTypes().All(t => t.IsPartial());
 		}
 
 		/// <summary>
@@ -1768,7 +1827,7 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
 		public static bool IsPartialContext(this IMethodSymbol method, MethodDeclarationSyntax? declaration = default)
 		{
-			return method.IsPartial(declaration) && method.GetContainingTypeSymbols().All(t => t.IsPartial());
+			return method.IsPartial(declaration) && method.GetContainingTypes().All(t => t.IsPartial());
 		}
 
 		/// <summary>
@@ -1779,7 +1838,7 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="declarationRetriever"/> is <see langword="null"/>.</exception>
 		public static bool IsPartialContext(this IMethodSymbol method, Func<MethodDeclarationSyntax?> declarationRetriever)
 		{
-			return method.IsPartial(declarationRetriever) && method.GetContainingTypeSymbols().All(t => t.IsPartial());
+			return method.IsPartial(declarationRetriever) && method.GetContainingTypes().All(t => t.IsPartial());
 		}
 
 		/// <summary>

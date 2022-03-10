@@ -157,27 +157,12 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			TargetData[] targets = target.Targets;
-			SortByOrder(targets);
-
-			Generate(0);
-			AddSourceWithOriginal(target.Declaration, hintName, in context);
-
-			for (int i = 1; i < targets.Length; i++)
+			if(target is CopyFromTypeData type)
 			{
-				Generate(i);
-				AddSourceWithOriginal(target.Declaration, hintName + $"_{i}", in context);
+				return GenerateType(type, hintName, in context);
 			}
 
-			return true;
-
-			void Generate(int index)
-			{
-				ref readonly TargetData t = ref targets[index];
-
-				CodeBuilder.WriteDeclarationLead(target, GetUsings(in t), GeneratorName, Version);
-				CodeBuilder.EndAllBlocks();
-			}
+			return false;
 		}
 
 		private static void SortByOrder(TargetData[] targets)
@@ -204,29 +189,9 @@ namespace Durian.Analysis.CopyFrom
 			});
 		}
 
-		private static void GenerateType(CopyFromTypeData type, in TargetData data)
+		private static bool GenerateType(CopyFromTypeData type, string hintName, in GeneratorExecutionContext context)
 		{
-
-		}
-
-		private static IEnumerable<string>? GetUsings(in TargetData target, out TypeDeclarationSyntax[]? partialDeclarations)
-		{
-			List<string> list = new(24);
-
-			if(target.CopyUsings)
-			{
-				if(target.PartialPart is null)
-				{
-					partialDeclarations = target.Symbol.GetPartialDeclarations<TypeDeclarationSyntax>().ToArray();
-
-					foreach (TypeDeclarationSyntax partial in partialDeclarations)
-					{
-						
-					}
-				}
-			}
-
-			return target.Usings;
+			return true;
 		}
 	}
 }

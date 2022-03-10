@@ -165,7 +165,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public override sealed DurianModule[] GetRequiredModules()
+		public override DurianModule[] GetRequiredModules()
 		{
 			return new DurianModule[] { DurianModule.DefaultParam };
 		}
@@ -308,7 +308,7 @@ namespace Durian.Analysis.DefaultParam
 		{
 			if (targetType is INamedTypeSymbol t)
 			{
-				return t.Arity > 0 ? t.GetGenericName(false) : AnalysisUtilities.TypeToKeyword(targetType.Name);
+				return t.Arity > 0 ? t.GetGenericName(GenericSubstitution.Arguments) : AnalysisUtilities.TypeToKeyword(targetType.Name);
 			}
 			else if (targetType is IArrayTypeSymbol a)
 			{
@@ -380,7 +380,7 @@ namespace Durian.Analysis.DefaultParam
 			{
 				WriteTargetLeadDeclaration(target);
 				WriteGeneratedMembers(members, target);
-				CodeBuilder.EndAllBlocks();
+				CodeBuilder.EndAllScopes();
 			}
 		}
 

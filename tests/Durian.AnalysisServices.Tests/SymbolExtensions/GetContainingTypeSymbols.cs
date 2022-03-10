@@ -17,7 +17,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		public void CanReturnMultipleTypes()
 		{
 			INamedTypeSymbol type = GetSymbol("class Test { class Parent { class Child { } } }", 2);
-			INamedTypeSymbol[] containingTypes = type.GetContainingTypeSymbols().ToArray();
+			INamedTypeSymbol[] containingTypes = type.GetContainingTypes().ToArray();
 			Assert.True(containingTypes.Length == 2 && containingTypes.Any(t => t.Name == "Parent") && containingTypes.Any(t => t.Name == "Test"));
 		}
 
@@ -25,7 +25,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		public void CanReturnSingleType()
 		{
 			INamedTypeSymbol type = GetSymbol("class Parent { class Child { } }", 1);
-			INamedTypeSymbol[] containingTypes = type.GetContainingTypeSymbols().ToArray();
+			INamedTypeSymbol[] containingTypes = type.GetContainingTypes().ToArray();
 			Assert.True(containingTypes.Length == 1 && containingTypes[0].Name == "Parent");
 		}
 
@@ -33,7 +33,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		public void ReturnsEmpty_When_IsNotNestedType()
 		{
 			INamedTypeSymbol type = GetSymbol("class Test { }");
-			INamedTypeSymbol[] containingTypes = type.GetContainingTypeSymbols().ToArray();
+			INamedTypeSymbol[] containingTypes = type.GetContainingTypes().ToArray();
 			Assert.True(containingTypes.Length == 0);
 		}
 
@@ -41,14 +41,14 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		public void ReturnsTypesInParentFirstOrder()
 		{
 			INamedTypeSymbol type = GetSymbol("class Test { class Parent { class Child { } } }", 2);
-			INamedTypeSymbol[] containingTypes = type.GetContainingTypeSymbols().ToArray();
+			INamedTypeSymbol[] containingTypes = type.GetContainingTypes().ToArray();
 			Assert.True(containingTypes.Length == 2 && containingTypes[0].Name == "Test" && containingTypes[1].Name == "Parent");
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_SymbolIsNull()
 		{
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetContainingTypeSymbols());
+			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetContainingTypes());
 		}
 
 		private INamedTypeSymbol GetSymbol(string source, int index = 0)

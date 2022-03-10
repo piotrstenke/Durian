@@ -126,7 +126,7 @@ namespace Durian.Analysis.Data
 		/// <inheritdoc/>
 		public virtual IEnumerable<ITypeData> GetContainingTypes()
 		{
-			return _containingTypes ??= Symbol.GetContainingTypes(ParentCompilation).ToArray();
+			return _containingTypes ??= Symbol.GetContainingTypesAsData(ParentCompilation).ToArray();
 		}
 
 		private protected static InvalidOperationException Exc_NoSyntaxReference(ISymbol symbol)

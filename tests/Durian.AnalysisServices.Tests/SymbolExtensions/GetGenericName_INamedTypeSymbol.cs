@@ -17,42 +17,42 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		public void CanReturnNameWithMultipleTypeArguments()
 		{
 			INamedTypeSymbol symbol = GetSymbolForArgument("class Test<T, U> { } class New : Test<int, string> { }");
-			Assert.True(symbol.GetGenericName(false) == "Test<int, string>");
+			Assert.True(symbol.GetGenericName(GenericSubstitution.Arguments) == "Test<int, string>");
 		}
 
 		[Fact]
 		public void CanReturnNameWithMultipleTypeParameters()
 		{
 			INamedTypeSymbol symbol = GetSymbolForParameter("class Test<T, U> { }");
-			Assert.True(symbol.GetGenericName(true) == "Test<T, U>");
+			Assert.True(symbol.GetGenericName() == "Test<T, U>");
 		}
 
 		[Fact]
 		public void CanReturnNameWithSingleTypeArgument()
 		{
 			INamedTypeSymbol symbol = GetSymbolForArgument("class Test<T> { } class New : Test<int> { }");
-			Assert.True(symbol.GetGenericName(false) == "Test<int>");
+			Assert.True(symbol.GetGenericName(GenericSubstitution.Arguments) == "Test<int>");
 		}
 
 		[Fact]
 		public void CanReturnNameWithSingleTypeParameter()
 		{
 			INamedTypeSymbol symbol = GetSymbolForParameter("class Test<T> { }");
-			Assert.True(symbol.GetGenericName(true) == "Test<T>");
+			Assert.True(symbol.GetGenericName() == "Test<T>");
 		}
 
 		[Fact]
 		public void ReturnsOnlyName_When_HasNoTypeParameters()
 		{
 			INamedTypeSymbol symbol = GetSymbolForParameter("class Test { }");
-			Assert.True(symbol.GetGenericName(true) == "Test");
+			Assert.True(symbol.GetGenericName() == "Test");
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_MethodIsNull()
 		{
 			INamedTypeSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetGenericName(true));
+			Assert.Throws<ArgumentNullException>(() => symbol.GetGenericName());
 		}
 
 		private INamedTypeSymbol GetSymbolForArgument(string source)

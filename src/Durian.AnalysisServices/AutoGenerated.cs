@@ -102,6 +102,11 @@ $@"//---------------------------------------------------------------------------
 		/// <param name="source">Member this code was generated from.</param>
 		public static string GetDurianGeneratedAttribute(string? source)
 		{
+			if(source is null)
+			{
+				return GetDurianGeneratedAttribute();
+			}
+
 			return $"[global::{DurianStrings.GeneratorNamespace}.DurianGenerated(\"{source}\")]";
 		}
 

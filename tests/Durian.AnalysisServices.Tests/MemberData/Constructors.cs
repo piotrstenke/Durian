@@ -67,7 +67,7 @@ namespace Durian.Analysis.Tests.MemberData
 			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(decl.SyntaxTree, true);
 			ISymbol symbol = semanticModel.GetDeclaredSymbol(decl)!;
 			Location location = decl.GetLocation();
-			ITypeData[] containingTypes = symbol.GetContainingTypes(compilation).ToArray();
+			ITypeData[] containingTypes = symbol.GetContainingTypesAsData(compilation).ToArray();
 			INamespaceSymbol[] containingNamespaces = symbol.GetContainingNamespaces().ToArray();
 			ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
 			Data.MemberData data = new(decl, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes);

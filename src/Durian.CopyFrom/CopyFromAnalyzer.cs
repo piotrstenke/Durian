@@ -585,8 +585,9 @@ namespace Durian.Analysis.CopyFrom
 		{
 			int order = GetOrder(attribute);
 			string[]? usings = GetUsings(attribute);
+			bool copyUsings = ShouldCopyUsings(attribute);
 
-			return new(target, order, partialPart, partialPartName, usings);
+			return new(target, order, partialPart, partialPartName, copyUsings, usings);
 		}
 
 		private static bool EnsureIsInPartialContext(IMethodSymbol method, [NotNullWhen(true)] ref MethodDeclarationSyntax? declaration)
@@ -647,7 +648,7 @@ namespace Durian.Analysis.CopyFrom
 				success = false;
 			}
 
-			foreach (INamedTypeSymbol baseType in method.GetContainingTypeSymbols())
+			foreach (INamedTypeSymbol baseType in method.GetContainingTypes())
 			{
 				if (!baseType.IsPartial())
 				{
@@ -674,7 +675,7 @@ namespace Durian.Analysis.CopyFrom
 				success = false;
 			}
 
-			foreach (INamedTypeSymbol baseType in type.GetContainingTypeSymbols())
+			foreach (INamedTypeSymbol baseType in type.GetContainingTypes())
 			{
 				if (!baseType.IsPartial())
 				{
@@ -1194,6 +1195,11 @@ namespace Durian.Analysis.CopyFrom
 				MethodKind.Constructor or
 				MethodKind.UserDefinedOperator or
 				MethodKind.Conversion;
+		}
+
+		private static bool ShouldCopyUsings(AttributeData attribute)
+		{
+			return attribute.GetNamedArgumentValue<bool>(CopyFromTypeAttributeProvider.CopyUsings);
 		}
 
 		private static bool TryGetPartialPart(

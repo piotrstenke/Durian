@@ -13,7 +13,7 @@ namespace Durian.Analysis.Tests.MemberDataExtensions
 		[Fact]
 		public void IsSuccess_When_GenericParameterIsArgument_and_IncludeParametersIsTrue()
 		{
-			Assert.True(GetMethod("class Test { void Method<T>(T a) { } }")!.GetGenericName(true) == "Method<T>(T)");
+			Assert.True(GetMethod("class Test { void Method<T>(T a) { } }")!.GetGenericName(GenericSubstitution.ParameterList) == "Method<T>(T)");
 		}
 
 		[Fact]
@@ -43,13 +43,13 @@ namespace Durian.Analysis.Tests.MemberDataExtensions
 		[Fact]
 		public void ReturnsNameWithParameters_When_MemberIsMethod_And_IncludeParametersIsTrue_When_HasMultipleTypeParameters()
 		{
-			Assert.True(GetMethod("class Test { void Method<T, U>(int a, int b) { } }")!.GetGenericName(true) == "Method<T, U>(int, int)");
+			Assert.True(GetMethod("class Test { void Method<T, U>(int a, int b) { } }")!.GetGenericName(GenericSubstitution.ParameterList) == "Method<T, U>(int, int)");
 		}
 
 		[Fact]
 		public void ReturnsNameWithParameters_When_MemberIsMethod_And_IncludeParametersIsTrue_When_HasSingleTypeParameter()
 		{
-			Assert.True(GetMethod("class Test { void Method<T>(int a, int b) { } }")!.GetGenericName(true) == "Method<T>(int, int)");
+			Assert.True(GetMethod("class Test { void Method<T>(int a, int b) { } }")!.GetGenericName(GenericSubstitution.ParameterList) == "Method<T>(int, int)");
 		}
 
 		[Fact]

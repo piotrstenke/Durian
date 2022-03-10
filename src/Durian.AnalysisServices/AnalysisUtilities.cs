@@ -590,13 +590,13 @@ namespace Durian.Analysis
 
 			if (n.IsValueType && n.Name == "Nullable" && n.TypeArguments.Length > 0)
 			{
-				name = n.TypeArguments[0].GetGenericName(false);
+				name = n.TypeArguments[0].GetGenericName(GenericSubstitution.Arguments);
 				sb.Append(TypeToKeyword(name));
 				sb.Append('?');
 			}
 			else
 			{
-				name = n.TypeArguments.Length > 0 ? n.GetGenericName(false) : n.Name;
+				name = n.TypeArguments.Length > 0 ? n.GetGenericName(GenericSubstitution.Arguments) : n.Name;
 				sb.Append(TypeToKeyword(name));
 
 				if (n.NullableAnnotation == NullableAnnotation.Annotated)

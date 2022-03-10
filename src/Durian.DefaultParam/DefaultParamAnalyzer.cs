@@ -203,7 +203,7 @@ namespace Durian.Analysis.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			INamedTypeSymbol[] types = symbol.GetContainingTypeSymbols().ToArray();
+			INamedTypeSymbol[] types = symbol.GetContainingTypes().ToArray();
 			bool isValid = AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver, types, cancellationToken);
 			containingTypes = isValid ? types : null;
 			return isValid;
@@ -268,7 +268,7 @@ namespace Durian.Analysis.DefaultParam
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
+			ITypeData[] types = symbol.GetContainingTypesAsData(compilation).ToArray();
 			bool isValid = true;
 
 			if (types.Length > 0)
@@ -311,7 +311,7 @@ namespace Durian.Analysis.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			INamedTypeSymbol[] containing = symbol.GetContainingTypeSymbols().ToArray();
+			INamedTypeSymbol[] containing = symbol.GetContainingTypes().ToArray();
 			bool isValid = AnalyzeContainingTypes(containing, compilation, cancellationToken);
 			containingTypes = isValid ? containing : null;
 			return isValid;
@@ -364,7 +364,7 @@ namespace Durian.Analysis.DefaultParam
 			CancellationToken cancellationToken = default
 		)
 		{
-			INamedTypeSymbol[] types = symbol.GetContainingTypeSymbols().ToArray();
+			INamedTypeSymbol[] types = symbol.GetContainingTypes().ToArray();
 
 			return AnalyzeContainingTypes(types, compilation, cancellationToken);
 		}
@@ -382,7 +382,7 @@ namespace Durian.Analysis.DefaultParam
 			[NotNullWhen(true)] out ITypeData[]? containingTypes
 		)
 		{
-			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
+			ITypeData[] types = symbol.GetContainingTypesAsData(compilation).ToArray();
 
 			if (types.Length > 0)
 			{
@@ -794,7 +794,7 @@ namespace Durian.Analysis.DefaultParam
 		{
 			if (containingTypes is null)
 			{
-				containingTypes = symbol.GetContainingTypeSymbols().ToArray();
+				containingTypes = symbol.GetContainingTypes().ToArray();
 			}
 		}
 

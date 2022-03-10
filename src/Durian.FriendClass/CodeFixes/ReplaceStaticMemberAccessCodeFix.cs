@@ -50,7 +50,7 @@ namespace Durian.Analysis.FriendClass.CodeFixes
 
 			if (parentType.IsInnerType())
 			{
-				name = AnalysisUtilities.JoinIntoQualifiedName(parentType.GetContainingTypeSymbols(true).Select(t => t.Name))!;
+				name = AnalysisUtilities.JoinIntoQualifiedName(parentType.GetContainingTypes(true).Select(t => t.Name))!;
 			}
 			else
 			{

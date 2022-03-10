@@ -128,6 +128,16 @@ namespace Durian.Analysis
 			TextBuilder.AppendLine(value);
 		}
 
+		/// <summary>
+		/// Begins a member declaration using the specified raw text.
+		/// </summary>
+		/// <param name="member">Raw text to write.</param>
+		public void BeginDeclation(string member)
+		{
+			TextBuilder?.AppendLine(member);
+			BeginScope();
+		}
+
 		/// <inheritdoc cref="BeginMethodDeclaration(MethodData, bool, bool)"/>
 		public void BeginMethodDeclaration(MethodData method, bool blockOrExpression)
 		{
@@ -269,6 +279,16 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Begins a new scope.
+		/// </summary>
+		public void BeginScope()
+		{
+			Indent();
+			TextBuilder.AppendLine("{");
+			CurrentIndent++;
+		}
+
+		/// <summary>
 		/// Writes declaration of a type.
 		/// </summary>
 		/// <param name="type"><see cref="ITypeData"/> that contains all the needed info about the target type.</param>
@@ -323,9 +343,9 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Ends all the remaining blocks.
+		/// Ends all the remaining scopes.
 		/// </summary>
-		public void EndAllBlocks()
+		public void EndAllScopes()
 		{
 			int length = CurrentIndent;
 
@@ -338,9 +358,9 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Ends the current block.
+		/// Ends the current scope.
 		/// </summary>
-		public void EndBlock()
+		public void EndScope()
 		{
 			CurrentIndent--;
 			Indent();
@@ -696,7 +716,7 @@ namespace Durian.Analysis
 			TextBuilder.Append(type.Declaration.GetKeyword());
 			TextBuilder.Append(' ');
 
-			TextBuilder.AppendLine(type.GetGenericName(false, true));
+			TextBuilder.AppendLine(type.GetGenericName(GenericSubstitution.Variance));
 			Indent();
 			CurrentIndent++;
 			TextBuilder.AppendLine("{");

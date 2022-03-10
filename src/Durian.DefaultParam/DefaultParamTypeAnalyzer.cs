@@ -45,7 +45,7 @@ namespace Durian.Analysis.DefaultParam
 			}
 
 			ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
-			INamedTypeSymbol[] containingTypes = symbol.GetContainingTypeSymbols().ToArray();
+			INamedTypeSymbol[] containingTypes = symbol.GetContainingTypes().ToArray();
 
 			bool isValid = AnalyzeAgainstProhibitedAttributes(symbol, compilation, diagnosticReceiver, attributes);
 			isValid &= AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver, containingTypes, cancellationToken);
