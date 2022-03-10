@@ -9,7 +9,7 @@ namespace Durian.Analysis.SyntaxVisitors
 	/// <summary>
 	/// Replaces node of the specified type with the provided <see cref="SyntaxNodeOrToken"/>.
 	/// </summary>
-	public abstract class SyntaxReplacer : CSharpSyntaxRewriter
+	public abstract class NodeOrTokenReplacer : CSharpSyntaxRewriter
 	{
 		/// <summary>
 		/// <see cref="SyntaxNodeOrToken"/> that is the replacement.
@@ -17,17 +17,17 @@ namespace Durian.Analysis.SyntaxVisitors
 		public SyntaxNodeOrToken Replacement { get; set; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SyntaxReplacer"/> class.
+		/// Initializes a new instance of the <see cref="NodeOrTokenReplacer"/> class.
 		/// </summary>
-		protected SyntaxReplacer()
+		protected NodeOrTokenReplacer()
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SyntaxReplacer"/> class.
+		/// Initializes a new instance of the <see cref="NodeOrTokenReplacer"/> class.
 		/// </summary>
 		/// <param name="replacement"><see cref="SyntaxNodeOrToken"/> that is the replacement.</param>
-		protected SyntaxReplacer(SyntaxNodeOrToken replacement)
+		protected NodeOrTokenReplacer(SyntaxNodeOrToken replacement)
 		{
 			Replacement = replacement;
 		}

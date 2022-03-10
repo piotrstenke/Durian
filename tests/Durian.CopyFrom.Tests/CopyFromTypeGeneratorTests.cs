@@ -1373,7 +1373,7 @@ partial class Target
 }}
 ";
 
-			string expected =
+			string expected1 =
 $@"partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
@@ -1381,7 +1381,11 @@ $@"partial class Test
 	{{
 		string b = string.Empty;
 	}}
-
+}}
+";
+			string expected2 =
+$@"partial class Test
+{{
 	{GetCodeGenerationAttributes("Target.Method(string)")}
 	void Method(string a)
 	{{
@@ -1392,7 +1396,7 @@ $@"partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
+			Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
 		}
 
 		[Fact]

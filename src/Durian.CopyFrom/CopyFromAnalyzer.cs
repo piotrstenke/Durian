@@ -1299,7 +1299,7 @@ namespace Durian.Analysis.CopyFrom
 					return false;
 				}
 
-				if (copyFromTypes.Any(t => SymbolEqualityComparer.Default.Equals(t.Symbol, target) && t.PartialPartName == partialPartName))
+				if (copyFromTypes.Any(t => SymbolEqualityComparer.Default.Equals(t.Symbol, target) && (t.PartialPartName is null || t.PartialPartName == partialPartName)))
 				{
 					location ??= attribute.GetLocation();
 					diagnosticReceiver.ReportDiagnostic(DUR0206_EquivalentTarget, location, type);

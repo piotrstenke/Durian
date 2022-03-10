@@ -129,6 +129,11 @@ namespace Durian.Analysis.CopyFrom
 		/// <inheritdoc/>
 		public override string ToString()
 		{
+			if(string.IsNullOrWhiteSpace(PartialPartName))
+			{
+				return Symbol.ToString();
+			}
+
 			return $"{Symbol} (\"{PartialPart}\")";
 		}
 	}

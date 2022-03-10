@@ -173,6 +173,8 @@ namespace Durian.Analysis.CopyFrom
 			bool generated = false;
 			string keyword = type.Declaration.GetKeyword();
 
+			string currentName = hintName;
+
 			for (int i = 0; i < targets.Length; i++)
 			{
 				ref readonly TargetData target = ref targets[i];
@@ -184,8 +186,8 @@ namespace Durian.Analysis.CopyFrom
 					continue;
 				}
 
-				hintName = partialDeclarations.Length > 1 ? hintName + "_partial" : hintName;
-				string partialName = hintName;
+				currentName = partialDeclarations.Length > 1 ? currentName + "_partial" : currentName;
+				string partialName = currentName;
 
 				for (int j = 0; j < partialDeclarations.Length; j++)
 				{
@@ -209,8 +211,10 @@ namespace Durian.Analysis.CopyFrom
 
 					AddSourceWithOriginal(type.Declaration, partialName, in context);
 					generated = true;
-					partialName = hintName + $"_{j}";
+					partialName = currentName + $"_{j + 1}";
 				}
+
+				currentName = hintName + $"_{i + 1}";
 			}
 
 			return generated;

@@ -44,6 +44,13 @@ namespace Durian.TestServices
 		/// <inheritdoc/>
 		public CSharpCompilation OutputCompilation { get; }
 
+		/// <summary>
+		/// Returns a <see cref="GeneratedSourceResult"/> at the specified <paramref name="index"/>.
+		/// </summary>
+		/// <param name="index">Index to get the <see cref="GeneratedSourceResult"/> at.</param>
+		/// <exception cref="IndexOutOfRangeException">The specified index is not in the array.</exception>
+		public GeneratedSourceResult this[int index] => GeneratedSources[index];
+
 		private MultiOutputGeneratorTestResult(
 			GeneratorRunResult runResult,
 			ImmutableArray<GeneratedSourceResult> generatesSources,
