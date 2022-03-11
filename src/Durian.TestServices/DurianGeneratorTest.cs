@@ -46,13 +46,13 @@ namespace Durian.TestServices
 		}
 
 		/// <inheritdoc/>
-		public override sealed SingletonGeneratorTestResult RunGenerator(string? input, int index, [CallerMemberName] string testName = "")
+		public sealed override SingletonGeneratorTestResult RunGenerator(string? input, int index, [CallerMemberName] string testName = "")
 		{
 			return base.RunGenerator(input, UnderlayingGenerator.NumStaticTrees + index, testName);
 		}
 
 		/// <inheritdoc/>
-		public override sealed SingletonGeneratorTestResult RunGenerator(string? input, [CallerMemberName] string testName = "")
+		public sealed override SingletonGeneratorTestResult RunGenerator(string? input, [CallerMemberName] string testName = "")
 		{
 			return base.RunGenerator(input, UnderlayingGenerator.NumStaticTrees, testName);
 		}
@@ -70,19 +70,19 @@ namespace Durian.TestServices
 		}
 
 		/// <inheritdoc/>
-		public override sealed SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, int index, [CallerMemberName] string testName = "")
+		public sealed override SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, int index, [CallerMemberName] string testName = "")
 		{
 			return base.RunGeneratorWithDependency(input, external, UnderlayingGenerator.NumStaticTrees + index, testName);
 		}
 
 		/// <inheritdoc/>
-		public override sealed SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, [CallerMemberName] string testName = "")
+		public sealed override SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, [CallerMemberName] string testName = "")
 		{
 			return base.RunGeneratorWithDependency(input, external, UnderlayingGenerator.NumStaticTrees, testName);
 		}
 
 		/// <inheritdoc/>
-		protected override sealed ITestableGenerator CreateGenerator(LoggingConfiguration configuration, string testName)
+		protected sealed override ITestableGenerator CreateGenerator(LoggingConfiguration configuration, string testName)
 		{
 			return CreateTestableGenerator(testName);
 		}

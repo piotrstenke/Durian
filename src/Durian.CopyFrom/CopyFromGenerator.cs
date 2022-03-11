@@ -175,6 +175,8 @@ namespace Durian.Analysis.CopyFrom
 
 			string currentName = hintName;
 
+			bool isGeneric = type.Symbol.IsGenericType;
+
 			for (int i = 0; i < targets.Length; i++)
 			{
 				ref readonly TargetData target = ref targets[i];
@@ -197,14 +199,29 @@ namespace Durian.Analysis.CopyFrom
 					CodeBuilder.Indent();
 					CodeBuilder.BeginDeclation($"partial {keyword} {type.Name}");
 
-					foreach (MemberDeclarationSyntax member in partial.Members)
+					if(isGeneric)
 					{
-						if(type.SemanticModel.GetDeclaredSymbol(member) is not ISymbol symbol)
+						foreach (MemberDeclarationSyntax member in partial.Members)
 						{
-							continue;
-						}
+							if (type.SemanticModel.GetDeclaredSymbol(member) is not ISymbol symbol)
+							{
+								continue;
+							}
 
-						WriteGeneratedMember(member, symbol);
+							WriteGeneratedMember(member, symbol);
+						}
+					}
+					else
+					{
+						foreach (MemberDeclarationSyntax member in partial.Members)
+						{
+							if (type.SemanticModel.GetDeclaredSymbol(member) is not ISymbol symbol)
+							{
+								continue;
+							}
+
+							WriteGeneratedMember(member, symbol);
+						}
 					}
 
 					CodeBuilder.EndAllScopes();

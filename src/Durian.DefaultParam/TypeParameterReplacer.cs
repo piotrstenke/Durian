@@ -77,7 +77,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="inputSymbols">A collection of <see cref="ISymbol"/>s in order they appear in the visited <see cref="CSharpSyntaxNode"/>.</param>
 		public TypeParameterReplacer(IEnumerable<ISymbol> inputSymbols)
 		{
-			InputSymbols = inputSymbols?.ToList() ?? new();
+			InputSymbols = inputSymbols?.ToList<ISymbol?>() ?? new();
 			ChangedConstraintIndices = new();
 		}
 

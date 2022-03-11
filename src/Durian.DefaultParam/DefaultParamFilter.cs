@@ -49,7 +49,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public override sealed IEnumerator<TData> GetEnumerator()
+		public sealed override IEnumerator<TData> GetEnumerator()
 		{
 			EnsureInitialized();
 
@@ -63,7 +63,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public override sealed IEnumerator<TData> GetEnumerator(in CachedGeneratorExecutionContext<TData> context)
+		public sealed override IEnumerator<TData> GetEnumerator(in CachedGeneratorExecutionContext<TData> context)
 		{
 			EnsureInitialized();
 
@@ -81,7 +81,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc/>
 		[Obsolete("TypeParameterContainer is required for proper analysis. Use GetValidationData with a TypeParameterContainer parameter instead.")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-		public override sealed bool GetValidationData(
+		public sealed override bool GetValidationData(
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 			TSyntax node,
 			DefaultParamCompilationData compilation,
@@ -124,7 +124,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public override sealed bool ValidateAndCreate(
+		public sealed override bool ValidateAndCreate(
 			TSyntax node,
 			DefaultParamCompilationData compilation,
 			[NotNullWhen(true)] out TData? data,
@@ -167,7 +167,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc/>
 		[Obsolete("TypeParameterContainer is required for proper analysis. Use ValidateAndCreate with a TypeParameterContainer parameter instead.")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-		public override sealed bool ValidateAndCreate(
+		public sealed override bool ValidateAndCreate(
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 			TSyntax node,
 			DefaultParamCompilationData compilation,
@@ -184,7 +184,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public override sealed bool ValidateAndCreate(
+		public sealed override bool ValidateAndCreate(
 			TSyntax node,
 			DefaultParamCompilationData compilation,
 			[NotNullWhen(true)] out TData? data,
@@ -224,7 +224,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc/>
 		[Obsolete("TypeParameterContainer is required for proper analysis. Use ValidateAndCreate with a TypeParameterContainer parameter instead.")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-		public override sealed bool ValidateAndCreate(
+		public sealed override bool ValidateAndCreate(
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 			TSyntax node,
 			DefaultParamCompilationData compilation,
@@ -442,7 +442,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		protected override sealed DefaultParamCompilationData? CreateCompilation(in GeneratorExecutionContext context)
+		protected sealed override DefaultParamCompilationData? CreateCompilation(in GeneratorExecutionContext context)
 		{
 			if (context.Compilation is not CSharpCompilation compilation)
 			{

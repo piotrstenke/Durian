@@ -22,10 +22,10 @@ namespace Durian.Analysis.DefaultParam
 	/// <summary>
 	/// Base class for all DefaultParam analyzers. Contains <see langword="static"/> methods that perform the most basic DefaultParam-related analysis.
 	/// </summary>
-	public abstract partial class DefaultParamAnalyzer : DurianAnalyzer<DefaultParamCompilationData>
+	public abstract class DefaultParamAnalyzer : DurianAnalyzer<DefaultParamCompilationData>
 	{
 		/// <inheritdoc/>
-		public override sealed ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.CreateRange(GetBaseDiagnostics().Concat(GetAnalyzerSpecificDiagnostics()));
+		public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.CreateRange(GetBaseDiagnostics().Concat(GetAnalyzerSpecificDiagnostics()));
 
 		/// <summary>
 		/// <see cref="SymbolKind"/> this analyzer can handle.
