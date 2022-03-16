@@ -796,7 +796,7 @@ class Outer<T, U>
 		{{
 			T a1 = default(T);
 			U b2 = b;
-			X[] c3 = new X[] {{ c }}
+			X[] c3 = new X[] {{ c }};
 		}}
 	}}
 }}
@@ -804,12 +804,12 @@ class Outer<T, U>
 			string expected =
 $@"partial class Test
 {{
-	{GetCodeGenerationAttributes("Outer<T, U>.Method(T, U, C)")}
-	void Method(T a, U b, X c)
+	{GetCodeGenerationAttributes("Outer<T, U>.Target<X>.Method(T, U, X)")}
+	void Method(T a, U b, int c)
 	{{
 		T a1 = default(T);
 		U b2 = b;
-		X[] c3 = new X[] {{ c }}
+		int[] c3 = new int[] {{ c }};
 	}}
 }}
 ";
@@ -1609,17 +1609,17 @@ class Target : System.IDisposable
 $@"partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Target()")}
-	public Target()
+	public Test()
 	{{
 	}}
 
 	{GetCodeGenerationAttributes("Target.static Target()")}
-	static Target()
+	static Test()
 	{{
 	}}
 
 	{GetCodeGenerationAttributes("Target.~Target()")}
-	~Target()
+	~Test()
 	{{
 	}}
 
@@ -1654,10 +1654,6 @@ $@"partial class Test
 	void Method<T>(ref T t1, in T t2, out T t2)
 	{{
 		string b = string.Empty;
-
-		void O()
-		{{
-		}}
 	}}
 
 	{GetCodeGenerationAttributes("(IDisposable)Target.Dispose()")}
@@ -1666,10 +1662,10 @@ $@"partial class Test
 	}}
 
 	{GetCodeGenerationAttributes("Target.operator +(Target, Target)")}
-	public static int operator +(Target a, Target b) => 2;
+	public static int operator +(Test a, Test b) => 2;
 
 	{GetCodeGenerationAttributes("Target.implicit operator bool(Target)")}
-	public static implicit operator bool(Target a) => a is not null;
+	public static implicit operator bool(Test a) => a is not null;
 
 	{GetCodeGenerationAttributes("Target.Inner")}
 	class Inner

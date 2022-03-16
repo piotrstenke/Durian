@@ -586,8 +586,9 @@ namespace Durian.Analysis.CopyFrom
 			int order = GetOrder(attribute);
 			string[]? usings = GetUsings(attribute);
 			bool copyUsings = ShouldCopyUsings(attribute);
+			bool handleSpecialMembers = ShouldHandleSpecialMembers(attribute);
 
-			return new(target, order, partialPart, partialPartName, copyUsings, usings);
+			return new(target, order, partialPart, partialPartName, copyUsings, usings, handleSpecialMembers);
 		}
 
 		private static bool EnsureIsInPartialContext(IMethodSymbol method, [NotNullWhen(true)] ref MethodDeclarationSyntax? declaration)
@@ -1200,6 +1201,11 @@ namespace Durian.Analysis.CopyFrom
 		private static bool ShouldCopyUsings(AttributeData attribute)
 		{
 			return attribute.GetNamedArgumentValue<bool>(CopyFromTypeAttributeProvider.CopyUsings);
+		}
+
+		private static bool ShouldHandleSpecialMembers(AttributeData attribute)
+		{
+			return attribute.GetNamedArgumentValue<bool>(CopyFromTypeAttributeProvider.HandleSpecialMembers);
 		}
 
 		private static bool TryGetPartialPart(

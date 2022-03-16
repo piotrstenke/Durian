@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Durian.Analysis.SyntaxVisitors;
+using System.Collections.Immutable;
 
 namespace Durian.Analysis.CopyFrom
 {
@@ -175,60 +177,31 @@ namespace Durian.Analysis.CopyFrom
 
 			string currentName = hintName;
 
-			bool isGeneric = type.Symbol.IsGenericType;
+			TypeParameterReplacer replacer = new();
 
 			for (int i = 0; i < targets.Length; i++)
 			{
-				ref readonly TargetData target = ref targets[i];
+				TargetData target = targets[i];
 
-				TypeDeclarationSyntax[] partialDeclarations = GetPartialDeclarations(in target);
+				TypeDeclarationSyntax[] partialDeclarations = GetPartialDeclarations(target);
 
-				if(partialDeclarations.Length == 0)
+				if (partialDeclarations.Length == 0)
 				{
 					continue;
 				}
 
 				currentName = partialDeclarations.Length > 1 ? currentName + "_partial" : currentName;
-				string partialName = currentName;
 
-				for (int j = 0; j < partialDeclarations.Length; j++)
+				if (target.Symbol.IsGenericType)
 				{
-					TypeDeclarationSyntax partial = partialDeclarations[j];
-
-					CodeBuilder.WriteDeclarationLead(type, GetUsings(in target, partial), GeneratorName, Version);
-					CodeBuilder.Indent();
-					CodeBuilder.BeginDeclation($"partial {keyword} {type.Name}");
-
-					if(isGeneric)
+					if (GenerateGenericDeclarations(type, target, partialDeclarations, currentName, keyword, replacer, in context))
 					{
-						foreach (MemberDeclarationSyntax member in partial.Members)
-						{
-							if (type.SemanticModel.GetDeclaredSymbol(member) is not ISymbol symbol)
-							{
-								continue;
-							}
-
-							WriteGeneratedMember(member, symbol);
-						}
+						generated = true;
 					}
-					else
-					{
-						foreach (MemberDeclarationSyntax member in partial.Members)
-						{
-							if (type.SemanticModel.GetDeclaredSymbol(member) is not ISymbol symbol)
-							{
-								continue;
-							}
-
-							WriteGeneratedMember(member, symbol);
-						}
-					}
-
-					CodeBuilder.EndAllScopes();
-
-					AddSourceWithOriginal(type.Declaration, partialName, in context);
+				}
+				else if (GenerateDeclarations(type, target, partialDeclarations, currentName, keyword, in context))
+				{
 					generated = true;
-					partialName = currentName + $"_{j + 1}";
 				}
 
 				currentName = hintName + $"_{i + 1}";
@@ -237,7 +210,145 @@ namespace Durian.Analysis.CopyFrom
 			return generated;
 		}
 
-		private static TypeDeclarationSyntax[] GetPartialDeclarations(in TargetData target)
+		private bool GenerateDeclarations(
+			CopyFromTypeData type,
+			TargetData target,
+			TypeDeclarationSyntax[] partialDeclarations,
+			string currentName,
+			string keyword,
+			in GeneratorExecutionContext context
+		)
+		{
+			bool generated = true;
+			string partialName = currentName;
+
+			for (int i = 0; i < partialDeclarations.Length; i++)
+			{
+				TypeDeclarationSyntax partial = partialDeclarations[i];
+
+				CodeBuilder.WriteDeclarationLead(type, GetUsings(target, partial), GeneratorName, Version);
+				CodeBuilder.Indent();
+				CodeBuilder.BeginDeclation($"partial {keyword} {type.Name}");
+
+				if(target.HandleSpecialMembers)
+				{
+					foreach (MemberDeclarationSyntax member in partial.Members)
+					{
+						if (GetMemberSymbol(member, type.SemanticModel) is not ISymbol symbol)
+						{
+							continue;
+						}
+
+						MemberDeclarationSyntax newMember = HandleSpecialMemberTypes(type, target.Symbol, member);
+						WriteGeneratedMember(newMember, symbol);
+					}
+				}
+				else
+				{
+					foreach (MemberDeclarationSyntax member in partial.Members)
+					{
+						if (GetMemberSymbol(member, type.SemanticModel) is not ISymbol symbol)
+						{
+							continue;
+						}
+
+						WriteGeneratedMember(member, symbol);
+					}
+				}
+
+				CodeBuilder.EndAllScopes();
+
+				AddSourceWithOriginal(type.Declaration, partialName, in context);
+				generated = true;
+				partialName = currentName + $"_{i + 1}";
+			}
+
+			return generated;
+		}
+
+		private bool GenerateGenericDeclarations(
+			CopyFromTypeData type,
+			TargetData target,
+			TypeDeclarationSyntax[] partialDeclarations,
+			string currentName,
+			string keyword,
+			TypeParameterReplacer replacer,
+			in GeneratorExecutionContext context
+		)
+		{
+			bool generated = true;
+			string partialName = currentName;
+
+			List<(string identifier, string replacement)> replacements = GetTypeParamterReplacements(target.Symbol);
+
+			for (int i = 0; i < partialDeclarations.Length; i++)
+			{
+				TypeDeclarationSyntax partial = partialDeclarations[i];
+
+				CodeBuilder.WriteDeclarationLead(type, GetUsings(target, partial), GeneratorName, Version);
+				CodeBuilder.Indent();
+				CodeBuilder.BeginDeclation($"partial {keyword} {type.Name}");
+
+				if(target.HandleSpecialMembers)
+				{
+					foreach (MemberDeclarationSyntax member in partial.Members)
+					{
+						if (GetMemberSymbol(member, type.SemanticModel) is not ISymbol symbol)
+						{
+							continue;
+						}
+
+						CSharpSyntaxNode replaced = HandleSpecialMemberTypes(type, target.Symbol, member);
+						ReplaceAndGenerate(replaced, symbol);
+					}
+				}
+				else
+				{
+					foreach (MemberDeclarationSyntax member in partial.Members)
+					{
+						if (GetMemberSymbol(member, type.SemanticModel) is not ISymbol symbol)
+						{
+							continue;
+						}
+
+						ReplaceAndGenerate(member, symbol);
+					}
+				}
+
+				CodeBuilder.EndAllScopes();
+
+				AddSourceWithOriginal(type.Declaration, partialName, in context);
+				generated = true;
+				partialName = currentName + $"_{i + 1}";
+			}
+
+			return generated;
+
+			void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol)
+			{
+				foreach ((string identifier, string replacement) in replacements)
+				{
+					replacer.Identifier = identifier;
+					replacer.Replacement = replacement;
+
+					replaced = (CSharpSyntaxNode)replacer.Visit(replaced);
+				}
+
+				WriteGeneratedMember(replaced, symbol);
+			}
+		}
+
+		private static ISymbol? GetMemberSymbol(MemberDeclarationSyntax member, SemanticModel semanticModel)
+		{
+			if(member is BaseFieldDeclarationSyntax field)
+			{
+				return semanticModel.GetDeclaredSymbol(field.Declaration);
+			}
+
+			return semanticModel.GetDeclaredSymbol(member);
+		}
+
+		private static TypeDeclarationSyntax[] GetPartialDeclarations(TargetData target)
 		{
 			if(target.PartialPart is not null)
 			{
@@ -247,7 +358,28 @@ namespace Durian.Analysis.CopyFrom
 			return target.Symbol.GetPartialDeclarations<TypeDeclarationSyntax>().ToArray();
 		}
 
-		private static IEnumerable<string> GetUsings(in TargetData target, TypeDeclarationSyntax partialDeclaration)
+		private static List<(string identifier, string replacement)> GetTypeParamterReplacements(INamedTypeSymbol type)
+		{
+			ImmutableArray<ITypeParameterSymbol> parameters = type.TypeParameters;
+			ImmutableArray<ITypeSymbol> arguments = type.TypeArguments;
+
+			List<(string, string)> list = new(parameters.Length);
+
+			for (int i = 0; i < parameters.Length; i++)
+			{
+				ITypeParameterSymbol parameter = parameters[i];
+				ITypeSymbol argument = arguments[i];
+
+				if (!SymbolEqualityComparer.Default.Equals(parameter, argument))
+				{
+					list.Add((parameter.Name, argument.GetGenericName(GenericSubstitution.Arguments)));
+				}
+			}
+
+			return list;
+		}
+
+		private static IEnumerable<string> GetUsings(TargetData target, TypeDeclarationSyntax partialDeclaration)
 		{
 			List<string> usings = new(24);
 			HashSet<string> set = new();
@@ -263,6 +395,69 @@ namespace Durian.Analysis.CopyFrom
 			}
 
 			return usings;
+		}
+
+		private static MemberDeclarationSyntax HandleSpecialMemberTypes(CopyFromTypeData type, INamedTypeSymbol target, MemberDeclarationSyntax member)
+		{
+			switch (member)
+			{
+				case ConstructorDeclarationSyntax ctor:
+					return ctor.WithIdentifier(SyntaxFactory.Identifier(type.Name).WithTriviaFrom(ctor.Identifier));
+
+				case DestructorDeclarationSyntax dtor:
+					return dtor.WithIdentifier(SyntaxFactory.Identifier(type.Name).WithTriviaFrom(dtor.Identifier));
+
+				case ConversionOperatorDeclarationSyntax conversion:
+
+					if(SymbolEqualityComparer.Default.Equals(type.SemanticModel.GetSymbolInfo(conversion.Type).Symbol, target))
+					{
+						conversion = conversion.WithType(GetNameSyntax(((SimpleNameSyntax)conversion.Type).Identifier));
+					}
+
+					return conversion.WithParameterList(conversion.ParameterList.WithParameters(SyntaxFactory.SeparatedList(UpdateParameters(conversion.ParameterList.Parameters))));
+
+				case OperatorDeclarationSyntax op:
+
+					if (SymbolEqualityComparer.Default.Equals(type.SemanticModel.GetSymbolInfo(op.ReturnType).Symbol, target))
+					{
+						op = op.WithReturnType(GetNameSyntax(((SimpleNameSyntax)op.ReturnType).Identifier));
+					}
+
+					return op.WithParameterList(op.ParameterList.WithParameters(SyntaxFactory.SeparatedList(UpdateParameters(op.ParameterList.Parameters))));
+			}
+
+			return member;
+
+			List<ParameterSyntax> UpdateParameters(SeparatedSyntaxList<ParameterSyntax> parameters)
+			{
+				List<ParameterSyntax> newParameters = new(parameters.Count);
+
+				for (int i = 0; i < parameters.Count; i++)
+				{
+					ParameterSyntax parameter = parameters[i];
+
+					if (parameter.Type is not null && SymbolEqualityComparer.Default.Equals(type.SemanticModel.GetSymbolInfo(parameter.Type).Symbol, target))
+					{
+						parameter = parameter.WithType(GetNameSyntax(((SimpleNameSyntax)parameter.Type).Identifier));
+					}
+
+					newParameters.Add(parameter);
+				}
+
+				return newParameters;
+			}
+
+			SimpleNameSyntax GetNameSyntax(SyntaxToken triviaFrom)
+			{
+				TypeSyntax syntax = type.Symbol.CreateTypeSyntax();
+
+				return syntax switch
+				{
+					IdentifierNameSyntax identifier => identifier.WithIdentifier(identifier.Identifier.WithTriviaFrom(triviaFrom)),
+					GenericNameSyntax generic => generic.WithIdentifier(generic.Identifier.WithTriviaFrom(triviaFrom)),
+					_ => (SimpleNameSyntax)syntax
+				};
+			}
 		}
 
 		private static void SortByOrder(TargetData[] targets)

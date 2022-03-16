@@ -12,20 +12,20 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 		[Fact]
 		public void ReturnsNull_When_ThereWereLessThan2Names()
 		{
-			Assert.True(Analysis.AnalysisUtilities.JoinIntoQualifiedName(new string[] { "System" }) is null);
+			Assert.True(Analysis.AnalysisUtilities.GetQualifiedName(new string[] { "System" }) is null);
 		}
 
 		[Fact]
 		public void ReturnsQualifiedName_When_ThereWere2OrMoreNames()
 		{
-			QualifiedNameSyntax? syntax = Analysis.AnalysisUtilities.JoinIntoQualifiedName(new string[] { "System", "Collections", "Generic" });
+			QualifiedNameSyntax? syntax = Analysis.AnalysisUtilities.GetQualifiedName(new string[] { "System", "Collections", "Generic" });
 			Assert.True(syntax is not null && syntax.ToFullString() == "System.Collections.Generic");
 		}
 
 		[Fact]
 		public void ThrowsArgumentNullException_When_NamesIsNull()
 		{
-			Assert.Throws<ArgumentNullException>(() => Analysis.AnalysisUtilities.JoinIntoQualifiedName(null!));
+			Assert.Throws<ArgumentNullException>(() => Analysis.AnalysisUtilities.GetQualifiedName(null!));
 		}
 	}
 }

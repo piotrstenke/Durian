@@ -56,7 +56,7 @@ class OtherAttribute : System.Attribute
 }";
 
 		public static string TestAttribute =>
-						@"[System.AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+@"[System.AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
 class TestAttribute : System.Attribute
 {
 	public TestAttribute() { }
@@ -66,51 +66,51 @@ class TestAttribute : System.Attribute
 		public static string[] GetCSharpTypeKeywords()
 		{
 			return new string[]
-{
-			"bool",
-			"char",
-			"sbyte",
-			"byte",
-			"short",
-			"ushort",
-			"int",
-			"uint",
-			"long",
-			"ulong",
-			"nint",
-			"nuint",
-			"float",
-			"double",
-			"decimal",
-			"string",
-			"object",
-			"void"
-};
+			{
+				"bool",
+				"char",
+				"sbyte",
+				"byte",
+				"short",
+				"ushort",
+				"int",
+				"uint",
+				"long",
+				"ulong",
+				"nint",
+				"nuint",
+				"float",
+				"double",
+				"decimal",
+				"string",
+				"object",
+				"void"
+			};
 		}
 
 		public static string[] GetDotNetTypeWithKeywords()
 		{
 			return new string[]
-{
-			"Boolean",
-			"Char",
-			"SByte",
-			"Byte",
-			"Int16",
-			"UInt16",
-			"Int32",
-			"UInt32",
-			"Int64",
-			"UInt64",
-			"IntPtr",
-			"UIntPtr",
-			"Single",
-			"Double",
-			"Decimal",
-			"String",
-			"Object",
-			"Void"
-};
+			{
+				"Boolean",
+				"Char",
+				"SByte",
+				"Byte",
+				"Int16",
+				"UInt16",
+				"Int32",
+				"UInt32",
+				"Int64",
+				"UInt64",
+				"IntPtr",
+				"UIntPtr",
+				"Single",
+				"Double",
+				"Decimal",
+				"String",
+				"Object",
+				"Void"
+			};
 		}
 
 		public static SpecialType[] GetPredefinedTypes()

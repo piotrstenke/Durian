@@ -499,27 +499,6 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 		}
 
 		[Fact]
-		public void ReplacesDotNetNullableTypeWithQuestionMark()
-		{
-			Mock<INamedTypeSymbol> arg = new();
-			arg.Setup(a => a.Name).Returns("int");
-			arg.Setup(a => a.TypeParameters).Returns(ImmutableArray.Create<ITypeParameterSymbol>());
-			arg.Setup(a => a.TypeArguments).Returns(ImmutableArray.Create<ITypeSymbol>());
-			arg.Setup(a => a.IsValueType).Returns(true);
-
-			Mock<ITypeParameterSymbol> param = new();
-			param.Setup(p => p.Name).Returns("T");
-
-			Mock<INamedTypeSymbol> type = new();
-			type.Setup(t => t.Name).Returns("Nullable");
-			type.Setup(t => t.TypeParameters).Returns(ImmutableArray.Create(param.Object));
-			type.Setup(t => t.TypeArguments).Returns(ImmutableArray.Create<ITypeSymbol>(arg.Object));
-			type.Setup(t => t.IsValueType).Returns(true);
-
-			Assert.True(RunWithSymbol(type.Object, "int?"));
-		}
-
-		[Fact]
 		public void ReplacesDotNetPrimitiveWithCSharpKeyword()
 		{
 			Mock<INamedTypeSymbol> arg = new();

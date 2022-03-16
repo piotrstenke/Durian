@@ -17,7 +17,12 @@ namespace Durian.Analysis.SyntaxVisitors
 	{
 		private readonly SyntaxAnnotation _annotation = new("TypeParameterWithSameName");
 
-		/// <inheritdoc cref="TypeParameterReplacer(string, CSharpSyntaxNode)"/>
+		/// <inheritdoc cref="TypeParameterReplacer(string, string)"/>
+		public TypeParameterReplacer()
+		{
+		}
+
+		/// <inheritdoc cref="TypeParameterReplacer(string, string)"/>
 		public TypeParameterReplacer(string identifier) : base(identifier)
 		{
 		}
@@ -26,9 +31,9 @@ namespace Durian.Analysis.SyntaxVisitors
 		/// Initializes a new instance of the <see cref="TypeParameterReplacer"/> class.
 		/// </summary>
 		/// <param name="identifier">Identifier to replace.</param>
-		/// <param name="replacement"><see cref="CSharpSyntaxNode"/> that is the replacement.</param>
-		/// <exception cref="ArgumentException"><paramref name="identifier"/> cannot be <see langword="null"/> or empty.</exception>
-		public TypeParameterReplacer(string identifier, CSharpSyntaxNode? replacement) : base(identifier, replacement)
+		/// <param name="replacement">Identifier to replace with.</param>
+		/// <exception cref="ArgumentException"><paramref name="identifier"/> cannot be <see langword="null"/> or empty. -or- <paramref name="replacement"/> cannot be <see langword="null"/> or empty.</exception>
+		public TypeParameterReplacer(string identifier, string replacement) : base(identifier, replacement)
 		{
 		}
 
@@ -37,7 +42,7 @@ namespace Durian.Analysis.SyntaxVisitors
 		{
 			if (IsValidForReplace(node.Identifier, node))
 			{
-				node = node.WithIdentifier(GetIdentifierToken());
+				node = node.WithIdentifier(GetReplacementToken(node.Identifier));
 			}
 
 			return base.VisitIdentifierName(node);
@@ -48,7 +53,7 @@ namespace Durian.Analysis.SyntaxVisitors
 		{
 			if (IsValidForReplace(node.Identifier, node))
 			{
-				node = node.WithIdentifier(GetIdentifierToken());
+				node = node.WithIdentifier(GetReplacementToken(node.Identifier));
 			}
 
 			return base.VisitGenericName(node);
@@ -139,7 +144,7 @@ namespace Durian.Analysis.SyntaxVisitors
 			return typeParameters is not null && typeParameters.Parameters.Any(p => ShouldReplace(p.Identifier));
 		}
 
-		private bool IsValidForReplace(SyntaxToken identifier, SyntaxNode node)
+		private bool IsValidForReplace(in SyntaxToken identifier, SyntaxNode node)
 		{
 			return ShouldReplace(identifier) && node.FirstAncestorOrSelf<MemberDeclarationSyntax>(m => m.HasAnnotation(_annotation)) is null;
 		}
@@ -148,7 +153,7 @@ namespace Durian.Analysis.SyntaxVisitors
 		{
 			return
 				HasParameterWithIdentifier(typeParameters) &&
-				typeParameters.FirstAncestorOrSelf<MemberDeclarationSyntax>(HasParameterWithIdentifier) is not null;
+				typeParameters.Parent?.Parent?.FirstAncestorOrSelf<MemberDeclarationSyntax>(HasParameterWithIdentifier) is not null;
 		}
 	}
 }

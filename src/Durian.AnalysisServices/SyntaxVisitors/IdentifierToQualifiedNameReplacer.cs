@@ -88,7 +88,7 @@ namespace Durian.Analysis.SyntaxVisitors
 				}
 				else
 				{
-					return QualifiedName(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, name).WithTriviaFrom(node);
+					return QualifiedName(AnalysisUtilities.GetQualifiedName(namespaces)!, name).WithTriviaFrom(node);
 				}
 			}
 		}
@@ -120,7 +120,7 @@ namespace Durian.Analysis.SyntaxVisitors
 			}
 			else
 			{
-				return QualifiedName(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, node.WithoutTrivia()).WithTriviaFrom(node);
+				return QualifiedName(AnalysisUtilities.GetQualifiedName(namespaces)!, node.WithoutTrivia()).WithTriviaFrom(node);
 			}
 		}
 
@@ -146,7 +146,7 @@ namespace Durian.Analysis.SyntaxVisitors
 			}
 			else
 			{
-				return QualifiedCref(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, node.WithoutTrivia()).WithTriviaFrom(node);
+				return QualifiedCref(AnalysisUtilities.GetQualifiedName(namespaces)!, node.WithoutTrivia()).WithTriviaFrom(node);
 			}
 		}
 
@@ -167,7 +167,7 @@ namespace Durian.Analysis.SyntaxVisitors
 			}
 			else
 			{
-				return QualifiedCref(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, node.Member.WithoutTrivia()).WithTriviaFrom(node);
+				return QualifiedCref(AnalysisUtilities.GetQualifiedName(namespaces)!, node.Member.WithoutTrivia()).WithTriviaFrom(node);
 			}
 		}
 
@@ -189,7 +189,7 @@ namespace Durian.Analysis.SyntaxVisitors
 			}
 			else
 			{
-				return QualifiedName(AnalysisUtilities.JoinIntoQualifiedName(namespaces)!, node.Right.WithoutTrivia()).WithTriviaFrom(node);
+				return QualifiedName(AnalysisUtilities.GetQualifiedName(namespaces)!, node.Right.WithoutTrivia()).WithTriviaFrom(node);
 			}
 		}
 

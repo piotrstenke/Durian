@@ -106,7 +106,7 @@ namespace Durian.Analysis
 		/// Appends the <paramref name="value"/> to the <see cref="TextBuilder"/>.
 		/// </summary>
 		/// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>
-		public void Append(string value)
+		public void Write(string value)
 		{
 			TextBuilder.Append(value);
 		}
@@ -114,7 +114,7 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Appends a new line character to the <see cref="TextBuilder"/>.
 		/// </summary>
-		public void AppendLine()
+		public void WriteLine()
 		{
 			TextBuilder.AppendLine();
 		}
@@ -123,7 +123,7 @@ namespace Durian.Analysis
 		/// Appends the <paramref name="value"/> followed by a new line to the <see cref="TextBuilder"/>.
 		/// </summary>
 		/// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>v
-		public void AppendLine(string value)
+		public void WriteLine(string value)
 		{
 			TextBuilder.AppendLine(value);
 		}
@@ -138,56 +138,90 @@ namespace Durian.Analysis
 			BeginScope();
 		}
 
-		/// <inheritdoc cref="BeginMethodDeclaration(MethodData, bool, bool)"/>
-		public void BeginMethodDeclaration(MethodData method, bool blockOrExpression)
+		public void BeginMethodDeclaration(IMethodData method)
 		{
-			BeginMethodDeclaration(method, blockOrExpression, false);
+
 		}
 
-		/// <summary>
-		/// Writes declaration of a method.
-		/// </summary>
-		/// <param name="method"><see cref="MethodData"/> that contains all the needed info about the target method.</param>
-		/// <param name="blockOrExpression">
-		/// Determines whether to begin a block body ('{') or an expression body ('=>').
-		/// <see langword="true"/> for block, <see langword="false"/> for expression.
-		/// </param>
-		/// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="method"/></param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public void BeginMethodDeclaration(MethodData method, bool blockOrExpression, bool includeTrivia)
+		public void BeginMethodDeclaration(IMethodSymbol method, MethodBody bodyType = MethodBody.Block)
 		{
 			if (method is null)
 			{
 				throw new ArgumentNullException(nameof(method));
 			}
 
-			BeginMethodDeclaration_Internal(method.Declaration, blockOrExpression, includeTrivia);
+
 		}
 
-		/// <inheritdoc cref="BeginMethodDeclaration(MethodDeclarationSyntax, bool, bool)"/>
-		public void BeginMethodDeclaration(MethodDeclarationSyntax method, bool blockOrExpression)
+		public void BeginAttributeList()
 		{
-			BeginMethodDeclaration(method, blockOrExpression, false);
+
 		}
+
+		public void WriteAttribute(string attributeName, params string[] parameters)
+		{
+
+		}
+
+		public void EndAttributeList()
+		{
+
+		}
+
 
 		/// <summary>
 		/// Writes declaration of a method.
 		/// </summary>
 		/// <param name="method"><see cref="MethodDeclarationSyntax"/> to copy the method signature from.</param>
-		/// <param name="blockOrExpression">
-		/// Determines whether to begin a block body ('{') or an expression body ('=>').
-		/// <see langword="true"/> for block, <see langword="false"/> for expression.
-		/// </param>
-		/// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="method"/></param>
+		/// <param name="bodyType">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public void BeginMethodDeclaration(MethodDeclarationSyntax method, bool blockOrExpression, bool includeTrivia)
+		public void BeginMethodDeclaration(MethodDeclarationSyntax method, MethodBody bodyType = MethodBody.Block)
 		{
 			if (method is null)
 			{
 				throw new ArgumentNullException(nameof(method));
 			}
 
-			BeginMethodDeclaration_Internal(method, blockOrExpression, includeTrivia);
+			//if(method.AttributeLists.Any())
+			//{
+			//	TextBuilder.Append(method.)
+			//}
+
+			if(method.Modifiers.Any())
+			{
+				TextBuilder.Append(method.Modifiers.ToFullString());
+			}
+
+			TextBuilder.Append(method.ReturnType.ToFullString());
+
+			if(method.ExplicitInterfaceSpecifier is not null)
+			{
+				TextBuilder.Append(method.ExplicitInterfaceSpecifier.ToFullString());
+			}
+
+			TextBuilder.Append(method.Identifier.ToFullString());
+
+			if(method.TypeParameterList is not null)
+			{
+				TextBuilder.Append(method.TypeParameterList.ToFullString());
+			}
+
+			TextBuilder.Append(method.ParameterList.ToFullString());
+
+			if(method.ConstraintClauses.Any())
+			{
+				TextBuilder.Append(method.ConstraintClauses.ToFullString());
+			}
+
+			if (bodyType == MethodBody.Expression)
+			{
+				TextBuilder.Append(" => ");
+			}
+			else
+			{
+				TextBuilder.AppendLine();
+				BeginScope();
+			}
 		}
 
 		/// <summary>
@@ -201,7 +235,7 @@ namespace Durian.Analysis
 				throw new ArgumentNullException(nameof(namespaces));
 			}
 
-			BeginNamespaceDeclaration_Internal(namespaces);
+			BeginNamespaceDeclaration_Internal(namespaces.JoinNamespaces());
 		}
 
 		/// <summary>
@@ -231,36 +265,6 @@ namespace Durian.Analysis
 			}
 
 			BeginNamespaceDeclaration_Internal(@namespace);
-		}
-
-		/// <summary>
-		/// Writes declaration of the parent namespace of the specified <paramref name="member"/>.
-		/// </summary>
-		/// <param name="member"><see cref="IMemberData"/> to write the full namespace it is declared in.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclarationOf(IMemberData member)
-		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
-
-			BeginNamespaceDeclaration_Internal(member.GetContainingNamespaces());
-		}
-
-		/// <summary>
-		/// Writes declaration of the parent namespace of the specified <paramref name="member"/>.
-		/// </summary>
-		/// <param name="member"><see cref="ISymbol"/> to write the full namespace it is declared in.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclarationOf(ISymbol member)
-		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
-
-			BeginNamespaceDeclaration_Internal(member.GetContainingNamespaces(false));
 		}
 
 		/// <summary>
@@ -670,28 +674,6 @@ namespace Durian.Analysis
 			}
 
 			return declaration.ToString();
-		}
-
-		private void BeginMethodDeclaration_Internal(MethodDeclarationSyntax method, bool blockOrExpression, bool includeTrivia)
-		{
-			TextBuilder.Append(GetDeclarationText(SyntaxFactory.MethodDeclaration(method.ReturnType, method.Identifier), includeTrivia));
-
-			if (blockOrExpression)
-			{
-				TextBuilder.AppendLine();
-				Indent();
-				CurrentIndent++;
-				TextBuilder.AppendLine("{");
-			}
-			else
-			{
-				TextBuilder.Append(" => ");
-			}
-		}
-
-		private void BeginNamespaceDeclaration_Internal(IEnumerable<INamespaceSymbol> namespaces)
-		{
-			BeginNamespaceDeclaration_Internal(namespaces.JoinNamespaces());
 		}
 
 		private void BeginNamespaceDeclaration_Internal(string @namespace)

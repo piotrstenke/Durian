@@ -3,6 +3,7 @@
 
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
@@ -239,6 +240,56 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the body of the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="BaseMethodDeclarationSyntax"/> to get the body of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static CSharpSyntaxNode? GetBody(this BaseMethodDeclarationSyntax method)
+		{
+			if(method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			if(method.Body is not null)
+			{
+				return method.Body;
+			}
+
+			if(method.ExpressionBody is not null)
+			{
+				return method.ExpressionBody;
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Returns type of the body of the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="BaseMethodDeclarationSyntax"/> to get the type of body of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static MethodBody GetBodyType(this BaseMethodDeclarationSyntax method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			if (method.Body is not null)
+			{
+				return MethodBody.Block;
+			}
+
+			if (method.ExpressionBody is not null)
+			{
+				return MethodBody.Expression;
+			}
+
+			return MethodBody.None;
+		}
+
+		/// <summary>
 		/// Returns the keyword that is used to declare the given <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="BaseTypeDeclarationSyntax"/> to get the keyword of.</param>
@@ -401,16 +452,11 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Checks if the target <paramref name="method"/> has a body, either block or expression.
 		/// </summary>
-		/// <param name="method"><see cref="MethodDeclarationSyntax"/> to check if has a body.</param>
+		/// <param name="method"><see cref="BaseMethodDeclarationSyntax"/> to check if has a body.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static bool HasBody(this MethodDeclarationSyntax method)
+		public static bool HasBody(this BaseMethodDeclarationSyntax method)
 		{
-			if (method is null)
-			{
-				throw new ArgumentNullException(nameof(method));
-			}
-
-			return method.Body is not null || method.ExpressionBody is not null;
+			return method.GetBody() is not null;
 		}
 	}
 }

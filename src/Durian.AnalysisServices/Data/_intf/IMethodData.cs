@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -14,7 +15,12 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Body of the method.
 		/// </summary>
-		public SyntaxNode? Body { get; }
+		CSharpSyntaxNode? Body { get; }
+
+		/// <summary>
+		/// Type of body of the method.
+		/// </summary>
+		MethodBody BodyType { get; }
 
 		/// <summary>
 		/// Target <see cref="BaseMethodDeclarationSyntax"/>.

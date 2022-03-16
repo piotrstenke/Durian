@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -23,25 +22,25 @@ namespace Durian.Analysis
 		private static readonly string[] _keywords = new string[]
 		{
 			"__arglist",	"__makeref",	"__reftype",	"__refvalue",
-			"abstract",	 "as",		   "base",		 "bool",
-			"break",		"byte",		 "case",		 "catch",
-			"char",		 "checked",	  "class",		"const",
-			"continue",	 "decimal",	  "default",	  "delegate",
-			"do",		   "double",	   "else",		 "enum",
-			"event",		"explicit",	 "extern",	   "false",
-			"finally",	  "fixed",		"float",		"for",
-			"foreach",	  "goto",		 "if",		   "implicit",
-			"in",		   "int",		  "interface",	"internal",
-			"is",		   "lock",		 "long",		 "namespace",
-			"new",		  "null",		 "object",	   "operator",
-			"out",		  "override",	 "params",	   "private",
-			"protected",	"public",	   "readonly",	 "ref",
-			"return",	   "sbyte",		"sealed",	   "short",
-			"sizeof",	   "stackalloc",   "static",	   "string",
-			"struct",	   "switch",	   "this",		 "throw",
-			"true",		 "try",		  "typeof",	   "uint",
-			"ulong",		"unchecked",	"unsafe",	   "ushort",
-			"using",		"virtual",	  "volatile",	 "void",
+			"abstract",		"as",			"base",			"bool",
+			"break",		"byte",			"case",			"catch",
+			"char",			"checked",		"class",		"const",
+			"continue",		"decimal",		"default",		"delegate",
+			"do",			"double",		"else",			"enum",
+			"event",		"explicit",		"extern",		"false",
+			"finally",		"fixed",		"float",		"for",
+			"foreach",		"goto",			"if",			"implicit",
+			"in",			"int",			"interface",	"internal",
+			"is",			"lock",			"long",			"namespace",
+			"new",			"null",			"object",		"operator",
+			"out",			"override",		"params",		"private",
+			"protected",	"public",		"readonly",		"ref",
+			"return",		"sbyte",		"sealed",		"short",
+			"sizeof",		"stackalloc",   "static",		"string",
+			"struct",		"switch",		"this",			"throw",
+			"true",			"try",			"typeof",		"uint",
+			"ulong",		"unchecked",	"unsafe",		"ushort",
+			"using",		"virtual",		"volatile",		"void",
 			"while"
 		};
 
@@ -60,7 +59,7 @@ namespace Durian.Analysis
 		/// Returns a <see cref="string"/> representing a dot-separated name.
 		/// </summary>
 		/// <param name="parts">Parts of the name. Each part will be separated by a dot.</param>
-		/// <returns>A <see cref="string"/> representing a dot-separated name. -or-. <see cref="string.Empty"/> if the <paramref name="parts"/> were null or empty or white-space only.</returns>
+		/// <returns>A <see cref="string"/> representing a dot-separated name. -or- <see cref="string.Empty"/> if the <paramref name="parts"/> were null or empty or white-space only.</returns>
 		public static string CreateName(params string[]? parts)
 		{
 			if (parts is null || parts.Length == 0)
@@ -198,6 +197,37 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Joins the collection of <see cref="string"/>s into a <see cref="QualifiedNameSyntax"/>.
+		/// </summary>
+		/// <param name="names">A collection of <see cref="string"/>s to join into a <see cref="QualifiedNameSyntax"/>.</param>
+		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="names"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="names"/> provided.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="names"/> is <see langword="null"/>.</exception>
+		public static QualifiedNameSyntax? GetQualifiedName(IEnumerable<string> names)
+		{
+			if (names is null)
+			{
+				throw new ArgumentNullException(nameof(names));
+			}
+
+			string[] n = names.ToArray();
+			int length = n.Length;
+
+			if (length < 2)
+			{
+				return null;
+			}
+
+			QualifiedNameSyntax q = SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName(n[0]), SyntaxFactory.IdentifierName(n[1]));
+
+			for (int i = 2; i < length; i++)
+			{
+				q = SyntaxFactory.QualifiedName(q, SyntaxFactory.IdentifierName(n[i]));
+			}
+
+			return q;
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="value"/> is a reserved C# keyword.
 		/// </summary>
 		/// <param name="value">Value to check if is a C# keyword.</param>
@@ -276,37 +306,6 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Joins the collection of <see cref="string"/>s into a <see cref="QualifiedNameSyntax"/>.
-		/// </summary>
-		/// <param name="names">A collection of <see cref="string"/>s to join into a <see cref="QualifiedNameSyntax"/>.</param>
-		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="names"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="names"/> provided.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="names"/> is <see langword="null"/>.</exception>
-		public static QualifiedNameSyntax? JoinIntoQualifiedName(IEnumerable<string> names)
-		{
-			if (names is null)
-			{
-				throw new ArgumentNullException(nameof(names));
-			}
-
-			string[] n = names.ToArray();
-			int length = n.Length;
-
-			if (length < 2)
-			{
-				return null;
-			}
-
-			QualifiedNameSyntax q = SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName(n[0]), SyntaxFactory.IdentifierName(n[1]));
-
-			for (int i = 2; i < length; i++)
-			{
-				q = SyntaxFactory.QualifiedName(q, SyntaxFactory.IdentifierName(n[i]));
-			}
-
-			return q;
-		}
-
-		/// <summary>
 		/// Returns a <see cref="string"/> that is created by joining the provided <paramref name="namespaces"/> using the dot (".") character.
 		/// </summary>
 		/// <param name="namespaces">Namespaces to join.</param>
@@ -368,6 +367,36 @@ namespace Durian.Analysis
 			}
 
 			return value;
+		}
+
+		/// <summary>
+		/// Converts a <see cref="RefKind"/> value to an associated <see cref="SyntaxKind"/> value.
+		/// </summary>
+		/// <param name="kind"><see cref="RefKind"/> to convert.</param>
+		public static SyntaxKind RefKindToSyntax(RefKind kind)
+		{
+			return kind switch
+			{
+				RefKind.Ref => SyntaxKind.RefKeyword,
+				RefKind.Out => SyntaxKind.OutKeyword,
+				RefKind.In => SyntaxKind.InKeyword,
+				_ => SyntaxKind.None
+			};
+		}
+
+		/// <summary>
+		/// Converts a <see cref="SyntaxKind"/> value to an associated <see cref="RefKind"/> value.
+		/// </summary>
+		/// <param name="kind"><see cref="SyntaxKind"/> to convert.</param>
+		public static RefKind SyntaxKindToRef(SyntaxKind kind)
+		{
+			return kind switch
+			{
+				SyntaxKind.RefKeyword => RefKind.Ref,
+				SyntaxKind.InKeyword => RefKind.In,
+				SyntaxKind.OutKeyword => RefKind.Out,
+				_ => RefKind.None
+			};
 		}
 
 		/// <summary>
@@ -478,132 +507,6 @@ namespace Durian.Analysis
 			}
 
 			return hashCode;
-		}
-
-		internal static IEnumerable<T> ReturnByOrder<T>(IEnumerable<T> collection, ReturnOrder order)
-		{
-			if (order == ReturnOrder.Root)
-			{
-				return collection.Reverse();
-			}
-
-			return collection;
-		}
-
-		internal static void WriteTypeNameOfParameter(ITypeSymbol type, StringBuilder sb)
-		{
-			if (type is INamedTypeSymbol n)
-			{
-				WriteParameterAsNamedType(n, sb);
-			}
-			else
-			{
-				if (type is IArrayTypeSymbol array)
-				{
-					WriteParameterAsArray(array, sb);
-					return;
-				}
-				else if (type is IDynamicTypeSymbol)
-				{
-					sb.Append("dynamic");
-				}
-				else if (type is IPointerTypeSymbol pointer)
-				{
-					WriteTypeNameOfParameter(pointer.PointedAtType, sb);
-					sb.Append('*');
-					return;
-				}
-				else if (type is IFunctionPointerTypeSymbol)
-				{
-					throw new InvalidOperationException("Function pointers are not supported!");
-				}
-				else
-				{
-					sb.Append(type.Name);
-				}
-
-				if (type.NullableAnnotation == NullableAnnotation.Annotated)
-				{
-					sb.Append('?');
-				}
-			}
-		}
-
-		private static void WriteParameterAsArray(IArrayTypeSymbol array, StringBuilder sb)
-		{
-			ITypeSymbol element = array.ElementType;
-
-			if (element is IArrayTypeSymbol elementArray)
-			{
-				Queue<IArrayTypeSymbol> childArrays = new();
-
-				while (elementArray is not null)
-				{
-					childArrays.Enqueue(elementArray);
-					element = elementArray.ElementType;
-					elementArray = (element as IArrayTypeSymbol)!;
-				}
-
-				WriteTypeNameOfParameter(element, sb);
-				WriteArrayBrackets(array);
-
-				while (childArrays.Count > 0)
-				{
-					elementArray = childArrays.Dequeue();
-					CheckNullable(elementArray);
-					WriteArrayBrackets(elementArray);
-				}
-			}
-			else
-			{
-				WriteTypeNameOfParameter(element, sb);
-				WriteArrayBrackets(array);
-			}
-
-			CheckNullable(array);
-
-			void CheckNullable(IArrayTypeSymbol a)
-			{
-				if (a.NullableAnnotation == NullableAnnotation.Annotated)
-				{
-					sb.Append('?');
-				}
-			}
-
-			void WriteArrayBrackets(IArrayTypeSymbol a)
-			{
-				int rank = a.Rank;
-				sb.Append('[');
-
-				for (int i = 1; i < rank; i++)
-				{
-					sb.Append(',');
-				}
-
-				sb.Append(']');
-			}
-		}
-
-		private static void WriteParameterAsNamedType(INamedTypeSymbol n, StringBuilder sb)
-		{
-			string name;
-
-			if (n.IsValueType && n.Name == "Nullable" && n.TypeArguments.Length > 0)
-			{
-				name = n.TypeArguments[0].GetGenericName(GenericSubstitution.Arguments);
-				sb.Append(TypeToKeyword(name));
-				sb.Append('?');
-			}
-			else
-			{
-				name = n.TypeArguments.Length > 0 ? n.GetGenericName(GenericSubstitution.Arguments) : n.Name;
-				sb.Append(TypeToKeyword(name));
-
-				if (n.NullableAnnotation == NullableAnnotation.Annotated)
-				{
-					sb.Append('?');
-				}
-			}
 		}
 	}
 }

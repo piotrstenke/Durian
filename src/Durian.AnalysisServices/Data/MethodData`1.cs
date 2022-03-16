@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
@@ -11,26 +13,24 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="BaseMethodDeclarationSyntax"/>.
 	/// </summary>
-	public abstract class MethodData<TDeclaration> : MemberData where TDeclaration : BaseMethodDeclarationSyntax
+	public abstract class MethodData<TDeclaration> : MemberData, IMethodData where TDeclaration : BaseMethodDeclarationSyntax
 	{
-		/// <summary>
-		/// Body of the method.
-		/// </summary>
-		public SyntaxNode? Body
+		private CSharpSyntaxNode? _body;
+
+		/// <inheritdoc/>
+		public CSharpSyntaxNode? Body => _body ??= Declaration.GetBody();
+
+		/// <inheritdoc/>
+		public MethodBody BodyType
 		{
 			get
 			{
-				if (Declaration.ExpressionBody is not null)
+				return Body switch
 				{
-					return Declaration.ExpressionBody;
-				}
-
-				if (Declaration.Body is not null)
-				{
-					return Declaration.Body;
-				}
-
-				return null;
+					BlockSyntax => MethodBody.Block,
+					ArrowExpressionClauseSyntax => MethodBody.Expression,
+					_ => MethodBody.None
+				};
 			}
 		}
 
@@ -43,6 +43,8 @@ namespace Durian.Analysis.Data
 		/// <see cref="IMethodSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		public new IMethodSymbol Symbol => (base.Symbol as IMethodSymbol)!;
+
+		BaseMethodDeclarationSyntax IMethodData.Declaration => Declaration;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MethodData{TDeclaration}"/> class.

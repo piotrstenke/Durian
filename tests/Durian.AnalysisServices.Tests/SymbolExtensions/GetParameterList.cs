@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Durian.Analysis.Tests.SymbolExtensions
 {
-	public sealed class GetParameterSignature : CompilationTest
+	public sealed class GetParameterList : CompilationTest
 	{
 		[Fact]
 		public void CanHandleArray()
@@ -113,7 +113,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[Fact]
 		public void CanHandleNullableTypeAsDotNetType()
 		{
-			IMethodSymbol symbol = GetSymbol("class Test { void Method(System.Nullable<int> a { ] }");
+			IMethodSymbol symbol = GetSymbol("class Test { void Method(System.Nullable<int> a { } }");
 			Assert.True(symbol.GetParameterList() == "(int?)");
 		}
 
@@ -173,14 +173,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		{
 			IMethodSymbol symbol = null!;
 			Assert.Throws<ArgumentNullException>(() => symbol.GetParameterList());
-		}
-
-		[Fact]
-		public void ThrowsInvalidOperatorException_When_MethodUsesFunctionPointers()
-		{
-			Compilation.OriginalCompilation = Compilation.OriginalCompilation!.WithOptions(Compilation.OriginalCompilation.Options.WithAllowUnsafe(true));
-			IMethodSymbol symbol = GetSymbol("class Test { unsafe void Method(delegate*<int> a) { } }");
-			Assert.Throws<InvalidOperationException>(() => symbol.GetParameterList());
 		}
 
 		private IMethodSymbol GetSymbol(string source)

@@ -13,32 +13,76 @@ namespace Durian.Analysis.SyntaxVisitors
 	/// </summary>
 	public class IdentifierReplacer : NodeReplacer
 	{
+		private string? _identifier;
+		private string? _replacement;
+
 		/// <summary>
 		/// Identifier to replace.
 		/// </summary>
-		public string Identifier { get; }
-
-		/// <inheritdoc cref="IdentifierReplacer(string, CSharpSyntaxNode)"/>
-		public IdentifierReplacer(string identifier)
+		/// <exception cref="ArgumentException"><paramref name="value"/> cannot be <see langword="null"/> or empty.</exception>
+		public string Identifier
 		{
-			Identifier = identifier;
+			get => _identifier ??= string.Empty;
+			set
+			{
+				if(string.IsNullOrWhiteSpace(value))
+				{
+					throw new ArgumentException("Identifier cannot be null or empty", nameof(Identifier));
+				}
+
+				_identifier = value;
+			}
+		}
+
+		/// <summary>
+		/// Identifier to replace with.
+		/// </summary>
+		/// <exception cref="ArgumentException"><paramref name="value"/> cannot be <see langword="null"/> or empty.</exception>
+		public new string Replacement
+		{
+			get => _replacement ??= string.Empty;
+			set
+			{
+				if (string.IsNullOrWhiteSpace(value))
+				{
+					throw new ArgumentException("Replacement cannot be null or empty", nameof(Replacement));
+				}
+
+				_replacement = value;
+				base.Replacement = SyntaxFactory.IdentifierName(_replacement);
+			}
+		}
+
+		/// <inheritdoc cref="IdentifierReplacer(string, string)"/>
+		public IdentifierReplacer()
+		{
+		}
+
+		/// <inheritdoc cref="IdentifierReplacer(string, string)"/>
+		public IdentifierReplacer(string identifier) : this(identifier, identifier)
+		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="IdentifierReplacer"/> class.
 		/// </summary>
 		/// <param name="identifier">Identifier to replace.</param>
-		/// <param name="replacement"><see cref="CSharpSyntaxNode"/> that is the replacement.</param>
-		/// <exception cref="ArgumentException"><paramref name="identifier"/> cannot be <see langword="null"/> or empty.</exception>
-		public IdentifierReplacer(string identifier, CSharpSyntaxNode? replacement)
+		/// <param name="replacement">Identifier to replace with.</param>
+		/// <exception cref="ArgumentException"><paramref name="identifier"/> cannot be <see langword="null"/> or empty. -or- <paramref name="replacement"/> cannot be <see langword="null"/> or empty.</exception>
+		public IdentifierReplacer(string identifier, string replacement)
 		{
 			if(string.IsNullOrWhiteSpace(identifier))
 			{
 				throw new ArgumentException("Identifier cannot be null or empty", nameof(identifier));
 			}
 
-			Identifier = identifier;
-			Replacement = replacement;
+			if (string.IsNullOrWhiteSpace(replacement))
+			{
+				throw new ArgumentException("Identifier cannot be null or empty", nameof(replacement));
+			}
+
+			_identifier = identifier;
+			_replacement = replacement;
 		}
 
 		/// <inheritdoc/>
@@ -46,10 +90,10 @@ namespace Durian.Analysis.SyntaxVisitors
 		{
 			if(ShouldReplace(node.Identifier))
 			{
-				node = node.WithIdentifier(GetIdentifierToken());
+				node = node.WithIdentifier(GetReplacementToken(node.Identifier));
 			}
 
-			return node;
+			return base.VisitIdentifierName(node);
 		}
 
 		/// <inheritdoc/>
@@ -57,27 +101,28 @@ namespace Durian.Analysis.SyntaxVisitors
 		{
 			if (ShouldReplace(node.Identifier))
 			{
-				node = node.WithIdentifier(GetIdentifierToken());
+				node = node.WithIdentifier(GetReplacementToken(node.Identifier));
 			}
 
 			return base.VisitGenericName(node);
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="identifier"/> should be replaced.
+		/// Returns a <see cref="SyntaxToken"/> the current <see cref="SyntaxToken"/> should be replaced with.
 		/// </summary>
-		/// <param name="identifier"><see cref="SyntaxToken"/> to determine whether should be replaced.</param>
-		protected bool ShouldReplace(SyntaxToken identifier)
+		/// <param name="previous">Previous <see cref="SyntaxToken"/>.</param>
+		protected SyntaxToken GetReplacementToken(in SyntaxToken previous)
 		{
-			return identifier.Text == Identifier;
+			return SyntaxFactory.Identifier(Replacement).WithTriviaFrom(previous);
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SyntaxToken"/> the current <see cref="SyntaxToken"/> should be replaced with.
+		/// Determines whether the specified <paramref name="identifier"/> should be replaced.
 		/// </summary>
-		protected SyntaxToken GetIdentifierToken()
+		/// <param name="identifier"><see cref="SyntaxToken"/> to determine whether should be replaced.</param>
+		protected bool ShouldReplace(in SyntaxToken identifier)
 		{
-			return SyntaxFactory.Identifier(Identifier!);
+			return identifier.Text == Identifier;
 		}
 	}
 }

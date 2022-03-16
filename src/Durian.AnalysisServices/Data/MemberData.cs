@@ -17,10 +17,7 @@ namespace Durian.Analysis.Data
 	public class MemberData : IMemberData
 	{
 		internal ImmutableArray<AttributeData> _attributes;
-
 		internal INamespaceSymbol[]? _containingNamespaces;
-
-		// Used is some extension methods.
 		internal ITypeData[]? _containingTypes;
 
 		private Location? _location;

@@ -10,12 +10,17 @@ namespace Durian.Analysis.CopyFrom
 	/// <summary>
 	/// Contains data of a <c>CopyFrom</c> target.
 	/// </summary>
-	public readonly struct TargetData : IEquatable<TargetData>
+	public sealed class TargetData : IEquatable<TargetData>
 	{
 		/// <summary>
 		/// Determines whether to copy usings from the target type's source file.
 		/// </summary>
 		public bool CopyUsings { get; }
+
+		/// <summary>
+		/// Determines whether to automatically replace name of the target type in constructor, destructor and operator declarations.
+		/// </summary>
+		public bool HandleSpecialMembers { get; }
 
 		/// <summary>
 		/// Order in which this target should be applied when comparing to other targets of the member.
@@ -42,12 +47,12 @@ namespace Durian.Analysis.CopyFrom
 		/// </summary>
 		public string[]? Usings { get; }
 
-		/// <inheritdoc cref="TargetData(INamedTypeSymbol, int, TypeDeclarationSyntax?, string?, bool, string[])"/>
+		/// <inheritdoc cref="TargetData(INamedTypeSymbol, int, TypeDeclarationSyntax?, string?, bool, string[], bool)"/>
 		public TargetData(INamedTypeSymbol symbol) : this(symbol, default, default, default)
 		{
 		}
 
-		/// <inheritdoc cref="TargetData(INamedTypeSymbol, int, TypeDeclarationSyntax?, string?, bool, string[])"/>
+		/// <inheritdoc cref="TargetData(INamedTypeSymbol, int, TypeDeclarationSyntax?, string?, bool, string[], bool)"/>
 		public TargetData(
 			INamedTypeSymbol symbol,
 			int order,
@@ -66,19 +71,22 @@ namespace Durian.Analysis.CopyFrom
 		/// <param name="partialPartName">Name of the partial part.</param>
 		/// <param name="copyUsings">Determines whether to copy usings from the target type's source file.</param>
 		/// <param name="usings">Array of usings that should be used when generating syntax tree.</param>
+		/// <param name="handleSpecialMembers">Determines whether to automatically replace name of the target type in constructor, destructor and operator declarations.</param>
 		public TargetData(
 			INamedTypeSymbol symbol,
 			int order,
 			TypeDeclarationSyntax? partialPart,
 			string? partialPartName,
 			bool copyUsings = true,
-			string[]? usings = default
+			string[]? usings = default,
+			bool handleSpecialMembers = true
 		)
 		{
 			Symbol = symbol;
 			PartialPart = partialPart;
 			PartialPartName = partialPartName;
 			Order = order;
+			HandleSpecialMembers = handleSpecialMembers;
 			CopyUsings = copyUsings;
 			Usings = usings;
 		}
@@ -106,6 +114,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			return
 				other.Order == Order &&
+				other.HandleSpecialMembers == HandleSpecialMembers &&
 				other.CopyUsings == CopyUsings &&
 				other.PartialPartName == PartialPartName &&
 				other.PartialPart == PartialPart &&
@@ -118,6 +127,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			int hashCode = 565389259;
 			hashCode = (hashCode * -1521134295) + Order.GetHashCode();
+			hashCode = (hashCode * -1521134295) + HandleSpecialMembers.GetHashCode();
 			hashCode = (hashCode * -1521134295) + PartialPartName?.GetHashCode() ?? 0;
 			hashCode = (hashCode * -1521134295) + PartialPart?.GetHashCode() ?? 0;
 			hashCode = (hashCode * -1521134295) + CopyUsings.GetHashCode();

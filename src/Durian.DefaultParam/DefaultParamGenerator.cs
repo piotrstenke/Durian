@@ -387,13 +387,13 @@ namespace Durian.Analysis.DefaultParam
 		private void WriteTargetLeadDeclaration(IDefaultParamTarget target)
 		{
 			CodeBuilder.WriteHeader(GeneratorName, Version);
-			CodeBuilder.AppendLine();
+			CodeBuilder.WriteLine();
 			string[] namespaces = AnalysisUtilities.SortUsings(target.GetUsedNamespaces()).ToArray();
 
 			if (namespaces.Length > 0)
 			{
 				CodeBuilder.WriteUsings(namespaces);
-				CodeBuilder.AppendLine();
+				CodeBuilder.WriteLine();
 			}
 
 			if (target.TargetNamespace != "global")

@@ -24,6 +24,11 @@ namespace Durian.Analysis.CopyFrom
 		public const string FullName = Namespace + "." + TypeName;
 
 		/// <summary>
+		/// Name of the 'HandleSpecialMembers' property.
+		/// </summary>
+		public const string HandleSpecialMembers = "HandleSpecialMembers";
+
+		/// <summary>
 		/// Namespace the provided type is located in.
 		/// </summary>
 		public const string Namespace = DurianStrings.MainNamespace;
@@ -99,6 +104,11 @@ namespace {Namespace}
 		/// Determines whether to copy usings from the target type's source file. Defaults to <see langword=""true""/>.
 		/// </summary>
 		public bool {CopyUsings} {{ get; set; }} = true;
+
+		/// <summary>
+		/// Determines whether to automatically replace name of the target type in constructor, destructor and operator declarations. Defaults to <see langword=""true""/>.
+		/// </summary>
+		public bool {HandleSpecialMembers} {{ get; set; }} = true;
 
 		/// <summary>
 		/// Partial part of the source type to copy the implementation from.
