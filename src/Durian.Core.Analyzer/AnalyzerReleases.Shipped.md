@@ -33,7 +33,7 @@ Rule ID | Category | Severity | Notes
 --------|----------|----------|-----------------------------------------
 DUR0008 | Durian | Warning | Separate analyzer packages detected, reference the main Durian package instead for better performance. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/Core/DUR0008.md)]
 
-## Release 2.1.0
+## Release 3.0.0
 
 ### New Rules
 

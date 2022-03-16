@@ -88,9 +88,9 @@ namespace Durian.Analysis.DefaultParam
 
 			if (isValid)
 			{
-				string targetNamespace = GetTargetNamespace(symbol, compilation, attributes!, containingTypes!);
+				string targetNamespace = GetTargetNamespace(symbol, compilation, attributes, containingTypes);
 
-				return AnalyzeCollidingMembers(symbol, in typeParameters, compilation, targetNamespace, out _, diagnosticReceiver, attributes!, containingTypes!, cancellationToken);
+				return AnalyzeCollidingMembers(symbol, in typeParameters, compilation, targetNamespace, out _, diagnosticReceiver, attributes, containingTypes, cancellationToken);
 			}
 
 			return false;

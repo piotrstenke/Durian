@@ -5,25 +5,25 @@
       "packages": [
         {
           "name": "Main",
-          "version": "2.1.0",
+          "version": "3.0.0",
           "type": [
             "Unspecified"
           ]
         },
-        {
-          "name": "CoreAnalyzer",
-          "version": "2.1.0",
-          "type": [
-            "Analyzer"
-          ]
-        },
-        {
-          "name": "Core",
-          "version": "2.1.0",
-          "type": [
-            "Library"
-          ]
-        }
+		{
+		  "name": "CoreAnalyzer",
+		  "version": "3.0.0",
+		  "type": [
+			"Analyzer"
+		  ]
+		},
+		{
+		  "name": "Core",
+		  "version": "3.0.0",
+		  "type": [
+			"Library"
+		  ]
+		}
       ],
       "diagnosticIdPrefix": "00",
       "diagnosticFiles": [
@@ -40,35 +40,35 @@
     {
       "name": "Development",
       "packages": [
-        {
-          "name": "AnalysisServices",
-          "version": "2.1.0",
-          "type": [
-            "Library"
-          ]
-        },
-        {
-          "name": "TestServices",
-          "version": "2.1.0",
-          "type": [
-            "Library"
-          ]
-        }
+		{
+		  "name": "AnalysisServices",
+		  "version": "3.0.0",
+		  "type": [
+			"Library"
+		  ]
+		},
+		{
+		  "name": "TestServices",
+		  "version": "3.0.0",
+		  "type": [
+			"Library"
+		  ]
+		}
       ]
     },
     {
       "name": "DefaultParam",
       "packages": [
-        {
-          "name": "DefaultParam",
-          "version": "2.1.0",
-          "type": [
-            "Analyzer",
-            "CodeFixLibrary",
-            "StaticGenerator",
-            "SyntaxBasedGenerator"
-          ]
-        }
+		{
+		  "name": "DefaultParam",
+		  "version": "3.0.0",
+		  "type": [
+			"Analyzer",
+			"CodeFixLibrary",
+			"StaticGenerator",
+			"SyntaxBasedGenerator"
+		  ]
+		}
       ],
       "includedTypes": [
         "Durian.DefaultParamAttribute",
@@ -88,7 +88,7 @@
       "packages": [
         {
           "name": "FriendClass",
-          "version": "1.1.0",
+          "version": "2.0.0",
           "type": [
             "Analyzer",
             "CodeFixLibrary",
@@ -111,7 +111,7 @@
       "packages": [
         {
           "name": "InterfaceTargets",
-          "version": "1.1.0",
+          "version": "2.0.0",
           "type": [
             "Analyzer",
             "StaticGenerator"

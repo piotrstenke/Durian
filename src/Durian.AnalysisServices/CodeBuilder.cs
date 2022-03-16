@@ -111,6 +111,7 @@ namespace Durian.Analysis
 			TextBuilder.Append(value);
 		}
 
+
 		/// <summary>
 		/// Appends a new line character to the <see cref="TextBuilder"/>.
 		/// </summary>
@@ -138,90 +139,66 @@ namespace Durian.Analysis
 			BeginScope();
 		}
 
-		public void BeginMethodDeclaration(IMethodData method)
+		/// <summary>
+		/// Begins a new scope.
+		/// </summary>
+		public void BeginScope()
 		{
-
+			Indent();
+			TextBuilder.AppendLine("{");
+			CurrentIndent++;
 		}
 
-		public void BeginMethodDeclaration(IMethodSymbol method, MethodBody bodyType = MethodBody.Block)
+		/// <inheritdoc cref="BeginMethodDeclaration(MethodData, bool, bool)"/>
+		public void BeginMethodDeclaration(MethodData method, bool blockOrExpression)
+		{
+			BeginMethodDeclaration(method, blockOrExpression, false);
+		}
+
+		/// <summary>
+		/// Writes declaration of a method.
+		/// </summary>
+		/// <param name="method"><see cref="MethodData"/> that contains all the needed info about the target method.</param>
+		/// <param name="blockOrExpression">
+		/// Determines whether to begin a block body ('{') or an expression body ('=>').
+		/// <see langword="true"/> for block, <see langword="false"/> for expression.
+		/// </param>
+		/// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="method"/></param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public void BeginMethodDeclaration(MethodData method, bool blockOrExpression, bool includeTrivia)
 		{
 			if (method is null)
 			{
 				throw new ArgumentNullException(nameof(method));
 			}
 
-
+			BeginMethodDeclaration_Internal(method.Declaration, blockOrExpression, includeTrivia);
 		}
 
-		public void BeginAttributeList()
+		/// <inheritdoc cref="BeginMethodDeclaration(MethodDeclarationSyntax, bool, bool)"/>
+		public void BeginMethodDeclaration(MethodDeclarationSyntax method, bool blockOrExpression)
 		{
-
+			BeginMethodDeclaration(method, blockOrExpression, false);
 		}
-
-		public void WriteAttribute(string attributeName, params string[] parameters)
-		{
-
-		}
-
-		public void EndAttributeList()
-		{
-
-		}
-
 
 		/// <summary>
 		/// Writes declaration of a method.
 		/// </summary>
 		/// <param name="method"><see cref="MethodDeclarationSyntax"/> to copy the method signature from.</param>
-		/// <param name="bodyType">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		/// <param name="blockOrExpression">
+		/// Determines whether to begin a block body ('{') or an expression body ('=>').
+		/// <see langword="true"/> for block, <see langword="false"/> for expression.
+		/// </param>
+		/// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="method"/></param>
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public void BeginMethodDeclaration(MethodDeclarationSyntax method, MethodBody bodyType = MethodBody.Block)
+		public void BeginMethodDeclaration(MethodDeclarationSyntax method, bool blockOrExpression, bool includeTrivia)
 		{
 			if (method is null)
 			{
 				throw new ArgumentNullException(nameof(method));
 			}
 
-			//if(method.AttributeLists.Any())
-			//{
-			//	TextBuilder.Append(method.)
-			//}
-
-			if(method.Modifiers.Any())
-			{
-				TextBuilder.Append(method.Modifiers.ToFullString());
-			}
-
-			TextBuilder.Append(method.ReturnType.ToFullString());
-
-			if(method.ExplicitInterfaceSpecifier is not null)
-			{
-				TextBuilder.Append(method.ExplicitInterfaceSpecifier.ToFullString());
-			}
-
-			TextBuilder.Append(method.Identifier.ToFullString());
-
-			if(method.TypeParameterList is not null)
-			{
-				TextBuilder.Append(method.TypeParameterList.ToFullString());
-			}
-
-			TextBuilder.Append(method.ParameterList.ToFullString());
-
-			if(method.ConstraintClauses.Any())
-			{
-				TextBuilder.Append(method.ConstraintClauses.ToFullString());
-			}
-
-			if (bodyType == MethodBody.Expression)
-			{
-				TextBuilder.Append(" => ");
-			}
-			else
-			{
-				TextBuilder.AppendLine();
-				BeginScope();
-			}
+			BeginMethodDeclaration_Internal(method, blockOrExpression, includeTrivia);
 		}
 
 		/// <summary>
@@ -235,7 +212,7 @@ namespace Durian.Analysis
 				throw new ArgumentNullException(nameof(namespaces));
 			}
 
-			BeginNamespaceDeclaration_Internal(namespaces.JoinNamespaces());
+			BeginNamespaceDeclaration_Internal(namespaces);
 		}
 
 		/// <summary>
@@ -268,6 +245,36 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Writes declaration of the parent namespace of the specified <paramref name="member"/>.
+		/// </summary>
+		/// <param name="member"><see cref="IMemberData"/> to write the full namespace it is declared in.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
+		public void BeginNamespaceDeclarationOf(IMemberData member)
+		{
+			if (member is null)
+			{
+				throw new ArgumentNullException(nameof(member));
+			}
+
+			BeginNamespaceDeclaration_Internal(member.GetContainingNamespaces());
+		}
+
+		/// <summary>
+		/// Writes declaration of the parent namespace of the specified <paramref name="member"/>.
+		/// </summary>
+		/// <param name="member"><see cref="ISymbol"/> to write the full namespace it is declared in.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
+		public void BeginNamespaceDeclarationOf(ISymbol member)
+		{
+			if (member is null)
+			{
+				throw new ArgumentNullException(nameof(member));
+			}
+
+			BeginNamespaceDeclaration_Internal(member.GetContainingNamespaces(false));
+		}
+
+		/// <summary>
 		/// Writes declaration of the parent namespace of the specified <paramref name="node"/>.
 		/// </summary>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the full namespace it is declared in.</param>
@@ -280,16 +287,6 @@ namespace Durian.Analysis
 			}
 
 			BeginNamespaceDeclaration_Internal(AnalysisUtilities.JoinNamespaces(node.GetParentNamespaces()));
-		}
-
-		/// <summary>
-		/// Begins a new scope.
-		/// </summary>
-		public void BeginScope()
-		{
-			Indent();
-			TextBuilder.AppendLine("{");
-			CurrentIndent++;
 		}
 
 		/// <summary>
@@ -347,7 +344,7 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Ends all the remaining scopes.
+		/// Ends all the remaining scope.
 		/// </summary>
 		public void EndAllScopes()
 		{
@@ -450,7 +447,7 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc cref="WriteDeclarationLead(IMemberData, IEnumerable{string}, string, string)"/>
-		public void WriteDeclarationLead(IMemberData member, IEnumerable<string>? usings, string? generatorName)
+		public void WriteDeclarationLead(IMemberData member, IEnumerable<string> usings, string? generatorName)
 		{
 			WriteDeclarationLead(member, usings, generatorName, null);
 		}
@@ -462,12 +459,17 @@ namespace Durian.Analysis
 		/// <param name="usings">A collection of usings to apply.</param>
 		/// <param name="generatorName">Name of generator that created the following code.</param>
 		/// <param name="version">Version of the generator.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void WriteDeclarationLead(IMemberData member, IEnumerable<string>? usings, string? generatorName, string? version)
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>. -or- <paramref name="usings"/> is <see langword="null"/>.</exception>
+		public void WriteDeclarationLead(IMemberData member, IEnumerable<string> usings, string? generatorName, string? version)
 		{
 			if (member is null)
 			{
 				throw new ArgumentNullException(nameof(member));
+			}
+
+			if (usings is null)
+			{
+				throw new ArgumentNullException(nameof(usings));
 			}
 
 			WriteDeclarationLead_Internal(member, usings, generatorName, version);
@@ -676,6 +678,28 @@ namespace Durian.Analysis
 			return declaration.ToString();
 		}
 
+		private void BeginMethodDeclaration_Internal(MethodDeclarationSyntax method, bool blockOrExpression, bool includeTrivia)
+		{
+			TextBuilder.Append(GetDeclarationText(SyntaxFactory.MethodDeclaration(method.ReturnType, method.Identifier), includeTrivia));
+
+			if (blockOrExpression)
+			{
+				TextBuilder.AppendLine();
+				Indent();
+				CurrentIndent++;
+				TextBuilder.AppendLine("{");
+			}
+			else
+			{
+				TextBuilder.Append(" => ");
+			}
+		}
+
+		private void BeginNamespaceDeclaration_Internal(IEnumerable<INamespaceSymbol> namespaces)
+		{
+			BeginNamespaceDeclaration_Internal(namespaces.JoinNamespaces());
+		}
+
 		private void BeginNamespaceDeclaration_Internal(string @namespace)
 		{
 			Indent();
@@ -709,12 +733,13 @@ namespace Durian.Analysis
 			TextBuilder.Append(GetDeclarationText(SyntaxFactory.TypeDeclaration(type.Kind(), type.Identifier), includeTrivia));
 		}
 
-		private void WriteDeclarationLead_Internal(IMemberData member, IEnumerable<string>? usings, string? generatorName, string? version)
+		private void WriteDeclarationLead_Internal(IMemberData member, IEnumerable<string> usings, string? generatorName, string? version)
 		{
 			WriteHeader(generatorName, version);
 			TextBuilder.AppendLine();
+			string[] namespaces = usings.ToArray();
 
-			if (usings is not null)
+			if (namespaces.Length > 0)
 			{
 				WriteUsings_Internal(usings);
 				TextBuilder.AppendLine();

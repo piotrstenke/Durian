@@ -839,7 +839,7 @@ namespace Durian.Analysis.CopyFrom
 				return default;
 			}
 
-			return allAttributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.CopyFromMethodAttribute!));
+			return allAttributes.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.CopyFromMethodAttribute));
 		}
 
 		private static AttributeData[]? GetAttributes(INamedTypeSymbol type, CopyFromCompilationData compilation, out ImmutableArray<AttributeData> allAttributes)

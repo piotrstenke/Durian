@@ -49,19 +49,19 @@ namespace Durian.Analysis.Tests.MemberDataExtensions
 		[Fact]
 		public void ReturnsNameWithParameters_When_IsGenericMethod_And_IncludeParametersIsTrue()
 		{
-			Assert.True(GetMethod("class Test { void Method<T>(int a) { } }")!.GetParentTypesString(true) == "Test.Method<T>(int)");
+			Assert.True(GetMethod("class Test { void Method<T>(int a) { } }")!.GetParentTypesString(true, true) == "Test.Method<T>(int)");
 		}
 
 		[Fact]
 		public void ReturnsNameWithParameters_When_IsGenericMethod_And_ParentIsGeneric_And_IncludeParametersIsTrue()
 		{
-			Assert.True(GetMethod("class Test<T> { void Method<U>(U a, int b) { } }")!.GetParentTypesString(true) == "Test<T>.Method<U>(U, int)");
+			Assert.True(GetMethod("class Test<T> { void Method<U>(U a, int b) { } }")!.GetParentTypesString(true, true) == "Test<T>.Method<U>(U, int)");
 		}
 
 		[Fact]
 		public void ReturnsNameWithParameters_When_IsMethod_And_IncludeParametersIsTrue()
 		{
-			Assert.True(GetMethod("class Test { void Method(int a) { } }")!.GetParentTypesString(true) == "Test.Method(int)");
+			Assert.True(GetMethod("class Test { void Method(int a) { } }")!.GetParentTypesString(true, true) == "Test.Method(int)");
 		}
 
 		[Fact]

@@ -73,7 +73,7 @@ namespace Durian.Analysis.CopyFrom
 
 				foreach (AttributeData attr in attributes)
 				{
-					if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.PatternAttribute!) &&
+					if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.PatternAttribute) &&
 						HasValidRegexPattern(attr, out string? pattern, out string? replacement) &&
 						set.Add(pattern))
 					{
@@ -128,7 +128,7 @@ namespace Durian.Analysis.CopyFrom
 
 			foreach (AttributeData attr in attributes)
 			{
-				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.PatternAttribute!) &&
+				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.PatternAttribute) &&
 					AnalyzePattern(symbol, attr, set, hasTarget, out string? pattern, out string? replacement, diagnosticReceiver))
 				{
 					patterns.Add(new PatternData(pattern, replacement));

@@ -61,7 +61,7 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		public override string? GetGeneratorVersion()
 		{
-			return "2.1.0";
+			return "3.0.0";
 		}
 
 		/// <inheritdoc/>

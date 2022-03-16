@@ -213,31 +213,6 @@ public static partial class Constants
 
 ```
 
-### [ConstParam](src/Durian.ConstExpr/README.md)
-
-*ConstParam* allows to specify that a value of a parameter cannot be modified, event if it's a reference type.
-
-
-```csharp
-using Durian;
-
-public class Test
-{
-    public class Data
-    {
-        public string Name { get; set; }
-        public int Id { get; set; }
-    }
-
-    public void Method([ConstParam]Data data)
-    {
-        // Error! Parameter cannot be modified.
-        data.Name = "";
-    }
-}
-
-```
-
 ##
 
 *\(Written by Piotr Stenke\)*

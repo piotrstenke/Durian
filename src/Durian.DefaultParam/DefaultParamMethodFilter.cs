@@ -69,12 +69,12 @@ namespace Durian.Analysis.DefaultParam
 
 				if (AnalyzeBaseMethodAndTypeParameters(symbol, ref combinedParameters, in combinedTypeParameters, diagnosticReceiver))
 				{
-					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes!);
+					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
 
-					if (AnalyzeMethodSignature(symbol, in combinedParameters, compilation, out HashSet<int>? newModifiers, diagnosticReceiver, attributes!, symbols, cancellationToken))
+					if (AnalyzeMethodSignature(symbol, in combinedParameters, compilation, out HashSet<int>? newModifiers, diagnosticReceiver, attributes, symbols, cancellationToken))
 					{
-						bool call = ShouldCallInsteadOfCopying(symbol, compilation, attributes!, symbols);
-						string targetNamespace = GetTargetNamespace(symbol, compilation, attributes!, symbols);
+						bool call = ShouldCallInsteadOfCopying(symbol, compilation, attributes, symbols);
+						string targetNamespace = GetTargetNamespace(symbol, compilation, attributes, symbols);
 
 						data = new(
 							node,
@@ -125,7 +125,7 @@ namespace Durian.Analysis.DefaultParam
 
 					if (AnalyzeMethodSignature(symbol, in combinedParameters, compilation, out HashSet<int>? newModifiers, attributes, symbols, cancellationToken))
 					{
-						bool call = ShouldCallInsteadOfCopying(symbol, compilation, attributes!, symbols);
+						bool call = ShouldCallInsteadOfCopying(symbol, compilation, attributes, symbols);
 						string targetNamespace = GetTargetNamespace(symbol, compilation, attributes, symbols);
 
 						data = new(

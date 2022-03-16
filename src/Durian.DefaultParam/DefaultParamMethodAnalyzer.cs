@@ -782,7 +782,7 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			return AnalyzeMethodSignature(symbol, in typeParameters, compilation, out _, diagnosticReceiver, attributes!, containingTypes!, cancellationToken);
+			return AnalyzeMethodSignature(symbol, in typeParameters, compilation, out _, diagnosticReceiver, attributes, containingTypes, cancellationToken);
 		}
 
 		private static bool AnalyzeCore(

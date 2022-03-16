@@ -712,7 +712,6 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="InvalidOperationException">Pointers can't be used as generic arguments.</exception>
 		public static string GetGenericName(this IEnumerable<ITypeSymbol> typeArguments)
 		{
-
 			if (typeArguments is null)
 			{
 				throw new ArgumentNullException(nameof(typeArguments));

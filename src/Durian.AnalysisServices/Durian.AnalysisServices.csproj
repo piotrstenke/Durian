@@ -7,7 +7,7 @@
 	<PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Service;Utility</PackageTags>
 	<PackageVersion>2.1.0</PackageVersion>
 	<AssemblyVersion>2.1.0</AssemblyVersion>
-	<Version>2.1.0</Version>
+	<Version>3.0.0</Version>
 	<RootNamespace>Durian.Analysis</RootNamespace>
 
   </PropertyGroup>
