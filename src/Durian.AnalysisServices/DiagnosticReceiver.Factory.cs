@@ -86,7 +86,7 @@ namespace Durian.Analysis
 			/// <summary>
 			/// Returns a new instance of the <see cref="DiagnosticReceiver"/> class.
 			/// </summary>
-			/// <param name="reportAction">Action that is performed when <see cref="DiagnosticReceiver.ReportDiagnostic(Diagnostic)"/>is called.</param>
+			/// <param name="reportAction">Action that is performed when <see cref="ReportDiagnostic(Diagnostic)"/>is called.</param>
 			/// <exception cref="ArgumentNullException"><paramref name="reportAction"/> is <see langword="null"/>.</exception>
 			public static DiagnosticReceiver Direct(ReportAction.Direct reportAction)
 			{

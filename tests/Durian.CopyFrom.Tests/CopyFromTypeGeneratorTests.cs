@@ -1569,7 +1569,7 @@ class Target : System.IDisposable
 
 	event System.Action Event2 {{ add {{ }} remove {{ }}}}
 
-	int _field;
+	private protected readonly int _field, _field2;
 
 	const float cos = 2;
 
@@ -1586,7 +1586,7 @@ class Target : System.IDisposable
 		string b = string.Empty;
 	}}
 
-	void IDisposable.Dispose()
+	void System.IDisposable.Dispose()
 	{{
 	}}
 
@@ -1606,7 +1606,7 @@ class Target : System.IDisposable
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"partial class Test : IDisposable
 {{
 	{GetCodeGenerationAttributes("Target.Target()")}
 	public Test()
@@ -1633,7 +1633,10 @@ $@"partial class Test
 	event System.Action Event2 {{ add {{ }} remove {{ }}}}
 
 	{GetCodeGenerationAttributes("Target._field")}
-	int _field;
+	private protected readonly int _field;
+
+	{GetCodeGenerationAttributes("Target._field2")}
+	private protected readonly  int _field2;
 
 	{GetCodeGenerationAttributes("Target.cos")}
 	const float cos = 2;

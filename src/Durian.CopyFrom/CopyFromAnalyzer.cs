@@ -880,7 +880,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			const string annotation = "copyFrom - inheritdoc";
 
-			text = AnalysisUtilities.ConvertFullyQualifiedNameToXml(text);
+			text = AnalysisUtilities.ToXmlCompatible(text);
 			string parse = $"/// <inheritdoc cref=\"{text}\"/>";
 
 			SyntaxNode root = CSharpSyntaxTree.ParseText(parse, encoding: Encoding.UTF8).GetRoot();

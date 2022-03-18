@@ -722,7 +722,7 @@ namespace Durian.Analysis
 			TextBuilder.Append(type.Declaration.GetKeyword());
 			TextBuilder.Append(' ');
 
-			TextBuilder.AppendLine(type.GetGenericName(GenericSubstitution.Variance));
+			TextBuilder.AppendLine(type.Symbol.GetGenericName(GenericSubstitution.Variance));
 			Indent();
 			CurrentIndent++;
 			TextBuilder.AppendLine("{");

@@ -5,6 +5,7 @@ using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Globalization;
+using System.Text;
 
 namespace Durian.Analysis.Extensions
 {
@@ -30,72 +31,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns the generic identifier of the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="type"><see cref="ITypeData"/> to get the generic name of.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		/// <returns>If the <paramref name="type"/> has no type parameters, returns the name of the <paramref name="type"/> instead.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this ITypeData type, GenericSubstitution substitution = default)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			return type.Symbol.GetGenericName(substitution);
-		}
-
-		/// <summary>
-		/// Returns the generic identifier of the specified <paramref name="method"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodData"/> to get the generic name of.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		/// <returns>If the <paramref name="method"/> has no type parameters, returns the name of the <paramref name="method"/> instead.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this IMethodData method, GenericSubstitution substitution = default)
-		{
-			if (method is null)
-			{
-				throw new ArgumentNullException(nameof(method));
-			}
-
-			return method.Symbol.GetGenericName(substitution);
-		}
-
-		/// <summary>
-		/// Returns the generic identifier of the specified <paramref name="member"/>.
-		/// </summary>
-		/// <param name="member"><see cref="IMemberData"/> to get the generic name of.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public static string GetGenericName(this IMemberData member, GenericSubstitution substitution = default)
-		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
-
-			return member.Symbol.GetGenericName(substitution);
-		}
-
-		/// <summary>
-		/// Creates an <c>&lt;inheritdoc/&gt;</c> tag from the specified <paramref name="member"/>.
-		/// </summary>
-		/// <param name="member"><see cref="IMemberData"/> to get the <c>&lt;inheritdoc/&gt;</c> tag from.</param>
-		/// <returns>A <see cref="string"/> containing the created <c>&lt;inheritdoc/&gt;</c> tag -or- <see langword="null"/> if <paramref name="member"/> has no documentation comment.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public static string? GetInheritdocIfHasDocumentation(this IMemberData member)
-		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
-
-			return member.Symbol.GetInheritdocIfHasDocumentation();
-		}
-
-		/// <summary>
 		/// Returns a <see cref="string"/> that contains all the parent types of the specified <paramref name="member"/> and the <paramref name="member"/>'s name separated by the dot ('.') character.
 		/// </summary>
 		/// <remarks>If the <paramref name="member"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
@@ -110,7 +45,24 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(member));
 			}
 
-			return member.Symbol.GetParentTypesString(includeSelf, includeParameters);
+			StringBuilder sb = new();
+
+			foreach (INamedTypeSymbol type in member.GetContainingTypes())
+			{
+				sb.Append(type.GetGenericName()).Append('.');
+			}
+
+			if (includeSelf)
+			{
+				sb.Append(member.Symbol.GetGenericName());
+
+				if (includeParameters && member is IMethodData m)
+				{
+					sb.Append(m.Symbol.GetParameterList());
+				}
+			}
+
+			return sb.ToString();
 		}
 
 		/// <summary>
@@ -125,7 +77,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(member));
 			}
 
-			return AnalysisUtilities.ConvertFullyQualifiedNameToXml(member.Symbol.ToString());
+			return AnalysisUtilities.ToXmlCompatible(member.Symbol.ToString());
 		}
 
 		/// <summary>
@@ -137,9 +89,24 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
 		public static string GetXmlParentTypesString(this IMemberData member, bool includeSelf = true, bool includeParameters = false)
 		{
-			string parentString = GetParentTypesString(member, includeSelf, includeParameters);
+			if (member is null)
+			{
+				throw new ArgumentNullException(nameof(member));
+			}
 
-			return AnalysisUtilities.ConvertFullyQualifiedNameToXml(parentString);
+			StringBuilder sb = new();
+
+			foreach (ITypeData type in member.GetContainingTypes())
+			{
+				sb.Append(type.Symbol.GetGenericName()).Append('.');
+			}
+
+			if (includeSelf)
+			{
+				sb.Append(member.Symbol.GetXmlCompatibleName(includeParameters));
+			}
+
+			return sb.ToString();
 		}
 
 		/// <summary>

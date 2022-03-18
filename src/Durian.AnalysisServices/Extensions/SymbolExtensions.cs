@@ -70,6 +70,274 @@ namespace Durian.Analysis.Extensions
 			return false;
 		}
 
+
+		/// <summary>
+		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static TypeSyntax CreateTypeSyntax(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			TypeSyntax syntax;
+
+			if (type.IsGenericType)
+			{
+				List<TypeSyntax> arguments = new(type.TypeArguments.Length);
+
+				foreach (ITypeSymbol t in type.TypeArguments)
+				{
+					arguments.Add(t.CreateTypeSyntax());
+				}
+
+				syntax = SyntaxFactory.GenericName(
+					SyntaxFactory.Identifier(type.Name),
+					SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(arguments)));
+			}
+			else if (type.GetPredefineTypeSyntax() is PredefinedTypeSyntax predefined)
+			{
+				syntax = predefined;
+			}
+			else
+			{
+				syntax = SyntaxFactory.IdentifierName(type.Name);
+			}
+
+			return ApplyAnnotation(syntax, NullableAnnotation.Annotated);
+		}
+
+		/// <summary>
+		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="IArrayTypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static TypeSyntax CreateTypeSyntax(this IArrayTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			ITypeSymbol[] elementTypes = type.GetElementTypes().ToArray();
+			TypeSyntax elementSyntax = elementTypes[0].CreateTypeSyntax();
+
+			List<ArrayRankSpecifierSyntax> ranks = new(elementTypes.Length - 1);
+
+			for (int i = 1; i < elementTypes.Length; i++)
+			{
+				IArrayTypeSymbol array = (IArrayTypeSymbol)elementTypes[i];
+				ranks.Add(GetArrayRank(array));
+
+				if (array.NullableAnnotation == NullableAnnotation.Annotated)
+				{
+					elementSyntax = SyntaxFactory.NullableType(SyntaxFactory.ArrayType(elementSyntax, SyntaxFactory.List(ranks)));
+					ranks.Clear();
+				}
+			}
+
+			ranks.Add(GetArrayRank(type));
+
+			return ApplyAnnotation(SyntaxFactory.ArrayType(elementSyntax, SyntaxFactory.List(ranks)), type.NullableAnnotation);
+
+			static ArrayRankSpecifierSyntax GetArrayRank(IArrayTypeSymbol array)
+			{
+				return SyntaxFactory.ArrayRankSpecifier(SyntaxFactory.SeparatedList<ExpressionSyntax>(
+					array.Sizes.Select(s => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(s)))));
+			}
+		}
+
+		/// <summary>
+		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="functionPointer"/>.
+		/// </summary>
+		/// <param name="functionPointer"><see cref="IFunctionPointerTypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="functionPointer"/> is <see langword="null"/>.</exception>
+		public static TypeSyntax CreateTypeSyntax(this IFunctionPointerTypeSymbol functionPointer)
+		{
+			if (functionPointer is null)
+			{
+				throw new ArgumentNullException(nameof(functionPointer));
+			}
+
+			IMethodSymbol signature = functionPointer.Signature;
+
+			FunctionPointerCallingConventionSyntax? callingConvention;
+
+			if (signature.CallingConvention == SignatureCallingConvention.Unmanaged)
+			{
+				FunctionPointerUnmanagedCallingConventionListSyntax? list = signature.UnmanagedCallingConventionTypes.Length > 0 ?
+					SyntaxFactory.FunctionPointerUnmanagedCallingConventionList(SyntaxFactory.SeparatedList(signature.UnmanagedCallingConventionTypes.Select(u =>
+						SyntaxFactory.FunctionPointerUnmanagedCallingConvention(SyntaxFactory.Identifier(u.Name)))))
+					: default;
+
+				callingConvention = SyntaxFactory.FunctionPointerCallingConvention(SyntaxFactory.Token(SyntaxKind.UnmanagedKeyword), list);
+			}
+			else
+			{
+				callingConvention = default;
+			}
+
+			List<FunctionPointerParameterSyntax> parameters = new(signature.Parameters.Length + 1);
+
+			foreach (IParameterSymbol parameter in signature.Parameters)
+			{
+				TypeSyntax parameterType = parameter.Type.CreateTypeSyntax();
+				parameters.Add(GetParameterSyntax(parameterType, parameter.RefKind, false));
+			}
+
+			parameters.Add(GetParameterSyntax(signature.ReturnType.CreateTypeSyntax(), signature.RefKind, true));
+
+			return SyntaxFactory.FunctionPointerType(callingConvention, SyntaxFactory.FunctionPointerParameterList(SyntaxFactory.SeparatedList(parameters)));
+
+			static FunctionPointerParameterSyntax GetParameterSyntax(TypeSyntax parameterType, RefKind refKind, bool allowRefReadonly)
+			{
+				switch (refKind)
+				{
+					case RefKind.None:
+						return SyntaxFactory.FunctionPointerParameter(parameterType);
+
+					case RefKind.RefReadOnly:
+
+						if (!allowRefReadonly)
+						{
+							goto default;
+						}
+
+						return SyntaxFactory.FunctionPointerParameter(default, SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.RefKeyword), SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword)), parameterType);
+
+					default:
+						SyntaxKind kind = AnalysisUtilities.RefKindToSyntax(refKind);
+						return SyntaxFactory.FunctionPointerParameter(default, SyntaxFactory.TokenList(SyntaxFactory.Token(kind)), parameterType);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="IDynamicTypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static TypeSyntax CreateTypeSyntax(this IDynamicTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return ApplyAnnotation(SyntaxFactory.IdentifierName("dynamic"), type.NullableAnnotation);
+		}
+
+		/// <summary>
+		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="typeParameter"/>.
+		/// </summary>
+		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="typeParameter"/> is <see langword="null"/>.</exception>
+		public static TypeSyntax CreateTypeSyntax(this ITypeParameterSymbol typeParameter)
+		{
+			if (typeParameter is null)
+			{
+				throw new ArgumentNullException(nameof(typeParameter));
+			}
+
+			return ApplyAnnotation(SyntaxFactory.IdentifierName(typeParameter.Name), typeParameter.NullableAnnotation);
+		}
+
+		/// <summary>
+		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="pointer"/>.
+		/// </summary>
+		/// <param name="pointer"><see cref="IPointerTypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="pointer"/> is <see langword="null"/>.</exception>
+		public static TypeSyntax CreateTypeSyntax(this IPointerTypeSymbol pointer)
+		{
+			if (pointer is null)
+			{
+				throw new ArgumentNullException(nameof(pointer));
+			}
+
+			return SyntaxFactory.PointerType(pointer.PointedAtType.CreateTypeSyntax());
+		}
+
+		/// <summary>
+		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static TypeSyntax CreateTypeSyntax(this ITypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type switch
+			{
+				INamedTypeSymbol named => named.CreateTypeSyntax(),
+				IDynamicTypeSymbol dynamic => dynamic.CreateTypeSyntax(),
+				IArrayTypeSymbol array => array.CreateTypeSyntax(),
+				ITypeParameterSymbol typeParameter => typeParameter.CreateTypeSyntax(),
+				IPointerTypeSymbol pointer => pointer.CreateTypeSyntax(),
+				IFunctionPointerTypeSymbol functionPointer => functionPointer.CreateTypeSyntax(),
+				_ => ApplyAnnotation(SyntaxFactory.IdentifierName(type.Name), type.NullableAnnotation),
+			};
+		}
+
+		/// <summary>
+		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static TypeSyntax CreateTypeSyntax(this ISymbol symbol)
+		{
+			if (symbol is ITypeSymbol type)
+			{
+				return type.CreateTypeSyntax();
+			}
+
+			if (symbol is IMethodSymbol method)
+			{
+				return method.CreateTypeSyntax();
+			}
+
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return SyntaxFactory.IdentifierName(symbol.Name);
+		}
+
+		/// <summary>
+		/// Creates a <see cref="SimpleNameSyntax"/> representing the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the <see cref="SimpleNameSyntax"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static TypeSyntax CreateTypeSyntax(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			if (!method.IsGenericMethod)
+			{
+				return SyntaxFactory.IdentifierName(method.Name);
+			}
+
+			List<TypeSyntax> arguments = new(method.TypeArguments.Length);
+
+			foreach (ITypeSymbol type in method.TypeArguments)
+			{
+				arguments.Add(type.CreateTypeSyntax());
+			}
+
+			return SyntaxFactory.GenericName(
+				SyntaxFactory.Identifier(method.Name),
+				SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(arguments)));
+		}
+
 		/// <inheritdoc cref="GetAllMembers(INamedTypeSymbol, string)"/>
 		public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type)
 		{
@@ -628,7 +896,7 @@ namespace Durian.Analysis.Extensions
 
 			if (substitution.HasFlag(GenericSubstitution.ParameterList))
 			{
-				name += GetParameterList(method);
+				name += GetParameterList(method, substitution);
 			}
 
 			return name;
@@ -655,7 +923,7 @@ namespace Durian.Analysis.Extensions
 
 			if (substitution.HasFlag(GenericSubstitution.ParameterList) && type.DelegateInvokeMethod is not null)
 			{
-				name += GetParameterList(type.DelegateInvokeMethod);
+				name += GetParameterList(type.DelegateInvokeMethod, substitution);
 			}
 
 			return name;
@@ -780,21 +1048,24 @@ namespace Durian.Analysis.Extensions
 		/// Creates an <c>&lt;inheritdoc/&gt;</c> tag from the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the <c>&lt;inheritdoc/&gt;</c> tag from.</param>
+		/// <param name="forceUnsupported">Determines whether to return the <c>&lt;inheritdoc/&gt;</c> event if it cannot be referenced by other symbols.</param>
 		/// <returns>A <see cref="string"/> containing the created <c>&lt;inheritdoc/&gt;</c> tag -or- <see langword="null"/> if <paramref name="symbol"/> has no documentation comment.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static string? GetInheritdocIfHasDocumentation(this ISymbol symbol)
+		public static string? GetInheritdocIfHasDocumentation(this ISymbol symbol, bool forceUnsupported = false)
 		{
-			if (symbol is null)
+			if (forceUnsupported)
 			{
-				throw new ArgumentNullException(nameof(symbol));
+				if (!symbol.HasDocumentation())
+				{
+					return default;
+				}
+			}
+			else if (!symbol.HasInheritableDocumentation())
+			{
+				return default;
 			}
 
-			if (string.IsNullOrEmpty(symbol.GetDocumentationCommentXml()))
-			{
-				return null;
-			}
-
-			return AutoGenerated.GetInheritdoc(symbol.GetXmlParentTypesString(true));
+			return AutoGenerated.GetInheritdoc(symbol.GetXmlParentTypesString(true, true));
 		}
 
 		/// <summary>
@@ -942,311 +1213,50 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			return GetModifiers(type.DeclaringSyntaxReferences.Select(e => e.GetSyntax(cancellationToken)).Cast<TypeDeclarationSyntax>());
+			return type.DeclaringSyntaxReferences
+				.Select(e => e.GetSyntax(cancellationToken))
+				.Cast<TypeDeclarationSyntax>()
+				.GetModifiers();
 		}
 
 		/// <summary>
-		/// Returns modifiers contained withing the given collection of <see cref="TypeDeclarationSyntax"/>es.
+		/// Returns kind of operator this <paramref name="method"/> overloads.
 		/// </summary>
-		/// <param name="decl">Collection of <see cref="TypeDeclarationSyntax"/>es to get the modifiers from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="decl"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<SyntaxToken> GetModifiers(this IEnumerable<MemberDeclarationSyntax> decl)
-		{
-			if (decl is null)
-			{
-				throw new ArgumentNullException(nameof(decl));
-			}
-
-			return Yield();
-
-			IEnumerable<SyntaxToken> Yield()
-			{
-				List<SyntaxToken> tokens = new();
-
-				foreach (TypeDeclarationSyntax d in decl)
-				{
-					if (d is null)
-					{
-						continue;
-					}
-
-					foreach (SyntaxToken modifier in d.Modifiers)
-					{
-						if (!tokens.Exists(m => m.IsKind(modifier.Kind())))
-						{
-							tokens.Add(modifier);
-							yield return modifier;
-						}
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static TypeSyntax CreateTypeSyntax(this INamedTypeSymbol type)
-		{
-			if(type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			TypeSyntax syntax;
-
-			if (type.IsGenericType)
-			{
-				List<TypeSyntax> arguments = new(type.TypeArguments.Length);
-
-				foreach (ITypeSymbol t in type.TypeArguments)
-				{
-					arguments.Add(t.CreateTypeSyntax());
-				}
-
-				syntax = SyntaxFactory.GenericName(
-					SyntaxFactory.Identifier(type.Name),
-					SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(arguments)));
-			}
-			else if(type.GetPredefineTypeSyntax() is PredefinedTypeSyntax predefined)
-			{
-				syntax = predefined;
-			}
-			else
-			{
-				syntax = SyntaxFactory.IdentifierName(type.Name);
-			}
-
-			return ApplyAnnotation(syntax, NullableAnnotation.Annotated);
-		}
-
-		/// <summary>
-		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="type"><see cref="IArrayTypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static TypeSyntax CreateTypeSyntax(this IArrayTypeSymbol type)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			ITypeSymbol[] elementTypes = type.GetElementTypes().ToArray();
-			TypeSyntax elementSyntax = elementTypes[0].CreateTypeSyntax();
-
-			List<ArrayRankSpecifierSyntax> ranks = new(elementTypes.Length - 1);
-
-			for (int i = 1; i < elementTypes.Length; i++)
-			{
-				IArrayTypeSymbol array = (IArrayTypeSymbol)elementTypes[i];
-				ranks.Add(GetArrayRank(array));
-
-				if (array.NullableAnnotation == NullableAnnotation.Annotated)
-				{
-					elementSyntax = SyntaxFactory.NullableType(SyntaxFactory.ArrayType(elementSyntax, SyntaxFactory.List(ranks)));
-					ranks.Clear();
-				}
-			}
-
-			ranks.Add(GetArrayRank(type));
-
-			return ApplyAnnotation(SyntaxFactory.ArrayType(elementSyntax, SyntaxFactory.List(ranks)), type.NullableAnnotation);
-
-			static ArrayRankSpecifierSyntax GetArrayRank(IArrayTypeSymbol array)
-			{
-				return SyntaxFactory.ArrayRankSpecifier(SyntaxFactory.SeparatedList<ExpressionSyntax>(
-					array.Sizes.Select(s => SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(s)))));
-			}
-		}
-
-		/// <summary>
-		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="functionPointer"/>.
-		/// </summary>
-		/// <param name="functionPointer"><see cref="IFunctionPointerTypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="functionPointer"/> is <see langword="null"/>.</exception>
-		public static TypeSyntax CreateTypeSyntax(this IFunctionPointerTypeSymbol functionPointer)
-		{
-			if (functionPointer is null)
-			{
-				throw new ArgumentNullException(nameof(functionPointer));
-			}
-
-			IMethodSymbol signature = functionPointer.Signature;
-
-			FunctionPointerCallingConventionSyntax? callingConvention;
-
-			if(signature.CallingConvention == SignatureCallingConvention.Unmanaged)
-			{
-				FunctionPointerUnmanagedCallingConventionListSyntax? list = signature.UnmanagedCallingConventionTypes.Length > 0 ?
-					SyntaxFactory.FunctionPointerUnmanagedCallingConventionList(SyntaxFactory.SeparatedList(signature.UnmanagedCallingConventionTypes.Select(u =>
-						SyntaxFactory.FunctionPointerUnmanagedCallingConvention(SyntaxFactory.Identifier(u.Name)))))
-					: default;
-
-				callingConvention = SyntaxFactory.FunctionPointerCallingConvention(SyntaxFactory.Token(SyntaxKind.UnmanagedKeyword), list);
-			}
-			else
-			{
-				callingConvention = default;
-			}
-
-			List<FunctionPointerParameterSyntax> parameters = new(signature.Parameters.Length + 1);
-
-			foreach (IParameterSymbol parameter in signature.Parameters)
-			{
-				TypeSyntax parameterType = parameter.Type.CreateTypeSyntax();
-				parameters.Add(GetParameterSyntax(parameterType, parameter.RefKind, false));
-			}
-
-			parameters.Add(GetParameterSyntax(signature.ReturnType.CreateTypeSyntax(), signature.RefKind, true));
-
-			return SyntaxFactory.FunctionPointerType(callingConvention, SyntaxFactory.FunctionPointerParameterList(SyntaxFactory.SeparatedList(parameters)));
-
-			static FunctionPointerParameterSyntax GetParameterSyntax(TypeSyntax parameterType, RefKind refKind, bool allowRefReadonly)
-			{
-				switch (refKind)
-				{
-					case RefKind.None:
-						return SyntaxFactory.FunctionPointerParameter(parameterType);
-
-					case RefKind.RefReadOnly:
-
-						if(!allowRefReadonly)
-						{
-							goto default;
-						}
-
-						return SyntaxFactory.FunctionPointerParameter(default, SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.RefKeyword), SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword)), parameterType);
-
-					default:
-						SyntaxKind kind = AnalysisUtilities.RefKindToSyntax(refKind);
-						return SyntaxFactory.FunctionPointerParameter(default, SyntaxFactory.TokenList(SyntaxFactory.Token(kind)), parameterType);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="type"><see cref="IDynamicTypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static TypeSyntax CreateTypeSyntax(this IDynamicTypeSymbol type)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			return ApplyAnnotation(SyntaxFactory.IdentifierName("dynamic"), type.NullableAnnotation);
-		}
-
-		/// <summary>
-		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="typeParameter"/>.
-		/// </summary>
-		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="typeParameter"/> is <see langword="null"/>.</exception>
-		public static TypeSyntax CreateTypeSyntax(this ITypeParameterSymbol typeParameter)
-		{
-			if(typeParameter is null)
-			{
-				throw new ArgumentNullException(nameof(typeParameter));
-			}
-
-			return ApplyAnnotation(SyntaxFactory.IdentifierName(typeParameter.Name), typeParameter.NullableAnnotation);
-		}
-
-		/// <summary>
-		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="pointer"/>.
-		/// </summary>
-		/// <param name="pointer"><see cref="IPointerTypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="pointer"/> is <see langword="null"/>.</exception>
-		public static TypeSyntax CreateTypeSyntax(this IPointerTypeSymbol pointer)
-		{
-			if (pointer is null)
-			{
-				throw new ArgumentNullException(nameof(pointer));
-			}
-
-			return SyntaxFactory.PointerType(pointer.PointedAtType.CreateTypeSyntax());
-		}
-
-		/// <summary>
-		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="type"><see cref="ITypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static TypeSyntax CreateTypeSyntax(this ITypeSymbol type)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			return type switch
-			{
-				INamedTypeSymbol named => named.CreateTypeSyntax(),
-				IDynamicTypeSymbol dynamic => dynamic.CreateTypeSyntax(),
-				IArrayTypeSymbol array => array.CreateTypeSyntax(),
-				ITypeParameterSymbol typeParameter => typeParameter.CreateTypeSyntax(),
-				IPointerTypeSymbol pointer => pointer.CreateTypeSyntax(),
-				IFunctionPointerTypeSymbol functionPointer => functionPointer.CreateTypeSyntax(),
-				_ => ApplyAnnotation(SyntaxFactory.IdentifierName(type.Name), type.NullableAnnotation),
-			};
-		}
-
-		/// <summary>
-		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static TypeSyntax CreateTypeSyntax(this ISymbol symbol)
-		{
-			if(symbol is ITypeSymbol type)
-			{
-				return type.CreateTypeSyntax();
-			}
-
-			if(symbol is IMethodSymbol method)
-			{
-				return method.CreateTypeSyntax();
-			}
-
-			if(symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			return SyntaxFactory.IdentifierName(symbol.Name);
-		}
-
-		/// <summary>
-		/// Creates a <see cref="SimpleNameSyntax"/> representing the specified <paramref name="method"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the <see cref="SimpleNameSyntax"/> for.</param>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the kind of the overloaded operator.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static TypeSyntax CreateTypeSyntax(this IMethodSymbol method)
+		public static OverloadableOperator GetOperatorType(this IMethodSymbol method)
 		{
 			if (method is null)
 			{
 				throw new ArgumentNullException(nameof(method));
 			}
 
-			if(!method.IsGenericMethod)
+			if (method.MethodKind != MethodKind.UserDefinedOperator && method.MethodKind != MethodKind.BuiltinOperator)
 			{
-				return SyntaxFactory.IdentifierName(method.Name);
+				return default;
 			}
 
-			List<TypeSyntax> arguments = new(method.TypeArguments.Length);
+			return AnalysisUtilities.GetOperatorType(method.Name);
+		}
 
-			foreach (ITypeSymbol type in method.TypeArguments)
+		/// <summary>
+		/// Returns text of operator this <paramref name="method"/> overloads.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the kind of the overloaded operator.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static string? GetOperatorText(this IMethodSymbol method)
+		{
+			if (method is null)
 			{
-				arguments.Add(type.CreateTypeSyntax());
+				throw new ArgumentNullException(nameof(method));
 			}
 
-			return SyntaxFactory.GenericName(
-				SyntaxFactory.Identifier(method.Name),
-				SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(arguments)));
+			if (method.MethodKind != MethodKind.UserDefinedOperator && method.MethodKind != MethodKind.BuiltinOperator)
+			{
+				return default;
+			}
+
+			return AnalysisUtilities.GetOperatorText(method.Name);
 		}
 
 		/// <summary>
@@ -1284,6 +1294,11 @@ namespace Durian.Analysis.Extensions
 			foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
 			{
 				sb.Append(type.GetGenericName()).Append('.');
+			}
+
+			if(sb.Length > 0)
+			{
+				sb.Remove(sb.Length - 1, 1);
 			}
 
 			if(includeSelf)
@@ -1486,6 +1501,114 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns name of the specified <paramref name="symbol"/> compatible with 'inheritdoc' tags.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the compatible name of.</param>
+		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static string GetXmlCompatibleName(this ISymbol symbol, bool includeParameters = false)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return symbol switch
+			{
+				IPropertySymbol property => property.GetXmlCompatibleName(),
+				IMethodSymbol method => method.GetXmlCompatibleName(includeParameters),
+				_ => symbol.GetGenericName(GenericSubstitution.Arguments)
+			};
+		}
+
+		/// <summary>
+		/// Returns name of the specified <paramref name="property"/> compatible with 'inheritdoc' tags.
+		/// </summary>
+		/// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
+		public static string GetXmlCompatibleName(this IPropertySymbol property)
+		{
+			if (property is null)
+			{
+				throw new ArgumentNullException(nameof(property));
+			}
+
+			if (property.IsIndexer)
+			{
+				return "this";
+			}
+
+			return property.Name;
+		}
+
+		/// <summary>
+		/// Returns name of the specified <paramref name="method"/> compatible with 'inheritdoc' tags.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the compatible name of.</param>
+		/// <param name="includeParameters">If the value of <paramref name="method"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static string GetXmlCompatibleName(this IMethodSymbol method, bool includeParameters = false)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			string name;
+
+			switch (method.MethodKind)
+			{
+				case MethodKind.Constructor:
+					name = method.ContainingType.Name;
+					break;
+
+				case MethodKind.UserDefinedOperator:
+					name = $"operator {method.GetOperatorText()}";
+					break;
+
+				case MethodKind.Conversion:
+
+					if (method.IsImplicitOperator())
+					{
+						name = $"implicit operator {method.ReturnType.GetXmlFullyQualifiedName()}";
+					}
+					else if (method.IsExplicitOperator())
+					{
+						name = $"explicit operator {method.ReturnType.GetXmlFullyQualifiedName()}";
+					}
+					else
+					{
+						goto default;
+					}
+
+					break;
+
+				default:
+					name = method.GetGenericName();
+					break;
+			}
+
+			if (includeParameters)
+			{
+				name += method.GetXmlParameterList();
+			}
+
+			return name;
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> that represents the parameter signature of the <paramref name="method"/> compatible with 'inheritdoc' tags.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the signature of.</param>
+		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static string GetXmlParameterList(this IMethodSymbol method, GenericSubstitution substitution = default)
+		{
+			string parameterList = method.GetParameterList(substitution);
+
+			return AnalysisUtilities.ToXmlCompatible(parameterList);
+		}
+
+		/// <summary>
 		/// Returns a <see cref="string"/> representing the fully qualified name of the <paramref name="symbol"/> that can be used in the XML documentation.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the fully qualified name of.</param>
@@ -1497,7 +1620,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			return AnalysisUtilities.ConvertFullyQualifiedNameToXml(symbol.ToString());
+			return AnalysisUtilities.ToXmlCompatible(symbol.ToString());
 		}
 
 		/// <summary>
@@ -1509,9 +1632,24 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
 		public static string GetXmlParentTypesString(this ISymbol symbol, bool includeSelf = true, bool includeParameters = false)
 		{
-			string parentString = GetParentTypesString(symbol, includeSelf, includeParameters);
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
 
-			return AnalysisUtilities.ConvertFullyQualifiedNameToXml(parentString);
+			StringBuilder sb = new();
+
+			foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
+			{
+				sb.Append(type.GetGenericName()).Append('.');
+			}
+
+			if (includeSelf)
+			{
+				sb.Append(symbol.GetXmlCompatibleName(includeParameters));
+			}
+
+			return sb.ToString();
 		}
 
 		/// <summary>
@@ -1523,6 +1661,21 @@ namespace Durian.Analysis.Extensions
 		public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attrSymbol)
 		{
 			return GetAttribute(symbol, attrSymbol) is not null;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> has a documentation.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check if has documentation.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static bool HasDocumentation(this ISymbol symbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return !string.IsNullOrEmpty(symbol.GetDocumentationCommentXml());
 		}
 
 		/// <summary>
@@ -1601,6 +1754,38 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return !(method.IsExtern || method.IsAbstract || method.IsImplicitlyDeclared || method.IsPartialDefinition);
+		}
+
+		/// <summary>
+		/// Determines whether the documentation of the specified <paramref name="symbol"/> can be references in an 'inheritdoc' tag.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check whether has inheritable documentation.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static bool HasInheritableDocumentation(this ISymbol symbol)
+		{
+			bool canHaveDocumentation = symbol switch
+			{
+				IMethodSymbol method => method.MethodKind is
+					MethodKind.Ordinary or
+					MethodKind.Constructor or
+					MethodKind.Destructor or
+					MethodKind.Conversion or
+					MethodKind.UserDefinedOperator,
+
+				INamedTypeSymbol type => type.TypeKind is
+					TypeKind.Class or
+					TypeKind.Struct or
+					TypeKind.Delegate or
+					TypeKind.Enum or
+					TypeKind.Interface,
+
+				_ => symbol is
+					IPropertySymbol or
+					IFieldSymbol or
+					IEventSymbol
+			};
+
+			return canHaveDocumentation && symbol.HasDocumentation();
 		}
 
 		/// <summary>
@@ -1946,6 +2131,21 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is an explicit conversion operator.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an explicit conversion operator.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool IsExplicitOperator(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return method.MethodKind == MethodKind.Conversion && method.Name == "op_Explicit";
+		}
+
+		/// <summary>
 		/// Determines whether the <paramref name="symbol"/> was generated from the <paramref name="target"/> <see cref="ISymbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
@@ -2004,6 +2204,21 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return attribute.ConstructorArguments.FirstOrDefault().Value is string value && value == target;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is an implicit conversion operator.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an implicit conversion operator.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool IsImplicitOperator(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return method.MethodKind == MethodKind.Conversion && method.Name == "op_Implicit";
 		}
 
 		/// <summary>

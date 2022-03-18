@@ -47,15 +47,6 @@ namespace Durian.Analysis
 		private static readonly HashSet<string> _keywordsHashed = new(_keywords);
 
 		/// <summary>
-		/// Modifiers a modified version of the specified <paramref name="fullyQualifiedName"/> that can be used in the XML documentation.
-		/// </summary>
-		/// <param name="fullyQualifiedName">Original fully qualified name.</param>
-		public static string ConvertFullyQualifiedNameToXml(string? fullyQualifiedName)
-		{
-			return fullyQualifiedName?.Replace('<', '{').Replace('>', '}') ?? string.Empty;
-		}
-
-		/// <summary>
 		/// Returns a <see cref="string"/> representing a dot-separated name.
 		/// </summary>
 		/// <param name="parts">Parts of the name. Each part will be separated by a dot.</param>
@@ -136,6 +127,164 @@ namespace Durian.Analysis
 			string[] keywords = new string[_keywords.Length];
 			Array.Copy(_keywords, keywords, _keywords.Length);
 			return keywords;
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="string"/> <paramref name="value"/> to a <see cref="OverloadableOperator"/>.
+		/// </summary>
+		/// <param name="value">Value to convert to a <see cref="OverloadableOperator"/>.</param>
+		public static OverloadableOperator GetOperatorType(string? value)
+		{
+			string? operatorName = value?.Trim();
+
+			if (string.IsNullOrWhiteSpace(operatorName))
+			{
+				return default;
+			}
+
+			if(char.IsLetter(operatorName![0]))
+			{
+				if (operatorName!.StartsWith("op_"))
+				{
+					operatorName = operatorName.Substring(3);
+				}
+
+				return operatorName switch
+				{
+					"Addition" => OverloadableOperator.Addition,
+					"Subtraction" => OverloadableOperator.Subtraction,
+					"Multiplication" => OverloadableOperator.Multiplication,
+					"Division" => OverloadableOperator.Division,
+					"Equality" => OverloadableOperator.Equality,
+					"Inequality" => OverloadableOperator.Inequality,
+					"Negation" => OverloadableOperator.Negation,
+					"GreaterThan" => OverloadableOperator.GreaterThan,
+					"GreaterThanOrEqual" => OverloadableOperator.GreaterThanOrEqual,
+					"LessThan" => OverloadableOperator.LessThan,
+					"LestThanOrEqual" => OverloadableOperator.LestThanOrEqual,
+					"Complement" => OverloadableOperator.Complement,
+					"LogicalAnd" => OverloadableOperator.LogicalAnd,
+					"LogicalOr" => OverloadableOperator.LogicalOr,
+					"LogicalXor" => OverloadableOperator.LogicalXor,
+					"Remainder" => OverloadableOperator.Remainder,
+					"Increment" => OverloadableOperator.Increment,
+					"Decrement" => OverloadableOperator.Decrement,
+					"False" => OverloadableOperator.False,
+					"True" => OverloadableOperator.True,
+					"UnaryPlus" => OverloadableOperator.UnaryPlus,
+					"UnaryMinus" => OverloadableOperator.UnaryMinus,
+					"RightShift" => OverloadableOperator.RightShift,
+					"LeftShift" => OverloadableOperator.LeftShift,
+					_ => default
+				};
+			}
+
+			return operatorName switch
+			{
+				"+" => OverloadableOperator.Addition,
+				"-" => OverloadableOperator.Subtraction,
+				"*" => OverloadableOperator.Multiplication,
+				"/" => OverloadableOperator.Division,
+				"==" => OverloadableOperator.Equality,
+				"!=" => OverloadableOperator.Inequality,
+				"!" => OverloadableOperator.Negation,
+				">" => OverloadableOperator.GreaterThan,
+				">=" => OverloadableOperator.GreaterThanOrEqual,
+				"<" => OverloadableOperator.LessThan,
+				"<=" => OverloadableOperator.LestThanOrEqual,
+				"~" => OverloadableOperator.Complement,
+				"&" => OverloadableOperator.LogicalAnd,
+				"|" => OverloadableOperator.LogicalOr,
+				"^" => OverloadableOperator.LogicalXor,
+				"%" => OverloadableOperator.Remainder,
+				"++" => OverloadableOperator.Increment,
+				"__" => OverloadableOperator.Decrement,
+				"false" => OverloadableOperator.False,
+				"true" => OverloadableOperator.True,
+				">>" => OverloadableOperator.RightShift,
+				"<<" => OverloadableOperator.LeftShift,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="string"/> <paramref name="value"/> into a <see cref="string"/> representation of the operator.
+		/// </summary>
+		/// <param name="value"><see cref="string"/> to convert.</param>
+		public static string? GetOperatorText(string? value)
+		{
+			string? operatorName = value?.Trim();
+
+			if (string.IsNullOrWhiteSpace(operatorName))
+			{
+				return default;
+			}
+
+			if (operatorName!.StartsWith("op_"))
+			{
+				operatorName = operatorName.Substring(3);
+			}
+
+			return operatorName switch
+			{
+				"Addition" or "UnaryPlus" => "+",
+				"Subtraction" or "UnaryMinus" => "-",
+				"Multiplication" => "*",
+				"Division" => "/",
+				"Equality" => "==",
+				"Inequality" => "!=",
+				"Negation" => "!",
+				"GreaterThan" => ">",
+				"GreaterThanOrEqual" => ">=",
+				"LessThan" => "<",
+				"LestThanOrEqual" => "<=",
+				"Complement" => "~",
+				"LogicalAnd" => "&",
+				"LogicalOr" => "|",
+				"LogicalXor" => "^",
+				"Remainder" => "%",
+				"Increment" => "++",
+				"Decrement" => "--",
+				"False" => "false",
+				"True" => "true",
+				"RightShift" => ">>",
+				"LeftShift" => "<<",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="OverloadableOperator"/> <paramref name="value"/> to a <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="OverloadableOperator"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetOperatorText(OverloadableOperator value)
+		{
+			return value switch
+			{
+				OverloadableOperator.Addition or OverloadableOperator.UnaryPlus => "+",
+				OverloadableOperator.Subtraction or OverloadableOperator.UnaryMinus => "-",
+				OverloadableOperator.Multiplication => "*",
+				OverloadableOperator.Division => "/",
+				OverloadableOperator.Equality => "==",
+				OverloadableOperator.Inequality => "!=",
+				OverloadableOperator.Negation => "!",
+				OverloadableOperator.GreaterThan => ">",
+				OverloadableOperator.GreaterThanOrEqual => ">=",
+				OverloadableOperator.LessThan => "<",
+				OverloadableOperator.LestThanOrEqual => "<=",
+				OverloadableOperator.Complement => "~",
+				OverloadableOperator.LogicalAnd => "&",
+				OverloadableOperator.LogicalOr => "|",
+				OverloadableOperator.LogicalXor => "^",
+				OverloadableOperator.Remainder => "%",
+				OverloadableOperator.Increment => "++",
+				OverloadableOperator.Decrement => "--",
+				OverloadableOperator.False => "false",
+				OverloadableOperator.True => "true",
+				OverloadableOperator.RightShift => ">>",
+				OverloadableOperator.LeftShift => "<<",
+				_ => default
+			};
 		}
 
 		/// <summary>
@@ -426,6 +575,15 @@ namespace Durian.Analysis
 					return 2;
 				}
 			}).ThenBy(n => n);
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an XML compatible value.
+		/// </summary>
+		/// <param name="value">Original value.</param>
+		public static string ToXmlCompatible(string? value)
+		{
+			return value?.Replace('<', '{').Replace('>', '}') ?? string.Empty;
 		}
 
 		/// <summary>

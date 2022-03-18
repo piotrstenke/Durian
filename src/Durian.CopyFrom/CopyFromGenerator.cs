@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Durian.Analysis.SyntaxVisitors;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.Analysis.CopyFrom
 {
@@ -192,14 +193,7 @@ namespace Durian.Analysis.CopyFrom
 
 				currentName = partialDeclarations.Length > 1 ? currentName + "_partial" : currentName;
 
-				if (target.Symbol.IsGenericType)
-				{
-					if (GenerateGenericDeclarations(type, target, partialDeclarations, currentName, keyword, replacer, in context))
-					{
-						generated = true;
-					}
-				}
-				else if (GenerateDeclarations(type, target, partialDeclarations, currentName, keyword, in context))
+				if (GenerateDeclarations(type, target, partialDeclarations, currentName, keyword, replacer, in context))
 				{
 					generated = true;
 				}
@@ -216,136 +210,102 @@ namespace Durian.Analysis.CopyFrom
 			TypeDeclarationSyntax[] partialDeclarations,
 			string currentName,
 			string keyword,
-			in GeneratorExecutionContext context
-		)
-		{
-			bool generated = true;
-			string partialName = currentName;
-
-			for (int i = 0; i < partialDeclarations.Length; i++)
-			{
-				TypeDeclarationSyntax partial = partialDeclarations[i];
-
-				CodeBuilder.WriteDeclarationLead(type, GetUsings(target, partial), GeneratorName, Version);
-				CodeBuilder.Indent();
-				CodeBuilder.BeginDeclation($"partial {keyword} {type.Name}");
-
-				if(target.HandleSpecialMembers)
-				{
-					foreach (MemberDeclarationSyntax member in partial.Members)
-					{
-						if (GetMemberSymbol(member, type.SemanticModel) is not ISymbol symbol)
-						{
-							continue;
-						}
-
-						MemberDeclarationSyntax newMember = HandleSpecialMemberTypes(type, target.Symbol, member);
-						WriteGeneratedMember(newMember, symbol);
-					}
-				}
-				else
-				{
-					foreach (MemberDeclarationSyntax member in partial.Members)
-					{
-						if (GetMemberSymbol(member, type.SemanticModel) is not ISymbol symbol)
-						{
-							continue;
-						}
-
-						WriteGeneratedMember(member, symbol);
-					}
-				}
-
-				CodeBuilder.EndAllScopes();
-
-				AddSourceWithOriginal(type.Declaration, partialName, in context);
-				generated = true;
-				partialName = currentName + $"_{i + 1}";
-			}
-
-			return generated;
-		}
-
-		private bool GenerateGenericDeclarations(
-			CopyFromTypeData type,
-			TargetData target,
-			TypeDeclarationSyntax[] partialDeclarations,
-			string currentName,
-			string keyword,
 			TypeParameterReplacer replacer,
 			in GeneratorExecutionContext context
 		)
 		{
-			bool generated = true;
+			bool isGenerated = true;
 			string partialName = currentName;
 
-			List<(string identifier, string replacement)> replacements = GetTypeParamterReplacements(target.Symbol);
+			Action<CSharpSyntaxNode, ISymbol, GenerateInheritdoc> generateAction = GetGenerationMethod(type, target, replacer);
 
 			for (int i = 0; i < partialDeclarations.Length; i++)
 			{
 				TypeDeclarationSyntax partial = partialDeclarations[i];
 
+				SyntaxList<MemberDeclarationSyntax> members = partial.Members;
+
+				if(!members.Any())
+				{
+					continue;
+				}
+
 				CodeBuilder.WriteDeclarationLead(type, GetUsings(target, partial), GeneratorName, Version);
 				CodeBuilder.Indent();
 				CodeBuilder.BeginDeclation($"partial {keyword} {type.Name}");
 
-				if(target.HandleSpecialMembers)
+				for (int j = 0; j < members.Count; j++)
 				{
-					foreach (MemberDeclarationSyntax member in partial.Members)
-					{
-						if (GetMemberSymbol(member, type.SemanticModel) is not ISymbol symbol)
-						{
-							continue;
-						}
+					CSharpSyntaxNode member = members[j];
 
-						CSharpSyntaxNode replaced = HandleSpecialMemberTypes(type, target.Symbol, member);
-						ReplaceAndGenerate(replaced, symbol);
+					if (TryGetMutlipleMembers(member, type.SemanticModel, out ISymbol? symbol, out List<(ISymbol original, MemberDeclarationSyntax generated)>? fields))
+					{
+						//GenerateInheritdoc inheridoc = target.Symbol.HasInheritableDocumentation() ? GenerateInheritdoc.Always : GenerateInheritdoc.Never;
+
+						foreach ((ISymbol original, MemberDeclarationSyntax generated) in fields)
+						{
+							generateAction(generated, original, GenerateInheritdoc.Always);
+						}
 					}
-				}
-				else
-				{
-					foreach (MemberDeclarationSyntax member in partial.Members)
+					else if(symbol is not null)
 					{
-						if (GetMemberSymbol(member, type.SemanticModel) is not ISymbol symbol)
-						{
-							continue;
-						}
-
-						ReplaceAndGenerate(member, symbol);
+						generateAction(member, symbol, GenerateInheritdoc.Always);
 					}
 				}
 
 				CodeBuilder.EndAllScopes();
 
 				AddSourceWithOriginal(type.Declaration, partialName, in context);
-				generated = true;
+				isGenerated = true;
 				partialName = currentName + $"_{i + 1}";
 			}
 
-			return generated;
-
-			void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol)
-			{
-				foreach ((string identifier, string replacement) in replacements)
-				{
-					replacer.Identifier = identifier;
-					replacer.Replacement = replacement;
-
-					replaced = (CSharpSyntaxNode)replacer.Visit(replaced);
-				}
-
-				WriteGeneratedMember(replaced, symbol);
-			}
+			return isGenerated;
 		}
 
-		private static ISymbol? GetMemberSymbol(MemberDeclarationSyntax member, SemanticModel semanticModel)
+		private Action<CSharpSyntaxNode, ISymbol, GenerateInheritdoc> GetGenerationMethod(CopyFromTypeData type, TargetData target, TypeParameterReplacer replacer)
 		{
-			if(member is BaseFieldDeclarationSyntax field)
+			if (target.Symbol.IsGenericType)
 			{
-				return semanticModel.GetDeclaredSymbol(field.Declaration);
+				List<(string identifier, string replacement)> replacements = GetTypeParamterReplacements(target.Symbol);
+
+				if (target.HandleSpecialMembers)
+				{
+					return (member, symbol, generateInheritdoc) =>
+					{
+						HandleSpecialMemberTypes(ref member, type, target.Symbol);
+						ReplaceAndGenerate(member, symbol, generateInheritdoc);
+					};
+				}
+				else
+				{
+					return ReplaceAndGenerate;
+				}
+
+				void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol, GenerateInheritdoc generateInheritdoc)
+				{
+					foreach ((string identifier, string replacement) in replacements)
+					{
+						replacer.Identifier = identifier;
+						replacer.Replacement = replacement;
+
+						replaced = (CSharpSyntaxNode)replacer.Visit(replaced);
+					}
+
+					WriteGeneratedMember(replaced, symbol, generateInheritdoc);
+				}
 			}
 
-			return semanticModel.GetDeclaredSymbol(member);
+			if (target.HandleSpecialMembers)
+			{
+				return (member, symbol, generateInheritdoc) =>
+				{
+					HandleSpecialMemberTypes(ref member, type, target.Symbol);
+					WriteGeneratedMember(member, symbol, generateInheritdoc);
+				};
+			}
+
+			return WriteGeneratedMember;
 		}
 
 		private static TypeDeclarationSyntax[] GetPartialDeclarations(TargetData target)
@@ -397,15 +357,17 @@ namespace Durian.Analysis.CopyFrom
 			return usings;
 		}
 
-		private static MemberDeclarationSyntax HandleSpecialMemberTypes(CopyFromTypeData type, INamedTypeSymbol target, MemberDeclarationSyntax member)
+		private static void HandleSpecialMemberTypes(ref CSharpSyntaxNode member, CopyFromTypeData type, INamedTypeSymbol target)
 		{
 			switch (member)
 			{
 				case ConstructorDeclarationSyntax ctor:
-					return ctor.WithIdentifier(SyntaxFactory.Identifier(type.Name).WithTriviaFrom(ctor.Identifier));
+					member = ctor.WithIdentifier(SyntaxFactory.Identifier(type.Name).WithTriviaFrom(ctor.Identifier));
+					break;
 
 				case DestructorDeclarationSyntax dtor:
-					return dtor.WithIdentifier(SyntaxFactory.Identifier(type.Name).WithTriviaFrom(dtor.Identifier));
+					member = dtor.WithIdentifier(SyntaxFactory.Identifier(type.Name).WithTriviaFrom(dtor.Identifier));
+					break;
 
 				case ConversionOperatorDeclarationSyntax conversion:
 
@@ -414,7 +376,8 @@ namespace Durian.Analysis.CopyFrom
 						conversion = conversion.WithType(GetNameSyntax(((SimpleNameSyntax)conversion.Type).Identifier));
 					}
 
-					return conversion.WithParameterList(conversion.ParameterList.WithParameters(SyntaxFactory.SeparatedList(UpdateParameters(conversion.ParameterList.Parameters))));
+					member = conversion.WithParameterList(conversion.ParameterList.WithParameters(SyntaxFactory.SeparatedList(UpdateParameters(conversion.ParameterList.Parameters))));
+					break;
 
 				case OperatorDeclarationSyntax op:
 
@@ -423,10 +386,9 @@ namespace Durian.Analysis.CopyFrom
 						op = op.WithReturnType(GetNameSyntax(((SimpleNameSyntax)op.ReturnType).Identifier));
 					}
 
-					return op.WithParameterList(op.ParameterList.WithParameters(SyntaxFactory.SeparatedList(UpdateParameters(op.ParameterList.Parameters))));
+					member = op.WithParameterList(op.ParameterList.WithParameters(SyntaxFactory.SeparatedList(UpdateParameters(op.ParameterList.Parameters))));
+					break;
 			}
-
-			return member;
 
 			List<ParameterSyntax> UpdateParameters(SeparatedSyntaxList<ParameterSyntax> parameters)
 			{
@@ -482,6 +444,72 @@ namespace Durian.Analysis.CopyFrom
 					return 0;
 				}
 			});
+		}
+
+		private static bool TryGetMutlipleMembers(
+			CSharpSyntaxNode member,
+			SemanticModel semanticModel,
+			out ISymbol? symbol,
+			[NotNullWhen(true)]out List<(ISymbol original, MemberDeclarationSyntax generated)>? members)
+		{
+			if (member is not BaseFieldDeclarationSyntax field)
+			{
+				members = default;
+				symbol = semanticModel.GetDeclaredSymbol(member);
+				return false;
+			}
+
+			SeparatedSyntaxList<VariableDeclaratorSyntax> variables = field.Declaration.Variables;
+
+			if (!variables.Any())
+			{
+				members = default;
+				symbol = default;
+				return false;
+			}
+
+			if (variables.Count == 1)
+			{
+				members = default;
+				symbol = semanticModel.GetDeclaredSymbol(variables[0]);
+				return false;
+			}
+
+			members = new(variables.Count);
+
+			if(field is EventFieldDeclarationSyntax)
+			{
+				foreach (VariableDeclaratorSyntax variable in variables)
+				{
+					if(semanticModel.GetDeclaredSymbol(variable) is not ISymbol s)
+					{
+						continue;
+					}
+
+					members.Add((s, SyntaxFactory.EventFieldDeclaration(
+						field.AttributeLists,
+						field.Modifiers,
+						SyntaxFactory.VariableDeclaration(field.Declaration.Type, SyntaxFactory.SingletonSeparatedList(variable)))));
+				}
+			}
+			else
+			{
+				foreach (VariableDeclaratorSyntax variable in variables)
+				{
+					if (semanticModel.GetDeclaredSymbol(variable) is not ISymbol s)
+					{
+						continue;
+					}
+
+					members.Add((s, SyntaxFactory.FieldDeclaration(
+						field.AttributeLists,
+						field.Modifiers,
+						SyntaxFactory.VariableDeclaration(field.Declaration.Type, SyntaxFactory.SingletonSeparatedList(variable)))));
+				}
+			}
+
+			symbol = default;
+			return true;
 		}
 	}
 }

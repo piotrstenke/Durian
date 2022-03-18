@@ -45,7 +45,7 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 
 		private static string Execute(string? input)
 		{
-			return Analysis.AnalysisUtilities.ConvertFullyQualifiedNameToXml(input);
+			return Analysis.AnalysisUtilities.ToXmlCompatible(input);
 		}
 	}
 }

@@ -7,9 +7,9 @@ using System;
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// A <see cref="IDirectDiagnosticReceiver"/> that invokes a <see cref="ReportAction.Direct"/> when the <see cref="ReportDiagnostic(Diagnostic)"/> method is called.
+	/// Static class that contains various <see cref="IDiagnosticReceiver"/> implementations.
 	/// </summary>
-	public sealed partial class DiagnosticReceiver : IDirectDiagnosticReceiver
+	public sealed partial class DiagnosticReceiver
 	{
 		private readonly ReportAction.Direct _action;
 

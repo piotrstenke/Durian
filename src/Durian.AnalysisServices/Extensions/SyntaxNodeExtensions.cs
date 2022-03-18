@@ -357,6 +357,43 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns modifiers contained withing the given collection of <see cref="TypeDeclarationSyntax"/>es.
+		/// </summary>
+		/// <param name="decl">Collection of <see cref="TypeDeclarationSyntax"/>es to get the modifiers from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="decl"/> is <see langword="null"/>.</exception>
+		public static IEnumerable<SyntaxToken> GetModifiers(this IEnumerable<MemberDeclarationSyntax> decl)
+		{
+			if (decl is null)
+			{
+				throw new ArgumentNullException(nameof(decl));
+			}
+
+			return Yield();
+
+			IEnumerable<SyntaxToken> Yield()
+			{
+				List<SyntaxToken> tokens = new();
+
+				foreach (TypeDeclarationSyntax d in decl)
+				{
+					if (d is null)
+					{
+						continue;
+					}
+
+					foreach (SyntaxToken modifier in d.Modifiers)
+					{
+						if (!tokens.Exists(m => m.IsKind(modifier.Kind())))
+						{
+							tokens.Add(modifier);
+							yield return modifier;
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		/// Returns the name of attribute argument represented by the specified <paramref name="syntax"/>
 		/// or <see langword="null"/> if the argument has neither <see cref="NameEqualsSyntax"/> or <see cref="NameColonSyntax"/>.
 		/// </summary>
