@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Durian.Analysis
+namespace Durian.Analysis.Logging
 {
 	/// <summary>
 	/// Types of logs that a source generator can produce.

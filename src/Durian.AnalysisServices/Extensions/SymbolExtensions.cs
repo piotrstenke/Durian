@@ -1296,19 +1296,13 @@ namespace Durian.Analysis.Extensions
 				sb.Append(type.GetGenericName()).Append('.');
 			}
 
-			if(sb.Length > 0)
-			{
-				sb.Remove(sb.Length - 1, 1);
-			}
-
 			if(includeSelf)
 			{
-				sb.Append(symbol.GetGenericName());
-
-				if (includeParameters && symbol is IMethodSymbol m)
-				{
-					sb.Append(m.GetParameterList());
-				}
+				sb.Append(symbol.GetGenericName(includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None));
+			}
+			else if (sb.Length > 0)
+			{
+				sb.Remove(sb.Length - 1, 1);
 			}
 
 			return sb.ToString();
@@ -1513,12 +1507,17 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			return symbol switch
+			switch (symbol)
 			{
-				IPropertySymbol property => property.GetXmlCompatibleName(),
-				IMethodSymbol method => method.GetXmlCompatibleName(includeParameters),
-				_ => symbol.GetGenericName(GenericSubstitution.Arguments)
-			};
+				case IPropertySymbol property:
+					return property.GetXmlCompatibleName();
+
+				case IMethodSymbol method:
+					return method.GetXmlCompatibleName(includeParameters);
+
+				default:
+					return AnalysisUtilities.ToXmlCompatible(symbol.GetGenericName(includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None));
+			}
 		}
 
 		/// <summary>
@@ -1583,7 +1582,7 @@ namespace Durian.Analysis.Extensions
 					break;
 
 				default:
-					name = method.GetGenericName();
+					name = AnalysisUtilities.ToXmlCompatible(method.GetGenericName());
 					break;
 			}
 
@@ -1641,12 +1640,16 @@ namespace Durian.Analysis.Extensions
 
 			foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
 			{
-				sb.Append(type.GetGenericName()).Append('.');
+				sb.Append(sb.Append(AnalysisUtilities.ToXmlCompatible(type.GetGenericName())).Append('.'));
 			}
 
 			if (includeSelf)
 			{
 				sb.Append(symbol.GetXmlCompatibleName(includeParameters));
+			}
+			else if (sb.Length > 0)
+			{
+				sb.Remove(sb.Length - 1, 1);
 			}
 
 			return sb.ToString();

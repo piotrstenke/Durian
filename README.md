@@ -199,7 +199,7 @@ public static class Utility
     }
 }
 
-[ConstExprSource("Utility.Sum", "Sum_10", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)]
+[ConstExprSource("Utility.Sum", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, Name = "Sum_10")]
 public static partial class Constants
 {
 }

@@ -47,19 +47,18 @@ namespace Durian.Analysis.Extensions
 
 			StringBuilder sb = new();
 
-			foreach (INamedTypeSymbol type in member.GetContainingTypes())
+			foreach (ITypeData type in member.GetContainingTypes())
 			{
-				sb.Append(type.GetGenericName()).Append('.');
+				sb.Append(type.Symbol.GetGenericName()).Append('.');
 			}
 
 			if (includeSelf)
 			{
-				sb.Append(member.Symbol.GetGenericName());
-
-				if (includeParameters && member is IMethodData m)
-				{
-					sb.Append(m.Symbol.GetParameterList());
-				}
+				sb.Append(member.Symbol.GetGenericName(includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None));
+			}
+			else if (sb.Length > 0)
+			{
+				sb.Remove(sb.Length - 1, 1);
 			}
 
 			return sb.ToString();
@@ -98,12 +97,16 @@ namespace Durian.Analysis.Extensions
 
 			foreach (ITypeData type in member.GetContainingTypes())
 			{
-				sb.Append(type.Symbol.GetGenericName()).Append('.');
+				sb.Append(AnalysisUtilities.ToXmlCompatible(type.Symbol.GetGenericName())).Append('.');
 			}
 
 			if (includeSelf)
 			{
 				sb.Append(member.Symbol.GetXmlCompatibleName(includeParameters));
+			}
+			else if (sb.Length > 0)
+			{
+				sb.Remove(sb.Length - 1, 1);
 			}
 
 			return sb.ToString();
