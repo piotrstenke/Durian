@@ -11,7 +11,7 @@ using System.Collections.Generic;
 namespace Durian.TestServices
 {
 	/// <summary>
-	/// A wrapper for <see cref="GeneratorWithFilters{TFilter}"/> that offers better logging experience.
+	/// A wrapper for <see cref="DurianGeneratorWithFilters{TFilter}"/> that offers better logging experience.
 	/// </summary>
 	/// <typeparam name="TFilter">Type of <see cref="IGeneratorSyntaxFilter"/> used to generate sources.</typeparam>
 	public class TestableGenerator<TFilter> : ITestableGenerator where TFilter : IGeneratorSyntaxFilter
@@ -35,18 +35,18 @@ namespace Durian.TestServices
 		public string TestName { get; }
 
 		/// <inheritdoc cref="ITestableGenerator.UnderlayingGenerator"/>
-		public GeneratorWithFilters<TFilter> UnderlayingGenerator { get; }
+		public DurianGeneratorWithFilters<TFilter> UnderlayingGenerator { get; }
 
 		ILoggableGenerator ITestableGenerator.UnderlayingGenerator => UnderlayingGenerator;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TestableGenerator{TFilter}"/> class.
 		/// </summary>
-		/// <param name="generator"><see cref="GeneratorWithFilters{TFilter}"/> that is used to actually generate sources.</param>
+		/// <param name="generator"><see cref="DurianGeneratorWithFilters{TFilter}"/> that is used to actually generate sources.</param>
 		/// <param name="testName">Name of a test that is currently running.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="testName"/> cannot be <see langword="null"/> or empty.</exception>
-		public TestableGenerator(GeneratorWithFilters<TFilter> generator, string testName)
+		public TestableGenerator(DurianGeneratorWithFilters<TFilter> generator, string testName)
 		{
 			if (generator is null)
 			{

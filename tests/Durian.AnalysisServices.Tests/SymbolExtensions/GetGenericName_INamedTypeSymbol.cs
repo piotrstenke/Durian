@@ -17,7 +17,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		public void CanReturnNameWithMultipleTypeArguments()
 		{
 			INamedTypeSymbol symbol = GetSymbolForArgument("class Test<T, U> { } class New : Test<int, string> { }");
-			Assert.True(symbol.GetGenericName(GenericSubstitution.Arguments) == "Test<int, string>");
+			Assert.True(symbol.GetGenericName(GenericSubstitution.TypeArguments) == "Test<int, string>");
 		}
 
 		[Fact]
@@ -31,7 +31,7 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		public void CanReturnNameWithSingleTypeArgument()
 		{
 			INamedTypeSymbol symbol = GetSymbolForArgument("class Test<T> { } class New : Test<int> { }");
-			Assert.True(symbol.GetGenericName(GenericSubstitution.Arguments) == "Test<int>");
+			Assert.True(symbol.GetGenericName(GenericSubstitution.TypeArguments) == "Test<int>");
 		}
 
 		[Fact]

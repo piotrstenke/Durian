@@ -19,5 +19,12 @@ namespace Durian.Analysis
 		/// <param name="messageArgs">Arguments of the diagnostic message.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="descriptor"/> is <see langword="null"/>.</exception>
 		void ReportDiagnostic(DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs);
+
+		/// <summary>
+		/// Reports a <see cref="Diagnostic"/>.
+		/// </summary>
+		/// <param name="diagnostic"><see cref="Diagnostic"/> to report.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="diagnostic"/> is <see langword="null"/>.</exception>
+		void ReportDiagnostic(Diagnostic diagnostic);
 	}
 }

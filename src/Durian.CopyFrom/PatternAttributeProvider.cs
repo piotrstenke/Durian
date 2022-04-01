@@ -78,7 +78,7 @@ namespace {Namespace}
 		/// <summary>
 		/// Order in which multiple <see cref=""{TypeName}""/>s are applied.
 		/// </summary>
-		public int Order {{ get; set; }}
+		public int {Order} {{ get; set; }}
 
 		/// <summary>
 		/// Regex pattern that is used when copying implementation from other source.

@@ -19,12 +19,17 @@ namespace Durian.Analysis.Logging
 		string GetHintName(ISymbol symbol);
 
 		/// <summary>
-		/// Resets the <see cref="IHintNameProvider"/> to its original state.
+		/// Initializes the provider.
+		/// </summary>
+		void Initialize();
+
+		/// <summary>
+		/// Resets the provider to its original state.
 		/// </summary>
 		void Reset();
 
 		/// <summary>
-		/// A callback method that changes the state of the current <see cref="IHintNameProvider"/>.
+		/// A callback method that changes the state of the current provider.
 		/// </summary>
 		void Success();
 	}

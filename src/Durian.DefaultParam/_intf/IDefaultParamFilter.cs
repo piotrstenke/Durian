@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using Durian.Analysis.Cache;
+using Durian.Analysis.Filters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Diagnostics.CodeAnalysis;
@@ -12,13 +13,8 @@ namespace Durian.Analysis.DefaultParam
 	/// <summary>
 	/// Filtrates and validates nodes collected by a <see cref="DefaultParamSyntaxReceiver"/>.
 	/// </summary>
-	public interface IDefaultParamFilter : ICachedGeneratorSyntaxFilterWithDiagnostics<IDefaultParamTarget>, INodeValidatorWithDiagnostics<IDefaultParamTarget>, INodeProvider
+	public interface IDefaultParamFilter : ICachedGeneratorSyntaxFilterWithDiagnostics<IDefaultParamTarget>, ISyntaxValidatorWithDiagnostics<IDefaultParamTarget>
 	{
-		/// <summary>
-		/// <see cref="DefaultParamGenerator"/> that created this filter.
-		/// </summary>
-		new DefaultParamGenerator Generator { get; }
-
 		/// <summary>
 		/// Specifies, if the <see cref="SemanticModel"/>, <see cref="ISymbol"/> and <see cref="TypeParameterContainer"/> can be created from the given <paramref name="node"/>.
 		/// If so, returns them.

@@ -21,10 +21,6 @@ namespace Durian.Analysis
 	/// </summary>
 	public abstract class DurianGeneratorBase : LoggableGenerator
 	{
-		private DiagnosticReceiver.ReadonlyContextual<GeneratorExecutionContext>? _diagnosticReceiver;
-
-		private IHintNameProvider _fileNameProvider;
-
 		#region Diagnostics copied from Durian.Core.Analyzer
 
 #pragma warning disable IDE1006 // Naming Styles
@@ -57,35 +53,7 @@ namespace Durian.Analysis
 
 		#endregion Diagnostics copied from Durian.Core.Analyzer
 
-		/// <summary>
-		/// A <see cref="IDiagnosticReceiver"/> that is used to report diagnostics.
-		/// </summary>
-		/// <remarks>Can be set only if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</remarks>
-		/// <exception cref="InvalidOperationException">
-		/// <see cref="DiagnosticReceiver"/> cannot be set if <see cref="SupportsDiagnostics"/> is <see langword="false"/>. -or-
-		/// <see cref="DiagnosticReceiver"/> cannot be set to <see langword="null"/> if <see cref="SupportsDiagnostics"/> is <see langword="true"/>.
-		/// </exception>
-		public virtual DiagnosticReceiver.ReadonlyContextual<GeneratorExecutionContext>? DiagnosticReceiver
-		{
-			get => _diagnosticReceiver;
-			set
-			{
-				if (!SupportsDiagnostics)
-				{
-					throw new InvalidOperationException($"{nameof(DiagnosticReceiver)} cannot be set if {nameof(SupportsDiagnostics)} is false!");
-				}
-
-				if (value is null && SupportsDiagnostics)
-				{
-					throw new InvalidOperationException($"{nameof(DiagnosticReceiver)} cannot be set to null if {nameof(SupportsDiagnostics)} is true!");
-				}
-
-				_diagnosticReceiver = value;
-			}
-		}
-
 		/// <inheritdoc cref="LoggingConfiguration.EnableDiagnostics"/>
-		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
 		public virtual bool EnableDiagnostics
 		{
 			get => LoggingConfiguration.EnableDiagnostics;
@@ -107,46 +75,24 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Creates names for generated files.
+		/// Unique identifier of the current instance.
 		/// </summary>
-		/// <exception cref="ArgumentNullException"><see cref="FileNameProvider"/> cannot be <see langword="null"/>.</exception>
-		public virtual IHintNameProvider FileNameProvider
-		{
-			get => _fileNameProvider;
-			set
-			{
-				if (value is null)
-				{
-					throw new ArgumentNullException(nameof(FileNameProvider));
-				}
-
-				_fileNameProvider = value;
-			}
-		}
-
-		/// <summary>
-		/// A <see cref="IDiagnosticReceiver"/> that is used to create log files outside of this <see cref="ISourceGenerator"/>.
-		/// </summary>
-		public LoggableDiagnosticReceiver LogReceiver { get; }
+		public Guid InstanceId { get; }
 
 		/// <inheritdoc/>
 		public virtual int NumStaticTrees => GetInitialSources().Count();
 
 		/// <inheritdoc cref="LoggingConfiguration.SupportsDiagnostics"/>
-		[MemberNotNullWhen(true, nameof(DiagnosticReceiver))]
 		public bool SupportsDiagnostics
 		{
 			get => LoggingConfiguration.SupportsDiagnostics;
 			set => LoggingConfiguration.SupportsDiagnostics = value;
 		}
 
-		/// <inheritdoc cref="DurianGeneratorBase(in ConstructionContext, IHintNameProvider)"/>
-		protected DurianGeneratorBase() : this(LoggingConfiguration.Default, null)
-		{
-		}
-
-		/// <inheritdoc cref="DurianGeneratorBase(in ConstructionContext, IHintNameProvider)"/>
-		protected DurianGeneratorBase(in ConstructionContext context) : this(in context, null)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DurianGeneratorBase"/> class.
+		/// </summary>
+		protected DurianGeneratorBase()
 		{
 		}
 
@@ -154,41 +100,18 @@ namespace Durian.Analysis
 		/// Initializes a new instance of the <see cref="DurianGeneratorBase"/> class.
 		/// </summary>
 		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-		/// <param name="fileNameProvider">Creates names for generated files.</param>
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-		protected DurianGeneratorBase(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+		protected DurianGeneratorBase(in ConstructionContext context) : base(in context)
 		{
-			if (SupportsDiagnostics)
-			{
-				DiagnosticReceiver = Analysis.DiagnosticReceiver.Factory.SourceGenerator();
-			}
-
-			FileNameProvider = fileNameProvider ?? new SymbolNameToFile();
-			LogReceiver = new(this);
-		}
-
-		/// <inheritdoc cref="DurianGeneratorBase(LoggingConfiguration?, IHintNameProvider?)"/>
-		protected DurianGeneratorBase(LoggingConfiguration? loggingConfiguration) : this(loggingConfiguration, null)
-		{
+			InstanceId = Guid.NewGuid();
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGeneratorBase"/> class.
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-		/// <param name="fileNameProvider">Creates names for generated files.</param>
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-		protected DurianGeneratorBase(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+		protected DurianGeneratorBase(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
-			if (SupportsDiagnostics)
-			{
-				DiagnosticReceiver = Analysis.DiagnosticReceiver.Factory.SourceGenerator();
-			}
-
-			FileNameProvider = fileNameProvider ?? new SymbolNameToFile();
-			LogReceiver = new(this);
+			InstanceId = Guid.NewGuid();
 		}
 
 		/// <inheritdoc/>
@@ -270,7 +193,7 @@ namespace Durian.Analysis
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
 		protected virtual void AddSource(string source, string hintName, in GeneratorExecutionContext context)
 		{
-			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(source, encoding: Encoding.UTF8);
+			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(source, (CSharpParseOptions)context.ParseOptions, encoding: Encoding.UTF8);
 			AddSource(tree, hintName, in context);
 		}
 
@@ -426,41 +349,6 @@ namespace Durian.Analysis
 			{
 				LogNode_Internal(syntaxTree.GetRoot(cancellationToken), hintName, NodeOutput.Node);
 			}
-		}
-
-		internal static IDiagnosticReceiver? GetDiagnosticReceiver(IDurianGenerator generator)
-		{
-			if (generator is DurianGeneratorBase durian && durian.DiagnosticReceiver is not null)
-			{
-				return durian.DiagnosticReceiver;
-			}
-
-			return null;
-		}
-
-		internal static INodeDiagnosticReceiver? GetLogReceiver(IDurianGenerator generator, bool includeDiagnostics)
-		{
-			if (includeDiagnostics)
-			{
-				if (generator is DurianGeneratorBase durian && durian.DiagnosticReceiver is not null)
-				{
-					return LoggableDiagnosticReceiver.Factory.SourceGenerator(durian, durian.DiagnosticReceiver);
-				}
-			}
-			else
-			{
-				if (generator is DurianGeneratorBase durian)
-				{
-					return durian.LogReceiver;
-				}
-
-				if (generator is ILoggableGenerator loggable)
-				{
-					return LoggableDiagnosticReceiver.Factory.Basic(loggable);
-				}
-			}
-
-			return null;
 		}
 	}
 }

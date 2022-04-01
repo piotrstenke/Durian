@@ -4,6 +4,7 @@
 using Microsoft.CodeAnalysis;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.Analysis.Cache
 {
@@ -75,7 +76,7 @@ namespace Durian.Analysis.Cache
 		/// Checks if value associated with the specified <paramref name="position"/> is cached in the context.
 		/// </summary>
 		/// <param name="position"><see cref="FileLinePositionSpan"/> the value is associated with.</param>
-		public readonly bool IsCached(FileLinePositionSpan position)
+		public bool IsCached(FileLinePositionSpan position)
 		{
 			if (!_hasData)
 			{
@@ -90,7 +91,7 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		/// <param name="position"><see cref="FileLinePositionSpan"/> the value is assigned to.</param>
 		/// <param name="value">Returned cached value.</param>
-		public readonly bool TryGetCachedValue(FileLinePositionSpan position, out T? value)
+		public bool TryGetCachedValue(FileLinePositionSpan position, [NotNullWhen(true)]out T? value)
 		{
 			if (!_hasData)
 			{

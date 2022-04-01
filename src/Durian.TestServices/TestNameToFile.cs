@@ -14,6 +14,7 @@ namespace Durian.TestServices
 	[DebuggerDisplay("TestName = {TestName}, Counter = {Counter}")]
 	public sealed class TestNameToFile : IHintNameProvider
 	{
+		private readonly object _syncRoot = new();
 		private int _counter = 0;
 		private string _current;
 		private string _testName;
@@ -32,8 +33,11 @@ namespace Durian.TestServices
 					throw new ArgumentOutOfRangeException(nameof(Counter), $"{nameof(Counter)} cannot be less than 0!");
 				}
 
-				_counter = value;
-				_current = value == 0 ? _testName : $"{_testName}_{value}";
+				lock(_syncRoot)
+				{
+					_counter = value;
+					_current = value == 0 ? _testName : $"{_testName}_{value}";
+				}
 			}
 		}
 
@@ -53,9 +57,15 @@ namespace Durian.TestServices
 
 				if (value != _testName)
 				{
-					_counter = 0;
-					_testName = value;
-					_current = _testName;
+					lock (_syncRoot)
+					{
+						if (value != _testName)
+						{
+							_counter = 0;
+							_testName = value;
+							_current = _testName;
+						}
+					}
 				}
 			}
 		}
@@ -88,7 +98,16 @@ namespace Durian.TestServices
 		/// <inheritdoc/>
 		public string GetHintName()
 		{
-			return _current;
+			lock(_syncRoot)
+			{
+				return _current;
+			}
+		}
+
+		/// <inheritdoc/>
+		public void Initialize()
+		{
+			// Do nothing by default.
 		}
 
 		/// <summary>
@@ -96,15 +115,21 @@ namespace Durian.TestServices
 		/// </summary>
 		public void Reset()
 		{
-			_current = _testName;
-			_counter = 0;
+			lock(_syncRoot)
+			{
+				_current = _testName;
+				_counter = 0;
+			}
 		}
 
 		/// <inheritdoc/>
 		public void Success()
 		{
-			_counter++;
-			_current = $"{_testName}_{_counter}";
+			lock(_syncRoot)
+			{
+				_counter++;
+				_current = $"{_testName}_{_counter}";
+			}
 		}
 
 		string IHintNameProvider.GetHintName(ISymbol symbol)

@@ -7,8 +7,13 @@ namespace Durian.Analysis
 	/// Provides a mechanism for reporting diagnostic messages to a context.
 	/// </summary>
 	/// <typeparam name="T">Type of context this <see cref="IContextualDiagnosticReceiver{T}"/> is compliant with.</typeparam>
-	public interface IContextualDiagnosticReceiver<T> : IDirectDiagnosticReceiver where T : struct
+	public interface IContextualDiagnosticReceiver<T> : IDiagnosticReceiver
 	{
+		/// <summary>
+		/// Determines whether target context is specified.
+		/// </summary>
+		bool HasContext { get; }
+
 		/// <summary>
 		/// Returns a reference to the target context.
 		/// </summary>

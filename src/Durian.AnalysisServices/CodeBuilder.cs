@@ -21,6 +21,7 @@ namespace Durian.Analysis
 	[DebuggerDisplay("{TextBuilder}")]
 	public sealed class CodeBuilder
 	{
+		private readonly IDurianGenerator? _generator;
 		private int _currentIndent;
 
 		/// <summary>
@@ -43,9 +44,25 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// The <see cref="IDurianGenerator"/> this <see cref="CodeBuilder"/> is used by.
+		/// <see cref="IDurianGenerator"/> that created this <see cref="CodeBuilder"/>.
 		/// </summary>
-		public IDurianGenerator? Generator { get; }
+		public IDurianGenerator? Generator
+		{
+			get
+			{
+				if(_generator is not null)
+				{
+					return _generator;
+				}
+
+				return PassContext?.Generator;
+			}
+		}
+
+		/// <summary>
+		/// <see cref="GeneratorPassContext"/> to use when writing data.
+		/// </summary>
+		public GeneratorPassContext? PassContext { get; }
 
 		/// <summary>
 		/// <see cref="StringBuilder"/> this <see cref="CodeBuilder"/> writes to.
@@ -83,23 +100,55 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CodeBuilder"/> class.
 		/// </summary>
-		/// <param name="sourceGenerator">The <see cref="IDurianGenerator"/> this <see cref="CodeBuilder"/> is used by.</param>
-		public CodeBuilder(IDurianGenerator sourceGenerator)
+		/// <param name="generator"><see cref="IDurianGenerator"/> that created this <see cref="CodeBuilder"/>.</param>
+		public CodeBuilder(IDurianGenerator? generator)
 		{
 			TextBuilder = new StringBuilder();
-			Generator = sourceGenerator;
+			_generator = generator;
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CodeBuilder"/> class.
 		/// </summary>
-		/// <param name="sourceGenerator">The <see cref="IDurianGenerator"/> this <see cref="CodeBuilder"/> is used by.</param>
+		/// <param name="generator"><see cref="IDurianGenerator"/> that created this <see cref="CodeBuilder"/>.</param>
 		/// <param name="builder"><see cref="StringBuilder"/> to write the data to.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-		public CodeBuilder(IDurianGenerator sourceGenerator, StringBuilder builder)
+		public CodeBuilder(IDurianGenerator? generator, StringBuilder builder)
 		{
+			if(builder is null)
+			{
+				throw new ArgumentNullException(nameof(builder));
+			}
+
 			TextBuilder = builder;
-			Generator = sourceGenerator;
+			_generator = generator;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CodeBuilder"/> class.
+		/// </summary>
+		/// <param name="context"><see cref="GeneratorPassContext"/> to use when writing data.</param>
+		public CodeBuilder(GeneratorPassContext? context)
+		{
+			PassContext = context;
+			TextBuilder = new();
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CodeBuilder"/> class.
+		/// </summary>
+		/// <param name="context"><see cref="GeneratorPassContext"/> to use when writing data.</param>
+		/// <param name="builder"><see cref="StringBuilder"/> to write the data to.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+		public CodeBuilder(GeneratorPassContext? context, StringBuilder builder)
+		{
+			if (builder is null)
+			{
+				throw new ArgumentNullException(nameof(builder));
+			}
+
+			TextBuilder = builder;
+			PassContext = context;
 		}
 
 		/// <summary>
@@ -110,7 +159,6 @@ namespace Durian.Analysis
 		{
 			TextBuilder.Append(value);
 		}
-
 
 		/// <summary>
 		/// Appends a new line character to the <see cref="TextBuilder"/>.
@@ -399,7 +447,8 @@ namespace Durian.Analysis
 		/// <inheritdoc cref="ParseSyntaxTree(CSharpParseOptions)"/>
 		public CSharpSyntaxTree ParseSyntaxTree()
 		{
-			return ParseSyntaxTree(Generator?.ParseOptions);
+			CSharpParseOptions? options = PassContext?.ParseOptions ?? Generator?.GetCurrentPassContext().ParseOptions;
+			return ParseSyntaxTree(options);
 		}
 
 		/// <summary>
@@ -573,12 +622,22 @@ namespace Durian.Analysis
 		/// </exception>
 		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, CancellationToken cancellationToken = default)
 		{
-			if (Generator is null)
+			ICompilationData? targetCompilation;
+
+			if(PassContext is not null)
 			{
-				throw new InvalidOperationException($"If the {nameof(Generator)} property is null, a {nameof(INamespaceSymbol)} of the assembly's global namespace must be explicitly provided using one of WriteUsings 3-parameter overloads.");
+				targetCompilation = PassContext.TargetCompilation;
+			}
+			else if(_generator is not null)
+			{
+				targetCompilation = _generator.GetCurrentPassContext().TargetCompilation; 
+			}
+			else
+			{
+				throw new InvalidOperationException($"If both the {nameof(Generator)} and {nameof(PassContext)} are null, a {nameof(INamespaceSymbol)} of the assembly's global namespace must be explicitly provided using one of WriteUsings 3-parameter overloads.");
 			}
 
-			WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, Generator.TargetCompilation, true, cancellationToken));
+			WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, targetCompilation, true, cancellationToken));
 		}
 
 		/// <summary>

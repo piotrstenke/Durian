@@ -4,6 +4,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
+using System.Collections.Generic;
 
 namespace Durian.Analysis
 {
@@ -81,6 +82,40 @@ namespace Durian.Analysis
 			public static Contextual<CompilationAnalysisContext> Compilation(CompilationAnalysisContext context)
 			{
 				return new Contextual<CompilationAnalysisContext>((context, diag) => context.ReportDiagnostic(diag), context);
+			}
+
+			/// <summary>
+			/// Creates a new instance of the <see cref="DiagnosticReceiver.Composite"/> class.
+			/// </summary>
+			public static Composite Composite()
+			{
+				return new Composite();
+			}
+
+			/// <summary>
+			/// Creates a new instance of the <see cref="DiagnosticReceiver.Composite"/> class.
+			/// </summary>
+			/// <param name="diagnosticReceivers">A collection of <see cref="IDiagnosticReceiver"/>s to add to the current resolver.</param>
+			/// <exception cref="ArgumentException">Collection contains <see langword="null"/> objects. -or- Collection contains <see cref="IDiagnosticReceiver"/>s that are already present in the current receiver.</exception>
+			public static Composite Composite(params IDiagnosticReceiver[]? diagnosticReceivers)
+			{
+				if(diagnosticReceivers is null)
+				{
+					return Composite();
+				}
+
+				return new Composite(diagnosticReceivers);
+			}
+
+			/// <summary>
+			/// Creates a new instance of the <see cref="DiagnosticReceiver.Composite"/> class.
+			/// </summary>
+			/// <param name="diagnosticReceivers">A collection of <see cref="IDiagnosticReceiver"/>s to add to the current resolver.</param>
+			/// <exception cref="ArgumentNullException"><paramref name="diagnosticReceivers"/> is <see langword="null"/>.</exception>
+			/// <exception cref="ArgumentException">Collection contains <see langword="null"/> objects. -or- Collection contains <see cref="IDiagnosticReceiver"/>s that are already present in the current receiver.</exception>
+			public static Composite Composite(IEnumerable<IDiagnosticReceiver> diagnosticReceivers)
+			{
+				return new Composite(diagnosticReceivers);
 			}
 
 			/// <summary>
@@ -164,7 +199,7 @@ namespace Durian.Analysis
 			/// Creates a new instance of the <see cref="ReadonlyContextual{T}"/> class that accepts only <see cref="GeneratorExecutionContext"/>.
 			/// </summary>
 			/// <param name="context">Context of this <see cref="ReadonlyContextual{T}"/>.</param>
-			public static ReadonlyContextual<GeneratorExecutionContext> SourceGenerator(GeneratorExecutionContext context)
+			public static ReadonlyContextual<GeneratorExecutionContext> SourceGenerator(in GeneratorExecutionContext context)
 			{
 				return new ReadonlyContextual<GeneratorExecutionContext>((in GeneratorExecutionContext context, Diagnostic diag) => context.ReportDiagnostic(diag), context);
 			}

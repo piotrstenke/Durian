@@ -890,7 +890,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(method));
 			}
 
-			string name = substitution.HasFlag(GenericSubstitution.Arguments)
+			string name = substitution.HasFlag(GenericSubstitution.TypeArguments)
 				? GetGenericName(method.TypeArguments, method.Name)
 				: GetGenericName(method.TypeParameters, method.Name, substitution.HasFlag(GenericSubstitution.Variance));
 
@@ -917,7 +917,7 @@ namespace Durian.Analysis.Extensions
 
 			string typeName = type.TypeToKeyword() ?? type.Name;
 
-			string name = substitution.HasFlag(GenericSubstitution.Arguments)
+			string name = substitution.HasFlag(GenericSubstitution.TypeArguments)
 				? GetGenericName(type.TypeArguments, typeName)
 				: GetGenericName(type.TypeParameters, typeName, substitution.HasFlag(GenericSubstitution.Variance));
 
@@ -1323,7 +1323,7 @@ namespace Durian.Analysis.Extensions
 
 			StringBuilder sb = new();
 
-			ImmutableArray<IParameterSymbol> parameters = substitution.HasFlag(GenericSubstitution.Arguments) || method.ConstructedFrom is null
+			ImmutableArray<IParameterSymbol> parameters = substitution.HasFlag(GenericSubstitution.TypeArguments) || method.ConstructedFrom is null
 				? method.Parameters
 				: method.ConstructedFrom.Parameters;
 
@@ -2153,14 +2153,14 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
 		/// <param name="target"><see cref="ISymbol"/> to check if the <paramref name="symbol"/> is generated from.</param>
-		/// <param name="compilation"><see cref="CompilationDataWithSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
+		/// <param name="compilation"><see cref="CompilationWithEssentialSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="symbol"/> is <see langword="null"/>. -or-
 		/// <paramref name="target"/> is <see langword="null"/>. -or-
 		/// <paramref name="compilation"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="InvalidOperationException">Target <paramref name="compilation"/> has errors.</exception>
-		public static bool IsGeneratedFrom(this ISymbol symbol, ISymbol target, CompilationDataWithSymbols compilation)
+		public static bool IsGeneratedFrom(this ISymbol symbol, ISymbol target, CompilationWithEssentialSymbols compilation)
 		{
 			return IsGeneratedFrom(symbol, target?.ToString()!, compilation);
 		}
@@ -2170,14 +2170,14 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
 		/// <param name="target"><see cref="string"/> representing a <see cref="ISymbol"/> to check if the <paramref name="symbol"/> was generated from.</param>
-		/// <param name="compilation"><see cref="CompilationDataWithSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
+		/// <param name="compilation"><see cref="CompilationWithEssentialSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="symbol"/> is <see langword="null"/>. -or-
 		/// <paramref name="target"/> is <see langword="null"/>. -or-
 		/// <paramref name="compilation"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="InvalidOperationException">Target <paramref name="compilation"/> has errors.</exception>
-		public static bool IsGeneratedFrom(this ISymbol symbol, string target, CompilationDataWithSymbols compilation)
+		public static bool IsGeneratedFrom(this ISymbol symbol, string target, CompilationWithEssentialSymbols compilation)
 		{
 			if (symbol is null)
 			{
@@ -2984,13 +2984,13 @@ namespace Durian.Analysis.Extensions
 		{
 			if (type.IsValueType && type.ConstructedFrom is not null && type.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T && type.TypeArguments.Length > 0)
 			{
-				string name = type.TypeArguments[0].GetGenericName(GenericSubstitution.Arguments);
+				string name = type.TypeArguments[0].GetGenericName(GenericSubstitution.TypeArguments);
 				sb.Append(AnalysisUtilities.TypeToKeyword(name));
 				sb.Append('?');
 			}
 			else
 			{
-				string name = type.TypeArguments.Length > 0 ? type.GetGenericName(GenericSubstitution.Arguments) : type.Name;
+				string name = type.TypeArguments.Length > 0 ? type.GetGenericName(GenericSubstitution.TypeArguments) : type.Name;
 				sb.Append(AnalysisUtilities.TypeToKeyword(name));
 
 				if (type.NullableAnnotation == NullableAnnotation.Annotated)

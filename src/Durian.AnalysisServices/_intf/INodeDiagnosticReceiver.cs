@@ -10,7 +10,7 @@ namespace Durian.Analysis
 	/// <summary>
 	/// <see cref="IDiagnosticReceiver"/> that reports <see cref="Diagnostic"/>s for a specified <see cref="CSharpSyntaxNode"/>.
 	/// </summary>
-	public interface INodeDiagnosticReceiver : IDirectDiagnosticReceiver, IDiagnosticReceiverWithBuffer
+	public interface INodeDiagnosticReceiver : IDiagnosticReceiverWithBuffer
 	{
 		/// <summary>
 		/// Sets the <see cref="CSharpSyntaxNode"/> that the diagnostics will be reported for.

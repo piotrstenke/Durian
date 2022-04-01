@@ -4,6 +4,7 @@
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
 using Durian.Analysis.Logging;
+using Durian.Analysis.Filters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System;

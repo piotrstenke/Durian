@@ -19,7 +19,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Type arguments are used instead of parameters.
 		/// </summary>
-		Arguments = 1,
+		TypeArguments = 1,
 
 		/// <summary>
 		/// If the symbol is a method, its parameter list is included.

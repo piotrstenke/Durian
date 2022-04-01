@@ -3,12 +3,15 @@
 
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
+using Durian.Analysis.Filters;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -16,89 +19,39 @@ using System.Threading;
 namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
-	/// <c>DefaultParam</c>-specific <see cref="SyntaxFilterValidator{TCompilation, TSyntaxReceiver, TSyntax, TSymbol, TData}"/>.
+	/// <c>DefaultParam</c>-specific <see cref="SyntaxValidator"/>.
 	/// </summary>
-	/// <typeparam name="TSyntax">Type of <see cref="CSharpSyntaxNode"/> this <see cref="DefaultParamFilter{TSyntax, TSymbol, TData}"/> uses.</typeparam>
-	/// <typeparam name="TSymbol">Type of <see cref="ISyntaxFilter"/> this <see cref="DefaultParamFilter{TSyntax, TSymbol, TData}"/> uses.</typeparam>
-	/// <typeparam name="TData">Type of <see cref="IMemberData"/> this <see cref="DefaultParamFilter{TSyntax, TSymbol, TData}"/> uses.</typeparam>
-	public abstract class DefaultParamFilter<TSyntax, TSymbol, TData> : CachedSyntaxFilterValidator<DefaultParamCompilationData, DefaultParamSyntaxReceiver, TSyntax, TSymbol, TData>.WithDiagnostics, IDefaultParamFilter
-		where TSyntax : CSharpSyntaxNode
-		where TSymbol : class, ISymbol
-		where TData : IDefaultParamTarget
+	public abstract class DefaultParamFilter : CachedSyntaxValidator, IDefaultParamFilter
 	{
-		/// <inheritdoc/>
-		public new DefaultParamGenerator Generator => (base.Generator as DefaultParamGenerator)!;
-
 		/// <summary>
-		/// Initializes a new instance of the <see cref="DefaultParamFilter{TSyntax, TSymbol, TData}"/> class.
+		/// Initializes a new instance of the <see cref="DefaultParamFilter"/> class.
 		/// </summary>
-		/// <param name="generator"><see cref="DefaultParamGenerator"/> that is the target of this filter.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		protected DefaultParamFilter(DefaultParamGenerator generator) : base(generator)
+		protected DefaultParamFilter()
 		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="DefaultParamFilter{TSyntax, TSymbol, TData}"/> class.
-		/// </summary>
-		/// <param name="generator"><see cref="DefaultParamGenerator"/> that is the target of this filter.</param>
-		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that is used to create a hint name for the generated source.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="hintNameProvider"/> is <see langword="null"/>.</exception>
-		protected DefaultParamFilter(DefaultParamGenerator generator, IHintNameProvider hintNameProvider) : base(generator, hintNameProvider)
-		{
-		}
-
-		/// <inheritdoc/>
-		public sealed override IEnumerator<TData> GetEnumerator()
-		{
-			EnsureInitialized();
-
-			return Mode switch
-			{
-				FilterMode.Diagnostics => new FilterEnumeratorWithDiagnostics<TData>(this, Generator.TargetCompilation!, this, Generator.DiagnosticReceiver!),
-				FilterMode.Logs => new DefaultParamFilterEnumerator<TData>(this, Generator.LogReceiver),
-				FilterMode.Both => new DefaultParamFilterEnumerator<TData>(this, LoggableDiagnosticReceiver.Factory.SourceGenerator(Generator, Generator.DiagnosticReceiver!)),
-				_ => new FilterEnumerator<TData>(this, Generator.TargetCompilation!, this)
-			};
-		}
-
-		/// <inheritdoc/>
-		public sealed override IEnumerator<TData> GetEnumerator(in CachedGeneratorExecutionContext<TData> context)
-		{
-			EnsureInitialized();
-
-			ref readonly CachedData<TData> cache = ref context.GetCachedData();
-
-			return Mode switch
-			{
-				FilterMode.Diagnostics => new CachedFilterEnumeratorWithDiagnostics<TData>(this, Generator.TargetCompilation!, this, Generator.DiagnosticReceiver!, in cache),
-				FilterMode.Logs => new CachedDefaultParamFilterEnumerator<TData>(this, Generator.LogReceiver, in cache),
-				FilterMode.Both => new CachedDefaultParamFilterEnumerator<TData>(this, LoggableDiagnosticReceiver.Factory.SourceGenerator(Generator, Generator.DiagnosticReceiver!), in cache),
-				_ => new CachedFilterEnumerator<TData>(this, Generator.TargetCompilation!, this, in cache)
-			};
 		}
 
 		/// <inheritdoc/>
 		[Obsolete("TypeParameterContainer is required for proper analysis. Use GetValidationData with a TypeParameterContainer parameter instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		public sealed override bool GetValidationData(
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
-			TSyntax node,
-			DefaultParamCompilationData compilation,
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
 			[NotNullWhen(true)] out SemanticModel? semanticModel,
-			[NotNullWhen(true)] out TSymbol? symbol,
+			[NotNullWhen(true)] out ISymbol? symbol,
 			CancellationToken cancellationToken = default
 		)
 		{
-			return GetValidationData(node, compilation, out semanticModel, out symbol, out _, cancellationToken);
+			return GetValidationData(node, GetDPCompilation(compilation), out semanticModel, out symbol, out _, cancellationToken);
 		}
 
 		/// <inheritdoc/>
 		public bool GetValidationData(
-			TSyntax node,
+			CSharpSyntaxNode node,
 			DefaultParamCompilationData compilation,
 			[NotNullWhen(true)] out SemanticModel? semanticModel,
-			[NotNullWhen(true)] out TSymbol? symbol,
+			[NotNullWhen(true)] out ISymbol? symbol,
 			out TypeParameterContainer typeParameters,
 			CancellationToken cancellationToken = default
 		)
@@ -109,7 +62,7 @@ namespace Durian.Analysis.DefaultParam
 
 			if (TypeParametersAreValid(in typeParameters, node))
 			{
-				symbol = s.GetDeclaredSymbol(node, cancellationToken) as TSymbol;
+				symbol = s.GetDeclaredSymbol(node, cancellationToken);
 
 				if (symbol is not null)
 				{
@@ -124,348 +77,243 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public sealed override bool ValidateAndCreate(
-			TSyntax node,
-			DefaultParamCompilationData compilation,
-			[NotNullWhen(true)] out TData? data,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken = default
-		)
-		{
-			if (!GetValidationData(node, compilation, out SemanticModel? semanticModel, out TSymbol? symbol, out TypeParameterContainer typeParameters, cancellationToken))
-			{
-				data = default;
-				return false;
-			}
-
-			return ValidateAndCreate(node, compilation, semanticModel, symbol, in typeParameters, out data, diagnosticReceiver, cancellationToken);
-		}
-
-		/// <summary>
-		/// Validates the specified <paramref name="node"/> and returns a new instance of <see cref="IMemberData"/> if the validation was a success.
-		/// </summary>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to validate.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the target <paramref name="node"/>.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="node"/>.</param>
-		/// <param name="symbol"><see cref="ISymbol"/> that is represented by the <paramref name="node"/>.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="node"/>'s type parameters.</param>
-		/// <param name="data"><see cref="IMemberData"/> that is returned if the validation succeeds.</param>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the validation was a success, <see langword="false"/> otherwise.</returns>
 		public abstract bool ValidateAndCreate(
-			TSyntax node,
+			CSharpSyntaxNode node,
 			DefaultParamCompilationData compilation,
 			SemanticModel semanticModel,
-			TSymbol symbol,
+			ISymbol symbol,
 			in TypeParameterContainer typeParameters,
-			[NotNullWhen(true)] out TData? data,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			IDiagnosticReceiver diagnosticReceiver,
 			CancellationToken cancellationToken = default
 		);
 
-		/// <inheritdoc/>
-		[Obsolete("TypeParameterContainer is required for proper analysis. Use ValidateAndCreate with a TypeParameterContainer parameter instead.")]
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-		public sealed override bool ValidateAndCreate(
-#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
-			TSyntax node,
-			DefaultParamCompilationData compilation,
-			SemanticModel semanticModel,
-			TSymbol symbol,
-			[NotNullWhen(true)] out TData? data,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken = default
-		)
+		public bool ValidateAndCreate(CSharpSyntaxNode node, DefaultParamCompilationData compilation, [NotNullWhen(true)] out IDefaultParamTarget? data, CancellationToken cancellationToken = default)
 		{
-			TypeParameterContainer typeParameters = GetTypeParameters(GetTypeParameterList(node), semanticModel, compilation, cancellationToken);
+			throw new NotImplementedException();
+		}
 
-			return ValidateAndCreate(node, compilation, semanticModel, symbol, in typeParameters, out data, diagnosticReceiver, cancellationToken);
+		public bool ValidateAndCreate(CSharpSyntaxNode node, DefaultParamCompilationData compilation, [NotNullWhen(true)] out IDefaultParamTarget? data, IDiagnosticReceiver diagnosticReceiver, CancellationToken cancellationToken = default)
+		{
+			throw new NotImplementedException();
 		}
 
 		/// <inheritdoc/>
-		public sealed override bool ValidateAndCreate(
-			TSyntax node,
-			DefaultParamCompilationData compilation,
-			[NotNullWhen(true)] out TData? data,
-			CancellationToken cancellationToken = default
-		)
-		{
-			if (!GetValidationData(node, compilation, out SemanticModel? semanticModel, out TSymbol? symbol, out TypeParameterContainer typeParameters, cancellationToken))
-			{
-				data = default;
-				return false;
-			}
-
-			return ValidateAndCreate(node, compilation, semanticModel, symbol, in typeParameters, out data, cancellationToken);
-		}
-
-		/// <summary>
-		/// Validates the specified <paramref name="node"/> and returns a new instance of <see cref="IMemberData"/> if the validation was a success.
-		/// </summary>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to validate.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the target <paramref name="node"/>.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="node"/>.</param>
-		/// <param name="symbol"><see cref="ISymbol"/> that is represented by the <paramref name="node"/>.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="node"/>'s type parameters.</param>
-		/// <param name="data"><see cref="IMemberData"/> that is returned if the validation succeeds.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the validation was a success, <see langword="false"/> otherwise.</returns>
 		public abstract bool ValidateAndCreate(
-			TSyntax node,
+			CSharpSyntaxNode node,
 			DefaultParamCompilationData compilation,
 			SemanticModel semanticModel,
-			TSymbol symbol,
+			ISymbol symbol,
 			in TypeParameterContainer typeParameters,
-			[NotNullWhen(true)] out TData? data,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
 			CancellationToken cancellationToken = default
 		);
 
 		/// <inheritdoc/>
-		[Obsolete("TypeParameterContainer is required for proper analysis. Use ValidateAndCreate with a TypeParameterContainer parameter instead.")]
+		[Obsolete("Use ValidateAndCreate with IDefaultParamTarget as return instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		public sealed override bool ValidateAndCreate(
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
-			TSyntax node,
-			DefaultParamCompilationData compilation,
-			SemanticModel semanticModel,
-			TSymbol symbol,
-			[NotNullWhen(true)] out TData? data,
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			[NotNullWhen(true)] out IMemberData? data,
+			IDiagnosticReceiver diagnosticReceiver,
 			CancellationToken cancellationToken = default
 		)
 		{
-			TypeParameterContainer typeParameters = GetTypeParameters(GetTypeParameterList(node), semanticModel, compilation, cancellationToken);
+			DefaultParamCompilationData c = GetDPCompilation(compilation);
 
-			return ValidateAndCreate(node, compilation, semanticModel, symbol, in typeParameters, out data, cancellationToken);
-		}
-
-		IEnumerable<IMemberData> ICachedGeneratorSyntaxFilter<IDefaultParamTarget>.Filtrate(in CachedGeneratorExecutionContext<IDefaultParamTarget> context)
-		{
-			return Filtrate(context.CastContext<TData>()).Cast<IMemberData>();
-		}
-
-		IEnumerator<IMemberData> ICachedGeneratorSyntaxFilter<IDefaultParamTarget>.GetEnumerator(in CachedGeneratorExecutionContext<IDefaultParamTarget> context)
-		{
-			IEnumerator<TData> enumerator = GetEnumerator(context.CastContext<TData>());
-
-			return Yield();
-
-			IEnumerator<IMemberData> Yield()
-			{
-				while (enumerator.MoveNext())
-				{
-					yield return enumerator.Current;
-				}
-
-				enumerator.Dispose();
-			}
-		}
-
-		bool IDefaultParamFilter.GetValidationData(
-			CSharpSyntaxNode node,
-			DefaultParamCompilationData compilation,
-			[NotNullWhen(true)] out SemanticModel? semanticModel,
-			[NotNullWhen(true)] out ISymbol? symbol,
-			[NotNullWhen(true)] out TypeParameterContainer typeParameters,
-			CancellationToken cancellationToken
-		)
-		{
-			if (node is not TSyntax n)
-			{
-				semanticModel = default;
-				symbol = default;
-				typeParameters = default;
-				return false;
-			}
-
-			bool isValid = GetValidationData(n, compilation, out semanticModel, out TSymbol? s, out typeParameters, cancellationToken);
-			symbol = s;
-			return isValid;
-		}
-
-		bool IDefaultParamFilter.ValidateAndCreate(
-			CSharpSyntaxNode node,
-			DefaultParamCompilationData compilation,
-			[NotNullWhen(true)] out IDefaultParamTarget? data,
-			CancellationToken cancellationToken
-		)
-		{
-			if (node is not TSyntax n)
+			if (!GetValidationData(node, c, out SemanticModel? semanticModel, out ISymbol? symbol, out TypeParameterContainer typeParameters, cancellationToken))
 			{
 				data = default;
 				return false;
 			}
 
-			bool isValid = ValidateAndCreate(n, compilation, out TData? d, cancellationToken);
-			data = d;
-			return isValid;
-		}
-
-		bool IDefaultParamFilter.ValidateAndCreate(
-			CSharpSyntaxNode node,
-			DefaultParamCompilationData compilation,
-			SemanticModel semanticModel,
-			ISymbol symbol,
-			in TypeParameterContainer typeParameters,
-			[NotNullWhen(true)] out IDefaultParamTarget? data,
-			CancellationToken cancellationToken
-		)
-		{
-			if (node is not TSyntax n || symbol is not TSymbol s)
-			{
-				data = default;
-				return false;
-			}
-
-			bool isValid = ValidateAndCreate(n, compilation, semanticModel, s, in typeParameters, out TData? d, cancellationToken);
-			data = d;
-			return isValid;
-		}
-
-		bool IDefaultParamFilter.ValidateAndCreate(
-			CSharpSyntaxNode node,
-			DefaultParamCompilationData compilation,
-			[NotNullWhen(true)] out IDefaultParamTarget? data,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken
-		)
-		{
-			if (node is not TSyntax n)
-			{
-				data = default;
-				return false;
-			}
-
-			bool isValid = ValidateAndCreate(n, compilation, out TData? d, cancellationToken);
-			data = d;
-			return isValid;
-		}
-
-		bool IDefaultParamFilter.ValidateAndCreate(
-			CSharpSyntaxNode node,
-			DefaultParamCompilationData compilation,
-			SemanticModel semanticModel,
-			ISymbol symbol,
-			in TypeParameterContainer typeParameters,
-			[NotNullWhen(true)] out IDefaultParamTarget? data,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken
-		)
-		{
-			if (node is not TSyntax n || symbol is not TSymbol s)
-			{
-				data = default;
-				return false;
-			}
-
-			bool isValid = ValidateAndCreate(n, compilation, semanticModel, s, in typeParameters, out TData? d, diagnosticReceiver, cancellationToken);
-			data = d;
-			return isValid;
-		}
-
-		bool INodeValidatorWithDiagnostics<IDefaultParamTarget>.ValidateAndCreate(
-			CSharpSyntaxNode node,
-			ICompilationData compilation,
-			[NotNullWhen(true)] out IDefaultParamTarget? data,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken
-		)
-		{
-			if (node is not TSyntax n || compilation is not DefaultParamCompilationData c)
-			{
-				data = default;
-				return false;
-			}
-
-			bool isValid = ValidateAndCreate(n, c, out TData? d, diagnosticReceiver, cancellationToken);
-			data = d;
-			return isValid;
-		}
-
-		bool INodeValidatorWithDiagnostics<IDefaultParamTarget>.ValidateAndCreate(
-			CSharpSyntaxNode node,
-			ICompilationData compilation,
-			SemanticModel semanticModel,
-			ISymbol symbol,
-			[NotNullWhen(true)] out IDefaultParamTarget? data,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken
-		)
-		{
-			if (node is not TSyntax n || compilation is not DefaultParamCompilationData c || symbol is not TSymbol s)
-			{
-				data = default;
-				return false;
-			}
-
-			bool isValid = ValidateAndCreate(n, c, semanticModel, s, out TData? d, diagnosticReceiver, cancellationToken);
-			data = d;
-			return isValid;
-		}
-
-		bool INodeValidator<IDefaultParamTarget>.ValidateAndCreate(
-			CSharpSyntaxNode node,
-			ICompilationData compilation,
-			[NotNullWhen(true)] out IDefaultParamTarget? data,
-			CancellationToken cancellationToken
-		)
-		{
-			if (node is not TSyntax n || compilation is not DefaultParamCompilationData c)
-			{
-				data = default;
-				return false;
-			}
-
-			bool isValid = ValidateAndCreate(n, c, out TData? d, cancellationToken);
-			data = d;
-			return isValid;
-		}
-
-		bool INodeValidator<IDefaultParamTarget>.ValidateAndCreate(
-			CSharpSyntaxNode node,
-			ICompilationData compilation,
-			SemanticModel semanticModel,
-			ISymbol symbol,
-			[NotNullWhen(true)] out IDefaultParamTarget? data,
-			CancellationToken cancellationToken
-		)
-		{
-			if (node is not TSyntax n || compilation is not DefaultParamCompilationData c || symbol is not TSymbol s)
-			{
-				data = default;
-				return false;
-			}
-
-			bool isValid = ValidateAndCreate(n, c, semanticModel, s, out TData? d, cancellationToken);
-			data = d;
+			bool isValid = ValidateAndCreate(node, c, semanticModel, symbol, in typeParameters, out IDefaultParamTarget? target, diagnosticReceiver, cancellationToken);
+			data = target;
 			return isValid;
 		}
 
 		/// <inheritdoc/>
-		protected sealed override DefaultParamCompilationData? CreateCompilation(in GeneratorExecutionContext context)
+		[Obsolete("Use ValidateAndCreate with IDefaultParamTarget as return instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		public sealed override bool ValidateAndCreate(
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			[NotNullWhen(true)] out IMemberData? data,
+			IDiagnosticReceiver diagnosticReceiver,
+			CancellationToken cancellationToken = default
+		)
 		{
-			if (context.Compilation is not CSharpCompilation compilation)
+			DefaultParamCompilationData c = GetDPCompilation(compilation);
+			TypeParameterContainer typeParameters = GetTypeParameters(GetTypeParameterList(node), semanticModel, c, cancellationToken);
+
+			bool isValid = ValidateAndCreate(node, c, semanticModel, symbol, in typeParameters, out IDefaultParamTarget? target, diagnosticReceiver, cancellationToken);
+			data = target;
+			return isValid;
+		}
+
+		/// <inheritdoc/>
+		[Obsolete("Use ValidateAndCreate with IDefaultParamTarget as return instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		public sealed override bool ValidateAndCreate(
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			[NotNullWhen(true)] out IMemberData? data,
+			CancellationToken cancellationToken = default
+		)
+		{
+			DefaultParamCompilationData c = GetDPCompilation(compilation);
+
+			if (!GetValidationData(node, c, out SemanticModel? semanticModel, out ISymbol? symbol, out TypeParameterContainer typeParameters, cancellationToken))
 			{
-				return null;
+				data = default;
+				return false;
 			}
 
-			return new DefaultParamCompilationData(compilation);
+			bool isValid = ValidateAndCreate(node, c, semanticModel, symbol, in typeParameters, out IDefaultParamTarget? target, cancellationToken);
+			data = target;
+			return isValid;
+		}
+
+		/// <inheritdoc/>
+		[Obsolete("Use ValidateAndCreate with IDefaultParamTarget as return instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		public sealed override bool ValidateAndCreate(
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			[NotNullWhen(true)] out IMemberData? data,
+			CancellationToken cancellationToken = default
+		)
+		{
+			DefaultParamCompilationData c = GetDPCompilation(compilation);
+			TypeParameterContainer typeParameters = GetTypeParameters(GetTypeParameterList(node), semanticModel, c, cancellationToken);
+
+			bool isValid = ValidateAndCreate(node, c, semanticModel, symbol, in typeParameters, out IDefaultParamTarget? target, cancellationToken);
+			data = target;
+			return isValid;
 		}
 
 		/// <summary>
 		/// Returns a <see cref="TypeParameterListSyntax"/> associated with the specified <paramref name="node"/>.
 		/// </summary>
-		/// <param name="node"><typeparamref name="TSyntax"/> to get the <see cref="TypeParameterListSyntax"/> associated with.</param>
-		protected abstract TypeParameterListSyntax? GetTypeParameterList(TSyntax node);
+		/// <param name="node"><see cref="CSharpSyntaxNode"/> to get the <see cref="TypeParameterListSyntax"/> associated with.</param>
+		protected abstract TypeParameterListSyntax? GetTypeParameterList(CSharpSyntaxNode node);
 
 		/// <summary>
 		/// Determines whether the collected <see cref="TypeParameterContainer"/> is valid for analysis.
 		/// </summary>
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> to check if is valid for analysis.</param>
 		/// <param name="node">Current <see cref="CSharpSyntaxNode"/>.</param>
-		protected virtual bool TypeParametersAreValid(in TypeParameterContainer typeParameters, TSyntax node)
+		protected virtual bool TypeParametersAreValid(in TypeParameterContainer typeParameters, CSharpSyntaxNode node)
 		{
 			return typeParameters.HasDefaultParams;
+		}
+
+		bool ISyntaxValidatorWithDiagnostics<IDefaultParamTarget>.ValidateAndCreate(
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			IDiagnosticReceiver diagnosticReceiver,
+			CancellationToken cancellationToken
+		)
+		{
+			bool isValid = ValidateAndCreate(node, GetDPCompilation(compilation), out IMemberData? target, diagnosticReceiver, cancellationToken);
+			data = target as IDefaultParamTarget;
+			return isValid;
+		}
+
+		bool ISyntaxValidatorWithDiagnostics<IDefaultParamTarget>.ValidateAndCreate(
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			IDiagnosticReceiver diagnosticReceiver,
+			CancellationToken cancellationToken
+		)
+		{
+			bool isValid = ValidateAndCreate(node, GetDPCompilation(compilation), semanticModel, symbol, out IMemberData? target, diagnosticReceiver, cancellationToken);
+			data = target as IDefaultParamTarget;
+			return isValid;
+		}
+
+		bool ISyntaxValidator<IDefaultParamTarget>.ValidateAndCreate(
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
+		{
+			bool isValid = ValidateAndCreate(node, GetDPCompilation(compilation), out IMemberData? target, cancellationToken);
+			data = target as IDefaultParamTarget;
+			return isValid;
+		}
+
+		bool ISyntaxValidator<IDefaultParamTarget>.ValidateAndCreate(
+			CSharpSyntaxNode node,
+			ICompilationData compilation,
+			SemanticModel semanticModel,
+			ISymbol symbol,
+			[NotNullWhen(true)] out IDefaultParamTarget? data,
+			CancellationToken cancellationToken
+		)
+		{
+			bool isValid = ValidateAndCreate(node, GetDPCompilation(compilation), semanticModel, symbol, out IMemberData? target, cancellationToken);
+			data = target as IDefaultParamTarget;
+			return isValid;
+		}
+
+		IEnumerable<IMemberData> ICachedGeneratorSyntaxFilter<IDefaultParamTarget>.Filtrate(ICachedGeneratorPassContext<IDefaultParamTarget> context)
+		{
+			if(context is ICachedGeneratorPassContext<IMemberData> cache)
+			{
+				return Filtrate(cache);
+			}
+
+			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
+			{
+				return Array.Empty<IMemberData>();
+			}
+
+			return Yield();
+
+			IEnumerable<IMemberData> Yield()
+			{
+				foreach (CSharpSyntaxNode node in list)
+				{
+					if (node is null)
+					{
+						continue;
+					}
+
+					if(context.OriginalContext.TryGetCachedValue(node, out IDefaultParamTarget? target))
+					{
+						yield return target;
+					}
+
+					if(ValidateAndCreate(node, context.TargetCompilation, out IMemberData? data, context.CancellationToken))
+					{
+						yield return (IDefaultParamTarget)data;
+					}
+				}
+			}
+		}
+
+		IEnumerator<IMemberData> ICachedGeneratorSyntaxFilter<IDefaultParamTarget>.GetEnumerator(ICachedGeneratorPassContext<IDefaultParamTarget> context)
+		{
+			throw new NotImplementedException();
 		}
 
 		private static TypeParameterContainer GetTypeParameters(
@@ -481,6 +329,16 @@ namespace Durian.Analysis.DefaultParam
 			}
 
 			return new TypeParameterContainer(typeParameters.Parameters.Select(p => TypeParameterData.CreateFrom(p, semanticModel, compilation, cancellationToken)));
+		}
+
+		private static DefaultParamCompilationData GetDPCompilation(ICompilationData compilation)
+		{
+			if(compilation is DefaultParamCompilationData c)
+			{
+				return c;
+			}
+
+			return new DefaultParamCompilationData(compilation.Compilation);
 		}
 	}
 }

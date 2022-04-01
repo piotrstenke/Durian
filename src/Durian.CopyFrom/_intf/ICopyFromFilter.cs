@@ -8,7 +8,7 @@ namespace Durian.Analysis.CopyFrom
 	/// <summary>
 	/// Filtrates and validates nodes collected by a <see cref="CopyFromSyntaxReceiver"/>.
 	/// </summary>
-	public interface ICopyFromFilter : ICachedGeneratorSyntaxFilterWithDiagnostics<ICopyFromMember>
+	public interface ICopyFromFilter : ICachedGeneratorSyntaxFilterWithDiagnostics<ICopyFromMember>, INodeValidatorWithDiagnostics<ICopyFromMember>, INodeProvider
 	{
 		/// <summary>
 		/// <see cref="CopyFromGenerator"/> that created this filter.

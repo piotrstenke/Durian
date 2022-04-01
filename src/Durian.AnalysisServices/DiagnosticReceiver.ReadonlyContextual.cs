@@ -3,6 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.Analysis
 {
@@ -17,7 +18,9 @@ namespace Durian.Analysis
 
 			private T _context;
 
-			private bool _contextIsSet;
+			/// <inheritdoc/>
+			[MemberNotNullWhen(true, nameof(_context))]
+			public bool HasContext { get; private set; }
 
 			/// <inheritdoc cref="ReadonlyContextual(ReportAction.ReadonlyDirectContextual{T}, in T)"/>
 			public ReadonlyContextual(ReportAction.ReadonlyDirectContextual<T> action)
@@ -45,7 +48,7 @@ namespace Durian.Analysis
 
 				_action = action;
 				_context = context;
-				_contextIsSet = true;
+				HasContext = true;
 			}
 
 			/// <summary>
@@ -55,13 +58,14 @@ namespace Durian.Analysis
 			public ref readonly T GetContext()
 			{
 				CheckContext();
+
 				return ref _context;
 			}
 
 			/// <inheritdoc/>
 			public void RemoveContext()
 			{
-				_contextIsSet = false;
+				HasContext = false;
 				_context = default;
 			}
 
@@ -88,12 +92,13 @@ namespace Durian.Analysis
 			public void SetContext(in T context)
 			{
 				_context = context;
-				_contextIsSet = true;
+				HasContext = true;
 			}
 
+			[MemberNotNull(nameof(_context))]
 			private void CheckContext()
 			{
-				if (!_contextIsSet)
+				if (!HasContext)
 				{
 					throw new InvalidOperationException("Target context not set!");
 				}

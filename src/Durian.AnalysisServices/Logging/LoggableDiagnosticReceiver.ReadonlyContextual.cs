@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis;
 using System;
+using Microsoft.CodeAnalysis;
+using Durian.Analysis.Filters;
 
 namespace Durian.Analysis.Logging
 {
@@ -41,7 +42,7 @@ namespace Durian.Analysis.Logging
 			/// <param name="generator"><see cref="ILoggableGenerator"/> that will log the received <see cref="Diagnostic"/>s.</param>
 			/// <param name="action"><see cref="ReportAction.ReadonlyDirectContextual{T}"/> to be performed when the <see cref="ReportDiagnostic(Diagnostic)"/> method is called.</param>
 			/// <param name="context">Context of this <see cref="DiagnosticReceiver.ReadonlyContextual{T}"/>.</param>
-			/// <exception cref="ArgumentNullException"><paramref name="action"/> is <see langword="null"/>.</exception>
+			/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="action"/> is <see langword="null"/>.</exception>
 			public ReadonlyContextual(ILoggableGenerator generator, ReportAction.ReadonlyDirectContextual<T> action, in T context) : base(generator)
 			{
 				_diagnosticReceiver = new(action, in context);
@@ -52,8 +53,14 @@ namespace Durian.Analysis.Logging
 			/// </summary>
 			/// <param name="generator"><see cref="ILoggableGenerator"/> that will log the received <see cref="Diagnostic"/>s.</param>
 			/// <param name="diagnosticReceiver">Target <see cref="DiagnosticReceiver.ReadonlyContextual{T}"/>.</param>
+			/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="diagnosticReceiver"/> is <see langword="null"/>.</exception>
 			public ReadonlyContextual(ILoggableGenerator generator, DiagnosticReceiver.ReadonlyContextual<T> diagnosticReceiver) : base(generator)
 			{
+				if(diagnosticReceiver is null)
+				{
+					throw new ArgumentNullException(nameof(diagnosticReceiver));
+				}
+
 				_diagnosticReceiver = diagnosticReceiver;
 			}
 

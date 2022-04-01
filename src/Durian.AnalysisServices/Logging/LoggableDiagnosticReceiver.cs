@@ -65,38 +65,94 @@ namespace Durian.Analysis.Logging
 		/// </summary>
 		public virtual void Clear()
 		{
-			_bag.Clear();
+			lock(_bag)
+			{
+				_bag.Clear();
+			}
 		}
 
 		/// <summary>
 		/// Actually writes the diagnostics to the target file.
 		/// </summary>
-		public virtual void Push()
+		/// <exception cref="InvalidOperationException">Cannot push diagnostics when target node or hint name is null.</exception>
+		public void Push()
 		{
-			if (_bag.Count > 0)
+			if (_bag.Count <= 0)
 			{
-				Generator.LogDiagnostics(Node!, HintName!, _bag.GetDiagnostics(), NodeOutput);
-				Clear();
+				return;
 			}
+
+			Diagnostic[]? diagnostics;
+			string hintName;
+			CSharpSyntaxNode node;
+			NodeOutput nodeOutput;
+
+			lock (_bag)
+			{
+				if (HintName is null || Node is null)
+				{
+					throw new InvalidOperationException("Cannot push diagnostics when target node or hint name is null");
+				}
+
+				hintName = HintName!;
+				node = Node!;
+				nodeOutput = NodeOutput;
+
+				if (_bag.Count > 0)
+				{
+					diagnostics = _bag.GetDiagnostics();
+				}
+				else
+				{
+					diagnostics = default;
+				}
+			}
+
+			if (diagnostics is null)
+			{
+				return;
+			}
+
+			Generator.LogDiagnostics(node, hintName, diagnostics, nodeOutput);
+			ReportDiagnostics(diagnostics);
+			Clear();
 		}
 
 		/// <inheritdoc/>
 		public virtual void ReportDiagnostic(DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs)
 		{
-			_bag.ReportDiagnostic(descriptor, location, messageArgs);
+			lock(_bag)
+			{
+				_bag.ReportDiagnostic(descriptor, location, messageArgs);
+			}
 		}
 
 		/// <inheritdoc/>
 		public virtual void ReportDiagnostic(Diagnostic diagnostic)
 		{
-			_bag.ReportDiagnostic(diagnostic);
+			lock(_bag)
+			{
+				_bag.ReportDiagnostic(diagnostic);
+			}
 		}
 
 		/// <inheritdoc/>
-		public void SetTargetNode(CSharpSyntaxNode? node, string? hintName)
+		public virtual void SetTargetNode(CSharpSyntaxNode? node, string? hintName)
 		{
-			Node = node;
-			HintName = hintName;
+			lock(_bag)
+			{
+				Node = node;
+				HintName = hintName;
+			}
+		}
+
+		/// <summary>
+		/// Reports the specified <paramref name="diagnostics"/>.
+		/// </summary>
+		/// <param name="diagnostics">A collection of <see cref="Diagnostic"/>s to report.</param>
+		protected virtual void ReportDiagnostics(Diagnostic[] diagnostics)
+		{
+			// Do nothing by default.
 		}
 	}
 }

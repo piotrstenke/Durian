@@ -11,7 +11,7 @@ namespace Durian.Analysis.Logging
 		/// <summary>
 		/// A <see cref="INodeDiagnosticReceiver"/> that reports <see cref="Diagnostic"/> to both <see cref="LoggableGenerator"/> and <see cref="DiagnosticReceiver.Contextual{T}"/>.
 		/// </summary>
-		public sealed class Contextual<T> : LoggableDiagnosticReceiver where T : struct
+		public sealed class Contextual<T> : LoggableDiagnosticReceiver
 		{
 			private readonly DiagnosticReceiver.Contextual<T> _diagnosticReceiver;
 
@@ -41,7 +41,7 @@ namespace Durian.Analysis.Logging
 			/// <param name="generator"><see cref="ILoggableGenerator"/> that will log the received <see cref="Diagnostic"/>s.</param>
 			/// <param name="action"><see cref="ReportAction.DirectContextual{T}"/> to be performed when the <see cref="ReportDiagnostic(Diagnostic)"/> method is called.</param>
 			/// <param name="context">Context of this <see cref="Contextual{T}"/>.</param>
-			/// <exception cref="ArgumentNullException"><paramref name="action"/> is <see langword="null"/>.</exception>
+			/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="action"/> is <see langword="null"/>.</exception>
 			public Contextual(ILoggableGenerator generator, ReportAction.DirectContextual<T> action, in T context) : base(generator)
 			{
 				_diagnosticReceiver = new(action, in context);
@@ -52,8 +52,14 @@ namespace Durian.Analysis.Logging
 			/// </summary>
 			/// <param name="generator"><see cref="LoggableGenerator"/> that will log the received <see cref="Diagnostic"/>s.</param>
 			/// <param name="diagnosticReceiver">Target <see cref="DiagnosticReceiver.Contextual{T}"/>.</param>
+			/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="diagnosticReceiver"/> is <see langword="null"/>.</exception>
 			public Contextual(ILoggableGenerator generator, DiagnosticReceiver.Contextual<T> diagnosticReceiver) : base(generator)
 			{
+				if(diagnosticReceiver is null)
+				{
+					throw new ArgumentNullException(nameof(diagnosticReceiver));
+				}
+
 				_diagnosticReceiver = diagnosticReceiver;
 			}
 

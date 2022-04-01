@@ -246,6 +246,32 @@ namespace Durian.Analysis.CopyFrom
 		);
 
 		/// <summary>
+		/// Provides a diagnostic message indicating that a <c>Durian.PatternAttribute</c> is specified on a partial declaration without a <c>Durian.CopyFromTypeAttribute</c>, even though at least one exists.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0219_PatternOnDifferentDeclaration = new(
+			id: "DUR0219",
+			title: "PatternAttribute should be applied on the same partial declaration as a CopyFromTypeAttribute",
+			messageFormat: "'{0}': PatternAttribute should be applied on the same partial declaration as a CopyFromTypeAttribute",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0219.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides a diagnostic message indicating that a namespace was already specified in the <see cref="CopyFromTypeAttributeProvider.AddUsings"/> property.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0220_UsingAlreadySpecified = new(
+			id: "DUR0220",
+			title: "Namespace already specified for the AddUsings property",
+			messageFormat: "'{0}': Namespace '{1}' already specified for the AddUsings property",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0220.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
 		/// Documentation directory of the <c>DefaultParam</c> module.
 		/// </summary>
 		public static string DocsPath => GlobalInfo.Repository + "/tree/master/docs/CopyFrom";

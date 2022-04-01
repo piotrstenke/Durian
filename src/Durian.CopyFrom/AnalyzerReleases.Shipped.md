@@ -21,3 +21,5 @@ DUR0215 | Durian.CopyFrom | Warning |  PatternAttribute is redundant. [[DOC](htt
 DUR0216 | Durian.CopyFrom | Warning |  PatternAttribute with equivalent pattern already specified. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0216.md)]
 DUR0217 | Durian.CopyFrom | Error |  Type is not a valid type argument. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0217.md)]
 DUR0218 | Durian.CopyFrom | Error |  Unknown partial part. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0218.md)]
+DUR0219 | Durian.CopyFrom | Warning |  PatternAttribute should be applied on the same partial declaration as a CopyFromTypeAttribute. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0219.md)]
+DUR0220 | Durian.CopyFrom | Warning |  Namespace already specified for the AddUsings property. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0220.md)]

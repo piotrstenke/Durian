@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using Durian.Analysis.Data;
+using Durian.Analysis.Filters;
 using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections;
@@ -13,7 +14,7 @@ using System.Threading;
 namespace Durian.Analysis.Cache
 {
 	/// <summary>
-	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="INodeValidator{T}"/> or retrieved from a <see cref="CachedData{T}"/>.
+	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="ISyntaxValidator{T}"/> or retrieved from a <see cref="CachedData{T}"/>.
 	/// </summary>
 	/// <typeparam name="T">Type of <see cref="IMemberData"/> this enumerator can handle.</typeparam>
 	[DebuggerDisplay("Current = {Current}")]
@@ -30,7 +31,7 @@ namespace Durian.Analysis.Cache
 		public T? Current { readonly get; private set; }
 
 		/// <inheritdoc cref="FilterEnumerator{T}.Validator"/>
-		public readonly INodeValidator<T> Validator { get; }
+		public readonly ISyntaxValidator<T> Validator { get; }
 
 		readonly T IEnumerator<T>.Current => Current!;
 		readonly object IEnumerator.Current => Current!;
@@ -40,12 +41,12 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
-		/// <param name="validator"><see cref="INodeValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="validator"><see cref="ISyntaxValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
 		public CachedFilterEnumerator(
 			IEnumerable<CSharpSyntaxNode> nodes,
 			ICompilationData compilation,
-			INodeValidator<T> validator,
+			ISyntaxValidator<T> validator,
 			in CachedData<T> cache
 		) : this(nodes.GetEnumerator(), compilation, validator, in cache)
 		{
@@ -56,18 +57,18 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
-		/// <param name="validator"><see cref="INodeValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="validator"><see cref="ISyntaxValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
 		public CachedFilterEnumerator(
 			INodeProvider provider,
 			ICompilationData compilation,
-			INodeValidator<T> validator,
+			ISyntaxValidator<T> validator,
 			in CachedData<T> cache
 		) : this(provider.GetNodes().GetEnumerator(), compilation, validator, in cache)
 		{
 		}
 
-		internal CachedFilterEnumerator(IEnumerator<CSharpSyntaxNode> nodes, ICompilationData compilation, INodeValidator<T> validator, in CachedData<T> cache)
+		internal CachedFilterEnumerator(IEnumerator<CSharpSyntaxNode> nodes, ICompilationData compilation, ISyntaxValidator<T> validator, in CachedData<T> cache)
 		{
 			Validator = validator;
 			Compilation = compilation;

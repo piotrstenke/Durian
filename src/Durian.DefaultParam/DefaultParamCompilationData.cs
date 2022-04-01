@@ -13,7 +13,7 @@ namespace Durian.Analysis.DefaultParam
 	/// <summary>
 	/// <see cref="CompilationData"/> that contains all <see cref="ISymbol"/>s needed to generate source code using the <see cref="DefaultParamGenerator"/>.
 	/// </summary>
-	public sealed class DefaultParamCompilationData : CompilationDataWithSymbols
+	public sealed class DefaultParamCompilationData : CompilationWithEssentialSymbols
 	{
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <c>Durian.DefaultParamAttribute</c> class.

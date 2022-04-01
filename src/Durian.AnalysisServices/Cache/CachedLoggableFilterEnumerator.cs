@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using Durian.Analysis.Data;
+using Durian.Analysis.Filters;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -15,7 +16,7 @@ using System.Threading;
 namespace Durian.Analysis.Cache
 {
 	/// <summary>
-	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="INodeValidatorWithDiagnostics{T}"/> or retrieved from a <see cref="CachedData{T}"/> with an option to log diagnostics using a <see cref="INodeDiagnosticReceiver"/>.
+	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="ISyntaxValidatorWithDiagnostics{T}"/> or retrieved from a <see cref="CachedData{T}"/> with an option to log diagnostics using a <see cref="INodeDiagnosticReceiver"/>.
 	/// </summary>
 	/// <typeparam name="T">Type of <see cref="IMemberData"/> this enumerator can handle.</typeparam>
 	[DebuggerDisplay("Current = {Current}")]
@@ -46,9 +47,9 @@ namespace Durian.Analysis.Cache
 		public readonly INodeDiagnosticReceiver LogReceiver { get; }
 
 		/// <summary>
-		/// <see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.
+		/// <see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.
 		/// </summary>
-		public readonly INodeValidatorWithDiagnostics<T> Validator { get; }
+		public readonly ISyntaxValidatorWithDiagnostics<T> Validator { get; }
 
 		readonly T IEnumerator<T>.Current => Current!;
 		readonly object IEnumerator.Current => Current!;
@@ -58,14 +59,14 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
-		/// <param name="validator"><see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
 		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <paramref name="nodes"/>.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
 		public CachedLoggableFilterEnumerator(
 			IEnumerable<CSharpSyntaxNode> nodes,
 			ICompilationData compilation,
-			INodeValidatorWithDiagnostics<T> validator,
+			ISyntaxValidatorWithDiagnostics<T> validator,
 			INodeDiagnosticReceiver logReceiver,
 			IHintNameProvider hintNameProvider,
 			in CachedData<T> cache
@@ -78,14 +79,14 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
-		/// <param name="validator"><see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
 		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
 		public CachedLoggableFilterEnumerator(
 			INodeProvider provider,
 			ICompilationData compilation,
-			INodeValidatorWithDiagnostics<T> validator,
+			ISyntaxValidatorWithDiagnostics<T> validator,
 			INodeDiagnosticReceiver logReceiver,
 			IHintNameProvider hintNameProvider,
 			in CachedData<T> cache
@@ -98,7 +99,7 @@ namespace Durian.Analysis.Cache
 		internal CachedLoggableFilterEnumerator(
 			IEnumerator<CSharpSyntaxNode> nodes,
 			ICompilationData compilation,
-			INodeValidatorWithDiagnostics<T> validator,
+			ISyntaxValidatorWithDiagnostics<T> validator,
 			INodeDiagnosticReceiver logReceiver,
 			IHintNameProvider hintNameProvider,
 			in CachedData<T> cache

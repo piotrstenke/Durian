@@ -17,14 +17,14 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		public void CanReturnNameWithMultipleTypeArguments()
 		{
 			IMethodSymbol symbol = GetSymbolForArgument("class Test { void Method<T, U>() { } void Caller() { Method<int, string>(); } }");
-			Assert.True(symbol.GetGenericName(GenericSubstitution.Arguments) == "Method<int, string>");
+			Assert.True(symbol.GetGenericName(GenericSubstitution.TypeArguments) == "Method<int, string>");
 		}
 
 		[Fact]
 		public void CanReturnNameWithmultipleTypeArgumentsAndParameters_When_IncludeParametersIsTrue()
 		{
 			IMethodSymbol symbol = GetSymbolForArgument("class Test { void Method<T, U>(int a) { } void Caller() { Method<int, string>(2); }  }");
-			Assert.True(symbol.GetGenericName(GenericSubstitution.Arguments | GenericSubstitution.ParameterList) == "Method<int, string>(int)");
+			Assert.True(symbol.GetGenericName(GenericSubstitution.TypeArguments | GenericSubstitution.ParameterList) == "Method<int, string>(int)");
 		}
 
 		[Fact]
@@ -45,14 +45,14 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		public void CanReturnNameWithSingleTypeArgument()
 		{
 			IMethodSymbol symbol = GetSymbolForArgument("class Test { void Method<T>() { } void Caller() { Method<int>(); } }");
-			Assert.True(symbol.GetGenericName(GenericSubstitution.Arguments) == "Method<int>");
+			Assert.True(symbol.GetGenericName(GenericSubstitution.TypeArguments) == "Method<int>");
 		}
 
 		[Fact]
 		public void CanReturnNameWithSingleTypeArgumentAndParameters_When_IncludeParametersIsTrue()
 		{
 			IMethodSymbol symbol = GetSymbolForArgument("class Test { void Method<T>(int a) { } void Caller() { Method<int>(2); } }");
-			Assert.True(symbol.GetGenericName(GenericSubstitution.Arguments | GenericSubstitution.ParameterList) == "Method<int>(int)");
+			Assert.True(symbol.GetGenericName(GenericSubstitution.TypeArguments | GenericSubstitution.ParameterList) == "Method<int>(int)");
 		}
 
 		[Fact]

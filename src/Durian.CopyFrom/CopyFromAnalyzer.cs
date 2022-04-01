@@ -48,7 +48,9 @@ namespace Durian.Analysis.CopyFrom
 			DUR0215_RedundantPatternAttribute,
 			DUR0216_EquivalentPatternAttribute,
 			DUR0217_TypeParameterIsNotValid,
-			DUR0218_UnknownPartialPartName
+			DUR0218_UnknownPartialPartName,
+			DUR0219_PatternOnDifferentDeclaration,
+			DUR0220_UsingAlreadySpecified
 		);
 
 		/// <summary>
@@ -421,7 +423,7 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		private static void AnalyzePattern(
-					ISymbol symbol,
+			ISymbol symbol,
 			ImmutableArray<AttributeData> attributes,
 			CopyFromCompilationData compilation,
 			bool hasTarget,
@@ -584,7 +586,7 @@ namespace Durian.Analysis.CopyFrom
 		private static TargetData CreateTargetData(AttributeData attribute, INamedTypeSymbol target, TypeDeclarationSyntax? partialPart, string? partialPartName)
 		{
 			int order = GetOrder(attribute);
-			string[]? usings = GetUsings(attribute);
+			string[] usings = GetUsings(attribute);
 			bool copyUsings = ShouldCopyUsings(attribute);
 			bool handleSpecialMembers = ShouldHandleSpecialMembers(attribute);
 
@@ -758,13 +760,10 @@ namespace Durian.Analysis.CopyFrom
 								return null;
 							}
 						}
-						else
+						else if (property.GetMethod is null)
 						{
-							if (property.GetMethod is null)
-							{
-								diagnostic = DUR0203_MemberCannotBeResolved;
-								return null;
-							}
+							diagnostic = DUR0203_MemberCannotBeResolved;
+							return null;
 						}
 					}
 
@@ -781,18 +780,15 @@ namespace Durian.Analysis.CopyFrom
 							return property.SetMethod;
 						}
 					}
+					else if (property.GetMethod is null)
+					{
+						diagnostic = DUR0212_TargetDoesNotHaveReturnType;
+						return null;
+					}
 					else
 					{
-						if (property.GetMethod is null)
-						{
-							diagnostic = DUR0212_TargetDoesNotHaveReturnType;
-							return null;
-						}
-						else
-						{
-							diagnostic = null;
-							return property.GetMethod;
-						}
+						diagnostic = null;
+						return property.GetMethod;
 					}
 
 				case IEventSymbol @event:
@@ -813,13 +809,10 @@ namespace Durian.Analysis.CopyFrom
 								return @event.AddMethod;
 							}
 						}
-						else
+						else if (@event.RemoveMethod is not null)
 						{
-							if (@event.RemoveMethod is not null)
-							{
-								diagnostic = null;
-								return @event.RemoveMethod;
-							}
+							diagnostic = null;
+							return @event.RemoveMethod;
 						}
 					}
 
@@ -1107,9 +1100,9 @@ namespace Durian.Analysis.CopyFrom
 			return null;
 		}
 
-		private static string[]? GetUsings(AttributeData attribute)
+		private static string[] GetUsings(AttributeData attribute)
 		{
-			return attribute.GetNamedArgumentValue<string[]>(CopyFromTypeAttributeProvider.AddUsings);
+			return attribute.GetNamedArgumentArrayValue<string>(CopyFromTypeAttributeProvider.AddUsings).ToArray();
 		}
 
 		private static bool HasValidTypeArguments(INamedTypeSymbol type, out List<ITypeSymbol>? invalidArguments)
@@ -1200,12 +1193,22 @@ namespace Durian.Analysis.CopyFrom
 
 		private static bool ShouldCopyUsings(AttributeData attribute)
 		{
-			return attribute.GetNamedArgumentValue<bool>(CopyFromTypeAttributeProvider.CopyUsings);
+			if (attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.CopyUsings, out bool value))
+			{
+				return value;
+			}
+
+			return true;
 		}
 
 		private static bool ShouldHandleSpecialMembers(AttributeData attribute)
 		{
-			return attribute.GetNamedArgumentValue<bool>(CopyFromTypeAttributeProvider.HandleSpecialMembers);
+			if (attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.HandleSpecialMembers, out bool value))
+			{
+				return value;
+			}
+
+			return true;
 		}
 
 		private static bool TryGetPartialPart(

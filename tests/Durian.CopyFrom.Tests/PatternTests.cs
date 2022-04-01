@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Xunit;
-using Durian.TestServices;
-
-using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Durian.TestServices;
+using Xunit;
+using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
 
 namespace Durian.Analysis.CopyFrom.Tests
 {

@@ -19,13 +19,10 @@ namespace Durian.Analysis
 		EnableExceptions = true)]
 	public sealed class EnableCoreModuleGenerator : DurianGeneratorBase
 	{
-		/// <inheritdoc cref="EnableCoreModuleGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		/// <summary>
+		/// Initializes a new instance of the <see cref="EnableCoreModuleGenerator"/> class.
+		/// </summary>
 		public EnableCoreModuleGenerator()
-		{
-		}
-
-		/// <inheritdoc cref="EnableCoreModuleGenerator(in ConstructionContext, IHintNameProvider?)"/>
-		public EnableCoreModuleGenerator(in ConstructionContext context) : base(in context)
 		{
 		}
 
@@ -33,13 +30,7 @@ namespace Durian.Analysis
 		/// Initializes a new instance of the <see cref="EnableCoreModuleGenerator"/> class.
 		/// </summary>
 		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public EnableCoreModuleGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
-		{
-		}
-
-		/// <inheritdoc cref="EnableCoreModuleGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
-		public EnableCoreModuleGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		public EnableCoreModuleGenerator(in ConstructionContext context) : base(in context)
 		{
 		}
 
@@ -47,8 +38,7 @@ namespace Durian.Analysis
 		/// Initializes a new instance of the <see cref="EnableCoreModuleGenerator"/> class.
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public EnableCoreModuleGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		public EnableCoreModuleGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
 

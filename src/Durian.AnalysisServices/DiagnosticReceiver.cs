@@ -7,15 +7,17 @@ using System;
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// Static class that contains various <see cref="IDiagnosticReceiver"/> implementations.
+	/// Basic implementation of the <see cref="IDiagnosticReceiver"/> interface.
 	/// </summary>
-	public sealed partial class DiagnosticReceiver
+	public sealed partial class DiagnosticReceiver : IDiagnosticReceiver
 	{
-		private readonly ReportAction.Direct _action;
+		private readonly ReportAction.Direct _directAction;
+		private readonly ReportAction.Basic _basicAction;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DiagnosticReceiver"/> class.
 		/// </summary>
+		/// <param name="action">Action that is executed when either <see cref="ReportDiagnostic(Diagnostic)"/> or <see cref="ReportDiagnostic(DiagnosticDescriptor, Location?, object?[])"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="action"/> is <see langword="null"/>.</exception>
 		public DiagnosticReceiver(ReportAction.Direct action)
 		{
@@ -24,7 +26,30 @@ namespace Durian.Analysis
 				throw new ArgumentNullException(nameof(action));
 			}
 
-			_action = action;
+			_directAction = action;
+			_basicAction = (diagnosticReceiver, location, messageArgs) => _directAction(Diagnostic.Create(diagnosticReceiver, location, messageArgs));
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DiagnosticReceiver"/> class.
+		/// </summary>
+		/// <param name="direct">Action that is executed when <see cref="ReportDiagnostic(Diagnostic)"/> is called.</param>
+		/// <param name="basic">Action that is executed when <see cref="ReportDiagnostic(DiagnosticDescriptor, Location?, object?[])"/> is called.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="direct"/> is <see langword="null"/>. -or- <paramref name="direct"/> is <see langword="null"/>.</exception>
+		public DiagnosticReceiver(ReportAction.Direct direct, ReportAction.Basic basic)
+		{
+			if (direct is null)
+			{
+				throw new ArgumentNullException(nameof(direct));
+			}
+
+			if(basic is null)
+			{
+				throw new ArgumentNullException(nameof(basic));
+			}
+
+			_directAction = direct;
+			_basicAction = basic;
 		}
 
 		/// <inheritdoc/>
@@ -35,7 +60,7 @@ namespace Durian.Analysis
 				throw new ArgumentNullException(nameof(descriptor));
 			}
 
-			_action.Invoke(Diagnostic.Create(descriptor, location, messageArgs));
+			_basicAction.Invoke(descriptor, location, messageArgs);
 		}
 
 		/// <inheritdoc/>
@@ -46,7 +71,7 @@ namespace Durian.Analysis
 				throw new ArgumentNullException(nameof(diagnostic));
 			}
 
-			_action.Invoke(diagnostic);
+			_directAction.Invoke(diagnostic);
 		}
 	}
 }

@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Cache;
-using Durian.Analysis.Data;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
@@ -19,13 +16,8 @@ namespace Durian.Analysis.CopyFrom
 	/// <summary>
 	/// Filtrates and validates <see cref="TypeDeclarationSyntax"/>es collected by a <see cref="CopyFromSyntaxReceiver"/>.
 	/// </summary>
-	public sealed class CopyFromTypeFilter : CachedSyntaxFilterValidator<CopyFromCompilationData, CopyFromSyntaxReceiver, TypeDeclarationSyntax, INamedTypeSymbol, CopyFromTypeData>.WithDiagnostics, ICopyFromFilter
+	public sealed class CopyFromTypeFilter : CopyFromFilter<TypeDeclarationSyntax, INamedTypeSymbol, CopyFromTypeData>
 	{
-		/// <summary>
-		/// <see cref="CopyFromGenerator"/> that created this filter.
-		/// </summary>
-		public new CopyFromGenerator Generator => (base.Generator as CopyFromGenerator)!;
-
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromTypeFilter"/> class.
 		/// </summary>
@@ -158,27 +150,6 @@ namespace Durian.Analysis.CopyFrom
 		protected override IEnumerable<TypeDeclarationSyntax>? GetCandidateNodes(CopyFromSyntaxReceiver syntaxReceiver)
 		{
 			return syntaxReceiver.CandidateTypes;
-		}
-
-		/// <inheritdoc/>
-		protected override CopyFromCompilationData? CreateCompilation(in GeneratorExecutionContext context)
-		{
-			if (context.Compilation is not CSharpCompilation compilation)
-			{
-				return null;
-			}
-
-			return new CopyFromCompilationData(compilation);
-		}
-
-		IEnumerable<IMemberData> ICachedGeneratorSyntaxFilter<ICopyFromMember>.Filtrate(in CachedGeneratorExecutionContext<ICopyFromMember> context)
-		{
-			return ((ICachedGeneratorSyntaxFilter<CopyFromTypeData>)this).Filtrate(context.CastContext<CopyFromTypeData>());
-		}
-
-		IEnumerator<IMemberData> ICachedGeneratorSyntaxFilter<ICopyFromMember>.GetEnumerator(in CachedGeneratorExecutionContext<ICopyFromMember> context)
-		{
-			return ((ICachedGeneratorSyntaxFilter<CopyFromTypeData>)this).GetEnumerator(context.CastContext<CopyFromTypeData>());
 		}
 	}
 }

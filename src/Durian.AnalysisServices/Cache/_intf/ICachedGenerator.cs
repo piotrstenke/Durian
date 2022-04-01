@@ -8,7 +8,7 @@ namespace Durian.Analysis.Cache
 	/// <summary>
 	/// <see cref="IDurianGenerator"/> that can retrieve data defined in a <see cref="CachedGeneratorExecutionContext{T}"/>.
 	/// </summary>
-	/// <typeparam name="T">Type of values this generated can retrieve from the <see cref="CachedGeneratorExecutionContext{T}"/>.</typeparam>
+	/// <typeparam name="T">Type of values this generator can retrieve from the <see cref="CachedGeneratorExecutionContext{T}"/>.</typeparam>
 	public interface ICachedGenerator<T> : IDurianGenerator
 	{
 		/// <summary>

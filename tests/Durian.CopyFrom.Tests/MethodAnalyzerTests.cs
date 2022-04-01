@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.TestServices;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Durian.TestServices;
 using Xunit;
 using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
 
@@ -1897,6 +1897,25 @@ partial class Test
 		}
 
 		[Fact]
+		public async Task Success_When_TargetIsGenericWithMutlipleParameters()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target<T, U>"")]
+	partial void Method();
+
+	void Target<T, U>()
+	{{
+	}}
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
 		public async Task Success_When_TargetIsGenericWithParamList()
 		{
 			string input =
@@ -1933,25 +1952,6 @@ partial class Test
 }}
 ";
 
-			Assert.Empty(await RunAnalyzer(input));
-		}
-
-		[Fact]
-		public async Task Success_When_TargetIsGenericWithMutlipleParameters()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target<T, U>"")]
-	partial void Method();
-
-	void Target<T, U>()
-	{{
-	}}
-}}
-";
 			Assert.Empty(await RunAnalyzer(input));
 		}
 

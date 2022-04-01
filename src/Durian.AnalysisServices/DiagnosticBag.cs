@@ -11,7 +11,7 @@ namespace Durian.Analysis
 	/// <summary>
 	/// A <see cref="IDiagnosticReceiver"/> that holds all the reported diagnostics in a publicly-visible <see cref="List{T}"/>.
 	/// </summary>
-	public sealed class DiagnosticBag : IDiagnosticReceiverWithBuffer, IDirectDiagnosticReceiver, IEnumerable<Diagnostic>
+	public sealed class DiagnosticBag : IDiagnosticReceiverWithBuffer, IEnumerable<Diagnostic>
 	{
 		private readonly List<Diagnostic> _diagnostics;
 

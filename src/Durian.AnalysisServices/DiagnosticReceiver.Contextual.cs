@@ -3,19 +3,22 @@
 
 using Microsoft.CodeAnalysis;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.Analysis
 {
 	public sealed partial class DiagnosticReceiver
 	{
 		/// <inheritdoc cref="IContextualDiagnosticReceiver{T}"/>
-		public sealed class Contextual<T> : IContextualDiagnosticReceiver<T> where T : struct
+		public sealed class Contextual<T> : IContextualDiagnosticReceiver<T>
 		{
 			private readonly ReportAction.DirectContextual<T> _action;
 
-			private T _context;
+			private T? _context;
 
-			private bool _contextIsSet;
+			/// <inheritdoc/>
+			[MemberNotNullWhen(true, nameof(_context))]
+			public bool HasContext { get; private set; }
 
 			/// <inheritdoc cref="Contextual{T}(ReportAction.DirectContextual{T}, in T)"/>
 			public Contextual(ReportAction.DirectContextual<T> action)
@@ -43,7 +46,7 @@ namespace Durian.Analysis
 
 				_action = action;
 				_context = context;
-				_contextIsSet = true;
+				HasContext = true;
 			}
 
 			/// <summary>
@@ -53,13 +56,14 @@ namespace Durian.Analysis
 			public ref readonly T GetContext()
 			{
 				CheckContext();
-				return ref _context;
+
+				return ref _context!;
 			}
 
 			/// <inheritdoc/>
 			public void RemoveContext()
 			{
-				_contextIsSet = false;
+				HasContext = false;
 				_context = default;
 			}
 
@@ -95,13 +99,14 @@ namespace Durian.Analysis
 			/// <param name="context">Context to set as a target of this <see cref="Contextual{T}"/>.</param>
 			public void SetContext(in T context)
 			{
-				_contextIsSet = true;
+				HasContext = true;
 				_context = context;
 			}
 
+			[MemberNotNull(nameof(_context))]
 			private void CheckContext()
 			{
-				if (!_contextIsSet)
+				if (!HasContext)
 				{
 					throw new InvalidOperationException("Target context not set!");
 				}
