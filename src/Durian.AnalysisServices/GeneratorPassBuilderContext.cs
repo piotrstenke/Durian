@@ -7,33 +7,32 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Threading;
 
-namespace Durian.Analysis.Cache
+namespace Durian.Analysis
 {
 	/// <summary>
-	/// <see cref="GeneratorPassContext"/> that provides a <see cref="CachedGeneratorExecutionContext{T}"/> instead of <see cref="GeneratorExecutionContext"/>.
+	/// <see cref="GeneratorPassContext"/> that also provides a <see cref="Analysis.CodeBuilder"/>.
 	/// </summary>
-	public class CachedGeneratorPassContext<TData> : GeneratorPassBuilderContext, ICachedGeneratorPassContext<TData> where TData : IMemberData
+	public class GeneratorPassBuilderContext : GeneratorPassContext
 	{
-		internal CachedGeneratorExecutionContext<TData> _cachedContext;
-
 		/// <summary>
-		/// <see cref="CachedGeneratorExecutionContext{T}"/> created for the current generator pass.
+		/// <see cref="Analysis.CodeBuilder"/> used to generate the source code.
 		/// </summary>
-		public new ref readonly CachedGeneratorExecutionContext<TData> OriginalContext => ref _cachedContext;
+		public CodeBuilder CodeBuilder { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedGeneratorPassContext{TData}"/> class.
+		/// Initializes a new instance of the <see cref="GeneratorPassBuilderContext"/> class.
 		/// </summary>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
 		/// <param name="parseOptions"><see cref="CSharpParseOptions"/> that will be used to parse any added sources.</param>
-		protected internal CachedGeneratorPassContext(IHintNameProvider? fileNameProvider = default, CSharpParseOptions? parseOptions = default) : base(fileNameProvider, parseOptions)
+		protected internal GeneratorPassBuilderContext(IHintNameProvider? fileNameProvider = default, CSharpParseOptions? parseOptions = default) : base(fileNameProvider, parseOptions)
 		{
+			CodeBuilder = new(this);
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedGeneratorPassContext{TData}"/> class.
+		/// Initializes a new instance of the <see cref="GeneratorPassBuilderContext"/> class.
 		/// </summary>
-		/// <param name="originalContext"><see cref="CachedGeneratorExecutionContext{TData}"/> created for the current generator pass.</param>
+		/// <param name="originalContext"><see cref="GeneratorExecutionContext"/> created for the current generator pass.</param>
 		/// <param name="generator"><see cref="IDurianGenerator"/> this context was created for.</param>
 		/// <param name="targetCompilation"><see cref="ICompilationData"/> this <see cref="IDurianGenerator"/> operates on.</param>
 		/// <param name="syntaxReceiver"><see cref="IDurianSyntaxReceiver"/> that provides the <see cref="SyntaxNode"/>es that will take part in the generation.</param>
@@ -41,8 +40,8 @@ namespace Durian.Analysis.Cache
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
 		/// <param name="services">Container of services that can be resolved during the current generator pass.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that can be checked to see if the generation should be canceled.</param>
-		public CachedGeneratorPassContext(
-			in CachedGeneratorExecutionContext<TData> originalContext,
+		internal GeneratorPassBuilderContext(
+			in GeneratorExecutionContext originalContext,
 			IDurianGenerator generator,
 			ICompilationData targetCompilation,
 			IDurianSyntaxReceiver syntaxReceiver,
@@ -50,9 +49,9 @@ namespace Durian.Analysis.Cache
 			IHintNameProvider fileNameProvider,
 			IGeneratorServiceContainer services,
 			CancellationToken cancellationToken = default
-		) : base(in originalContext.GetContext(), generator, targetCompilation, syntaxReceiver, parseOptions, fileNameProvider, services, cancellationToken)
+		) : base(originalContext, generator, targetCompilation, syntaxReceiver, parseOptions, fileNameProvider, services, cancellationToken)
 		{
-			_cachedContext = originalContext;
+			CodeBuilder = new(this);
 		}
 	}
 }

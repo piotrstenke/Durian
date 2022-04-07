@@ -15,59 +15,61 @@ namespace Durian.Analysis.Filters
 	/// <summary>
 	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="ISyntaxValidator{T}"/>.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="IMemberData"/> this enumerator can handle.</typeparam>
+	/// <typeparam name="T">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
 	[DebuggerDisplay("Current = {Current}")]
-	public struct FilterEnumerator<T> : IEnumerator<T> where T : IMemberData
+	public struct FilterEnumerator<T> : IFilterEnumerator<T> where T : ISyntaxValidatorContext
 	{
 		internal readonly IEnumerator<CSharpSyntaxNode> _nodes;
 
-		/// <summary>
-		/// Parent <see cref="ICompilationData"/> of the provided <see cref="CSharpSyntaxNode"/>s.
-		/// </summary>
+		/// <inheritdoc/>
 		public readonly ICompilationData Compilation { get; }
 
 		/// <summary>
 		/// Current <see cref="IMemberData"/>.
 		/// </summary>
-		public T? Current { readonly get; private set; }
+		public IMemberData? Current { readonly get; private set; }
 
-		/// <summary>
-		/// <see cref="ISyntaxValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.
-		/// </summary>
+		/// <inheritdoc/>
 		public readonly ISyntaxValidator<T> Validator { get; }
 
-		readonly T IEnumerator<T>.Current => Current!;
+		readonly IMemberData IEnumerator<IMemberData>.Current => Current!;
 		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FilterEnumerator{T}"/> struct.
 		/// </summary>
-		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
+		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="validator"><see cref="ISyntaxValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		public FilterEnumerator(
-			IEnumerable<CSharpSyntaxNode> nodes,
 			ICompilationData compilation,
+			IEnumerable<CSharpSyntaxNode> nodes,
 			ISyntaxValidator<T> validator
-		) : this(nodes.GetEnumerator(), compilation, validator)
+		) : this(compilation, nodes.GetEnumerator(), validator)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FilterEnumerator{T}"/> struct.
 		/// </summary>
-		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
+		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
 		/// <param name="validator"><see cref="ISyntaxValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		public FilterEnumerator(
-			INodeProvider provider,
 			ICompilationData compilation,
+			INodeProvider provider,
 			ISyntaxValidator<T> validator
-		) : this(provider.GetNodes().GetEnumerator(), compilation, validator)
+		) : this(compilation, provider.GetNodes().GetEnumerator(), validator)
 		{
 		}
 
-		internal FilterEnumerator(IEnumerator<CSharpSyntaxNode> nodes, ICompilationData compilation, ISyntaxValidator<T> validator)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FilterEnumerator{T}"/> struct.
+		/// </summary>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
+		/// <param name="nodes">An enumerator that iterates through a collection of <see cref="CSharpSyntaxNode"/>s.</param>
+		/// <param name="validator"><see cref="ISyntaxValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		public FilterEnumerator(ICompilationData compilation, IEnumerator<CSharpSyntaxNode> nodes, ISyntaxValidator<T> validator)
 		{
 			Validator = validator;
 			Compilation = compilation;
@@ -75,11 +77,7 @@ namespace Durian.Analysis.Filters
 			Current = default;
 		}
 
-		/// <summary>
-		/// Creates and validates the next <see cref="IMemberData"/>.
-		/// </summary>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> is the <see cref="IMemberData"/> is valid, <see langword="false"/> otherwise.</returns>
+		/// <inheritdoc/>
 		[MemberNotNullWhen(true, nameof(Current))]
 		public bool MoveNext(CancellationToken cancellationToken = default)
 		{
@@ -92,7 +90,7 @@ namespace Durian.Analysis.Filters
 					continue;
 				}
 
-				if (Validator.ValidateAndCreate(node, Compilation, out T? data, cancellationToken))
+				if (Validator.ValidateAndCreate(new ValidationDataProviderContext(node, Compilation, cancellationToken), out IMemberData? data))
 				{
 					Current = data;
 					return true;

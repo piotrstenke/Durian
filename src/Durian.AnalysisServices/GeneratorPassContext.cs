@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,16 +25,10 @@ namespace Durian.Analysis
 		public CancellationToken CancellationToken { get; internal set; }
 
 		/// <inheritdoc/>
-		public DiagnosticReceiver.ReadonlyContextual<GeneratorExecutionContext>? DiagnosticReceiver { get; internal set; }
-
-		/// <inheritdoc/>
 		public IHintNameProvider FileNameProvider { get; }
 
 		/// <inheritdoc/>
 		public IDurianGenerator Generator { get; internal set; }
-
-		/// <inheritdoc/>
-		public LoggableDiagnosticReceiver? LogReceiver { get; internal set; }
 
 		/// <inheritdoc/>
 		public IDurianSyntaxReceiver SyntaxReceiver { get; internal set; }
@@ -46,6 +41,9 @@ namespace Durian.Analysis
 
 		/// <inheritdoc/>
 		public IGeneratorServiceContainer Services { get; internal set; }
+
+		/// <inheritdoc/>
+		public GeneratorState State { get; internal set; }
 
 		internal List<CSharpSyntaxTree> GenerationQueue { get; } = new();
 		internal bool IsFilterWithGeneratedSymbols { get; set; }
@@ -63,7 +61,18 @@ namespace Durian.Analysis
 			ParseOptions = parseOptions ?? CSharpParseOptions.Default;
 		}
 
-		internal GeneratorPassContext(
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GeneratorPassContext"/> class.
+		/// </summary>
+		/// <param name="originalContext"><see cref="GeneratorExecutionContext"/> created for the current generator pass.</param>
+		/// <param name="generator"><see cref="IDurianGenerator"/> this context was created for.</param>
+		/// <param name="targetCompilation"><see cref="ICompilationData"/> this <see cref="IDurianGenerator"/> operates on.</param>
+		/// <param name="syntaxReceiver"><see cref="IDurianSyntaxReceiver"/> that provides the <see cref="SyntaxNode"/>es that will take part in the generation.</param>
+		/// <param name="parseOptions"><see cref="CSharpParseOptions"/> that will be used to parse any added sources.</param>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		/// <param name="services">Container of services that can be resolved during the current generator pass.</param>
+		/// <param name="cancellationToken"><see cref="System.Threading.CancellationToken"/> that can be checked to see if the generation should be canceled.</param>
+		public GeneratorPassContext(
 			in GeneratorExecutionContext originalContext,
 			IDurianGenerator generator,
 			ICompilationData targetCompilation,
@@ -71,8 +80,6 @@ namespace Durian.Analysis
 			CSharpParseOptions parseOptions,
 			IHintNameProvider fileNameProvider,
 			IGeneratorServiceContainer services,
-			DiagnosticReceiver.ReadonlyContextual<GeneratorExecutionContext>? diagnosticReceiver = default,
-			LoggableDiagnosticReceiver? logReceiver = default,
 			CancellationToken cancellationToken = default
 		)
 		{
@@ -83,9 +90,48 @@ namespace Durian.Analysis
 			ParseOptions = parseOptions;
 			FileNameProvider = fileNameProvider;
 			Services = services;
-			DiagnosticReceiver = diagnosticReceiver;
-			LogReceiver = logReceiver;
 			CancellationToken = cancellationToken;
+		}
+
+		/// <summary>
+		/// Returns a <see cref="IDiagnosticReceiver"/> that will be actually used during the current generation pass.
+		/// </summary>
+		public IDiagnosticReceiver? GetActualDiagnosticReceiver()
+		{
+			return Generator.GetFilterMode() switch
+			{
+				FilterMode.Diagnostics => DiagnosticReceiver.Factory.SourceGenerator(),
+				FilterMode.Logs => GetLogReceiverOrEmpty(false),
+				FilterMode.Both => GetLogReceiverOrEmpty(true),
+				_ => default
+			};
+		}
+
+		IDiagnosticReceiver? IGeneratorPassContext.GetDiagnosticReceiver()
+		{
+			return GetActualDiagnosticReceiver();
+		}
+
+		private INodeDiagnosticReceiver GetLogReceiverOrEmpty(bool includeDiagnostics)
+		{
+			if(Generator.LogHandler is null)
+			{
+				return DiagnosticReceiver.Factory.Empty();
+			}
+
+			LogReceiver logReceiver = new(Generator.LogHandler);
+
+			if (includeDiagnostics)
+			{
+				DiagnosticReceiver.Composite dr = DiagnosticReceiver.Factory.Composite();
+
+				dr.AddReceiver(DiagnosticReceiver.Factory.SourceGenerator());
+				dr.AddReceiver(logReceiver, true);
+
+				return dr;
+			}
+
+			return logReceiver;
 		}
 	}
 }

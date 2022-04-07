@@ -167,7 +167,7 @@ namespace Durian.Info
 
 			foreach (DurianPackage package in packages)
 			{
-				PackageIdentity.EnsureIsValidPackageEnum(package);
+				PackageIdentity.EnsureIsValidPackageEnum_InvOp(package);
 			}
 
 			AssemblyName[] references = assembly.GetReferencedAssemblies();
@@ -256,7 +256,7 @@ namespace Durian.Info
 
 			foreach (DurianPackage package in packages)
 			{
-				PackageIdentity.EnsureIsValidPackageEnum(package);
+				PackageIdentity.EnsureIsValidPackageEnum_InvOp(package);
 			}
 
 			AssemblyName[] references = assembly.GetReferencedAssemblies();

@@ -4,6 +4,7 @@
 using Durian.Analysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Durian.Analysis.Logging;
 using System;
 
 namespace Durian.TestServices
@@ -16,14 +17,14 @@ namespace Durian.TestServices
 		/// <summary>
 		/// An <see cref="ISourceGenerator"/> that is being tested.
 		/// </summary>
-		public ISourceGenerator Generator { get; }
+		public ISourceGenerator UnderlayingGenerator { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorTest"/> class.
 		/// </summary>
 		protected GeneratorTest()
 		{
-			Generator = CreateGenerator();
+			UnderlayingGenerator = CreateGenerator();
 		}
 
 		/// <summary>
@@ -34,12 +35,12 @@ namespace Durian.TestServices
 		{
 			ISourceGenerator generator = CreateGenerator();
 
-			if (enableDiagnostics && generator is IDurianGenerator g && g.SupportsDiagnostics)
+			if (enableDiagnostics && generator is IDurianGenerator g && g.LogHandler is not null)
 			{
-				g.EnableDiagnostics = true;
+				g.LogHandler.EnableDiagnosticsIfSupported();
 			}
 
-			Generator = generator;
+			UnderlayingGenerator = generator;
 		}
 
 		/// <summary>
@@ -119,62 +120,62 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="UnderlayingGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		public virtual SingletonGeneratorTestResult RunGenerator(string? input)
 		{
-			return RunGenerator(Generator, input);
+			return RunGenerator(UnderlayingGenerator, input);
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="UnderlayingGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		/// <param name="index">Index of the source in the generator's output.</param>
 		public virtual SingletonGeneratorTestResult RunGenerator(string? input, int index)
 		{
-			return RunGenerator(Generator, input, index);
+			return RunGenerator(UnderlayingGenerator, input, index);
 		}
 
 		/// <summary>
-		/// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+		/// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="UnderlayingGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		public virtual MultiOutputGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input)
 		{
-			return RunGeneratorWithMultipleOutputs(Generator, input);
+			return RunGeneratorWithMultipleOutputs(UnderlayingGenerator, input);
 		}
 
 		/// <summary>
-		/// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+		/// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="UnderlayingGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		/// <param name="startIndex">Number of generated sources to skip.</param>
 		public virtual MultiOutputGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, int startIndex)
 		{
-			return RunGeneratorWithMultipleOutputs(Generator, input, startIndex);
+			return RunGeneratorWithMultipleOutputs(UnderlayingGenerator, input, startIndex);
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="UnderlayingGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		/// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
 		public virtual SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string? external)
 		{
-			return RunGeneratorWithDependency(Generator, input, external);
+			return RunGeneratorWithDependency(UnderlayingGenerator, input, external);
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="Generator"/>.
+		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="UnderlayingGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		/// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
 		/// <param name="index">Index of the source in the generator's output.</param>
 		public virtual SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string? external, int index)
 		{
-			return RunGeneratorWithDependency(Generator, input, external, index);
+			return RunGeneratorWithDependency(UnderlayingGenerator, input, external, index);
 		}
 
 		/// <summary>

@@ -195,7 +195,7 @@ namespace Durian.Info
 		/// </summary>
 		/// <param name="modules">A collection of <see cref="DurianModule"/>s to convert.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="modules"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value detected.</exception>
 		public static ModuleReference[] ToReferences(IEnumerable<DurianModule> modules)
 		{
 			if (modules is null)

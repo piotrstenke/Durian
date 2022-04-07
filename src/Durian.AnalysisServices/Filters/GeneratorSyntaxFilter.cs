@@ -28,42 +28,20 @@ namespace Durian.Analysis.Filters
 		/// <inheritdoc cref="IGeneratorSyntaxFilter.Filtrate(IGeneratorPassContext)"/>
 		public virtual IEnumerable<IMemberData> Filtrate(IGeneratorPassContext context)
 		{
-			return context.Generator.GetFilterMode() switch
+			IDiagnosticReceiver? diagnosticReceiver = context.GetDiagnosticReceiver();
+
+			if(diagnosticReceiver is null)
 			{
-				FilterMode.Diagnostics => Filtrate(context.TargetCompilation, context.SyntaxReceiver, GetDiagnosticReceiver(context), context.CancellationToken),
-				FilterMode.Logs => Filtrate(context.TargetCompilation, context.SyntaxReceiver, GetLogReceiver(context, false), context.CancellationToken),
-				FilterMode.Both => Filtrate(context.TargetCompilation, context.SyntaxReceiver, GetLogReceiver(context, true), context.CancellationToken),
-				_ => Filtrate(context.TargetCompilation, context.SyntaxReceiver, context.CancellationToken)
-			};
+				return Filtrate(context.TargetCompilation, context.SyntaxReceiver, context.CancellationToken);
+			}
+
+			return Filtrate(context.TargetCompilation, context.SyntaxReceiver, diagnosticReceiver, context.CancellationToken);
 		}
 
 		/// <inheritdoc cref="IGeneratorSyntaxFilter.GetEnumerator(IGeneratorPassContext)"/>
 		public virtual IEnumerator<IMemberData> GetEnumerator(IGeneratorPassContext context)
 		{
 			return Filtrate(context).GetEnumerator();
-		}
-
-		/// <summary>
-		/// Returns a <see cref="IDiagnosticReceiver"/> that will be used during enumeration of the filter when <see cref="FilterMode"/> of the <paramref name="context"/> is equal to <see cref="FilterMode.Diagnostics"/>.
-		/// </summary>
-		/// <param name="context"><see cref="IGeneratorPassContext"/> to retrieve the <see cref="IDiagnosticReceiver"/> from.</param>
-		protected virtual IDiagnosticReceiver GetDiagnosticReceiver(IGeneratorPassContext context)
-		{
-			return context.GetDiagnosticReceiverOrEmpty();
-		}
-
-		/// <summary>
-		/// Returns a <see cref="INodeDiagnosticReceiver"/> that will be used enumeration of the filter when <see cref="FilterMode"/> of the <paramref name="context"/>  is equal to <see cref="FilterMode.Logs"/> or <see cref="FilterMode.Both"/>.
-		/// </summary>
-		/// <param name="context"><see cref="IGeneratorPassContext"/> to retrieve the <see cref="INodeDiagnosticReceiver"/> from.</param>
-		/// <param name="includeDiagnostics">
-		/// Determines whether to include diagnostics other than log files.
-		/// <para>If <see cref="FilterMode"/> is equal to <see cref="FilterMode.Both"/>,
-		/// <paramref name="includeDiagnostics"/> is <see langword="true"/>, otherwise <see langword="false"/>.</para>
-		/// </param>
-		protected virtual INodeDiagnosticReceiver GetLogReceiver(IGeneratorPassContext context, bool includeDiagnostics)
-		{
-			return context.GetLogReceiverOrEmpty(includeDiagnostics);
 		}
 	}
 }

@@ -23,34 +23,25 @@ namespace Durian.Analysis.FriendClass
 		/// <summary>
 		/// Name of this source generator.
 		/// </summary>
-		public static string GeneratorName => "FriendClass";
+		public override string GeneratorName => "FriendClass";
 
 		/// <summary>
 		/// Version of this source generator.
 		/// </summary>
-		public static string Version => "2.0.0";
+		public override string GeneratorVersion => "2.0.0";
 
-		/// <inheritdoc cref="FriendClassGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FriendClassGenerator"/> class.
+		/// </summary>
 		public FriendClassGenerator()
-		{
-		}
-
-		/// <inheritdoc cref="FriendClassGenerator(in ConstructionContext, IHintNameProvider?)"/>
-		public FriendClassGenerator(in ConstructionContext context) : base(in context)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FriendClassGenerator"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public FriendClassGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
-		{
-		}
-
-		/// <inheritdoc cref="FriendClassGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
-		public FriendClassGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		/// <param name="context">Configures how this <see cref="FriendClassGenerator"/> is initialized.</param>
+		public FriendClassGenerator(in GeneratorLogCreationContext context) : base(in context)
 		{
 		}
 
@@ -58,8 +49,7 @@ namespace Durian.Analysis.FriendClass
 		/// Initializes a new instance of the <see cref="FriendClassGenerator"/> class.
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public FriendClassGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		public FriendClassGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
 
@@ -73,18 +63,6 @@ namespace Durian.Analysis.FriendClass
 				new FriendClassAttributeProvider(),
 				new FriendClassConfigurationAttributeProvider()
 			};
-		}
-
-		/// <inheritdoc/>
-		public override string GetGeneratorName()
-		{
-			return GeneratorName;
-		}
-
-		/// <inheritdoc/>
-		public override string GetGeneratorVersion()
-		{
-			return Version;
 		}
 
 		/// <inheritdoc/>

@@ -71,7 +71,7 @@ namespace Durian.Analysis.DefaultParam
 		/// Initializes a new instance of the <see cref="DefaultParamGenerator"/> class.
 		/// </summary>
 		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-		public DefaultParamGenerator(in ConstructionContext context) : base(in context)
+		public DefaultParamGenerator(in GeneratorLogCreationContext context) : base(in context)
 		{
 		}
 
@@ -168,7 +168,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc/>
 		protected override bool Generate(IMemberData data, string hintName, GeneratorPassContext context)
 		{
-			if (data is not IDefaultParamTarget target || context is not BuilderContext c)
+			if (data is not IDefaultParamTarget target || context is not GeneratorPassBuilderContext c)
 			{
 				return false;
 			}
@@ -363,7 +363,7 @@ namespace Durian.Analysis.DefaultParam
 			return members;
 		}
 
-		private void GenerateAllVersionsOfTarget(IDefaultParamTarget target, BuilderContext context)
+		private void GenerateAllVersionsOfTarget(IDefaultParamTarget target, GeneratorPassBuilderContext context)
 		{
 			IDefaultParamDeclarationBuilder declBuilder = target.GetDeclarationBuilder(context.CancellationToken);
 			_rewriter.Acquire(declBuilder);
@@ -377,7 +377,7 @@ namespace Durian.Analysis.DefaultParam
 			}
 		}
 
-		private void WriteTargetLeadDeclaration(IDefaultParamTarget target, BuilderContext context)
+		private void WriteTargetLeadDeclaration(IDefaultParamTarget target, GeneratorPassBuilderContext context)
 		{
 			context.CodeBuilder.WriteHeader(GeneratorName, Version);
 			context.CodeBuilder.WriteLine();

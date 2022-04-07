@@ -19,6 +19,12 @@ namespace Durian.Analysis
 		EnableExceptions = true)]
 	public sealed class EnableCoreModuleGenerator : DurianGeneratorBase
 	{
+		/// <inheritdoc/>
+		public override string GeneratorName => nameof(EnableCoreModuleGenerator);
+
+		/// <inheritdoc/>
+		public override string GeneratorVersion => "3.0.0";
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EnableCoreModuleGenerator"/> class.
 		/// </summary>
@@ -29,8 +35,8 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EnableCoreModuleGenerator"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-		public EnableCoreModuleGenerator(in ConstructionContext context) : base(in context)
+		/// <param name="context">Configures how this <see cref="EnableCoreModuleGenerator"/> is initialized.</param>
+		public EnableCoreModuleGenerator(in GeneratorLogCreationContext context) : base(in context)
 		{
 		}
 
@@ -40,18 +46,6 @@ namespace Durian.Analysis
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		public EnableCoreModuleGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
-		}
-
-		/// <inheritdoc/>
-		public override string GetGeneratorName()
-		{
-			return nameof(EnableCoreModuleGenerator);
-		}
-
-		/// <inheritdoc/>
-		public override string? GetGeneratorVersion()
-		{
-			return "3.0.0";
 		}
 
 		/// <inheritdoc/>

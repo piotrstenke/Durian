@@ -8,9 +8,9 @@ using System;
 namespace Durian.Analysis.Logging
 {
 	/// <summary>
-	/// A <see cref="INodeDiagnosticReceiver"/> that uses a <see cref="LoggableGenerator"/> to log the received <see cref="Diagnostic"/>s.
+	/// A <see cref="INodeDiagnosticReceiver"/> that uses a <see cref="IGeneratorLogHandler"/> to log the received <see cref="Diagnostic"/>s.
 	/// </summary>
-	public partial class LoggableDiagnosticReceiver : INodeDiagnosticReceiver
+	public class LogReceiver : INodeDiagnosticReceiver
 	{
 		private readonly DiagnosticBag _bag;
 
@@ -18,9 +18,14 @@ namespace Durian.Analysis.Logging
 		public int Count => _bag.Count;
 
 		/// <summary>
-		/// <see cref="ILoggableGenerator"/> this <see cref="LoggableDiagnosticReceiver"/> reports the diagnostics to.
+		/// Name of the log file to log to.
 		/// </summary>
-		public ILoggableGenerator Generator { get; }
+		public string? HintName { get; private set; }
+
+		/// <summary>
+		/// <see cref="IGeneratorLogHandler"/> to write the reported <see cref="Diagnostic"/>s to.
+		/// </summary>
+		public IGeneratorLogHandler LogHandler { get; }
 
 		/// <summary>
 		/// Determines what to output when a <see cref="SyntaxNode"/> is being logged.
@@ -28,36 +33,41 @@ namespace Durian.Analysis.Logging
 		public NodeOutput NodeOutput { get; set; }
 
 		/// <summary>
-		/// Name of the log file to log to.
-		/// </summary>
-		public string? HintName { get; private set; }
-
-		/// <summary>
 		/// Target <see cref="CSharpSyntaxNode"/>.
 		/// </summary>
 		public CSharpSyntaxNode? Node { get; private set; }
 
-		/// <inheritdoc cref="LoggableDiagnosticReceiver(ILoggableGenerator, NodeOutput)"/>
-		public LoggableDiagnosticReceiver(ILoggableGenerator generator)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="LogReceiver"/> class.
+		/// </summary>
+		public LogReceiver() : this(default(LoggingConfiguration))
 		{
-			if (generator is null)
-			{
-				throw new ArgumentNullException(nameof(generator));
-			}
-
-			_bag = new();
-			Generator = generator;
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="LoggableGenerator"/> class.
+		/// Initializes a new instance of the <see cref="LogReceiver"/> class.
 		/// </summary>
-		/// <param name="generator"><see cref="LoggableGenerator"/> that will log the received <see cref="Diagnostic"/>s.</param>
-		/// <param name="nodeOutput">Determines what to output when a <see cref="SyntaxNode"/> is being logged.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		public LoggableDiagnosticReceiver(ILoggableGenerator generator, NodeOutput nodeOutput) : this(generator)
+		/// <param name="configuration">Configures how logging is handled.</param>
+		public LogReceiver(LoggingConfiguration? configuration)
 		{
-			NodeOutput = nodeOutput;
+			LogHandler = new GeneratorLogHandler(configuration);
+			_bag = new();
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="LogReceiver"/> class.
+		/// </summary>
+		/// <param name="logHandler"><see cref="IGeneratorLogHandler"/> to write the reported <see cref="Diagnostic"/>s to.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="logHandler"/> is <see langword="null"/>.</exception>
+		public LogReceiver(IGeneratorLogHandler logHandler)
+		{
+			if(logHandler is null)
+			{
+				throw new ArgumentNullException(nameof(logHandler));
+			}
+
+			LogHandler = logHandler;
+			_bag = new();
 		}
 
 		/// <summary>
@@ -65,7 +75,7 @@ namespace Durian.Analysis.Logging
 		/// </summary>
 		public virtual void Clear()
 		{
-			lock(_bag)
+			lock (_bag)
 			{
 				_bag.Clear();
 			}
@@ -113,7 +123,7 @@ namespace Durian.Analysis.Logging
 				return;
 			}
 
-			Generator.LogDiagnostics(node, hintName, diagnostics, nodeOutput);
+			LogHandler.LogDiagnostics(node, hintName, diagnostics, nodeOutput);
 			ReportDiagnostics(diagnostics);
 			Clear();
 		}
@@ -121,7 +131,7 @@ namespace Durian.Analysis.Logging
 		/// <inheritdoc/>
 		public virtual void ReportDiagnostic(DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs)
 		{
-			lock(_bag)
+			lock (_bag)
 			{
 				_bag.ReportDiagnostic(descriptor, location, messageArgs);
 			}
@@ -130,7 +140,7 @@ namespace Durian.Analysis.Logging
 		/// <inheritdoc/>
 		public virtual void ReportDiagnostic(Diagnostic diagnostic)
 		{
-			lock(_bag)
+			lock (_bag)
 			{
 				_bag.ReportDiagnostic(diagnostic);
 			}
@@ -139,7 +149,7 @@ namespace Durian.Analysis.Logging
 		/// <inheritdoc/>
 		public virtual void SetTargetNode(CSharpSyntaxNode? node, string? hintName)
 		{
-			lock(_bag)
+			lock (_bag)
 			{
 				Node = node;
 				HintName = hintName;

@@ -34,17 +34,17 @@ namespace Durian.Info
 		/// Throws an <see cref="InvalidOperationException"/> if the specified <paramref name="module"/> is not a valid <see cref="DurianModule"/> value.
 		/// </summary>
 		/// <param name="module"><see cref="DurianModule"/> to ensure that is valid.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
 		public static void EnsureIsValidModuleEnum(DurianModule module)
 		{
 			if (module == DurianModule.None)
 			{
-				throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!");
+				throw new ArgumentException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!");
 			}
 
 			if (!GlobalInfo.IsValidModuleValue(module))
 			{
-				throw new InvalidOperationException($"Unknown {nameof(DurianModule)} value: {module}!");
+				throw new ArgumentException($"Unknown {nameof(DurianModule)} value: {module}!");
 			}
 		}
 
@@ -162,26 +162,6 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Returns a new instance of <see cref="ModuleIdentity"/> corresponding with the specified <see cref="DurianModule"/>.
-		/// </summary>
-		/// <param name="module"><see cref="DurianModule"/> to get <see cref="ModuleIdentity"/> for.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
-		public static ModuleIdentity GetModule(DurianModule module)
-		{
-			return module switch
-			{
-				DurianModule.Core => ModuleRepository.Core,
-				DurianModule.DefaultParam => ModuleRepository.DefaultParam,
-				DurianModule.FriendClass => ModuleRepository.FriendClass,
-				DurianModule.InterfaceTargets => ModuleRepository.InterfaceTargets,
-				DurianModule.Development => ModuleRepository.Development,
-				DurianModule.CopyFrom => ModuleRepository.CopyFrom,
-				DurianModule.None => throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!"),
-				_ => throw new InvalidOperationException($"Unknown {nameof(DurianModule)} value: {module}!")
-			};
-		}
-
-		/// <summary>
 		/// Returns a <see cref="ModuleIdentity"/> of Durian module with the specified <paramref name="moduleName"/>.
 		/// </summary>
 		/// <param name="moduleName">Name of the Durian module to get the <see cref="ModuleIdentity"/> of.</param>
@@ -199,7 +179,7 @@ namespace Durian.Info
 		/// Returns a new instance of <see cref="ModuleReference"/> that represents an in-direct reference to a <see cref="ModuleIdentity"/>.
 		/// </summary>
 		/// <param name="module"><see cref="DurianModule"/> to get a <see cref="ModuleReference"/> to.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
 		public static ModuleReference GetReference(DurianModule module)
 		{
 			return new ModuleReference(module);
@@ -335,6 +315,19 @@ namespace Durian.Info
 			string name = Utilities.DurianRegex.Replace(moduleName, "");
 
 			return Enum.TryParse(name, true, out module);
+		}
+
+		internal static void EnsureIsValidModuleEnum_InvOp(DurianModule module)
+		{
+			if (module == DurianModule.None)
+			{
+				throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!");
+			}
+
+			if (!GlobalInfo.IsValidModuleValue(module))
+			{
+				throw new InvalidOperationException($"Unknown {nameof(DurianModule)} value: {module}!");
+			}
 		}
 	}
 }

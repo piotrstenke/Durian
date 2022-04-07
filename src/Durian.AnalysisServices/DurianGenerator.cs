@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filters;
 using Durian.Analysis.Logging;
@@ -12,25 +13,26 @@ namespace Durian.Analysis
 	/// <summary>
 	/// Abstract implementation of the <see cref="IDurianGenerator"/> interface that performs early validation of the input <see cref="GeneratorExecutionContext"/>.
 	/// </summary>
-	public abstract class DurianGenerator : DurianGeneratorWithContext<GeneratorPassContext>
+	/// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> this generator uses.</typeparam>
+	public abstract class DurianGenerator<TContext> : DurianGeneratorWithContext<TContext> where TContext : GeneratorPassContext
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="DurianGenerator"/> class.
+		/// Initializes a new instance of the <see cref="DurianGenerator{TContext}"/> class.
 		/// </summary>
 		protected DurianGenerator()
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="DurianGenerator"/> class.
+		/// Initializes a new instance of the <see cref="DurianGenerator{TContext}"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="DurianGenerator"/> is initialized.</param>
-		protected DurianGenerator(in ConstructionContext context) : base(in context)
+		/// <param name="context">Configures how this <see cref="DurianGenerator{TContext}"/> is initialized.</param>
+		protected DurianGenerator(in GeneratorLogCreationContext context) : base(in context)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="DurianGenerator"/> class.
+		/// Initializes a new instance of the <see cref="DurianGenerator{TContext}"/> class.
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		protected DurianGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
@@ -53,7 +55,7 @@ namespace Durian.Analysis
 		public abstract ICompilationData? CreateCompilationData(CSharpCompilation compilation);
 
 		/// <inheritdoc/>
-		protected override void AddSourceCore(CSharpSyntaxTree tree, string hintName, GeneratorPassContext context)
+		protected internal override void AddSourceCore(CSharpSyntaxTree tree, string hintName, TContext context)
 		{
 			base.AddSourceCore(tree, hintName, context);
 
@@ -68,13 +70,19 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		protected override void AfterExecutionOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, GeneratorPassContext context)
+		protected internal override void AfterExecution(TContext context)
+		{
+			context.State = GeneratorState.Success;
+		}
+
+		/// <inheritdoc/>
+		protected internal override void AfterExecutionOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
 		{
 			context.IsFilterWithGeneratedSymbols = false;
 		}
 
 		/// <inheritdoc/>
-		protected override void BeforeFiltersWithGeneratedSymbols(GeneratorPassContext context)
+		protected internal override void BeforeFiltersWithGeneratedSymbols(TContext context)
 		{
 			if (context.GenerationQueue.Count > 0)
 			{
@@ -91,7 +99,7 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		protected sealed override GeneratorPassContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, in GeneratorExecutionContext context)
+		protected internal sealed override TContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, in GeneratorExecutionContext context)
 		{
 			if (context.SyntaxReceiver is not IDurianSyntaxReceiver syntaxReceiver || !ValidateSyntaxReceiver(syntaxReceiver))
 			{
@@ -109,28 +117,41 @@ namespace Durian.Analysis
 
 			ConfigureServices(services);
 
-			GeneratorPassContext pass = CreateCurrentPassContext(data, in context);
+			TContext pass = CreateCurrentPassContext(data, in context);
 
+			pass._originalContext = context;
+			pass.Generator = this;
 			pass.CancellationToken = context.CancellationToken;
 			pass.Services = services;
-			pass.DiagnosticReceiver = EnableDiagnostics ? DiagnosticReceiver.Factory.SourceGenerator(in context) : default;
-			pass.LogReceiver = EnableLogging ? new LoggableDiagnosticReceiver(this) : default;
 			pass.TargetCompilation = data;
-			pass.Generator = this;
 			pass.SyntaxReceiver = syntaxReceiver;
-			pass._originalContext = context;
+			pass.State = GeneratorState.Running;
+
+			FillContext(pass);
 
 			return pass;
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="GeneratorPassContext"/> for the current generator pass.
+		/// Creates a new <typeparamref name="TContext"/> for the current generator pass.
 		/// </summary>
 		/// <param name="currentCompilation">Current <see cref="ICompilationData"/>.</param>
 		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-		protected virtual GeneratorPassContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
+		protected abstract TContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context);
+
+		/// <summary>
+		/// Fills the specified <paramref name="context"/> with custom data.
+		/// </summary>
+		/// <param name="context"><typeparamref name="TContext"/> to fill with data.</param>
+		protected virtual void FillContext(TContext context)
 		{
-			return new GeneratorPassContext();
+			// Do nothing by default.
+		}
+
+		/// <inheritdoc/>
+		protected internal override void OnException(Exception e, TContext context)
+		{
+			context.State = GeneratorState.Failed;
 		}
 
 		/// <summary>
@@ -140,6 +161,39 @@ namespace Durian.Analysis
 		protected virtual bool ValidateSyntaxReceiver(IDurianSyntaxReceiver syntaxReceiver)
 		{
 			return !syntaxReceiver.IsEmpty();
+		}
+	}
+
+	/// <inheritdoc cref="DurianGenerator{TContext}"/>
+	public abstract class DurianGenerator : DurianGeneratorWithContext<GeneratorPassContext>
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DurianGenerator"/> class.
+		/// </summary>
+		protected DurianGenerator()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DurianGenerator"/> class.
+		/// </summary>
+		/// <param name="context">Configures how this <see cref="DurianGenerator"/> is initialized.</param>
+		protected DurianGenerator(in GeneratorLogCreationContext context) : base(in context)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DurianGenerator"/> class.
+		/// </summary>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
+		protected DurianGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		{
+		}
+
+		/// <inheritdoc/>
+		protected internal override GeneratorPassContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, in GeneratorExecutionContext context)
+		{
+			return new GeneratorPassContext();
 		}
 	}
 }

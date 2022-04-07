@@ -23,34 +23,25 @@ namespace Durian.Analysis.InterfaceTargets
 		/// <summary>
 		/// Name of this source generator.
 		/// </summary>
-		public static string GeneratorName => "InterfaceTargets";
+		public override string GeneratorName => "InterfaceTargets";
 
 		/// <summary>
 		/// Version of this source generator.
 		/// </summary>
-		public static string Version => "2.0.0";
+		public override string GeneratorVersion => "2.0.0";
 
-		/// <inheritdoc cref="InterfaceTargetsGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		/// <summary>
+		/// Initializes a new instance of the <see cref="InterfaceTargetsGenerator"/> class.
+		/// </summary>
 		public InterfaceTargetsGenerator()
-		{
-		}
-
-		/// <inheritdoc cref="InterfaceTargetsGenerator(in ConstructionContext, IHintNameProvider?)"/>
-		public InterfaceTargetsGenerator(in ConstructionContext context) : base(in context)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="InterfaceTargetsGenerator"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public InterfaceTargetsGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
-		{
-		}
-
-		/// <inheritdoc cref="InterfaceTargetsGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
-		public InterfaceTargetsGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		/// <param name="context">Configures how this <see cref="InterfaceTargetsGenerator"/> is initialized.</param>
+		public InterfaceTargetsGenerator(in GeneratorLogCreationContext context) : base(in context)
 		{
 		}
 
@@ -58,8 +49,7 @@ namespace Durian.Analysis.InterfaceTargets
 		/// Initializes a new instance of the <see cref="InterfaceTargetsGenerator"/> class.
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public InterfaceTargetsGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		public InterfaceTargetsGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
 
@@ -73,18 +63,6 @@ namespace Durian.Analysis.InterfaceTargets
 				new InterfaceTargetsProvider(),
 				new InterfaceTargetsAttributeProvider()
 			};
-		}
-
-		/// <inheritdoc/>
-		public override string GetGeneratorName()
-		{
-			return GeneratorName;
-		}
-
-		/// <inheritdoc/>
-		public override string GetGeneratorVersion()
-		{
-			return Version;
 		}
 
 		/// <inheritdoc/>

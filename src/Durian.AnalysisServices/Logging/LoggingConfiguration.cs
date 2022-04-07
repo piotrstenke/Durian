@@ -24,11 +24,6 @@ namespace Durian.Analysis.Logging
 		private bool _supportsDiagnostics;
 
 		/// <summary>
-		/// Returns a <see cref="FilterMode"/> associated with the current configuration.
-		/// </summary>
-		public FilterMode CurrentFilterMode => Extensions.GeneratorExtensions.GetFilterMode(EnableDiagnostics, EnableLogging);
-
-		/// <summary>
 		/// Determines what to output when a <see cref="SyntaxNode"/> is being logged and no other <see cref="NodeOutput"/> is specified.
 		/// </summary>
 		/// <exception cref="ArgumentException">Value cannot be equal to <see cref="NodeOutput.Default"/>. -or- Invalid <see cref="NodeOutput"/> value.</exception>
@@ -85,7 +80,7 @@ namespace Durian.Analysis.Logging
 			get => _enableLogging;
 			set
 			{
-				if (value && !IsEnabled)
+				if (value && !IsGloballyEnabled)
 				{
 					throw new InvalidOperationException($"{nameof(EnableLogging)} cannot be set to true if generator logging is globally disabled!");
 				}
@@ -152,6 +147,11 @@ namespace Durian.Analysis.Logging
 		/// <inheritdoc/>
 		public static bool operator ==(LoggingConfiguration? a, LoggingConfiguration? b)
 		{
+			if (ReferenceEquals(a, b))
+			{
+				return true;
+			}
+
 			if (a is null)
 			{
 				return b is null;

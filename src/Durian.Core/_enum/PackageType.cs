@@ -44,6 +44,6 @@ namespace Durian.Info
 		/// <summary>
 		/// Represents a code fix package. Code fix packages are basically libraries of non-abstract code fixes.
 		/// </summary>
-		CodeFixLibrary = 32
+		CodeFixLibrary = 32,
 	}
 }

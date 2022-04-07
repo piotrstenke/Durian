@@ -120,7 +120,7 @@ namespace Durian.Info
 
 			foreach (DurianModule m in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(m);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(m);
 			}
 
 			_enums = enums;
@@ -545,7 +545,7 @@ namespace Durian.Info
 
 			foreach (DurianModule module in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(module);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(module);
 
 				_enums.Add(module);
 				_references.Add(null);

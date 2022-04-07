@@ -17,62 +17,94 @@ namespace Durian.Analysis.Cache
 {
 	/// <summary>
 	/// <see cref="ISyntaxFilter"/> that validates the filtrated nodes.
-	/// If the value associated with a <see cref="CSharpSyntaxNode"/> is present in the <see cref="CachedGeneratorExecutionContext{T}"/>, it is re-used instead of creating a new one.
+	/// If the value associated with a <see cref="CSharpSyntaxNode"/> is present in the <see cref="CachedGeneratorExecutionContext{T}"/>, it is re-used.
 	/// </summary>
-	public abstract class CachedSyntaxValidator : SyntaxValidator, ICachedGeneratorSyntaxFilterWithDiagnostics<IMemberData>
+	/// <typeparam name="TData">Type of cached values.</typeparam>
+	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
+	public abstract class CachedSyntaxValidator<TData, TContext> : SyntaxValidator<TContext>, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>
+		where TData : class, IMemberData
+		where TContext : ISyntaxValidatorContext
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedSyntaxValidator"/> class.
+		/// Initializes a new instance of the <see cref="CachedSyntaxValidator{TData, TContext}"/> class.
 		/// </summary>
 		protected CachedSyntaxValidator()
 		{
 		}
 
 		/// <inheritdoc/>
-		public IEnumerable<IMemberData> Filtrate(ICachedGeneratorPassContext<IMemberData> context)
+		public IEnumerable<TData> Filtrate(ICachedGeneratorPassContext<TData> context)
 		{
 			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
 			{
-				return Array.Empty<IMemberData>();
+				return Array.Empty<TData>();
 			}
 
-			return Yield();
+			ref readonly CachedData<TData> cache = ref context.OriginalContext.GetCachedData();
 
-			IEnumerable<IMemberData> Yield()
+			IDiagnosticReceiver? diagnosticReceiver = context.GetDiagnosticReceiver();
+
+			if (diagnosticReceiver is null)
 			{
-				foreach (CSharpSyntaxNode node in list)
-				{
-					if (node is null)
-					{
-						continue;
-					}
+				return Yield(new CachedFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, in cache));
+			}
 
-					if (context.OriginalContext.TryGetCachedValue(node.GetLocation().GetLineSpan(), out IMemberData? data) ||
-						ValidateAndCreate(node, context.TargetCompilation, out data, context.CancellationToken))
-					{
-						yield return data;
-					}
+			if(diagnosticReceiver is INodeDiagnosticReceiver node)
+			{
+				return Yield(new CachedLoggableFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, node, context.FileNameProvider, in cache));
+			}
+
+			return Yield(new CachedFilterEnumeratorWithDiagnostics<TData, TContext>(context.TargetCompilation, list, this, diagnosticReceiver, in cache));
+
+			IEnumerable<TData> Yield<TEnumerator>(TEnumerator enumerator) where TEnumerator : IFilterEnumerator<TContext>
+			{
+				while(enumerator.MoveNext(context.CancellationToken))
+				{
+					yield return (enumerator.Current as TData)!;
 				}
 			}
 		}
 
 		/// <inheritdoc/>
-		public virtual IEnumerator<IMemberData> GetEnumerator(ICachedGeneratorPassContext<IMemberData> context)
+		public virtual IEnumerator<TData> GetEnumerator(ICachedGeneratorPassContext<TData> context)
 		{
 			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
 			{
-				return Enumerable.Empty<IMemberData>().GetEnumerator();
+				return Enumerable.Empty<TData>().GetEnumerator();
 			}
 
-			ref readonly CachedData<IMemberData> cache = ref context.OriginalContext.GetCachedData();
+			ref readonly CachedData<TData> cache = ref context.OriginalContext.GetCachedData();
 
-			return context.Generator.GetFilterMode() switch
+			IDiagnosticReceiver? diagnosticReceiver = context.GetDiagnosticReceiver();
+
+			if(diagnosticReceiver is null)
 			{
-				FilterMode.Diagnostics => new CachedFilterEnumeratorWithDiagnostics<IMemberData>(list, context.TargetCompilation, this, GetDiagnosticReceiver(context), in cache),
-				FilterMode.Logs => new CachedLoggableFilterEnumerator<IMemberData>(list, context.TargetCompilation, this, GetLogReceiver(context, false), context.FileNameProvider, in cache),
-				FilterMode.Both => new CachedLoggableFilterEnumerator<IMemberData>(list, context.TargetCompilation, this, GetLogReceiver(context, true), context.FileNameProvider, in cache),
-				_ => new CachedFilterEnumerator<IMemberData>(list, context.TargetCompilation, this, in cache)
-			};
+				return new CachedFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, in cache);
+			}
+
+			if(diagnosticReceiver is INodeDiagnosticReceiver node)
+			{
+				return new CachedLoggableFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, node, context.FileNameProvider, in cache);
+			}
+
+			return new CachedFilterEnumeratorWithDiagnostics<TData, TContext>(context.TargetCompilation, list, this, diagnosticReceiver, in cache);
+		}
+	}
+
+	/// <inheritdoc cref="CachedSyntaxValidator{TData}"/>
+	public abstract class CachedSyntaxValidator<TData> : CachedSyntaxValidator<TData, SyntaxValidatorContext> where TData : IMemberData
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedSyntaxValidator{TData}"/> class.
+		/// </summary>
+		protected CachedSyntaxValidator()
+		{
+		}
+
+		/// <inheritdoc/>
+		protected override SyntaxValidatorContext CreateContext(in ValidationDataProviderContext context, SemanticModel semanticModel, ISymbol symbol)
+		{
+			return new SyntaxValidatorContext(context.TargetCompilation, semanticModel, context.Node, symbol, context.CancellationToken);
 		}
 	}
 }

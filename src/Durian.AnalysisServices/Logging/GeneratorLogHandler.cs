@@ -11,87 +11,27 @@ using System.Threading;
 
 namespace Durian.Analysis.Logging
 {
-	/// <inheritdoc cref="ILoggableGenerator"/>
-	public abstract partial class LoggableGenerator : ILoggableGenerator
+	/// <inheritdoc cref="IGeneratorLogHandler"/>
+	public class GeneratorLogHandler : IGeneratorLogHandler
 	{
 		/// <inheritdoc/>
 		public LoggingConfiguration LoggingConfiguration { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="LoggableGenerator"/> class.
+		/// Initializes a new instance of the <see cref="GeneratorLogHandler"/> class.
 		/// </summary>
-		protected LoggableGenerator() : this(null)
+		public GeneratorLogHandler() : this(default)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="LoggableGenerator"/> class.
+		/// Initializes a new instance of the <see cref="GeneratorLogHandler"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-		protected LoggableGenerator(in ConstructionContext context)
-		{
-			LoggingConfiguration = context.CheckForConfigurationAttribute ? LoggingConfiguration.CreateConfigurationForGenerator(this) : LoggingConfiguration.Default;
-
-			if (!context.EnableLoggingIfSupported)
-			{
-				LoggingConfiguration.EnableLogging = false;
-			}
-			else if (LoggingConfiguration.IsEnabled)
-			{
-				LoggingConfiguration.EnableLogging = true;
-			}
-
-			if (!context.EnableDiagnosticsIfSupported)
-			{
-				LoggingConfiguration.EnableDiagnostics = false;
-			}
-			else if (LoggingConfiguration.SupportsDiagnostics)
-			{
-				LoggingConfiguration.EnableDiagnostics = true;
-			}
-
-			if (context.EnableExceptions)
-			{
-				LoggingConfiguration.EnableExceptions = true;
-			}
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="LoggableGenerator"/> class.
-		/// </summary>
-		/// <param name="configuration">Determines how the source generator should behave when logging information. If <see langword="null"/>, <see cref="LoggingConfiguration.Default"/> is used instead.</param>
-		protected LoggableGenerator(LoggingConfiguration? configuration)
+		/// <param name="configuration">Configures how logging is handled.</param>
+		public GeneratorLogHandler(LoggingConfiguration? configuration)
 		{
 			LoggingConfiguration = configuration ?? LoggingConfiguration.Default;
 		}
-
-		/// <summary>
-		/// Enables diagnostics if <see cref="LoggingConfiguration.SupportedLogs"/> of the <see cref="LoggingConfiguration"/> is <see langword="true"/>.
-		/// </summary>
-		public void EnableDiagnosticsIfSupported()
-		{
-			if (LoggingConfiguration.SupportsDiagnostics)
-			{
-				LoggingConfiguration.EnableDiagnostics = true;
-			}
-		}
-
-		/// <summary>
-		/// Enables generator logging if <see cref="LoggingConfiguration.IsEnabled"/> is <see langword="true"/>.
-		/// </summary>
-		public void EnableLoggingIfSupported()
-		{
-			if (LoggingConfiguration.IsEnabled)
-			{
-				LoggingConfiguration.EnableLogging = true;
-			}
-		}
-
-		/// <inheritdoc/>
-		public abstract void Execute(in GeneratorExecutionContext context);
-
-		/// <inheritdoc/>
-		public abstract void Initialize(GeneratorInitializationContext context);
 
 		/// <inheritdoc/>
 		public void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics, NodeOutput nodeOutput = default)
@@ -119,7 +59,7 @@ namespace Durian.Analysis.Logging
 		/// <inheritdoc/>
 		public void LogException(Exception exception, string source)
 		{
-			if(LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
+			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
 			{
 				LogException_Internal(exception, source);
 			}
@@ -143,12 +83,7 @@ namespace Durian.Analysis.Logging
 			}
 		}
 
-		void ISourceGenerator.Execute(GeneratorExecutionContext context)
-		{
-			Execute(in context);
-		}
-
-		private protected void LogDiagnostics_Internal(SyntaxNode node, string hintName, Diagnostic[] diagnostics, NodeOutput nodeOutput)
+		internal void LogDiagnostics_Internal(SyntaxNode node, string hintName, Diagnostic[] diagnostics, NodeOutput nodeOutput)
 		{
 			StringBuilder sb = new();
 
@@ -170,19 +105,19 @@ namespace Durian.Analysis.Logging
 			WriteToFile(hintName, sb, ".diag");
 		}
 
-		private protected void LogException_Internal(Exception exception)
+		internal void LogException_Internal(Exception exception)
 		{
 			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
 			TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString() + "\n\n");
 		}
 
-		private protected void LogException_Internal(Exception exception, string source)
+		internal void LogException_Internal(Exception exception, string source)
 		{
 			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
 			TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", source + "::\n\n" + exception.ToString() + "\n\n");
 		}
 
-		private protected void LogInputOutput_Internal(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput)
+		internal void LogInputOutput_Internal(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput)
 		{
 			StringBuilder sb = new();
 
@@ -203,7 +138,7 @@ namespace Durian.Analysis.Logging
 			WriteToFile(hintName, sb, ".generated");
 		}
 
-		private protected void LogNode_Internal(SyntaxNode node, string hintName, NodeOutput nodeOutput)
+		internal void LogNode_Internal(SyntaxNode node, string hintName, NodeOutput nodeOutput)
 		{
 			StringBuilder sb = new();
 

@@ -10,8 +10,9 @@ namespace Durian.Analysis
 	public sealed partial class DiagnosticReceiver
 	{
 		/// <summary>
-		/// A <see cref="IDirectDiagnosticReceiver"/> that accepts see <see cref="ReportAction.ReadonlyDirectContextual{T}"/> instead of <see cref="ReportAction.DirectContextual{T}"/>.
+		/// Provides a mechanism for reporting diagnostic messages to a context.
 		/// </summary>
+		/// <typeparam name="T">Type of context this <see cref="IContextualDiagnosticReceiver{T}"/> is compliant with.</typeparam>
 		public sealed class ReadonlyContextual<T> : IContextualDiagnosticReceiver<T> where T : struct
 		{
 			private readonly ReportAction.ReadonlyDirectContextual<T> _action;

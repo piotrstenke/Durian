@@ -16,25 +16,26 @@ using System.Threading;
 namespace Durian.Analysis.Cache
 {
 	/// <summary>
-	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="ISyntaxValidatorWithDiagnostics{T}"/> or retrieved from a <see cref="CachedData{T}"/> with an option to log diagnostics using a <see cref="INodeDiagnosticReceiver"/>.
+	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="TContext"/> created by the provided <see cref="ISyntaxValidator{T}"/> or retrieved from a <see cref="CachedData{T}"/> with an option to log diagnostics using a <see cref="INodeDiagnosticReceiver"/>.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="IMemberData"/> this enumerator can handle.</typeparam>
+	/// <typeparam name="TData">Type of cached data.</typeparam>
+	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
 	[DebuggerDisplay("Current = {Current}")]
-	public struct CachedLoggableFilterEnumerator<T> : IEnumerator<T> where T : IMemberData
+	public struct CachedLoggableFilterEnumerator<TData, TContext> : IFilterEnumerator<TContext>
+		where TData : class, IMemberData
+		where TContext : ISyntaxValidatorContext
 	{
-		internal readonly CachedData<T> _cache;
+		internal readonly CachedData<TData> _cache;
 
 		private readonly IEnumerator<CSharpSyntaxNode> _nodes;
 
-		/// <summary>
-		/// Parent <see cref="ICompilationData"/> of the provided <see cref="CSharpSyntaxNode"/>s.
-		/// </summary>
+		/// <inheritdoc/>
 		public readonly ICompilationData Compilation { get; }
 
 		/// <summary>
 		/// Current <see cref="IMemberData"/>.
 		/// </summary>
-		public T? Current { readonly get; private set; }
+		public IMemberData? Current { readonly get; private set; }
 
 		/// <summary>
 		/// <see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s.
@@ -46,63 +47,69 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		public readonly INodeDiagnosticReceiver LogReceiver { get; }
 
-		/// <summary>
-		/// <see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.
-		/// </summary>
-		public readonly ISyntaxValidatorWithDiagnostics<T> Validator { get; }
+		/// <inheritdoc cref="IFilterEnumerator{T}.Validator"/>
+		public readonly ISyntaxValidatorWithDiagnostics<TContext> Validator { get; }
 
-		readonly T IEnumerator<T>.Current => Current!;
+		readonly IMemberData IEnumerator<IMemberData>.Current => Current!;
 		readonly object IEnumerator.Current => Current!;
+		readonly ISyntaxValidator<TContext> IFilterEnumerator<TContext>.Validator => Validator;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{T}"/> struct.
+		/// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> struct.
 		/// </summary>
-		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
+		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
 		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <paramref name="nodes"/>.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
 		public CachedLoggableFilterEnumerator(
-			IEnumerable<CSharpSyntaxNode> nodes,
 			ICompilationData compilation,
-			ISyntaxValidatorWithDiagnostics<T> validator,
+			IEnumerable<CSharpSyntaxNode> nodes,
+			ISyntaxValidatorWithDiagnostics<TContext> validator,
 			INodeDiagnosticReceiver logReceiver,
 			IHintNameProvider hintNameProvider,
-			in CachedData<T> cache
-		) : this(nodes.GetEnumerator(), compilation, validator, logReceiver, hintNameProvider, in cache)
+			in CachedData<TData> cache
+		) : this(compilation, nodes.GetEnumerator(), validator, logReceiver, hintNameProvider, in cache)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{T}"/> struct.
+		/// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> struct.
 		/// </summary>
-		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
+		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
 		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
 		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
 		public CachedLoggableFilterEnumerator(
-			INodeProvider provider,
 			ICompilationData compilation,
-			ISyntaxValidatorWithDiagnostics<T> validator,
+			INodeProvider provider,
+			ISyntaxValidatorWithDiagnostics<TContext> validator,
 			INodeDiagnosticReceiver logReceiver,
 			IHintNameProvider hintNameProvider,
-			in CachedData<T> cache
-		) : this(provider.GetNodes().GetEnumerator(), compilation, validator, logReceiver, hintNameProvider, in cache)
+			in CachedData<TData> cache
+		) : this(compilation, provider.GetNodes().GetEnumerator(), validator, logReceiver, hintNameProvider, in cache)
 		{
 		}
 
-#pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
-
-		internal CachedLoggableFilterEnumerator(
-			IEnumerator<CSharpSyntaxNode> nodes,
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> struct.
+		/// </summary>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
+		/// <param name="nodes">An enumerator that iterates through a collection of <see cref="CSharpSyntaxNode"/>s.</param>
+		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
+		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <paramref name="nodes"/>.</param>
+		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
+		public CachedLoggableFilterEnumerator(
 			ICompilationData compilation,
-			ISyntaxValidatorWithDiagnostics<T> validator,
+			IEnumerator<CSharpSyntaxNode> nodes,
+			ISyntaxValidatorWithDiagnostics<TContext> validator,
 			INodeDiagnosticReceiver logReceiver,
 			IHintNameProvider hintNameProvider,
-			in CachedData<T> cache
+			in CachedData<TData> cache
 		)
 		{
 			Validator = validator;
@@ -114,21 +121,23 @@ namespace Durian.Analysis.Cache
 			Current = default;
 		}
 
+#pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
+
 		/// <inheritdoc/>
-		public static explicit operator LoggableFilterEnumerator<T>(in CachedLoggableFilterEnumerator<T> a)
+		public static explicit operator LoggableFilterEnumerator<TContext>(in CachedLoggableFilterEnumerator<TData, TContext> a)
 		{
-			return new LoggableFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, a.LogReceiver, a.HintNameProvider);
+			return new LoggableFilterEnumerator<TContext>(a.Compilation, a._nodes, a.Validator, a.LogReceiver, a.HintNameProvider);
 		}
 
 		/// <inheritdoc/>
-		public static implicit operator CachedLoggableFilterEnumerator<T>(in LoggableFilterEnumerator<T> a)
+		public static implicit operator CachedLoggableFilterEnumerator<TData, TContext>(in LoggableFilterEnumerator<TContext> a)
 		{
-			return new CachedLoggableFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, a.LogReceiver, a.HintNameProvider, CachedData<T>.Empty);
+			return new CachedLoggableFilterEnumerator<TData, TContext>(a.Compilation, a._nodes, a.Validator, a.LogReceiver, a.HintNameProvider, CachedData<TData>.Empty);
 		}
 
 #pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 
-		/// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>
+		/// <inheritdoc/>
 		[MemberNotNullWhen(true, nameof(Current))]
 		public bool MoveNext(CancellationToken cancellationToken = default)
 		{
@@ -141,20 +150,20 @@ namespace Durian.Analysis.Cache
 					continue;
 				}
 
-				if (_cache.TryGetCachedValue(node.GetLocation().GetLineSpan(), out T? data))
+				if (_cache.TryGetCachedValue(node.GetLocation().GetLineSpan(), out TData? data))
 				{
 					Current = data!;
 					return true;
 				}
 
-				if (!Validator.GetValidationData(node, Compilation, out SemanticModel? semanticModel, out ISymbol? symbol, cancellationToken))
+				if (!Validator.TryGetValidationData(new ValidationDataProviderContext(node, Compilation, cancellationToken), out TContext? context))
 				{
 					continue;
 				}
 
-				string fileName = HintNameProvider.GetHintName(symbol);
+				string fileName = HintNameProvider.GetHintName(context.Symbol);
 				LogReceiver.SetTargetNode(node, fileName);
-				bool isValid = Validator.ValidateAndCreate(node, Compilation, semanticModel, symbol, out data, LogReceiver, cancellationToken);
+				bool isValid = Validator.ValidateAndCreate(context, out IMemberData? member, LogReceiver);
 
 				if (LogReceiver.Count > 0)
 				{
@@ -164,7 +173,7 @@ namespace Durian.Analysis.Cache
 
 				if (isValid)
 				{
-					Current = data!;
+					Current = member!;
 					return true;
 				}
 			}
@@ -181,19 +190,19 @@ namespace Durian.Analysis.Cache
 		}
 
 		/// <summary>
-		/// Converts this <see cref="CachedLoggableFilterEnumerator{T}"/> to a new instance of <see cref="CachedFilterEnumerator{T}"/>.
+		/// Converts this <see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> to a new instance of <see cref="CachedFilterEnumerator{TData, TContext}"/>.
 		/// </summary>
-		public readonly CachedFilterEnumerator<T> ToBasicCachedEnumerator()
+		public readonly CachedFilterEnumerator<TData, TContext> ToBasicCachedEnumerator()
 		{
-			return new CachedFilterEnumerator<T>(_nodes, Compilation, Validator, in _cache);
+			return new CachedFilterEnumerator<TData, TContext>(Compilation, _nodes, Validator, in _cache);
 		}
 
 		/// <summary>
-		/// Converts this <see cref="CachedLoggableFilterEnumerator{T}"/> to a new instance of <see cref="FilterEnumerator{T}"/>.
+		/// Converts this <see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> to a new instance of <see cref="FilterEnumerator{T}"/>.
 		/// </summary>
-		public readonly FilterEnumerator<T> ToBasicEnumerator()
+		public readonly FilterEnumerator<TContext> ToBasicEnumerator()
 		{
-			return new FilterEnumerator<T>(_nodes, Compilation, Validator);
+			return new FilterEnumerator<TContext>(Compilation, _nodes, Validator);
 		}
 
 		readonly void IDisposable.Dispose()

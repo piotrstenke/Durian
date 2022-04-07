@@ -497,7 +497,7 @@ namespace Durian.Analysis.Extensions
 
 			foreach (DurianModule module in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(module);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(module);
 			}
 
 			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
@@ -835,7 +835,7 @@ namespace Durian.Analysis.Extensions
 
 			foreach (DurianModule module in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(module);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(module);
 			}
 
 			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
@@ -979,7 +979,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to get the <see cref="INamedTypeSymbol"/>s from.</param>
 		/// <param name="module"><see cref="DurianModule"/> to get the <see cref="INamedTypeSymbol"/> of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Target type could not be resolved.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Target type could not be resolved.</exception>
 		public static IEnumerable<INamedTypeSymbol> GetDurianTypes(this Compilation compilation, DurianModule module)
 		{
 			if (compilation is null)
@@ -1477,7 +1477,7 @@ namespace Durian.Analysis.Extensions
 
 			foreach (DurianModule module in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(module);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(module);
 			}
 
 			AttributeData[] attributes = GetInstancesOfEnableAttribute(compilation, enableModuleAttribute);
@@ -1972,7 +1972,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="Compilation"/> to check if the <paramref name="module"/> is enabled for.</param>
 		/// <param name="module"><see cref="DurianModule"/> representing a Durian module to check for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Error while resolving the <see cref="EnableModuleAttribute"/> class.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module. -or- Error while resolving the <see cref="EnableModuleAttribute"/> class.</exception>
 		public static bool IsEnabled(this Compilation compilation, DurianModule module)
 		{
 			if (compilation is null)
@@ -1991,7 +1991,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="module"><see cref="DurianModule"/> representing a Durian module to check for.</param>
 		/// <param name="enableModuleAttribute"><see cref="INamedTypeSymbol"/> that represents the <see cref="EnableModuleAttribute"/> class.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>. -or- <paramref name="enableModuleAttribute"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
 		public static bool IsEnabled(this Compilation compilation, DurianModule module, INamedTypeSymbol enableModuleAttribute)
 		{
 			if (compilation is null)
@@ -2213,7 +2213,7 @@ namespace Durian.Analysis.Extensions
 
 			foreach (DurianModule module in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(module);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(module);
 			}
 
 			TypeIdentity identity = type.GetIdentity();
@@ -2254,7 +2254,7 @@ namespace Durian.Analysis.Extensions
 
 			foreach (DurianModule module in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(module);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(module);
 			}
 
 			TypeIdentity identity = type.GetIdentity();

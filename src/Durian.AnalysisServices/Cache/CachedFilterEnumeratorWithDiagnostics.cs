@@ -1,95 +1,103 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Durian.Analysis.Data;
+using Durian.Analysis.Filters;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Cache
 {
 	/// <summary>
-	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="ISyntaxValidatorWithDiagnostics{T}"/> or retrieved from a <see cref="CachedData{T}"/> with an option to report diagnostics using a <see cref="IDiagnosticReceiver"/>.
+	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="TContext"/> created by the provided <see cref="ISyntaxValidator{T}"/> or retrieved from a <see cref="CachedData{T}"/> with an option to report diagnostics using a <see cref="IDiagnosticReceiver"/>.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="IMemberData"/> this enumerator can handle.</typeparam>
+	/// <typeparam name="TData">Type of cached data.</typeparam>
+	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
 	[DebuggerDisplay("Current = {Current}")]
-	public struct CachedFilterEnumeratorWithDiagnostics<T> : IEnumerator<T> where T : IMemberData
+	public struct CachedFilterEnumeratorWithDiagnostics<TData, TContext> : IFilterEnumerator<TContext>
+		where TData : class, IMemberData
+		where TContext : ISyntaxValidatorContext
 	{
-		internal readonly CachedData<T> _cache;
+		internal readonly CachedData<TData> _cache;
 
 		private readonly IEnumerator<CSharpSyntaxNode> _nodes;
 
-		/// <summary>
-		/// Parent <see cref="ICompilationData"/> of the provided <see cref="CSharpSyntaxNode"/>s.
-		/// </summary>
+		/// <inheritdoc/>
 		public readonly ICompilationData Compilation { get; }
 
 		/// <summary>
 		/// Current <see cref="IMemberData"/>.
 		/// </summary>
-		public T? Current { readonly get; private set; }
+		public IMemberData? Current { readonly get; private set; }
 
 		/// <summary>
 		/// <see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.
 		/// </summary>
 		public readonly IDiagnosticReceiver DiagnosticReceiver { get; }
 
-		/// <summary>
-		/// <see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.
-		/// </summary>
-		public readonly ISyntaxValidatorWithDiagnostics<T> Validator { get; }
+		/// <inheritdoc cref="IFilterEnumerator{T}.Validator"/>
+		public readonly ISyntaxValidatorWithDiagnostics<TContext> Validator { get; }
 
-		readonly T IEnumerator<T>.Current => Current!;
+		readonly IMemberData IEnumerator<IMemberData>.Current => Current!;
 		readonly object IEnumerator.Current => Current!;
+		readonly ISyntaxValidator<TContext> IFilterEnumerator<TContext>.Validator => Validator;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedFilterEnumeratorWithDiagnostics{T}"/> struct.
+		/// Initializes a new instance of the <see cref="CachedFilterEnumeratorWithDiagnostics{TData, TContext}"/> struct.
 		/// </summary>
-		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
+		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
 		public CachedFilterEnumeratorWithDiagnostics(
-			IEnumerable<CSharpSyntaxNode> nodes,
 			ICompilationData compilation,
-			ISyntaxValidatorWithDiagnostics<T> validator,
+			IEnumerable<CSharpSyntaxNode> nodes,
+			ISyntaxValidatorWithDiagnostics<TContext> validator,
 			IDiagnosticReceiver diagnosticReceiver,
-			in CachedData<T> cache
-		) : this(nodes.GetEnumerator(), compilation, validator, diagnosticReceiver, in cache)
+			in CachedData<TData> cache
+		) : this(compilation, nodes.GetEnumerator(), validator, diagnosticReceiver, in cache)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedFilterEnumeratorWithDiagnostics{T}"/> struct.
+		/// Initializes a new instance of the <see cref="CachedFilterEnumeratorWithDiagnostics{TData, TContext}"/> struct.
 		/// </summary>
-		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
+		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
 		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
 		public CachedFilterEnumeratorWithDiagnostics(
-			INodeProvider provider,
 			ICompilationData compilation,
-			ISyntaxValidatorWithDiagnostics<T> validator,
+			INodeProvider provider,
+			ISyntaxValidatorWithDiagnostics<TContext> validator,
 			IDiagnosticReceiver diagnosticReceiver,
-			in CachedData<T> cache
-		) : this(provider.GetNodes().GetEnumerator(), compilation, validator, diagnosticReceiver, in cache)
+			in CachedData<TData> cache
+		) : this(compilation, provider.GetNodes().GetEnumerator(), validator, diagnosticReceiver, in cache)
 		{
 		}
 
-		internal CachedFilterEnumeratorWithDiagnostics(
-			IEnumerator<CSharpSyntaxNode> nodes,
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedFilterEnumeratorWithDiagnostics{TData, TContext}"/> struct.
+		/// </summary>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
+		/// <param name="nodes">An enumerator that iterates through a collection of <see cref="CSharpSyntaxNode"/>s.</param>
+		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
+		public CachedFilterEnumeratorWithDiagnostics(
 			ICompilationData compilation,
-			ISyntaxValidatorWithDiagnostics<T> validator,
+			IEnumerator<CSharpSyntaxNode> nodes,
+			ISyntaxValidatorWithDiagnostics<TContext> validator,
 			IDiagnosticReceiver diagnosticReceiver,
-			in CachedData<T> cache
+			in CachedData<TData> cache
 		)
 		{
 			Validator = validator;
@@ -103,20 +111,20 @@ namespace Durian.Analysis.Cache
 #pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
 
 		/// <inheritdoc/>
-		public static explicit operator CachedFilterEnumeratorWithDiagnostics<T>(in FilterEnumeratorWithDiagnostics<T> a)
+		public static explicit operator CachedFilterEnumeratorWithDiagnostics<TData, TContext>(in FilterEnumeratorWithDiagnostics<TContext> a)
 		{
-			return new CachedFilterEnumeratorWithDiagnostics<T>(a._nodes, a.Compilation, a.Validator, a.DiagnosticReceiver, CachedData<T>.Empty);
+			return new CachedFilterEnumeratorWithDiagnostics<TData, TContext>(a.Compilation, a._nodes, a.Validator, a.DiagnosticReceiver, CachedData<TData>.Empty);
 		}
 
 		/// <inheritdoc/>
-		public static explicit operator FilterEnumeratorWithDiagnostics<T>(in CachedFilterEnumeratorWithDiagnostics<T> a)
+		public static explicit operator FilterEnumeratorWithDiagnostics<TContext>(in CachedFilterEnumeratorWithDiagnostics<TData, TContext> a)
 		{
-			return new FilterEnumeratorWithDiagnostics<T>(a._nodes, a.Compilation, a.Validator, a.DiagnosticReceiver);
+			return new FilterEnumeratorWithDiagnostics<TContext>(a.Compilation, a._nodes, a.Validator, a.DiagnosticReceiver);
 		}
 
 #pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 
-		/// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>
+		/// <inheritdoc/>
 		[MemberNotNullWhen(true, nameof(Current))]
 		public bool MoveNext(CancellationToken cancellationToken = default)
 		{
@@ -129,9 +137,15 @@ namespace Durian.Analysis.Cache
 					continue;
 				}
 
-				if (_cache.TryGetCachedValue(node.GetLocation().GetLineSpan(), out T? data) || Validator.ValidateAndCreate(node, Compilation, out data, DiagnosticReceiver, cancellationToken))
+				if(_cache.TryGetCachedValue(node, out TData? data))
 				{
-					Current = data!;
+					Current = data;
+					return true;
+				}
+
+				if (Validator.ValidateAndCreate(new ValidationDataProviderContext(node, Compilation, cancellationToken), out IMemberData? member, DiagnosticReceiver))
+				{
+					Current = member;
 					return true;
 				}
 			}
@@ -148,19 +162,19 @@ namespace Durian.Analysis.Cache
 		}
 
 		/// <summary>
-		/// Converts this <see cref="CachedFilterEnumeratorWithDiagnostics{T}"/> to a new instance of <see cref="CachedFilterEnumerator{T}"/>.
+		/// Converts this <see cref="CachedFilterEnumeratorWithDiagnostics{TData, TContext}"/> to a new instance of <see cref="CachedFilterEnumerator{TData, TContext}"/>.
 		/// </summary>
-		public readonly CachedFilterEnumerator<T> ToBasicCachedEnumerator()
+		public readonly CachedFilterEnumerator<TData, TContext> ToBasicCachedEnumerator()
 		{
-			return new CachedFilterEnumerator<T>(_nodes, Compilation, Validator, in _cache);
+			return new CachedFilterEnumerator<TData, TContext>(Compilation, _nodes, Validator, in _cache);
 		}
 
 		/// <summary>
-		/// Converts this <see cref="CachedFilterEnumeratorWithDiagnostics{T}"/> to a new instance of <see cref="FilterEnumerator{T}"/>.
+		/// Converts this <see cref="CachedFilterEnumeratorWithDiagnostics{TData, TContext}"/> to a new instance of <see cref="FilterEnumerator{T}"/>.
 		/// </summary>
-		public readonly FilterEnumerator<T> ToBasicEnumerator()
+		public readonly FilterEnumerator<TContext> ToBasicEnumerator()
 		{
-			return new FilterEnumerator<T>(_nodes, Compilation, Validator);
+			return new FilterEnumerator<TContext>(Compilation, _nodes, Validator);
 		}
 
 		readonly void IDisposable.Dispose()

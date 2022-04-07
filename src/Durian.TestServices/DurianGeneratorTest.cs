@@ -10,8 +10,8 @@ namespace Durian.TestServices
 	/// <summary>
 	/// An abstract class that provides methods to test <see cref="IDurianGenerator"/>s and log information about the generator test.
 	/// </summary>
-	/// <typeparam name="T">Type of target <see cref="ILoggableGenerator"/>.</typeparam>
-	public abstract class DurianGeneratorTest<T> : LoggableGeneratorTest<ITestableGenerator> where T : IDurianGenerator, ILoggableGenerator
+	/// <typeparam name="T">Type of target <see cref="IDurianGenerator"/>.</typeparam>
+	public abstract class DurianGeneratorTest<T> : LoggableGeneratorTest<ITestableGenerator> where T : IDurianGenerator
 	{
 		/// <summary>
 		/// Underlaying source generator to test.
@@ -29,7 +29,7 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGeneratorTest{T}"/> class.
 		/// </summary>
-		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for the created <see cref="ILoggableGenerator"/> if it supports any.</param>
+		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for the created <see cref="IDurianGenerator"/> if it supports any.</param>
 		protected DurianGeneratorTest(bool enableDiagnostics) : base(enableDiagnostics, typeof(T))
 		{
 			UnderlayingGenerator = CreateUnderlayingGenerator(_configuration);

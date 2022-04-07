@@ -33,9 +33,9 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Analyzes the specified <paramref name="compilation"/>.
 		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDirectDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 		/// <param name="compilation"><see cref="Compilation"/> to analyze.</param>
-		public static bool Analyze(IDirectDiagnosticReceiver diagnosticReceiver, Compilation compilation)
+		public static bool Analyze(IDiagnosticReceiver diagnosticReceiver, Compilation compilation)
 		{
 			bool isValid = Analyze(compilation, out Diagnostic[] diagnostics);
 
@@ -61,7 +61,7 @@ namespace Durian.Analysis
 			{
 				string name = assembly.Name;
 
-				if (IsDurianManager(name))
+				if (IsDurianMain(name))
 				{
 					hasCore = true;
 					hasManager = true;
@@ -124,7 +124,7 @@ namespace Durian.Analysis
 					continue;
 				}
 
-				if (IsDurianManager(name))
+				if (IsDurianMain(name))
 				{
 					hasManager = true;
 					hasCore = true;
@@ -187,9 +187,9 @@ namespace Durian.Analysis
 			return assembly == "Durian.Core";
 		}
 
-		private static bool IsDurianManager(string assembly)
+		private static bool IsDurianMain(string assembly)
 		{
-			return assembly == "Durian" || assembly == "Durian.Manager";
+			return assembly == "Durian";
 		}
 	}
 }

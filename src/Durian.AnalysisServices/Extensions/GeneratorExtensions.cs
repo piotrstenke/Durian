@@ -14,71 +14,9 @@ namespace Durian.Analysis.Extensions
 	public static class GeneratorExtensions
 	{
 		/// <summary>
-		/// Returns the <see cref="IGeneratorPassContext.LogReceiver"/> or <see cref="DiagnosticReceiver.Factory.Empty"/>.
+		/// Determines a <see cref="FilterMode"/> from values provided by the specified <paramref name="context"/>.
 		/// </summary>
-		/// <param name="context"><see cref="IGeneratorPassContext"/> to get the <see cref="INodeDiagnosticReceiver"/> from.</param>
-		/// <param name="includeDiagnostics">
-		/// Determines whether to include diagnostics other than log files.
-		/// <para>If <see cref="FilterMode"/> is equal to <see cref="FilterMode.Both"/>,
-		/// <paramref name="includeDiagnostics"/> is <see langword="true"/>, otherwise <see langword="false"/>.</para>
-		/// </param>
-		/// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
-		public static INodeDiagnosticReceiver GetLogReceiverOrEmpty(this IGeneratorPassContext context, bool includeDiagnostics = false)
-		{
-			if (context is null)
-			{
-				throw new ArgumentNullException(nameof(context));
-			}
-
-			if (includeDiagnostics && context.DiagnosticReceiver is not null)
-			{
-				if (context.LogReceiver is IContextualDiagnosticReceiver<GeneratorExecutionContext>)
-				{
-					return context.LogReceiver;
-				}
-
-				if (context.Generator is ILoggableGenerator loggable)
-				{
-					return LoggableDiagnosticReceiver.Factory.SourceGenerator(loggable, context.DiagnosticReceiver);
-				}
-
-				if (context.LogReceiver is not null)
-				{
-					return DiagnosticReceiver.Factory.Composite(context.LogReceiver, context.DiagnosticReceiver);
-				}
-			}
-			else if (context.LogReceiver is not null)
-			{
-				return context.LogReceiver;
-			}
-
-			return DiagnosticReceiver.Factory.Empty();
-		}
-
-		/// <summary>
-		/// Returns the <see cref="IGeneratorPassContext.DiagnosticReceiver"/> or <see cref="DiagnosticReceiver.Factory.Empty"/>.
-		/// </summary>
-		/// <param name="context"><see cref="IGeneratorPassContext"/> to get the <see cref="IDiagnosticReceiver"/> from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
-		public static IDiagnosticReceiver GetDiagnosticReceiverOrEmpty(this IGeneratorPassContext context)
-		{
-			if (context is null)
-			{
-				throw new ArgumentNullException(nameof(context));
-			}
-
-			if (context.DiagnosticReceiver is null)
-			{
-				return DiagnosticReceiver.Factory.Empty();
-			}
-
-			return context.DiagnosticReceiver;
-		}
-
-		/// <summary>
-		/// Returns a <see cref="FilterMode"/> associated with the specified <paramref name="context"/>.
-		/// </summary>
-		/// <param name="context"><see cref="IGeneratorPassContext"/> to get the <see cref="FilterMode"/> associated with.</param>
+		/// <param name="context"><see cref="IGeneratorPassContext"/> to get the <see cref="FilterMode"/> value for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
 		public static FilterMode GetFilterMode(this IGeneratorPassContext context)
 		{
@@ -91,38 +29,53 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns a <see cref="FilterMode"/> associated with the specified <paramref name="generator"/>.
+		/// Determines a <see cref="FilterMode"/> from values provided by the specified <paramref name="generator"/>.
 		/// </summary>
-		/// <param name="generator"><see cref="IDurianGenerator"/> to get the <see cref="FilterMode"/> associated with.</param>
+		/// <param name="generator"><see cref="IDurianGenerator"/> to get the <see cref="FilterMode"/> value for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
 		public static FilterMode GetFilterMode(this IDurianGenerator generator)
 		{
-			if (generator is ILoggableGenerator loggable)
-			{
-				return GetFilterMode(loggable);
-			}
-
 			if (generator is null)
 			{
 				throw new ArgumentNullException(nameof(generator));
 			}
 
-			return GetFilterMode(generator.EnableDiagnostics, generator.EnableLogging);
+			if(generator.LogHandler is null)
+			{
+				return FilterMode.None;
+			}
+
+			return generator.LogHandler.LoggingConfiguration.GetFilterMode();
 		}
 
 		/// <summary>
-		/// Returns a <see cref="FilterMode"/> associated with the specified <paramref name="generator"/>.
+		/// Determines a <see cref="FilterMode"/> from values provided by the specified <paramref name="logHandler"/>.
 		/// </summary>
-		/// <param name="generator"><see cref="ILoggableGenerator"/> to get the <see cref="FilterMode"/> associated with.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		public static FilterMode GetFilterMode(this ILoggableGenerator generator)
+		/// <param name="logHandler"><see cref="IGeneratorLogHandler"/> to get the <see cref="FilterMode"/> value for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="logHandler"/> is <see langword="null"/>.</exception>
+		public static FilterMode GetFilterMode(this IGeneratorLogHandler logHandler)
 		{
-			if (generator is null)
+			if (logHandler is null)
 			{
-				throw new ArgumentNullException(nameof(generator));
+				throw new ArgumentNullException(nameof(logHandler));
 			}
 
-			return generator.LoggingConfiguration.CurrentFilterMode;
+			return logHandler.LoggingConfiguration.GetFilterMode();
+		}
+
+		/// <summary>
+		/// Determines a <see cref="FilterMode"/> from values provided by the specified <paramref name="configuration"/>.
+		/// </summary>
+		/// <param name="configuration"><see cref="LoggingConfiguration"/> to get the <see cref="FilterMode"/> value for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
+		public static FilterMode GetFilterMode(this LoggingConfiguration configuration)
+		{
+			if(configuration is null)
+			{
+				throw new ArgumentNullException(nameof(configuration));
+			}
+
+			return GetFilterMode(configuration.EnableDiagnostics, configuration.EnableLogging);
 		}
 
 #pragma warning disable RCS1224 // Make method an extension method.

@@ -12,7 +12,7 @@ namespace Durian.Info
 	/// Creating a new instance of <see cref="PackageIdentity"/> is very costly performance-wise because of array allocations.
 	/// This class should be used in cases when there is no need for direct reference to a <see cref="PackageIdentity"/>
 	/// <para>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references.</para></remarks>
-	public sealed class PackageReference : IDurianReference, IEquatable<PackageReference>, ICloneable
+	public sealed class PackageReference : IDurianReference, IEquatable<PackageReference>
 	{
 		private readonly ModuleIdentity? _targetIdentity;
 		private PackageIdentity? _package;
@@ -31,7 +31,7 @@ namespace Durian.Info
 		/// Initializes a new instance of the <see cref="PackageReference"/> class.
 		/// </summary>
 		/// <param name="package">The package this <see cref="PackageReference"/> references.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianPackage"/> value detected.</exception>
 		public PackageReference(DurianPackage package)
 		{
 			PackageIdentity.EnsureIsValidPackageEnum(package);

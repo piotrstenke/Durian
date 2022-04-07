@@ -166,7 +166,7 @@ namespace Durian.Info
 
 			foreach (DurianModule module in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(module);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(module);
 			}
 
 			EnableModuleAttribute[] attributes = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
@@ -255,7 +255,7 @@ namespace Durian.Info
 
 			foreach (DurianModule module in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(module);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(module);
 			}
 
 			EnableModuleAttribute[] attributes = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
@@ -415,7 +415,7 @@ namespace Durian.Info
 		/// <param name="assembly"><see cref="Assembly"/> to check if the <paramref name="module"/> is enabled for.</param>
 		/// <param name="module"><see cref="DurianModule"/> representing a Durian module to check for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
 		public static bool IsEnabled(this Assembly assembly, DurianModule module)
 		{
 			if (assembly is null)

@@ -120,16 +120,16 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Converts the specified <paramref name="generator"/> to a <see cref="DurianGeneratorWithFilters{TFilter}"/>.
+		/// Converts the specified <paramref name="generator"/> into a <see cref="TestableGenerator{TContext}"/>.
 		/// </summary>
-		/// <typeparam name="TFilter">Type of <see cref="IGeneratorSyntaxFilter"/> used to generate sources.</typeparam>
+		/// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> used to generate sources.</typeparam>
 		/// <param name="generator"><see cref="IDurianGenerator"/> that is used to actually generate sources.</param>
 		/// <param name="testName">Name of the currently executing test.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="testName"/> cannot be <see langword="null"/> or empty.</exception>
-		public static TestableGenerator<TFilter> CreateTestable<TFilter>(this DurianGeneratorWithFilters<TFilter> generator, string testName) where TFilter : IGeneratorSyntaxFilter
+		public static TestableGenerator<TContext> CreateTestable<TContext>(this DurianGeneratorWithContext<TContext> generator, string testName) where TContext : class, IGeneratorPassContext
 		{
-			return new TestableGenerator<TFilter>(generator, testName);
+			return new TestableGenerator<TContext>(generator, testName);
 		}
 
 		/// <summary>

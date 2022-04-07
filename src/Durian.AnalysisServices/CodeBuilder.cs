@@ -447,7 +447,7 @@ namespace Durian.Analysis
 		/// <inheritdoc cref="ParseSyntaxTree(CSharpParseOptions)"/>
 		public CSharpSyntaxTree ParseSyntaxTree()
 		{
-			CSharpParseOptions? options = PassContext?.ParseOptions ?? Generator?.GetCurrentPassContext().ParseOptions;
+			CSharpParseOptions? options = PassContext?.ParseOptions ?? Generator?.GetCurrentPassContext()?.ParseOptions;
 			return ParseSyntaxTree(options);
 		}
 
@@ -617,7 +617,8 @@ namespace Durian.Analysis
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">
-		/// If the <see cref="Generator"/> property is <see langword="null"/>,
+		/// <see cref="Generator"/> returned null <see cref="IGeneratorPassContext"/>. -or-
+		/// If both the <see cref="Generator"/> and <see cref="PassContext"/> are <see langword="null"/>,
 		/// a <see cref="INamespaceSymbol"/> of the assembly's global namespace must be explicitly provided using one of WriteUsings 3-parameter overloads.
 		/// </exception>
 		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, CancellationToken cancellationToken = default)
@@ -630,7 +631,12 @@ namespace Durian.Analysis
 			}
 			else if(_generator is not null)
 			{
-				targetCompilation = _generator.GetCurrentPassContext().TargetCompilation; 
+				targetCompilation = _generator.GetCurrentPassContext()?.TargetCompilation;
+
+				if(targetCompilation is null)
+				{
+					throw new InvalidOperationException($"Generator returned null {nameof(IGeneratorPassContext)}");
+				}
 			}
 			else
 			{

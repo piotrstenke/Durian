@@ -32,7 +32,7 @@ namespace Durian.Info
 		/// Initializes a new instance of the <see cref="ModuleReference"/> class.
 		/// </summary>
 		/// <param name="module">The module this <see cref="ModuleReference"/> references.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value detected. -or- <see cref="DurianModule.None"/> is not a valid Durian module.</exception>
 		public ModuleReference(DurianModule module)
 		{
 			ModuleIdentity.EnsureIsValidModuleEnum(module);

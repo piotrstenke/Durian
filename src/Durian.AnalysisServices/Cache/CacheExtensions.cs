@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Data;
+using Durian.Analysis.Filters;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Cache
@@ -94,7 +95,7 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		/// <typeparam name="T">Type of values this <paramref name="enumerator"/> enumerates on.</typeparam>
 		/// <param name="enumerator"><see cref="CachedFilterEnumerator{T}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
-		public static ref readonly CachedData<T> GetCachedData<T>(this in CachedFilterEnumerator<T> enumerator) where T : IMemberData
+		public static ref readonly CachedData<IMemberData> GetCachedData<T>(this in CachedFilterEnumerator<T> enumerator) where T : ISyntaxValidatorContext
 		{
 			return ref enumerator._cache;
 		}
@@ -104,7 +105,7 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		/// <typeparam name="T">Type of values this <paramref name="enumerator"/> enumerates on.</typeparam>
 		/// <param name="enumerator"><see cref="CachedFilterEnumeratorWithDiagnostics{T}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
-		public static ref readonly CachedData<T> GetCachedData<T>(this in CachedFilterEnumeratorWithDiagnostics<T> enumerator) where T : IMemberData
+		public static ref readonly CachedData<IMemberData> GetCachedData<T>(this in CachedFilterEnumeratorWithDiagnostics<T> enumerator) where T : ISyntaxValidatorContext
 		{
 			return ref enumerator._cache;
 		}
@@ -114,7 +115,7 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		/// <typeparam name="T">Type of values this <paramref name="enumerator"/> enumerates on.</typeparam>
 		/// <param name="enumerator"><see cref="CachedLoggableFilterEnumerator{T}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
-		public static ref readonly CachedData<T> GetCachedData<T>(this in CachedLoggableFilterEnumerator<T> enumerator) where T : IMemberData
+		public static ref readonly CachedData<IMemberData> GetCachedData<T>(this in CachedLoggableFilterEnumerator<T> enumerator) where T : ISyntaxValidatorContext
 		{
 			return ref enumerator._cache;
 		}

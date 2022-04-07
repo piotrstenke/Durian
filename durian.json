@@ -3,18 +3,11 @@
     {
       "name": "Core",
       "packages": [
-        {
-          "name": "Main",
-          "version": "3.0.0",
-          "type": [
-            "Unspecified"
-          ]
-        },
 		{
-		  "name": "CoreAnalyzer",
+		  "name": "Main",
 		  "version": "3.0.0",
 		  "type": [
-			"Analyzer"
+			"Unspecified"
 		  ]
 		},
 		{
@@ -22,6 +15,13 @@
 		  "version": "3.0.0",
 		  "type": [
 			"Library"
+		  ]
+		},
+		{
+		  "name": "CoreAnalyzer",
+		  "version": "3.0.0",
+		  "type": [
+			"Analyzer"
 		  ]
 		}
       ],

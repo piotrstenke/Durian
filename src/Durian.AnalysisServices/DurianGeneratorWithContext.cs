@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filters;
 using Durian.Analysis.Logging;
@@ -15,47 +17,9 @@ namespace Durian.Analysis
 	/// Abstract implementation of the <see cref="IDurianGenerator"/> interface that performs early validation of the input <see cref="GeneratorExecutionContext"/>.
 	/// </summary>
 	/// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> this generator uses.</typeparam>
-	public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase, IDurianGenerator where TContext : class, IGeneratorPassContext
+	public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase where TContext : class, IGeneratorPassContext
 	{
-		private protected static class Registry
-		{
-			[ThreadStatic]
-			private static readonly Dictionary<Guid, TContext> _data = new();
-
-			public static TContext Get(Guid guid)
-			{
-				if (!_data.TryGetValue(guid, out TContext data))
-				{
-					throw new InvalidOperationException("Generator is not initialized");
-				}
-
-				return data;
-			}
-
-			public static void Remove(Guid guid)
-			{
-				_data.Remove(guid);
-			}
-
-			public static void Set(Guid guid, TContext data)
-			{
-				_data[guid] = data;
-			}
-		}
-
-		string? IDurianGenerator.GeneratorName => GetGeneratorName();
-
-		string? IDurianGenerator.GeneratorVersion => GetGeneratorVersion();
-
-		/// <summary>
-		/// Determines whether the last execution of the <see cref="Execute(in GeneratorExecutionContext)"/> method was a success.
-		/// </summary>
-		public bool IsSuccess { get; private protected set; }
-
-		/// <summary>
-		/// Determines whether data of this <see cref="DurianGeneratorWithContext{TContext}"/> was successfully initialized by the last call to the <see cref="Execute(in GeneratorExecutionContext)"/> method.
-		/// </summary>
-		public bool IsValid { get; set; }
+		private readonly int _sourceThreadId = Environment.CurrentManagedThreadId;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGeneratorWithContext{TContext}"/> class.
@@ -68,7 +32,7 @@ namespace Durian.Analysis
 		/// Initializes a new instance of the <see cref="DurianGeneratorWithContext{TContext}"/> class.
 		/// </summary>
 		/// <param name="context">Configures how this <see cref="DurianGeneratorWithContext{TContext}"/> is initialized.</param>
-		protected DurianGeneratorWithContext(in ConstructionContext context) : base(in context)
+		protected DurianGeneratorWithContext(in GeneratorLogCreationContext context) : base(in context)
 		{
 		}
 
@@ -86,45 +50,78 @@ namespace Durian.Analysis
 		public abstract IDurianSyntaxReceiver CreateSyntaxReceiver();
 
 		/// <summary>
-		/// Begins the generation.
+		/// Returns a new <see cref="GeneratorThreadHandle"/> targeting the current thread.
 		/// </summary>
-		/// <param name="context">The <see cref="GeneratorInitializationContext"/> to work on.</param>
-		public sealed override void Execute(in GeneratorExecutionContext context)
+		public GeneratorThreadHandle GetThreadHandle()
 		{
-			ResetData();
+			return GetThreadHandle(Environment.CurrentManagedThreadId);
+		}
 
-			if (!InitializeCompilation(in context, out CSharpCompilation? compilation))
+		/// <summary>
+		/// Returns a new <see cref="GeneratorThreadHandle"/> targeting a thread with the specified <paramref name="threadId"/>.
+		/// </summary>
+		/// <param name="threadId">Id of the target thread.</param>
+		public GeneratorThreadHandle GetThreadHandle(int threadId)
+		{
+			return new GeneratorThreadHandle(InstanceId, threadId, _sourceThreadId);
+		}
+
+		/// <inheritdoc/>
+		public sealed override bool Execute(in GeneratorExecutionContext context)
+		{
+			TContext? pass;
+
+			try
 			{
-				IsSuccess = false;
-				return;
+				Reset(Environment.CurrentManagedThreadId);
+
+				if (!InitializeCompilation(in context, out CSharpCompilation? compilation))
+				{
+					return false;
+				}
+
+				pass = CreateCurrentPassContext(compilation, in context);
+
+				if (pass is null)
+				{
+					return false;
+				}
+			}
+			catch (Exception e) when (HandleException(e))
+			{
+				return false;
 			}
 
 			try
 			{
-				TContext? pass = CreateCurrentPassContext(compilation, in context);
-
-				if (pass is null)
-				{
-					IsValid = false;
-					IsSuccess = false;
-					return;
-				}
-
-				IsValid = true;
-				Registry.Set(InstanceId, pass);
-
-				Filtrate(pass);
-				IsSuccess = true;
+				return Execute_Internal(pass);
 			}
-			catch (Exception e)
+			catch (Exception e) when(HandleException(e, pass))
 			{
-				LogException(e);
-				IsSuccess = false;
+				return false;
+			}
+		}
 
-				if (EnableExceptions)
-				{
-					throw;
-				}
+		/// <summary>
+		///  Called to perform source generation. A generator can use the context to add source files via
+		///  the Microsoft.CodeAnalysis.GeneratorExecutionContext.AddSource(System.String,Microsoft.CodeAnalysis.Text.SourceText) method.
+		/// </summary>
+		/// <param name="context"><typeparamref name="TContext"/> to add the sources to.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+		public bool Execute(TContext context)
+		{
+			if(context is null)
+			{
+				throw new ArgumentNullException(nameof(context));
+			}
+
+			try
+			{
+				return Execute_Internal(context);
+			}
+			catch (Exception e) when (HandleException(e, context))
+			{
+				return false;
 			}
 		}
 
@@ -156,15 +153,26 @@ namespace Durian.Analysis
 			AfterExecution(context);
 		}
 
-		IGeneratorPassContext IDurianGenerator.GetCurrentPassContext()
+		/// <summary>
+		/// Returns a <typeparamref name="TContext"/> used during generator pass on the main thread.
+		/// </summary>
+		/// <exception cref="ArgumentException">Context not found for the specified <see cref="GeneratorThreadHandle"/>.</exception>
+		/// <exception cref="InvalidOperationException">Registered context is not of type <typeparamref name="TContext"/>.</exception>
+		public new TContext GetCurrentPassContext()
 		{
-			return GetCurrentPassContext();
+			GeneratorThreadHandle handle = GetThreadHandle();
+			return GeneratorContextRegistry.GetContext<TContext>(handle);
 		}
 
-		/// <inheritdoc/>
-		public TContext GetCurrentPassContext()
+		/// <summary>
+		/// Returns a <typeparamref name="TContext"/>  used during generator pass on the thread with the specified <paramref name="threadId"/>.
+		/// </summary>
+		/// <exception cref="ArgumentException">Context not found for the specified <see cref="GeneratorThreadHandle"/>.</exception>
+		/// <exception cref="InvalidOperationException">Registered context is not of type <typeparamref name="TContext"/>.</exception>
+		public TContext GetCurrentPassContext(int threadId)
 		{
-			return Registry.Get(InstanceId);
+			GeneratorThreadHandle handle = GetThreadHandle(threadId);
+			return GeneratorContextRegistry.GetContext<TContext>(handle);
 		}
 
 		/// <summary>
@@ -192,6 +200,23 @@ namespace Durian.Analysis
 			context.RegisterForSyntaxNotifications(CreateSyntaxReceiver);
 		}
 
+		/// <summary>
+		/// Removes all the registered <typeparamref name="TContext"/>s associated with this generator.
+		/// </summary>
+		public void Reset()
+		{
+			GeneratorContextRegistry.RemoveAllContexts(InstanceId);
+		}
+
+		/// <summary>
+		/// Removes the <typeparamref name="TContext"/> associated with this generator and a thread with the specified <paramref name="threadId"/>.
+		/// </summary>
+		/// <param name="threadId">Id of thread to remove the <typeparamref name="TContext"/> associated with.</param>
+		public void Reset(int threadId)
+		{
+			GeneratorContextRegistry.RemoveContext(InstanceId, threadId);
+		}
+
 		/// <inheritdoc/>
 		protected sealed override void AddSource(CSharpSyntaxTree syntaxTree, string hintName, in GeneratorPostInitializationContext context)
 		{
@@ -210,11 +235,8 @@ namespace Durian.Analysis
 		/// <param name="source">The generated text.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-		/// <exception cref="InvalidOperationException"><see cref="IsValid"/> must be <see langword="true"/> in order to add new source.</exception>
 		protected void AddSource(string source, string hintName, TContext context)
 		{
-			ThrowIfHasNoValidData();
-
 			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(source, context.ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
 			AddSource_Internal(tree, hintName, context);
 		}
@@ -225,10 +247,8 @@ namespace Durian.Analysis
 		/// <param name="tree">The generated <see cref="CSharpSyntaxTree"/>.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-		/// <exception cref="InvalidOperationException"><see cref="IsValid"/> must be <see langword="true"/> in order to add new source.</exception>
 		protected void AddSource(CSharpSyntaxTree tree, string hintName, TContext context)
 		{
-			ThrowIfHasNoValidData();
 			AddSource_Internal(tree, hintName, context);
 		}
 
@@ -238,11 +258,8 @@ namespace Durian.Analysis
 		/// <param name="source">The generated text.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-		/// <exception cref="InvalidOperationException"><see cref="IsValid"/> must be <see langword="true"/> in order to add new source.</exception>
 		protected sealed override void AddSource(string source, string hintName, in GeneratorExecutionContext context)
 		{
-			ThrowIfHasNoValidData();
-
 			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(source, (CSharpParseOptions)context.ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
 			AddSource_Internal(tree, hintName, in context);
 		}
@@ -253,10 +270,8 @@ namespace Durian.Analysis
 		/// <param name="tree">The generated <see cref="CSharpSyntaxTree"/>.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-		/// <exception cref="InvalidOperationException"><see cref="IsValid"/> must be <see langword="true"/> in order to add new source.</exception>
 		protected sealed override void AddSource(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
-			ThrowIfHasNoValidData();
 			AddSource_Internal(tree, hintName, in context);
 		}
 
@@ -266,7 +281,7 @@ namespace Durian.Analysis
 		/// <param name="tree">The generated <see cref="CSharpSyntaxTree"/>.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-		protected virtual void AddSourceCore(CSharpSyntaxTree tree, string hintName, TContext context)
+		protected internal virtual void AddSourceCore(CSharpSyntaxTree tree, string hintName, TContext context)
 		{
 			context.OriginalContext.AddSource(hintName, tree.GetText(context.CancellationToken));
 		}
@@ -277,7 +292,7 @@ namespace Durian.Analysis
 		/// <param name="tree">The generated <see cref="CSharpSyntaxTree"/>.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-		protected virtual void AddSourceCore(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+		protected internal virtual void AddSourceCore(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
 			context.AddSource(hintName, tree.GetText(context.CancellationToken));
 		}
@@ -289,10 +304,8 @@ namespace Durian.Analysis
 		/// <param name="text">The generated text.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-		/// <exception cref="InvalidOperationException"><see cref="IsValid"/> must be <see langword="true"/> in order to add new source.</exception>
 		protected void AddSourceWithOriginal(CSharpSyntaxNode original, string text, string hintName, TContext context)
 		{
-			ThrowIfHasNoValidData();
 			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, context.ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
 			AddSource_Internal(original, tree, hintName, context);
 		}
@@ -304,10 +317,8 @@ namespace Durian.Analysis
 		/// <param name="tree">The generated <see cref="CSharpSyntaxTree"/>.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-		/// <exception cref="InvalidOperationException"><see cref="IsValid"/> must be <see langword="true"/> in order to add new source.</exception>
 		protected void AddSourceWithOriginal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, TContext context)
 		{
-			ThrowIfHasNoValidData();
 			AddSource_Internal(original, tree, hintName, context);
 		}
 
@@ -318,10 +329,8 @@ namespace Durian.Analysis
 		/// <param name="text">The generated text.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-		/// <exception cref="InvalidOperationException"><see cref="IsValid"/> must be <see langword="true"/> in order to add new source.</exception>
 		protected void AddSourceWithOriginal(CSharpSyntaxNode original, string text, string hintName, in GeneratorExecutionContext context)
 		{
-			ThrowIfHasNoValidData();
 			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, (CSharpParseOptions)context.ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
 			AddSource_Internal(original, tree, hintName, in context);
 		}
@@ -333,10 +342,8 @@ namespace Durian.Analysis
 		/// <param name="tree">The generated <see cref="CSharpSyntaxTree"/>.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-		/// <exception cref="InvalidOperationException"><see cref="IsValid"/> must be <see langword="true"/> in order to add new source.</exception>
 		protected void AddSourceWithOriginal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
-			ThrowIfHasNoValidData();
 			AddSource_Internal(original, tree, hintName, in context);
 		}
 
@@ -344,7 +351,7 @@ namespace Durian.Analysis
 		/// Called after all code is generated.
 		/// </summary>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected virtual void AfterExecution(TContext context)
+		protected internal virtual void AfterExecution(TContext context)
 		{
 			// Do nothing by default.
 		}
@@ -354,7 +361,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="filterGroup">Current <see cref="IReadOnlyFilterGroup{TFilter}"/>.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected virtual void AfterExecutionOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
+		protected internal virtual void AfterExecutionOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
 		{
 			// Do nothing by default.
 		}
@@ -363,7 +370,7 @@ namespace Durian.Analysis
 		/// Called before any generation takes places.
 		/// </summary>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected virtual void BeforeExecution(TContext context)
+		protected internal virtual void BeforeExecution(TContext context)
 		{
 			// Do nothing by default.
 		}
@@ -373,7 +380,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="filterGroup">Current <see cref="IReadOnlyFilterGroup{TFilter}"/>.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected virtual void BeforeExecutionOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
+		protected internal virtual void BeforeExecutionOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
 		{
 			// Do nothing by default.;
 		}
@@ -382,7 +389,7 @@ namespace Durian.Analysis
 		/// Called before filters with generated symbols are executed.
 		/// </summary>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected virtual void BeforeFiltersWithGeneratedSymbols(TContext context)
+		protected internal virtual void BeforeFiltersWithGeneratedSymbols(TContext context)
 		{
 			// Do nothing by default.
 		}
@@ -393,7 +400,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="filterGroup">Current <see cref="IReadOnlyFilterGroup{TFilter}"/>.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected virtual void BeforeFiltrationOfGeneratedSymbols(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
+		protected internal virtual void BeforeFiltrationOfGeneratedSymbols(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
 		{
 			// Do nothing by default.
 		}
@@ -403,7 +410,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="filterGroup">Current <see cref="IReadOnlyFilterGroup{TFilter}"/>.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected virtual void BeforeFiltrationOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
+		protected internal virtual void BeforeFiltrationOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
 		{
 			// Do nothing by default.
 		}
@@ -413,7 +420,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="currentCompilation">Current <see cref="CSharpCompilation"/>.</param>
 		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-		protected abstract TContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, in GeneratorExecutionContext context);
+		protected internal abstract TContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, in GeneratorExecutionContext context);
 
 		/// <summary>
 		/// Performs the generation for the specified <paramref name="data"/>.
@@ -421,14 +428,14 @@ namespace Durian.Analysis
 		/// <param name="data"><see cref="IMemberData"/> to perform the generation for.</param>
 		/// <param name="hintName">Name of the generated file.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected abstract bool Generate(IMemberData data, string hintName, TContext context);
+		protected internal abstract bool Generate(IMemberData data, string hintName, TContext context);
 
 		/// <summary>
 		/// Performs the generation for the specified <paramref name="data"/>.
 		/// </summary>
 		/// <param name="data"><see cref="IMemberData"/> to perform the generation for.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected void GenerateFromData(IMemberData data, TContext context)
+		protected internal void GenerateFromData(IMemberData data, TContext context)
 		{
 			string name = context.FileNameProvider.GetHintName(data.Symbol);
 
@@ -438,12 +445,22 @@ namespace Durian.Analysis
 			}
 		}
 
+		/// <inheritdoc/>
+		[Obsolete("Use GetCurrentPassContext() instead")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		protected sealed override IGeneratorPassContext? GetCurrentPassContextCore()
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			return GetCurrentPassContext(Environment.CurrentManagedThreadId);
+		}
+
 		/// <summary>
 		/// Performs node filtration without the <see cref="BeforeExecution"/> and <see cref="AfterExecution"/> callbacks.
 		/// </summary>
 		/// <param name="filters">Collection of <see cref="ISyntaxFilter"/>s to filtrate the nodes with.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected virtual void HandleFilterContainer(IReadOnlyFilterContainer<IGeneratorSyntaxFilter> filters, TContext context)
+		protected internal virtual void HandleFilterContainer(IReadOnlyFilterContainer<IGeneratorSyntaxFilter> filters, TContext context)
 		{
 			foreach (IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup in filters)
 			{
@@ -456,7 +473,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="filter"><see cref="IGeneratorSyntaxFilter"/> to iterate through.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected virtual void IterateThroughFilter(IGeneratorSyntaxFilter filter, TContext context)
+		protected internal virtual void IterateThroughFilter(IGeneratorSyntaxFilter filter, TContext context)
 		{
 			IEnumerator<IMemberData> iter = filter.GetEnumerator(context);
 
@@ -467,62 +484,48 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Throws an <see cref="InvalidOperationException"/> if <see cref="IsValid"/> is <see langword="false"/> and <see cref="DurianGeneratorBase.EnableExceptions"/> is <see langword="true"/>.
+		/// Executed upon detecting an <see cref="Exception"/>.
 		/// </summary>
-		/// <exception cref="InvalidOperationException"><see cref="IsValid"/> must be <see langword="true"/> in order to add a new source.</exception>
-		protected void ThrowIfHasNoValidData()
+		/// <param name="e"><see cref="Exception"/> that was detected.</param>
+		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
+		protected internal virtual void OnException(Exception e, TContext context)
 		{
-			if (!IsValid && EnableExceptions)
-			{
-				throw new InvalidOperationException($"{nameof(IsValid)} must be true in order to add a new source!");
-			}
+			// Do nothing by default.
 		}
 
 		private protected void AddSource_Internal(CSharpSyntaxTree tree, string hintName, TContext context)
 		{
 			AddSourceCore(tree, hintName, context);
 
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
-			{
-				LogNode_Internal(tree.GetRoot(context.CancellationToken), hintName, NodeOutput.Node);
-			}
+			LogHandler.LogNode(tree.GetRoot(context.CancellationToken), hintName, NodeOutput.Node);
 		}
 
 		private protected void AddSource_Internal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, TContext context)
 		{
 			AddSourceCore(tree, hintName, context);
 
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput))
-			{
-				LogInputOutput_Internal(original, tree.GetRoot(context.CancellationToken), hintName, default);
-			}
+			LogHandler.LogInputOutput(original, tree.GetRoot(context.CancellationToken), hintName, default);
 		}
 
 		private protected void AddSource_Internal(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
 			AddSourceCore(tree, hintName, in context);
 
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
-			{
-				LogNode_Internal(tree.GetRoot(context.CancellationToken), hintName, NodeOutput.Node);
-			}
+			LogHandler.LogNode(tree.GetRoot(context.CancellationToken), hintName, NodeOutput.Node);
 		}
 
 		private protected void AddSource_Internal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
 			AddSourceCore(tree, hintName, in context);
 
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput))
-			{
-				LogInputOutput_Internal(original, tree.GetRoot(context.CancellationToken), hintName, default);
-			}
+			LogHandler.LogInputOutput(original, tree.GetRoot(context.CancellationToken), hintName, default);
 		}
 
-		private protected void ResetData()
+		private bool Execute_Internal(TContext context)
 		{
-			Registry.Remove(InstanceId);
-			IsSuccess = false;
-			IsValid = false;
+			GeneratorContextRegistry.AddContext(InstanceId, Environment.CurrentManagedThreadId, context);
+			Filtrate(context);
+			return true;
 		}
 
 		private void GenerateFromFiltersWithGeneratedSymbols(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols, TContext context)
@@ -534,6 +537,19 @@ namespace Durian.Analysis
 			{
 				IterateThroughFilter(filter, context);
 			}
+		}
+
+		private bool HandleException(Exception e)
+		{
+			LogHandler.LogException(e);
+			return !LoggingConfiguration.EnableExceptions;
+		}
+
+		private bool HandleException(Exception e, TContext context)
+		{
+			bool shouldThrow = !HandleException(e);
+			OnException(e, context);
+			return shouldThrow;
 		}
 
 		private void HandleFilterGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)

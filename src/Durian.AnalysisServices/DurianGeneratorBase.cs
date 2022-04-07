@@ -19,12 +19,12 @@ namespace Durian.Analysis
 	/// <summary>
 	/// Base class for all Durian generators.
 	/// </summary>
-	public abstract class DurianGeneratorBase : LoggableGenerator
+	public abstract class DurianGeneratorBase : IDurianGenerator
 	{
 		#region Diagnostics copied from Durian.Core.Analyzer
 
 #pragma warning disable IDE1006 // Naming Styles
-		private static readonly DiagnosticDescriptor DUR0001_DoesNotReferenceDurianCore = new(
+		private static readonly DiagnosticDescriptor DUR0001_ProjectMustReferenceDurianCore = new(
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning disable RS2008 // Enable analyzer release tracking
 			id: "DUR0001",
@@ -38,7 +38,7 @@ namespace Durian.Analysis
 		);
 
 #pragma warning disable IDE1006 // Naming Styles
-		private static readonly DiagnosticDescriptor DUR0004_NotCSharpCompilation = new(
+		private static readonly DiagnosticDescriptor DUR0004_DurianModulesAreValidOnlyInCSharp = new(
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning disable RS2008 // Enable analyzer release tracking
 			id: "DUR0004",
@@ -53,55 +53,57 @@ namespace Durian.Analysis
 
 		#endregion Diagnostics copied from Durian.Core.Analyzer
 
-		/// <inheritdoc cref="LoggingConfiguration.EnableDiagnostics"/>
-		public virtual bool EnableDiagnostics
-		{
-			get => LoggingConfiguration.EnableDiagnostics;
-			set => LoggingConfiguration.EnableDiagnostics = value;
-		}
-
-		/// <inheritdoc cref="LoggingConfiguration.EnableExceptions"/>
-		public virtual bool EnableExceptions
-		{
-			get => LoggingConfiguration.EnableExceptions;
-			set => LoggingConfiguration.EnableExceptions = value;
-		}
-
-		/// <inheritdoc cref="LoggingConfiguration.EnableLogging"/>
-		public virtual bool EnableLogging
-		{
-			get => LoggingConfiguration.EnableLogging;
-			set => LoggingConfiguration.EnableLogging = value;
-		}
-
 		/// <summary>
 		/// Unique identifier of the current instance.
 		/// </summary>
 		public Guid InstanceId { get; }
 
 		/// <inheritdoc/>
+		public IGeneratorLogHandler LogHandler { get; }
+
+		/// <inheritdoc cref="IGeneratorLogHandler.LoggingConfiguration"/>
+		public LoggingConfiguration LoggingConfiguration => LogHandler.LoggingConfiguration;
+
+		/// <inheritdoc/>
 		public virtual int NumStaticTrees => GetInitialSources().Count();
 
-		/// <inheritdoc cref="LoggingConfiguration.SupportsDiagnostics"/>
-		public bool SupportsDiagnostics
-		{
-			get => LoggingConfiguration.SupportsDiagnostics;
-			set => LoggingConfiguration.SupportsDiagnostics = value;
-		}
+		/// <inheritdoc/>
+		public abstract string GeneratorName { get; }
+
+		/// <inheritdoc/>
+		public abstract string GeneratorVersion { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGeneratorBase"/> class.
 		/// </summary>
 		protected DurianGeneratorBase()
 		{
+			LogHandler = new GeneratorLogHandler();
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGeneratorBase"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-		protected DurianGeneratorBase(in ConstructionContext context) : base(in context)
+		/// <param name="logHandler">Service that handles log files for this generator.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="logHandler"/> is <see langword="null"/>.</exception>
+		protected DurianGeneratorBase(IGeneratorLogHandler logHandler)
 		{
+			if(logHandler is null)
+			{
+				throw new ArgumentNullException(nameof(logHandler));
+			}
+
+			LogHandler = logHandler;
+			InstanceId = Guid.NewGuid();
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DurianGeneratorBase"/> class.
+		/// </summary>
+		/// <param name="context">Configures how this generator is initialized.</param>
+		protected DurianGeneratorBase(in GeneratorLogCreationContext context)
+		{
+			LogHandler = new GeneratorLogHandler(LoggingConfiguration.CreateForGenerator(this, in context));
 			InstanceId = Guid.NewGuid();
 		}
 
@@ -109,31 +111,28 @@ namespace Durian.Analysis
 		/// Initializes a new instance of the <see cref="DurianGeneratorBase"/> class.
 		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-		protected DurianGeneratorBase(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		protected DurianGeneratorBase(LoggingConfiguration? loggingConfiguration)
 		{
+			LogHandler = new GeneratorLogHandler(loggingConfiguration);
 			InstanceId = Guid.NewGuid();
 		}
 
 		/// <inheritdoc/>
-		public override void Execute(in GeneratorExecutionContext context)
+		public virtual bool Execute(in GeneratorExecutionContext context)
 		{
-			InitializeCompilation(in context, out _);
+			return InitializeCompilation(in context, out _);
 		}
 
-		/// <summary>
-		/// Returns name of this <see cref="IDurianGenerator"/>.
-		/// </summary>
-		public virtual string? GetGeneratorName()
+		/// <inheritdoc cref="IDurianGenerator.GetCurrentPassContext"/>
+		public IGeneratorPassContext? GetCurrentPassContext()
 		{
-			return null;
+			return GetCurrentPassContextCore();
 		}
 
-		/// <summary>
-		/// Returns version of this <see cref="IDurianGenerator"/>.
-		/// </summary>
-		public virtual string? GetGeneratorVersion()
+		/// <inheritdoc/>
+		public override int GetHashCode()
 		{
-			return null;
+			return InstanceId.GetHashCode();
 		}
 
 		/// <summary>
@@ -150,7 +149,7 @@ namespace Durian.Analysis
 		public abstract DurianModule[] GetRequiredModules();
 
 		/// <inheritdoc/>
-		public override void Initialize(GeneratorInitializationContext context)
+		public virtual void Initialize(GeneratorInitializationContext context)
 		{
 			context.RegisterForPostInitialization(InitializeStaticTrees);
 		}
@@ -158,7 +157,7 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		public override string ToString()
 		{
-			return $"{GetGeneratorName()} (v. {GetGeneratorVersion()})";
+			return $"{GeneratorName} (v. {GeneratorVersion})";
 		}
 
 		/// <summary>
@@ -209,6 +208,12 @@ namespace Durian.Analysis
 			LogSource(hintName, syntaxTree, context.CancellationToken);
 		}
 
+		/// <inheritdoc cref="IDurianGenerator.GetCurrentPassContext"/>
+		protected virtual IGeneratorPassContext? GetCurrentPassContextCore()
+		{
+			return null;
+		}
+
 		/// <summary>
 		/// Validates and initializes a <see cref="CSharpCompilation"/> provided by the <paramref name="context"/>.
 		/// </summary>
@@ -217,33 +222,17 @@ namespace Durian.Analysis
 		/// <returns><see langword="true"/> if the <paramref name="compilation"/> was successfully validated and initialized, <see langword="false"/> otherwise.</returns>
 		protected bool InitializeCompilation(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
 		{
-			if (context.Compilation is not CSharpCompilation c)
+			if(IsValidCSharpCompilation(in context, out CSharpCompilation? c) && ValidateCompilation(c, in context))
 			{
-				context.ReportDiagnostic(Diagnostic.Create(DUR0004_NotCSharpCompilation, Location.None));
+				DurianModule[] modules = GetRequiredModules();
+				EnableModules(ref c, in context, modules);
 
-				compilation = null;
-				return false;
+				compilation = c;
+				return true;
 			}
 
-			if (!HasValidReferences(c))
-			{
-				context.ReportDiagnostic(Diagnostic.Create(DUR0001_DoesNotReferenceDurianCore, Location.None));
-
-				compilation = null;
-				return false;
-			}
-
-			if (!ValidateCompilation(c, in context))
-			{
-				compilation = null;
-				return false;
-			}
-
-			DurianModule[] modules = GetRequiredModules();
-			EnableModules(ref c, in context, modules);
-
-			compilation = c;
-			return true;
+			compilation = default;
+			return false;
 		}
 
 		/// <summary>
@@ -251,9 +240,19 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> to validate.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to report <see cref="Diagnostic"/>s to.</param>
-		protected virtual bool ValidateCompilation(CSharpCompilation compilation, in GeneratorExecutionContext context)
+		protected internal virtual bool ValidateCompilation(CSharpCompilation compilation, in GeneratorExecutionContext context)
 		{
 			return true;
+		}
+
+		void ISourceGenerator.Execute(GeneratorExecutionContext context)
+		{
+			Execute(in context);
+		}
+
+		IGeneratorPassContext? IDurianGenerator.GetCurrentPassContext()
+		{
+			return GetCurrentPassContextCore();
 		}
 
 		private static void EnableModules(ref CSharpCompilation compilation, in GeneratorExecutionContext context, DurianModule[] modules)
@@ -300,16 +299,44 @@ namespace Durian.Analysis
 			}
 		}
 
-		private static bool HasValidReferences(CSharpCompilation compilation)
+		private static bool HasValidReferences(Compilation compilation, out bool hasCoreAnalyzer)
 		{
+			bool foundAnalyzer = false;
+			bool currentValue = false;
+
 			foreach (AssemblyIdentity assembly in compilation.ReferencedAssemblyNames)
 			{
-				if (assembly.Name == "Durian.Core" || assembly.Name == "Durian" || assembly.Name == "Durian.Manager")
+				if(assembly.Name == "Durian")
 				{
+					hasCoreAnalyzer = true;
 					return true;
+				}
+
+				if(assembly.Name == "Durian.Core")
+				{
+					if(foundAnalyzer)
+					{
+						hasCoreAnalyzer = true;
+						return true;
+					}
+
+					currentValue = true;
+					continue;
+				}
+
+				if(assembly.Name == "Durian.Core.Analyzer")
+				{
+					if(currentValue)
+					{
+						hasCoreAnalyzer = true;
+						return true;
+					}
+
+					foundAnalyzer = true;
 				}
 			}
 
+			hasCoreAnalyzer = false;
 			return false;
 		}
 
@@ -322,8 +349,8 @@ namespace Durian.Analysis
 				return;
 			}
 
-			string? generatorName = GetGeneratorName();
-			string? generatorVersion = GetGeneratorVersion();
+			string? generatorName = GeneratorName;
+			string? generatorVersion = GeneratorVersion;
 
 			foreach (ISourceTextProvider treeProvider in syntaxTreeProviders)
 			{
@@ -343,12 +370,37 @@ namespace Durian.Analysis
 			}
 		}
 
+		private static bool IsValidCSharpCompilation(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
+		{
+			bool isValid = true;
+
+			if (!HasValidReferences(context.Compilation, out bool hasCoreAnalyzer))
+			{
+				if (!hasCoreAnalyzer)
+				{
+					context.ReportDiagnostic(Diagnostic.Create(DUR0001_ProjectMustReferenceDurianCore, Location.None));
+				}
+
+				isValid = false;
+			}
+
+			if (context.Compilation is CSharpCompilation c)
+			{
+				compilation = c;
+				return isValid;
+			}
+			else if (!hasCoreAnalyzer)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(DUR0004_DurianModulesAreValidOnlyInCSharp, Location.None));
+			}
+
+			compilation = default;
+			return false;
+		}
+
 		private void LogSource(string hintName, SyntaxTree syntaxTree, CancellationToken cancellationToken)
 		{
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node))
-			{
-				LogNode_Internal(syntaxTree.GetRoot(cancellationToken), hintName, NodeOutput.Node);
-			}
+			LogHandler.LogNode(syntaxTree.GetRoot(cancellationToken), hintName, NodeOutput.Node);
 		}
 	}
 }

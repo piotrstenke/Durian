@@ -41,13 +41,13 @@ namespace Durian.Analysis.CopyFrom
 		/// <inheritdoc/>
 		public override int NumStaticTrees => _numStaticTrees;
 
-		/// <inheritdoc cref="CopyFromGenerator(in ConstructionContext, IHintNameProvider?)"/>
+		/// <inheritdoc cref="CopyFromGenerator(in GeneratorLogCreationContext, IHintNameProvider?)"/>
 		public CopyFromGenerator()
 		{
 		}
 
-		/// <inheritdoc cref="CopyFromGenerator(in ConstructionContext, IHintNameProvider?)"/>
-		public CopyFromGenerator(in ConstructionContext context) : base(in context)
+		/// <inheritdoc cref="CopyFromGenerator(in GeneratorLogCreationContext, IHintNameProvider?)"/>
+		public CopyFromGenerator(in GeneratorLogCreationContext context) : base(in context)
 		{
 		}
 
@@ -56,7 +56,7 @@ namespace Durian.Analysis.CopyFrom
 		/// </summary>
 		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public CopyFromGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
+		public CopyFromGenerator(in GeneratorLogCreationContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
 		{
 		}
 

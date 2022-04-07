@@ -3,16 +3,17 @@
 
 using Durian.Analysis;
 using Durian.Analysis.Logging;
+using Microsoft.CodeAnalysis;
 using System;
 using System.Runtime.CompilerServices;
 
 namespace Durian.TestServices
 {
 	/// <summary>
-	/// An abstract class that provides methods to test <see cref="ILoggableGenerator"/>s and log information about the generator test.
+	/// An abstract class that provides methods to test <see cref="ISourceGenerator"/>s and log information about the generator test.
 	/// </summary>
-	/// <typeparam name="T">Type of target <see cref="ILoggableGenerator"/>.</typeparam>
-	public abstract class LoggableGeneratorTest<T> where T : ILoggableGenerator
+	/// <typeparam name="T">Type of target <see cref="ISourceGenerator"/>.</typeparam>
+	public abstract class LoggableGeneratorTest<T> where T : ISourceGenerator
 	{
 		internal readonly LoggingConfiguration _configuration;
 
@@ -28,7 +29,7 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableGeneratorTest{T}"/> class.
 		/// </summary>
-		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for the created <see cref="ILoggableGenerator"/> if it supports any.</param>
+		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for the created <see cref="ISourceGenerator"/> if it supports any.</param>
 		protected LoggableGeneratorTest(bool enableDiagnostics) : this(enableDiagnostics, typeof(T))
 		{
 		}
@@ -36,17 +37,17 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableGeneratorTest{T}"/> class.
 		/// </summary>
-		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for the created <see cref="ILoggableGenerator"/> if it supports any.</param>
+		/// <param name="enableDiagnostics">Determines whether to enable diagnostics for the created <see cref="ISourceGenerator"/> if it supports any.</param>
 		/// <param name="generatorType"><see cref="Type"/> to get the <see cref="LoggingConfiguration"/> from.</param>
 		protected LoggableGeneratorTest(bool enableDiagnostics, Type generatorType)
 		{
-			_configuration = LoggingConfiguration.CreateConfigurationForGenerator(generatorType);
+			_configuration = LoggingConfiguration.CreateForGenerator(generatorType);
 			_configuration.LogDirectory += $"/{GetType().Name}";
 			_enableDiagnostics = enableDiagnostics;
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="ILoggableGenerator"/>.
+		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="ISourceGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		/// <param name="testName">Name of the test that is currently performed.</param>
@@ -57,7 +58,7 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="ILoggableGenerator"/>.
+		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="ISourceGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		/// <param name="index">Index of the source in the generator's output.</param>
@@ -69,7 +70,7 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="ILoggableGenerator"/>.
+		/// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="ISourceGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		/// <param name="testName">Name of the test that is currently performed.</param>
@@ -79,7 +80,7 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="ILoggableGenerator"/>.
+		/// Returns a <see cref="MultiOutputGeneratorTestResult"/> created by performing a test on the target <see cref="ISourceGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		/// <param name="startIndex">Number of generated sources to skip.</param>
@@ -90,7 +91,7 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="ILoggableGenerator"/>.
+		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="ISourceGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		/// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
@@ -102,7 +103,7 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="ILoggableGenerator"/>.
+		/// Returns a <see cref="SingletonGeneratorTestResult"/> created by performing a test on the target <see cref="ISourceGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
 		/// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
@@ -115,9 +116,9 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="ILoggableGenerator"/> based on the specified <paramref name="configuration"/> and <paramref name="testName"/>.
+		/// Creates a new <see cref="ISourceGenerator"/> based on the specified <paramref name="configuration"/> and <paramref name="testName"/>.
 		/// </summary>
-		/// <param name="configuration">Configuration for the <see cref="ILoggableGenerator"/>.</param>
+		/// <param name="configuration">Configuration for the <see cref="ISourceGenerator"/>.</param>
 		/// <param name="testName">Name of the current test.</param>
 		protected abstract T CreateGenerator(LoggingConfiguration configuration, string testName);
 
@@ -130,9 +131,9 @@ namespace Durian.TestServices
 				throw new InvalidOperationException($"{nameof(CreateGenerator)} returned null");
 			}
 
-			if (_enableDiagnostics && generator is IDurianGenerator g && g.SupportsDiagnostics)
+			if (_enableDiagnostics && generator is IDurianGenerator g && g.LogHandler is not null)
 			{
-				g.EnableDiagnostics = true;
+				g.LogHandler.EnableDiagnosticsIfSupported();
 			}
 
 			return generator;

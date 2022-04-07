@@ -25,11 +25,6 @@ namespace Durian.Analysis
 		CancellationToken CancellationToken { get; }
 
 		/// <summary>
-		/// <see cref="IDiagnosticReceiver"/> that is used to report diagnostics during the current generator pass.
-		/// </summary>
-		DiagnosticReceiver.ReadonlyContextual<GeneratorExecutionContext>? DiagnosticReceiver { get; }
-
-		/// <summary>
 		/// Creates names for generated files.
 		/// </summary>
 		IHintNameProvider FileNameProvider { get; }
@@ -38,11 +33,6 @@ namespace Durian.Analysis
 		/// <see cref="IDurianGenerator"/> this context was created for.
 		/// </summary>
 		IDurianGenerator Generator { get; }
-
-		/// <summary>
-		/// <see cref="LoggableDiagnosticReceiver"/> that is used to report diagnostics to log files.
-		/// </summary>
-		LoggableDiagnosticReceiver? LogReceiver { get; }
 
 		/// <summary>
 		/// <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="SyntaxNode"/>es that will take part in the generation.
@@ -63,5 +53,15 @@ namespace Durian.Analysis
 		/// Container of services that can be resolved during the current generator pass.
 		/// </summary>
 		IGeneratorServiceContainer Services { get; }
+
+		/// <summary>
+		/// Current state of the generator.
+		/// </summary>
+		GeneratorState State { get; }
+
+		/// <summary>
+		/// Returns a <see cref="IDiagnosticReceiver"/> to be used during the current generation pass.
+		/// </summary>
+		IDiagnosticReceiver? GetDiagnosticReceiver();
 	}
 }

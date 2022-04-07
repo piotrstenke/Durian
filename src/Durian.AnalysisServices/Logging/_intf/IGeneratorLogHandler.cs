@@ -8,11 +8,13 @@ using System.Collections.Generic;
 namespace Durian.Analysis.Logging
 {
 	/// <summary>
-	/// An <see cref="ISourceGenerator"/> that can create log files.
+	/// Provides methods for creating log files for source generators.
 	/// </summary>
-	public interface ILoggableGenerator : ISourceGenerator
+	public interface IGeneratorLogHandler
 	{
-		/// <inheritdoc cref="Logging.LoggingConfiguration"/>
+		/// <summary>
+		/// Configures how log files are handled.
+		/// </summary>
 		LoggingConfiguration LoggingConfiguration { get; }
 
 		/// <summary>

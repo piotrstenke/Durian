@@ -1,52 +1,56 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis;
-using Durian.Analysis.Data;
-using Durian.Analysis.Logging;
-using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
+using Durian.Analysis;
+using Durian.Analysis.Data;
+using Durian.Analysis.Filters;
+using Durian.Analysis.Logging;
+using Durian.Info;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.TestServices
 {
-	/// <summary>
-	/// A wrapper for <see cref="DurianGeneratorWithFilters{TFilter}"/> that offers better logging experience.
-	/// </summary>
-	/// <typeparam name="TFilter">Type of <see cref="IGeneratorSyntaxFilter"/> used to generate sources.</typeparam>
-	public class TestableGenerator<TFilter> : ITestableGenerator where TFilter : IGeneratorSyntaxFilter
+	/// <inheritdoc cref="ITestableGenerator"/>
+	/// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> this generator uses.</typeparam>
+	public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>, ITestableGenerator where TContext : class, IGeneratorPassContext
 	{
-		private int _analyzerCounter;
-		private int _generatorCounter;
+		private volatile int _analyzerCounter;
+		private volatile int _generatorCounter;
 
 		/// <inheritdoc/>
-		public IHintNameProvider FileNameProvider
-		{
-			get => UnderlayingGenerator.FileNameProvider;
-			set => UnderlayingGenerator.FileNameProvider = value;
-		}
+		public override string GeneratorName => UnderlayingGenerator.GeneratorName!;
 
 		/// <inheritdoc/>
-		public LoggingConfiguration LoggingConfiguration => UnderlayingGenerator.LoggingConfiguration;
+		public override string GeneratorVersion => UnderlayingGenerator.GeneratorVersion!;
+
+		/// <inheritdoc/>
+		public override int NumStaticTrees => UnderlayingGenerator.NumStaticTrees;
 
 		/// <summary>
-		/// Name of a test that is currently running.
+		/// Name of the test that is currently running.
 		/// </summary>
 		public string TestName { get; }
 
 		/// <inheritdoc cref="ITestableGenerator.UnderlayingGenerator"/>
-		public DurianGeneratorWithFilters<TFilter> UnderlayingGenerator { get; }
+		public DurianGeneratorWithContext<TContext> UnderlayingGenerator { get; }
 
-		ILoggableGenerator ITestableGenerator.UnderlayingGenerator => UnderlayingGenerator;
+		IDurianGenerator ITestableGenerator.UnderlayingGenerator => UnderlayingGenerator;
+
+		/// <inheritdoc cref="TestableGenerator(DurianGeneratorWithContext{TContext}, string?)"/>
+		public TestableGenerator(DurianGeneratorWithContext<TContext> generator) : this(generator, default)
+		{
+		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="TestableGenerator{TFilter}"/> class.
+		/// Initializes a new instance of the <see cref="TestableGenerator{TContext}"/> class.
 		/// </summary>
-		/// <param name="generator"><see cref="DurianGeneratorWithFilters{TFilter}"/> that is used to actually generate sources.</param>
-		/// <param name="testName">Name of a test that is currently running.</param>
+		/// <param name="generator"><see cref="ISourceGenerator"/> that is used to actually generate sources.</param>
+		/// <param name="testName">Name of the test that is currently running.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="testName"/> cannot be <see langword="null"/> or empty.</exception>
-		public TestableGenerator(DurianGeneratorWithFilters<TFilter> generator, string testName)
+		public TestableGenerator(DurianGeneratorWithContext<TContext> generator, string? testName)
 		{
 			if (generator is null)
 			{
@@ -54,95 +58,153 @@ namespace Durian.TestServices
 			}
 
 			UnderlayingGenerator = generator;
-			FileNameProvider = new TestNameToFile(testName);
-			TestName = testName;
-
-			generator.AfterExecutionOfGroup += SetAnalyzerMode;
-			generator.BeforeExecutionOfGroup += SetGeneratorMode;
-			generator.BeforeFiltrationOfGroup += SetAnalyzerMode;
-			generator.IterateThroughFilterEvent += IterateThroughFilter;
+			TestName = testName ?? string.Empty;
 		}
 
 		/// <inheritdoc/>
-		public void Execute(in GeneratorExecutionContext context)
+		public override IDurianSyntaxReceiver CreateSyntaxReceiver()
 		{
-			UnderlayingGenerator.LoggingConfiguration.SupportedLogs &= ~GeneratorLogs.Exception;
-
-			try
-			{
-				UnderlayingGenerator.Execute(in context);
-			}
-			catch(Exception e)
-			{
-				UnderlayingGenerator.LoggingConfiguration.SupportedLogs |= GeneratorLogs.Exception;
-				LogException(e, TestName);
-				throw;
-			}
+			return UnderlayingGenerator.CreateSyntaxReceiver();
 		}
 
 		/// <inheritdoc/>
-		public void Initialize(GeneratorInitializationContext context)
+		public override IReadOnlyFilterContainer<IGeneratorSyntaxFilter> GetFilters(IHintNameProvider fileNameProvider)
+		{
+			return UnderlayingGenerator.GetFilters(fileNameProvider);
+		}
+
+		/// <inheritdoc/>
+		public override IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? GetFilters(TContext context)
+		{
+			return UnderlayingGenerator.GetFilters(context);
+		}
+
+		/// <inheritdoc/>
+		public override IEnumerable<ISourceTextProvider>? GetInitialSources()
+		{
+			return UnderlayingGenerator.GetInitialSources();
+		}
+
+		/// <inheritdoc/>
+		public override DurianModule[] GetRequiredModules()
+		{
+			return UnderlayingGenerator.GetRequiredModules();
+		}
+
+		/// <inheritdoc/>
+		public override void Initialize(GeneratorInitializationContext context)
 		{
 			UnderlayingGenerator.Initialize(context);
 		}
 
 		/// <inheritdoc/>
-		public void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics, NodeOutput nodeOutput = default)
+		protected internal override void AddSourceCore(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
-			UnderlayingGenerator.LogDiagnostics(node, hintName, diagnostics, nodeOutput);
+			UnderlayingGenerator.AddSourceCore(tree, hintName, context);
 		}
 
 		/// <inheritdoc/>
-		public void LogException(Exception exception)
+		protected internal override void AddSourceCore(CSharpSyntaxTree tree, string hintName, TContext context)
 		{
-			UnderlayingGenerator.LogException(exception);
+			UnderlayingGenerator.AddSourceCore(tree, hintName, context);
 		}
 
 		/// <inheritdoc/>
-		public void LogException(Exception exception, string source)
+		protected internal override void AfterExecution(TContext context)
 		{
-			UnderlayingGenerator.LogException(exception, source);
+			UnderlayingGenerator.AfterExecution(context);
 		}
 
 		/// <inheritdoc/>
-		public void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput = default)
+		protected internal override void AfterExecutionOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
 		{
-			UnderlayingGenerator.LogInputOutput(input, output, hintName, nodeOutput);
+			UnderlayingGenerator.AfterExecutionOfGroup(filterGroup, context);
+
+			SetAnalyzerMode(context);
 		}
 
 		/// <inheritdoc/>
-		public void LogNode(SyntaxNode node, string hintName, NodeOutput nodeOutput = default)
+		protected internal override void BeforeExecution(TContext context)
 		{
-			UnderlayingGenerator.LogNode(node, hintName, nodeOutput);
+			UnderlayingGenerator.BeforeExecution(context);
 		}
 
-		void ISourceGenerator.Execute(GeneratorExecutionContext context)
+		/// <inheritdoc/>
+		protected internal override void BeforeExecutionOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
 		{
-			Execute(in context);
+			UnderlayingGenerator.BeforeExecutionOfGroup(filterGroup, context);
+
+			SetGeneratorMode(context);
 		}
 
-		private void IterateThroughFilter(TFilter filter, in GeneratorExecutionContext context)
+		/// <inheritdoc/>
+		protected internal override void BeforeFiltersWithGeneratedSymbols(TContext context)
 		{
-			IEnumerator<IMemberData> iter = filter.GetEnumerator();
+			UnderlayingGenerator.BeforeFiltersWithGeneratedSymbols(context);
+		}
 
-			SetAnalyzerMode();
+		/// <inheritdoc/>
+		protected internal override void BeforeFiltrationOfGeneratedSymbols(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
+		{
+			UnderlayingGenerator.BeforeFiltrationOfGeneratedSymbols(filterGroup, context);
+		}
+
+		/// <inheritdoc/>
+		protected internal override void BeforeFiltrationOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
+		{
+			UnderlayingGenerator.BeforeFiltrationOfGroup(filterGroup, context);
+
+			SetAnalyzerMode(context);
+		}
+
+		/// <inheritdoc/>
+		protected internal override TContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, in GeneratorExecutionContext context)
+		{
+			return UnderlayingGenerator.CreateCurrentPassContext(currentCompilation, in context);
+		}
+
+		/// <inheritdoc/>
+		protected internal override bool Generate(IMemberData data, string hintName, TContext context)
+		{
+			return UnderlayingGenerator.Generate(data, hintName, context);
+		}
+
+		/// <inheritdoc/>
+		protected internal override void HandleFilterContainer(IReadOnlyFilterContainer<IGeneratorSyntaxFilter> filters, TContext context)
+		{
+			UnderlayingGenerator.HandleFilterContainer(filters, context);
+		}
+
+		/// <inheritdoc/>
+		protected internal override void IterateThroughFilter(IGeneratorSyntaxFilter filter, TContext context)
+		{
+			IEnumerator<IMemberData> iter = filter.GetEnumerator(context);
+
+			SetAnalyzerMode(context);
 
 			while (iter.MoveNext())
 			{
-				SetGeneratorMode();
-				UnderlayingGenerator.GenerateFromData(iter.Current, in context);
-				SetAnalyzerMode();
+				SetGeneratorMode(context);
+				UnderlayingGenerator.GenerateFromData(iter.Current, context);
+				SetAnalyzerMode(context);
 			}
 		}
 
-		private void SetAnalyzerMode(FilterGroup<TFilter>? filterGroup, in GeneratorExecutionContext context)
+		/// <inheritdoc/>
+		protected internal override void OnException(Exception e, TContext context)
 		{
-			SetAnalyzerMode();
+			UnderlayingGenerator.OnException(e, context);
 		}
 
-		private void SetAnalyzerMode()
+		/// <inheritdoc/>
+		protected internal override bool ValidateCompilation(CSharpCompilation compilation, in GeneratorExecutionContext context)
 		{
-			if (FileNameProvider is not TestNameToFile t)
+			return UnderlayingGenerator.ValidateCompilation(compilation, context);
+		}
+
+		private void SetAnalyzerMode(TContext context)
+		{
+			if (context.FileNameProvider is not TestNameToFile t)
 			{
 				return;
 			}
@@ -151,14 +213,9 @@ namespace Durian.TestServices
 			t.Counter = _analyzerCounter;
 		}
 
-		private void SetGeneratorMode(FilterGroup<TFilter>? filterGroup, in GeneratorExecutionContext context)
+		private void SetGeneratorMode(TContext context)
 		{
-			SetGeneratorMode();
-		}
-
-		private void SetGeneratorMode()
-		{
-			if (FileNameProvider is not TestNameToFile t)
+			if (context.FileNameProvider is not TestNameToFile t)
 			{
 				return;
 			}

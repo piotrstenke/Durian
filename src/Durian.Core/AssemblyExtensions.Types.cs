@@ -125,7 +125,7 @@ namespace Durian.Info
 
 			foreach (DurianModule module in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(module);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(module);
 			}
 
 			EnableModuleAttribute[] attributes = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
@@ -372,7 +372,7 @@ namespace Durian.Info
 
 			foreach (DurianModule module in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(module);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(module);
 			}
 
 			EnableModuleAttribute[] attributes = assembly.GetCustomAttributes<EnableModuleAttribute>().ToArray();
@@ -648,7 +648,7 @@ namespace Durian.Info
 
 			foreach (DurianModule module in modules)
 			{
-				ModuleIdentity.EnsureIsValidModuleEnum(module);
+				ModuleIdentity.EnsureIsValidModuleEnum_InvOp(module);
 			}
 
 			return IsEnabled_Internal(assembly, type, modules);

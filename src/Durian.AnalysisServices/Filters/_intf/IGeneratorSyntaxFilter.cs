@@ -25,7 +25,7 @@ namespace Durian.Analysis.Filters
 		IEnumerable<IMemberData> Filtrate(IGeneratorPassContext context);
 
 		/// <summary>
-		/// Iterates through nodes collected by the ?<see cref="IGeneratorPassContext.SyntaxReceiver"/>.
+		/// Iterates through nodes collected by the <see cref="IGeneratorPassContext.SyntaxReceiver"/>.
 		/// </summary>
 		/// <param name="context"><see cref="IGeneratorPassContext"/> that is used when filtrating the <see cref="IMemberData"/>s.</param>
 		IEnumerator<IMemberData> GetEnumerator(IGeneratorPassContext context);

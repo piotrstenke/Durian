@@ -38,8 +38,23 @@ namespace Durian.Info
 		{
 			if (!GlobalInfo.IsValidPackageValue(package))
 			{
-				throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!");
+				throw new ArgumentException($"Unknown {nameof(DurianPackage)} value: {package}!");
 			}
+		}
+
+		/// <summary>
+		/// Determines whether <see cref="DurianPackage"/> with the given <paramref name="packageName"/> is of the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="packageName">Name of the Durian package to check whether is of the specified <paramref name="type"/>.</param>
+		/// <param name="type">Type of the package.</param>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="packageName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian package name: <paramref name="packageName"/>.
+		/// </exception>
+		public static bool IsPackageType(string packageName, PackageType type)
+		{
+			DurianPackage package = ParsePackage(packageName);
+			return IsPackageType(package, type);
 		}
 
 		/// <summary>
@@ -105,28 +120,6 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Returns a new instance of <see cref="PackageIdentity"/> corresponding with the specified <see cref="DurianPackage"/>.
-		/// </summary>
-		/// <param name="package"><see cref="DurianPackage"/> to get the <see cref="PackageIdentity"/> of.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
-		public static PackageIdentity GetPackage(DurianPackage package)
-		{
-			return package switch
-			{
-				DurianPackage.Main => PackageRepository.Main,
-				DurianPackage.AnalysisServices => PackageRepository.AnalysisServices,
-				DurianPackage.Core => PackageRepository.Core,
-				DurianPackage.CoreAnalyzer => PackageRepository.CoreAnalyzer,
-				DurianPackage.DefaultParam => PackageRepository.DefaultParam,
-				DurianPackage.TestServices => PackageRepository.TestServices,
-				DurianPackage.FriendClass => PackageRepository.FriendClass,
-				DurianPackage.InterfaceTargets => PackageRepository.InterfaceTargets,
-				DurianPackage.CopyFrom => PackageRepository.CopyFrom,
-				_ => throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!")
-			};
-		}
-
-		/// <summary>
 		/// Returns a new instance of <see cref="PackageIdentity"/> of Durian package with the specified <paramref name="packageName"/>.
 		/// </summary>
 		/// <param name="packageName">Name of the Durian package to get the <see cref="PackageIdentity"/> of.</param>
@@ -138,6 +131,20 @@ namespace Durian.Info
 		{
 			DurianPackage package = ParsePackage(packageName);
 			return GetPackage(package);
+		}
+
+		/// <summary>
+		/// Returns the <see cref="PackageType"/> associated with a <see cref="DurianPackage"/> with the specified <paramref name="packageName"/>.
+		/// </summary>
+		/// <param name="packageName">Name of <see cref="DurianPackage"/> to get the <see cref="PackageType"/> associated with.</param>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="packageName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian package name: <paramref name="packageName"/>.
+		/// </exception>
+		public static PackageType GetPackageType(string packageName)
+		{
+			DurianPackage package = ParsePackage(packageName);
+			return GetPackageType(package);
 		}
 
 		/// <summary>
@@ -158,7 +165,7 @@ namespace Durian.Info
 		/// Returns a new instance of <see cref="PackageReference"/> that represents an in-direct reference to a <see cref="PackageIdentity"/>.
 		/// </summary>
 		/// <param name="package"><see cref="DurianPackage"/> to get a <see cref="PackageReference"/> to.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianPackage"/> value detected.</exception>
 		public static PackageReference GetReference(DurianPackage package)
 		{
 			return new PackageReference(package);
@@ -239,7 +246,7 @@ namespace Durian.Info
 		/// Determines whether the calling <see cref="Assembly"/> references the provided <paramref name="package"/>.
 		/// </summary>
 		/// <param name="package"><see cref="DurianPackage"/> representing a Durian package to check for.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianPackage"/> value: <paramref name="package"/>.</exception>
 		public static bool HasReference(DurianPackage package)
 		{
 			return Assembly.GetCallingAssembly().HasReference(package);
@@ -259,18 +266,19 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="package"/> is a Roslyn-based analyzer package.
+		/// Determines whether the  specified <paramref name="package"/> is a Roslyn-based analyzer package (either <see cref="PackageType.Analyzer"/>,
+		/// <see cref="PackageType.StaticGenerator"/>, <see cref="PackageType.SyntaxBasedGenerator"/> or <see cref="PackageType.FileBasedGenerator"/>).
 		/// </summary>
-		/// <param name="package"><see cref="DurianPackage"/> to check.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianPackage"/> value: <paramref name="package"/>.</exception>
 		public static bool IsAnalyzerPackage(DurianPackage package)
 		{
-			PackageIdentity identity = GetPackage(package);
-			return IsAnalyzerPackage(identity.Type);
+			PackageType type = GetPackageType(package);
+			return IsAnalyzerPackage(type);
 		}
 
 		/// <summary>
-		/// Determines whether <see cref="DurianPackage"/> with the specified <paramref name="packageName"/> is a Roslyn-based analyzer package.
+		/// Determines whether a <see cref="DurianPackage"/> with the specified <paramref name="packageName"/> is a Roslyn-based analyzer package (either <see cref="PackageType.Analyzer"/>,
+		/// <see cref="PackageType.StaticGenerator"/>, <see cref="PackageType.SyntaxBasedGenerator"/> or <see cref="PackageType.FileBasedGenerator"/>).
 		/// </summary>
 		/// <param name="packageName">Name of the Durian package to check.</param>
 		/// <exception cref="ArgumentException">
@@ -279,12 +287,13 @@ namespace Durian.Info
 		/// </exception>
 		public static bool IsAnalyzerPackage(string packageName)
 		{
-			PackageIdentity identity = GetPackage(packageName);
-			return IsAnalyzerPackage(identity.Type);
+			PackageType type = GetPackageType(packageName);
+			return IsAnalyzerPackage(type);
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> represents a Roslyn-based analyzer package (either <see cref="PackageType.Analyzer"/>, <see cref="PackageType.StaticGenerator"/>, <see cref="PackageType.SyntaxBasedGenerator"/> or <see cref="PackageType.FileBasedGenerator"/>).
+		/// Determines whether the specified <paramref name="type"/> represents a Roslyn-based analyzer package (either <see cref="PackageType.Analyzer"/>,
+		/// <see cref="PackageType.StaticGenerator"/>, <see cref="PackageType.SyntaxBasedGenerator"/> or <see cref="PackageType.FileBasedGenerator"/>).
 		/// </summary>
 		/// <param name="type"><see cref="PackageType"/> to check.</param>
 		public static bool IsAnalyzerPackage(PackageType type)
@@ -294,23 +303,6 @@ namespace Durian.Info
 				type.HasFlag(PackageType.StaticGenerator) ||
 				type.HasFlag(PackageType.SyntaxBasedGenerator) ||
 				type.HasFlag(PackageType.FileBasedGenerator);
-		}
-
-		/// <summary>
-		/// Converts the specified <paramref name="package"/> value into a <see cref="string"/> value.
-		/// </summary>
-		/// <param name="package"><see cref="DurianPackage"/> to convert into a <see cref="string"/>.</param>
-		/// <exception cref="ArgumentException">Unknown <see cref="DurianPackage"/> value: <paramref name="package"/>.</exception>
-		public static string PackageToString(DurianPackage package)
-		{
-			EnsureIsValidPackageEnum(package);
-
-			return package switch
-			{
-				DurianPackage.CoreAnalyzer => "Durian.Core.Analyzer",
-				DurianPackage.Main => "Durian",
-				_ => $"Durian.{package}"
-			};
 		}
 
 		/// <summary>
@@ -386,6 +378,14 @@ namespace Durian.Info
 			string name = Utilities.DurianRegex.Replace(packageName, "");
 
 			return Enum.TryParse(name, true, out package);
+		}
+
+		internal static void EnsureIsValidPackageEnum_InvOp(DurianPackage package)
+		{
+			if (!GlobalInfo.IsValidPackageValue(package))
+			{
+				throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!");
+			}
 		}
 	}
 }

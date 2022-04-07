@@ -46,6 +46,13 @@ namespace Durian.Analysis
 
 		private static readonly HashSet<string> _keywordsHashed = new(_keywords);
 
+		internal static int MainThreadId { get; }
+
+		static AnalysisUtilities()
+		{
+			MainThreadId = Environment.CurrentManagedThreadId;
+		}
+
 		/// <summary>
 		/// Returns a <see cref="string"/> representing a dot-separated name.
 		/// </summary>

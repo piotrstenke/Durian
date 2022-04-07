@@ -38,7 +38,7 @@ namespace Durian.Analysis.Logging
 		/// Logging becomes globally disabled when an <see cref="DisableLoggingGloballyAttribute"/>
 		/// is detected on any assembly in the current <see cref="AppDomain"/>.
 		/// </remarks>
-		public static bool IsEnabled { get; } = CheckLoggingIsEnabled();
+		public static bool IsGloballyEnabled { get; } = CheckLoggingIsEnabled();
 
 		/// <summary>
 		/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified <paramref name="assembly"/>.
@@ -49,7 +49,7 @@ namespace Durian.Analysis.Logging
 		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> is set to <see langword="false"/>.
 		/// </exception>
 		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static LoggingConfiguration CreateConfigurationForAssembly(Assembly assembly)
+		public static LoggingConfiguration CreateForAssembly(Assembly assembly)
 		{
 			if (assembly is null)
 			{
@@ -68,7 +68,7 @@ namespace Durian.Analysis.Logging
 				{
 					LogDirectory = attr.GetFullDirectoryForAssembly(),
 					SupportedLogs = attr.SupportedLogs,
-					EnableLogging = IsEnabled && !Attribute.IsDefined(assembly, typeof(DisableLoggingAttribute)),
+					EnableLogging = IsGloballyEnabled && !Attribute.IsDefined(assembly, typeof(DisableLoggingAttribute)),
 					SupportsDiagnostics = attr.SupportsDiagnostics,
 					EnableDiagnostics = attr.SupportsDiagnostics,
 					EnableExceptions = attr.EnableExceptions,
@@ -77,32 +77,42 @@ namespace Durian.Analysis.Logging
 			}
 		}
 
-		/// <summary>
-		/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
-		/// </summary>
-		/// <typeparam name="T">Type of <see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</typeparam>
-		/// <exception cref="ArgumentException">
-		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
-		/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
-		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
-		/// </exception>
-		public static LoggingConfiguration CreateConfigurationForGenerator<T>() where T : ISourceGenerator
+		/// <inheritdoc cref="CreateForGenerator{T}(in GeneratorLogCreationContext, LoggingConfiguration?)"/>
+		public static LoggingConfiguration CreateForGenerator<T>() where T : ISourceGenerator
 		{
-			return CreateConfigurationForGenerator_Internal(typeof(T));
+			return CreateForGenerator_Internal(typeof(T));
+		}
+
+		/// <inheritdoc cref="CreateForGenerator{T}(in GeneratorLogCreationContext, LoggingConfiguration?)"/>
+		public static LoggingConfiguration CreateForGenerator<T>(in GeneratorLogCreationContext context)
+		{
+			return CreateForGenerator<T>(in context, default);
 		}
 
 		/// <summary>
 		/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
 		/// </summary>
-		/// <param name="type"><see cref="Type"/> of <see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</param>
+		/// <typeparam name="T">Type of <see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</typeparam>
+		/// <param name="context"><see cref="GeneratorLogCreationContext"/> to use when creating the <see cref="LoggingConfiguration"/>.</param>
+		/// <param name="defaultConfiguration"><see cref="LoggingConfiguration"/> to return if <see cref="GeneratorLogCreationContext.CheckForConfigurationAttribute"/> is <see langword="true"/>.</param>
 		/// <exception cref="ArgumentException">
-		/// <paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface. -or-
 		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
 		/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
 		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static LoggingConfiguration CreateConfigurationForGenerator(Type type)
+		public static LoggingConfiguration CreateForGenerator<T>(in GeneratorLogCreationContext context, LoggingConfiguration? defaultConfiguration)
+		{
+			LoggingConfiguration config = context.CheckForConfigurationAttribute
+				? CreateForGenerator_Internal(typeof(T))
+				: (defaultConfiguration ?? Default);
+
+			config.AcceptContext(in context);
+
+			return config;
+		}
+
+		/// <inheritdoc cref="CreateForGenerator(Type, in GeneratorLogCreationContext, LoggingConfiguration?)"/>
+		public static LoggingConfiguration CreateForGenerator(Type type)
 		{
 			if (type is null)
 			{
@@ -110,7 +120,55 @@ namespace Durian.Analysis.Logging
 			}
 
 			CheckTypeIsISourceGenerator(type);
-			return CreateConfigurationForGenerator_Internal(type);
+			return CreateForGenerator_Internal(type);
+		}
+
+		/// <summary>
+		/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
+		/// </summary>
+		/// <param name="type"><see cref="Type"/> of <see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</param>
+		/// <exception cref="ArgumentException">
+		/// <param name="context"><see cref="GeneratorLogCreationContext"/> to use when creating the <see cref="LoggingConfiguration"/>.</param>
+		/// <paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface. -or-
+		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
+		/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
+		/// </exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static LoggingConfiguration CreateForGenerator(Type type, in GeneratorLogCreationContext context)
+		{
+			return CreateForGenerator(type, in context, default);
+		}
+
+		/// <summary>
+		/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
+		/// </summary>
+		/// <param name="type"><see cref="Type"/> of <see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</param>
+		/// <exception cref="ArgumentException">
+		/// <param name="context"><see cref="GeneratorLogCreationContext"/> to use when creating the <see cref="LoggingConfiguration"/>.</param>
+		/// <param name="defaultConfiguration"><see cref="LoggingConfiguration"/> to return if <see cref="GeneratorLogCreationContext.CheckForConfigurationAttribute"/> is <see langword="true"/>.</param>
+		/// <paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface. -or-
+		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
+		/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
+		/// </exception>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static LoggingConfiguration CreateForGenerator(Type type, in GeneratorLogCreationContext context, LoggingConfiguration? defaultConfiguration)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			CheckTypeIsISourceGenerator(type);
+
+			LoggingConfiguration config = context.CheckForConfigurationAttribute
+				? CreateForGenerator_Internal(type)
+				: (defaultConfiguration ?? Default);
+
+			config.AcceptContext(in context);
+
+			return config;
 		}
 
 		/// <summary>
@@ -123,14 +181,58 @@ namespace Durian.Analysis.Logging
 		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		public static LoggingConfiguration CreateConfigurationForGenerator(ISourceGenerator generator)
+		public static LoggingConfiguration CreateForGenerator(ISourceGenerator generator)
 		{
 			if (generator is null)
 			{
 				throw new ArgumentNullException(nameof(generator));
 			}
 
-			return CreateConfigurationForGenerator_Internal(generator.GetType());
+			return CreateForGenerator_Internal(generator.GetType());
+		}
+
+		/// <summary>
+		/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
+		/// </summary>
+		/// <param name="generator"><see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</param>
+		/// <param name="context"><see cref="GeneratorLogCreationContext"/> to use when creating the <see cref="LoggingConfiguration"/>.</param>
+		/// <exception cref="ArgumentException">
+		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
+		/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
+		/// </exception>
+		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+		public static LoggingConfiguration CreateForGenerator(ISourceGenerator generator, in GeneratorLogCreationContext context)
+		{
+			return CreateForGenerator(generator, in context, default);
+		}
+
+		/// <summary>
+		/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
+		/// </summary>
+		/// <param name="generator"><see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</param>
+		/// <param name="context"><see cref="GeneratorLogCreationContext"/> to use when creating the <see cref="LoggingConfiguration"/>.</param>
+		/// <param name="defaultConfiguration"><see cref="LoggingConfiguration"/> to return if <see cref="GeneratorLogCreationContext.CheckForConfigurationAttribute"/> is <see langword="true"/>.</param>
+		/// <exception cref="ArgumentException">
+		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
+		/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
+		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
+		/// </exception>
+		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+		public static LoggingConfiguration CreateForGenerator(ISourceGenerator generator, in GeneratorLogCreationContext context, LoggingConfiguration? defaultConfiguration)
+		{
+			if (generator is null)
+			{
+				throw new ArgumentNullException(nameof(generator));
+			}
+
+			LoggingConfiguration config = context.CheckForConfigurationAttribute
+				? CreateForGenerator_Internal(generator.GetType())
+				: (defaultConfiguration ?? Default);
+
+			config.AcceptContext(in context);
+
+			return config;
 		}
 
 		/// <summary>
@@ -139,7 +241,7 @@ namespace Durian.Analysis.Logging
 		/// <param name="assembly"><see cref="Assembly"/> to get the <see cref="LoggingConfiguration"/> for.</param>
 		/// <exception cref="ArgumentException"><see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only.</exception>
 		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static LoggingConfiguration GetConfigurationForAssembly(Assembly assembly)
+		public static LoggingConfiguration GetForAssembly(Assembly assembly)
 		{
 			if (assembly is null)
 			{
@@ -152,7 +254,7 @@ namespace Durian.Analysis.Logging
 			}
 			else
 			{
-				config = CreateConfigurationForAssembly(assembly);
+				config = CreateForAssembly(assembly);
 				_assemblyConfigurations.TryAdd(assembly, config);
 				return config;
 			}
@@ -192,7 +294,7 @@ namespace Durian.Analysis.Logging
 		/// <summary>
 		/// Checks if generator logging is enabled for the specified <paramref name="assembly"/>.
 		/// </summary>
-		/// <remarks>Always returns <see langword="false"/> is <see cref="IsEnabled"/> is <see langword="false"/>.</remarks>
+		/// <remarks>Always returns <see langword="false"/> is <see cref="IsGloballyEnabled"/> is <see langword="false"/>.</remarks>
 		/// <param name="assembly"><see cref="Assembly"/> to perform the check for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
 		public static bool IsEnabledForAssembly(Assembly assembly)
@@ -202,13 +304,13 @@ namespace Durian.Analysis.Logging
 				throw new ArgumentNullException(nameof(assembly));
 			}
 
-			return IsEnabled && assembly.GetCustomAttribute(typeof(DisableLoggingAttribute)) is null;
+			return IsGloballyEnabled && assembly.GetCustomAttribute(typeof(DisableLoggingAttribute)) is null;
 		}
 
 		/// <summary>
 		/// Checks if generator logging is enabled for the specified <paramref name="generator"/>.
 		/// </summary>
-		/// <remarks>Always returns <see langword="false"/> is <see cref="IsEnabled"/> is <see langword="false"/>.</remarks>
+		/// <remarks>Always returns <see langword="false"/> is <see cref="IsGloballyEnabled"/> is <see langword="false"/>.</remarks>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to perform the check for.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
 		public static bool IsEnabledForGenerator(ISourceGenerator generator)
@@ -218,7 +320,7 @@ namespace Durian.Analysis.Logging
 				throw new ArgumentNullException(nameof(generator));
 			}
 
-			if (!IsEnabled)
+			if (!IsGloballyEnabled)
 			{
 				return false;
 			}
@@ -236,7 +338,7 @@ namespace Durian.Analysis.Logging
 		/// <summary>
 		/// Checks if generator logging is enabled for the specified generator <paramref name="type"/>.
 		/// </summary>
-		/// <remarks>Always returns <see langword="false"/> is <see cref="IsEnabled"/> is <see langword="false"/>.</remarks>
+		/// <remarks>Always returns <see langword="false"/> is <see cref="IsGloballyEnabled"/> is <see langword="false"/>.</remarks>
 		/// <param name="type"><see cref="Type"/> of <see cref="ISourceGenerator"/> to perform the check for.</param>
 		/// <exception cref="ArgumentException"><paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface.</exception>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
@@ -249,7 +351,7 @@ namespace Durian.Analysis.Logging
 
 			CheckTypeIsISourceGenerator(type);
 
-			if (!IsEnabled)
+			if (!IsGloballyEnabled)
 			{
 				return false;
 			}
@@ -265,11 +367,11 @@ namespace Durian.Analysis.Logging
 		/// <summary>
 		/// Checks if generator logging is enabled for the specified generator type.
 		/// </summary>
-		/// <remarks>Always returns <see langword="false"/> is <see cref="IsEnabled"/> is <see langword="false"/>.</remarks>
+		/// <remarks>Always returns <see langword="false"/> is <see cref="IsGloballyEnabled"/> is <see langword="false"/>.</remarks>
 		/// <typeparam name="T">Type of <see cref="ISourceGenerator"/> to perform the check for.</typeparam>
 		public static bool IsEnabledForGenerator<T>() where T : ISourceGenerator
 		{
-			if (!IsEnabled)
+			if (!IsGloballyEnabled)
 			{
 				return false;
 			}
@@ -314,13 +416,13 @@ namespace Durian.Analysis.Logging
 			}
 		}
 
-		private static LoggingConfiguration CreateConfigurationForGenerator_Internal(Type type)
+		private static LoggingConfiguration CreateForGenerator_Internal(Type type)
 		{
 			LoggingConfigurationAttribute? attr = type.GetCustomAttribute<LoggingConfigurationAttribute>(true);
 
 			if (attr is null)
 			{
-				LoggingConfiguration config = GetConfigurationForAssembly(type.Assembly);
+				LoggingConfiguration config = GetForAssembly(type.Assembly);
 
 				if (config.EnableLogging)
 				{
@@ -333,9 +435,9 @@ namespace Durian.Analysis.Logging
 			{
 				return new LoggingConfiguration()
 				{
-					_logDirectory = attr.GetFullDirectoryForType(GetConfigurationForAssembly(type.Assembly)),
+					_logDirectory = attr.GetFullDirectoryForType(GetForAssembly(type.Assembly)),
 					SupportedLogs = attr.SupportedLogs,
-					_enableLogging = IsEnabled && !HasDisableAttribute_Internal(type),
+					_enableLogging = IsGloballyEnabled && !HasDisableAttribute_Internal(type),
 					_supportsDiagnostics = attr.SupportsDiagnostics,
 					_enableDiagnostics = attr.SupportsDiagnostics,
 					EnableExceptions = attr.EnableExceptions,

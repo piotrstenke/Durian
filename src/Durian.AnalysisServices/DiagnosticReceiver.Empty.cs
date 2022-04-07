@@ -9,7 +9,7 @@ namespace Durian.Analysis
 	public sealed partial class DiagnosticReceiver
 	{
 		/// <summary>
-		/// A <see cref="IDirectDiagnosticReceiver"/> that does not actually report any diagnostics.
+		/// A <see cref="IDiagnosticReceiver"/> that does not report any diagnostics.
 		/// </summary>
 		public sealed class Empty : INodeDiagnosticReceiver
 		{

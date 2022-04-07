@@ -30,8 +30,8 @@ namespace Durian.Analysis.Cache
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CachedGenerator{TData}"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-		protected CachedGenerator(in ConstructionContext context) : base(in context)
+		/// <param name="context">Configures how this <see cref="CachedGenerator{TData}"/> is initialized.</param>
+		protected CachedGenerator(in GeneratorLogCreationContext context) : base(in context)
 		{
 		}
 
@@ -68,7 +68,7 @@ namespace Durian.Analysis.Cache
 				}
 
 				IsValid = true;
-				Registry.Set(InstanceId, pass);
+				GeneratorContextRegistry.Set(InstanceId, pass);
 
 				Filtrate(pass);
 				IsSuccess = true;

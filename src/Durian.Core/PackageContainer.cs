@@ -120,7 +120,7 @@ namespace Durian.Info
 
 			foreach (DurianPackage p in packages)
 			{
-				PackageIdentity.EnsureIsValidPackageEnum(p);
+				PackageIdentity.EnsureIsValidPackageEnum_InvOp(p);
 			}
 
 			_enums = enums;
@@ -545,7 +545,7 @@ namespace Durian.Info
 
 			foreach (DurianPackage package in packages)
 			{
-				PackageIdentity.EnsureIsValidPackageEnum(package);
+				PackageIdentity.EnsureIsValidPackageEnum_InvOp(package);
 
 				_enums.Add(package);
 				_references.Add(null);
