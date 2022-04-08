@@ -33,7 +33,7 @@ namespace Durian.Analysis.Cache
 		}
 
 		/// <inheritdoc/>
-		public IEnumerable<TData> Filtrate(ICachedGeneratorPassContext<TData> context)
+		public IEnumerable<IMemberData> Filtrate(ICachedGeneratorPassContext<TData> context)
 		{
 			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
 			{
@@ -56,17 +56,17 @@ namespace Durian.Analysis.Cache
 
 			return Yield(new CachedFilterEnumeratorWithDiagnostics<TData, TContext>(context.TargetCompilation, list, this, diagnosticReceiver, in cache));
 
-			IEnumerable<TData> Yield<TEnumerator>(TEnumerator enumerator) where TEnumerator : IFilterEnumerator<TContext>
+			IEnumerable<IMemberData> Yield<TEnumerator>(TEnumerator enumerator) where TEnumerator : IFilterEnumerator<TContext>
 			{
 				while(enumerator.MoveNext(context.CancellationToken))
 				{
-					yield return (enumerator.Current as TData)!;
+					yield return enumerator.Current;
 				}
 			}
 		}
 
 		/// <inheritdoc/>
-		public virtual IEnumerator<TData> GetEnumerator(ICachedGeneratorPassContext<TData> context)
+		public virtual IEnumerator<IMemberData> GetEnumerator(ICachedGeneratorPassContext<TData> context)
 		{
 			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
 			{
@@ -92,7 +92,7 @@ namespace Durian.Analysis.Cache
 	}
 
 	/// <inheritdoc cref="CachedSyntaxValidator{TData}"/>
-	public abstract class CachedSyntaxValidator<TData> : CachedSyntaxValidator<TData, SyntaxValidatorContext> where TData : IMemberData
+	public abstract class CachedSyntaxValidator<TData> : CachedSyntaxValidator<TData, SyntaxValidatorContext> where TData : class, IMemberData
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CachedSyntaxValidator{TData}"/> class.
@@ -104,7 +104,7 @@ namespace Durian.Analysis.Cache
 		/// <inheritdoc/>
 		protected override SyntaxValidatorContext CreateContext(in ValidationDataProviderContext context, SemanticModel semanticModel, ISymbol symbol)
 		{
-			return new SyntaxValidatorContext(context.TargetCompilation, semanticModel, context.Node, symbol, context.CancellationToken);
+			return new SyntaxValidatorContext(context.TargetCompilation, semanticModel, symbol, context.Node, context.CancellationToken);
 		}
 	}
 }

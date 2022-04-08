@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis.CSharp;
@@ -12,8 +13,13 @@ namespace Durian.Analysis.Filters
 	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="ISyntaxValidator{T}"/>.
 	/// </summary>
 	/// <typeparam name="T">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
-	public interface IFilterEnumerator<T> : IEnumerator<IMemberData> where T : ISyntaxValidatorContext
+	public interface IFilterEnumerator<T> where T : ISyntaxValidatorContext
 	{
+		/// <summary>
+		/// <see cref="IMemberData"/> at the current position in the enumerator.
+		/// </summary>
+		IMemberData? Current { get; }
+
 		/// <summary>
 		/// Parent <see cref="ICompilationData"/> of the provided <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
@@ -29,6 +35,7 @@ namespace Durian.Analysis.Filters
 		/// </summary>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> is the <see cref="IMemberData"/> is valid, <see langword="false"/> otherwise.</returns>
+		[MemberNotNullWhen(true, nameof(Current))]
 		bool MoveNext(CancellationToken cancellationToken = default);
 	}
 }

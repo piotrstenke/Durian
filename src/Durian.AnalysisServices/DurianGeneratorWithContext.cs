@@ -103,8 +103,8 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		///  Called to perform source generation. A generator can use the context to add source files via
-		///  the Microsoft.CodeAnalysis.GeneratorExecutionContext.AddSource(System.String,Microsoft.CodeAnalysis.Text.SourceText) method.
+		/// Called to perform source generation. A generator can use the context to add source files via
+		/// the Microsoft.CodeAnalysis.GeneratorExecutionContext.AddSource(System.String,Microsoft.CodeAnalysis.Text.SourceText) method.
 		/// </summary>
 		/// <param name="context"><typeparamref name="TContext"/> to add the sources to.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
@@ -179,16 +179,7 @@ namespace Durian.Analysis
 		/// Returns a <see cref="IReadOnlyFilterContainer{TFilter}"/> to be used during the current generation pass.
 		/// </summary>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		public virtual IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? GetFilters(TContext context)
-		{
-			return GetFilters(context.FileNameProvider);
-		}
-
-		/// <summary>
-		/// Returns a <see cref="IReadOnlyFilterContainer{TFilter}"/> to be used during the current generation pass.
-		/// </summary>
-		/// <param name="fileNameProvider">Creates name for the generated files.</param>
-		public abstract IReadOnlyFilterContainer<IGeneratorSyntaxFilter> GetFilters(IHintNameProvider fileNameProvider);
+		public abstract IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? GetFilters(TContext context);
 
 		/// <summary>
 		/// Initializes the source generator.
@@ -493,6 +484,19 @@ namespace Durian.Analysis
 			// Do nothing by default.
 		}
 
+		internal bool HandleException(Exception e)
+		{
+			LogHandler.LogException(e);
+			return !LoggingConfiguration.EnableExceptions;
+		}
+
+		internal bool HandleException(Exception e, TContext context)
+		{
+			bool shouldThrow = !HandleException(e);
+			OnException(e, context);
+			return shouldThrow;
+		}
+
 		private protected void AddSource_Internal(CSharpSyntaxTree tree, string hintName, TContext context)
 		{
 			AddSourceCore(tree, hintName, context);
@@ -537,19 +541,6 @@ namespace Durian.Analysis
 			{
 				IterateThroughFilter(filter, context);
 			}
-		}
-
-		private bool HandleException(Exception e)
-		{
-			LogHandler.LogException(e);
-			return !LoggingConfiguration.EnableExceptions;
-		}
-
-		private bool HandleException(Exception e, TContext context)
-		{
-			bool shouldThrow = !HandleException(e);
-			OnException(e, context);
-			return shouldThrow;
 		}
 
 		private void HandleFilterGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)

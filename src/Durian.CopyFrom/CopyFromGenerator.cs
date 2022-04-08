@@ -3,6 +3,7 @@
 
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
+using Durian.Analysis.Filters;
 using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
@@ -22,31 +23,30 @@ namespace Durian.Analysis.CopyFrom
 		RelativeToGlobal = true,
 		EnableExceptions = true,
 		DefaultNodeOutput = NodeOutput.SyntaxTree)]
-	public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember, CopyFromCompilationData, CopyFromSyntaxReceiver, ICopyFromFilter>
+	public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember>
 	{
 		private const int _numStaticTrees = 4;
 
-		private FilterContainer<ICopyFromFilter>? _filters;
+		/// <inheritdoc/>
+		public override string GeneratorName => "CopyFrom";
 
-		/// <summary>
-		/// Name of this source generator.
-		/// </summary>
-		public static string GeneratorName => "CopyFrom";
-
-		/// <summary>
-		/// Version of this source generator.
-		/// </summary>
-		public static string Version => "1.0.0";
+		/// <inheritdoc/>
+		public override string GeneratorVersion => "1.0.0";
 
 		/// <inheritdoc/>
 		public override int NumStaticTrees => _numStaticTrees;
 
-		/// <inheritdoc cref="CopyFromGenerator(in GeneratorLogCreationContext, IHintNameProvider?)"/>
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CopyFromGenerator"/> class.
+		/// </summary>
 		public CopyFromGenerator()
 		{
 		}
 
-		/// <inheritdoc cref="CopyFromGenerator(in GeneratorLogCreationContext, IHintNameProvider?)"/>
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CopyFromGenerator"/> class.
+		/// </summary>
+		/// <param name="context">Configures how this <see cref="CopyFromGenerator"/> is initialized.</param>
 		public CopyFromGenerator(in GeneratorLogCreationContext context) : base(in context)
 		{
 		}
@@ -54,23 +54,8 @@ namespace Durian.Analysis.CopyFrom
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromGenerator"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public CopyFromGenerator(in GeneratorLogCreationContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
-		{
-		}
-
-		/// <inheritdoc cref="CopyFromGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
-		public CopyFromGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="CopyFromGenerator"/> class.
-		/// </summary>
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		public CopyFromGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
+		public CopyFromGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
 		}
 
@@ -88,46 +73,26 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		public override CopyFromCompilationData? CreateCompilationData(CSharpCompilation compilation)
+		public override ICompilationData? CreateCompilationData(CSharpCompilation compilation)
 		{
 			return new CopyFromCompilationData(compilation);
 		}
 
 		/// <inheritdoc/>
-		public override CopyFromSyntaxReceiver CreateSyntaxReceiver()
+		public override IDurianSyntaxReceiver CreateSyntaxReceiver()
 		{
 			return new CopyFromSyntaxReceiver();
 		}
 
-		/// <summary>
-		/// Returns a <see cref="FilterContainer{TFilter}"/> to be used during the current generation pass.
-		/// </summary>
-		/// <param name="fileNameProvider">Creates name for the generated files.</param>
-		public override FilterContainer<ICopyFromFilter> GetFilters(IHintNameProvider fileNameProvider)
-		{
-			if (_filters is null)
-			{
-				FilterContainer<ICopyFromFilter> list = new();
-
-				list.RegisterFilterGroup("Methods", new CopyFromMethodFilter(this, fileNameProvider));
-				list.RegisterFilterGroup("Types", new CopyFromTypeFilter(this, fileNameProvider));
-
-				_filters = list;
-			}
-
-			return _filters;
-		}
-
 		/// <inheritdoc/>
-		public override string? GetGeneratorName()
+		public override IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? GetFilters(GeneratorPassBuilderContext context)
 		{
-			return GeneratorName;
-		}
+			FilterContainer<IGeneratorSyntaxFilter> list = new();
 
-		/// <inheritdoc/>
-		public override string? GetGeneratorVersion()
-		{
-			return Version;
+			list.RegisterGroup("Methods", new CopyFromMethodFilter());
+			list.RegisterGroup("Types", new CopyFromTypeFilter());
+
+			return list;
 		}
 
 		/// <inheritdoc/>
@@ -146,22 +111,14 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		public override IGeneratorServiceContainer ConfigureServices()
+		protected internal override bool Generate(IMemberData data, string hintName, GeneratorPassBuilderContext context)
 		{
-			GeneratorServiceContainer serviceContainer = new();
-
-			return serviceContainer;
-		}
-
-		/// <inheritdoc/>
-		protected override bool Generate(IMemberData member, string hintName, in GeneratorExecutionContext context)
-		{
-			if (member is not ICopyFromMember target)
+			if (data is not ICopyFromMember target)
 			{
 				return false;
 			}
 
-			if(target is CopyFromTypeData type)
+			if (target is CopyFromTypeData type)
 			{
 				return GenerateType(type, hintName, in context);
 			}

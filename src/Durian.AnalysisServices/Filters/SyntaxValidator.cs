@@ -90,7 +90,7 @@ namespace Durian.Analysis.Filters
 		}
 
 		/// <inheritdoc/>
-		public sealed override IEnumerable<IMemberData> Filtrate(IGeneratorPassContext context)
+		public override IEnumerable<IMemberData> Filtrate(IGeneratorPassContext context)
 		{
 			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
 			{
@@ -164,7 +164,7 @@ namespace Durian.Analysis.Filters
 		public abstract bool ValidateAndCreate(in T context, out IMemberData? data);
 
 		/// <inheritdoc/>
-		public bool ValidateAndCreate(in ValidationDataProviderContext context, [NotNullWhen(true)] out IMemberData? data)
+		public virtual bool ValidateAndCreate(in ValidationDataProviderContext context, [NotNullWhen(true)] out IMemberData? data)
 		{
 			if(TryGetValidationData(in context, out T? validationData))
 			{
@@ -176,13 +176,13 @@ namespace Durian.Analysis.Filters
 		}
 
 		/// <inheritdoc/>
-		public bool ValidateAndCreate(in T context, out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
+		public virtual bool ValidateAndCreate(in T context, out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
 		{
 			return ValidateAndCreate(in context, out data);
 		}
 
 		/// <inheritdoc/>
-		public bool ValidateAndCreate(in ValidationDataProviderContext context, [NotNullWhen(true)] out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
+		public virtual bool ValidateAndCreate(in ValidationDataProviderContext context, [NotNullWhen(true)] out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
 		{
 			if (TryGetValidationData(in context, out T? validationData))
 			{
@@ -227,7 +227,7 @@ namespace Durian.Analysis.Filters
 		/// <inheritdoc/>
 		protected override SyntaxValidatorContext CreateContext(in ValidationDataProviderContext context, SemanticModel semanticModel, ISymbol symbol)
 		{
-			return new SyntaxValidatorContext(context.TargetCompilation, semanticModel, context.Node, symbol, context.CancellationToken);
+			return new SyntaxValidatorContext(context.TargetCompilation, semanticModel, symbol, context.Node, context.CancellationToken);
 		}
 	}
 }

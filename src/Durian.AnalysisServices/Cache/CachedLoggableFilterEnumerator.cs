@@ -21,7 +21,7 @@ namespace Durian.Analysis.Cache
 	/// <typeparam name="TData">Type of cached data.</typeparam>
 	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
 	[DebuggerDisplay("Current = {Current}")]
-	public struct CachedLoggableFilterEnumerator<TData, TContext> : IFilterEnumerator<TContext>
+	public struct CachedLoggableFilterEnumerator<TData, TContext> : IFilterEnumerator<TContext>, IEnumerator<TData>
 		where TData : class, IMemberData
 		where TContext : ISyntaxValidatorContext
 	{
@@ -33,9 +33,9 @@ namespace Durian.Analysis.Cache
 		public readonly ICompilationData Compilation { get; }
 
 		/// <summary>
-		/// Current <see cref="IMemberData"/>.
+		/// <typeparamref name="TData"/> at the current position in the enumerator.
 		/// </summary>
-		public IMemberData? Current { readonly get; private set; }
+		public TData? Current { readonly get; private set; }
 
 		/// <summary>
 		/// <see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s.
@@ -50,7 +50,8 @@ namespace Durian.Analysis.Cache
 		/// <inheritdoc cref="IFilterEnumerator{T}.Validator"/>
 		public readonly ISyntaxValidatorWithDiagnostics<TContext> Validator { get; }
 
-		readonly IMemberData IEnumerator<IMemberData>.Current => Current!;
+		readonly TData IEnumerator<TData>.Current => Current!;
+		readonly IMemberData IFilterEnumerator<TContext>.Current => Current!;
 		readonly object IEnumerator.Current => Current!;
 		readonly ISyntaxValidator<TContext> IFilterEnumerator<TContext>.Validator => Validator;
 
@@ -163,7 +164,7 @@ namespace Durian.Analysis.Cache
 
 				string fileName = HintNameProvider.GetHintName(context.Symbol);
 				LogReceiver.SetTargetNode(node, fileName);
-				bool isValid = Validator.ValidateAndCreate(context, out IMemberData? member, LogReceiver);
+				bool isValid = Validator.ValidateAndCreate(context, out IMemberData? member, LogReceiver) && member is TData;
 
 				if (LogReceiver.Count > 0)
 				{
@@ -173,7 +174,7 @@ namespace Durian.Analysis.Cache
 
 				if (isValid)
 				{
-					Current = member!;
+					Current = (member as TData)!;
 					return true;
 				}
 			}

@@ -16,7 +16,7 @@ namespace Durian.Analysis.CopyFrom
 {
 	public sealed partial class CopyFromGenerator
 	{
-		private bool GenerateType(CopyFromTypeData type, string hintName, in GeneratorExecutionContext context)
+		private bool GenerateType(CopyFromTypeData type, string hintName, GeneratorPassBuilderContext context)
 		{
 			TargetData[] targets = type.Targets;
 			SortByOrder(targets);
@@ -41,7 +41,7 @@ namespace Durian.Analysis.CopyFrom
 
 				currentName = partialDeclarations.Length > 1 ? currentName + "_partial" : currentName;
 
-				if (GenerateDeclarations(type, target, partialDeclarations, currentName, keyword, replacer, in context))
+				if (GenerateDeclarations(type, target, partialDeclarations, currentName, keyword, replacer, context))
 				{
 					generated = true;
 				}

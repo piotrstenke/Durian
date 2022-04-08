@@ -15,6 +15,6 @@ namespace Durian.Analysis.Cache
 		/// Executes the generator using a <see cref="CachedGeneratorExecutionContext{T}"/> instead of usual <see cref="GeneratorExecutionContext"/>.
 		/// </summary>
 		/// <param name="context"><see cref="CachedGeneratorExecutionContext{T}"/> that is used to execute the generator.</param>
-		void Execute(in CachedGeneratorExecutionContext<T> context);
+		bool Execute(in CachedGeneratorExecutionContext<T> context);
 	}
 }

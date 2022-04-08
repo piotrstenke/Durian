@@ -8,49 +8,37 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using Durian.Analysis.Cache;
 using System.Threading;
 using static Durian.Analysis.CopyFrom.CopyFromAnalyzer;
+using Durian.Analysis.Data;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.CopyFrom
 {
 	/// <summary>
 	/// Filtrates and validates <see cref="TypeDeclarationSyntax"/>es collected by a <see cref="CopyFromSyntaxReceiver"/>.
 	/// </summary>
-	public sealed class CopyFromTypeFilter : CopyFromFilter<TypeDeclarationSyntax, INamedTypeSymbol, CopyFromTypeData>
+	public sealed class CopyFromTypeFilter : CachedSyntaxValidator<ICopyFromMember, CopyFromTypeContext>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromTypeFilter"/> class.
 		/// </summary>
-		/// <param name="generator"><see cref="CopyFromGenerator"/> that is the target of this filter.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		public CopyFromTypeFilter(CopyFromGenerator generator) : base(generator)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="CopyFromTypeFilter"/> class.
-		/// </summary>
-		/// <param name="generator"><see cref="CopyFromGenerator"/> that is the target of this filter.</param>
-		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that is used to create a hint name for the generated source.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="hintNameProvider"/> is <see langword="null"/>.</exception>
-		public CopyFromTypeFilter(CopyFromGenerator generator, IHintNameProvider hintNameProvider) : base(generator, hintNameProvider)
+		public CopyFromTypeFilter()
 		{
 		}
 
 		/// <inheritdoc/>
-		public override bool ValidateAndCreate(
-			TypeDeclarationSyntax node,
-			CopyFromCompilationData compilation,
-			SemanticModel semanticModel,
-			INamedTypeSymbol symbol,
-			[NotNullWhen(true)] out CopyFromTypeData? data,
-			CancellationToken cancellationToken = default
-		)
+		public override bool ValidateAndCreate(in CopyFromTypeContext context, out IMemberData? data)
 		{
+			if (context.Node is null)
+			{
+				data = default;
+				return false;
+			}
+
 			bool isValid = AnalyzeTypeWithoutPattern(
-				symbol,
-				compilation,
-				semanticModel,
+				in context,
 				out ImmutableArray<AttributeData> attributes,
 				out List<TargetData>? targetTypes
 			);
@@ -65,7 +53,7 @@ namespace Durian.Analysis.CopyFrom
 
 				foreach (AttributeData attr in attributes)
 				{
-					if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.PatternAttribute) &&
+					if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, context.Compilation.PatternAttribute) &&
 						HasValidRegexPattern(attr, out string? pattern, out string? replacement) &&
 						set.Add(pattern))
 					{
@@ -81,10 +69,10 @@ namespace Durian.Analysis.CopyFrom
 			}
 
 			data = new CopyFromTypeData(
-				node,
-				compilation,
-				symbol,
-				semanticModel,
+				context.Node!,
+				context.Compilation,
+				context.Symbol,
+				context.SemanticModel,
 				targetTypes!.ToArray(),
 				patterns?.ToArray(),
 				attributes: attributes
@@ -94,20 +82,16 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		public override bool ValidateAndCreate(
-			TypeDeclarationSyntax node,
-			CopyFromCompilationData compilation,
-			SemanticModel semanticModel,
-			INamedTypeSymbol symbol,
-			[NotNullWhen(true)] out CopyFromTypeData? data,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken = default
-		)
+		public override bool ValidateAndCreate(in CopyFromTypeContext context, out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
 		{
+			if(context.Node is null)
+			{
+				data = default;
+				return false;
+			}
+
 			bool isValid = AnalyzeTypeWithoutPattern(
-				symbol,
-				compilation,
-				semanticModel,
+				in context,
 				out ImmutableArray<AttributeData> attributes,
 				out List<TargetData>? targetTypes,
 				diagnosticReceiver
@@ -120,8 +104,8 @@ namespace Durian.Analysis.CopyFrom
 
 			foreach (AttributeData attr in attributes)
 			{
-				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.PatternAttribute) &&
-					AnalyzePattern(symbol, attr, set, hasTarget, out string? pattern, out string? replacement, diagnosticReceiver))
+				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, context.Compilation.PatternAttribute) &&
+					AnalyzePattern(context.Symbol, attr, set, hasTarget, out string? pattern, out string? replacement, diagnosticReceiver))
 				{
 					patterns.Add(new PatternData(pattern, replacement));
 				}
@@ -134,10 +118,10 @@ namespace Durian.Analysis.CopyFrom
 			}
 
 			data = new CopyFromTypeData(
-				node,
-				compilation,
-				symbol,
-				semanticModel,
+				context.Node!,
+				context.Compilation,
+				context.Symbol,
+				context.SemanticModel,
 				targetTypes!.ToArray(),
 				patterns.ToArray(),
 				attributes: attributes
@@ -147,9 +131,14 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		protected override IEnumerable<TypeDeclarationSyntax>? GetCandidateNodes(CopyFromSyntaxReceiver syntaxReceiver)
+		protected override IEnumerable<CSharpSyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
 		{
-			return syntaxReceiver.CandidateTypes;
+			if(syntaxReceiver is not CopyFromSyntaxReceiver sr)
+			{
+				return base.GetCandidateNodes(syntaxReceiver);
+			}
+
+			return sr.CandidateTypes;
 		}
 	}
 }

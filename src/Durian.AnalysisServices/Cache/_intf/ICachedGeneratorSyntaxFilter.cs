@@ -18,12 +18,12 @@ namespace Durian.Analysis.Cache
 		/// Decides, which <see cref="CSharpSyntaxNode"/>s collected by a <see cref="IDurianSyntaxReceiver"/> are valid and returns a collection of <see cref="IMemberData"/> based on those <see cref="CSharpSyntaxNode"/>s. If the <paramref name="context"/> contains a value associated with the current <see cref="CSharpSyntaxNode"/>, this value is used instead.
 		/// </summary>
 		/// <param name="context"><see cref="ICachedGeneratorPassContext{T}"/> that is used when filtrating the <see cref="IMemberData"/>s.</param>
-		IEnumerable<T> Filtrate(ICachedGeneratorPassContext<T> context);
+		IEnumerable<IMemberData> Filtrate(ICachedGeneratorPassContext<T> context);
 
 		/// <summary>
 		/// Returns an <see cref="IEnumerator{T}"/> that allows to manually iterate through the filtrated <see cref="IMemberData"/>s.
 		/// </summary>
 		/// <param name="context"><see cref="ICachedGeneratorPassContext{T}"/> that is used when filtrating the <see cref="IMemberData"/>s.</param>
-		IEnumerator<T> GetEnumerator(ICachedGeneratorPassContext<T> context);
+		IEnumerator<IMemberData> GetEnumerator(ICachedGeneratorPassContext<T> context);
 	}
 }

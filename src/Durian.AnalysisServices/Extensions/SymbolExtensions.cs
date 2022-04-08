@@ -2706,34 +2706,22 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Attempts to return a <see cref="CSharpSyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="method"/>.
+		/// Attempts to return a <see cref="CSharpSyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to return.</typeparam>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the <see cref="CSharpSyntaxNode"/> associated with.</param>
-		/// <param name="syntax"><see cref="CSharpSyntaxNode"/> associated with the specified <paramref name="method"/>.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="CSharpSyntaxNode"/> associated with.</param>
+		/// <param name="syntax"><see cref="CSharpSyntaxNode"/> associated with the specified <paramref name="symbol"/>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static bool TryGetSyntax<T>(this IMethodSymbol method, [NotNullWhen(true)] out T? syntax, CancellationToken cancellationToken = default) where T : CSharpSyntaxNode
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static bool TryGetSyntax<T>(this ISymbol symbol, [NotNullWhen(true)] out T? syntax, CancellationToken cancellationToken = default) where T : CSharpSyntaxNode
 		{
-			if (method is null)
+			if (symbol is null)
 			{
-				throw new ArgumentNullException(nameof(method));
+				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			syntax = method.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as T;
+			syntax = symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as T;
 			return syntax is not null;
-		}
-
-		/// <summary>
-		/// Attempts to return a <see cref="MethodDeclarationSyntax"/> associated with the specified <paramref name="method"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the <see cref="MethodDeclarationSyntax"/> associated with.</param>
-		/// <param name="syntax"><see cref="CSharpSyntaxNode"/> associated with the specified <paramref name="method"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static bool TryGetSyntax(this IMethodSymbol method, [NotNullWhen(true)] out MethodDeclarationSyntax? syntax, CancellationToken cancellationToken = default)
-		{
-			return method.TryGetSyntax<MethodDeclarationSyntax>(out syntax, cancellationToken);
 		}
 
 		/// <summary>

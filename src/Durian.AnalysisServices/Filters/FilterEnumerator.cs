@@ -17,16 +17,14 @@ namespace Durian.Analysis.Filters
 	/// </summary>
 	/// <typeparam name="T">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
 	[DebuggerDisplay("Current = {Current}")]
-	public struct FilterEnumerator<T> : IFilterEnumerator<T> where T : ISyntaxValidatorContext
+	public struct FilterEnumerator<T> : IFilterEnumerator<T>, IEnumerator<IMemberData> where T : ISyntaxValidatorContext
 	{
 		internal readonly IEnumerator<CSharpSyntaxNode> _nodes;
 
 		/// <inheritdoc/>
 		public readonly ICompilationData Compilation { get; }
 
-		/// <summary>
-		/// Current <see cref="IMemberData"/>.
-		/// </summary>
+		/// <inheritdoc/>
 		public IMemberData? Current { readonly get; private set; }
 
 		/// <inheritdoc/>

@@ -30,14 +30,16 @@ namespace Durian.Analysis.Cache
 		/// <inheritdoc/>
 		public readonly ICompilationData Compilation { get; }
 
-		/// <inheritdoc cref="FilterEnumerator{T}.Current"/>
+		/// <summary>
+		/// <typeparamref name="TData"/> at the current position in the enumerator.
+		/// </summary>
 		public TData? Current { readonly get; private set; }
 
 		/// <inheritdoc/>
 		public readonly ISyntaxValidator<TContext> Validator { get; }
 
-		readonly IMemberData IEnumerator<IMemberData>.Current => Current!;
 		readonly TData IEnumerator<TData>.Current => Current!;
+		readonly IMemberData IFilterEnumerator<TContext>.Current => Current!;
 		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>
