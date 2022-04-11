@@ -54,7 +54,7 @@ namespace Durian.Analysis
 
 			if (_services.TryGetValue(type, out object value))
 			{
-				if(value is not List<Entry> entries || entries[0].Name is null)
+				if (value is not List<Entry> entries || entries[0].Name is null)
 				{
 					throw new ArgumentException($"Service of type '{type}' already registered", nameof(serviceCreator));
 				}
@@ -70,12 +70,12 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		public void AddService<T>(Func<T> serviceCreator, string name)
 		{
-			if(serviceCreator is null)
+			if (serviceCreator is null)
 			{
 				throw new ArgumentNullException(nameof(serviceCreator));
 			}
 
-			if(string.IsNullOrWhiteSpace(name))
+			if (string.IsNullOrWhiteSpace(name))
 			{
 				throw new ArgumentException("Name cannot be null or empty", nameof(name));
 			}
@@ -83,11 +83,11 @@ namespace Durian.Analysis
 			Type type = typeof(T);
 			List<Entry> list;
 
-			if(_services.TryGetValue(type, out object value))
+			if (_services.TryGetValue(type, out object value))
 			{
-				if(value is List<Entry> entries)
+				if (value is List<Entry> entries)
 				{
-					if(entries.Exists(e => e.Name == name))
+					if (entries.Exists(e => e.Name == name))
 					{
 						throw new ArgumentException($"Service of type '{type}' and name '{name}' already registered", nameof(name));
 					}
@@ -122,18 +122,18 @@ namespace Durian.Analysis
 		{
 			Type type = typeof(T);
 
-			if(!_services.TryGetValue(type, out object value))
+			if (!_services.TryGetValue(type, out object value))
 			{
 				throw new ArgumentException($"Service of type '{type}' could not be resolved");
 			}
 
 			Func<T> func;
 
-			if(value is List<Entry> entries)
+			if (value is List<Entry> entries)
 			{
 				Entry entry = entries[0];
 
-				if(entry.Name is not null)
+				if (entry.Name is not null)
 				{
 					throw new ArgumentException("Service without name not found");
 				}
@@ -165,11 +165,11 @@ namespace Durian.Analysis
 
 			Func<T> func;
 
-			if(value is List<Entry> entries)
+			if (value is List<Entry> entries)
 			{
 				Entry? entry = entries.Find(e => e.Name == name);
 
-				if(entry is null)
+				if (entry is null)
 				{
 					throw new ArgumentException($"Service of type '{type}' and name '{name}' could not be resolved", nameof(name));
 				}

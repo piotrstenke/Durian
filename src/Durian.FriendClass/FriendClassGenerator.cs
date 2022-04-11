@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
 using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
 
 namespace Durian.Analysis.FriendClass
 {

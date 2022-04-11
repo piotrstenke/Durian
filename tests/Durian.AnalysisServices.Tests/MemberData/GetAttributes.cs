@@ -1,9 +1,9 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Linq;
 using Durian.TestServices;
 using Microsoft.CodeAnalysis;
-using System.Linq;
 using Xunit;
 
 namespace Durian.Analysis.Tests.MemberData

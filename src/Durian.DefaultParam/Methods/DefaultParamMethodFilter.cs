@@ -1,17 +1,14 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
-using Durian.Analysis.Logging;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading;
+using Durian.Analysis.Data;
+using Durian.Analysis.Filters;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Durian.Analysis.DefaultParam.DefaultParamAnalyzer;
 using static Durian.Analysis.DefaultParam.Methods.DefaultParamMethodAnalyzer;
 
@@ -164,7 +161,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		/// <inheritdoc/>
 		protected override bool TypeParametersAreValid(in TypeParameterContainer typeParameters, CSharpSyntaxNode node)
 		{
-			if(node is not MethodDeclarationSyntax method)
+			if (node is not MethodDeclarationSyntax method)
 			{
 				return false;
 			}

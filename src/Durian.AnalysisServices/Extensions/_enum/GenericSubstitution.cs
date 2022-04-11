@@ -24,7 +24,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// If the symbol is a method, its parameter list is included.
 		/// </summary>
-		ParameterList= 2,
+		ParameterList = 2,
 
 		/// <summary>
 		/// Includes variance of the type parameters.

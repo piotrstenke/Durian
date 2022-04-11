@@ -1,17 +1,17 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis
 {
@@ -50,7 +50,7 @@ namespace Durian.Analysis
 		{
 			get
 			{
-				if(_generator is not null)
+				if (_generator is not null)
 				{
 					return _generator;
 				}
@@ -115,7 +115,7 @@ namespace Durian.Analysis
 		/// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
 		public CodeBuilder(IDurianGenerator? generator, StringBuilder builder)
 		{
-			if(builder is null)
+			if (builder is null)
 			{
 				throw new ArgumentNullException(nameof(builder));
 			}
@@ -625,15 +625,15 @@ namespace Durian.Analysis
 		{
 			ICompilationData? targetCompilation;
 
-			if(PassContext is not null)
+			if (PassContext is not null)
 			{
 				targetCompilation = PassContext.TargetCompilation;
 			}
-			else if(_generator is not null)
+			else if (_generator is not null)
 			{
 				targetCompilation = _generator.GetCurrentPassContext()?.TargetCompilation;
 
-				if(targetCompilation is null)
+				if (targetCompilation is null)
 				{
 					throw new InvalidOperationException($"Generator returned null {nameof(IGeneratorPassContext)}");
 				}

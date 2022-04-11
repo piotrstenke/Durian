@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.TestServices;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Durian.TestServices;
 using Xunit;
 using static Durian.Analysis.InterfaceTargets.InterfaceTargetsDiagnostics;
 

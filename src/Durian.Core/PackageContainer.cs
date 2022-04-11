@@ -249,10 +249,7 @@ namespace Durian.Info
 				references = new List<PackageReference?>(Count);
 				enums = new List<DurianPackage>(Count);
 
-				foreach (PackageReference? r in _references)
-				{
-					references.Add(r);
-				}
+				references.AddRange(_references);
 			}
 
 			return new PackageContainer(enums, references);

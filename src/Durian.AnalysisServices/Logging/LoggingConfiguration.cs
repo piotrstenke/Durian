@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis;
 using System;
 using System.IO;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Logging
 {
@@ -32,12 +32,12 @@ namespace Durian.Analysis.Logging
 			get => _nodeOutput;
 			set
 			{
-				if(value == NodeOutput.Default)
+				if (value == NodeOutput.Default)
 				{
 					throw new ArgumentException($"{nameof(DefaultNodeOutput)} cannot be equal to {nameof(NodeOutput)}.{nameof(NodeOutput.Default)}", nameof(DefaultNodeOutput));
 				}
 
-				if(value is NodeOutput.Node or NodeOutput.Containing or NodeOutput.SyntaxTree)
+				if (value is NodeOutput.Node or NodeOutput.Containing or NodeOutput.SyntaxTree)
 				{
 					_nodeOutput = value;
 				}

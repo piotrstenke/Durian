@@ -1,8 +1,8 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
 namespace Durian.Analysis.Tests.AnalysisUtilities

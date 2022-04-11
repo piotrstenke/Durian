@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Info;
 using System;
+using Durian.Info;
 
 namespace Durian.Generator
 {

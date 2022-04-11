@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.Filters;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
@@ -97,7 +95,7 @@ namespace Durian.Analysis
 			{
 				return Execute_Internal(pass);
 			}
-			catch (Exception e) when(HandleException(e, pass))
+			catch (Exception e) when (HandleException(e, pass))
 			{
 				return false;
 			}
@@ -111,7 +109,7 @@ namespace Durian.Analysis
 		/// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
 		public bool Execute(TContext context)
 		{
-			if(context is null)
+			if (context is null)
 			{
 				throw new ArgumentNullException(nameof(context));
 			}

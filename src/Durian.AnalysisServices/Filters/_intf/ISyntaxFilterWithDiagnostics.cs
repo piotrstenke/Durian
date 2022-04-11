@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Threading;
+using Durian.Analysis.Data;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Filters
 {

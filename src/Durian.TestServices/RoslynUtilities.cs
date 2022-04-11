@@ -1,11 +1,6 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis;
-using Durian.Generator;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,6 +10,11 @@ using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Durian.Analysis;
+using Durian.Generator;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 
 namespace Durian.TestServices
 {
@@ -355,12 +355,12 @@ namespace Durian.TestServices
 		{
 			CSharpCompilation compilation = CreateBaseCompilation(true);
 
-			if(references is not null)
+			if (references is not null)
 			{
 				compilation = compilation.AddReferences(references);
 			}
 
-			if(syntaxTrees is not null)
+			if (syntaxTrees is not null)
 			{
 				compilation = compilation.AddSyntaxTrees(syntaxTrees);
 			}

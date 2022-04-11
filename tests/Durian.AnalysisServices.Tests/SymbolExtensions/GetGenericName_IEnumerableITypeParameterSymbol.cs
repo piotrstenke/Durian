@@ -1,11 +1,11 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Moq;
-using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace Durian.Analysis.Tests.AnalysisUtilities

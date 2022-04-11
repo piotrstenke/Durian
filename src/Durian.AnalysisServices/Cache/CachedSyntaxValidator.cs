@@ -1,18 +1,15 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
-using Durian.Analysis.Filters;
-using Durian.Analysis.Logging;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading;
+using Durian.Analysis.Data;
+using Durian.Analysis.Filters;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Cache
 {
@@ -50,7 +47,7 @@ namespace Durian.Analysis.Cache
 				return Yield(new CachedFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, in cache));
 			}
 
-			if(diagnosticReceiver is INodeDiagnosticReceiver node)
+			if (diagnosticReceiver is INodeDiagnosticReceiver node)
 			{
 				return Yield(new CachedLoggableFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, node, context.FileNameProvider, in cache));
 			}
@@ -59,7 +56,7 @@ namespace Durian.Analysis.Cache
 
 			IEnumerable<IMemberData> Yield<TEnumerator>(TEnumerator enumerator) where TEnumerator : IFilterEnumerator<TContext>
 			{
-				while(enumerator.MoveNext(context.CancellationToken))
+				while (enumerator.MoveNext(context.CancellationToken))
 				{
 					yield return enumerator.Current;
 				}
@@ -78,12 +75,12 @@ namespace Durian.Analysis.Cache
 
 			IDiagnosticReceiver? diagnosticReceiver = context.GetDiagnosticReceiver();
 
-			if(diagnosticReceiver is null)
+			if (diagnosticReceiver is null)
 			{
 				return new CachedFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, in cache);
 			}
 
-			if(diagnosticReceiver is INodeDiagnosticReceiver node)
+			if (diagnosticReceiver is INodeDiagnosticReceiver node)
 			{
 				return new CachedLoggableFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, node, context.FileNameProvider, in cache);
 			}

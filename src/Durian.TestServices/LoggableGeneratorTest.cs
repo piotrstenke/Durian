@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+using System.Runtime.CompilerServices;
 using Durian.Analysis;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
-using System;
-using System.Runtime.CompilerServices;
 
 namespace Durian.TestServices
 {
@@ -97,7 +97,7 @@ namespace Durian.TestServices
 		/// <param name="external">Code in external assembly that is referenced by assembly containing the <paramref name="input"/> text.</param>
 		/// <param name="testName">Name of the test that is currently performed.</param>
 		/// <exception cref="InvalidOperationException"><see cref="CreateGenerator(LoggingConfiguration, string)"/> returned <see langword="null"/>.</exception>
-		public virtual SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, [CallerMemberName]string testName = "")
+		public virtual SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, [CallerMemberName] string testName = "")
 		{
 			return RunGeneratorWithDependency(input, external, 0, testName);
 		}

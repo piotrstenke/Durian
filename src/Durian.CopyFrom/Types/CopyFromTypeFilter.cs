@@ -1,19 +1,16 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Logging;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Cache;
-using System.Threading;
-using static Durian.Analysis.CopyFrom.CopyFromAnalyzer;
 using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis.CSharp;
 using Durian.Analysis.Filters;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Durian.Analysis.CopyFrom.CopyFromAnalyzer;
 
 namespace Durian.Analysis.CopyFrom.Types
 {
@@ -85,7 +82,7 @@ namespace Durian.Analysis.CopyFrom.Types
 		/// <inheritdoc/>
 		public override bool ValidateAndCreate(in CopyFromTypeContext context, out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
 		{
-			if(context.Node is null)
+			if (context.Node is null)
 			{
 				data = default;
 				return false;
@@ -134,12 +131,12 @@ namespace Durian.Analysis.CopyFrom.Types
 		/// <inheritdoc/>
 		protected override IEnumerable<CSharpSyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
 		{
-			if(syntaxReceiver is not CopyFromSyntaxReceiver sr)
+			if (syntaxReceiver is not CopyFromSyntaxReceiver sr)
 			{
 				return base.GetCandidateNodes(syntaxReceiver);
 			}
 
-			if(sr.CandidateTypes.Count == 0)
+			if (sr.CandidateTypes.Count == 0)
 			{
 				return default;
 			}

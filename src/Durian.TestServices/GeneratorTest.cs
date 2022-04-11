@@ -1,11 +1,11 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Durian.Analysis;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Durian.Analysis.Logging;
-using System;
 
 namespace Durian.TestServices
 {

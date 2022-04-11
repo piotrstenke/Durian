@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Configuration;
 using System;
 using System.IO;
 using System.Text;
+using Durian.Configuration;
 
 namespace Durian.Samples.DefaultParam
 {
 	[DefaultParamConfiguration(TypeConvention = DPTypeConvention.Copy)]
-	public class Logger<[DefaultParam(typeof(string))]T> : ILogger<T> where T : IEquatable<string>
+	public class Logger<[DefaultParam(typeof(string))] T> : ILogger<T> where T : IEquatable<string>
 	{
 		private readonly StringBuilder _builder;
 

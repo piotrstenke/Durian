@@ -14,7 +14,7 @@ namespace Durian.Analysis.Filters
 	/// </summary>
 	/// <typeparam name="TFilter">Type of <see cref="ISyntaxFilter"/> that can be stored in this list.</typeparam>
 	[DebuggerDisplay("NumGroups = {_filterGroups?.Count ?? 0}, IsSealed = {IsSealed}")]
-	public class FilterContainer<TFilter> : ICollection<FilterGroup<TFilter>>,  IFilterContainer<TFilter> where TFilter : ISyntaxFilter
+	public class FilterContainer<TFilter> : ICollection<FilterGroup<TFilter>>, IFilterContainer<TFilter> where TFilter : ISyntaxFilter
 	{
 		private readonly List<FilterGroup<TFilter>> _filterGroups;
 
@@ -324,7 +324,7 @@ namespace Durian.Analysis.Filters
 
 			foreach (FilterGroup<TFilter> group in groups)
 			{
-				if(group is null)
+				if (group is null)
 				{
 					continue;
 				}
@@ -595,12 +595,12 @@ namespace Durian.Analysis.Filters
 
 		int IFilterContainer<TFilter>.RegisterGroup(IFilterGroup<TFilter> group)
 		{
-			if(group is null)
+			if (group is null)
 			{
 				throw new ArgumentNullException(nameof(group));
 			}
 
-			if(group is not FilterGroup<TFilter> g)
+			if (group is not FilterGroup<TFilter> g)
 			{
 				throw new ArgumentException($"Unsupported type: '{group.GetType()}'", nameof(group));
 			}
@@ -612,14 +612,14 @@ namespace Durian.Analysis.Filters
 		{
 			ThrowIfSealed();
 
-			if(groups is null)
+			if (groups is null)
 			{
 				throw new ArgumentNullException(nameof(groups));
 			}
 
 			foreach (IFilterGroup<TFilter> group in groups)
 			{
-				if(group is null)
+				if (group is null)
 				{
 					continue;
 				}
@@ -640,7 +640,7 @@ namespace Durian.Analysis.Filters
 
 		int IFilterContainer<TFilter>.UnregisterGroup(IFilterGroup<TFilter> group)
 		{
-			if(group is null)
+			if (group is null)
 			{
 				throw new ArgumentNullException(nameof(group));
 			}

@@ -1,13 +1,13 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.TestServices;
 using Durian.TestServices.Fixtures;
 using Microsoft.CodeAnalysis;
 using Moq;
-using System;
 using Xunit;
 
 namespace Durian.Analysis.Tests.SymbolExtensions

@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System;
-using System.Threading;
 
 namespace Durian.Analysis.Cache
 {
@@ -54,7 +54,7 @@ namespace Durian.Analysis.Cache
 		/// <param name="originalContext"><see cref="CachedGeneratorExecutionContext{T}"/> created for the current generator pass.</param>
 		public CachedGeneratorPassContext(TContext underlayingContext, in CachedGeneratorExecutionContext<TData> originalContext)
 		{
-			if(underlayingContext is null)
+			if (underlayingContext is null)
 			{
 				throw new ArgumentNullException(nameof(underlayingContext));
 			}

@@ -62,7 +62,7 @@ internal static class Program
 	{
 		string[]? included = module.Module!.IncludedTypes;
 
-		if(included is null || included.Length == 0)
+		if (included is null || included.Length == 0)
 		{
 			return;
 		}
@@ -79,9 +79,9 @@ internal static class Program
 
 	private static TypeData GetTypeData(string typeName, Dictionary<string, TypeData> types, string moduleName)
 	{
-		if(types.TryGetValue(typeName, out TypeData? data))
+		if (types.TryGetValue(typeName, out TypeData? data))
 		{
-			if(data.Modules!.Contains(moduleName))
+			if (data.Modules!.Contains(moduleName))
 			{
 				Console.WriteLine($"Module '{moduleName}' already contains type '{typeName}'");
 			}
@@ -114,7 +114,7 @@ internal static class Program
 	{
 		string[]? files = module.Module!.DiagnosticFiles;
 
-		if(files is null || files.Length == 0)
+		if (files is null || files.Length == 0)
 		{
 			return;
 		}
@@ -255,7 +255,7 @@ $@"namespace Durian.Info
 						version: ""{package.Version}"",
 						type: ");
 
-					if(package.Type is null || package.Type.Length == 0)
+					if (package.Type is null || package.Type.Length == 0)
 					{
 						builder.AppendLine("null,");
 					}
@@ -310,7 +310,7 @@ namespace Durian.Info
 
 		foreach (ModuleConfiguration config in configurations)
 		{
-			if(config.IncludedTypes?.Count == default)
+			if (config.IncludedTypes?.Count == default)
 			{
 				continue;
 			}

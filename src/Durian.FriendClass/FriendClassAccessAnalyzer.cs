@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Extensions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Durian.Analysis.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 
 namespace Durian.Analysis.FriendClass
@@ -146,54 +146,54 @@ namespace Durian.Analysis.FriendClass
 			switch (node)
 			{
 				case ConstructorDeclarationSyntax ctor:
+				{
+					if (ctor.Initializer is null)
 					{
-						if (ctor.Initializer is null)
-						{
-							if (currentType.BaseType?.GetParameterlessConstructor() is IMethodSymbol baseCtor)
-							{
-								return baseCtor;
-							}
-						}
-						else if (semanticModel.GetSymbolInfo(ctor.Initializer).Symbol is IMethodSymbol baseCtor)
+						if (currentType.BaseType?.GetParameterlessConstructor() is IMethodSymbol baseCtor)
 						{
 							return baseCtor;
 						}
-
-						break;
 					}
+					else if (semanticModel.GetSymbolInfo(ctor.Initializer).Symbol is IMethodSymbol baseCtor)
+					{
+						return baseCtor;
+					}
+
+					break;
+				}
 
 				case ClassDeclarationSyntax @class:
+				{
+					if (@class.BaseList is not null &&
+						GetParameterlessConstructorFromSymbol(currentType) is IMethodSymbol baseCtor
+					)
 					{
-						if (@class.BaseList is not null &&
-							GetParameterlessConstructorFromSymbol(currentType) is IMethodSymbol baseCtor
-						)
+						return baseCtor;
+					}
+
+					break;
+				}
+
+				case RecordDeclarationSyntax record:
+				{
+					if (record.BaseList is not null && record.BaseList.Types.Any())
+					{
+						BaseTypeSyntax baseType = record.BaseList.Types[0];
+						ISymbol? symbol = semanticModel.GetSymbolInfo(baseType).Symbol;
+
+						if (symbol is IMethodSymbol baseCtor)
 						{
 							return baseCtor;
 						}
 
-						break;
-					}
-
-				case RecordDeclarationSyntax record:
-					{
-						if (record.BaseList is not null && record.BaseList.Types.Any())
+						if (symbol is INamedTypeSymbol type && GetParameterlessConstructorFromSymbol(type) is IMethodSymbol ctor)
 						{
-							BaseTypeSyntax baseType = record.BaseList.Types[0];
-							ISymbol? symbol = semanticModel.GetSymbolInfo(baseType).Symbol;
-
-							if (symbol is IMethodSymbol baseCtor)
-							{
-								return baseCtor;
-							}
-
-							if (symbol is INamedTypeSymbol type && GetParameterlessConstructorFromSymbol(type) is IMethodSymbol ctor)
-							{
-								return ctor;
-							}
+							return ctor;
 						}
-
-						break;
 					}
+
+					break;
+				}
 			}
 
 			return null;
@@ -346,39 +346,39 @@ namespace Durian.Analysis.FriendClass
 			switch (node)
 			{
 				case MethodDeclarationSyntax:
+				{
+					if (accessedSymbol is IMethodSymbol method && method.IsOverride && method.OverriddenMethod is not null)
 					{
-						if (accessedSymbol is IMethodSymbol method && method.IsOverride && method.OverriddenMethod is not null)
-						{
-							accessedSymbol = method.OverriddenMethod;
-							return true;
-						}
-
-						break;
+						accessedSymbol = method.OverriddenMethod;
+						return true;
 					}
+
+					break;
+				}
 
 				case PropertyDeclarationSyntax:
 				case IndexerDeclarationSyntax:
+				{
+					if (accessedSymbol is IPropertySymbol property && property.IsOverride && property.OverriddenProperty is not null)
 					{
-						if (accessedSymbol is IPropertySymbol property && property.IsOverride && property.OverriddenProperty is not null)
-						{
-							accessedSymbol = property.OverriddenProperty;
-							return true;
-						}
-
-						break;
+						accessedSymbol = property.OverriddenProperty;
+						return true;
 					}
+
+					break;
+				}
 
 				case EventDeclarationSyntax:
 				case EventFieldDeclarationSyntax:
+				{
+					if (accessedSymbol is IEventSymbol @event && @event.IsOverride && @event.OverriddenEvent is not null)
 					{
-						if (accessedSymbol is IEventSymbol @event && @event.IsOverride && @event.OverriddenEvent is not null)
-						{
-							accessedSymbol = @event.OverriddenEvent;
-							return true;
-						}
-
-						break;
+						accessedSymbol = @event.OverriddenEvent;
+						return true;
 					}
+
+					break;
+				}
 			}
 
 			return false;

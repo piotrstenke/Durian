@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.Filters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Threading;
 
 namespace Durian.Analysis.CopyFrom.Methods
 {
@@ -66,13 +66,13 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// <param name="context">Returned <see cref="CopyFromMethodContext"/>.</param>
 		public bool TryInitNode(out CopyFromMethodContext context)
 		{
-			if(Node is not null)
+			if (Node is not null)
 			{
 				context = this;
 				return true;
 			}
 
-			if(Symbol.TryGetSyntax(out MethodDeclarationSyntax? node, CancellationToken))
+			if (Symbol.TryGetSyntax(out MethodDeclarationSyntax? node, CancellationToken))
 			{
 				context = new(Compilation, SemanticModel, Symbol, node, CancellationToken);
 				return true;

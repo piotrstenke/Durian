@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Cache
 {
@@ -91,7 +91,7 @@ namespace Durian.Analysis.Cache
 		/// </summary>
 		/// <param name="position"><see cref="FileLinePositionSpan"/> the value is assigned to.</param>
 		/// <param name="value">Returned cached value.</param>
-		public bool TryGetCachedValue(FileLinePositionSpan position, [NotNullWhen(true)]out T? value)
+		public bool TryGetCachedValue(FileLinePositionSpan position, [NotNullWhen(true)] out T? value)
 		{
 			if (!_hasData)
 			{

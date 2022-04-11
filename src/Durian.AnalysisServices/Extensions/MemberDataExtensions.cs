@@ -1,11 +1,11 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis;
 using System;
 using System.Globalization;
 using System.Text;
+using Durian.Analysis.Data;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Extensions
 {

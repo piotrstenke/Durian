@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Durian.Analysis
 {

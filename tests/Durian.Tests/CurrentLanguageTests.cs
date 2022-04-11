@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Immutable;
+using System.Threading.Tasks;
 using Durian.Analysis;
 using Durian.TestServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.VisualBasic;
-using System.Collections.Immutable;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Durian.Tests

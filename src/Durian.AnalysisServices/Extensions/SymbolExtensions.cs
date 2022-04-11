@@ -1,10 +1,6 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,6 +9,10 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading;
+using Durian.Analysis.Data;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Extensions
 {
@@ -69,7 +69,6 @@ namespace Durian.Analysis.Extensions
 
 			return false;
 		}
-
 
 		/// <summary>
 		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="type"/>.
@@ -685,32 +684,32 @@ namespace Durian.Analysis.Extensions
 				switch (parent.TypeKind)
 				{
 					case TypeKind.Class:
-						{
-							ClassData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
-							parentList.Add(data);
-							return data;
-						}
+					{
+						ClassData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
+						parentList.Add(data);
+						return data;
+					}
 
 					case TypeKind.Interface:
-						{
-							InterfaceData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
-							parentList.Add(data);
-							return data;
-						}
+					{
+						InterfaceData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
+						parentList.Add(data);
+						return data;
+					}
 
 					case TypeKind.Struct:
-						{
-							StructData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
-							parentList.Add(data);
-							return data;
-						}
+					{
+						StructData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
+						parentList.Add(data);
+						return data;
+					}
 
 					case TypeKind.Enum:
-						{
-							EnumData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
-							parentList.Add(data);
-							return data;
-						}
+					{
+						EnumData data = new(parent, compilation) { _containingTypes = parentList.ToArray() };
+						parentList.Add(data);
+						return data;
+					}
 
 					default:
 						throw new InvalidOperationException($"Invalid type kind of '{parent}'");
@@ -1296,7 +1295,7 @@ namespace Durian.Analysis.Extensions
 				sb.Append(type.GetGenericName()).Append('.');
 			}
 
-			if(includeSelf)
+			if (includeSelf)
 			{
 				sb.Append(symbol.GetGenericName(includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None));
 			}
@@ -1372,7 +1371,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			if(type.SpecialType == SpecialType.None)
+			if (type.SpecialType == SpecialType.None)
 			{
 				return default;
 			}
@@ -1398,7 +1397,7 @@ namespace Durian.Analysis.Extensions
 				_ => default
 			};
 
-			if(kind == default)
+			if (kind == default)
 			{
 				return default;
 			}
@@ -1507,17 +1506,12 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			switch (symbol)
+			return symbol switch
 			{
-				case IPropertySymbol property:
-					return property.GetXmlCompatibleName();
-
-				case IMethodSymbol method:
-					return method.GetXmlCompatibleName(includeParameters);
-
-				default:
-					return AnalysisUtilities.ToXmlCompatible(symbol.GetGenericName(includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None));
-			}
+				IPropertySymbol property => property.GetXmlCompatibleName(),
+				IMethodSymbol method => method.GetXmlCompatibleName(includeParameters),
+				_ => AnalysisUtilities.ToXmlCompatible(symbol.GetGenericName(includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None)),
+			};
 		}
 
 		/// <summary>
@@ -2731,12 +2725,12 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 		public static string? TypeToKeyword(this ITypeSymbol type)
 		{
-			if(type is null)
+			if (type is null)
 			{
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			if(type is IDynamicTypeSymbol)
+			if (type is IDynamicTypeSymbol)
 			{
 				return "dynamic";
 			}
@@ -2838,7 +2832,7 @@ namespace Durian.Analysis.Extensions
 
 			ImmutableArray<IParameterSymbol> parameters = signature.Parameters;
 
-			if(parameters.Length > 0)
+			if (parameters.Length > 0)
 			{
 				WriteParameter(parameters[0], sb);
 

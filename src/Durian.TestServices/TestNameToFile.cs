@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Logging;
-using Microsoft.CodeAnalysis;
 using System;
 using System.Diagnostics;
+using Durian.Analysis.Logging;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.TestServices
 {
@@ -33,7 +33,7 @@ namespace Durian.TestServices
 					throw new ArgumentOutOfRangeException(nameof(Counter), $"{nameof(Counter)} cannot be less than 0!");
 				}
 
-				lock(_syncRoot)
+				lock (_syncRoot)
 				{
 					_counter = value;
 					_current = value == 0 ? _testName : $"{_testName}_{value}";
@@ -98,7 +98,7 @@ namespace Durian.TestServices
 		/// <inheritdoc/>
 		public string GetHintName()
 		{
-			lock(_syncRoot)
+			lock (_syncRoot)
 			{
 				return _current;
 			}
@@ -115,7 +115,7 @@ namespace Durian.TestServices
 		/// </summary>
 		public void Reset()
 		{
-			lock(_syncRoot)
+			lock (_syncRoot)
 			{
 				_current = _testName;
 				_counter = 0;
@@ -125,7 +125,7 @@ namespace Durian.TestServices
 		/// <inheritdoc/>
 		public void Success()
 		{
-			lock(_syncRoot)
+			lock (_syncRoot)
 			{
 				_counter++;
 				_current = $"{_testName}_{_counter}";

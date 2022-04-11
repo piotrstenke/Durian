@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -54,7 +53,7 @@ namespace Durian.Analysis.Filters
 		{
 			FilterEnumeratorWithDiagnostics<TContext> e = new(compilation, collectedNodes, this, diagnosticReceiver);
 
-			while(e.MoveNext(cancellationToken))
+			while (e.MoveNext(cancellationToken))
 			{
 				yield return e.Current;
 			}
@@ -84,7 +83,7 @@ namespace Durian.Analysis.Filters
 		{
 			FilterEnumerator<TContext> e = new(compilation, collectedNodes, this);
 
-			while(e.MoveNext(cancellationToken))
+			while (e.MoveNext(cancellationToken))
 			{
 				yield return e.Current;
 			}
@@ -133,12 +132,12 @@ namespace Durian.Analysis.Filters
 
 			IDiagnosticReceiver? diagnosticReceiver = context.GetDiagnosticReceiver();
 
-			if(diagnosticReceiver is null)
+			if (diagnosticReceiver is null)
 			{
 				return new FilterEnumerator<TContext>(context.TargetCompilation, list, this);
 			}
 
-			if(diagnosticReceiver is INodeDiagnosticReceiver node)
+			if (diagnosticReceiver is INodeDiagnosticReceiver node)
 			{
 				return new LoggableFilterEnumerator<TContext>(context.TargetCompilation, list, this, node, context.FileNameProvider);
 			}
@@ -155,7 +154,7 @@ namespace Durian.Analysis.Filters
 		{
 			SemanticModel semanticModel = validationContext.TargetCompilation.Compilation.GetSemanticModel(validationContext.Node.SyntaxTree);
 
-			if(semanticModel.GetDeclaredSymbol(validationContext.Node, validationContext.CancellationToken) is not ISymbol s)
+			if (semanticModel.GetDeclaredSymbol(validationContext.Node, validationContext.CancellationToken) is not ISymbol s)
 			{
 				context = default;
 				return false;
@@ -170,7 +169,7 @@ namespace Durian.Analysis.Filters
 		/// <inheritdoc/>
 		public bool ValidateAndCreate(in ValidationDataContext context, [NotNullWhen(true)] out IMemberData? data)
 		{
-			if(TryGetContext(in context, out TContext? validationData))
+			if (TryGetContext(in context, out TContext? validationData))
 			{
 				return ValidateAndCreate(in validationData, out data);
 			}

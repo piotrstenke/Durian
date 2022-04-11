@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using Durian.Analysis;
-using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.TestServices

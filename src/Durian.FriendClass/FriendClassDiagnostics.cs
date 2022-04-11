@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
-using System;
 
 namespace Durian.Analysis.FriendClass
 {

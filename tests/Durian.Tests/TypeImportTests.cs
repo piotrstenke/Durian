@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Immutable;
+using System.Threading.Tasks;
 using Durian.Analysis;
 using Durian.Generator;
 using Durian.Info;
@@ -8,10 +10,7 @@ using Durian.TestServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System.Collections.Immutable;
-using System.Threading.Tasks;
 using Xunit;
-
 using static Durian.Analysis.DurianDiagnostics;
 
 namespace Durian.Tests

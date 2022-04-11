@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System.Collections.Immutable;
-using System.Collections.Generic;
-using System.Linq;
-
 using static Durian.Analysis.DurianDiagnostics;
 
 namespace Durian.Analysis
@@ -38,7 +37,7 @@ namespace Durian.Analysis
 			{
 				INamedTypeSymbol? partialNameAttribute = context.Compilation.GetTypeByMetadataName($"{nameof(Durian)}.{nameof(PartialNameAttribute)}");
 
-				if(partialNameAttribute is null)
+				if (partialNameAttribute is null)
 				{
 					return;
 				}
@@ -49,7 +48,7 @@ namespace Durian.Analysis
 
 		private static void Analyze(SymbolAnalysisContext context, INamedTypeSymbol partialNameAttribute)
 		{
-			if(context.Symbol is not INamedTypeSymbol type || type.TypeKind is not TypeKind.Class and not TypeKind.Struct and not TypeKind.Interface)
+			if (context.Symbol is not INamedTypeSymbol type || type.TypeKind is not TypeKind.Class and not TypeKind.Struct and not TypeKind.Interface)
 			{
 				return;
 			}
@@ -58,12 +57,12 @@ namespace Durian.Analysis
 
 			AttributeData[] attributes = context.Symbol.GetAttributes(partialNameAttribute).ToArray();
 
-			if(attributes.Length == 0)
+			if (attributes.Length == 0)
 			{
 				return;
 			}
 
-			if(!type.IsPartial())
+			if (!type.IsPartial())
 			{
 				foreach (AttributeData attribute in attributes)
 				{
@@ -73,7 +72,7 @@ namespace Durian.Analysis
 
 			foreach (AttributeData attribute in attributes)
 			{
-				if(attribute.TryGetConstructorArgumentValue(0, out string? value) && value is not null && !names.Add(value))
+				if (attribute.TryGetConstructorArgumentValue(0, out string? value) && value is not null && !names.Add(value))
 				{
 					context.ReportDiagnostic(Diagnostic.Create(DUR0009_DuplicatePartialPart, attribute.GetLocation(), type));
 				}

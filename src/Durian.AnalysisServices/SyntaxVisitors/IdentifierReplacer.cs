@@ -25,7 +25,7 @@ namespace Durian.Analysis.SyntaxVisitors
 			get => _identifier ??= string.Empty;
 			set
 			{
-				if(string.IsNullOrWhiteSpace(value))
+				if (string.IsNullOrWhiteSpace(value))
 				{
 					throw new ArgumentException("Identifier cannot be null or empty", nameof(Identifier));
 				}
@@ -71,7 +71,7 @@ namespace Durian.Analysis.SyntaxVisitors
 		/// <exception cref="ArgumentException"><paramref name="identifier"/> cannot be <see langword="null"/> or empty. -or- <paramref name="replacement"/> cannot be <see langword="null"/> or empty.</exception>
 		public IdentifierReplacer(string identifier, string replacement)
 		{
-			if(string.IsNullOrWhiteSpace(identifier))
+			if (string.IsNullOrWhiteSpace(identifier))
 			{
 				throw new ArgumentException("Identifier cannot be null or empty", nameof(identifier));
 			}
@@ -88,7 +88,7 @@ namespace Durian.Analysis.SyntaxVisitors
 		/// <inheritdoc/>
 		public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node)
 		{
-			if(ShouldReplace(node.Identifier))
+			if (ShouldReplace(node.Identifier))
 			{
 				node = node.WithIdentifier(GetReplacementToken(node.Identifier));
 			}

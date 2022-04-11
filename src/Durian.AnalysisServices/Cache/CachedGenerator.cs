@@ -145,7 +145,7 @@ namespace Durian.Analysis.Cache
 				return r;
 			}
 
-			if(filters is null)
+			if (filters is null)
 			{
 				return null;
 			}
@@ -164,7 +164,7 @@ namespace Durian.Analysis.Cache
 
 			TContext? pass = CreateCurrentPassContext(currentCompilation, in original);
 
-			if(pass is null)
+			if (pass is null)
 			{
 				return null;
 			}

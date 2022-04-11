@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.Analysis.Filters
 {
@@ -18,6 +18,6 @@ namespace Durian.Analysis.Filters
 		/// </summary>
 		/// <param name="context"><see cref="ValidationDataContext"/> that contains all data necessary to retrieve the required data.</param>
 		/// <param name="data">Returned data.</param>
-		bool TryGetContext(in ValidationDataContext context, [NotNullWhen(true)]out T? data);
+		bool TryGetContext(in ValidationDataContext context, [NotNullWhen(true)] out T? data);
 	}
 }

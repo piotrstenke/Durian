@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Extensions;
-using Durian.Analysis.Logging;
-using Durian.Info;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Durian.Analysis.Extensions;
+using Durian.Analysis.Logging;
+using Durian.Info;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Durian.Analysis
 {
@@ -89,7 +89,7 @@ namespace Durian.Analysis
 		/// <exception cref="ArgumentNullException"><paramref name="logHandler"/> is <see langword="null"/>.</exception>
 		protected DurianGeneratorBase(IGeneratorLogHandler logHandler)
 		{
-			if(logHandler is null)
+			if (logHandler is null)
 			{
 				throw new ArgumentNullException(nameof(logHandler));
 			}
@@ -223,7 +223,7 @@ namespace Durian.Analysis
 		/// <returns><see langword="true"/> if the <paramref name="compilation"/> was successfully validated and initialized, <see langword="false"/> otherwise.</returns>
 		protected bool InitializeCompilation(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
 		{
-			if(IsValidCSharpCompilation(in context, out CSharpCompilation? c) && ValidateCompilation(c, in context))
+			if (IsValidCSharpCompilation(in context, out CSharpCompilation? c) && ValidateCompilation(c, in context))
 			{
 				DurianModule[] modules = GetRequiredModules();
 				EnableModules(ref c, in context, modules);
@@ -307,15 +307,15 @@ namespace Durian.Analysis
 
 			foreach (AssemblyIdentity assembly in compilation.ReferencedAssemblyNames)
 			{
-				if(assembly.Name == "Durian")
+				if (assembly.Name == "Durian")
 				{
 					hasCoreAnalyzer = true;
 					return true;
 				}
 
-				if(assembly.Name == "Durian.Core")
+				if (assembly.Name == "Durian.Core")
 				{
-					if(foundAnalyzer)
+					if (foundAnalyzer)
 					{
 						hasCoreAnalyzer = true;
 						return true;
@@ -325,9 +325,9 @@ namespace Durian.Analysis
 					continue;
 				}
 
-				if(assembly.Name == "Durian.Core.Analyzer")
+				if (assembly.Name == "Durian.Core.Analyzer")
 				{
-					if(currentValue)
+					if (currentValue)
 					{
 						hasCoreAnalyzer = true;
 						return true;

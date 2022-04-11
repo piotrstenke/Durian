@@ -42,12 +42,12 @@ namespace Durian.Info
 		/// <param name="type">Type of the package.</param>
 		public static bool IsPackageType(DurianPackage package, PackageType type)
 		{
-			if(type <= PackageType.Unspecified)
+			if (type <= PackageType.Unspecified)
 			{
 				return false;
 			}
 
-			if(IsSingleFlag(type))
+			if (IsSingleFlag(type))
 			{
 				return IsFlag(package, type);
 			}

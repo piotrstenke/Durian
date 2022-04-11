@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Durian.Analysis
 {
@@ -99,7 +99,7 @@ namespace Durian.Analysis
 			/// <exception cref="ArgumentException">Collection contains <see langword="null"/> objects. -or- Collection contains <see cref="IDiagnosticReceiver"/>s that are already present in the current receiver.</exception>
 			public static Composite Composite(params IDiagnosticReceiver[]? diagnosticReceivers)
 			{
-				if(diagnosticReceivers is null)
+				if (diagnosticReceivers is null)
 				{
 					return Composite();
 				}

@@ -1,12 +1,12 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.TestServices.Fixtures;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Linq;
 using System.Numerics;
+using Durian.TestServices.Fixtures;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
 namespace Durian.Analysis.Tests.CompilationData

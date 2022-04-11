@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Filters;
 using Durian.Analysis.DefaultParam.Delegates;
-using Durian.Analysis.DefaultParam.Types;
 using Durian.Analysis.DefaultParam.Methods;
+using Durian.Analysis.DefaultParam.Types;
+using Durian.Analysis.Filters;
 
 namespace Durian.Analysis.DefaultParam
 {

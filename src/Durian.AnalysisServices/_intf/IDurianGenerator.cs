@@ -1,15 +1,11 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using System;
 using Durian.Analysis.Logging;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis
 {
-
 	/// <summary>
 	/// <see cref="ISourceGenerator"/> that provides additional information about the current generator pass.
 	/// </summary>

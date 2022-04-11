@@ -1,6 +1,8 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
+using System.Linq;
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
@@ -9,12 +11,9 @@ using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Durian.Analysis.DefaultParam
 {
-
 	/// <summary>
 	/// Main class of the <c>DefaultParam</c> module. Generates source code of members marked with the <c>Durian.DefaultParamAttribute</c>.
 	/// </summary>
@@ -108,7 +107,7 @@ namespace Durian.Analysis.DefaultParam
 			list.RegisterGroup("Delegates", new Delegates.DefaultParamDelegateFilter());
 			list.RegisterGroup("Types", new Types.DefaultParamTypeFilter());
 
-			if(LoggingConfiguration.EnableDiagnostics)
+			if (LoggingConfiguration.EnableDiagnostics)
 			{
 				list.RegisterGroup("Local Functions", new Methods.DefaultParamLocalFunctionFilter());
 			}

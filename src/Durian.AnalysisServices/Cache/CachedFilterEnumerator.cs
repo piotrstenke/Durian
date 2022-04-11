@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Durian.Analysis.Data;
+using Durian.Analysis.Filters;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Cache
 {
@@ -117,13 +117,13 @@ namespace Durian.Analysis.Cache
 					continue;
 				}
 
-				if(_cache.TryGetCachedValue(node, out TData? data))
+				if (_cache.TryGetCachedValue(node, out TData? data))
 				{
 					Current = data;
 					return true;
 				}
 
-				if(Validator.ValidateAndCreate(new ValidationDataContext(node, Compilation, cancellationToken), out IMemberData? member) && member is TData d)
+				if (Validator.ValidateAndCreate(new ValidationDataContext(node, Compilation, cancellationToken), out IMemberData? member) && member is TData d)
 				{
 					Current = d;
 					return true;

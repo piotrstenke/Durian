@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 
 namespace Durian.Analysis.CopyFrom
 {
@@ -139,7 +139,7 @@ namespace Durian.Analysis.CopyFrom
 		/// <inheritdoc/>
 		public override string ToString()
 		{
-			if(string.IsNullOrWhiteSpace(PartialPartName))
+			if (string.IsNullOrWhiteSpace(PartialPartName))
 			{
 				return Symbol.ToString();
 			}

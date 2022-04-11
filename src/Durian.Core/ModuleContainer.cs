@@ -249,10 +249,7 @@ namespace Durian.Info
 				references = new List<ModuleReference?>(Count);
 				enums = new List<DurianModule>(Count);
 
-				foreach (ModuleReference? r in _references)
-				{
-					references.Add(r);
-				}
+				references.AddRange(_references);
 			}
 
 			return new ModuleContainer(enums, references);

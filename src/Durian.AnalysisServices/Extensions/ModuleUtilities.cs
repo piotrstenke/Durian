@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Generator;
-using Durian.Info;
-using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Durian.Generator;
+using Durian.Info;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Extensions
 {

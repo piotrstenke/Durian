@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filters;
@@ -8,7 +9,6 @@ using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Generic;
 
 namespace Durian.Analysis.CopyFrom
 {

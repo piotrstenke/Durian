@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Immutable;
 using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.TestServices
 {
@@ -102,11 +102,11 @@ namespace Durian.TestServices
 			GeneratorRunResult runResult = generatorDriver.GetRunResult().Results[0];
 			ImmutableArray<GeneratedSourceResult> generatedSources = runResult.GeneratedSources;
 
-			if(startIndex >= generatedSources.Length)
+			if (startIndex >= generatedSources.Length)
 			{
 				generatedSources = ImmutableArray.Create<GeneratedSourceResult>();
 			}
-			else if(startIndex > 0)
+			else if (startIndex > 0)
 			{
 				generatedSources = generatedSources.RemoveRange(0, startIndex);
 			}
@@ -159,7 +159,7 @@ namespace Durian.TestServices
 
 			for (int i = 0; i < syntaxTrees.Length; i++)
 			{
-				if(!generatedSources[0].SyntaxTree.IsEquivalentTo(syntaxTrees[0]))
+				if (!generatedSources[0].SyntaxTree.IsEquivalentTo(syntaxTrees[0]))
 				{
 					return false;
 				}

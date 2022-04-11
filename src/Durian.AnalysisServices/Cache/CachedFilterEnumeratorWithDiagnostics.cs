@@ -138,7 +138,7 @@ namespace Durian.Analysis.Cache
 					continue;
 				}
 
-				if(_cache.TryGetCachedValue(node, out TData? data))
+				if (_cache.TryGetCachedValue(node, out TData? data))
 				{
 					Current = data;
 					return true;

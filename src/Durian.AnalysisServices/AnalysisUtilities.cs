@@ -1,16 +1,16 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Durian.Analysis.Data;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis
 {
@@ -21,26 +21,26 @@ namespace Durian.Analysis
 	{
 		private static readonly string[] _keywords = new string[]
 		{
-			"__arglist",	"__makeref",	"__reftype",	"__refvalue",
-			"abstract",		"as",			"base",			"bool",
-			"break",		"byte",			"case",			"catch",
-			"char",			"checked",		"class",		"const",
-			"continue",		"decimal",		"default",		"delegate",
-			"do",			"double",		"else",			"enum",
-			"event",		"explicit",		"extern",		"false",
-			"finally",		"fixed",		"float",		"for",
-			"foreach",		"goto",			"if",			"implicit",
-			"in",			"int",			"interface",	"internal",
-			"is",			"lock",			"long",			"namespace",
-			"new",			"null",			"object",		"operator",
-			"out",			"override",		"params",		"private",
-			"protected",	"public",		"readonly",		"ref",
-			"return",		"sbyte",		"sealed",		"short",
-			"sizeof",		"stackalloc",   "static",		"string",
-			"struct",		"switch",		"this",			"throw",
-			"true",			"try",			"typeof",		"uint",
-			"ulong",		"unchecked",	"unsafe",		"ushort",
-			"using",		"virtual",		"volatile",		"void",
+			"__arglist",    "__makeref",    "__reftype",    "__refvalue",
+			"abstract",     "as",           "base",         "bool",
+			"break",        "byte",         "case",         "catch",
+			"char",         "checked",      "class",        "const",
+			"continue",     "decimal",      "default",      "delegate",
+			"do",           "double",       "else",         "enum",
+			"event",        "explicit",     "extern",       "false",
+			"finally",      "fixed",        "float",        "for",
+			"foreach",      "goto",         "if",           "implicit",
+			"in",           "int",          "interface",    "internal",
+			"is",           "lock",         "long",         "namespace",
+			"new",          "null",         "object",       "operator",
+			"out",          "override",     "params",       "private",
+			"protected",    "public",       "readonly",     "ref",
+			"return",       "sbyte",        "sealed",       "short",
+			"sizeof",       "stackalloc",   "static",       "string",
+			"struct",       "switch",       "this",         "throw",
+			"true",         "try",          "typeof",       "uint",
+			"ulong",        "unchecked",    "unsafe",       "ushort",
+			"using",        "virtual",      "volatile",     "void",
 			"while"
 		};
 
@@ -149,7 +149,7 @@ namespace Durian.Analysis
 				return default;
 			}
 
-			if(char.IsLetter(operatorName![0]))
+			if (char.IsLetter(operatorName![0]))
 			{
 				if (operatorName!.StartsWith("op_"))
 				{
@@ -648,7 +648,7 @@ namespace Durian.Analysis
 
 			for (int i = 0; i < left.Length; i++)
 			{
-				if(!left[i]!.Equals(right[i]))
+				if (!left[i]!.Equals(right[i]))
 				{
 					return false;
 				}
@@ -659,7 +659,7 @@ namespace Durian.Analysis
 
 		internal static int GetArrayHashCode<T>(T[]? array)
 		{
-			if(array is null || array.Length == 0)
+			if (array is null || array.Length == 0)
 			{
 				return 0;
 			}

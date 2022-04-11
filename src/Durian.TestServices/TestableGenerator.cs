@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Durian.Analysis;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filters;
-using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -156,7 +155,7 @@ namespace Durian.TestServices
 		{
 			TContext? newContext = UnderlayingGenerator.CreateCurrentPassContext(currentCompilation, in context);
 
-			if(newContext is not null)
+			if (newContext is not null)
 			{
 				newContext.FileNameProvider = new TestNameToFile(TestName);
 			}

@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Threading.Tasks;
 using Durian.Analysis;
 using Durian.TestServices;
-using System.Threading.Tasks;
 using Xunit;
-
 using static Durian.Analysis.DurianDiagnostics;
 
 namespace Durian.Tests

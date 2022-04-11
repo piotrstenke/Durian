@@ -2,11 +2,10 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-
 using Reg = System.Collections.Concurrent.ConcurrentDictionary<int, Durian.Analysis.IGeneratorPassContext>;
 
 namespace Durian.Analysis
@@ -36,9 +35,9 @@ namespace Durian.Analysis
 		/// <param name="context"><see cref="IGeneratorPassContext"/> to add to the registry.</param>
 		public static bool AddContext(Guid generatorId, int threadId, IGeneratorPassContext context)
 		{
-			if(!_generators.TryGetValue(generatorId, out object? value))
+			if (!_generators.TryGetValue(generatorId, out object? value))
 			{
-				if(threadId == AnalysisUtilities.MainThreadId)
+				if (threadId == AnalysisUtilities.MainThreadId)
 				{
 					return _generators.TryAdd(generatorId, context);
 				}
@@ -49,9 +48,9 @@ namespace Durian.Analysis
 				return _generators.TryAdd(generatorId, reg);
 			}
 
-			if(value is IGeneratorPassContext c)
+			if (value is IGeneratorPassContext c)
 			{
-				if(threadId == AnalysisUtilities.MainThreadId)
+				if (threadId == AnalysisUtilities.MainThreadId)
 				{
 					return false;
 				}
@@ -112,12 +111,12 @@ namespace Durian.Analysis
 		/// <param name="threadId">Id of the target thread.</param>
 		public static bool ContainsContext(Guid generatorId, int threadId)
 		{
-			if(!_generators.TryGetValue(generatorId, out object? value))
+			if (!_generators.TryGetValue(generatorId, out object? value))
 			{
 				return false;
 			}
 
-			if(value is IGeneratorPassContext)
+			if (value is IGeneratorPassContext)
 			{
 				return threadId == AnalysisUtilities.MainThreadId;
 			}
@@ -132,12 +131,12 @@ namespace Durian.Analysis
 		/// <param name="handle">Target <see cref="GeneratorThreadHandle"/>.</param>
 		public static bool ContainsContext(in GeneratorThreadHandle handle)
 		{
-			if(!_generators.TryGetValue(handle.GeneratorId, out object? value))
+			if (!_generators.TryGetValue(handle.GeneratorId, out object? value))
 			{
 				return false;
 			}
 
-			if(value is IGeneratorPassContext)
+			if (value is IGeneratorPassContext)
 			{
 				return handle.IsMainThread;
 			}
@@ -153,7 +152,7 @@ namespace Durian.Analysis
 		/// <exception cref="ArgumentException">Context not found for the specified <paramref name="handle"/>.</exception>
 		public static IGeneratorPassContext GetContext(in GeneratorThreadHandle handle)
 		{
-			if(!TryGetContext(handle, out IGeneratorPassContext? context))
+			if (!TryGetContext(handle, out IGeneratorPassContext? context))
 			{
 				throw new ArgumentException($"Context not found for handle '{handle}'", nameof(handle));
 			}
@@ -168,7 +167,7 @@ namespace Durian.Analysis
 		/// <exception cref="ArgumentException">Context not found for generator with the specified <paramref name="generatorId"/>.</exception>
 		public static IGeneratorPassContext GetContext(Guid generatorId)
 		{
-			if(!TryGetContext(generatorId, out IGeneratorPassContext? context))
+			if (!TryGetContext(generatorId, out IGeneratorPassContext? context))
 			{
 				throw new ArgumentException($"Context not found for generator with id '{generatorId}'", nameof(generatorId));
 			}
@@ -201,7 +200,7 @@ namespace Durian.Analysis
 		/// <exception cref="InvalidOperationException">Registered context is not of type <typeparamref name="TContext"/>.</exception>
 		public static TContext GetContext<TContext>(in GeneratorThreadHandle handle) where TContext : class, IGeneratorPassContext
 		{
-			if(GetContext(handle) is not TContext context)
+			if (GetContext(handle) is not TContext context)
 			{
 				throw Exc_WrongContextType(typeof(TContext));
 			}
@@ -274,9 +273,9 @@ namespace Durian.Analysis
 
 			foreach (KeyValuePair<Guid, object> generator in _generators)
 			{
-				if(generator.Value is IGeneratorPassContext)
+				if (generator.Value is IGeneratorPassContext)
 				{
-					if(isMainThread)
+					if (isMainThread)
 					{
 						toRemove.Add(generator.Key);
 					}
@@ -286,9 +285,9 @@ namespace Durian.Analysis
 
 				Reg data = (Reg)generator.Value;
 
-				if(data.TryRemove(threadId, out _))
+				if (data.TryRemove(threadId, out _))
 				{
-					if(data.IsEmpty)
+					if (data.IsEmpty)
 					{
 						toRemove.Add(generator.Key);
 					}
@@ -321,7 +320,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="generatorId">Id of generator to remove the <see cref="IGeneratorPassContext"/> associated with.</param>
 		/// <param name="context">Removed <see cref="IGeneratorPassContext"/>.</param>
-		public static bool RemoveContext(Guid generatorId, [NotNullWhen(true)]out IGeneratorPassContext? context)
+		public static bool RemoveContext(Guid generatorId, [NotNullWhen(true)] out IGeneratorPassContext? context)
 		{
 			return RemoveContext(generatorId, AnalysisUtilities.MainThreadId, out context);
 		}
@@ -338,7 +337,7 @@ namespace Durian.Analysis
 		/// <param name="generatorId">Id of generator to remove the <see cref="IGeneratorPassContext"/> associated with.</param>
 		/// <param name="threadId">Id of thread to remove the <see cref="IGeneratorPassContext"/> associated with.</param>
 		/// <param name="context">Removed <see cref="IGeneratorPassContext"/>.</param>
-		public static bool RemoveContext(Guid generatorId, int threadId, [NotNullWhen(true)]out IGeneratorPassContext? context)
+		public static bool RemoveContext(Guid generatorId, int threadId, [NotNullWhen(true)] out IGeneratorPassContext? context)
 		{
 			if (!_generators.TryGetValue(generatorId, out object? value))
 			{
@@ -365,13 +364,13 @@ namespace Durian.Analysis
 
 			Reg data = (Reg)value;
 
-			if(data.TryRemove(threadId, out context))
+			if (data.TryRemove(threadId, out context))
 			{
-				if(data.IsEmpty)
+				if (data.IsEmpty)
 				{
 					_generators.TryRemove(generatorId, out _);
 				}
-				else if(data.Count == 1 && data.TryGetValue(AnalysisUtilities.MainThreadId, out IGeneratorPassContext? pass))
+				else if (data.Count == 1 && data.TryGetValue(AnalysisUtilities.MainThreadId, out IGeneratorPassContext? pass))
 				{
 					AddOrReplace(generatorId, data, pass);
 				}
@@ -387,7 +386,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="handle"><see cref="GeneratorPassContext"/> to get the <see cref="IGeneratorPassContext"/> associated with.</param>
 		/// <param name="context">Returned <see cref="IGeneratorPassContext"/>.</param>
-		public static bool TryGetContext(in GeneratorThreadHandle handle, [NotNullWhen(true)]out IGeneratorPassContext? context)
+		public static bool TryGetContext(in GeneratorThreadHandle handle, [NotNullWhen(true)] out IGeneratorPassContext? context)
 		{
 			ReadOnlySpan<int> span = stackalloc int[3] { handle.ThreadId, handle.SourceThreadId, AnalysisUtilities.MainThreadId };
 			return TryGetContext_Internal(handle.GeneratorId, span, out context);
@@ -425,7 +424,7 @@ namespace Durian.Analysis
 		{
 			ReadOnlySpan<int> span = stackalloc int[3] { handle.ThreadId, handle.SourceThreadId, AnalysisUtilities.MainThreadId };
 
-			if(TryGetContext_Internal(handle.GeneratorId, span, out IGeneratorPassContext? c))
+			if (TryGetContext_Internal(handle.GeneratorId, span, out IGeneratorPassContext? c))
 			{
 				context = c as TContext;
 				return context is not null;
@@ -456,8 +455,8 @@ namespace Durian.Analysis
 		public static bool TryGetContext<TContext>(Guid generatorId, int threadId, [NotNullWhen(true)] out TContext? context) where TContext : class, IGeneratorPassContext
 		{
 			ReadOnlySpan<int> span = stackalloc int[1] { threadId };
-	
-			if(TryGetContext_Internal(generatorId, span, out IGeneratorPassContext? c))
+
+			if (TryGetContext_Internal(generatorId, span, out IGeneratorPassContext? c))
 			{
 				context = c as TContext;
 				return context is not null;
@@ -490,7 +489,7 @@ namespace Durian.Analysis
 
 			foreach (int threadId in threads)
 			{
-				if(data.TryGetValue(threadId, out context))
+				if (data.TryGetValue(threadId, out context))
 				{
 					return true;
 				}

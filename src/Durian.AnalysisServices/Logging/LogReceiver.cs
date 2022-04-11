@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System;
 
 namespace Durian.Analysis.Logging
 {
@@ -61,7 +61,7 @@ namespace Durian.Analysis.Logging
 		/// <exception cref="ArgumentNullException"><paramref name="logHandler"/> is <see langword="null"/>.</exception>
 		public LogReceiver(IGeneratorLogHandler logHandler)
 		{
-			if(logHandler is null)
+			if (logHandler is null)
 			{
 				throw new ArgumentNullException(nameof(logHandler));
 			}

@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 
 namespace Durian.Analysis.FriendClass
@@ -100,9 +100,7 @@ namespace Durian.Analysis.FriendClass
 			List<Diagnostic> diagnostics
 		)
 		{
-#pragma warning disable RS1024 // Compare symbols correctly
 			HashSet<ITypeSymbol> friendTypes = new(SymbolEqualityComparer.Default);
-#pragma warning restore RS1024 // Compare symbols correctly
 
 			foreach (AttributeData attribute in attributes)
 			{

@@ -1,18 +1,17 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Extensions;
-using Durian.Analysis.SyntaxVisitors;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.CopyFrom.Types;
-
+using Durian.Analysis.Extensions;
+using Durian.Analysis.SyntaxVisitors;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using GenerateAction = System.Action<Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode, Microsoft.CodeAnalysis.ISymbol, Durian.Analysis.GeneratorPassBuilderContext, Durian.Analysis.GenerateInheritdoc>;
 
 namespace Durian.Analysis.CopyFrom

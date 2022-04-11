@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.TestServices;
-using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using Durian.TestServices;
+using Microsoft.CodeAnalysis;
 using Xunit;
 using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 

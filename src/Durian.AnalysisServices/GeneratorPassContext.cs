@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
+using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Generic;
-using System.Threading;
 
 namespace Durian.Analysis
 {
@@ -114,7 +114,7 @@ namespace Durian.Analysis
 
 		private INodeDiagnosticReceiver GetLogReceiverOrEmpty(bool includeDiagnostics)
 		{
-			if(Generator.LogHandler is null)
+			if (Generator.LogHandler is null)
 			{
 				return DiagnosticReceiver.Factory.Empty();
 			}

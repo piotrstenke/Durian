@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis;
 using Durian.Analysis.Filters;
 using Microsoft.CodeAnalysis;
 

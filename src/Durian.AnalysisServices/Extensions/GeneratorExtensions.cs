@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using System;
 
 namespace Durian.Analysis.Extensions
 {
@@ -40,7 +39,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(generator));
 			}
 
-			if(generator.LogHandler is null)
+			if (generator.LogHandler is null)
 			{
 				return FilterMode.None;
 			}
@@ -70,7 +69,7 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
 		public static FilterMode GetFilterMode(this LoggingConfiguration configuration)
 		{
-			if(configuration is null)
+			if (configuration is null)
 			{
 				throw new ArgumentNullException(nameof(configuration));
 			}

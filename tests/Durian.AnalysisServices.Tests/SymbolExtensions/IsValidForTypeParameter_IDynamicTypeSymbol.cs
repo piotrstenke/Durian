@@ -1,14 +1,14 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+using System.Collections.Immutable;
 using Durian.Analysis.Extensions;
 using Durian.TestServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
-using System;
-using System.Collections.Immutable;
 using Xunit;
 
 namespace Durian.Analysis.Tests.SymbolExtensions

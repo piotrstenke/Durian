@@ -243,3 +243,6 @@ dotnet_diagnostic.IDE0073.severity=warning
 
 # IDE0150: Prefer 'null' check over type check
 csharp_style_prefer_null_check_over_type_check = false
+
+# RS2003: Shipped diagnostic IDs that are no longer reported should have an entry in the 'Removed Rules' table in unshipped file
+dotnet_diagnostic.RS2003.severity = none

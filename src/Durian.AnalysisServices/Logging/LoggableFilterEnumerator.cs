@@ -119,7 +119,7 @@ namespace Durian.Analysis.Logging
 					continue;
 				}
 
-				if(!Validator.TryGetContext(new ValidationDataContext(node, Compilation, cancellationToken), out T? context))
+				if (!Validator.TryGetContext(new ValidationDataContext(node, Compilation, cancellationToken), out T? context))
 				{
 					continue;
 				}

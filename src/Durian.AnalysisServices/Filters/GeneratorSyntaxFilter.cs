@@ -2,10 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Filters
@@ -30,7 +27,7 @@ namespace Durian.Analysis.Filters
 		{
 			IDiagnosticReceiver? diagnosticReceiver = context.GetDiagnosticReceiver();
 
-			if(diagnosticReceiver is null)
+			if (diagnosticReceiver is null)
 			{
 				return Filtrate(context.TargetCompilation, context.SyntaxReceiver, context.CancellationToken);
 			}

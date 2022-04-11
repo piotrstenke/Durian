@@ -127,7 +127,7 @@ namespace Durian.Analysis
 			pass.SyntaxReceiver = syntaxReceiver;
 			pass.State = GeneratorState.Running;
 
-			if(pass.ParseOptions is null)
+			if (pass.ParseOptions is null)
 			{
 				pass.ParseOptions = CSharpParseOptions.Default;
 			}

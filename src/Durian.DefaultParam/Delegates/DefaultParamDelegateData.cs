@@ -1,13 +1,13 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
-using System.Threading;
 
 namespace Durian.Analysis.DefaultParam.Delegates
 {
@@ -18,7 +18,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 	{
 		private readonly TypeParameterContainer _typeParameters;
 
-		/// <inheritdoc cref="DefaultParamMethodData.NewModifierIndexes"/>
+		/// <inheritdoc cref="Methods.DefaultParamMethodData.NewModifierIndexes"/>
 		public HashSet<int>? NewModifierIndexes { get; }
 
 		/// <summary>
@@ -26,7 +26,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 		/// </summary>
 		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
 
-		/// <inheritdoc cref="DefaultParamTypeData.TargetNamespace"/>
+		/// <inheritdoc cref="Types.DefaultParamTypeData.TargetNamespace"/>
 		public string TargetNamespace { get; }
 
 		/// <inheritdoc/>

@@ -1,9 +1,9 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
 using System.Collections.Generic;
 using System.Threading;
+using Durian.Analysis.Data;
 
 namespace Durian.Analysis.DefaultParam
 {

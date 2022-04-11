@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis;
 using System;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis
 {
@@ -43,7 +43,7 @@ namespace Durian.Analysis
 				throw new ArgumentNullException(nameof(direct));
 			}
 
-			if(basic is null)
+			if (basic is null)
 			{
 				throw new ArgumentNullException(nameof(basic));
 			}

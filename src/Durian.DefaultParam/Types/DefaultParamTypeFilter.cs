@@ -1,16 +1,13 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filters;
-using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using static Durian.Analysis.DefaultParam.DefaultParamAnalyzer;
 using static Durian.Analysis.DefaultParam.Types.DefaultParamTypeAnalyzer;
 

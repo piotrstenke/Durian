@@ -1,13 +1,13 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Durian.Analysis.Extensions
 {
@@ -246,17 +246,17 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
 		public static CSharpSyntaxNode? GetBody(this BaseMethodDeclarationSyntax method)
 		{
-			if(method is null)
+			if (method is null)
 			{
 				throw new ArgumentNullException(nameof(method));
 			}
 
-			if(method.Body is not null)
+			if (method.Body is not null)
 			{
 				return method.Body;
 			}
 
-			if(method.ExpressionBody is not null)
+			if (method.ExpressionBody is not null)
 			{
 				return method.ExpressionBody;
 			}

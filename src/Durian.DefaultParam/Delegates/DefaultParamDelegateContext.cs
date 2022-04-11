@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Threading;
 
 namespace Durian.Analysis.DefaultParam.Delegates
 {

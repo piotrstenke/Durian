@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Durian.Analysis;
 using Durian.Analysis.Logging;
-using System.Runtime.CompilerServices;
 
 namespace Durian.TestServices
 {

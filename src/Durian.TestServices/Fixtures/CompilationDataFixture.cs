@@ -1,8 +1,8 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis.CSharp;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.TestServices.Fixtures
 {
