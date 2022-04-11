@@ -19,11 +19,11 @@ namespace Durian.Analysis.Cache
 	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="TContext"/> created by the provided <see cref="ISyntaxValidator{T}"/> or retrieved from a <see cref="CachedData{T}"/> with an option to log diagnostics using a <see cref="INodeDiagnosticReceiver"/>.
 	/// </summary>
 	/// <typeparam name="TData">Type of cached data.</typeparam>
-	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
+	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
 	[DebuggerDisplay("Current = {Current}")]
 	public struct CachedLoggableFilterEnumerator<TData, TContext> : IFilterEnumerator<TContext>, IEnumerator<TData>
 		where TData : class, IMemberData
-		where TContext : ISyntaxValidatorContext
+		where TContext : ISyntaxValidationContext
 	{
 		internal readonly CachedData<TData> _cache;
 
@@ -157,7 +157,7 @@ namespace Durian.Analysis.Cache
 					return true;
 				}
 
-				if (!Validator.TryGetValidationData(new ValidationDataProviderContext(node, Compilation, cancellationToken), out TContext? context))
+				if (!Validator.TryGetContext(new ValidationDataContext(node, Compilation, cancellationToken), out TContext? context))
 				{
 					continue;
 				}

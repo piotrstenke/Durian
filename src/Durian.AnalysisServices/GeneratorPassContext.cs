@@ -25,7 +25,7 @@ namespace Durian.Analysis
 		public CancellationToken CancellationToken { get; internal set; }
 
 		/// <inheritdoc/>
-		public IHintNameProvider FileNameProvider { get; }
+		public IHintNameProvider FileNameProvider { get; internal set; }
 
 		/// <inheritdoc/>
 		public IDurianGenerator Generator { get; internal set; }
@@ -37,7 +37,7 @@ namespace Durian.Analysis
 		public ICompilationData TargetCompilation { get; internal set; }
 
 		/// <inheritdoc/>
-		public CSharpParseOptions ParseOptions { get; }
+		public CSharpParseOptions ParseOptions { get; internal set; }
 
 		/// <inheritdoc/>
 		public IGeneratorServiceContainer Services { get; internal set; }
@@ -57,8 +57,8 @@ namespace Durian.Analysis
 		protected internal GeneratorPassContext(IHintNameProvider? fileNameProvider = default, CSharpParseOptions? parseOptions = default)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
-			FileNameProvider = fileNameProvider ?? new SymbolNameToFile();
-			ParseOptions = parseOptions ?? CSharpParseOptions.Default;
+			FileNameProvider = fileNameProvider!;
+			ParseOptions = parseOptions!;
 		}
 
 		/// <summary>
@@ -125,7 +125,7 @@ namespace Durian.Analysis
 			{
 				DiagnosticReceiver.Composite dr = DiagnosticReceiver.Factory.Composite();
 
-				dr.AddReceiver(DiagnosticReceiver.Factory.SourceGenerator());
+				dr.AddReceiver(DiagnosticReceiver.Factory.SourceGenerator(_originalContext));
 				dr.AddReceiver(logReceiver, true);
 
 				return dr;

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -17,11 +18,11 @@ namespace Durian.Analysis.Filters
 	/// <summary>
 	/// <see cref="ISyntaxFilter"/> that validates the filtrated nodes.
 	/// </summary>
-	/// <typeparam name="T">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
-	public abstract class SyntaxValidator<T> : GeneratorSyntaxFilter, ISyntaxValidatorWithDiagnostics<T> where T : ISyntaxValidatorContext
+	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
+	public abstract class SyntaxValidator<TContext> : GeneratorSyntaxFilter, ISyntaxValidatorWithDiagnostics<TContext> where TContext : ISyntaxValidationContext
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SyntaxValidator{T}"/> class.
+		/// Initializes a new instance of the <see cref="SyntaxValidator{TContext}"/> class.
 		/// </summary>
 		protected SyntaxValidator()
 		{
@@ -51,7 +52,7 @@ namespace Durian.Analysis.Filters
 			CancellationToken cancellationToken = default
 		)
 		{
-			FilterEnumeratorWithDiagnostics<T> e = new(compilation, collectedNodes, this, diagnosticReceiver);
+			FilterEnumeratorWithDiagnostics<TContext> e = new(compilation, collectedNodes, this, diagnosticReceiver);
 
 			while(e.MoveNext(cancellationToken))
 			{
@@ -81,7 +82,7 @@ namespace Durian.Analysis.Filters
 			CancellationToken cancellationToken = default
 		)
 		{
-			FilterEnumerator<T> e = new(compilation, collectedNodes, this);
+			FilterEnumerator<TContext> e = new(compilation, collectedNodes, this);
 
 			while(e.MoveNext(cancellationToken))
 			{
@@ -113,7 +114,7 @@ namespace Durian.Analysis.Filters
 
 			IEnumerable<IMemberData> YieldLoggable()
 			{
-				LoggableFilterEnumerator<T> e = new(context.TargetCompilation, list, this, node, context.FileNameProvider);
+				LoggableFilterEnumerator<TContext> e = new(context.TargetCompilation, list, this, node, context.FileNameProvider);
 
 				while (e.MoveNext(context.CancellationToken))
 				{
@@ -134,39 +135,42 @@ namespace Durian.Analysis.Filters
 
 			if(diagnosticReceiver is null)
 			{
-				return new FilterEnumerator<T>(context.TargetCompilation, list, this);
+				return new FilterEnumerator<TContext>(context.TargetCompilation, list, this);
 			}
 
 			if(diagnosticReceiver is INodeDiagnosticReceiver node)
 			{
-				return new LoggableFilterEnumerator<T>(context.TargetCompilation, list, this, node, context.FileNameProvider);
+				return new LoggableFilterEnumerator<TContext>(context.TargetCompilation, list, this, node, context.FileNameProvider);
 			}
 
-			return new FilterEnumeratorWithDiagnostics<T>(context.TargetCompilation, list, this, diagnosticReceiver);
+			return new FilterEnumeratorWithDiagnostics<TContext>(context.TargetCompilation, list, this, diagnosticReceiver);
 		}
 
-		/// <inheritdoc/>
-		public virtual bool TryGetValidationData(in ValidationDataProviderContext context, [NotNullWhen(true)] out T? data)
+		/// <summary>
+		/// Checks whether a <see cref="SemanticModel"/> and a <see cref="ISymbol"/> can be created from the a given <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
+		/// <param name="validationContext"><see cref="ValidationDataContext"/> that contains all data necessary to retrieve the required data.</param>
+		/// <param name="context">Returned data.</param>
+		public virtual bool TryGetContext(in ValidationDataContext validationContext, [NotNullWhen(true)] out TContext? context)
 		{
-			SemanticModel semanticModel = context.TargetCompilation.Compilation.GetSemanticModel(context.Node.SyntaxTree);
+			SemanticModel semanticModel = validationContext.TargetCompilation.Compilation.GetSemanticModel(validationContext.Node.SyntaxTree);
 
-			if (semanticModel.GetDeclaredSymbol(context.Node, context.CancellationToken) is ISymbol t)
+			if(semanticModel.GetDeclaredSymbol(validationContext.Node, validationContext.CancellationToken) is not ISymbol s)
 			{
-				data = CreateContext(in context, semanticModel, t);
-				return data is not null;
+				context = default;
+				return false;
 			}
 
-			data = default;
-			return false;
+			return TryCreateContext(validationContext.ToSyntaxContext(semanticModel, s), out context);
 		}
 
 		/// <inheritdoc/>
-		public abstract bool ValidateAndCreate(in T context, out IMemberData? data);
+		public abstract bool ValidateAndCreate(in TContext context, out IMemberData? data);
 
 		/// <inheritdoc/>
-		public virtual bool ValidateAndCreate(in ValidationDataProviderContext context, [NotNullWhen(true)] out IMemberData? data)
+		public bool ValidateAndCreate(in ValidationDataContext context, [NotNullWhen(true)] out IMemberData? data)
 		{
-			if(TryGetValidationData(in context, out T? validationData))
+			if(TryGetContext(in context, out TContext? validationData))
 			{
 				return ValidateAndCreate(in validationData, out data);
 			}
@@ -176,15 +180,15 @@ namespace Durian.Analysis.Filters
 		}
 
 		/// <inheritdoc/>
-		public virtual bool ValidateAndCreate(in T context, out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
+		public virtual bool ValidateAndCreate(in TContext context, out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
 		{
 			return ValidateAndCreate(in context, out data);
 		}
 
 		/// <inheritdoc/>
-		public virtual bool ValidateAndCreate(in ValidationDataProviderContext context, [NotNullWhen(true)] out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
+		public bool ValidateAndCreate(in ValidationDataContext context, [NotNullWhen(true)] out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
 		{
-			if (TryGetValidationData(in context, out T? validationData))
+			if (TryGetContext(in context, out TContext? validationData))
 			{
 				return ValidateAndCreate(in validationData, out data, diagnosticReceiver);
 			}
@@ -203,19 +207,18 @@ namespace Durian.Analysis.Filters
 		}
 
 		/// <summary>
-		/// Creates a new <typeparamref name="T"/> from the specified <paramref name="context"/>, <paramref name="semanticModel"/> and <paramref name="symbol"/>.
+		/// Attempts to create a new <typeparamref name="TContext"/> from the specified <paramref name="validationContext"/>.
 		/// </summary>
-		/// <param name="context"><see cref="ValidationDataProviderContext"/> that contains all data necessary to retrieve the required data.</param>
-		/// <param name="semanticModel">Current <see cref="SemanticModel"/>.</param>
-		/// <param name="symbol">Current <see cref="ISymbol"/>.</param>
-		protected virtual T? CreateContext(in ValidationDataProviderContext context, SemanticModel semanticModel, ISymbol symbol)
-		{
-			return default;
-		}
+		/// <param name="validationContext"><see cref="SyntaxValidationContext"/> that contains all data necessary to retrieve the required data.</param>
+		/// <param name="context">Created <typeparamref name="TContext"/>.</param>
+		protected abstract bool TryCreateContext(
+			in SyntaxValidationContext validationContext,
+			[NotNullWhen(true)] out TContext? context
+		);
 	}
 
 	/// <inheritdoc cref="SyntaxValidator{T}"/>
-	public abstract class SyntaxValidator : SyntaxValidator<SyntaxValidatorContext>
+	public abstract class SyntaxValidator : SyntaxValidator<SyntaxValidationContext>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SyntaxValidator"/> class.
@@ -225,9 +228,32 @@ namespace Durian.Analysis.Filters
 		}
 
 		/// <inheritdoc/>
-		protected override SyntaxValidatorContext CreateContext(in ValidationDataProviderContext context, SemanticModel semanticModel, ISymbol symbol)
+		public override bool TryGetContext(in ValidationDataContext validationContext, [NotNullWhen(true)] out SyntaxValidationContext context)
 		{
-			return new SyntaxValidatorContext(context.TargetCompilation, semanticModel, symbol, context.Node, context.CancellationToken);
+			SemanticModel semanticModel = validationContext.TargetCompilation.Compilation.GetSemanticModel(validationContext.Node.SyntaxTree);
+
+			if (semanticModel.GetDeclaredSymbol(validationContext.Node, validationContext.CancellationToken) is not ISymbol s)
+			{
+				context = default;
+				return false;
+			}
+
+			context = validationContext.ToSyntaxContext(semanticModel, s);
+			return true;
+		}
+
+		/// <inheritdoc/>
+		[Obsolete("This method has no effect.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		protected sealed override bool TryCreateContext(
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			in SyntaxValidationContext validationContext,
+			[NotNullWhen(true)] out SyntaxValidationContext context
+		)
+		{
+			context = validationContext;
+			return true;
 		}
 	}
 }

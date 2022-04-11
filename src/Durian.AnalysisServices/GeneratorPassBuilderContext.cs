@@ -40,7 +40,7 @@ namespace Durian.Analysis
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
 		/// <param name="services">Container of services that can be resolved during the current generator pass.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that can be checked to see if the generation should be canceled.</param>
-		internal GeneratorPassBuilderContext(
+		public GeneratorPassBuilderContext(
 			in GeneratorExecutionContext originalContext,
 			IDurianGenerator generator,
 			ICompilationData targetCompilation,

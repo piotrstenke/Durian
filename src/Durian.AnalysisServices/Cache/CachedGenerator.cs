@@ -192,12 +192,7 @@ namespace Durian.Analysis.Cache
 		/// <param name="context">Current <see cref="CachedGeneratorPassContext{TData, TContext}"/>.</param>
 		protected virtual void IterateThroughFilter(ICachedGeneratorSyntaxFilter<TData> filter, CachedGeneratorPassContext<TData, TContext> context)
 		{
-			IEnumerator<IMemberData> iter = filter.GetEnumerator(context);
-
-			while (iter.MoveNext())
-			{
-				GenerateFromData(iter.Current, context.UnderlayingContext);
-			}
+			filter.Filtrate(context);
 		}
 
 		private bool Execute_Internal(CachedGeneratorPassContext<TData, TContext> context)

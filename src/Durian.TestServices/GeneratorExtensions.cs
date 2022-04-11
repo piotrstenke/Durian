@@ -127,7 +127,7 @@ namespace Durian.TestServices
 		/// <param name="testName">Name of the currently executing test.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="testName"/> cannot be <see langword="null"/> or empty.</exception>
-		public static TestableGenerator<TContext> CreateTestable<TContext>(this DurianGeneratorWithContext<TContext> generator, string testName) where TContext : class, IGeneratorPassContext
+		public static TestableGenerator<TContext> CreateTestable<TContext>(this DurianGeneratorWithContext<TContext> generator, string testName) where TContext : GeneratorPassContext
 		{
 			return new TestableGenerator<TContext>(generator, testName);
 		}

@@ -17,9 +17,9 @@ namespace Durian.Analysis.Logging
 	/// <summary>
 	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="ISyntaxValidator{T}"/> with an option to log diagnostics using a <see cref="INodeDiagnosticReceiver"/>.
 	/// </summary>
-	/// <typeparam name="T">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
+	/// <typeparam name="T">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
 	[DebuggerDisplay("Current = {Current}")]
-	public struct LoggableFilterEnumerator<T> : IFilterEnumerator<T>, IEnumerator<IMemberData> where T : ISyntaxValidatorContext
+	public struct LoggableFilterEnumerator<T> : IFilterEnumerator<T>, IEnumerator<IMemberData> where T : ISyntaxValidationContext
 	{
 		internal readonly IEnumerator<CSharpSyntaxNode> _nodes;
 
@@ -119,7 +119,7 @@ namespace Durian.Analysis.Logging
 					continue;
 				}
 
-				if(!Validator.TryGetValidationData(new ValidationDataProviderContext(node, Compilation, cancellationToken), out T? context))
+				if(!Validator.TryGetContext(new ValidationDataContext(node, Compilation, cancellationToken), out T? context))
 				{
 					continue;
 				}

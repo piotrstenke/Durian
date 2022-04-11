@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -20,10 +21,10 @@ namespace Durian.Analysis.Cache
 	/// If the value associated with a <see cref="CSharpSyntaxNode"/> is present in the <see cref="CachedGeneratorExecutionContext{T}"/>, it is re-used.
 	/// </summary>
 	/// <typeparam name="TData">Type of cached values.</typeparam>
-	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
+	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
 	public abstract class CachedSyntaxValidator<TData, TContext> : SyntaxValidator<TContext>, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>
 		where TData : class, IMemberData
-		where TContext : ISyntaxValidatorContext
+		where TContext : ISyntaxValidationContext
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CachedSyntaxValidator{TData, TContext}"/> class.
@@ -92,7 +93,7 @@ namespace Durian.Analysis.Cache
 	}
 
 	/// <inheritdoc cref="CachedSyntaxValidator{TData}"/>
-	public abstract class CachedSyntaxValidator<TData> : CachedSyntaxValidator<TData, SyntaxValidatorContext> where TData : class, IMemberData
+	public abstract class CachedSyntaxValidator<TData> : CachedSyntaxValidator<TData, SyntaxValidationContext> where TData : class, IMemberData
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CachedSyntaxValidator{TData}"/> class.
@@ -102,9 +103,32 @@ namespace Durian.Analysis.Cache
 		}
 
 		/// <inheritdoc/>
-		protected override SyntaxValidatorContext CreateContext(in ValidationDataProviderContext context, SemanticModel semanticModel, ISymbol symbol)
+		public override bool TryGetContext(in ValidationDataContext validationContext, [NotNullWhen(true)] out SyntaxValidationContext context)
 		{
-			return new SyntaxValidatorContext(context.TargetCompilation, semanticModel, symbol, context.Node, context.CancellationToken);
+			SemanticModel semanticModel = validationContext.TargetCompilation.Compilation.GetSemanticModel(validationContext.Node.SyntaxTree);
+
+			if (semanticModel.GetDeclaredSymbol(validationContext.Node, validationContext.CancellationToken) is not ISymbol s)
+			{
+				context = default;
+				return false;
+			}
+
+			context = validationContext.ToSyntaxContext(semanticModel, s);
+			return true;
+		}
+
+		/// <inheritdoc/>
+		[Obsolete("This method has no effect.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		protected sealed override bool TryCreateContext(
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			in SyntaxValidationContext validationContext,
+			[NotNullWhen(true)] out SyntaxValidationContext context
+		)
+		{
+			context = validationContext;
+			return true;
 		}
 	}
 }

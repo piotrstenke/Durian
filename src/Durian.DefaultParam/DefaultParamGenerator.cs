@@ -14,6 +14,7 @@ using System.Linq;
 
 namespace Durian.Analysis.DefaultParam
 {
+
 	/// <summary>
 	/// Main class of the <c>DefaultParam</c> module. Generates source code of members marked with the <c>Durian.DefaultParamAttribute</c>.
 	/// </summary>
@@ -25,16 +26,12 @@ namespace Durian.Analysis.DefaultParam
 		RelativeToGlobal = true,
 		EnableExceptions = true,
 		DefaultNodeOutput = NodeOutput.Containing)]
-	public sealed class DefaultParamGenerator : CachedGenerator<IDefaultParamTarget>
+	public sealed class DefaultParamGenerator : CachedGenerator<IDefaultParamTarget, DefaultParamPassContext>
 	{
-		private readonly DefaultParamRewriter _rewriter = new();
-
-		private FilterContainer<IDefaultParamFilter>? _filters;
-
 		/// <summary>
 		/// Name of this source generator.
 		/// </summary>
-		public static string GeneratorName => "DefaultParam";
+		public static string Name => "DefaultParam";
 
 		/// <summary>
 		/// Version of this source generator.
@@ -42,20 +39,10 @@ namespace Durian.Analysis.DefaultParam
 		public static string Version => "3.0.0";
 
 		/// <inheritdoc/>
-		public override bool EnableDiagnostics
-		{
-			get => base.EnableDiagnostics;
-			set
-			{
-				bool old = base.EnableDiagnostics;
+		public override string GeneratorName => Name;
 
-				if (old != value)
-				{
-					base.EnableDiagnostics = value;
-					_filters = null;
-				}
-			}
-		}
+		/// <inheritdoc/>
+		public override string GeneratorVersion => Version;
 
 		/// <inheritdoc/>
 		public override int NumStaticTrees => 6;
@@ -70,7 +57,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamGenerator"/> class.
 		/// </summary>
-		/// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
+		/// <param name="context">Configures how this <see cref="DefaultParamGenerator"/> is initialized.</param>
 		public DefaultParamGenerator(in GeneratorLogCreationContext context) : base(in context)
 		{
 		}
@@ -109,41 +96,24 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		public override IDurianSyntaxReceiver CreateSyntaxReceiver()
 		{
-			return new DefaultParamSyntaxReceiver(SupportsDiagnostics);
+			return new DefaultParamSyntaxReceiver(LoggingConfiguration.SupportsDiagnostics);
 		}
 
 		/// <inheritdoc/>
-		public override IReadOnlyFilterContainer<IGeneratorSyntaxFilter> GetFilters(IHintNameProvider fileNameProvider)
+		public override IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? GetFilters(DefaultParamPassContext context)
 		{
-			if (_filters is null)
+			FilterContainer<IGeneratorSyntaxFilter> list = new();
+
+			list.RegisterGroup("Methods", new Methods.DefaultParamMethodFilter());
+			list.RegisterGroup("Delegates", new Delegates.DefaultParamDelegateFilter());
+			list.RegisterGroup("Types", new Types.DefaultParamTypeFilter());
+
+			if(LoggingConfiguration.EnableDiagnostics)
 			{
-				FilterContainer<IDefaultParamFilter> list = new();
-
-				list.RegisterGroup("Methods", new DefaultParamMethodFilter(this, fileNameProvider));
-				list.RegisterGroup("Delegates", new DefaultParamDelegateFilter(this, fileNameProvider));
-				list.RegisterGroup("Types", new DefaultParamTypeFilter(this, fileNameProvider));
-
-				if (EnableDiagnostics)
-				{
-					list.RegisterGroup("Local Functions", new DefaultParamLocalFunctionFilter(this, fileNameProvider));
-				}
-
-				_filters = list;
+				list.RegisterGroup("Local Functions", new Methods.DefaultParamLocalFunctionFilter());
 			}
 
-			return _filters;
-		}
-
-		/// <inheritdoc/>
-		public override string GetGeneratorName()
-		{
-			return GeneratorName;
-		}
-
-		/// <inheritdoc/>
-		public override string GetGeneratorVersion()
-		{
-			return Version;
+			return list;
 		}
 
 		/// <inheritdoc/>
@@ -159,142 +129,30 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		protected override void BeforeExecution(GeneratorPassContext context)
+		protected internal override void BeforeExecution(DefaultParamPassContext context)
 		{
-			_rewriter.ParentCompilation = (DefaultParamCompilationData)context.TargetCompilation;
+			context.Rewriter.ParentCompilation = (DefaultParamCompilationData)context.TargetCompilation;
 			base.BeforeExecution(context);
 		}
 
 		/// <inheritdoc/>
-		protected override bool Generate(IMemberData data, string hintName, GeneratorPassContext context)
+		protected override DefaultParamPassContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
 		{
-			if (data is not IDefaultParamTarget target || context is not GeneratorPassBuilderContext c)
+			return new DefaultParamPassContext();
+		}
+
+		/// <inheritdoc/>
+		protected internal override bool Generate(IMemberData data, string hintName, DefaultParamPassContext context)
+		{
+			if (data is not IDefaultParamTarget target)
 			{
 				return false;
 			}
 
-			GenerateAllVersionsOfTarget(target, c);
-			AddSourceWithOriginal(target.Declaration, hintName, c);
+			GenerateAllVersionsOfTarget(target, context);
+			AddSourceWithOriginal(target.Declaration, hintName, context);
 
 			return true;
-		}
-
-		/// <inheritdoc/>
-		protected override void IterateThroughFilter(IGeneratorSyntaxFilter filter, GeneratorPassContext context)
-		{
-			if(filter is not IDefaultParamFilter f)
-			{
-				return;
-			}
-
-			switch (context.Generator.GetFilterMode())
-			{
-				case FilterMode.Diagnostics:
-				{
-					FilterEnumeratorWithDiagnostics<IDefaultParamTarget> enumerator = new(f, context.TargetCompilation, f, context.DiagnosticReceiver!);
-
-					while (enumerator.MoveNext())
-					{
-						GenerateFromData(enumerator.Current, context);
-					}
-
-					break;
-				}
-
-				case FilterMode.Logs:
-				{
-					DefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(f);
-
-					while (enumerator.MoveNext())
-					{
-						GenerateFromData(enumerator.Current, context);
-					}
-
-					break;
-				}
-
-				case FilterMode.Both:
-				{
-					DefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(f, LoggableDiagnosticReceiver.Factory.SourceGenerator(this, DiagnosticReceiver));
-
-					while (enumerator.MoveNext())
-					{
-						GenerateFromData(enumerator.Current, context);
-					}
-
-					break;
-				}
-
-				default:
-				{
-					FilterEnumerator<IDefaultParamTarget> enumerator = new(f, TargetCompilation!, f);
-
-					while (enumerator.MoveNext())
-					{
-						GenerateFromData(enumerator.Current, context);
-					}
-
-					break;
-				}
-			}
-		}
-
-		/// <inheritdoc/>
-		protected override void IterateThroughFilter(IDefaultParamFilter filter, in CachedGeneratorExecutionContext<IDefaultParamTarget> context)
-		{
-			ref readonly CachedData<IDefaultParamTarget> cache = ref context.GetCachedData();
-			ref readonly GeneratorExecutionContext c = ref context.GetContext();
-
-			switch (filter.Mode)
-			{
-				case FilterMode.Diagnostics:
-				{
-					CachedFilterEnumeratorWithDiagnostics<IDefaultParamTarget> enumerator = new(filter, TargetCompilation!, filter, DiagnosticReceiver!, in cache);
-
-					while (enumerator.MoveNext())
-					{
-						GenerateFromData(enumerator.Current, in c);
-					}
-
-					break;
-				}
-
-				case FilterMode.Logs:
-				{
-					CachedDefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, in cache);
-
-					while (enumerator.MoveNext())
-					{
-						GenerateFromData(enumerator.Current, in c);
-					}
-
-					break;
-				}
-
-				case FilterMode.Both:
-				{
-					CachedDefaultParamFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, LoggableDiagnosticReceiver.Factory.SourceGenerator(this, DiagnosticReceiver!), in cache);
-
-					while (enumerator.MoveNext())
-					{
-						GenerateFromData(enumerator.Current, in c);
-					}
-
-					break;
-				}
-
-				default:
-				{
-					CachedFilterEnumerator<IDefaultParamTarget> enumerator = new(filter, TargetCompilation!, filter, in cache);
-
-					while (enumerator.MoveNext())
-					{
-						GenerateFromData(enumerator.Current, in c);
-					}
-
-					break;
-				}
-			}
 		}
 
 		private static string GetTargetName(ITypeSymbol targetType)
@@ -313,7 +171,7 @@ namespace Durian.Analysis.DefaultParam
 			}
 		}
 
-		private CSharpSyntaxNode[] CreateDefaultParamDeclarations(in TypeParameterContainer parameters)
+		private static CSharpSyntaxNode[] CreateDefaultParamDeclarations(in TypeParameterContainer parameters, DefaultParamPassContext context)
 		{
 			const int originalMemberIndex = 0;
 			int originalDataIndex = parameters.Length - 1;
@@ -334,9 +192,9 @@ namespace Durian.Analysis.DefaultParam
 				ref readonly TypeParameterData data = ref parameters[dataIndex];
 
 				string name = GetTargetName(data.TargetType!);
-				_rewriter.ReplaceType(data.Symbol, data.TargetType!, name);
+				context.Rewriter.ReplaceType(data.Symbol, data.TargetType!, name);
 
-				members[memberIndex] = _rewriter.CurrentNode;
+				members[memberIndex] = context.Rewriter.CurrentNode;
 
 				dataIndex--;
 				memberIndex++;
@@ -350,11 +208,11 @@ namespace Durian.Analysis.DefaultParam
 			{
 				ref readonly TypeParameterData data = ref parameters[dataIndex];
 
-				_rewriter.Emplace(members[memberIndex]);
-				_rewriter.RemoveLastTypeParameter();
-				_rewriter.RemoveConstraintsOf(data.Symbol);
+				context.Rewriter.Emplace(members[memberIndex]);
+				context.Rewriter.RemoveLastTypeParameter();
+				context.Rewriter.RemoveConstraintsOf(data.Symbol);
 
-				members[memberIndex] = _rewriter.CurrentNode;
+				members[memberIndex] = context.Rewriter.CurrentNode;
 
 				dataIndex--;
 				memberIndex++;
@@ -363,11 +221,11 @@ namespace Durian.Analysis.DefaultParam
 			return members;
 		}
 
-		private void GenerateAllVersionsOfTarget(IDefaultParamTarget target, GeneratorPassBuilderContext context)
+		private void GenerateAllVersionsOfTarget(IDefaultParamTarget target, DefaultParamPassContext context)
 		{
 			IDefaultParamDeclarationBuilder declBuilder = target.GetDeclarationBuilder(context.CancellationToken);
-			_rewriter.Acquire(declBuilder);
-			CSharpSyntaxNode[] members = CreateDefaultParamDeclarations(in target.TypeParameters);
+			context.Rewriter.Acquire(declBuilder);
+			CSharpSyntaxNode[] members = CreateDefaultParamDeclarations(in target.TypeParameters, context);
 
 			if (members.Length > 0)
 			{
@@ -377,9 +235,9 @@ namespace Durian.Analysis.DefaultParam
 			}
 		}
 
-		private void WriteTargetLeadDeclaration(IDefaultParamTarget target, GeneratorPassBuilderContext context)
+		private static void WriteTargetLeadDeclaration(IDefaultParamTarget target, DefaultParamPassContext context)
 		{
-			context.CodeBuilder.WriteHeader(GeneratorName, Version);
+			context.CodeBuilder.WriteHeader(Name, Version);
 			context.CodeBuilder.WriteLine();
 			string[] namespaces = AnalysisUtilities.SortUsings(target.GetUsedNamespaces()).ToArray();
 

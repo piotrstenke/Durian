@@ -89,8 +89,8 @@ namespace Durian.Analysis.CopyFrom
 		{
 			FilterContainer<IGeneratorSyntaxFilter> list = new();
 
-			list.RegisterGroup("Methods", new CopyFromMethodFilter());
-			list.RegisterGroup("Types", new CopyFromTypeFilter());
+			list.RegisterGroup("Methods", new Methods.CopyFromMethodFilter());
+			list.RegisterGroup("Types", new Types.CopyFromTypeFilter());
 
 			return list;
 		}
@@ -118,9 +118,9 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			if (target is CopyFromTypeData type)
+			if (target is Types.CopyFromTypeData type)
 			{
-				return GenerateType(type, hintName, in context);
+				return GenerateType(type, hintName, context);
 			}
 
 			return false;

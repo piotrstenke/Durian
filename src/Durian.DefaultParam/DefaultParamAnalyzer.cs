@@ -40,6 +40,101 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
+		/// Performs basic analysis of the <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
+		public static bool AnalyzeDefault(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
+		{
+			if (!TryGetTypeParameters(symbol, compilation, cancellationToken, out TypeParameterContainer typeParameters))
+			{
+				return false;
+			}
+
+			return AnalyzeDefault(symbol, compilation, in typeParameters, cancellationToken);
+		}
+
+		/// <summary>
+		/// Performs basic analysis of the <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="symbol"/>'s type parameters.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
+		public static bool AnalyzeDefault(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			in TypeParameterContainer typeParameters,
+			CancellationToken cancellationToken = default
+		)
+		{
+			if (!typeParameters.HasDefaultParams)
+			{
+				return false;
+			}
+
+			return
+				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
+				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
+				AnalyzeTypeParameters(symbol, in typeParameters);
+		}
+
+		/// <summary>
+		/// Performs basic analysis of the <paramref name="symbol"/> and reports <see cref="Diagnostic"/>s if the <paramref name="symbol"/> is not valid.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
+		public static bool AnalyzeDefault(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			IDiagnosticReceiver diagnosticReceiver,
+			CancellationToken cancellationToken = default
+		)
+		{
+			if (!TryGetTypeParameters(symbol, compilation, cancellationToken, out TypeParameterContainer typeParameters))
+			{
+				return false;
+			}
+
+			return AnalyzeDefault(symbol, compilation, in typeParameters, diagnosticReceiver, cancellationToken);
+		}
+
+		/// <summary>
+		/// Performs basic analysis of the <paramref name="symbol"/> and reports <see cref="Diagnostic"/>s if the <paramref name="symbol"/> is not valid.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="symbol"/>'s type parameters.</param>
+		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
+		public static bool AnalyzeDefault(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			in TypeParameterContainer typeParameters,
+			IDiagnosticReceiver diagnosticReceiver,
+			CancellationToken cancellationToken = default
+		)
+		{
+			if (!typeParameters.HasDefaultParams)
+			{
+				return false;
+			}
+
+			bool isValid = AnalyzeAgainstProhibitedAttributes(symbol, compilation, diagnosticReceiver);
+			isValid &= AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver, cancellationToken: cancellationToken);
+			isValid &= AnalyzeTypeParameters(symbol, in typeParameters, diagnosticReceiver);
+
+			return isValid;
+		}
+
+		/// <summary>
 		/// Determines whether the 'new' modifier is allowed to be applied to the target <see cref="ISymbol"/> according to the most specific <c>Durian.Configuration.DefaultParamConfigurationAttribute</c> or <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
@@ -491,101 +586,6 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <summary>
-		/// Performs basic analysis of the <paramref name="symbol"/> and reports <see cref="Diagnostic"/>s if the <paramref name="symbol"/> is not valid.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool DefaultAnalyze(
-			ISymbol symbol,
-			DefaultParamCompilationData compilation,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken = default
-		)
-		{
-			if (!TryGetTypeParameters(symbol, compilation, cancellationToken, out TypeParameterContainer typeParameters))
-			{
-				return false;
-			}
-
-			return DefaultAnalyze(symbol, compilation, in typeParameters, diagnosticReceiver, cancellationToken);
-		}
-
-		/// <summary>
-		/// Performs basic analysis of the <paramref name="symbol"/> and reports <see cref="Diagnostic"/>s if the <paramref name="symbol"/> is not valid.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="symbol"/>'s type parameters.</param>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool DefaultAnalyze(
-			ISymbol symbol,
-			DefaultParamCompilationData compilation,
-			in TypeParameterContainer typeParameters,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken = default
-		)
-		{
-			if (!typeParameters.HasDefaultParams)
-			{
-				return false;
-			}
-
-			bool isValid = AnalyzeAgainstProhibitedAttributes(symbol, compilation, diagnosticReceiver);
-			isValid &= AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver, cancellationToken: cancellationToken);
-			isValid &= AnalyzeTypeParameters(symbol, in typeParameters, diagnosticReceiver);
-
-			return isValid;
-		}
-
-		/// <summary>
-		/// Performs basic analysis of the <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool DefaultAnalyze(ISymbol symbol, DefaultParamCompilationData compilation, CancellationToken cancellationToken = default)
-		{
-			if (!TryGetTypeParameters(symbol, compilation, cancellationToken, out TypeParameterContainer typeParameters))
-			{
-				return false;
-			}
-
-			return DefaultAnalyze(symbol, compilation, in typeParameters, cancellationToken);
-		}
-
-		/// <summary>
-		/// Performs basic analysis of the <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="symbol"/>'s type parameters.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
-		public static bool DefaultAnalyze(
-			ISymbol symbol,
-			DefaultParamCompilationData compilation,
-			in TypeParameterContainer typeParameters,
-			CancellationToken cancellationToken = default
-		)
-		{
-			if (!typeParameters.HasDefaultParams)
-			{
-				return false;
-			}
-
-			return
-				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
-				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
-				AnalyzeTypeParameters(symbol, in typeParameters);
-		}
-
-		/// <summary>
 		/// Returns a collection of <see cref="CollidingMember"/>s representing <see cref="ISymbol"/>s that can potentially collide with members generated from the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the colliding members of.</param>
@@ -745,7 +745,7 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			return tool == DefaultParamGenerator.GeneratorName;
+			return tool == DefaultParamGenerator.Name;
 		}
 
 		/// <inheritdoc/>
@@ -753,6 +753,41 @@ namespace Durian.Analysis.DefaultParam
 		{
 			context.RegisterSymbolAction(c => AnalyzeSymbol(c, compilation), SupportedSymbolKind);
 		}
+
+		/// <summary>
+		/// Analyzes the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		protected virtual void Analyze(
+			ISymbol symbol,
+			DefaultParamCompilationData compilation,
+			IDiagnosticReceiver diagnosticReceiver,
+			CancellationToken cancellationToken = default
+		)
+		{
+			AnalyzeDefault(symbol, compilation, diagnosticReceiver, cancellationToken);
+		}
+
+		/// <inheritdoc/>
+		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
+		{
+			return new DefaultParamCompilationData(compilation);
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="DiagnosticDescriptor"/>s that are used by this analyzer specifically.
+		/// </summary>
+		protected abstract IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics();
+
+		/// <summary>
+		/// Determines whether analysis should be performed for the specified <paramref name="symbol"/> and <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check if should be analyzed.</param>
+		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
+		protected abstract bool ShouldAnalyze(ISymbol symbol, DefaultParamCompilationData compilation);
 
 		private protected static HashSet<int>? GetApplyNewOrNull(HashSet<int> applyNew)
 		{
@@ -797,41 +832,6 @@ namespace Durian.Analysis.DefaultParam
 				containingTypes = symbol.GetContainingTypes().ToArray();
 			}
 		}
-
-		/// <summary>
-		/// Analyzes the specified <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		protected virtual void Analyze(
-			ISymbol symbol,
-			DefaultParamCompilationData compilation,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken = default
-		)
-		{
-			DefaultAnalyze(symbol, compilation, diagnosticReceiver, cancellationToken);
-		}
-
-		/// <inheritdoc/>
-		protected override DefaultParamCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
-		{
-			return new DefaultParamCompilationData(compilation);
-		}
-
-		/// <summary>
-		/// Returns a collection of <see cref="DiagnosticDescriptor"/>s that are used by this analyzer specifically.
-		/// </summary>
-		protected abstract IEnumerable<DiagnosticDescriptor> GetAnalyzerSpecificDiagnostics();
-
-		/// <summary>
-		/// Determines whether analysis should be performed for the specified <paramref name="symbol"/> and <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check if should be analyzed.</param>
-		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		protected abstract bool ShouldAnalyze(ISymbol symbol, DefaultParamCompilationData compilation);
 
 		private static IEnumerable<ISymbol> GetCollidingMembersForMethodSymbol(IMethodSymbol method, string fullName, IEnumerable<ISymbol> symbols, INamedTypeSymbol generatedFromAttribute, int numParameters)
 		{
@@ -1206,7 +1206,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		private static bool ValidateTargetTypeParameter(
-																																																													ISymbol symbol,
+			ISymbol symbol,
 			in TypeParameterData currentTypeParameter,
 			in TypeParameterContainer typeParameters,
 			IDiagnosticReceiver diagnosticReceiver

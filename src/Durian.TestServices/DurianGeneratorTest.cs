@@ -23,7 +23,6 @@ namespace Durian.TestServices
 		/// </summary>
 		protected DurianGeneratorTest() : this(true)
 		{
-			UnderlayingGenerator = CreateUnderlayingGenerator(_configuration);
 		}
 
 		/// <summary>

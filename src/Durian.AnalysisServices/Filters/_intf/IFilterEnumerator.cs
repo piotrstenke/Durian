@@ -12,8 +12,8 @@ namespace Durian.Analysis.Filters
 	/// <summary>
 	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="ISyntaxValidator{T}"/>.
 	/// </summary>
-	/// <typeparam name="T">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
-	public interface IFilterEnumerator<T> where T : ISyntaxValidatorContext
+	/// <typeparam name="T">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
+	public interface IFilterEnumerator<T> where T : ISyntaxValidationContext
 	{
 		/// <summary>
 		/// <see cref="IMemberData"/> at the current position in the enumerator.

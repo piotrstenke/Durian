@@ -79,6 +79,7 @@ namespace Durian.Analysis
 		protected DurianGeneratorBase()
 		{
 			LogHandler = new GeneratorLogHandler();
+			InstanceId = Guid.NewGuid();
 		}
 
 		/// <summary>
@@ -337,7 +338,7 @@ namespace Durian.Analysis
 			}
 
 			hasCoreAnalyzer = false;
-			return false;
+			return currentValue;
 		}
 
 		private void InitializeStaticTrees(GeneratorPostInitializationContext context)

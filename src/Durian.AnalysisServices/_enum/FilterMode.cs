@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// Determines what information should a <see cref="IGeneratorSyntaxFilterWithDiagnostics"/> emit.
+	/// Determines how diagnostic information should be emitted.
 	/// </summary>
 	public enum FilterMode
 	{

@@ -18,11 +18,11 @@ namespace Durian.Analysis.Cache
 	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="TContext"/> created by the provided <see cref="ISyntaxValidator{T}"/> or retrieved from a <see cref="CachedData{T}"/> with an option to report diagnostics using a <see cref="IDiagnosticReceiver"/>.
 	/// </summary>
 	/// <typeparam name="TData">Type of cached data.</typeparam>
-	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
+	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
 	[DebuggerDisplay("Current = {Current}")]
 	public struct CachedFilterEnumeratorWithDiagnostics<TData, TContext> : IFilterEnumerator<TContext>, IEnumerator<TData>
 		where TData : class, IMemberData
-		where TContext : ISyntaxValidatorContext
+		where TContext : ISyntaxValidationContext
 	{
 		internal readonly CachedData<TData> _cache;
 
@@ -144,7 +144,7 @@ namespace Durian.Analysis.Cache
 					return true;
 				}
 
-				if (Validator.ValidateAndCreate(new ValidationDataProviderContext(node, Compilation, cancellationToken), out IMemberData? member, DiagnosticReceiver) && member is TData d)
+				if (Validator.ValidateAndCreate(new ValidationDataContext(node, Compilation, cancellationToken), out IMemberData? member, DiagnosticReceiver) && member is TData d)
 				{
 					Current = d;
 					return true;

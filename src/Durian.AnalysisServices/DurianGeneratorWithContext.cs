@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Durian.Analysis.Filters;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
@@ -451,7 +452,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="filters">Collection of <see cref="ISyntaxFilter"/>s to filtrate the nodes with.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected internal virtual void HandleFilterContainer(IReadOnlyFilterContainer<IGeneratorSyntaxFilter> filters, TContext context)
+		protected void HandleFilterContainer(IReadOnlyFilterContainer<IGeneratorSyntaxFilter> filters, TContext context)
 		{
 			foreach (IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup in filters)
 			{
@@ -466,12 +467,7 @@ namespace Durian.Analysis
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
 		protected internal virtual void IterateThroughFilter(IGeneratorSyntaxFilter filter, TContext context)
 		{
-			IEnumerator<IMemberData> iter = filter.GetEnumerator(context);
-
-			while (iter.MoveNext())
-			{
-				GenerateFromData(iter.Current, context);
-			}
+			filter.Filtrate(context);
 		}
 
 		/// <summary>

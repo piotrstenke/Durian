@@ -12,6 +12,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Durian.Analysis.Data;
 using static Durian.Analysis.DurianDiagnostics;
 
 namespace Durian.Analysis

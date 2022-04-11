@@ -15,7 +15,7 @@ namespace Durian.TestServices
 {
 	/// <inheritdoc cref="ITestableGenerator"/>
 	/// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> this generator uses.</typeparam>
-	public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>, ITestableGenerator where TContext : class, IGeneratorPassContext
+	public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>, ITestableGenerator where TContext : GeneratorPassContext
 	{
 		private volatile int _analyzerCounter;
 		private volatile int _generatorCounter;
@@ -50,7 +50,7 @@ namespace Durian.TestServices
 		/// <param name="generator"><see cref="ISourceGenerator"/> that is used to actually generate sources.</param>
 		/// <param name="testName">Name of the test that is currently running.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		public TestableGenerator(DurianGeneratorWithContext<TContext> generator, string? testName)
+		public TestableGenerator(DurianGeneratorWithContext<TContext> generator, string? testName) : base(generator.LoggingConfiguration)
 		{
 			if (generator is null)
 			{
@@ -65,12 +65,6 @@ namespace Durian.TestServices
 		public override IDurianSyntaxReceiver CreateSyntaxReceiver()
 		{
 			return UnderlayingGenerator.CreateSyntaxReceiver();
-		}
-
-		/// <inheritdoc/>
-		public override IReadOnlyFilterContainer<IGeneratorSyntaxFilter> GetFilters(IHintNameProvider fileNameProvider)
-		{
-			return UnderlayingGenerator.GetFilters(fileNameProvider);
 		}
 
 		/// <inheritdoc/>
@@ -160,19 +154,20 @@ namespace Durian.TestServices
 		/// <inheritdoc/>
 		protected internal override TContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, in GeneratorExecutionContext context)
 		{
-			return UnderlayingGenerator.CreateCurrentPassContext(currentCompilation, in context);
+			TContext? newContext = UnderlayingGenerator.CreateCurrentPassContext(currentCompilation, in context);
+
+			if(newContext is not null)
+			{
+				newContext.FileNameProvider = new TestNameToFile(TestName);
+			}
+
+			return newContext;
 		}
 
 		/// <inheritdoc/>
 		protected internal override bool Generate(IMemberData data, string hintName, TContext context)
 		{
 			return UnderlayingGenerator.Generate(data, hintName, context);
-		}
-
-		/// <inheritdoc/>
-		protected internal override void HandleFilterContainer(IReadOnlyFilterContainer<IGeneratorSyntaxFilter> filters, TContext context)
-		{
-			UnderlayingGenerator.HandleFilterContainer(filters, context);
 		}
 
 		/// <inheritdoc/>

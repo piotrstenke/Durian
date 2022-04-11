@@ -94,11 +94,11 @@ namespace Durian.Analysis.Cache
 		/// Returns a reference to the internal <see cref="CachedData{T}"/> of the given <paramref name="enumerator"/>.
 		/// </summary>
 		/// <typeparam name="TData">Type of cached data.</typeparam>
-		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
+		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
 		/// <param name="enumerator"><see cref="CachedFilterEnumerator{TData, TContext}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
 		public static ref readonly CachedData<TData> GetCachedData<TData, TContext>(this in CachedFilterEnumerator<TData, TContext> enumerator)
 			where TData : class, IMemberData
-			where TContext : ISyntaxValidatorContext
+			where TContext : ISyntaxValidationContext
 		{
 			return ref enumerator._cache;
 		}
@@ -107,11 +107,11 @@ namespace Durian.Analysis.Cache
 		/// Returns a reference to the internal <see cref="CachedData{T}"/> of the given <paramref name="enumerator"/>.
 		/// </summary>
 		/// <typeparam name="TData">Type of cached data.</typeparam>
-		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
+		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
 		/// <param name="enumerator"><see cref="CachedFilterEnumeratorWithDiagnostics{TData, TContext}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
 		public static ref readonly CachedData<TData> GetCachedData<TData, TContext>(this in CachedFilterEnumeratorWithDiagnostics<TData, TContext> enumerator)
 			where TData : class, IMemberData
-			where TContext : ISyntaxValidatorContext
+			where TContext : ISyntaxValidationContext
 		{
 			return ref enumerator._cache;
 		}
@@ -120,11 +120,11 @@ namespace Durian.Analysis.Cache
 		/// Returns a reference to the internal <see cref="CachedData{T}"/> of the given <paramref name="enumerator"/>.
 		/// </summary>
 		/// <typeparam name="TData">Type of cached data.</typeparam>
-		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidatorContext"/>.</typeparam>
+		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
 		/// <param name="enumerator"><see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
 		public static ref readonly CachedData<TData> GetCachedData<TData, TContext>(this in CachedLoggableFilterEnumerator<TData, TContext> enumerator)
 			where TData : class, IMemberData
-			where TContext : ISyntaxValidatorContext
+			where TContext : ISyntaxValidationContext
 		{
 			return ref enumerator._cache;
 		}
