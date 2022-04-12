@@ -98,19 +98,11 @@ namespace Durian.Analysis.CopyFrom
 			}
 		}
 
-		private static TargetData CreateTargetData(AttributeData attribute, INamedTypeSymbol target)
+		internal static bool IsCopyFromAttribute(AttributeData attribute, CopyFromCompilationData compilation)
 		{
-			return CreateTargetData(attribute, target, default, default);
-		}
-
-		private static TargetData CreateTargetData(AttributeData attribute, INamedTypeSymbol target, TypeDeclarationSyntax? partialPart, string? partialPartName)
-		{
-			int order = GetOrder(attribute);
-			string[] usings = GetUsings(attribute);
-			bool copyUsings = ShouldCopyUsings(attribute);
-			bool handleSpecialMembers = ShouldHandleSpecialMembers(attribute);
-
-			return new(target, order, partialPart, partialPartName, copyUsings, usings, handleSpecialMembers);
+			return
+				SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.CopyFromMethodAttribute) ||
+				SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.CopyFromTypeAttribute);
 		}
 
 		private static AttributeData[] GetAttributes(ImmutableArray<AttributeData> attributes, INamedTypeSymbol attrSymbol)

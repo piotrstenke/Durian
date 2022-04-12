@@ -1634,7 +1634,7 @@ namespace Durian.Analysis.Extensions
 
 			foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
 			{
-				sb.Append(sb.Append(AnalysisUtilities.ToXmlCompatible(type.GetGenericName())).Append('.'));
+				sb.Append(AnalysisUtilities.ToXmlCompatible(type.GetGenericName())).Append('.');
 			}
 
 			if (includeSelf)

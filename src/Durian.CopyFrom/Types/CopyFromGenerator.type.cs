@@ -5,14 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Durian.Analysis.CopyFrom.Types;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SyntaxVisitors;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using GenerateAction = System.Action<Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode, Microsoft.CodeAnalysis.ISymbol, Durian.Analysis.GeneratorPassBuilderContext, Durian.Analysis.GenerateInheritdoc>;
+using GenerateAction = System.Action<Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode, Microsoft.CodeAnalysis.ISymbol, Durian.Analysis.GeneratorPassBuilderContext, Durian.Analysis.GenerateDocumentation>;
 
 namespace Durian.Analysis.CopyFrom
 {
@@ -64,7 +66,7 @@ namespace Durian.Analysis.CopyFrom
 			GeneratorPassBuilderContext context
 		)
 		{
-			bool isGenerated = true;
+			bool isGenerated = false;
 			string partialName = currentName;
 
 			GenerateAction generateAction = GetGenerationMethod(type, target, replacer);
@@ -80,7 +82,7 @@ namespace Durian.Analysis.CopyFrom
 					continue;
 				}
 
-				context.CodeBuilder.WriteDeclarationLead(type, GetUsings(target, partial), GeneratorName, GeneratorVersion);
+				context.CodeBuilder.WriteDeclarationLead(type, target.Usings, GeneratorName, GeneratorVersion);
 				context.CodeBuilder.Indent();
 				context.CodeBuilder.BeginDeclation($"partial {keyword} {type.Name}");
 
@@ -90,7 +92,7 @@ namespace Durian.Analysis.CopyFrom
 
 					if (TryGetMutlipleMembers(member, type.SemanticModel, out ISymbol? symbol, out List<(ISymbol original, MemberDeclarationSyntax generated)>? fields))
 					{
-						GenerateInheritdoc inheridoc = target.Symbol.HasInheritableDocumentation() ? GenerateInheritdoc.Always : GenerateInheritdoc.Never;
+						GenerateDocumentation inheridoc = target.Symbol.HasInheritableDocumentation() ? GenerateDocumentation.Always : GenerateDocumentation.Never;
 
 						foreach ((ISymbol original, MemberDeclarationSyntax generated) in fields)
 						{
@@ -99,7 +101,7 @@ namespace Durian.Analysis.CopyFrom
 					}
 					else if (symbol is not null)
 					{
-						generateAction(member, symbol, context, GenerateInheritdoc.WhenPossible);
+						generateAction(member, symbol, context, GenerateDocumentation.WhenPossible);
 					}
 				}
 
@@ -121,10 +123,10 @@ namespace Durian.Analysis.CopyFrom
 
 				if (target.HandleSpecialMembers)
 				{
-					return (member, symbol, context, generateInheritdoc) =>
+					return (member, symbol, context, applyInheritdoc) =>
 					{
 						HandleSpecialMemberTypes(ref member, type, target.Symbol);
-						ReplaceAndGenerate(member, symbol, context, generateInheritdoc);
+						ReplaceAndGenerate(member, symbol, context, applyInheritdoc);
 					};
 				}
 				else
@@ -132,7 +134,7 @@ namespace Durian.Analysis.CopyFrom
 					return ReplaceAndGenerate;
 				}
 
-				void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol, GeneratorPassBuilderContext context, GenerateInheritdoc generateInheritdoc)
+				void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol, GeneratorPassBuilderContext context, GenerateDocumentation applyInheritdoc)
 				{
 					foreach ((string identifier, string replacement) in replacements)
 					{
@@ -142,20 +144,20 @@ namespace Durian.Analysis.CopyFrom
 						replaced = (CSharpSyntaxNode)replacer.Visit(replaced);
 					}
 
-					WriteGeneratedMember(replaced, symbol, context, generateInheritdoc);
+					WriteGeneratedMember(type, replaced, symbol, context, applyInheritdoc);
 				}
 			}
 
 			if (target.HandleSpecialMembers)
 			{
-				return (member, symbol, context, generateInheritdoc) =>
+				return (member, symbol, context, applyInheritdoc) =>
 				{
 					HandleSpecialMemberTypes(ref member, type, target.Symbol);
-					WriteGeneratedMember(member, symbol, context, generateInheritdoc);
+					WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
 				};
 			}
 
-			return WriteGeneratedMember;
+			return (member, symbol, context, applyInheritdoc) => WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
 		}
 
 		private static TypeDeclarationSyntax[] GetPartialDeclarations(TargetData target)
@@ -200,24 +202,6 @@ namespace Durian.Analysis.CopyFrom
 			}
 
 			return list;
-		}
-
-		private static IEnumerable<string> GetUsings(TargetData target, TypeDeclarationSyntax partialDeclaration)
-		{
-			List<string> usings = new(24);
-			HashSet<string> set = new();
-
-			if (target.CopyUsings && partialDeclaration.FirstAncestorOrSelf<CompilationUnitSyntax>() is CompilationUnitSyntax root)
-			{
-				usings.AddRange(root.Usings.Select(u => u.Name.ToString()).Where(u => set.Add(u)));
-			}
-
-			if (target.Usings is not null && target.Usings.Length > 0)
-			{
-				usings.AddRange(target.Usings.Where(u => set.Add(u)));
-			}
-
-			return usings;
 		}
 
 		private static void HandleSpecialMemberTypes(ref CSharpSyntaxNode member, CopyFromTypeData type, INamedTypeSymbol target)

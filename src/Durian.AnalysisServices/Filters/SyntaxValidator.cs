@@ -210,10 +210,7 @@ namespace Durian.Analysis.Filters
 		/// </summary>
 		/// <param name="validationContext"><see cref="SyntaxValidationContext"/> that contains all data necessary to retrieve the required data.</param>
 		/// <param name="context">Created <typeparamref name="TContext"/>.</param>
-		protected abstract bool TryCreateContext(
-			in SyntaxValidationContext validationContext,
-			[NotNullWhen(true)] out TContext? context
-		);
+		protected abstract bool TryCreateContext(in SyntaxValidationContext validationContext, [NotNullWhen(true)] out TContext? context);
 	}
 
 	/// <inheritdoc cref="SyntaxValidator{T}"/>

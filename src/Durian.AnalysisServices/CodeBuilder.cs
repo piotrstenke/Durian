@@ -508,17 +508,12 @@ namespace Durian.Analysis
 		/// <param name="usings">A collection of usings to apply.</param>
 		/// <param name="generatorName">Name of generator that created the following code.</param>
 		/// <param name="version">Version of the generator.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>. -or- <paramref name="usings"/> is <see langword="null"/>.</exception>
-		public void WriteDeclarationLead(IMemberData member, IEnumerable<string> usings, string? generatorName, string? version)
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
+		public void WriteDeclarationLead(IMemberData member, IEnumerable<string>? usings, string? generatorName, string? version)
 		{
 			if (member is null)
 			{
 				throw new ArgumentNullException(nameof(member));
-			}
-
-			if (usings is null)
-			{
-				throw new ArgumentNullException(nameof(usings));
 			}
 
 			WriteDeclarationLead_Internal(member, usings, generatorName, version);
@@ -798,16 +793,20 @@ namespace Durian.Analysis
 			TextBuilder.Append(GetDeclarationText(SyntaxFactory.TypeDeclaration(type.Kind(), type.Identifier), includeTrivia));
 		}
 
-		private void WriteDeclarationLead_Internal(IMemberData member, IEnumerable<string> usings, string? generatorName, string? version)
+		private void WriteDeclarationLead_Internal(IMemberData member, IEnumerable<string>? usings, string? generatorName, string? version)
 		{
 			WriteHeader(generatorName, version);
 			TextBuilder.AppendLine();
-			string[] namespaces = usings.ToArray();
 
-			if (namespaces.Length > 0)
+			if(usings is not null)
 			{
+				int length = TextBuilder.Length;
 				WriteUsings_Internal(usings);
-				TextBuilder.AppendLine();
+
+				if(TextBuilder.Length > length)
+				{
+					TextBuilder.AppendLine();
+				}
 			}
 
 			if (member.Symbol.ContainingNamespace is not null && !member.Symbol.ContainingNamespace.IsGlobalNamespace)

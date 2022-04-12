@@ -39,18 +39,20 @@ namespace Durian.Analysis.CopyFrom.Methods
 			);
 
 			bool hasTarget = targetMethod is not null;
-			List<PatternData> patterns = new(attributes.Length);
 
 			HashSet<string> set = new();
+			List<(int order, PatternData pattern)> notSortedPatterns = new();
 
 			foreach (AttributeData attr in attributes)
 			{
 				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, newContext.Compilation.PatternAttribute) &&
-					AnalyzePattern(newContext.Symbol, attr, set, hasTarget, out string? pattern, out string? replacement, diagnosticReceiver))
+					AnalyzePattern(newContext.Symbol, attr, set, hasTarget, hasTarget, out string? pattern, out string? replacement, out int order, diagnosticReceiver))
 				{
-					patterns.Add(new PatternData(pattern, replacement));
+					notSortedPatterns.Add((order, new PatternData(pattern, replacement)));
 				}
 			}
+
+			PatternData[]? patterns = SortByOrder(notSortedPatterns);
 
 			if (!isValid)
 			{
@@ -64,7 +66,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 				newContext.Symbol,
 				newContext.SemanticModel,
 				targetMethod!,
-				patterns.ToArray(),
+				patterns,
 				attributes: attributes
 			);
 
@@ -83,22 +85,24 @@ namespace Durian.Analysis.CopyFrom.Methods
 			);
 
 			bool hasTarget = targetMethod is not null;
-			List<PatternData>? patterns = null;
+			PatternData[]? patterns = null;
 
 			if (hasTarget)
 			{
-				patterns = new(attributes.Length);
+				List<(int order, PatternData pattern)> notSortedPatterns = new();
 				HashSet<string> set = new();
 
 				foreach (AttributeData attr in attributes)
 				{
 					if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, newContext.Compilation.PatternAttribute) &&
-						HasValidRegexPattern(attr, out string? pattern, out string? replacement) &&
+						HasValidRegexPattern(attr, out string? pattern, out string? replacement, out int order) &&
 						set.Add(pattern))
 					{
-						patterns.Add(new PatternData(pattern, replacement));
+						notSortedPatterns.Add((order, new PatternData(pattern, replacement)));
 					}
 				}
+
+				patterns = SortByOrder(notSortedPatterns);
 			}
 
 			if (!isValid)
@@ -113,7 +117,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 				newContext.Symbol,
 				newContext.SemanticModel,
 				targetMethod!,
-				patterns?.ToArray(),
+				patterns,
 				attributes: attributes
 			);
 

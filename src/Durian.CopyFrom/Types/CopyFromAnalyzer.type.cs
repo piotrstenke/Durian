@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
 
 namespace Durian.Analysis.CopyFrom
@@ -86,7 +87,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			AttributeData[]? copyFroms = GetAttributes(context.Symbol, context.Compilation, out attributes);
 
-			if (copyFroms is null)
+			if (copyFroms is null || !HasCopyFromsOnCurrentDeclaration(in context, copyFroms))
 			{
 				targetTypes = default;
 				return false;
@@ -106,7 +107,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			AttributeData[]? copyFroms = GetAttributes(context.Symbol, context.Compilation, out attributes);
 
-			if (copyFroms is null)
+			if (copyFroms is null || !HasCopyFromsOnCurrentDeclaration(in context, copyFroms))
 			{
 				targetTypes = default;
 				return false;
@@ -129,7 +130,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			AttributeData[]? copyFroms = GetAttributes(context.Symbol, context.Compilation, out _);
 
-			if (copyFroms is null)
+			if (copyFroms is null || !HasCopyFromsOnCurrentDeclaration(in context, copyFroms))
 			{
 				return false;
 			}
@@ -173,6 +174,29 @@ namespace Durian.Analysis.CopyFrom
 			return false;
 		}
 
+		private static TargetData CreateTargetData(
+			AttributeData attribute,
+			INamedTypeSymbol target,
+			string[]? usings
+		)
+		{
+			return CreateTargetData(attribute, target, usings, default, default);
+		}
+
+		private static TargetData CreateTargetData(
+			AttributeData attribute,
+			INamedTypeSymbol target,
+			string[]? usings,
+			TypeDeclarationSyntax? partialPart,
+			string? partialPartName
+		)
+		{
+			int order = GetOrder(attribute);
+			bool handleSpecialMembers = ShouldHandleSpecialMembers(attribute);
+
+			return new(target, order, partialPart, partialPartName, usings, handleSpecialMembers);
+		}
+
 		private static bool EnsureIsInPartialContext(INamedTypeSymbol type)
 		{
 			return type.IsPartialContext();
@@ -200,6 +224,141 @@ namespace Durian.Analysis.CopyFrom
 			return success;
 		}
 
+		private static bool FindAddedUsings(AttributeData attribute, HashSet<string> includedUsings)
+		{
+			string[] attributeUsings = attribute.GetNamedArgumentArrayValue<string>(CopyFromTypeAttributeProvider.AddUsings).ToArray();
+
+			if (attributeUsings.Length == 0)
+			{
+				return false;
+			}
+
+			bool hasAny = false;
+
+			foreach (string @using in attributeUsings)
+			{
+				string actual = FormatUsing(@using);
+
+				if(includedUsings.Add(actual))
+				{
+					hasAny = true;
+				}
+			}
+
+			return hasAny;
+		}
+
+		private static bool FindAddedUsings(
+			AttributeData attribute,
+			HashSet<string> includedUsings,
+			INamedTypeSymbol symbol,
+			IDiagnosticReceiver diagnosticReceiver
+		)
+		{
+			string[] attributeUsings = attribute.GetNamedArgumentArrayValue<string>(CopyFromTypeAttributeProvider.AddUsings).ToArray();
+
+			if (attributeUsings.Length == 0)
+			{
+				return false;
+			}
+
+			AttributeArgumentSyntax? argument = default;
+			Location? attributeLocation = default;
+			bool failedFind = false;
+
+			bool hasAny = false;
+
+			for (int i = 0; i < attributeUsings.Length; i++)
+			{
+				string @using = attributeUsings[i];
+				string actual = FormatUsing(@using);
+
+				if (includedUsings.Add(actual))
+				{
+					hasAny = true;
+				}
+				else
+				{
+					Location? location = GetUsingLocation(i);
+					diagnosticReceiver.ReportDiagnostic(DUR0220_UsingAlreadySpecified, location, symbol, @using);
+				}
+			}
+
+			return hasAny;
+
+			Location? GetUsingLocation(int index)
+			{
+				if (argument is null)
+				{
+					if(failedFind)
+					{
+						return attributeLocation;
+					}
+
+					if(attribute.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax attributeSyntax)
+					{
+						attributeLocation = Location.None;
+						failedFind = true;
+						return attributeLocation;
+					}
+
+					if (attributeSyntax.GetArgument(CopyFromTypeAttributeProvider.AddUsings) is not AttributeArgumentSyntax arg)
+					{
+						attributeLocation = attributeSyntax.GetLocation();
+						failedFind = true;
+						return attributeLocation;
+					}
+
+					argument = arg;
+				}
+
+				SeparatedSyntaxList<ExpressionSyntax> elements = argument.Expression
+					.DescendantNodes(child => child is ImplicitArrayCreationExpressionSyntax or ArrayCreationExpressionSyntax)
+					.OfType<InitializerExpressionSyntax>()
+					.FirstOrDefault()
+					.Expressions;
+
+				if (elements.Count <= index)
+				{
+					return argument.GetLocation();
+				}
+
+				return elements[index].GetLocation();
+			}
+		}
+
+		private static string FormatUsing(string @using)
+		{
+			string actual = @using.TrimStart();
+
+			string? toAdd = default;
+
+			if (actual.StartsWith("static "))
+			{
+				toAdd = "static ";
+				actual = actual.Substring(7);
+			}
+			else
+			{
+				int equalsIndex = actual.IndexOf('=');
+
+				if (equalsIndex > 0)
+				{
+					toAdd = actual.Substring(0, equalsIndex).Replace(" ", "") + " = ";
+					actual = actual.Substring(equalsIndex + 1);
+				}
+			}
+
+			actual = actual.Replace(" ", "");
+
+			if (toAdd is not null)
+			{
+				actual = toAdd + actual;
+			}
+
+			return actual;
+		}
+
 		private static AttributeData[]? GetAttributes(INamedTypeSymbol type, CopyFromCompilationData compilation, out ImmutableArray<AttributeData> allAttributes)
 		{
 			allAttributes = type.GetAttributes();
@@ -217,6 +376,44 @@ namespace Durian.Analysis.CopyFrom
 			}
 
 			return copyFroms;
+		}
+
+		private static HashSet<string> GetCopiedUsings(AttributeData attribute, TypeDeclarationSyntax declaration)
+		{
+			HashSet<string> usings = new();
+
+			if (attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.CopyUsings, out bool value) && !value)
+			{
+				return usings;
+			}
+
+			if (declaration.FirstAncestorOrSelf<CompilationUnitSyntax>() is not CompilationUnitSyntax root)
+			{
+				return usings;
+			}
+
+			foreach (UsingDirectiveSyntax @using in root.Usings)
+			{
+				string str = GetUsingString(@using);
+				usings.Add(str);
+			}
+
+			return usings;
+
+			static string GetUsingString(UsingDirectiveSyntax @using)
+			{
+				if (@using.StaticKeyword != default)
+				{
+					return "static " + @using.Name.ToString();
+				}
+
+				if (@using.Alias is not null)
+				{
+					return $"{@using.Alias.Name} = {@using.Name}";
+				}
+
+				return @using.Name.ToString();
+			}
 		}
 
 		private static INamedTypeSymbol? GetTargetType(
@@ -327,11 +524,6 @@ namespace Durian.Analysis.CopyFrom
 			return null;
 		}
 
-		private static string[] GetUsings(AttributeData attribute)
-		{
-			return attribute.GetNamedArgumentArrayValue<string>(CopyFromTypeAttributeProvider.AddUsings).ToArray();
-		}
-
 		private static bool HasValidTypeArguments(INamedTypeSymbol type, out List<ITypeSymbol>? invalidArguments)
 		{
 			if (type.IsUnboundGenericType)
@@ -343,6 +535,35 @@ namespace Durian.Analysis.CopyFrom
 			return HasValidTypeArguments(type.TypeParameters, type.TypeArguments, out invalidArguments);
 		}
 
+		private static bool HasCopyFromsOnCurrentDeclaration(in CopyFromTypeContext context, AttributeData[] attributes)
+		{
+			Location? currentLocation = context.Node?.GetLocation();
+
+			if (currentLocation is null || currentLocation.SourceTree is null)
+			{
+				return false;
+			}
+
+			TextSpan span = currentLocation.SourceSpan;
+
+			foreach (AttributeData attribute in attributes)
+			{
+				if (attribute.GetLocation() is null)
+				{
+					continue;
+				}
+
+				SyntaxReference? reference = attribute.ApplicationSyntaxReference;
+
+				if (reference?.SyntaxTree == currentLocation.SourceTree && span.Contains(reference.Span.Start))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		private static bool IsInDifferentAssembly(INamedTypeSymbol type, INamedTypeSymbol target)
 		{
 			return !SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, target.ContainingAssembly);
@@ -351,16 +572,6 @@ namespace Durian.Analysis.CopyFrom
 		private static bool IsValidTarget(INamedTypeSymbol symbol)
 		{
 			return symbol.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Interface;
-		}
-
-		private static bool ShouldCopyUsings(AttributeData attribute)
-		{
-			if (attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.CopyUsings, out bool value))
-			{
-				return value;
-			}
-
-			return true;
 		}
 
 		private static bool ShouldHandleSpecialMembers(AttributeData attribute)
@@ -404,11 +615,56 @@ namespace Durian.Analysis.CopyFrom
 			return attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.PartialPart, out partialPartName);
 		}
 
+		private static bool TryGetUsings(
+			AttributeData attribute,
+			TypeDeclarationSyntax declaration,
+			[NotNullWhen(true)] out string[]? usings
+		)
+		{
+			HashSet<string> copied = GetCopiedUsings(attribute, declaration);
+
+			FindAddedUsings(attribute, copied);
+
+			if (copied.Count > 0)
+			{
+				usings = new string[copied.Count];
+				copied.CopyTo(usings);
+				return true;
+			}
+
+			usings = default;
+			return false;
+		}
+
+		private static bool TryGetUsings(
+			AttributeData attribute,
+			TypeDeclarationSyntax declaration,
+			[NotNullWhen(true)] out string[]? usings,
+			INamedTypeSymbol symbol,
+			IDiagnosticReceiver diagnosticReceiver
+		)
+		{
+			HashSet<string> copied = GetCopiedUsings(attribute, declaration);
+
+			FindAddedUsings(attribute, copied, symbol, diagnosticReceiver);
+
+			if(copied.Count > 0)
+			{
+				usings = new string[copied.Count];
+				copied.CopyTo(usings);
+				return true;
+			}
+
+			usings = default;
+			return false;
+		}
+
 		private static bool ValidatePartialNameAndAddTarget(
 			in CopyFromTypeContext context,
 			AttributeData attribute,
-			INamedTypeSymbol target,
 			List<TargetData> copyFromTypes,
+			string[]? usings,
+			INamedTypeSymbol target,
 			bool isValid,
 			ref Location? location,
 			IDiagnosticReceiver diagnosticReceiver
@@ -430,7 +686,7 @@ namespace Durian.Analysis.CopyFrom
 				}
 				else if (isValid)
 				{
-					copyFromTypes.Add(CreateTargetData(attribute, target, partialPart, partialPartName));
+					copyFromTypes.Add(CreateTargetData(attribute, target, usings, partialPart, partialPartName));
 				}
 			}
 			else if (copyFromTypes.Any(t => SymbolEqualityComparer.Default.Equals(t.Symbol, target)))
@@ -440,7 +696,7 @@ namespace Durian.Analysis.CopyFrom
 			}
 			else if (isValid)
 			{
-				copyFromTypes.Add(CreateTargetData(attribute, target));
+				copyFromTypes.Add(CreateTargetData(attribute, target, usings));
 			}
 
 			return isValid;
@@ -460,6 +716,8 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
+			TryGetUsings(attribute, context.Node!, out string[]? usings);
+
 			if (TryGetPartialPartName(attribute, out string? partialPartName))
 			{
 				if (!TryGetPartialPart(target, context.Compilation, partialPartName, out TypeDeclarationSyntax? partialPart))
@@ -472,13 +730,13 @@ namespace Durian.Analysis.CopyFrom
 					return true;
 				}
 
-				copyFromTypes.Add(CreateTargetData(attribute, target, partialPart, partialPartName));
+				copyFromTypes.Add(CreateTargetData(attribute, target, usings, partialPart, partialPartName));
 				return true;
 			}
 
 			if (!copyFromTypes.Any(t => SymbolEqualityComparer.Default.Equals(t.Symbol, target)))
 			{
-				copyFromTypes.Add(CreateTargetData(attribute, target));
+				copyFromTypes.Add(CreateTargetData(attribute, target, usings));
 			}
 
 			return true;
@@ -533,7 +791,18 @@ namespace Durian.Analysis.CopyFrom
 				}
 			}
 
-			return ValidatePartialNameAndAddTarget(in context, attribute, target, copyFromTypes, isValid, ref location, diagnosticReceiver);
+			TryGetUsings(attribute, context.Node!, out string[]? usings, context.Symbol, diagnosticReceiver);
+
+			return ValidatePartialNameAndAddTarget(
+				in context,
+				attribute,
+				copyFromTypes,
+				usings,
+				target,
+				isValid,
+				ref location,
+				diagnosticReceiver
+			);
 		}
 
 		private static bool ValidateTargetTypes(
