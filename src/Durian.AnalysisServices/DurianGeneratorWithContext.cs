@@ -412,6 +412,12 @@ namespace Durian.Analysis
 		/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
 		protected internal abstract TContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, in GeneratorExecutionContext context);
 
+		/// <inheritdoc/>
+		protected override void Dispose(bool disposing)
+		{
+			GeneratorContextRegistry.RemoveAllContexts(InstanceId);
+		}
+
 		/// <summary>
 		/// Performs the generation for the specified <paramref name="data"/>.
 		/// </summary>

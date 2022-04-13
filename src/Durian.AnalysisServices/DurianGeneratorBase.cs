@@ -119,6 +119,13 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		/// <inheritdoc/>
 		public virtual bool Execute(in GeneratorExecutionContext context)
 		{
 			return InitializeCompilation(in context, out _);
@@ -207,6 +214,15 @@ namespace Durian.Analysis
 		{
 			context.AddSource(hintName, syntaxTree.GetText(context.CancellationToken));
 			LogSource(hintName, syntaxTree, context.CancellationToken);
+		}
+
+		/// <summary>
+		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+		/// </summary>
+		/// <param name="disposing">Determines whether this method was called from the <see cref="Dispose()"/> method or object's finalizer.</param>
+		protected virtual void Dispose(bool disposing)
+		{
+			// Do nothing by default.
 		}
 
 		/// <inheritdoc cref="IDurianGenerator.GetCurrentPassContext"/>

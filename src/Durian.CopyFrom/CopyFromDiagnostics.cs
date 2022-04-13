@@ -272,6 +272,19 @@ namespace Durian.Analysis.CopyFrom
 		);
 
 		/// <summary>
+		/// Provides a diagnostic message indicating that a namespace was already specified in the <see cref="CopyFromTypeAttributeProvider.AddUsings"/> property.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0221_CircularDependency = new(
+			id: "DUR0221",
+			title: "Circular dependency between target members",
+			messageFormat: "'{0}': Circular dependency between target members",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Error,
+			helpLinkUri: DocsPath + "/DUR0221.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
 		/// Documentation directory of the <c>DefaultParam</c> module.
 		/// </summary>
 		public static string DocsPath => GlobalInfo.Repository + "/tree/master/docs/CopyFrom";

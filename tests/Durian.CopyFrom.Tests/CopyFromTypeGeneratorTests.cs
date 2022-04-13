@@ -198,6 +198,64 @@ namespace N2
 		}
 
 		[Fact]
+		public void Error_When_HasDirectCircularDependency()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Other"")]
+partial class Test
+{{
+	void A()
+	{{
+	}}
+}}
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Test"")]
+partial class Other
+{{
+	void B()
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0221_CircularDependency));
+		}
+
+		[Fact]
+		public void Error_When_HasNestedCircularDepenency()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
+partial class Test
+{{
+	void A()
+	{{
+	}}
+}}
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Other"")]
+partial class Target
+{{
+	void B()
+	{{
+	}}
+}}
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Test"")]
+partial class Other
+{{
+	void C()
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0221_CircularDependency));
+		}
+
+		[Fact]
 		public void Error_When_IsNotPartial()
 		{
 			string input =
@@ -470,41 +528,6 @@ partial class Test
 		}
 
 		[Fact]
-		public void Success_When_AddsUsings()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AddUsings} = new string[] {{ ""System"" }})]
-partial class Test
-{{
-}}
-
-class Target
-{{
-	void Method()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			string expected =
-$@"using {DurianStrings.MainNamespace};
-using System;
-
-partial class Test
-{{
-	{GetCodeGenerationAttributes("Target.Method()")}
-	void Method()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
 		public void Success_When_AddsStaticUsingsAndAliases()
 		{
 			string input =
@@ -527,6 +550,41 @@ class Target
 $@"using {DurianStrings.MainNamespace};
 using static System.Int32;
 using Ta = Target;
+
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_AddsUsings()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AddUsings} = new string[] {{ ""System"" }})]
+partial class Test
+{{
+}}
+
+class Target
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+using System;
 
 partial class Test
 {{
@@ -1070,6 +1128,64 @@ partial class Test
 		}
 
 		[Fact]
+		public void Success_When_HasPattern_And_MemberOfTargetHasXmlComment()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
+[{PatternAttributeProvider.TypeName}(""string"", ""int"")]
+partial class Test
+{{
+}}
+
+class Target
+{{
+	/// <summary>
+	/// <see cref=""string""/>.
+	/// </summary>
+	void Method()
+	{{
+		string b = default;
+	}}
+
+	/// <summary>
+	/// <see cref=""string""/>.
+	/// </summary>
+	/// <param name=""a""></param>
+	void Method(string a)
+	{{
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	/// <summary>
+	/// <see cref=""int""/>.
+	/// </summary>
+	{ GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		int b = default;
+	}}
+
+	/// <summary>
+	/// <see cref=""int""/>.
+	/// </summary>
+	/// <param name=""a""></param>
+	{GetCodeGenerationAttributes("Target.Method(string)")}
+	void Method(int a)
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
 		public void Success_When_HasPattern_And_MultipleTargets()
 		{
 			string input =
@@ -1123,6 +1239,45 @@ partial class Test
 }}
 ";
 			Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
+		}
+
+		[Fact]
+		public void Success_When_HasXmlComment_And_TargetHasXmlComment()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+/// <summary>
+/// Documentation
+/// </summary>
+[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
+partial class Test
+{{
+}}
+
+/// <summary>
+/// Hello there
+/// </summary>
+class Target
+{{
+	void Method()
+	{{
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	/// <inheritdoc cref=""Target.Method()""/>
+	{ GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
 		}
 
 		[Fact]
@@ -1184,139 +1339,6 @@ partial class Test
 }}
 ";
 			Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
-		}
-
-		[Fact]
-		public void Success_When_TargetHasXmlComment()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
-partial class Test
-{{
-}}
-
-/// <summary>
-/// Hello there
-/// </summary>
-class Target
-{{
-	void Method()
-	{{
-	}}
-}}
-";
-			string expected =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	/// <inheritdoc cref=""Target.Method()""/>
-	{ GetCodeGenerationAttributes("Target.Method()")}
-	void Method()
-	{{
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_HasXmlComment_And_TargetHasXmlComment()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-/// <summary>
-/// Documentation
-/// </summary>
-[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
-partial class Test
-{{
-}}
-
-/// <summary>
-/// Hello there
-/// </summary>
-class Target
-{{
-	void Method()
-	{{
-	}}
-}}
-";
-			string expected =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	/// <inheritdoc cref=""Target.Method()""/>
-	{ GetCodeGenerationAttributes("Target.Method()")}
-	void Method()
-	{{
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_HasPattern_And_MemberOfTargetHasXmlComment()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
-[{PatternAttributeProvider.TypeName}(""string"", ""int"")]
-partial class Test
-{{
-}}
-
-class Target
-{{
-	/// <summary>
-	/// <see cref=""string""/>.
-	/// </summary>
-	void Method()
-	{{
-		string b = default;
-	}}
-
-	/// <summary>
-	/// <see cref=""string""/>.
-	/// </summary>
-	/// <param name=""a""></param>
-	void Method(string a)
-	{{
-	}}
-}}
-";
-			string expected =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	/// <summary>
-	/// <see cref=""int""/>.
-	/// </summary>
-	{ GetCodeGenerationAttributes("Target.Method()")}
-	void Method()
-	{{
-		int b = default;
-	}}
-
-	/// <summary>
-	/// <see cref=""int""/>.
-	/// </summary>
-	/// <param name=""a""></param>
-	{GetCodeGenerationAttributes("Target.Method(string)")}
-	void Method(int a)
-	{{
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
 		}
 
 		[Fact]
@@ -1463,6 +1485,42 @@ partial class Test
 	void Other()
 	{{
 		int a = 2;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_TargetHasXmlComment()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
+partial class Test
+{{
+}}
+
+/// <summary>
+/// Hello there
+/// </summary>
+class Target
+{{
+	void Method()
+	{{
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	/// <inheritdoc cref=""Target.Method()""/>
+	{ GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
 	}}
 }}
 ";

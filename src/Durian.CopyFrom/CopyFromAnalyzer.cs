@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
 
 namespace Durian.Analysis.CopyFrom
@@ -40,7 +41,8 @@ namespace Durian.Analysis.CopyFrom
 			DUR0217_TypeParameterIsNotValid,
 			DUR0218_UnknownPartialPartName,
 			DUR0219_PatternOnDifferentDeclaration,
-			DUR0220_UsingAlreadySpecified
+			DUR0220_UsingAlreadySpecified,
+			DUR0221_CircularDependency
 		);
 
 		/// <summary>
@@ -113,6 +115,30 @@ namespace Durian.Analysis.CopyFrom
 		private static int GetOrder(AttributeData attribute)
 		{
 			return attribute.GetNamedArgumentValue<int>(CopyFromTypeAttributeProvider.Order);
+		}
+
+		internal static bool HasCopyFromsOnCurrentDeclaration(MemberDeclarationSyntax currentDeclaration, AttributeData[] attributes)
+		{
+			Location? currentLocation = currentDeclaration.GetLocation();
+
+			if (currentLocation is null || currentLocation.SourceTree is null)
+			{
+				return false;
+			}
+
+			TextSpan span = currentLocation.SourceSpan;
+
+			foreach (AttributeData attribute in attributes)
+			{
+				SyntaxReference? reference = attribute.ApplicationSyntaxReference;
+
+				if (reference?.SyntaxTree == currentLocation.SourceTree && span.Contains(reference.Span.Start))
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		private static bool HasValidTypeArguments(

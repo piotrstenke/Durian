@@ -14,13 +14,13 @@ using Durian.Analysis.SyntaxVisitors;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using GenerateAction = System.Action<Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode, Microsoft.CodeAnalysis.ISymbol, Durian.Analysis.GeneratorPassBuilderContext, Durian.Analysis.GenerateDocumentation>;
+using GenerateAction = System.Action<Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode, Microsoft.CodeAnalysis.ISymbol, Durian.Analysis.CopyFrom.CopyFromPassContext, Durian.Analysis.GenerateDocumentation>;
 
 namespace Durian.Analysis.CopyFrom
 {
 	public sealed partial class CopyFromGenerator
 	{
-		private bool GenerateType(CopyFromTypeData type, string hintName, GeneratorPassBuilderContext context)
+		private bool GenerateType(CopyFromTypeData type, string hintName, CopyFromPassContext context)
 		{
 			TargetData[] targets = type.Targets;
 			SortByOrder(targets);
@@ -63,7 +63,7 @@ namespace Durian.Analysis.CopyFrom
 			string currentName,
 			string keyword,
 			TypeParameterReplacer replacer,
-			GeneratorPassBuilderContext context
+			CopyFromPassContext context
 		)
 		{
 			bool isGenerated = false;
@@ -134,7 +134,7 @@ namespace Durian.Analysis.CopyFrom
 					return ReplaceAndGenerate;
 				}
 
-				void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol, GeneratorPassBuilderContext context, GenerateDocumentation applyInheritdoc)
+				void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol, CopyFromPassContext context, GenerateDocumentation applyInheritdoc)
 				{
 					foreach ((string identifier, string replacement) in replacements)
 					{

@@ -34,7 +34,9 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			return ValidateTargetTypes(in context, attributes, out _, true);
+			List<INamedTypeSymbol> dependencies = new();
+
+			return ValidateTargetTypes(in context, attributes, dependencies, out _, true);
 		}
 
 		/// <summary>
@@ -52,6 +54,7 @@ namespace Durian.Analysis.CopyFrom
 			bool isValid = AnalyzeTypeWithoutPattern(
 				in context,
 				out ImmutableArray<AttributeData> attributes,
+				out _,
 				out List<TargetData>? targetTypes,
 				diagnosticReceiver
 			);
@@ -81,20 +84,26 @@ namespace Durian.Analysis.CopyFrom
 		internal static bool AnalyzeTypeWithoutPattern(
 			in CopyFromTypeContext context,
 			out ImmutableArray<AttributeData> attributes,
+			[NotNullWhen(true)] out List<INamedTypeSymbol>? dependencies,
 			[NotNullWhen(true)] out List<TargetData>? targetTypes,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			AttributeData[]? copyFroms = GetAttributes(context.Symbol, context.Compilation, out attributes);
+			AttributeData[]? copyFroms = GetCopyFromAttributes(context.Symbol, context.Compilation, out attributes);
 
-			if (copyFroms is null || !HasCopyFromsOnCurrentDeclaration(in context, copyFroms))
+			if (copyFroms is null || !HasCopyFromsOnCurrentDeclaration(context.Node!, copyFroms))
 			{
 				targetTypes = default;
+				dependencies = default;
 				return false;
 			}
 
+			List<INamedTypeSymbol> deps = new();
+
 			bool isValid = EnsureIsInPartialContext(context.Symbol, diagnosticReceiver);
-			isValid &= ValidateTargetTypes(context, copyFroms, out targetTypes, diagnosticReceiver);
+			isValid &= ValidateTargetTypes(context, copyFroms, deps, out targetTypes, diagnosticReceiver);
+
+			dependencies = isValid ? deps : default;
 
 			return isValid;
 		}
@@ -102,23 +111,29 @@ namespace Durian.Analysis.CopyFrom
 		internal static bool AnalyzeTypeWithoutPattern(
 			in CopyFromTypeContext context,
 			out ImmutableArray<AttributeData> attributes,
+			[NotNullWhen(true)] out List<INamedTypeSymbol>? dependencies,
 			[NotNullWhen(true)] out List<TargetData>? targetTypes
 		)
 		{
-			AttributeData[]? copyFroms = GetAttributes(context.Symbol, context.Compilation, out attributes);
+			AttributeData[]? copyFroms = GetCopyFromAttributes(context.Symbol, context.Compilation, out attributes);
 
-			if (copyFroms is null || !HasCopyFromsOnCurrentDeclaration(in context, copyFroms))
+			if (copyFroms is null || !HasCopyFromsOnCurrentDeclaration(context.Node!, copyFroms))
 			{
 				targetTypes = default;
+				dependencies = default;
 				return false;
 			}
 
 			if (EnsureIsInPartialContext(context.Symbol))
 			{
-				return ValidateTargetTypes(in context, copyFroms, out targetTypes, true);
+				List<INamedTypeSymbol> deps = new();
+				bool isValid = ValidateTargetTypes(in context, copyFroms, deps, out targetTypes, true);
+				dependencies = isValid ? deps : default;
+				return isValid;
 			}
 
 			targetTypes = default;
+			dependencies = default;
 			return false;
 		}
 
@@ -128,9 +143,9 @@ namespace Durian.Analysis.CopyFrom
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			AttributeData[]? copyFroms = GetAttributes(context.Symbol, context.Compilation, out _);
+			AttributeData[]? copyFroms = GetCopyFromAttributes(context.Symbol, context.Compilation, out _);
 
-			if (copyFroms is null || !HasCopyFromsOnCurrentDeclaration(in context, copyFroms))
+			if (copyFroms is null || !HasCopyFromsOnCurrentDeclaration(context.Node!, copyFroms))
 			{
 				return false;
 			}
@@ -146,10 +161,12 @@ namespace Durian.Analysis.CopyFrom
 			Array.Copy(copyFroms, 0, targets, 0, index);
 			Array.Copy(copyFroms, index + 1, targets, index, targets.Length - index);
 
-			ValidateTargetTypes(in context, targets, out List<TargetData>? targetTypes, false);
+			List<INamedTypeSymbol> dependencies = new();
+
+			ValidateTargetTypes(in context, targets, dependencies, out List<TargetData>? targetTypes, false);
 
 			bool isValid = EnsureIsInPartialContext(context.Symbol, diagnosticReceiver);
-			isValid &= ValidateTargetType(in context, copyFroms[index], targetTypes!);
+			isValid &= ValidateTargetType(in context, copyFroms[index], targetTypes!, dependencies);
 
 			return isValid;
 		}
@@ -359,7 +376,7 @@ namespace Durian.Analysis.CopyFrom
 			return actual;
 		}
 
-		private static AttributeData[]? GetAttributes(INamedTypeSymbol type, CopyFromCompilationData compilation, out ImmutableArray<AttributeData> allAttributes)
+		private static AttributeData[]? GetCopyFromAttributes(INamedTypeSymbol type, CopyFromCompilationData compilation, out ImmutableArray<AttributeData> allAttributes)
 		{
 			allAttributes = type.GetAttributes();
 
@@ -535,35 +552,6 @@ namespace Durian.Analysis.CopyFrom
 			return HasValidTypeArguments(type.TypeParameters, type.TypeArguments, out invalidArguments);
 		}
 
-		private static bool HasCopyFromsOnCurrentDeclaration(in CopyFromTypeContext context, AttributeData[] attributes)
-		{
-			Location? currentLocation = context.Node?.GetLocation();
-
-			if (currentLocation is null || currentLocation.SourceTree is null)
-			{
-				return false;
-			}
-
-			TextSpan span = currentLocation.SourceSpan;
-
-			foreach (AttributeData attribute in attributes)
-			{
-				if (attribute.GetLocation() is null)
-				{
-					continue;
-				}
-
-				SyntaxReference? reference = attribute.ApplicationSyntaxReference;
-
-				if (reference?.SyntaxTree == currentLocation.SourceTree && span.Contains(reference.Span.Start))
-				{
-					return true;
-				}
-			}
-
-			return false;
-		}
-
 		private static bool IsInDifferentAssembly(INamedTypeSymbol type, INamedTypeSymbol target)
 		{
 			return !SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, target.ContainingAssembly);
@@ -705,12 +693,14 @@ namespace Durian.Analysis.CopyFrom
 		private static bool ValidateTargetType(
 			in CopyFromTypeContext context,
 			AttributeData attribute,
-			List<TargetData> copyFromTypes
+			List<TargetData> copyFromTypes,
+			List<INamedTypeSymbol> dependencies
 		)
 		{
 			if (GetTargetType(attribute, context.SemanticModel, out _, out _) is not INamedTypeSymbol target ||
 				CopiesFromItself(context.Symbol, target) ||
 				IsInDifferentAssembly(context.Symbol, target) ||
+				IsCircularDependency(in context, target, dependencies) ||
 				!HasValidTypeArguments(target, out _))
 			{
 				return false;
@@ -742,10 +732,31 @@ namespace Durian.Analysis.CopyFrom
 			return true;
 		}
 
+		private static bool IsCircularDependency(in CopyFromTypeContext context, INamedTypeSymbol target, List<INamedTypeSymbol> dependencies)
+		{
+			foreach (AttributeData attribute in target.GetAttributes(context.Compilation.CopyFromTypeAttribute!))
+			{
+				if (GetTargetType(attribute, context.SemanticModel, out _, out _) is not INamedTypeSymbol type)
+				{
+					continue;
+				}
+
+				if (SymbolEqualityComparer.Default.Equals(context.Symbol, type) || IsCircularDependency(in context, type, dependencies))
+				{
+					return true;
+				}
+
+				dependencies.Add(type);
+			}
+
+			return false;
+		}
+
 		private static bool ValidateTargetType(
 			in CopyFromTypeContext context,
 			AttributeData attribute,
 			List<TargetData> copyFromTypes,
+			List<INamedTypeSymbol> dependencies,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
@@ -768,11 +779,16 @@ namespace Durian.Analysis.CopyFrom
 				diagnosticReceiver.ReportDiagnostic(DUR0207_MemberCannotCopyFromItselfOrItsParent, location, context.Symbol);
 				isValid = false;
 			}
-
-			if (IsInDifferentAssembly(context.Symbol, target))
+			else if (IsInDifferentAssembly(context.Symbol, target))
 			{
 				location ??= attribute.GetLocation();
 				diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, location, context.Symbol, target);
+				isValid = false;
+			}
+			else if(IsCircularDependency(in context, target, dependencies))
+			{
+				location ??= attribute.GetLocation();
+				diagnosticReceiver.ReportDiagnostic(DUR0221_CircularDependency, location, context.Symbol);
 				isValid = false;
 			}
 
@@ -808,6 +824,7 @@ namespace Durian.Analysis.CopyFrom
 		private static bool ValidateTargetTypes(
 			in CopyFromTypeContext context,
 			AttributeData[] attributes,
+			List<INamedTypeSymbol> dependencies,
 			[NotNullWhen(true)] out List<TargetData>? targetTypes,
 			bool returnIfInvalid
 		)
@@ -817,7 +834,7 @@ namespace Durian.Analysis.CopyFrom
 
 			foreach (AttributeData attribute in attributes)
 			{
-				if (!ValidateTargetType(in context, attribute, copyFromTypes))
+				if (!ValidateTargetType(in context, attribute, copyFromTypes, dependencies))
 				{
 					if (returnIfInvalid)
 					{
@@ -836,6 +853,7 @@ namespace Durian.Analysis.CopyFrom
 		private static bool ValidateTargetTypes(
 			in CopyFromTypeContext context,
 			AttributeData[] attributes,
+			List<INamedTypeSymbol> dependencies,
 			[NotNullWhen(true)] out List<TargetData>? targetTypes,
 			IDiagnosticReceiver diagnosticReceiver
 		)
@@ -846,7 +864,7 @@ namespace Durian.Analysis.CopyFrom
 
 			foreach (AttributeData attribute in attributes)
 			{
-				if (!ValidateTargetType(in context, attribute, copyFromTypes, diagnosticReceiver))
+				if (!ValidateTargetType(in context, attribute, copyFromTypes, dependencies, diagnosticReceiver))
 				{
 					isValid = false;
 				}

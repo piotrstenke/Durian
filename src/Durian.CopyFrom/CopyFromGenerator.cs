@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -27,7 +28,7 @@ namespace Durian.Analysis.CopyFrom
 		RelativeToGlobal = true,
 		EnableExceptions = true,
 		DefaultNodeOutput = NodeOutput.SyntaxTree)]
-	public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember>
+	public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember, CopyFromPassContext>
 	{
 		private const int _numStaticTrees = 4;
 
@@ -89,7 +90,7 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		public override IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? GetFilters(GeneratorPassBuilderContext context)
+		public override IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? GetFilters(CopyFromPassContext context)
 		{
 			FilterContainer<IGeneratorSyntaxFilter> list = new();
 
@@ -115,19 +116,104 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		protected internal override bool Generate(IMemberData data, string hintName, GeneratorPassBuilderContext context)
+		protected internal override void AfterExecution(CopyFromPassContext context)
+		{
+			if(context.DependencyQueue.Count > 0)
+			{
+				GenerateFromDependencyQueue(context);
+			}
+
+			context.SymbolRegistry.Clear();
+
+			base.AfterExecution(context);
+		}
+
+		/// <inheritdoc/>
+		protected override CopyFromPassContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
+		{
+			return new();
+		}
+
+		/// <inheritdoc/>
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+		}
+
+		/// <inheritdoc/>
+		protected internal override bool Generate(IMemberData data, string hintName, CopyFromPassContext context)
 		{
 			if (data is not ICopyFromMember target)
 			{
 				return false;
 			}
 
-			if (target is Types.CopyFromTypeData type)
+			if (!HasAllDependencies(target.Dependencies, context))
+			{
+				context.DependencyQueue.Enqueue(target, hintName);
+				return false;
+			}
+
+			if(Generate(target, hintName, context))
+			{
+				context.SymbolRegistry.Register(target.Symbol);
+				return true;
+			}
+
+			return false;
+		}
+
+		private bool Generate(ICopyFromMember data, string hintName, CopyFromPassContext context)
+		{
+			if (data is Types.CopyFromTypeData type)
 			{
 				return GenerateType(type, hintName, context);
 			}
 
 			return false;
+		}
+
+		private bool GenerateFromDependencyQueue(CopyFromPassContext context)
+		{
+			Queue<(ICopyFromMember, string)> localQueue = new(context.DependencyQueue.Count);
+
+			while(true)
+			{
+				int current = context.DependencyQueue.Count;
+
+				while (context.DependencyQueue.Count > 0)
+				{
+					if(!context.DependencyQueue.Dequeue(out ICopyFromMember? member, out string? hintName))
+					{
+						continue;
+					}
+
+					if (HasAllDependencies(member.Dependencies, context))
+					{
+						Generate(member, hintName, context);
+					}
+					else
+					{
+						localQueue.Enqueue((member, hintName));
+					}
+				}
+
+				if(localQueue.Count == 0)
+				{
+					return true;
+				}
+
+				if(localQueue.Count == current)
+				{
+					return false;
+				}
+
+				while(localQueue.Count > 0)
+				{
+					(ICopyFromMember member, string hintName) = localQueue.Dequeue();
+					context.DependencyQueue.Enqueue(member, hintName);
+				}
+			}
 		}
 
 		private static DocumentationCommentTriviaSyntax? GetDocumentationTrivia(CSharpSyntaxNode node)
@@ -140,11 +226,29 @@ namespace Durian.Analysis.CopyFrom
 				.FirstOrDefault();
 		}
 
+		private static bool HasAllDependencies(ISymbol[]? symbols, CopyFromPassContext context)
+		{
+			if (symbols is null)
+			{
+				return true;
+			}
+
+			foreach (ISymbol symbol in symbols)
+			{
+				if(!context.SymbolRegistry.IsRegistered(symbol))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		private void WriteGeneratedMember(
 			ICopyFromMember member,
 			CSharpSyntaxNode node,
 			ISymbol original,
-			GeneratorPassBuilderContext context,
+			CopyFromPassContext context,
 			GenerateDocumentation applyInheritdoc,
 			DocumentationCommentTriviaSyntax? documentation
 		)
@@ -194,7 +298,7 @@ namespace Durian.Analysis.CopyFrom
 			ICopyFromMember member,
 			CSharpSyntaxNode node,
 			ISymbol original,
-			GeneratorPassBuilderContext context,
+			CopyFromPassContext context,
 			GenerateDocumentation applyInheritdoc
 		)
 		{

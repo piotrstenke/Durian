@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using System.Runtime.CompilerServices;
 using Durian.Analysis;
 using Durian.Analysis.Logging;
@@ -11,7 +12,7 @@ namespace Durian.TestServices
 	/// An abstract class that provides methods to test <see cref="IDurianGenerator"/>s and log information about the generator test.
 	/// </summary>
 	/// <typeparam name="T">Type of target <see cref="IDurianGenerator"/>.</typeparam>
-	public abstract class DurianGeneratorTest<T> : LoggableGeneratorTest<ITestableGenerator> where T : IDurianGenerator
+	public abstract class DurianGeneratorTest<T> : LoggableGeneratorTest<ITestableGenerator>, IDisposable where T : IDurianGenerator
 	{
 		/// <summary>
 		/// Underlaying source generator to test.
@@ -97,5 +98,13 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="configuration">Configuration for the <see cref="IDurianGenerator"/>.</param>
 		protected abstract T CreateUnderlayingGenerator(LoggingConfiguration configuration);
+
+		/// <inheritdoc/>
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
+		public void Dispose()
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+		{
+			UnderlayingGenerator.Dispose();
+		}
 	}
 }

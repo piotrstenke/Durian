@@ -34,6 +34,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 			bool isValid = AnalyzeMethodWithoutPattern(
 				ref newContext,
 				out ImmutableArray<AttributeData> attributes,
+				out List<IMethodSymbol>? dependencies,
 				out IMethodSymbol? targetMethod,
 				diagnosticReceiver
 			);
@@ -66,6 +67,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 				newContext.Symbol,
 				newContext.SemanticModel,
 				targetMethod!,
+				dependencies?.ToArray(),
 				patterns,
 				attributes: attributes
 			);
@@ -81,6 +83,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 			bool isValid = AnalyzeMethodWithoutPattern(
 				ref newContext,
 				out ImmutableArray<AttributeData> attributes,
+				out List<IMethodSymbol>? dependencies,
 				out IMethodSymbol? targetMethod
 			);
 
@@ -117,6 +120,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 				newContext.Symbol,
 				newContext.SemanticModel,
 				targetMethod!,
+				dependencies?.ToArray(),
 				patterns,
 				attributes: attributes
 			);

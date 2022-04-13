@@ -41,7 +41,8 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			return ValidateTargetMethod(in context, attribute, out _);
+			List<IMethodSymbol> dependencies = new();
+			return ValidateTargetMethod(in context, attribute, dependencies, out _);
 		}
 
 		/// <summary>
@@ -60,6 +61,7 @@ namespace Durian.Analysis.CopyFrom
 			bool isValid = AnalyzeMethodWithoutPattern(
 				ref context,
 				out ImmutableArray<AttributeData> attributes,
+				out _,
 				out IMethodSymbol? targetMethod,
 				diagnosticReceiver
 			);
@@ -86,6 +88,7 @@ namespace Durian.Analysis.CopyFrom
 		internal static bool AnalyzeMethodWithoutPattern(
 			ref CopyFromMethodContext context,
 			out ImmutableArray<AttributeData> attributes,
+			[NotNullWhen(true)] out List<IMethodSymbol>? dependencies,
 			[NotNullWhen(true)] out IMethodSymbol? targetMethod,
 			IDiagnosticReceiver diagnosticReceiver
 		)
@@ -95,26 +98,23 @@ namespace Durian.Analysis.CopyFrom
 			if (copyFrom is null)
 			{
 				targetMethod = default;
+				dependencies = default;
 				return false;
 			}
 
+			List<IMethodSymbol> deps = new();
+
 			bool isValid = ValidateMarkedMethod(ref context, diagnosticReceiver);
+			isValid &= ValidateTargetMethod(in context, copyFrom, deps, out targetMethod, diagnosticReceiver);
 
-			if (context.Node is null)
-			{
-				targetMethod = default;
-			}
-			else
-			{
-				isValid &= ValidateTargetMethod(in context, copyFrom, out targetMethod, diagnosticReceiver);
-			}
-
+			dependencies = isValid ? deps : default;
 			return isValid;
 		}
 
 		internal static bool AnalyzeMethodWithoutPattern(
 			ref CopyFromMethodContext context,
 			out ImmutableArray<AttributeData> attributes,
+			[NotNullWhen(true)] out List<IMethodSymbol>? dependencies,
 			[NotNullWhen(true)] out IMethodSymbol? targetMethod
 		)
 		{
@@ -123,15 +123,20 @@ namespace Durian.Analysis.CopyFrom
 			if (copyFrom is null)
 			{
 				targetMethod = default;
+				dependencies = default;
 				return false;
 			}
 
 			if (ValidateMarkedMethod(ref context))
 			{
-				return ValidateTargetMethod(in context, copyFrom, out targetMethod);
+				List<IMethodSymbol> deps = new();
+				bool isValid = ValidateTargetMethod(in context, copyFrom, deps, out targetMethod);
+				dependencies = isValid ? deps : default;
+				return isValid;
 			}
 
 			targetMethod = default;
+			dependencies = default;
 			return false;
 		}
 
@@ -145,7 +150,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
 				CopyFromMethodContext c = new(compilation, context.SemanticModel, methodSymbol, member as MethodDeclarationSyntax);
-				AnalyzeMethodWithoutPattern(ref c, out _, out _, diagnosticReceiver);
+				AnalyzeMethodWithoutPattern(ref c, out _, out _, out _, diagnosticReceiver);
 			}
 		}
 
@@ -372,6 +377,24 @@ namespace Durian.Analysis.CopyFrom
 			return null;
 		}
 
+		private static bool IsCircularDependency(in CopyFromMethodContext context, IMethodSymbol target, List<IMethodSymbol> dependencies)
+		{
+			AttributeData? attribute = target.GetAttribute(context.Compilation.CopyFromMethodAttribute!);
+
+			if(attribute is null || GetTargetMethod(in context, attribute, out _, out _) is not IMethodSymbol method)
+			{
+				return false;
+			}
+
+			if (SymbolEqualityComparer.Default.Equals(context.Symbol, method) || IsCircularDependency(in context, method, dependencies))
+			{
+				return true;
+			}
+
+			dependencies.Add(method);
+			return false;
+		}
+
 		private static AttributeData? GetAttribute(IMethodSymbol method, CopyFromCompilationData compilation, out ImmutableArray<AttributeData> allAttributes)
 		{
 			allAttributes = method.GetAttributes();
@@ -581,12 +604,14 @@ namespace Durian.Analysis.CopyFrom
 		private static bool ValidateTargetMethod(
 			in CopyFromMethodContext context,
 			AttributeData attribute,
+			List<IMethodSymbol> dependencies,
 			[NotNullWhen(true)] out IMethodSymbol? targetMethod
 		)
 		{
 			if (GetTargetMethod(in context, attribute, out _, out _) is IMethodSymbol target &&
 				!CopiesFromItself(context.Symbol, target) &&
 				!IsInDifferentAssembly(context.Symbol, context.Compilation) &&
+				!IsCircularDependency(in context, target, dependencies) &&
 				HasValidTypeArguments(target, out _)
 			)
 			{
@@ -601,6 +626,7 @@ namespace Durian.Analysis.CopyFrom
 		private static bool ValidateTargetMethod(
 			in CopyFromMethodContext context,
 			AttributeData attribute,
+			List<IMethodSymbol> dependencies,
 			[NotNullWhen(true)] out IMethodSymbol? targetMethod,
 			IDiagnosticReceiver diagnosticReceiver
 		)
@@ -616,12 +642,17 @@ namespace Durian.Analysis.CopyFrom
 					location ??= attribute.GetLocation();
 					diagnosticReceiver.ReportDiagnostic(DUR0207_MemberCannotCopyFromItselfOrItsParent, location, context.Symbol);
 				}
-
-				if (IsInDifferentAssembly(target, context.Compilation))
+				else if (IsInDifferentAssembly(target, context.Compilation))
 				{
 					isValid = false;
 					location ??= attribute.GetLocation();
 					diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, location, context.Symbol, target);
+				}
+				else if(IsCircularDependency(in context, target, dependencies))
+				{
+					isValid = false;
+					location ??= attribute.GetLocation();
+					diagnosticReceiver.ReportDiagnostic(DUR0221_CircularDependency, location, context.Symbol);
 				}
 
 				if (!HasValidTypeArguments(target, out List<ITypeSymbol>? invalidArguments))

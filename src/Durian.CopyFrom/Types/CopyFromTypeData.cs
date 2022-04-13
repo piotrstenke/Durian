@@ -25,23 +25,33 @@ namespace Durian.Analysis.CopyFrom.Types
 		public TargetData[] Targets { get; }
 
 		/// <summary>
+		/// <see cref="INamedTypeSymbol"/>s generation of this type depends on.
+		/// </summary>
+		public INamedTypeSymbol[]? Dependencies { get; }
+
+		ISymbol[]? ICopyFromMember.Dependencies => Dependencies;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromTypeData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="TypeDeclarationSyntax"/> this <see cref="CopyFromTypeData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="CopyFromTypeData"/>.</param>
+		/// <param name="compilation">Parent <see cref="CopyFromCompilationData"/> of this <see cref="CopyFromTypeData"/>.</param>
 		/// <param name="targets">A collection of target types.</param>
+		/// <param name="dependencies"><see cref="INamedTypeSymbol"/>s generation of this type depends on.</param>
 		/// <param name="patterns">A collection of patterns applied to the type using <c>Durian.PatternAttribute</c>.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
 		public CopyFromTypeData(
 			TypeDeclarationSyntax declaration,
-			ICompilationData compilation,
+			CopyFromCompilationData compilation,
 			TargetData[] targets,
+			INamedTypeSymbol[]? dependencies = default,
 			PatternData[]? patterns = default
 		) : base(declaration, compilation)
 		{
 			Targets = targets;
+			Dependencies = dependencies;
 			Patterns = patterns;
 		}
 
@@ -49,10 +59,11 @@ namespace Durian.Analysis.CopyFrom.Types
 		/// Initializes a new instance of the <see cref="CopyFromTypeData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="TypeDeclarationSyntax"/> this <see cref="CopyFromTypeData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="CopyFromTypeData"/>.</param>
+		/// <param name="compilation">Parent <see cref="CopyFromCompilationData"/> of this <see cref="CopyFromTypeData"/>.</param>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> this <see cref="CopyFromTypeData"/> represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
 		/// <param name="targets">A collection of target types.</param>
+		/// <param name="dependencies"><see cref="INamedTypeSymbol"/>s generation of this type depends on.</param>
 		/// <param name="patterns">A collection of patterns applied to the type using <c>Durian.PatternAttribute</c>.</param>
 		/// <param name="partialDeclarations">A collection of <see cref="TypeDeclarationSyntax"/> that represent the partial declarations of the target <paramref name="symbol"/>.</param>
 		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
@@ -61,10 +72,11 @@ namespace Durian.Analysis.CopyFrom.Types
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
 		public CopyFromTypeData(
 			TypeDeclarationSyntax declaration,
-			ICompilationData compilation,
+			CopyFromCompilationData compilation,
 			INamedTypeSymbol symbol,
 			SemanticModel semanticModel,
 			TargetData[] targets,
+			INamedTypeSymbol[]? dependencies = default,
 			PatternData[]? patterns = default,
 			IEnumerable<TypeDeclarationSyntax>? partialDeclarations = null,
 			IEnumerable<SyntaxToken>? modifiers = null,
@@ -84,6 +96,7 @@ namespace Durian.Analysis.CopyFrom.Types
 		)
 		{
 			Targets = targets;
+			Dependencies = dependencies;
 			Patterns = patterns;
 		}
 	}

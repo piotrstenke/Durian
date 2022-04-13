@@ -39,6 +39,7 @@ namespace Durian.Analysis.CopyFrom.Types
 			bool isValid = AnalyzeTypeWithoutPattern(
 				in context,
 				out ImmutableArray<AttributeData> attributes,
+				out List<INamedTypeSymbol>? dependencies,
 				out List<TargetData>? targetTypes
 			);
 
@@ -76,6 +77,7 @@ namespace Durian.Analysis.CopyFrom.Types
 				context.Symbol,
 				context.SemanticModel,
 				targetTypes!.ToArray(),
+				dependencies?.ToArray(),
 				patterns,
 				attributes: attributes
 			);
@@ -95,6 +97,7 @@ namespace Durian.Analysis.CopyFrom.Types
 			bool isValid = AnalyzeTypeWithoutPattern(
 				in context,
 				out ImmutableArray<AttributeData> attributes,
+				out List<INamedTypeSymbol>? dependencies,
 				out List<TargetData>? targetTypes,
 				diagnosticReceiver
 			);
@@ -148,6 +151,7 @@ namespace Durian.Analysis.CopyFrom.Types
 				context.Symbol,
 				context.SemanticModel,
 				targetTypes!.ToArray(),
+				dependencies?.ToArray(),
 				patterns,
 				attributes: attributes
 			);

@@ -1,6 +1,7 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 
@@ -9,7 +10,7 @@ namespace Durian.Analysis
 	/// <summary>
 	/// <see cref="ISourceGenerator"/> that provides additional information about the current generator pass.
 	/// </summary>
-	public interface IDurianGenerator : ISourceGenerator
+	public interface IDurianGenerator : ISourceGenerator, IDisposable
 	{
 		/// <summary>
 		/// Name of this <see cref="IDurianGenerator"/>.
