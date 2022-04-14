@@ -159,8 +159,9 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		protected internal override void OnException(Exception e, TContext context)
+		protected internal override void OnException(Exception e, TContext context, bool allowLog)
 		{
+			base.OnException(e, context, allowLog);
 			context.State = GeneratorState.Failed;
 		}
 

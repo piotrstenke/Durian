@@ -2,7 +2,9 @@
 // Licensed under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.CopyFrom
 {
@@ -33,7 +35,7 @@ namespace Durian.Analysis.CopyFrom
 		/// <summary>
 		/// Determines whether the specified <paramref name="symbol"/> is registered.
 		/// </summary>
-		/// <param name="symbol"></param>
+		/// <param name="symbol"><see cref="ISymbol"/> to check if is registered.</param>
 		public bool IsRegistered(ISymbol symbol)
 		{
 			return _symbols.ContainsKey(symbol.ToString());

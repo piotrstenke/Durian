@@ -746,7 +746,7 @@ namespace Durian.Analysis.CopyFrom
 					return true;
 				}
 
-				dependencies.Add(type);
+				dependencies.Add(target);
 			}
 
 			return false;

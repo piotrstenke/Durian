@@ -33,7 +33,7 @@ namespace Durian.Analysis.CopyFrom
 		public string? PartialPartName { get; }
 
 		/// <summary>
-		/// <see cref="ISymbol"/> of the target member.
+		/// <see cref="INamedTypeSymbol"/> of the target member.
 		/// </summary>
 		public INamedTypeSymbol Symbol { get; }
 
@@ -134,6 +134,15 @@ namespace Durian.Analysis.CopyFrom
 			}
 
 			return $"{Symbol} (\"{PartialPart}\")";
+		}
+
+		/// <summary>
+		/// Returns a new instance of the <see cref="TargetData"/> class being a copy of the current instance, but with the specified <paramref name="symbol"/> instead.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamedTypeSymbol"/> of the target member.</param>
+		public TargetData WithSymbol(INamedTypeSymbol symbol)
+		{
+			return new TargetData(symbol, Order, PartialPart, PartialPartName, Usings, HandleSpecialMembers);
 		}
 	}
 }

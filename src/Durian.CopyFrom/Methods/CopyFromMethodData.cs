@@ -29,6 +29,9 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// </summary>
 		public IMethodSymbol[]? Dependencies { get; }
 
+		/// <inheritdoc cref="MemberData.ParentCompilation"/>
+		public new CopyFromCompilationData ParentCompilation => (base.ParentCompilation as CopyFromCompilationData)!;
+
 		ISymbol[]? ICopyFromMember.Dependencies => Dependencies;
 
 		TargetData[] ICopyFromMember.Targets => Array.Empty<TargetData>();

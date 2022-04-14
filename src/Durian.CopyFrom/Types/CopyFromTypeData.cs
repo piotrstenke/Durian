@@ -29,6 +29,9 @@ namespace Durian.Analysis.CopyFrom.Types
 		/// </summary>
 		public INamedTypeSymbol[]? Dependencies { get; }
 
+		/// <inheritdoc cref="MemberData.ParentCompilation"/>
+		public new CopyFromCompilationData ParentCompilation => (base.ParentCompilation as CopyFromCompilationData)!;
+
 		ISymbol[]? ICopyFromMember.Dependencies => Dependencies;
 
 		/// <summary>

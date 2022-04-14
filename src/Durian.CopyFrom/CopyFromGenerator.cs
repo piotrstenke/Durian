@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
@@ -31,6 +33,9 @@ namespace Durian.Analysis.CopyFrom
 	public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember, CopyFromPassContext>
 	{
 		private const int _numStaticTrees = 4;
+
+		private const string _groupTypes = "Types";
+		private const string _groupMethods = "Methods";
 
 		/// <inheritdoc/>
 		public override string GeneratorName => "CopyFrom";
@@ -94,8 +99,8 @@ namespace Durian.Analysis.CopyFrom
 		{
 			FilterContainer<IGeneratorSyntaxFilter> list = new();
 
-			list.RegisterGroup("Methods", new Methods.CopyFromMethodFilter());
-			list.RegisterGroup("Types", new Types.CopyFromTypeFilter());
+			list.RegisterGroup(_groupMethods, new Methods.CopyFromMethodFilter());
+			list.RegisterGroup(_groupTypes, new Types.CopyFromTypeFilter());
 
 			return list;
 		}
@@ -116,16 +121,18 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		protected internal override void AfterExecution(CopyFromPassContext context)
+		protected internal override void AfterExecutionOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, CopyFromPassContext context)
 		{
-			if(context.DependencyQueue.Count > 0)
+			if (context.DependencyQueue.Count > 0)
 			{
-				GenerateFromDependencyQueue(context);
+				GenerateFromDependencyQueue(filterGroup, context);
+			}
+			else
+			{
+				context.SymbolRegistry.Clear();
 			}
 
-			context.SymbolRegistry.Clear();
-
-			base.AfterExecution(context);
+			base.AfterExecutionOfGroup(filterGroup, context);
 		}
 
 		/// <inheritdoc/>
@@ -150,11 +157,47 @@ namespace Durian.Analysis.CopyFrom
 
 			if (!HasAllDependencies(target.Dependencies, context))
 			{
-				context.DependencyQueue.Enqueue(target, hintName);
+				context.DependencyQueue.Enqueue(target.Declaration, hintName);
 				return false;
 			}
 
 			if(Generate(target, hintName, context))
+			{
+				context.SymbolRegistry.Register(target.Symbol);
+				return true;
+			}
+
+			return false;
+		}
+
+		private bool Generate(
+			IMemberData data,
+			string hintName,
+			CopyFromPassContext context,
+			Queue<(SyntaxReference, string)> dependencies,
+			Queue<(CSharpSyntaxNode, string)> cache
+		)
+		{
+			if (data is not ICopyFromMember target)
+			{
+				return false;
+			}
+
+			if (!HasAllDependencies(target.Dependencies, context))
+			{
+				if(CanCache(cache))
+				{
+					cache.Enqueue((target.Declaration, hintName));
+				}
+				else
+				{
+					dependencies.Enqueue((target.Declaration.GetReference(), hintName));
+				}
+
+				return false;
+			}
+
+			if (Generate(target, hintName, context))
 			{
 				context.SymbolRegistry.Register(target.Symbol);
 				return true;
@@ -173,45 +216,184 @@ namespace Durian.Analysis.CopyFrom
 			return false;
 		}
 
-		private bool GenerateFromDependencyQueue(CopyFromPassContext context)
+		private static Queue<(SyntaxReference, string)> GetDependenciesFromQueue(
+			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
+			CopyFromPassContext context,
+			out Queue<(CSharpSyntaxNode, string)> cache
+		)
 		{
-			Queue<(ICopyFromMember, string)> localQueue = new(context.DependencyQueue.Count);
+			Queue<(SyntaxReference, string)> dependencies = context.DependencyQueue.ToSystemQueue();
+			cache = new(dependencies.Count);
 
-			while(true)
+			return filterGroup.Name switch
 			{
-				int current = context.DependencyQueue.Count;
+				_groupMethods => CreateQueue<MethodDeclarationSyntax>(cache),
+				_groupTypes => CreateQueue<TypeDeclarationSyntax>(cache),
+				_ => dependencies,
+			};
 
-				while (context.DependencyQueue.Count > 0)
+			Queue<(SyntaxReference, string)> CreateQueue<T>(Queue<(CSharpSyntaxNode, string)> cache) where T : CSharpSyntaxNode
+			{
+				Queue<(SyntaxReference, string)> queue = new(dependencies.Count);
+
+				while (dependencies.Count > 0)
 				{
-					if(!context.DependencyQueue.Dequeue(out ICopyFromMember? member, out string? hintName))
-					{
-						continue;
-					}
+					(SyntaxReference reference, string hintName) result = dependencies.Dequeue();
 
-					if (HasAllDependencies(member.Dependencies, context))
+					if (result.reference.GetSyntax(context.CancellationToken) is T node)
 					{
-						Generate(member, hintName, context);
+						if (CanCache(cache))
+						{
+							cache.Enqueue((node, result.hintName));
+						}
+						else
+						{
+							queue.Enqueue(result);
+						}
 					}
 					else
 					{
-						localQueue.Enqueue((member, hintName));
+						context.DependencyQueue.Enqueue(result.reference, result.hintName);
 					}
 				}
 
-				if(localQueue.Count == 0)
-				{
-					return true;
-				}
+				return queue;
+			}
+		}
 
-				if(localQueue.Count == current)
+		private static bool CanCache(Queue<(CSharpSyntaxNode, string)> cache)
+		{
+			return cache.Count < 32;
+		}
+
+		private bool GenerateFromDependencyQueue(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, CopyFromPassContext context)
+		{
+			Queue<(SyntaxReference, string)> dependencies = GetDependenciesFromQueue(filterGroup, context, out Queue<(CSharpSyntaxNode, string)> cache);
+
+			if(dependencies.Count == 0 && cache.Count == 0)
+			{
+				return true;
+			}
+
+			while (true)
+			{
+				int current = dependencies.Count + cache.Count;
+
+				HandleFilterGroup(filterGroup, context, dependencies, cache, GetNodes());
+
+				int result = dependencies.Count + cache.Count;
+
+				if(result >= current)
 				{
 					return false;
 				}
 
-				while(localQueue.Count > 0)
+				if(result == 0)
 				{
-					(ICopyFromMember member, string hintName) = localQueue.Dequeue();
-					context.DependencyQueue.Enqueue(member, hintName);
+					return true;
+				}
+			}
+
+			IEnumerable<(CSharpSyntaxNode, string)> GetNodes()
+			{
+				int cacheLength = cache.Count;
+				int depLength = dependencies.Count;
+
+				for (int i = 0; i < cacheLength; i++)
+				{
+					yield return cache.Dequeue();
+				}
+
+				for (int i = 0; i < depLength; i++)
+				{
+					(SyntaxReference reference, string hintName) = dependencies.Dequeue();
+
+					CSharpSyntaxNode node = (CSharpSyntaxNode)reference.GetSyntax();
+
+					if(CanCache(cache))
+					{
+						cache.Enqueue((node, hintName));
+					}
+
+					yield return (node, hintName);
+				}
+			}
+		}
+
+		private void HandleFilterGroup(
+			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
+			CopyFromPassContext context,
+			Queue<(SyntaxReference, string)> dependencies,
+			Queue<(CSharpSyntaxNode, string)> cache,
+			IEnumerable<(CSharpSyntaxNode node, string hintName)> nodes
+		)
+		{
+			int numFilters = filterGroup.Count;
+			List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols = new(numFilters);
+
+			//filterGroup.Unseal();
+			BeforeFiltrationOfGroup(filterGroup, context);
+			//filterGroup.Seal();
+
+			foreach (IGeneratorSyntaxFilter filter in filterGroup)
+			{
+				if (filter.IncludeGeneratedSymbols)
+				{
+					filtersWithGeneratedSymbols.Add(filter);
+				}
+				else
+				{
+					IterateThroughFilter(filterGroup, filter, context, dependencies, cache, nodes);
+				}
+			}
+
+			BeforeExecutionOfGroup(filterGroup, context);
+
+			GenerateFromFiltersWithGeneratedSymbols(filterGroup, filtersWithGeneratedSymbols, context, dependencies, cache, nodes);
+
+			//filterGroup.Unseal();
+			AfterExecutionOfGroup(filterGroup, context);
+		}
+
+		private void GenerateFromFiltersWithGeneratedSymbols(
+			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
+			List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols,
+			CopyFromPassContext context,
+			Queue<(SyntaxReference, string)> dependencies,
+			Queue<(CSharpSyntaxNode, string)> cache,
+			IEnumerable<(CSharpSyntaxNode node, string hintName)> nodes
+		)
+		{
+			BeforeFiltersWithGeneratedSymbols(context);
+			BeforeFiltrationOfGeneratedSymbols(filterGroup, context);
+
+			foreach (IGeneratorSyntaxFilter filter in filtersWithGeneratedSymbols)
+			{
+				IterateThroughFilter(filterGroup, filter, context, dependencies, cache, nodes);
+			}
+		}
+
+		private void IterateThroughFilter(
+			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
+			IGeneratorSyntaxFilter filter,
+			CopyFromPassContext context,
+			Queue<(SyntaxReference, string)> dependencies,
+			Queue<(CSharpSyntaxNode, string)> cache,
+			IEnumerable<(CSharpSyntaxNode node, string hintName)> nodes
+		)
+		{
+			if (filter is not ISyntaxValidator single)
+			{
+				throw new InvalidOperationException($"Filter in group '{filterGroup.Name}' does not implement the '{nameof(ISyntaxValidator)}' interface");
+			}
+
+			foreach ((CSharpSyntaxNode node, string hintName) in nodes)
+			{
+				ValidationDataContext validation = new(node, context.TargetCompilation, context.CancellationToken);
+
+				if (single.ValidateAndCreate(validation, out IMemberData? member) && Generate(member, hintName, context, dependencies, cache))
+				{
+					context.FileNameProvider.Success();
 				}
 			}
 		}

@@ -764,7 +764,7 @@ partial class Target
 {{
 }}
 
-class Other()
+class Other
 {{
 	void A()
 	{{
@@ -815,7 +815,7 @@ partial class Target
 {{
 }}
 
-class Other()
+class Other
 {{
 	void A()
 	{{

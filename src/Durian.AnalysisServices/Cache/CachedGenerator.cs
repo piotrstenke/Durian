@@ -66,7 +66,7 @@ namespace Durian.Analysis.Cache
 					return false;
 				}
 			}
-			catch (Exception e) when (HandleException(e))
+			catch when (!LoggingConfiguration.EnableExceptions)
 			{
 				return false;
 			}
@@ -192,7 +192,12 @@ namespace Durian.Analysis.Cache
 		/// <param name="context">Current <see cref="CachedGeneratorPassContext{TData, TContext}"/>.</param>
 		protected virtual void IterateThroughFilter(ICachedGeneratorSyntaxFilter<TData> filter, CachedGeneratorPassContext<TData, TContext> context)
 		{
-			filter.Filtrate(context);
+			IEnumerator<IMemberData> iter = filter.GetEnumerator(context);
+
+			while (iter.MoveNext())
+			{
+				GenerateFromData(iter.Current, context.UnderlayingContext);
+			}
 		}
 
 		private bool Execute_Internal(CachedGeneratorPassContext<TData, TContext> context)

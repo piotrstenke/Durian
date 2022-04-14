@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Durian.Analysis.Filters;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
@@ -86,7 +87,7 @@ namespace Durian.Analysis
 					return false;
 				}
 			}
-			catch (Exception e) when (HandleException(e))
+			catch when (!LoggingConfiguration.EnableExceptions)
 			{
 				return false;
 			}
@@ -471,7 +472,12 @@ namespace Durian.Analysis
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
 		protected internal virtual void IterateThroughFilter(IGeneratorSyntaxFilter filter, TContext context)
 		{
-			filter.Filtrate(context);
+			IEnumerator<IMemberData> iter = filter.GetEnumerator(context);
+
+			while (iter.MoveNext())
+			{
+				GenerateFromData(iter.Current, context);
+			}
 		}
 
 		/// <summary>
@@ -479,22 +485,19 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="e"><see cref="Exception"/> that was detected.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected internal virtual void OnException(Exception e, TContext context)
+		/// <param name="allowLog">Determines whether to log the <see cref="Exception"/>.</param>
+		protected internal virtual void OnException(Exception e, TContext context, bool allowLog)
 		{
-			// Do nothing by default.
-		}
-
-		internal bool HandleException(Exception e)
-		{
-			LogHandler.LogException(e);
-			return !LoggingConfiguration.EnableExceptions;
+			if(allowLog)
+			{
+				LogHandler.LogException(e);
+			}
 		}
 
 		internal bool HandleException(Exception e, TContext context)
 		{
-			bool shouldThrow = !HandleException(e);
-			OnException(e, context);
-			return shouldThrow;
+			OnException(e, context, true);
+			return !LoggingConfiguration.EnableExceptions;
 		}
 
 		private protected void AddSource_Internal(CSharpSyntaxTree tree, string hintName, TContext context)
@@ -543,7 +546,7 @@ namespace Durian.Analysis
 			}
 		}
 
-		private void HandleFilterGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
+		internal void HandleFilterGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
 		{
 			int numFilters = filterGroup.Count;
 			List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols = new(numFilters);

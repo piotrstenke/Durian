@@ -2,7 +2,10 @@
 // Licensed under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.CopyFrom
 {
@@ -11,7 +14,7 @@ namespace Durian.Analysis.CopyFrom
 	/// </summary>
 	public sealed class DependencyQueue
 	{
-		private readonly ConcurrentQueue<(ICopyFromMember member, string hintName)> _queue;
+		private readonly ConcurrentQueue<(SyntaxReference node, string hintName)> _queue;
 
 		/// <summary>
 		/// Number of elements in the queue.
@@ -27,32 +30,57 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <summary>
-		/// Enqueues the specified <paramref name="member"/>.
+		/// Enqueues the specified <paramref name="node"/>.
 		/// </summary>
-		/// <param name="member"><see cref="ICopyFromMember"/> to enqueue.</param>
-		/// <param name="hintName">Name associated with the <paramref name="member"/>.</param>
-		public void Enqueue(ICopyFromMember member, string hintName)
+		/// <param name="node"><see cref="CSharpSyntaxNode"/> to enqueue.</param>
+		/// <param name="hintName">Name associated with the <paramref name="node"/>.</param>
+		public void Enqueue(CSharpSyntaxNode node, string hintName)
 		{
-			_queue.Enqueue((member, hintName));
+			_queue.Enqueue((node.GetReference(), hintName));
 		}
 
 		/// <summary>
-		/// Attempt to dequeue a <see cref="ICopyFromMember"/>.
+		/// Enqueues the specified <paramref name="reference"/>.
 		/// </summary>
-		/// <param name="member">Dequeued <see cref="ICopyFromMember"/>.</param>
-		/// <param name="hintName">Name associated with the <paramref name="member"/>.</param>
-		public bool Dequeue([NotNullWhen(true)]out ICopyFromMember? member, [NotNullWhen(true)] out string? hintName)
+		/// <param name="reference"><see cref="SyntaxReference"/> to a <see cref="CSharpSyntaxNode"/> to enqueue.</param>
+		/// <param name="hintName">Name associated with the <paramref name="reference"/>.</param>
+		public void Enqueue(SyntaxReference reference, string hintName)
 		{
-			if(_queue.TryDequeue(out (ICopyFromMember member, string hintName) result))
+			_queue.Enqueue((reference, hintName));
+		}
+
+		/// <summary>
+		/// Attempts to dequeue a <see cref="SyntaxReference"/> to an enqueued <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
+		/// <param name="reference"><see cref="SyntaxReference"/> to an enqueued <see cref="CSharpSyntaxNode"/>.</param>
+		/// <param name="hintName">Name associated with the <paramref name="reference"/>.</param>
+		public bool Dequeue([NotNullWhen(true)]out SyntaxReference? reference, [NotNullWhen(true)] out string? hintName)
+		{
+			if(_queue.TryDequeue(out (SyntaxReference node, string hintName) result))
 			{
-				member = result.member;
+				reference = result.node;
 				hintName = result.hintName;
 				return true;
 			}
 
-			member = default;
+			reference = default;
 			hintName = default;
 			return false;
+		}
+
+		/// <summary>
+		/// Converts the current <see cref="DependencyQueue"/> to a <see cref="Queue{T}"/>.
+		/// </summary>
+		public Queue<(SyntaxReference, string)> ToSystemQueue()
+		{
+			Queue<(SyntaxReference, string)> queue = new(_queue.Count);
+
+			while(!_queue.IsEmpty && _queue.TryDequeue(out (SyntaxReference, string) result))
+			{
+				queue.Enqueue(result);
+			}
+
+			return queue;
 		}
 	}
 }

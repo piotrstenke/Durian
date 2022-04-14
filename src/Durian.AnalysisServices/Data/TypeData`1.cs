@@ -14,9 +14,9 @@ namespace Durian.Analysis.Data
 	/// <typeparam name="TDeclaration">Specific type of the target <see cref="TypeDeclarationSyntax"/>.</typeparam>
 	public abstract class TypeData<TDeclaration> : MemberData, ITypeData where TDeclaration : BaseTypeDeclarationSyntax
 	{
-		private SyntaxToken[]? _modifiers;
+		internal SyntaxToken[]? _modifiers;
 
-		private TDeclaration[]? _partialDeclarations;
+		internal TDeclaration[]? _partialDeclarations;
 
 		/// <summary>
 		/// Target <see cref="BaseTypeDeclarationSyntax"/>.

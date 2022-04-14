@@ -185,9 +185,14 @@ namespace Durian.TestServices
 		}
 
 		/// <inheritdoc/>
-		protected internal override void OnException(Exception e, TContext context)
+		protected internal override void OnException(Exception e, TContext context, bool allowLog)
 		{
-			UnderlayingGenerator.OnException(e, context);
+			UnderlayingGenerator.OnException(e, context, false);
+
+			if(allowLog)
+			{
+				UnderlayingGenerator.LogHandler.LogException(e, TestName);
+			}
 		}
 
 		/// <inheritdoc/>
