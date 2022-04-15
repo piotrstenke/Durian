@@ -9,23 +9,25 @@ namespace Durian.Analysis
 	/// <inheritdoc cref="IGeneratorServiceContainer"/>
 	public sealed class GeneratorServiceContainer : IGeneratorServiceContainer
 	{
-		private sealed class Entry
+		internal sealed class Entry
 		{
-			public string? Name { get; }
 			public Delegate Delegate { get; }
+			public string? Name { get; }
+			public Type Type { get; }
 
-			public Entry(Delegate @delegate)
+			public Entry(Type type, Delegate @delegate)
 			{
+				Type = type;
 				Delegate = @delegate;
 			}
 
-			public Entry(Delegate @delegate, string name)
+			public Entry(Type type, Delegate @delegate, string? name) : this(type, @delegate)
 			{
-				Delegate = @delegate;
 				Name = name;
 			}
 		}
 
+		private readonly List<Entry> _scoped;
 		private readonly Dictionary<Type, object> _services;
 
 		/// <summary>
@@ -34,41 +36,40 @@ namespace Durian.Analysis
 		public GeneratorServiceContainer()
 		{
 			_services = new();
+			_scoped = new();
 		}
 
 		/// <inheritdoc/>
-		public void AddService<T>() where T : new()
+		public void AddScoped<TService, TActual>() where TService : class where TActual : TService, new()
 		{
-			AddService(() => new T());
+			Func<TService> func = () => new TActual();
+
+			AddService(func);
+			_scoped.Add(new(typeof(TService), func));
 		}
 
 		/// <inheritdoc/>
-		public void AddService<T>(Func<T> serviceCreator)
+		public void AddScoped<TService, TActual>(string name) where TService : class where TActual : TService, new()
+		{
+			Func<TService> func = () => new TActual();
+
+			AddService(func, name);
+			_scoped.Add(new(typeof(TService), func, name));
+		}
+
+		/// <inheritdoc/>
+		public void AddService<TService>(Func<TService> serviceCreator) where TService : class
 		{
 			if (serviceCreator is null)
 			{
 				throw new ArgumentNullException(nameof(serviceCreator));
 			}
 
-			Type type = typeof(T);
-
-			if (_services.TryGetValue(type, out object value))
-			{
-				if (value is not List<Entry> entries || entries[0].Name is null)
-				{
-					throw new ArgumentException($"Service of type '{type}' already registered", nameof(serviceCreator));
-				}
-
-				entries.Insert(0, new Entry(serviceCreator));
-			}
-			else
-			{
-				_services[type] = serviceCreator;
-			}
+			AddService(typeof(TService), _services, serviceCreator);
 		}
 
 		/// <inheritdoc/>
-		public void AddService<T>(Func<T> serviceCreator, string name)
+		public void AddService<TService>(Func<TService> serviceCreator, string name) where TService : class
 		{
 			if (serviceCreator is null)
 			{
@@ -80,10 +81,70 @@ namespace Durian.Analysis
 				throw new ArgumentException("Name cannot be null or empty", nameof(name));
 			}
 
-			Type type = typeof(T);
+			AddService(typeof(TService), _services, serviceCreator, name);
+		}
+
+		/// <inheritdoc/>
+		public void AddSingleton<TService, TActual>() where TService : class where TActual : TService, new()
+		{
+			TActual? actual = default;
+
+			AddService<TService>(() => actual ??= new TActual());
+		}
+
+		/// <inheritdoc/>
+		public void AddSingleton<TService, TActual>(string name) where TService : class where TActual : TService, new()
+		{
+			TActual? actual = default;
+
+			AddService<TService>(() => actual ??= new TActual(), name);
+		}
+
+		/// <inheritdoc/>
+		public void AddTransient<TService, TActual>() where TService : class where TActual : TService, new()
+		{
+			AddService<TService>(() => new TActual());
+		}
+
+		/// <inheritdoc/>
+		public void AddTransient<TService, TActual>(string name) where TService : class where TActual : TService, new()
+		{
+			AddService<TService>(() => new TActual(), name);
+		}
+
+		/// <inheritdoc cref="IGeneratorServiceContainer.CreateResolver"/>
+		public GeneratorServiceResolver CreateResolver()
+		{
+			return new(_services, _scoped);
+		}
+
+		IGeneratorServiceResolver IGeneratorServiceContainer.CreateResolver()
+		{
+			return CreateResolver();
+		}
+
+		internal static void AddService(Type type, Dictionary<Type, object> services, Delegate serviceCreator)
+		{
+			if (services.TryGetValue(type, out object value))
+			{
+				if (value is not List<Entry> entries || entries[0].Name is null)
+				{
+					throw new ArgumentException($"Service of type '{type}' already registered", nameof(serviceCreator));
+				}
+
+				entries.Insert(0, new Entry(type, serviceCreator));
+			}
+			else
+			{
+				services[type] = serviceCreator;
+			}
+		}
+
+		internal static void AddService(Type type, Dictionary<Type, object> services, Delegate serviceCreator, string name)
+		{
 			List<Entry> list;
 
-			if (_services.TryGetValue(type, out object value))
+			if (services.TryGetValue(type, out object value))
 			{
 				if (value is List<Entry> entries)
 				{
@@ -95,9 +156,9 @@ namespace Durian.Analysis
 				else
 				{
 					entries = new();
-					entries.Add(new Entry((Func<T>)value));
+					entries.Add(new Entry(type, (Delegate)value));
 
-					_services[type] = entries;
+					services[type] = entries;
 				}
 
 				list = entries;
@@ -105,83 +166,10 @@ namespace Durian.Analysis
 			else
 			{
 				list = new();
-				_services[type] = list;
+				services[type] = list;
 			}
 
-			list.Add(new Entry(serviceCreator, name));
-		}
-
-		/// <inheritdoc/>
-		public void AddService<T>(string name) where T : new()
-		{
-			AddService(() => new T(), name);
-		}
-
-		/// <inheritdoc/>
-		public T GetService<T>()
-		{
-			Type type = typeof(T);
-
-			if (!_services.TryGetValue(type, out object value))
-			{
-				throw new ArgumentException($"Service of type '{type}' could not be resolved");
-			}
-
-			Func<T> func;
-
-			if (value is List<Entry> entries)
-			{
-				Entry entry = entries[0];
-
-				if (entry.Name is not null)
-				{
-					throw new ArgumentException("Service without name not found");
-				}
-
-				func = (Func<T>)entry.Delegate;
-			}
-			else
-			{
-				func = (Func<T>)value;
-			}
-
-			return func();
-		}
-
-		/// <inheritdoc/>
-		public T GetService<T>(string name)
-		{
-			if (string.IsNullOrWhiteSpace(name))
-			{
-				throw new ArgumentException("Name cannot be null or empty", nameof(name));
-			}
-
-			Type type = typeof(T);
-
-			if (!_services.TryGetValue(type, out object value))
-			{
-				throw new ArgumentException($"Service of type '{type}' and name '{name}' could not be resolved", nameof(name));
-			}
-
-			Func<T> func;
-
-			if (value is List<Entry> entries)
-			{
-				Entry? entry = entries.Find(e => e.Name == name);
-
-				if (entry is null)
-				{
-					throw new ArgumentException($"Service of type '{type}' and name '{name}' could not be resolved", nameof(name));
-				}
-
-				func = (Func<T>)entry.Delegate;
-			}
-			else
-			{
-				func = (Func<T>)value;
-			}
-
-			return func();
+			list.Add(new Entry(type, serviceCreator, name));
 		}
 	}
 }

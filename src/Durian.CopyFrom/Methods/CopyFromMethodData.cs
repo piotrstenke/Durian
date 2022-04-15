@@ -15,6 +15,16 @@ namespace Durian.Analysis.CopyFrom.Methods
 	public sealed class CopyFromMethodData : MethodData, ICopyFromMember
 	{
 		/// <summary>
+		/// <see cref="IMethodSymbol"/>s generation of this type depends on.
+		/// </summary>
+		public IMethodSymbol[]? Dependencies { get; }
+
+		ISymbol[]? ICopyFromMember.Dependencies => Dependencies;
+
+		/// <inheritdoc cref="MemberData.ParentCompilation"/>
+		public new CopyFromCompilationData ParentCompilation => (base.ParentCompilation as CopyFromCompilationData)!;
+
+		/// <summary>
 		/// A collection of patterns applied to the method using <c>Durian.PatternAttribute</c>.
 		/// </summary>
 		public PatternData[]? Patterns { get; }
@@ -23,18 +33,6 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// Target method.
 		/// </summary>
 		public IMethodSymbol Target { get; }
-
-		/// <summary>
-		/// <see cref="IMethodSymbol"/>s generation of this type depends on.
-		/// </summary>
-		public IMethodSymbol[]? Dependencies { get; }
-
-		/// <inheritdoc cref="MemberData.ParentCompilation"/>
-		public new CopyFromCompilationData ParentCompilation => (base.ParentCompilation as CopyFromCompilationData)!;
-
-		ISymbol[]? ICopyFromMember.Dependencies => Dependencies;
-
-		TargetData[] ICopyFromMember.Targets => Array.Empty<TargetData>();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromMethodData"/> class.

@@ -15,14 +15,22 @@ namespace Durian.Analysis.Data
 	/// </summary>
 	public class CompilationWithEssentialSymbols : CompilationData, ICompilationDataWithSymbols
 	{
-		/// <inheritdoc/>
-		public INamedTypeSymbol? DurianGeneratedAttribute { get; private set; }
+		private string? _durianGeneratedAttributeName;
+		private string? _enableModuleAttributeName;
+		private string? _generatedCodeAttributeName;
+
+		private INamedTypeSymbol? _durianGeneratedAttribute;
+		private INamedTypeSymbol? _enableModuleAttribute;
+		private INamedTypeSymbol? _generatedCodeAttribute;
 
 		/// <inheritdoc/>
-		public INamedTypeSymbol? EnableModuleAttribute { get; private set; }
+		public INamedTypeSymbol? DurianGeneratedAttribute => IncludeType(GetDurianGeneratedAttributeName(), ref _durianGeneratedAttribute);
 
 		/// <inheritdoc/>
-		public INamedTypeSymbol? GeneratedCodeAttribute { get; private set; }
+		public INamedTypeSymbol? EnableModuleAttribute => IncludeType(GetEnableModuleAttributeName(), ref _enableModuleAttribute);
+
+		/// <inheritdoc/>
+		public INamedTypeSymbol? GeneratedCodeAttribute => IncludeType(GetGeneratedCodeAttributeName(), ref _generatedCodeAttribute);
 
 		/// <inheritdoc/>
 		[MemberNotNullWhen(false, nameof(GeneratedCodeAttribute), nameof(DurianGeneratedAttribute), nameof(EnableModuleAttribute))]
@@ -43,16 +51,39 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public CompilationWithEssentialSymbols(CSharpCompilation compilation) : base(compilation)
+		public CompilationWithEssentialSymbols(CSharpCompilation compilation) : base(compilation, false)
 		{
 		}
 
 		/// <inheritdoc/>
 		public override void Reset()
 		{
-			DurianGeneratedAttribute = IncludeType(typeof(DurianGeneratedAttribute).ToString());
-			GeneratedCodeAttribute = IncludeType(typeof(GeneratedCodeAttribute).ToString());
-			EnableModuleAttribute = IncludeType(typeof(EnableModuleAttribute).ToString());
+			_durianGeneratedAttribute = default;
+			_generatedCodeAttribute = default;
+			_enableModuleAttribute = default;
+		}
+
+		/// <inheritdoc/>
+		public override void ForceReset()
+		{
+			_durianGeneratedAttribute = IncludeType(GetDurianGeneratedAttributeName());
+			_generatedCodeAttribute = IncludeType(GetGeneratedCodeAttributeName());
+			_enableModuleAttribute = IncludeType(GetEnableModuleAttributeName());
+		}
+
+		private string GetDurianGeneratedAttributeName()
+		{
+			return _durianGeneratedAttributeName ??= typeof(DurianGeneratedAttribute).ToString();
+		}
+
+		private string GetGeneratedCodeAttributeName()
+		{
+			return _generatedCodeAttributeName ??= typeof(GeneratedCodeAttribute).ToString();
+		}
+
+		private string GetEnableModuleAttributeName()
+		{
+			return _enableModuleAttributeName ??= typeof(EnableModuleAttribute).ToString();
 		}
 	}
 }

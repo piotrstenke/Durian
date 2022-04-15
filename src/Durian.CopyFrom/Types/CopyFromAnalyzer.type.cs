@@ -12,7 +12,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Text;
 using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
 
 namespace Durian.Analysis.CopyFrom
@@ -72,15 +71,6 @@ namespace Durian.Analysis.CopyFrom
 			return IsValidTarget(symbol);
 		}
 
-		private static void AnalyzeTypeAttribute(SyntaxNodeAnalysisContext context, CopyFromCompilationData compilation, AttributeSyntax attr, CSharpSyntaxNode member)
-		{
-			if (context.SemanticModel.GetDeclaredSymbol(member) is INamedTypeSymbol typeSymbol && ShouldAnalyze(typeSymbol))
-			{
-				DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
-				AnalyzeTypeWithoutPattern(new CopyFromTypeContext(compilation, context.SemanticModel, typeSymbol, cancellationToken: context.CancellationToken), attr, diagnosticReceiver);
-			}
-		}
-
 		internal static bool AnalyzeTypeWithoutPattern(
 			in CopyFromTypeContext context,
 			out ImmutableArray<AttributeData> attributes,
@@ -135,6 +125,15 @@ namespace Durian.Analysis.CopyFrom
 			targetTypes = default;
 			dependencies = default;
 			return false;
+		}
+
+		private static void AnalyzeTypeAttribute(SyntaxNodeAnalysisContext context, CopyFromCompilationData compilation, AttributeSyntax attr, CSharpSyntaxNode member)
+		{
+			if (context.SemanticModel.GetDeclaredSymbol(member) is INamedTypeSymbol typeSymbol && ShouldAnalyze(typeSymbol))
+			{
+				DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
+				AnalyzeTypeWithoutPattern(new CopyFromTypeContext(compilation, context.SemanticModel, typeSymbol, cancellationToken: context.CancellationToken), attr, diagnosticReceiver);
+			}
 		}
 
 		private static bool AnalyzeTypeWithoutPattern(
@@ -210,8 +209,9 @@ namespace Durian.Analysis.CopyFrom
 		{
 			int order = GetOrder(attribute);
 			bool handleSpecialMembers = ShouldHandleSpecialMembers(attribute);
+			bool copyAttributes = ShouldCopyAttributes(attribute);
 
-			return new(target, order, partialPart, partialPartName, usings, handleSpecialMembers);
+			return new(target, order, usings, partialPart, partialPartName, handleSpecialMembers, copyAttributes);
 		}
 
 		private static bool EnsureIsInPartialContext(INamedTypeSymbol type)
@@ -256,7 +256,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				string actual = FormatUsing(@using);
 
-				if(includedUsings.Add(actual))
+				if (includedUsings.Add(actual))
 				{
 					hasAny = true;
 				}
@@ -307,12 +307,12 @@ namespace Durian.Analysis.CopyFrom
 			{
 				if (argument is null)
 				{
-					if(failedFind)
+					if (failedFind)
 					{
 						return attributeLocation;
 					}
 
-					if(attribute.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax attributeSyntax)
+					if (attribute.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax attributeSyntax)
 					{
 						attributeLocation = Location.None;
 						failedFind = true;
@@ -376,25 +376,6 @@ namespace Durian.Analysis.CopyFrom
 			return actual;
 		}
 
-		private static AttributeData[]? GetCopyFromAttributes(INamedTypeSymbol type, CopyFromCompilationData compilation, out ImmutableArray<AttributeData> allAttributes)
-		{
-			allAttributes = type.GetAttributes();
-
-			if (allAttributes.Length == 0)
-			{
-				return default;
-			}
-
-			AttributeData[] copyFroms = GetAttributes(allAttributes, compilation.CopyFromTypeAttribute!);
-
-			if (copyFroms.Length == 0)
-			{
-				return default;
-			}
-
-			return copyFroms;
-		}
-
 		private static HashSet<string> GetCopiedUsings(AttributeData attribute, TypeDeclarationSyntax declaration)
 		{
 			HashSet<string> usings = new();
@@ -431,6 +412,25 @@ namespace Durian.Analysis.CopyFrom
 
 				return @using.Name.ToString();
 			}
+		}
+
+		private static AttributeData[]? GetCopyFromAttributes(INamedTypeSymbol type, CopyFromCompilationData compilation, out ImmutableArray<AttributeData> allAttributes)
+		{
+			allAttributes = type.GetAttributes();
+
+			if (allAttributes.Length == 0)
+			{
+				return default;
+			}
+
+			AttributeData[] copyFroms = GetAttributes(allAttributes, compilation.CopyFromTypeAttribute!);
+
+			if (copyFroms.Length == 0)
+			{
+				return default;
+			}
+
+			return copyFroms;
 		}
 
 		private static INamedTypeSymbol? GetTargetType(
@@ -552,6 +552,26 @@ namespace Durian.Analysis.CopyFrom
 			return HasValidTypeArguments(type.TypeParameters, type.TypeArguments, out invalidArguments);
 		}
 
+		private static bool IsCircularDependency(in CopyFromTypeContext context, INamedTypeSymbol target, List<INamedTypeSymbol> dependencies)
+		{
+			foreach (AttributeData attribute in target.GetAttributes(context.Compilation.CopyFromTypeAttribute!))
+			{
+				if (GetTargetType(attribute, context.SemanticModel, out _, out _) is not INamedTypeSymbol type)
+				{
+					continue;
+				}
+
+				if (SymbolEqualityComparer.Default.Equals(context.Symbol, type) || IsCircularDependency(in context, type, dependencies))
+				{
+					return true;
+				}
+
+				dependencies.Add(target);
+			}
+
+			return false;
+		}
+
 		private static bool IsInDifferentAssembly(INamedTypeSymbol type, INamedTypeSymbol target)
 		{
 			return !SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, target.ContainingAssembly);
@@ -636,7 +656,7 @@ namespace Durian.Analysis.CopyFrom
 
 			FindAddedUsings(attribute, copied, symbol, diagnosticReceiver);
 
-			if(copied.Count > 0)
+			if (copied.Count > 0)
 			{
 				usings = new string[copied.Count];
 				copied.CopyTo(usings);
@@ -732,26 +752,6 @@ namespace Durian.Analysis.CopyFrom
 			return true;
 		}
 
-		private static bool IsCircularDependency(in CopyFromTypeContext context, INamedTypeSymbol target, List<INamedTypeSymbol> dependencies)
-		{
-			foreach (AttributeData attribute in target.GetAttributes(context.Compilation.CopyFromTypeAttribute!))
-			{
-				if (GetTargetType(attribute, context.SemanticModel, out _, out _) is not INamedTypeSymbol type)
-				{
-					continue;
-				}
-
-				if (SymbolEqualityComparer.Default.Equals(context.Symbol, type) || IsCircularDependency(in context, type, dependencies))
-				{
-					return true;
-				}
-
-				dependencies.Add(target);
-			}
-
-			return false;
-		}
-
 		private static bool ValidateTargetType(
 			in CopyFromTypeContext context,
 			AttributeData attribute,
@@ -785,7 +785,7 @@ namespace Durian.Analysis.CopyFrom
 				diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, location, context.Symbol, target);
 				isValid = false;
 			}
-			else if(IsCircularDependency(in context, target, dependencies))
+			else if (IsCircularDependency(in context, target, dependencies))
 			{
 				location ??= attribute.GetLocation();
 				diagnosticReceiver.ReportDiagnostic(DUR0221_CircularDependency, location, context.Symbol);

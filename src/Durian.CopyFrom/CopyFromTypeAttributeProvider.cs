@@ -14,6 +14,11 @@ namespace Durian.Analysis.CopyFrom
 		public const string AddUsings = "AddUsings";
 
 		/// <summary>
+		/// Name of the 'CopyAttributes' property.
+		/// </summary>
+		public const string CopyAttributes = "CopyAttributes";
+
+		/// <summary>
 		/// Name of the 'CopyUsings' property.
 		/// </summary>
 		public const string CopyUsings = "CopyUsings";
@@ -99,6 +104,11 @@ namespace {Namespace}
 		/// Specifies, which namespaces should be imported for the generated code.
 		/// </summary>
 		public string[]? {AddUsings} {{ get; set; }}
+
+		/// <summary>
+		/// Determines whether to copy attributes applied to the target. Defaults to <see langword=""false""/>.
+		/// </summary>
+		public bool {CopyAttributes} {{ get; set; }}
 
 		/// <summary>
 		/// Determines whether to copy usings from the target type's source file. Defaults to <see langword=""true""/>.

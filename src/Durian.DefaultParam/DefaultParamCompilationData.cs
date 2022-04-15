@@ -15,30 +15,36 @@ namespace Durian.Analysis.DefaultParam
 	/// </summary>
 	public sealed class DefaultParamCompilationData : CompilationWithEssentialSymbols
 	{
+		private INamedTypeSymbol? _defaultParamAtttribute;
+		private INamedTypeSymbol? _defaultParamConfigurationAttribute;
+		private INamedTypeSymbol? _defaultParamScopedConfigurationAttribute;
+		private INamedTypeSymbol? _dpMethodConventionAttribute;
+		private INamedTypeSymbol? _dpTypeConventionAttribute;
+
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <c>Durian.DefaultParamAttribute</c> class.
 		/// </summary>
-		public INamedTypeSymbol? DefaultParamAttribute { get; private set; }
+		public INamedTypeSymbol? DefaultParamAttribute => IncludeType(DefaultParamAttributeProvider.FullName, ref _defaultParamAtttribute);
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c> class.
 		/// </summary>
-		public INamedTypeSymbol? DefaultParamConfigurationAttribute { get; private set; }
+		public INamedTypeSymbol? DefaultParamConfigurationAttribute => IncludeType(DefaultParamConfigurationAttributeProvider.FullName, ref _defaultParamConfigurationAttribute);
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> class.
 		/// </summary>
-		public INamedTypeSymbol? DefaultParamScopedConfigurationAttribute { get; private set; }
+		public INamedTypeSymbol? DefaultParamScopedConfigurationAttribute => IncludeType(DefaultParamScopedConfigurationAttributeProvider.FullName, ref _defaultParamScopedConfigurationAttribute);
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <c>Durian.Configuration.DPMethodConvention</c> enum.
 		/// </summary>
-		public INamedTypeSymbol? DPMethodConvention { get; private set; }
+		public INamedTypeSymbol? DPMethodConvention => IncludeType(DPMethodConventionProvider.FullName, ref _dpMethodConventionAttribute);
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> of the <c>Durian.Configuration.DPTypeConvention</c> enum.
 		/// </summary>
-		public INamedTypeSymbol? DPTypeConvention { get; private set; }
+		public INamedTypeSymbol? DPTypeConvention => IncludeType(DPTypeConventionProvider.FullName, ref _dpTypeConventionAttribute);
 
 		/// <summary>
 		/// <see cref="DefaultParamConfiguration"/> created from the <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c>
@@ -89,11 +95,23 @@ namespace Durian.Analysis.DefaultParam
 		{
 			base.Reset();
 
-			DefaultParamAttribute = IncludeType(DefaultParamAttributeProvider.FullName);
-			DefaultParamConfigurationAttribute = IncludeType(DefaultParamConfigurationAttributeProvider.FullName);
-			DefaultParamScopedConfigurationAttribute = IncludeType(DefaultParamScopedConfigurationAttributeProvider.FullName);
-			DPTypeConvention = IncludeType(DPTypeConventionProvider.FullName);
-			DPMethodConvention = IncludeType(DPMethodConventionProvider.FullName);
+			_defaultParamAtttribute = default;
+			_defaultParamConfigurationAttribute = default;
+			_defaultParamScopedConfigurationAttribute = default;
+			_dpTypeConventionAttribute = default;
+			_dpMethodConventionAttribute = default;
+		}
+
+		/// <inheritdoc/>
+		public override void ForceReset()
+		{
+			base.ForceReset();
+
+			_defaultParamAtttribute = IncludeType(DefaultParamAttributeProvider.TypeName);
+			_defaultParamConfigurationAttribute = IncludeType(DefaultParamConfigurationAttributeProvider.TypeName);
+			_defaultParamScopedConfigurationAttribute = IncludeType(DefaultParamScopedConfigurationAttributeProvider.TypeName);
+			_dpTypeConventionAttribute = IncludeType(DPTypeConventionProvider.TypeName);
+			_dpMethodConventionAttribute = IncludeType(DPMethodConventionProvider.TypeName);
 		}
 
 		private static DefaultParamConfiguration BuildConfiguration(AttributeData attribute)

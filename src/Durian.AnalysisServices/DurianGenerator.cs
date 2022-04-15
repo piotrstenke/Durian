@@ -16,11 +16,14 @@ namespace Durian.Analysis
 	/// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> this generator uses.</typeparam>
 	public abstract class DurianGenerator<TContext> : DurianGeneratorWithContext<TContext> where TContext : GeneratorPassContext
 	{
+		private readonly IGeneratorServiceContainer _serviceContainer;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGenerator{TContext}"/> class.
 		/// </summary>
 		protected DurianGenerator()
 		{
+			_serviceContainer = InitServices();
 		}
 
 		/// <summary>
@@ -29,6 +32,7 @@ namespace Durian.Analysis
 		/// <param name="context">Configures how this <see cref="DurianGenerator{TContext}"/> is initialized.</param>
 		protected DurianGenerator(in GeneratorLogCreationContext context) : base(in context)
 		{
+			_serviceContainer = InitServices();
 		}
 
 		/// <summary>
@@ -37,15 +41,29 @@ namespace Durian.Analysis
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		protected DurianGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 		{
+			_serviceContainer = InitServices();
+		}
+
+		private IGeneratorServiceContainer InitServices()
+		{
+			GeneratorServiceContainer services = new();
+			ConfigureServices(services);
+			return services;
 		}
 
 		/// <summary>
-		/// Configures services to be used during the current generator pass.
+		/// Configures services used by this generator.
 		/// </summary>
 		/// <param name="services">Container of services to configure.</param>
 		public virtual void ConfigureServices(IGeneratorServiceContainer services)
 		{
 			// Do nothing by default.
+		}
+
+		/// <inheritdoc/>
+		public override void Initialize(GeneratorInitializationContext context)
+		{
+			base.Initialize(context);
 		}
 
 		/// <summary>
@@ -113,11 +131,9 @@ namespace Durian.Analysis
 				return default;
 			}
 
-			IGeneratorServiceContainer services = new GeneratorServiceContainer();
-
-			ConfigureServices(services);
-
 			TContext pass = CreateCurrentPassContext(data, in context);
+
+			IGeneratorServiceResolver services = _serviceContainer.CreateResolver();
 
 			pass._originalContext = context;
 			pass.Generator = this;
@@ -176,7 +192,7 @@ namespace Durian.Analysis
 	}
 
 	/// <inheritdoc cref="DurianGenerator{TContext}"/>
-	public abstract class DurianGenerator : DurianGeneratorWithContext<GeneratorPassContext>
+	public abstract class DurianGenerator : DurianGenerator<GeneratorPassContext>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGenerator"/> class.
@@ -202,9 +218,9 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		protected internal override GeneratorPassContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, in GeneratorExecutionContext context)
+		protected override GeneratorPassContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
 		{
-			return new GeneratorPassContext();
+			return new();
 		}
 	}
 }

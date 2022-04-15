@@ -40,7 +40,7 @@ namespace Durian.Analysis
 		public CSharpParseOptions ParseOptions { get; internal set; }
 
 		/// <inheritdoc/>
-		public IGeneratorServiceContainer Services { get; internal set; }
+		public IGeneratorServiceResolver Services { get; internal set; }
 
 		/// <inheritdoc/>
 		public GeneratorState State { get; internal set; }
@@ -79,7 +79,7 @@ namespace Durian.Analysis
 			IDurianSyntaxReceiver syntaxReceiver,
 			CSharpParseOptions parseOptions,
 			IHintNameProvider fileNameProvider,
-			IGeneratorServiceContainer services,
+			IGeneratorServiceResolver services,
 			CancellationToken cancellationToken = default
 		)
 		{

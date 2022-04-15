@@ -95,15 +95,15 @@ namespace Durian.Analysis.DefaultParam.Delegates
 			return new DelegateDeclarationBuilder(this, cancellationToken);
 		}
 
+		IDefaultParamDeclarationBuilder IDefaultParamTarget.GetDeclarationBuilder(CancellationToken cancellationToken)
+		{
+			return GetDeclarationBuilder(cancellationToken);
+		}
+
 		/// <inheritdoc/>
 		public IEnumerable<string> GetUsedNamespaces(CancellationToken cancellationToken = default)
 		{
 			return DefaultParamUtilities.GetUsedNamespaces(this, in _typeParameters, cancellationToken);
-		}
-
-		IDefaultParamDeclarationBuilder IDefaultParamTarget.GetDeclarationBuilder(CancellationToken cancellationToken)
-		{
-			return GetDeclarationBuilder(cancellationToken);
 		}
 
 		IEnumerable<string> IDefaultParamTarget.GetUsedNamespaces()

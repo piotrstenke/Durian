@@ -43,7 +43,7 @@ namespace Durian.Analysis.Cache
 
 		CSharpParseOptions IGeneratorPassContext.ParseOptions => UnderlayingContext.ParseOptions;
 
-		IGeneratorServiceContainer IGeneratorPassContext.Services => UnderlayingContext.Services;
+		IGeneratorServiceResolver IGeneratorPassContext.Services => UnderlayingContext.Services;
 
 		GeneratorState IGeneratorPassContext.State => UnderlayingContext.State;
 

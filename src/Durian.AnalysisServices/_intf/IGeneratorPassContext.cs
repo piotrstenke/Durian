@@ -52,7 +52,7 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Container of services that can be resolved during the current generator pass.
 		/// </summary>
-		IGeneratorServiceContainer Services { get; }
+		IGeneratorServiceResolver Services { get; }
 
 		/// <summary>
 		/// Current state of the generator.

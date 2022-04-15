@@ -47,7 +47,7 @@ namespace Durian.Analysis
 			IDurianSyntaxReceiver syntaxReceiver,
 			CSharpParseOptions parseOptions,
 			IHintNameProvider fileNameProvider,
-			IGeneratorServiceContainer services,
+			IGeneratorServiceResolver services,
 			CancellationToken cancellationToken = default
 		) : base(originalContext, generator, targetCompilation, syntaxReceiver, parseOptions, fileNameProvider, services, cancellationToken)
 		{

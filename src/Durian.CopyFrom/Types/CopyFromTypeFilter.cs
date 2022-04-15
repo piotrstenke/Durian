@@ -111,7 +111,7 @@ namespace Durian.Analysis.CopyFrom.Types
 
 			foreach (AttributeData attr in attributes)
 			{
-				if(!SymbolEqualityComparer.Default.Equals(attr.AttributeClass, context.Compilation.PatternAttribute))
+				if (!SymbolEqualityComparer.Default.Equals(attr.AttributeClass, context.Compilation.PatternAttribute))
 				{
 					continue;
 				}

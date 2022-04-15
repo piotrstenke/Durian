@@ -3,10 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
@@ -32,10 +31,9 @@ namespace Durian.Analysis.CopyFrom
 		DefaultNodeOutput = NodeOutput.SyntaxTree)]
 	public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember, CopyFromPassContext>
 	{
-		private const int _numStaticTrees = 4;
-
-		private const string _groupTypes = "Types";
 		private const string _groupMethods = "Methods";
+		private const string _groupTypes = "Types";
+		private const int _numStaticTrees = 4;
 
 		/// <inheritdoc/>
 		public override string GeneratorName => "CopyFrom";
@@ -136,18 +134,6 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		protected override CopyFromPassContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
-		{
-			return new();
-		}
-
-		/// <inheritdoc/>
-		protected override void Dispose(bool disposing)
-		{
-			base.Dispose(disposing);
-		}
-
-		/// <inheritdoc/>
 		protected internal override bool Generate(IMemberData data, string hintName, CopyFromPassContext context)
 		{
 			if (data is not ICopyFromMember target)
@@ -155,45 +141,14 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			if (!HasAllDependencies(target.Dependencies, context))
+			if (context.SymbolRegistry.IsRegistered(target.Symbol))
 			{
-				context.DependencyQueue.Enqueue(target.Declaration, hintName);
-				return false;
-			}
-
-			if(Generate(target, hintName, context))
-			{
-				context.SymbolRegistry.Register(target.Symbol);
 				return true;
 			}
 
-			return false;
-		}
-
-		private bool Generate(
-			IMemberData data,
-			string hintName,
-			CopyFromPassContext context,
-			Queue<(SyntaxReference, string)> dependencies,
-			Queue<(CSharpSyntaxNode, string)> cache
-		)
-		{
-			if (data is not ICopyFromMember target)
-			{
-				return false;
-			}
-
 			if (!HasAllDependencies(target.Dependencies, context))
 			{
-				if(CanCache(cache))
-				{
-					cache.Enqueue((target.Declaration, hintName));
-				}
-				else
-				{
-					dependencies.Enqueue((target.Declaration.GetReference(), hintName));
-				}
-
+				context.DependencyQueue.Enqueue(target.Declaration, hintName);
 				return false;
 			}
 
@@ -206,14 +161,36 @@ namespace Durian.Analysis.CopyFrom
 			return false;
 		}
 
-		private bool Generate(ICopyFromMember data, string hintName, CopyFromPassContext context)
+		/// <inheritdoc/>
+		protected override CopyFromPassContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
 		{
-			if (data is Types.CopyFromTypeData type)
+			return new();
+		}
+
+		/// <inheritdoc/>
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+		}
+
+		private static string ApplyPattern(ICopyFromMember member, CopyFromPassContext context, string input)
+		{
+			string current = input;
+
+			for (int i = 0; i < member.Patterns!.Length; i++)
 			{
-				return GenerateType(type, hintName, context);
+				ref readonly PatternData pattern = ref member.Patterns[i];
+
+				Regex regex = context.RegexProvider.GetRegex(pattern.Pattern);
+				current = regex.Replace(current, pattern.Replacement);
 			}
 
-			return false;
+			return current;
+		}
+
+		private static bool CanCache(Queue<(CSharpSyntaxNode, string)> cache)
+		{
+			return cache.Count < 32;
 		}
 
 		private static Queue<(SyntaxReference, string)> GetDependenciesFromQueue(
@@ -261,16 +238,190 @@ namespace Durian.Analysis.CopyFrom
 			}
 		}
 
-		private static bool CanCache(Queue<(CSharpSyntaxNode, string)> cache)
+		private static DocumentationCommentTriviaSyntax? GetDocumentationTrivia(CSharpSyntaxNode node)
 		{
-			return cache.Count < 32;
+			return node
+				.GetLeadingTrivia()
+				.Where(trivia => trivia.HasStructure)
+				.Select(trivia => trivia.GetStructure())
+				.OfType<DocumentationCommentTriviaSyntax>()
+				.FirstOrDefault();
+		}
+
+		private static string HandleAttributeText(ICopyFromMember member, MemberDeclarationSyntax declaration, CopyFromPassContext context)
+		{
+			StringBuilder attributeText = new();
+
+			if (member.Patterns is null)
+			{
+				foreach (AttributeListSyntax list in declaration.AttributeLists)
+				{
+					for (int i = 0; i < context.CodeBuilder.CurrentIndent; i++)
+					{
+						attributeText.Append('\t');
+					}
+
+					string current = NodeToString(list);
+					attributeText.AppendLine(current);
+				}
+			}
+			else
+			{
+				foreach (AttributeListSyntax list in declaration.AttributeLists)
+				{
+					for (int i = 0; i < context.CodeBuilder.CurrentIndent; i++)
+					{
+						attributeText.Append('\t');
+					}
+
+					string current = NodeToString(list);
+					current = ApplyPattern(member, context, current);
+					attributeText.AppendLine(current);
+				}
+			}
+
+			return attributeText.ToString();
+		}
+
+		private static bool HasAllDependencies(ISymbol[]? symbols, CopyFromPassContext context)
+		{
+			if (symbols is null)
+			{
+				return true;
+			}
+
+			foreach (ISymbol symbol in symbols)
+			{
+				if (!context.SymbolRegistry.IsRegistered(symbol))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		private static MemberDeclarationSyntax SkipGeneratorAttributes(MemberDeclarationSyntax node, SemanticModel semanticModel, CopyFromPassContext context)
+		{
+			SyntaxList<AttributeListSyntax> attributeLists = node.AttributeLists;
+
+			if (!attributeLists.Any())
+			{
+				return node;
+			}
+
+			List<AttributeListSyntax> newAttributeLists = new(attributeLists.Count);
+			List<AttributeSyntax> newAttributes = new();
+
+			bool isChanged = false;
+
+			foreach (AttributeListSyntax attrList in attributeLists)
+			{
+				SeparatedSyntaxList<AttributeSyntax> attributes = attrList.Attributes;
+
+				if (!attributes.Any())
+				{
+					continue;
+				}
+
+				foreach (AttributeSyntax attribute in attributes)
+				{
+					if (semanticModel.GetSymbolInfo(attribute, context.CancellationToken).Symbol?.ContainingType is not INamedTypeSymbol attrType)
+					{
+						continue;
+					}
+
+					if (!SymbolEqualityComparer.Default.Equals(attrType, context.TargetCompilation.DurianGeneratedAttribute) &&
+						!SymbolEqualityComparer.Default.Equals(attrType, context.TargetCompilation.GeneratedCodeAttribute))
+					{
+						newAttributes.Add(attribute);
+					}
+				}
+
+				if (newAttributes.Count > 0)
+				{
+					if (newAttributes.Count == attributes.Count)
+					{
+						newAttributeLists.Add(attrList);
+					}
+					else
+					{
+						newAttributeLists.Add(attrList.WithAttributes(SyntaxFactory.SeparatedList(newAttributes)));
+						isChanged = true;
+					}
+
+					newAttributes.Clear();
+				}
+				else
+				{
+					isChanged = true;
+				}
+			}
+
+			if (isChanged)
+			{
+				return node.WithAttributeLists(SyntaxFactory.List(newAttributeLists));
+			}
+
+			return node;
+		}
+
+		private bool Generate(
+																	IMemberData data,
+			string hintName,
+			CopyFromPassContext context,
+			Queue<(SyntaxReference, string)> dependencies,
+			Queue<(CSharpSyntaxNode, string)> cache
+		)
+		{
+			if (data is not ICopyFromMember target)
+			{
+				return false;
+			}
+
+			if (context.SymbolRegistry.IsRegistered(target.Symbol))
+			{
+				return true;
+			}
+
+			if (!HasAllDependencies(target.Dependencies, context))
+			{
+				if (CanCache(cache))
+				{
+					cache.Enqueue((target.Declaration, hintName));
+				}
+				else
+				{
+					dependencies.Enqueue((target.Declaration.GetReference(), hintName));
+				}
+
+				return false;
+			}
+
+			if (Generate(target, hintName, context))
+			{
+				context.SymbolRegistry.Register(target.Symbol);
+				return true;
+			}
+
+			return false;
+		}
+
+		private bool Generate(ICopyFromMember data, string hintName, CopyFromPassContext context)
+		{
+			if (data is Types.CopyFromTypeData type)
+			{
+				return GenerateType(type, hintName, context);
+			}
+
+			return false;
 		}
 
 		private bool GenerateFromDependencyQueue(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, CopyFromPassContext context)
 		{
 			Queue<(SyntaxReference, string)> dependencies = GetDependenciesFromQueue(filterGroup, context, out Queue<(CSharpSyntaxNode, string)> cache);
 
-			if(dependencies.Count == 0 && cache.Count == 0)
+			if (dependencies.Count == 0 && cache.Count == 0)
 			{
 				return true;
 			}
@@ -279,22 +430,22 @@ namespace Durian.Analysis.CopyFrom
 			{
 				int current = dependencies.Count + cache.Count;
 
-				HandleFilterGroup(filterGroup, context, dependencies, cache, GetNodes());
+				HandleFilterGroup(filterGroup, context, dependencies, cache, GetNodesFromQueue());
 
 				int result = dependencies.Count + cache.Count;
 
-				if(result >= current)
+				if (result >= current)
 				{
 					return false;
 				}
 
-				if(result == 0)
+				if (result == 0)
 				{
 					return true;
 				}
 			}
 
-			IEnumerable<(CSharpSyntaxNode, string)> GetNodes()
+			IEnumerable<(CSharpSyntaxNode, string)> GetNodesFromQueue()
 			{
 				int cacheLength = cache.Count;
 				int depLength = dependencies.Count;
@@ -310,18 +461,31 @@ namespace Durian.Analysis.CopyFrom
 
 					CSharpSyntaxNode node = (CSharpSyntaxNode)reference.GetSyntax();
 
-					if(CanCache(cache))
-					{
-						cache.Enqueue((node, hintName));
-					}
-
 					yield return (node, hintName);
 				}
 			}
 		}
 
-		private void HandleFilterGroup(
+		private void GenerateFromFiltersWithGeneratedSymbols(
 			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
+			List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols,
+			CopyFromPassContext context,
+			Queue<(SyntaxReference, string)> dependencies,
+			Queue<(CSharpSyntaxNode, string)> cache,
+			IEnumerable<(CSharpSyntaxNode node, string hintName)> nodes
+		)
+		{
+			BeforeFiltersWithGeneratedSymbols(context);
+			BeforeFiltrationOfGeneratedSymbols(filterGroup, context);
+
+			foreach (IGeneratorSyntaxFilter filter in filtersWithGeneratedSymbols)
+			{
+				IterateThroughFilter(filterGroup, filter, context, dependencies, cache, nodes);
+			}
+		}
+
+		private void HandleFilterGroup(
+					IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
 			CopyFromPassContext context,
 			Queue<(SyntaxReference, string)> dependencies,
 			Queue<(CSharpSyntaxNode, string)> cache,
@@ -334,6 +498,11 @@ namespace Durian.Analysis.CopyFrom
 			//filterGroup.Unseal();
 			BeforeFiltrationOfGroup(filterGroup, context);
 			//filterGroup.Seal();
+
+			// TODO: Current implementation will enumerate 'nodes' for each filter in the group.
+			// That's OK for now, since all filter groups in CopyFrom contain only a single filter,
+			// but if there will ever be need to make this code more generic (e.g. by moving it to one of abstract DurianGenerators),
+			// the implementation must be re-written.
 
 			foreach (IGeneratorSyntaxFilter filter in filterGroup)
 			{
@@ -353,24 +522,6 @@ namespace Durian.Analysis.CopyFrom
 
 			//filterGroup.Unseal();
 			AfterExecutionOfGroup(filterGroup, context);
-		}
-
-		private void GenerateFromFiltersWithGeneratedSymbols(
-			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
-			List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols,
-			CopyFromPassContext context,
-			Queue<(SyntaxReference, string)> dependencies,
-			Queue<(CSharpSyntaxNode, string)> cache,
-			IEnumerable<(CSharpSyntaxNode node, string hintName)> nodes
-		)
-		{
-			BeforeFiltersWithGeneratedSymbols(context);
-			BeforeFiltrationOfGeneratedSymbols(filterGroup, context);
-
-			foreach (IGeneratorSyntaxFilter filter in filtersWithGeneratedSymbols)
-			{
-				IterateThroughFilter(filterGroup, filter, context, dependencies, cache, nodes);
-			}
 		}
 
 		private void IterateThroughFilter(
@@ -398,34 +549,6 @@ namespace Durian.Analysis.CopyFrom
 			}
 		}
 
-		private static DocumentationCommentTriviaSyntax? GetDocumentationTrivia(CSharpSyntaxNode node)
-		{
-			return node
-				.GetLeadingTrivia()
-				.Where(trivia => trivia.HasStructure)
-				.Select(trivia => trivia.GetStructure())
-				.OfType<DocumentationCommentTriviaSyntax>()
-				.FirstOrDefault();
-		}
-
-		private static bool HasAllDependencies(ISymbol[]? symbols, CopyFromPassContext context)
-		{
-			if (symbols is null)
-			{
-				return true;
-			}
-
-			foreach (ISymbol symbol in symbols)
-			{
-				if(!context.SymbolRegistry.IsRegistered(symbol))
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-
 		private void WriteGeneratedMember(
 			ICopyFromMember member,
 			CSharpSyntaxNode node,
@@ -438,15 +561,9 @@ namespace Durian.Analysis.CopyFrom
 			string current = NodeToString(node);
 			string generatedFrom = AutoGenerated.GetDurianGeneratedAttribute(SymbolToString(original));
 
-			if(documentation is null)
+			if (documentation is null)
 			{
-				for (int i = 0; i < member.Patterns!.Length; i++)
-				{
-					ref readonly PatternData pattern = ref member.Patterns[i];
-
-					Regex regex = new(pattern.Pattern, RegexOptions.CultureInvariant | RegexOptions.Singleline);
-					current = regex.Replace(current, pattern.Replacement);
-				}
+				current = ApplyPattern(member, context, current);
 
 				if (applyInheritdoc == GenerateDocumentation.Always)
 				{
@@ -466,7 +583,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				ref readonly PatternData pattern = ref member.Patterns[i];
 
-				Regex regex = new(pattern.Pattern, RegexOptions.CultureInvariant | RegexOptions.Singleline);
+				Regex regex = context.RegexProvider.GetRegex(pattern.Pattern);
 				current = regex.Replace(current, pattern.Replacement);
 				doc = regex.Replace(doc, pattern.Replacement);
 			}

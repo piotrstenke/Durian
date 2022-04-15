@@ -9,6 +9,11 @@ namespace Durian.Analysis.CopyFrom
 	public sealed class CopyFromMethodAttributeProvider : SourceTextProvider
 	{
 		/// <summary>
+		/// Name of the 'CopyAttributes' property.
+		/// </summary>
+		public const string CopyAttributes = "CopyAttributes";
+
+		/// <summary>
 		/// Full name of the provided type.
 		/// </summary>
 		public const string FullName = Namespace + "." + TypeName;
@@ -65,6 +70,11 @@ namespace {Namespace}
 	[Conditional(""DEBUG"")]
 	public sealed class {TypeName} : Attribute
 	{{
+		/// <summary>
+		/// Determines whether to copy attributes applied to the target. Defaults to <see langword=""false""/>.
+		/// </summary>
+		public bool {CopyAttributes} {{ get; set; }}
+
 		/// <summary>
 		/// Source of the copied implementation.
 		/// </summary>

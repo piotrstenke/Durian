@@ -33,7 +33,7 @@ namespace Durian.Analysis.CopyFrom
 
 			if (hasAnyTarget)
 			{
-				if(!hasTargetOnSameDeclaration)
+				if (!hasTargetOnSameDeclaration)
 				{
 					location = patternAttribute.GetLocation();
 					diagnosticReceiver.ReportDiagnostic(DUR0219_PatternOnDifferentDeclaration, location, symbol);
@@ -64,8 +64,13 @@ namespace Durian.Analysis.CopyFrom
 			return isValid;
 		}
 
+		internal static Location? GetParentLocation(AttributeData attribute)
+		{
+			return attribute.ApplicationSyntaxReference?.GetSyntax()?.Parent?.Parent?.GetLocation();
+		}
+
 		internal static bool HasValidRegexPattern(
-			AttributeData attribute,
+					AttributeData attribute,
 			[NotNullWhen(true)] out string? pattern,
 			[NotNullWhen(true)] out string? replacement,
 			out int order
@@ -95,7 +100,7 @@ namespace Durian.Analysis.CopyFrom
 
 		internal static PatternData[]? SortByOrder(List<(int order, PatternData pattern)> patterns)
 		{
-			if(patterns.Count == 0)
+			if (patterns.Count == 0)
 			{
 				return default;
 			}
@@ -207,11 +212,6 @@ namespace Durian.Analysis.CopyFrom
 				DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
 				AnalyzePattern(symbol, compilation, attr, diagnosticReceiver);
 			}
-		}
-
-		internal static Location? GetParentLocation(AttributeData attribute)
-		{
-			return attribute.ApplicationSyntaxReference?.GetSyntax()?.Parent?.Parent?.GetLocation();
 		}
 	}
 }

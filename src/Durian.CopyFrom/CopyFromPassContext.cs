@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading;
-using Durian.Analysis.Data;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -16,27 +15,28 @@ namespace Durian.Analysis.CopyFrom
 	public sealed class CopyFromPassContext : GeneratorPassBuilderContext
 	{
 		/// <summary>
-		/// <see cref="CopyFrom.SymbolRegistry"/> that contains all the symbols that were already generated.
-		/// </summary>
-		public SymbolRegistry SymbolRegistry { get; } = new();
-
-		/// <summary>
-		/// <see cref="Queue{T}"/> that contains <see cref="ICopyFromMember"/> waiting for their dependencies to be generated.
+		/// Queue that contains <see cref="ICopyFromMember"/> waiting for their dependencies to be generated.
 		/// </summary>
 		public DependencyQueue DependencyQueue { get; } = new();
 
 		/// <inheritdoc cref="GeneratorPassContext.Generator"/>
 		public new CopyFromGenerator Generator => (base.Generator as CopyFromGenerator)!;
 
+		/// <summary>
+		/// Provides <see cref="Regex"/> for a given pattern.
+		/// </summary>
+		public RegexProvider RegexProvider { get; } = new();
+
+		/// <summary>
+		/// <see cref="CopyFrom.SymbolRegistry"/> that contains all the symbols that were already generated.
+		/// </summary>
+		public SymbolRegistry SymbolRegistry { get; } = new();
+
 		/// <inheritdoc cref="GeneratorPassContext.SyntaxReceiver"/>
 		public new CopyFromSyntaxReceiver SyntaxReceiver => (base.SyntaxReceiver as CopyFromSyntaxReceiver)!;
 
 		/// <inheritdoc cref="GeneratorPassContext.TargetCompilation"/>
 		public new CopyFromCompilationData TargetCompilation => (base.TargetCompilation as CopyFromCompilationData)!;
-
-		internal CopyFromPassContext(IHintNameProvider? fileNameProvider = default, CSharpParseOptions? parseOptions = default) : base(fileNameProvider, parseOptions)
-		{
-		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromPassContext"/> class.
@@ -56,9 +56,13 @@ namespace Durian.Analysis.CopyFrom
 			CopyFromSyntaxReceiver syntaxReceiver,
 			CSharpParseOptions parseOptions,
 			IHintNameProvider fileNameProvider,
-			IGeneratorServiceContainer services,
+			IGeneratorServiceResolver services,
 			CancellationToken cancellationToken = default
 		) : base(originalContext, generator, targetCompilation, syntaxReceiver, parseOptions, fileNameProvider, services, cancellationToken)
+		{
+		}
+
+		internal CopyFromPassContext(IHintNameProvider? fileNameProvider = default, CSharpParseOptions? parseOptions = default) : base(fileNameProvider, parseOptions)
 		{
 		}
 	}

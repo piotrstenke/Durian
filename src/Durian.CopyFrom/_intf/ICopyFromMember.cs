@@ -20,10 +20,5 @@ namespace Durian.Analysis.CopyFrom
 		/// A collection of patterns applied to the member using <c>Durian.PatternAttribute</c>.
 		/// </summary>
 		PatternData[]? Patterns { get; }
-
-		/// <summary>
-		/// Target members.
-		/// </summary>
-		TargetData[] Targets { get; }
 	}
 }

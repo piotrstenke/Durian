@@ -58,6 +58,37 @@ namespace Durian.Analysis.CopyFrom
 			context.RegisterSyntaxNodeAction(c => AnalyzeAttributeSyntax(c, compilation), SyntaxKind.Attribute);
 		}
 
+		internal static bool HasCopyFromsOnCurrentDeclaration(MemberDeclarationSyntax currentDeclaration, AttributeData[] attributes)
+		{
+			Location? currentLocation = currentDeclaration.GetLocation();
+
+			if (currentLocation is null || currentLocation.SourceTree is null)
+			{
+				return false;
+			}
+
+			TextSpan span = currentLocation.SourceSpan;
+
+			foreach (AttributeData attribute in attributes)
+			{
+				SyntaxReference? reference = attribute.ApplicationSyntaxReference;
+
+				if (reference?.SyntaxTree == currentLocation.SourceTree && span.Contains(reference.Span.Start))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		internal static bool IsCopyFromAttribute(AttributeData attribute, CopyFromCompilationData compilation)
+		{
+			return
+				SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.CopyFromMethodAttribute) ||
+				SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.CopyFromTypeAttribute);
+		}
+
 		/// <inheritdoc/>
 		protected override CopyFromCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
 		{
@@ -100,13 +131,6 @@ namespace Durian.Analysis.CopyFrom
 			}
 		}
 
-		internal static bool IsCopyFromAttribute(AttributeData attribute, CopyFromCompilationData compilation)
-		{
-			return
-				SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.CopyFromMethodAttribute) ||
-				SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.CopyFromTypeAttribute);
-		}
-
 		private static AttributeData[] GetAttributes(ImmutableArray<AttributeData> attributes, INamedTypeSymbol attrSymbol)
 		{
 			return attributes.Where(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol)).ToArray();
@@ -115,30 +139,6 @@ namespace Durian.Analysis.CopyFrom
 		private static int GetOrder(AttributeData attribute)
 		{
 			return attribute.GetNamedArgumentValue<int>(CopyFromTypeAttributeProvider.Order);
-		}
-
-		internal static bool HasCopyFromsOnCurrentDeclaration(MemberDeclarationSyntax currentDeclaration, AttributeData[] attributes)
-		{
-			Location? currentLocation = currentDeclaration.GetLocation();
-
-			if (currentLocation is null || currentLocation.SourceTree is null)
-			{
-				return false;
-			}
-
-			TextSpan span = currentLocation.SourceSpan;
-
-			foreach (AttributeData attribute in attributes)
-			{
-				SyntaxReference? reference = attribute.ApplicationSyntaxReference;
-
-				if (reference?.SyntaxTree == currentLocation.SourceTree && span.Contains(reference.Span.Start))
-				{
-					return true;
-				}
-			}
-
-			return false;
 		}
 
 		private static bool HasValidTypeArguments(
@@ -180,6 +180,11 @@ namespace Durian.Analysis.CopyFrom
 
 			invalidArguments = default;
 			return true;
+		}
+
+		private static bool ShouldCopyAttributes(AttributeData attribute)
+		{
+			return attribute.GetNamedArgumentValue<bool>(CopyFromTypeAttributeProvider.CopyAttributes);
 		}
 	}
 }

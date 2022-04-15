@@ -24,22 +24,15 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public CompilationData(CSharpCompilation compilation)
+		public CompilationData(CSharpCompilation compilation) : this(compilation, true)
 		{
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			Compilation = compilation;
-			Reset();
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CompilationData"/> class.
 		/// </summary>
 		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
-		/// <param name="reset">Determines whether to call <see cref="Reset"/>().</param>
+		/// <param name="reset">Determines whether to call <see cref="Reset"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		protected CompilationData(CSharpCompilation compilation, bool reset)
 		{
@@ -60,6 +53,14 @@ namespace Durian.Analysis.Data
 		/// Resets all collected <see cref="ISymbol"/>s.
 		/// </summary>
 		public virtual void Reset()
+		{
+			ForceReset();
+		}
+
+		/// <summary>
+		/// Resets all collected <see cref="ISymbol"/>s without lazy initialization.
+		/// </summary>
+		public virtual void ForceReset()
 		{
 			// Do nothing by default.
 		}
@@ -135,9 +136,10 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <summary>
-		/// Returns a <see cref="INamedTypeSymbol"/> by the specified <paramref name="metadataName"/> and sets <see cref="HasErrors"/> to <see langword="true"/> if the <see cref="INamedTypeSymbol"/> could not be found.
+		/// Attempts to retrieve a <see cref="INamedTypeSymbol"/> by the specified <paramref name="metadataName"/> from the <see cref="Compilation"/>
+		/// and sets <see cref="HasErrors"/> to <see langword="true"/> if the <see cref="INamedTypeSymbol"/> could not be found.
 		/// </summary>
-		/// <param name="metadataName">Metadata name of <see cref="INamedTypeSymbol"/> to include.</param>
+		/// <param name="metadataName">Meta data name of <see cref="INamedTypeSymbol"/> to include.</param>
 		protected INamedTypeSymbol? IncludeType(string metadataName)
 		{
 			if (Compilation.GetTypeByMetadataName(metadataName) is not INamedTypeSymbol t)
@@ -147,6 +149,22 @@ namespace Durian.Analysis.Data
 			}
 
 			return t;
+		}
+
+		/// <summary>
+		/// Returns a <see cref="INamedTypeSymbol"/> contained in the specified <paramref name="field"/>. If the <paramref name="field"/> is <see langword="null"/>,
+		/// attempts to retrieve a <see cref="INamedTypeSymbol"/> by the specified <paramref name="metadataName"/> from the <see cref="Compilation"/>.
+		/// </summary>
+		/// <param name="metadataName">Meta data name of <see cref="INamedTypeSymbol"/> to include.</param>
+		/// <param name="field">Field to save the returned <see cref="INamedTypeSymbol"/> to.</param>
+		protected INamedTypeSymbol? IncludeType(string metadataName, ref INamedTypeSymbol? field)
+		{
+			if (field is null && !HasErrors)
+			{
+				field = Compilation.GetTypeByMetadataName(metadataName);
+			}
+
+			return field;
 		}
 
 		/// <summary>

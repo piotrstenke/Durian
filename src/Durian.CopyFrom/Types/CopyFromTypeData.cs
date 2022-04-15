@@ -15,6 +15,16 @@ namespace Durian.Analysis.CopyFrom.Types
 	public sealed class CopyFromTypeData : TypeData<TypeDeclarationSyntax>, ICopyFromMember
 	{
 		/// <summary>
+		/// <see cref="INamedTypeSymbol"/>s generation of this type depends on.
+		/// </summary>
+		public INamedTypeSymbol[]? Dependencies { get; }
+
+		ISymbol[]? ICopyFromMember.Dependencies => Dependencies;
+
+		/// <inheritdoc cref="MemberData.ParentCompilation"/>
+		public new CopyFromCompilationData ParentCompilation => (base.ParentCompilation as CopyFromCompilationData)!;
+
+		/// <summary>
 		/// A collection of patterns applied to the type using <c>Durian.PatternAttribute</c>.
 		/// </summary>
 		public PatternData[]? Patterns { get; }
@@ -23,16 +33,6 @@ namespace Durian.Analysis.CopyFrom.Types
 		/// A collection of target types.
 		/// </summary>
 		public TargetData[] Targets { get; }
-
-		/// <summary>
-		/// <see cref="INamedTypeSymbol"/>s generation of this type depends on.
-		/// </summary>
-		public INamedTypeSymbol[]? Dependencies { get; }
-
-		/// <inheritdoc cref="MemberData.ParentCompilation"/>
-		public new CopyFromCompilationData ParentCompilation => (base.ParentCompilation as CopyFromCompilationData)!;
-
-		ISymbol[]? ICopyFromMember.Dependencies => Dependencies;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromTypeData"/> class.

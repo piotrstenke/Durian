@@ -12,17 +12,23 @@ namespace Durian.Analysis.CopyFrom
 	/// <summary>
 	/// <see cref="CompilationData"/> that contains all <see cref="ISymbol"/>s needed to properly analyze types marked with the <c>Durian.CopyFromTypeAttribute</c> or <c>Durian.CopyFromMethodAttribute</c>.
 	/// </summary>
-	public sealed class CopyFromCompilationData : CompilationData
+	public sealed class CopyFromCompilationData : CompilationWithEssentialSymbols
 	{
+		private INamedTypeSymbol? _copyFromMethodAttribute;
+		private INamedTypeSymbol? _copyFromTypeAttribute;
+		private INamedTypeSymbol? _partialNameAttribute;
+		private string? _partialNameAttributeName;
+		private INamedTypeSymbol? _patternAttribute;
+
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> representing the <c>Durian.CopyFromMethodAttribute</c> class.
 		/// </summary>
-		public INamedTypeSymbol? CopyFromMethodAttribute { get; private set; }
+		public INamedTypeSymbol? CopyFromMethodAttribute => IncludeType(CopyFromMethodAttributeProvider.FullName, ref _copyFromMethodAttribute);
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> representing the <c>Durian.CopyFromTypeAttribute</c> class.
 		/// </summary>
-		public INamedTypeSymbol? CopyFromTypeAttribute { get; private set; }
+		public INamedTypeSymbol? CopyFromTypeAttribute => IncludeType(CopyFromTypeAttributeProvider.FullName, ref _copyFromTypeAttribute);
 
 		/// <inheritdoc/>
 		[MemberNotNullWhen(false,
@@ -37,14 +43,19 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> representing the <c>Durian.PatternAttribute</c> class.
+		/// <see cref="CSharpCompilation"/> that was passed to the constructor.
 		/// </summary>
-		public INamedTypeSymbol? PatternAttribute { get; private set; }
+		public CSharpCompilation OriginalCompilation { get; }
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> representing the <see cref="Durian.PartialNameAttribute"/> class.
 		/// </summary>
-		public INamedTypeSymbol? PartialNameAttribute { get; private set; }
+		public INamedTypeSymbol? PartialNameAttribute => IncludeType(GetPartialNameAttributeName(), ref _partialNameAttribute);
+
+		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> representing the <c>Durian.PatternAttribute</c> class.
+		/// </summary>
+		public INamedTypeSymbol? PatternAttribute => IncludeType(PatternAttributeProvider.FullName, ref _patternAttribute);
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromCompilationData"/> class.
@@ -53,6 +64,18 @@ namespace Durian.Analysis.CopyFrom
 		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public CopyFromCompilationData(CSharpCompilation compilation) : base(compilation)
 		{
+			OriginalCompilation = compilation;
+		}
+
+		/// <inheritdoc/>
+		public override void ForceReset()
+		{
+			base.ForceReset();
+
+			_copyFromTypeAttribute = IncludeType(CopyFromTypeAttributeProvider.TypeName);
+			_copyFromMethodAttribute = IncludeType(CopyFromMethodAttributeProvider.TypeName);
+			_patternAttribute = IncludeType(PatternAttributeProvider.TypeName);
+			_partialNameAttribute = IncludeType(GetPartialNameAttributeName());
 		}
 
 		/// <inheritdoc/>
@@ -60,10 +83,15 @@ namespace Durian.Analysis.CopyFrom
 		{
 			base.Reset();
 
-			CopyFromTypeAttribute = IncludeType(CopyFromTypeAttributeProvider.FullName);
-			CopyFromMethodAttribute = IncludeType(CopyFromMethodAttributeProvider.FullName);
-			PatternAttribute = IncludeType(PatternAttributeProvider.FullName);
-			PartialNameAttribute = IncludeType(typeof(PartialNameAttribute).ToString());
+			_copyFromTypeAttribute = default;
+			_copyFromMethodAttribute = default;
+			_patternAttribute = default;
+			_partialNameAttribute = default;
+		}
+
+		private string GetPartialNameAttributeName()
+		{
+			return _partialNameAttributeName ??= typeof(PartialNameAttribute).ToString();
 		}
 	}
 }

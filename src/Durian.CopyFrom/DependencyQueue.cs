@@ -30,6 +30,25 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <summary>
+		/// Attempts to dequeue a <see cref="SyntaxReference"/> to an enqueued <see cref="CSharpSyntaxNode"/>.
+		/// </summary>
+		/// <param name="reference"><see cref="SyntaxReference"/> to an enqueued <see cref="CSharpSyntaxNode"/>.</param>
+		/// <param name="hintName">Name associated with the <paramref name="reference"/>.</param>
+		public bool Dequeue([NotNullWhen(true)] out SyntaxReference? reference, [NotNullWhen(true)] out string? hintName)
+		{
+			if (_queue.TryDequeue(out (SyntaxReference node, string hintName) result))
+			{
+				reference = result.node;
+				hintName = result.hintName;
+				return true;
+			}
+
+			reference = default;
+			hintName = default;
+			return false;
+		}
+
+		/// <summary>
 		/// Enqueues the specified <paramref name="node"/>.
 		/// </summary>
 		/// <param name="node"><see cref="CSharpSyntaxNode"/> to enqueue.</param>
@@ -50,32 +69,13 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <summary>
-		/// Attempts to dequeue a <see cref="SyntaxReference"/> to an enqueued <see cref="CSharpSyntaxNode"/>.
-		/// </summary>
-		/// <param name="reference"><see cref="SyntaxReference"/> to an enqueued <see cref="CSharpSyntaxNode"/>.</param>
-		/// <param name="hintName">Name associated with the <paramref name="reference"/>.</param>
-		public bool Dequeue([NotNullWhen(true)]out SyntaxReference? reference, [NotNullWhen(true)] out string? hintName)
-		{
-			if(_queue.TryDequeue(out (SyntaxReference node, string hintName) result))
-			{
-				reference = result.node;
-				hintName = result.hintName;
-				return true;
-			}
-
-			reference = default;
-			hintName = default;
-			return false;
-		}
-
-		/// <summary>
 		/// Converts the current <see cref="DependencyQueue"/> to a <see cref="Queue{T}"/>.
 		/// </summary>
 		public Queue<(SyntaxReference, string)> ToSystemQueue()
 		{
 			Queue<(SyntaxReference, string)> queue = new(_queue.Count);
 
-			while(!_queue.IsEmpty && _queue.TryDequeue(out (SyntaxReference, string) result))
+			while (!_queue.IsEmpty && _queue.TryDequeue(out (SyntaxReference, string) result))
 			{
 				queue.Enqueue(result);
 			}

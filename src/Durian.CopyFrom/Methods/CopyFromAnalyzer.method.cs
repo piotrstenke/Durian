@@ -381,7 +381,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			AttributeData? attribute = target.GetAttribute(context.Compilation.CopyFromMethodAttribute!);
 
-			if(attribute is null || GetTargetMethod(in context, attribute, out _, out _) is not IMethodSymbol method)
+			if (attribute is null || GetTargetMethod(in context, attribute, out _, out _) is not IMethodSymbol method)
 			{
 				return false;
 			}
@@ -648,7 +648,7 @@ namespace Durian.Analysis.CopyFrom
 					location ??= attribute.GetLocation();
 					diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, location, context.Symbol, target);
 				}
-				else if(IsCircularDependency(in context, target, dependencies))
+				else if (IsCircularDependency(in context, target, dependencies))
 				{
 					isValid = false;
 					location ??= attribute.GetLocation();

@@ -25,17 +25,16 @@ namespace Durian.Analysis.CopyFrom.Types
 		/// <inheritdoc cref="ISyntaxValidationContext.Node"/>
 		public TypeDeclarationSyntax? Node { get; }
 
+		CSharpSyntaxNode ISyntaxValidationContext.Node => Node!;
+
 		/// <inheritdoc/>
 		public SemanticModel SemanticModel { get; }
 
 		/// <inheritdoc cref="ISyntaxValidationContext.Symbol"/>
 		public INamedTypeSymbol Symbol { get; }
 
-		ICompilationData ISyntaxValidationContext.TargetCompilation => Compilation;
-
-		CSharpSyntaxNode ISyntaxValidationContext.Node => Node!;
-
 		ISymbol ISyntaxValidationContext.Symbol => Symbol;
+		ICompilationData ISyntaxValidationContext.TargetCompilation => Compilation;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromTypeContext"/> structure.

@@ -749,6 +749,114 @@ partial class Test
 		}
 
 		[Fact]
+		public void Success_When_CopiesFromTypeWithAttribtes_And_AllowsCopyFromAttributes_And_HasPattern()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.CopyAttributes} = true)]
+[{PatternAttributeProvider.TypeName}(""DEBUG"", ""RELEASE"")]
+partial class Test
+{{
+}}
+
+[System.Diagnostics.Conditional(""DEBUG"")]
+class Target
+{{
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+[System.Diagnostics.Conditional(""RELEASE"")]
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_CopiesFromTypeWithAttributes()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
+partial class Test
+{{
+}}
+
+[System.Diagnostics.Conditional(""DEBUG"")]
+class Target
+{{
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_CopiesFromTypeWithAttributes_And_AllowsCopyFromAttributes()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.CopyAttributes} = true)]
+partial class Test
+{{
+}}
+
+[System.Diagnostics.Conditional(""DEBUG"")]
+class Target
+{{
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+[System.Diagnostics.Conditional(""DEBUG"")]
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string b = string.Empty;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
 		public void Success_When_CopiesFromTypeWithCopyFrom()
 		{
 			string input =
@@ -810,7 +918,7 @@ partial class Test
 {{
 }}
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Other""), {PatternAttributeProvider.TypeName}(""string"", ""var"")]
+[{CopyFromTypeAttributeProvider.TypeName}(""Other""), {PatternAttributeProvider.TypeName}(""string "", ""var "")]
 partial class Target
 {{
 }}
@@ -843,7 +951,7 @@ partial class Test
 	{GetCodeGenerationAttributes("Target.A()")}
 	void A()
 	{{
-		string a = string.Empty;
+		var a = string.Empty;
 	}}
 }}
 ";
@@ -2480,6 +2588,7 @@ class Target : System.IDisposable
 
 	event System.Action Event2 {{ add {{ }} remove {{ }}}}
 
+	[System.NonSerialized]
 	private protected readonly int _field, _field2;
 
 	const float cos = 2;
@@ -2546,9 +2655,11 @@ partial class Test
 	event System.Action Event2 {{ add {{ }} remove {{ }}}}
 
 	{GetCodeGenerationAttributes("Target._field")}
+	[System.NonSerialized]
 	private protected readonly int _field;
 
 	{GetCodeGenerationAttributes("Target._field2")}
+	[System.NonSerialized]
 	private protected readonly int _field2;
 
 	{GetCodeGenerationAttributes("Target.cos")}

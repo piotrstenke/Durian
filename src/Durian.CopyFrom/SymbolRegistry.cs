@@ -2,9 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.CopyFrom
 {
@@ -24,12 +22,11 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <summary>
-		/// Registers the specified <paramref name="symbol"/>.
+		/// Clears the registry.
 		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to register.</param>
-		public void Register(ISymbol symbol)
+		public void Clear()
 		{
-			_symbols.TryAdd(symbol.ToString(), default);
+			_symbols.Clear();
 		}
 
 		/// <summary>
@@ -42,11 +39,12 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <summary>
-		/// Clears the registry.
+		/// Registers the specified <paramref name="symbol"/>.
 		/// </summary>
-		public void Clear()
+		/// <param name="symbol"><see cref="ISymbol"/> to register.</param>
+		public void Register(ISymbol symbol)
 		{
-			_symbols.Clear();
+			_symbols.TryAdd(symbol.ToString(), default);
 		}
 	}
 }

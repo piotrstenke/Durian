@@ -13,6 +13,11 @@ namespace Durian.Analysis.CopyFrom
 	public sealed class TargetData : IEquatable<TargetData>
 	{
 		/// <summary>
+		/// Determines whether to copy attributes applied to the target.
+		/// </summary>
+		public bool CopyAttributes { get; }
+
+		/// <summary>
 		/// Determines whether to automatically replace name of the target type in constructor, destructor and operator declarations.
 		/// </summary>
 		public bool HandleSpecialMembers { get; }
@@ -42,17 +47,17 @@ namespace Durian.Analysis.CopyFrom
 		/// </summary>
 		public string[]? Usings { get; }
 
-		/// <inheritdoc cref="TargetData(INamedTypeSymbol, int, TypeDeclarationSyntax?, string?, string[], bool)"/>
-		public TargetData(INamedTypeSymbol symbol) : this(symbol, default, default, default)
+		/// <inheritdoc cref="TargetData(INamedTypeSymbol, int, string[], TypeDeclarationSyntax?, string?, bool, bool)"/>
+		public TargetData(INamedTypeSymbol symbol) : this(symbol, default, default)
 		{
 		}
 
-		/// <inheritdoc cref="TargetData(INamedTypeSymbol, int, TypeDeclarationSyntax?, string?, string[], bool)"/>
+		/// <inheritdoc cref="TargetData(INamedTypeSymbol, int, string[], TypeDeclarationSyntax?, string?, bool, bool)"/>
 		public TargetData(
 			INamedTypeSymbol symbol,
 			int order,
-			string[]? usings = default
-		) : this(symbol, order, default, default, usings)
+			string[]? usings
+		) : this(symbol, order, usings, default, default, default, default)
 		{
 		}
 
@@ -61,17 +66,19 @@ namespace Durian.Analysis.CopyFrom
 		/// </summary>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> of the target member.</param>
 		/// <param name="order">Order in which this target should be applied when comparing to other targets of the member.</param>
+		/// <param name="usings">Array of usings that should be used when generating syntax tree.</param>
 		/// <param name="partialPart">Partial part of the source type to copy the implementation from.</param>
 		/// <param name="partialPartName">Name of the partial part.</param>
-		/// <param name="usings">Array of usings that should be used when generating syntax tree.</param>
 		/// <param name="handleSpecialMembers">Determines whether to automatically replace name of the target type in constructor, destructor and operator declarations.</param>
+		/// <param name="copyAttributes">Determines whether to copy attributes applied to the target.</param>
 		public TargetData(
 			INamedTypeSymbol symbol,
 			int order,
+			string[]? usings,
 			TypeDeclarationSyntax? partialPart,
 			string? partialPartName,
-			string[]? usings = default,
-			bool handleSpecialMembers = true
+			bool handleSpecialMembers,
+			bool copyAttributes
 		)
 		{
 			Symbol = symbol;
@@ -80,18 +87,19 @@ namespace Durian.Analysis.CopyFrom
 			Order = order;
 			HandleSpecialMembers = handleSpecialMembers;
 			Usings = usings;
-		}
-
-		/// <inheritdoc/>
-		public static bool operator ==(TargetData left, TargetData right)
-		{
-			return left.Equals(right);
+			CopyAttributes = copyAttributes;
 		}
 
 		/// <inheritdoc/>
 		public static bool operator !=(TargetData left, TargetData right)
 		{
 			return !(left == right);
+		}
+
+		/// <inheritdoc/>
+		public static bool operator ==(TargetData left, TargetData right)
+		{
+			return left.Equals(right);
 		}
 
 		/// <inheritdoc/>
@@ -106,6 +114,7 @@ namespace Durian.Analysis.CopyFrom
 			return
 				other.Order == Order &&
 				other.HandleSpecialMembers == HandleSpecialMembers &&
+				other.CopyAttributes == CopyAttributes &&
 				other.PartialPartName == PartialPartName &&
 				other.PartialPart == PartialPart &&
 				SymbolEqualityComparer.Default.Equals(other.Symbol, Symbol) &&
@@ -118,6 +127,7 @@ namespace Durian.Analysis.CopyFrom
 			int hashCode = 565389259;
 			hashCode = (hashCode * -1521134295) + Order.GetHashCode();
 			hashCode = (hashCode * -1521134295) + HandleSpecialMembers.GetHashCode();
+			hashCode = (hashCode * -1521134295) + CopyAttributes.GetHashCode();
 			hashCode = (hashCode * -1521134295) + PartialPartName?.GetHashCode() ?? 0;
 			hashCode = (hashCode * -1521134295) + PartialPart?.GetHashCode() ?? 0;
 			hashCode = (hashCode * -1521134295) + SymbolEqualityComparer.Default.GetHashCode(Symbol);
@@ -142,7 +152,7 @@ namespace Durian.Analysis.CopyFrom
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> of the target member.</param>
 		public TargetData WithSymbol(INamedTypeSymbol symbol)
 		{
-			return new TargetData(symbol, Order, PartialPart, PartialPartName, Usings, HandleSpecialMembers);
+			return new(symbol, Order, Usings, PartialPart, PartialPartName, HandleSpecialMembers, CopyAttributes);
 		}
 	}
 }
