@@ -54,7 +54,7 @@ namespace Durian.Analysis.CopyFrom
 				in context,
 				out ImmutableArray<AttributeData> attributes,
 				out _,
-				out List<TargetData>? targetTypes,
+				out List<TypeTargetData>? targetTypes,
 				diagnosticReceiver
 			);
 
@@ -75,7 +75,7 @@ namespace Durian.Analysis.CopyFrom
 			in CopyFromTypeContext context,
 			out ImmutableArray<AttributeData> attributes,
 			[NotNullWhen(true)] out List<INamedTypeSymbol>? dependencies,
-			[NotNullWhen(true)] out List<TargetData>? targetTypes,
+			[NotNullWhen(true)] out List<TypeTargetData>? targetTypes,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
@@ -102,7 +102,7 @@ namespace Durian.Analysis.CopyFrom
 			in CopyFromTypeContext context,
 			out ImmutableArray<AttributeData> attributes,
 			[NotNullWhen(true)] out List<INamedTypeSymbol>? dependencies,
-			[NotNullWhen(true)] out List<TargetData>? targetTypes
+			[NotNullWhen(true)] out List<TypeTargetData>? targetTypes
 		)
 		{
 			AttributeData[]? copyFroms = GetCopyFromAttributes(context.Symbol, context.Compilation, out attributes);
@@ -162,7 +162,7 @@ namespace Durian.Analysis.CopyFrom
 
 			List<INamedTypeSymbol> dependencies = new();
 
-			ValidateTargetTypes(in context, targets, dependencies, out List<TargetData>? targetTypes, false);
+			ValidateTargetTypes(in context, targets, dependencies, out List<TypeTargetData>? targetTypes, false);
 
 			bool isValid = EnsureIsInPartialContext(context.Symbol, diagnosticReceiver);
 			isValid &= ValidateTargetType(in context, copyFroms[index], targetTypes!, dependencies);
@@ -190,7 +190,7 @@ namespace Durian.Analysis.CopyFrom
 			return false;
 		}
 
-		private static TargetData CreateTargetData(
+		private static TypeTargetData CreateTargetData(
 			AttributeData attribute,
 			INamedTypeSymbol target,
 			string[]? usings
@@ -199,7 +199,7 @@ namespace Durian.Analysis.CopyFrom
 			return CreateTargetData(attribute, target, usings, default, default);
 		}
 
-		private static TargetData CreateTargetData(
+		private static TypeTargetData CreateTargetData(
 			AttributeData attribute,
 			INamedTypeSymbol target,
 			string[]? usings,
@@ -239,179 +239,6 @@ namespace Durian.Analysis.CopyFrom
 			}
 
 			return success;
-		}
-
-		private static bool FindAddedUsings(AttributeData attribute, HashSet<string> includedUsings)
-		{
-			string[] attributeUsings = attribute.GetNamedArgumentArrayValue<string>(CopyFromTypeAttributeProvider.AddUsings).ToArray();
-
-			if (attributeUsings.Length == 0)
-			{
-				return false;
-			}
-
-			bool hasAny = false;
-
-			foreach (string @using in attributeUsings)
-			{
-				string actual = FormatUsing(@using);
-
-				if (includedUsings.Add(actual))
-				{
-					hasAny = true;
-				}
-			}
-
-			return hasAny;
-		}
-
-		private static bool FindAddedUsings(
-			AttributeData attribute,
-			HashSet<string> includedUsings,
-			INamedTypeSymbol symbol,
-			IDiagnosticReceiver diagnosticReceiver
-		)
-		{
-			string[] attributeUsings = attribute.GetNamedArgumentArrayValue<string>(CopyFromTypeAttributeProvider.AddUsings).ToArray();
-
-			if (attributeUsings.Length == 0)
-			{
-				return false;
-			}
-
-			AttributeArgumentSyntax? argument = default;
-			Location? attributeLocation = default;
-			bool failedFind = false;
-
-			bool hasAny = false;
-
-			for (int i = 0; i < attributeUsings.Length; i++)
-			{
-				string @using = attributeUsings[i];
-				string actual = FormatUsing(@using);
-
-				if (includedUsings.Add(actual))
-				{
-					hasAny = true;
-				}
-				else
-				{
-					Location? location = GetUsingLocation(i);
-					diagnosticReceiver.ReportDiagnostic(DUR0220_UsingAlreadySpecified, location, symbol, @using);
-				}
-			}
-
-			return hasAny;
-
-			Location? GetUsingLocation(int index)
-			{
-				if (argument is null)
-				{
-					if (failedFind)
-					{
-						return attributeLocation;
-					}
-
-					if (attribute.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax attributeSyntax)
-					{
-						attributeLocation = Location.None;
-						failedFind = true;
-						return attributeLocation;
-					}
-
-					if (attributeSyntax.GetArgument(CopyFromTypeAttributeProvider.AddUsings) is not AttributeArgumentSyntax arg)
-					{
-						attributeLocation = attributeSyntax.GetLocation();
-						failedFind = true;
-						return attributeLocation;
-					}
-
-					argument = arg;
-				}
-
-				SeparatedSyntaxList<ExpressionSyntax> elements = argument.Expression
-					.DescendantNodes(child => child is ImplicitArrayCreationExpressionSyntax or ArrayCreationExpressionSyntax)
-					.OfType<InitializerExpressionSyntax>()
-					.FirstOrDefault()
-					.Expressions;
-
-				if (elements.Count <= index)
-				{
-					return argument.GetLocation();
-				}
-
-				return elements[index].GetLocation();
-			}
-		}
-
-		private static string FormatUsing(string @using)
-		{
-			string actual = @using.TrimStart();
-
-			string? toAdd = default;
-
-			if (actual.StartsWith("static "))
-			{
-				toAdd = "static ";
-				actual = actual.Substring(7);
-			}
-			else
-			{
-				int equalsIndex = actual.IndexOf('=');
-
-				if (equalsIndex > 0)
-				{
-					toAdd = actual.Substring(0, equalsIndex).Replace(" ", "") + " = ";
-					actual = actual.Substring(equalsIndex + 1);
-				}
-			}
-
-			actual = actual.Replace(" ", "");
-
-			if (toAdd is not null)
-			{
-				actual = toAdd + actual;
-			}
-
-			return actual;
-		}
-
-		private static HashSet<string> GetCopiedUsings(AttributeData attribute, TypeDeclarationSyntax declaration)
-		{
-			HashSet<string> usings = new();
-
-			if (attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.CopyUsings, out bool value) && !value)
-			{
-				return usings;
-			}
-
-			if (declaration.FirstAncestorOrSelf<CompilationUnitSyntax>() is not CompilationUnitSyntax root)
-			{
-				return usings;
-			}
-
-			foreach (UsingDirectiveSyntax @using in root.Usings)
-			{
-				string str = GetUsingString(@using);
-				usings.Add(str);
-			}
-
-			return usings;
-
-			static string GetUsingString(UsingDirectiveSyntax @using)
-			{
-				if (@using.StaticKeyword != default)
-				{
-					return "static " + @using.Name.ToString();
-				}
-
-				if (@using.Alias is not null)
-				{
-					return $"{@using.Alias.Name} = {@using.Name}";
-				}
-
-				return @using.Name.ToString();
-			}
 		}
 
 		private static AttributeData[]? GetCopyFromAttributes(INamedTypeSymbol type, CopyFromCompilationData compilation, out ImmutableArray<AttributeData> allAttributes)
@@ -623,54 +450,10 @@ namespace Durian.Analysis.CopyFrom
 			return attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.PartialPart, out partialPartName);
 		}
 
-		private static bool TryGetUsings(
-			AttributeData attribute,
-			TypeDeclarationSyntax declaration,
-			[NotNullWhen(true)] out string[]? usings
-		)
-		{
-			HashSet<string> copied = GetCopiedUsings(attribute, declaration);
-
-			FindAddedUsings(attribute, copied);
-
-			if (copied.Count > 0)
-			{
-				usings = new string[copied.Count];
-				copied.CopyTo(usings);
-				return true;
-			}
-
-			usings = default;
-			return false;
-		}
-
-		private static bool TryGetUsings(
-			AttributeData attribute,
-			TypeDeclarationSyntax declaration,
-			[NotNullWhen(true)] out string[]? usings,
-			INamedTypeSymbol symbol,
-			IDiagnosticReceiver diagnosticReceiver
-		)
-		{
-			HashSet<string> copied = GetCopiedUsings(attribute, declaration);
-
-			FindAddedUsings(attribute, copied, symbol, diagnosticReceiver);
-
-			if (copied.Count > 0)
-			{
-				usings = new string[copied.Count];
-				copied.CopyTo(usings);
-				return true;
-			}
-
-			usings = default;
-			return false;
-		}
-
 		private static bool ValidatePartialNameAndAddTarget(
 			in CopyFromTypeContext context,
 			AttributeData attribute,
-			List<TargetData> copyFromTypes,
+			List<TypeTargetData> copyFromTypes,
 			string[]? usings,
 			INamedTypeSymbol target,
 			bool isValid,
@@ -713,7 +496,7 @@ namespace Durian.Analysis.CopyFrom
 		private static bool ValidateTargetType(
 			in CopyFromTypeContext context,
 			AttributeData attribute,
-			List<TargetData> copyFromTypes,
+			List<TypeTargetData> copyFromTypes,
 			List<INamedTypeSymbol> dependencies
 		)
 		{
@@ -726,7 +509,7 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			TryGetUsings(attribute, context.Node!, out string[]? usings);
+			string[]? usings = GetUsings(attribute, context.Node!);
 
 			if (TryGetPartialPartName(attribute, out string? partialPartName))
 			{
@@ -755,7 +538,7 @@ namespace Durian.Analysis.CopyFrom
 		private static bool ValidateTargetType(
 			in CopyFromTypeContext context,
 			AttributeData attribute,
-			List<TargetData> copyFromTypes,
+			List<TypeTargetData> copyFromTypes,
 			List<INamedTypeSymbol> dependencies,
 			IDiagnosticReceiver diagnosticReceiver
 		)
@@ -807,7 +590,7 @@ namespace Durian.Analysis.CopyFrom
 				}
 			}
 
-			TryGetUsings(attribute, context.Node!, out string[]? usings, context.Symbol, diagnosticReceiver);
+			string[]? usings = GetUsings(attribute, context.Node!, context.Symbol, diagnosticReceiver);
 
 			return ValidatePartialNameAndAddTarget(
 				in context,
@@ -821,15 +604,61 @@ namespace Durian.Analysis.CopyFrom
 			);
 		}
 
+		private static AdditionalNodes RetrieveNonStandardTypeConfig(AttributeData attribute)
+		{
+		}
+
+		private static AdditionalNodes RetrieveNonStandardTypeConfig(AttributeData attribute, INamedTypeSymbol symbol, IDiagnosticReceiver diagnosticReceiver)
+		{
+			if (!attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.AdditionalNodes, out int value))
+			{
+				return default;
+			}
+
+			Location? location = default;
+
+			AdditionalNodes additionalNodes = (AdditionalNodes)value;
+
+			if(additionalNodes == AdditionalNodes.All)
+			{
+				return additionalNodes;
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Constraints))
+			{
+				if(!symbol.IsGenericType)
+				{
+					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+					diagnosticReceiver.ReportDiagnostic(DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember, location, symbol);
+					RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
+				}
+				else if(symbol.HasConstraint())
+				{
+					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+					diagnosticReceiver.ReportDiagnostic(DUR0223_MemberAlreadyHasConstraints, location, symbol);
+					RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
+				}
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Documentation) && symbol.HasDocumentation())
+			{
+				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+				diagnosticReceiver.ReportDiagnostic(DUR0222_MemberAlreadyHasDocumentation, location, symbol);
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Documentation);
+			}
+
+			return additionalNodes;
+		}
+
 		private static bool ValidateTargetTypes(
 			in CopyFromTypeContext context,
 			AttributeData[] attributes,
 			List<INamedTypeSymbol> dependencies,
-			[NotNullWhen(true)] out List<TargetData>? targetTypes,
+			[NotNullWhen(true)] out List<TypeTargetData>? targetTypes,
 			bool returnIfInvalid
 		)
 		{
-			List<TargetData> copyFromTypes = new();
+			List<TypeTargetData> copyFromTypes = new();
 			bool isValid = true;
 
 			foreach (AttributeData attribute in attributes)
@@ -854,11 +683,11 @@ namespace Durian.Analysis.CopyFrom
 			in CopyFromTypeContext context,
 			AttributeData[] attributes,
 			List<INamedTypeSymbol> dependencies,
-			[NotNullWhen(true)] out List<TargetData>? targetTypes,
+			[NotNullWhen(true)] out List<TypeTargetData>? targetTypes,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			List<TargetData> copyFromTypes = new();
+			List<TypeTargetData> copyFromTypes = new();
 
 			bool isValid = true;
 

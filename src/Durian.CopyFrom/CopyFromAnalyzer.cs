@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
@@ -42,7 +43,10 @@ namespace Durian.Analysis.CopyFrom
 			DUR0218_UnknownPartialPartName,
 			DUR0219_PatternOnDifferentDeclaration,
 			DUR0220_UsingAlreadySpecified,
-			DUR0221_CircularDependency
+			DUR0221_CircularDependency,
+			DUR0222_MemberAlreadyHasDocumentation,
+			DUR0223_MemberAlreadyHasConstraints,
+			DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember
 		);
 
 		/// <summary>
@@ -136,6 +140,219 @@ namespace Durian.Analysis.CopyFrom
 			return attributes.Where(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol)).ToArray();
 		}
 
+		private static bool FindAddedUsings(AttributeData attribute, List<string> includedUsings)
+		{
+			string[] attributeUsings = attribute.GetNamedArgumentArrayValue<string>(CopyFromTypeAttributeProvider.AddUsings).ToArray();
+
+			if (attributeUsings.Length == 0)
+			{
+				return false;
+			}
+
+			bool hasAny = false;
+
+			foreach (string @using in attributeUsings)
+			{
+				string actual = FormatUsing(@using);
+
+				if(!includedUsings.Contains(actual))
+				{
+					includedUsings.Add(actual);
+					hasAny = true;
+				}
+			}
+
+			return hasAny;
+		}
+
+		private static bool FindAddedUsings(
+			AttributeData attribute,
+			List<string> includedUsings,
+			ISymbol symbol,
+			IDiagnosticReceiver diagnosticReceiver
+		)
+		{
+			string[] attributeUsings = attribute.GetNamedArgumentArrayValue<string>(CopyFromTypeAttributeProvider.AddUsings).ToArray();
+
+			if (attributeUsings.Length == 0)
+			{
+				return false;
+			}
+
+			AttributeArgumentSyntax? argument = default;
+			Location? attributeLocation = default;
+			bool failedFind = false;
+
+			bool hasAny = false;
+
+			for (int i = 0; i < attributeUsings.Length; i++)
+			{
+				string @using = attributeUsings[i];
+				string actual = FormatUsing(@using);
+
+				if (includedUsings.Contains(actual))
+				{
+					Location? location = GetUsingLocation(i);
+					diagnosticReceiver.ReportDiagnostic(DUR0220_UsingAlreadySpecified, location, symbol, @using);
+				}
+				else
+				{
+					includedUsings.Add(actual);
+					hasAny = true;
+				}
+			}
+
+			return hasAny;
+
+			Location? GetUsingLocation(int index)
+			{
+				if (argument is null)
+				{
+					if (failedFind)
+					{
+						return attributeLocation;
+					}
+
+					if (attribute.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax attributeSyntax)
+					{
+						attributeLocation = Location.None;
+						failedFind = true;
+						return attributeLocation;
+					}
+
+					if (attributeSyntax.GetArgument(CopyFromTypeAttributeProvider.AddUsings) is not AttributeArgumentSyntax arg)
+					{
+						attributeLocation = attributeSyntax.GetLocation();
+						failedFind = true;
+						return attributeLocation;
+					}
+
+					argument = arg;
+				}
+
+				SeparatedSyntaxList<ExpressionSyntax> elements = argument.Expression
+					.DescendantNodes(child => child is ImplicitArrayCreationExpressionSyntax or ArrayCreationExpressionSyntax)
+					.OfType<InitializerExpressionSyntax>()
+					.FirstOrDefault()
+					.Expressions;
+
+				if (elements.Count <= index)
+				{
+					return argument.GetLocation();
+				}
+
+				return elements[index].GetLocation();
+			}
+		}
+
+		private static string FormatUsing(string @using)
+		{
+			string actual = @using.TrimStart();
+
+			string? toAdd = default;
+
+			if (actual.StartsWith("static "))
+			{
+				toAdd = "static ";
+				actual = actual.Substring(7);
+			}
+			else
+			{
+				int equalsIndex = actual.IndexOf('=');
+
+				if (equalsIndex > 0)
+				{
+					toAdd = actual.Substring(0, equalsIndex).Replace(" ", "") + " = ";
+					actual = actual.Substring(equalsIndex + 1);
+				}
+			}
+
+			actual = actual.Replace(" ", "");
+
+			if (toAdd is not null)
+			{
+				actual = toAdd + actual;
+			}
+
+			return actual;
+		}
+
+		private static string[]? GetUsings(
+			AttributeData attribute,
+			MemberDeclarationSyntax declaration,
+			AdditionalNodes additionalNodes
+		)
+		{
+			List<string> list = new();
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Usings))
+			{
+				GetCopiedUsings(list, declaration);
+			}
+
+			FindAddedUsings(attribute, list);
+
+			return list.Count > 0 ? list.ToArray() : default;
+		}
+
+		private static void RemoveFlag(ref AdditionalNodes current, AdditionalNodes value)
+		{
+			current &= ~value;
+		}
+
+		private static string[]? GetUsings(
+			AttributeData attribute,
+			MemberDeclarationSyntax declaration,
+			AdditionalNodes additionalNodes,
+			ISymbol symbol,
+			IDiagnosticReceiver diagnosticReceiver
+		)
+		{
+			List<string> list = new();
+
+			if(additionalNodes.HasFlag(AdditionalNodes.Usings))
+			{
+				GetCopiedUsings(list, declaration);
+			}
+
+			FindAddedUsings(attribute, list, symbol, diagnosticReceiver);
+
+			return list.Count > 0 ? list.ToArray() : default;
+		}
+
+		private static void GetCopiedUsings(List<string> usings, MemberDeclarationSyntax declaration)
+		{
+			if (declaration.FirstAncestorOrSelf<CompilationUnitSyntax>() is not CompilationUnitSyntax root)
+			{
+				return;
+			}
+
+			foreach (UsingDirectiveSyntax @using in root.Usings)
+			{
+				string str = GetUsingString(@using);
+
+				if(!usings.Contains(str))
+				{
+					usings.Add(str);
+				}
+			}
+
+			static string GetUsingString(UsingDirectiveSyntax @using)
+			{
+				if (@using.StaticKeyword != default)
+				{
+					return "static " + @using.Name.ToString();
+				}
+
+				if (@using.Alias is not null)
+				{
+					return $"{@using.Alias.Name} = {@using.Name}";
+				}
+
+				return @using.Name.ToString();
+			}
+		}
+
 		private static int GetOrder(AttributeData attribute)
 		{
 			return attribute.GetNamedArgumentValue<int>(CopyFromTypeAttributeProvider.Order);
@@ -180,11 +397,6 @@ namespace Durian.Analysis.CopyFrom
 
 			invalidArguments = default;
 			return true;
-		}
-
-		private static bool ShouldCopyAttributes(AttributeData attribute)
-		{
-			return attribute.GetNamedArgumentValue<bool>(CopyFromTypeAttributeProvider.CopyAttributes);
 		}
 	}
 }

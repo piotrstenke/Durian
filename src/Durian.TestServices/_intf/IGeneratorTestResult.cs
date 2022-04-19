@@ -47,6 +47,7 @@ namespace Durian.TestServices
 		/// Checks if the provided <paramref name="result"/> is equivalent to the <see cref="GeneratorDriverRunResult"/> created by the <see cref="ISourceGenerator"/> pass.
 		/// </summary>
 		/// <param name="result"><see cref="GeneratorDriverRunResult"/> to compare.</param>
-		bool Compare(GeneratorDriverRunResult result);
+		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
+		bool Compare(GeneratorDriverRunResult result, bool includeStructuredTrivia = false);
 	}
 }

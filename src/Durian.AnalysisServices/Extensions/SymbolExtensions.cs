@@ -545,6 +545,110 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns generic constraints applied to type parameters of the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the generic constraints of.</param>
+		/// <param name="includeParentParameters">
+		/// If a <see cref="ITypeParameterSymbol"/> is constrained to another <see cref="ITypeParameterSymbol"/>,
+		/// determines whether to also include constraints of that <see cref="ITypeParameterSymbol"/>'s base parameter.
+		/// </param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static GenericConstraint[] GetConstraints(this IMethodSymbol method, bool includeParentParameters = false)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			if (!method.IsGenericMethod)
+			{
+				return Array.Empty<GenericConstraint>();
+			}
+
+			return method.TypeParameters.Select(p => p.GetConstraints(includeParentParameters)).ToArray();
+		}
+
+		/// <summary>
+		/// Returns generic constraints applied to type parameters of the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the generic constraints of.</param>
+		/// <param name="includeParentParameters">
+		/// If a <see cref="ITypeParameterSymbol"/> is constrained to another <see cref="ITypeParameterSymbol"/>,
+		/// determines whether to also include constraints of that <see cref="ITypeParameterSymbol"/>'s base parameter.
+		/// </param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static GenericConstraint[] GetConstraints(this INamedTypeSymbol type, bool includeParentParameters = false)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			if (!type.IsGenericType)
+			{
+				return Array.Empty<GenericConstraint>();
+			}
+
+			return type.TypeParameters.Select(p => p.GetConstraints(includeParentParameters)).ToArray();
+		}
+
+		/// <summary>
+		/// Returns generic constraints applied to the specified <paramref name="parameter"/>.
+		/// </summary>
+		/// <param name="parameter"><see cref="ITypeParameterSymbol"/> to get the generic constraint of.</param>
+		/// <param name="includeParentParameter">
+		/// If the <paramref name="parameter"/> is constrained to another <see cref="ITypeParameterSymbol"/>,
+		/// determines whether to also include constraints of the <paramref name="parameter"/>'s base parameter.
+		/// </param>
+		/// <exception cref="ArgumentNullException"><paramref name="parameter"/> is <see langword="null"/>.</exception>
+		public static GenericConstraint GetConstraints(this ITypeParameterSymbol parameter, bool includeParentParameter = false)
+		{
+			if (parameter is null)
+			{
+				throw new ArgumentNullException(nameof(parameter));
+			}
+
+			GenericConstraint constraint = default;
+
+			if (parameter.HasReferenceTypeConstraint)
+			{
+				constraint |= GenericConstraint.Class;
+			}
+
+			if (parameter.HasValueTypeConstraint)
+			{
+				constraint |= GenericConstraint.Struct;
+			}
+
+			if (parameter.HasUnmanagedTypeConstraint)
+			{
+				constraint |= GenericConstraint.Unmanaged;
+			}
+
+			if (parameter.HasConstructorConstraint)
+			{
+				constraint |= GenericConstraint.New;
+			}
+
+			if (parameter.HasNotNullConstraint)
+			{
+				constraint |= GenericConstraint.NotNull;
+			}
+
+			if (parameter.ConstraintTypes.Length > 0)
+			{
+				constraint |= GenericConstraint.Type;
+
+				if (includeParentParameter && parameter.ConstraintTypes.FirstOrDefault(p => p.TypeKind == TypeKind.TypeParameter) is ITypeParameterSymbol baseParameter)
+				{
+					constraint |= baseParameter.GetConstraints(true);
+				}
+			}
+
+			return constraint;
+		}
+
+		/// <summary>
 		/// Returns all <see cref="INamespaceSymbol"/>s that contain the target <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent namespaces of.</param>
@@ -1083,30 +1187,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns a keyword used to declare the specified <paramref name="type"/> ('class, 'record', 'struct', 'delegate', 'interface', 'enum').
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the keyword of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static string GetKeyword(this INamedTypeSymbol type)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			return type.TypeKind switch
-			{
-				TypeKind.Class => type.IsRecord ? "record" : "class",
-				TypeKind.Struct => type.IsRecord ? "record struct" : "struct",
-				TypeKind.Interface => "interface",
-				TypeKind.Enum => "enum",
-				TypeKind.Delegate => "delegate",
-				TypeKind.Module => "module",
-				_ => throw new ArgumentException($"Type '{type}' is not declared using a keyword", nameof(type))
-			};
-		}
-
-		/// <summary>
 		/// Returns a collection of all inner types of the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="INamespaceSymbol"/> to get the inner types of.</param>
@@ -1140,6 +1220,30 @@ namespace Durian.Analysis.Extensions
 					}
 				}
 			}
+		}
+
+		/// <summary>
+		/// Returns a keyword used to declare the specified <paramref name="type"/> ('class, 'record', 'struct', 'delegate', 'interface', 'enum').
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the keyword of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static string GetKeyword(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.TypeKind switch
+			{
+				TypeKind.Class => type.IsRecord ? "record" : "class",
+				TypeKind.Struct => type.IsRecord ? "record struct" : "struct",
+				TypeKind.Interface => "interface",
+				TypeKind.Enum => "enum",
+				TypeKind.Delegate => "delegate",
+				TypeKind.Module => "module",
+				_ => throw new ArgumentException($"Type '{type}' is not declared using a keyword", nameof(type))
+			};
 		}
 
 		/// <summary>
@@ -1219,26 +1323,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns kind of operator this <paramref name="method"/> overloads.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the kind of the overloaded operator.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static OverloadableOperator GetOperatorType(this IMethodSymbol method)
-		{
-			if (method is null)
-			{
-				throw new ArgumentNullException(nameof(method));
-			}
-
-			if (method.MethodKind != MethodKind.UserDefinedOperator && method.MethodKind != MethodKind.BuiltinOperator)
-			{
-				return default;
-			}
-
-			return AnalysisUtilities.GetOperatorType(method.Name);
-		}
-
-		/// <summary>
 		/// Returns text of operator this <paramref name="method"/> overloads.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the kind of the overloaded operator.</param>
@@ -1259,6 +1343,26 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns kind of operator this <paramref name="method"/> overloads.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the kind of the overloaded operator.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static OverloadableOperator GetOperatorType(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			if (method.MethodKind != MethodKind.UserDefinedOperator && method.MethodKind != MethodKind.BuiltinOperator)
+			{
+				return default;
+			}
+
+			return AnalysisUtilities.GetOperatorType(method.Name);
+		}
+
+		/// <summary>
 		/// Returns the parameterless constructor of the specified <paramref name="type"/> if it has one.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the parameterless constructor of.</param>
@@ -1271,40 +1375,6 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return type.InstanceConstructors.FirstOrDefault(ctor => ctor.Parameters.Length == 0);
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> that contains all the parent types of the specified <paramref name="symbol"/> and the <paramref name="symbol"/>'s name separated by the dot ('.') character.
-		/// </summary>
-		/// <remarks>If the <paramref name="symbol"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="string"/> of.</param>
-		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned <see cref="string"/>.</param>
-		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static string GetParentTypesString(this ISymbol symbol, bool includeSelf = true, bool includeParameters = false)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			StringBuilder sb = new();
-
-			foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
-			{
-				sb.Append(type.GetGenericName()).Append('.');
-			}
-
-			if (includeSelf)
-			{
-				sb.Append(symbol.GetGenericName(includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None));
-			}
-			else if (sb.Length > 0)
-			{
-				sb.Remove(sb.Length - 1, 1);
-			}
-
-			return sb.ToString();
 		}
 
 		/// <summary>
@@ -1340,6 +1410,40 @@ namespace Durian.Analysis.Extensions
 			}
 
 			sb.Append(')');
+			return sb.ToString();
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> that contains all the parent types of the specified <paramref name="symbol"/> and the <paramref name="symbol"/>'s name separated by the dot ('.') character.
+		/// </summary>
+		/// <remarks>If the <paramref name="symbol"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="string"/> of.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned <see cref="string"/>.</param>
+		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static string GetParentTypesString(this ISymbol symbol, bool includeSelf = true, bool includeParameters = false)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			StringBuilder sb = new();
+
+			foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
+			{
+				sb.Append(type.GetGenericName()).Append('.');
+			}
+
+			if (includeSelf)
+			{
+				sb.Append(symbol.GetGenericName(includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None));
+			}
+			else if (sb.Length > 0)
+			{
+				sb.Remove(sb.Length - 1, 1);
+			}
+
 			return sb.ToString();
 		}
 
@@ -1589,19 +1693,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns a <see cref="string"/> that represents the parameter signature of the <paramref name="method"/> compatible with 'inheritdoc' tags.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the signature of.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public static string GetXmlParameterList(this IMethodSymbol method, GenericSubstitution substitution = default)
-		{
-			string parameterList = method.GetParameterList(substitution);
-
-			return AnalysisUtilities.ToXmlCompatible(parameterList);
-		}
-
-		/// <summary>
 		/// Returns a <see cref="string"/> representing the fully qualified name of the <paramref name="symbol"/> that can be used in the XML documentation.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the fully qualified name of.</param>
@@ -1614,6 +1705,19 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return AnalysisUtilities.ToXmlCompatible(symbol.ToString());
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> that represents the parameter signature of the <paramref name="method"/> compatible with 'inheritdoc' tags.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the signature of.</param>
+		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static string GetXmlParameterList(this IMethodSymbol method, GenericSubstitution substitution = default)
+		{
+			string parameterList = method.GetParameterList(substitution);
+
+			return AnalysisUtilities.ToXmlCompatible(parameterList);
 		}
 
 		/// <summary>
@@ -1658,6 +1762,138 @@ namespace Durian.Analysis.Extensions
 		public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attrSymbol)
 		{
 			return GetAttribute(symbol, attrSymbol) is not null;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> has at least one generic constraint.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if has at least one generic constraint.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool HasConstraint(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.IsGenericType && type.TypeParameters.Any(p => p.HasConstraint());
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> has at least one generic constraint.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if has at least one generic constraint.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static bool HasConstraint(this IMethodSymbol method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return method.IsGenericMethod && method.TypeParameters.Any(p => p.HasConstraint());
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="parameter"/> has at least one generic constraint.
+		/// </summary>
+		/// <param name="parameter"><see cref="ITypeParameterSymbol"/> to check if has at least one generic constraint.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="parameter"/> is <see langword="null"/>.</exception>
+		public static bool HasConstraint(this ITypeParameterSymbol parameter)
+		{
+			if (parameter is null)
+			{
+				throw new ArgumentNullException(nameof(parameter));
+			}
+
+			return
+				parameter.HasConstructorConstraint ||
+				parameter.HasValueTypeConstraint ||
+				parameter.HasReferenceTypeConstraint ||
+				parameter.HasUnmanagedTypeConstraint ||
+				parameter.HasNotNullConstraint ||
+				parameter.ConstraintTypes.Length > 0;
+		}
+
+		/// <summary>
+		/// Determines whether the given <paramref name="parameter"/> has a specific <paramref name="constraint"/> applied.
+		/// </summary>
+		/// <param name="parameter"><see cref="ITypeParameterSymbol"/> to check if has a specific <paramref name="constraint"/> applied.</param>
+		/// <param name="constraint"><see cref="GenericConstraint"/> to check if is applied to the <paramref name="parameter"/>.</param>
+		/// <param name="strict">Determines whether to only include constraints that are explicitly applied to the <paramref name="parameter"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="parameter"/> is <see langword="null"/>.</exception>
+		public static bool HasConstraint(this ITypeParameterSymbol parameter, GenericConstraint constraint, bool strict = true)
+		{
+			if (parameter is null)
+			{
+				throw new ArgumentNullException(nameof(parameter));
+			}
+
+			switch (constraint)
+			{
+				case GenericConstraint.Class:
+
+					if (parameter.HasReferenceTypeConstraint)
+					{
+						return true;
+					}
+
+					if (strict)
+					{
+						return false;
+					}
+
+					return parameter.ConstraintTypes.Any(type =>
+					{
+						if (type.TypeKind == TypeKind.Class)
+						{
+							return true;
+						}
+
+						if (type.TypeKind == TypeKind.TypeParameter)
+						{
+							return (type as ITypeParameterSymbol)?.HasConstraint(GenericConstraint.Class, false) ?? false;
+						}
+
+						return true;
+					});
+
+				case GenericConstraint.Struct:
+
+					if (parameter.HasValueTypeConstraint)
+					{
+						return true;
+					}
+
+					return !strict && parameter.HasUnmanagedTypeConstraint;
+
+				case GenericConstraint.Unmanaged:
+					return parameter.HasUnmanagedTypeConstraint;
+
+				case GenericConstraint.Type:
+					return parameter.ConstraintTypes.Length > 0;
+
+				case GenericConstraint.NotNull:
+					return parameter.HasNotNullConstraint;
+
+				case GenericConstraint.New:
+
+					if (parameter.HasConstructorConstraint)
+					{
+						return true;
+					}
+
+					return !strict && (parameter.HasConstructorConstraint || parameter.HasUnmanagedTypeConstraint);
+
+				//case GenericConstraint.Default:
+				//	break;
+
+				case GenericConstraint.None:
+					return !parameter.HasConstraint();
+
+				default:
+					return false;
+			}
 		}
 
 		/// <summary>
@@ -2201,6 +2437,22 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return attribute.ConstructorArguments.FirstOrDefault().Value is string value && value == target;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> is generic.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check if is generic.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static bool IsGeneric(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				IMethodSymbol method => method.IsGenericMethod,
+				INamedTypeSymbol type => type.IsGenericType,
+				null => throw new ArgumentNullException(nameof(symbol)),
+				_ => false
+			};
 		}
 
 		/// <summary>
@@ -2804,6 +3056,61 @@ namespace Durian.Analysis.Extensions
 			return collection;
 		}
 
+		private static void WriteArrayName(IArrayTypeSymbol array, StringBuilder sb)
+		{
+			ITypeSymbol element = array.ElementType;
+
+			if (element is IArrayTypeSymbol elementArray)
+			{
+				Queue<IArrayTypeSymbol> childArrays = new();
+
+				while (elementArray is not null)
+				{
+					childArrays.Enqueue(elementArray);
+					element = elementArray.ElementType;
+					elementArray = (element as IArrayTypeSymbol)!;
+				}
+
+				WriteTypeName(element, sb);
+				WriteArrayBrackets(array);
+
+				while (childArrays.Count > 0)
+				{
+					elementArray = childArrays.Dequeue();
+					CheckNullable(elementArray);
+					WriteArrayBrackets(elementArray);
+				}
+			}
+			else
+			{
+				WriteTypeName(element, sb);
+				WriteArrayBrackets(array);
+			}
+
+			CheckNullable(array);
+
+			void CheckNullable(IArrayTypeSymbol a)
+			{
+				if (a.NullableAnnotation == NullableAnnotation.Annotated)
+				{
+					sb.Append('?');
+				}
+			}
+
+			void WriteArrayBrackets(IArrayTypeSymbol a)
+			{
+				int rank = a.Rank;
+				sb.Append('[');
+
+				for (int i = 1; i < rank; i++)
+				{
+					sb.Append(',');
+				}
+
+				sb.Append(']');
+			}
+		}
+
 		private static void WriteFunctionPointer(IFunctionPointerTypeSymbol pointer, StringBuilder sb)
 		{
 			IMethodSymbol signature = pointer.Signature;
@@ -2869,61 +3176,6 @@ namespace Durian.Analysis.Extensions
 			}
 
 			WriteTypeName(parameter.Type, sb);
-		}
-
-		private static void WriteArrayName(IArrayTypeSymbol array, StringBuilder sb)
-		{
-			ITypeSymbol element = array.ElementType;
-
-			if (element is IArrayTypeSymbol elementArray)
-			{
-				Queue<IArrayTypeSymbol> childArrays = new();
-
-				while (elementArray is not null)
-				{
-					childArrays.Enqueue(elementArray);
-					element = elementArray.ElementType;
-					elementArray = (element as IArrayTypeSymbol)!;
-				}
-
-				WriteTypeName(element, sb);
-				WriteArrayBrackets(array);
-
-				while (childArrays.Count > 0)
-				{
-					elementArray = childArrays.Dequeue();
-					CheckNullable(elementArray);
-					WriteArrayBrackets(elementArray);
-				}
-			}
-			else
-			{
-				WriteTypeName(element, sb);
-				WriteArrayBrackets(array);
-			}
-
-			CheckNullable(array);
-
-			void CheckNullable(IArrayTypeSymbol a)
-			{
-				if (a.NullableAnnotation == NullableAnnotation.Annotated)
-				{
-					sb.Append('?');
-				}
-			}
-
-			void WriteArrayBrackets(IArrayTypeSymbol a)
-			{
-				int rank = a.Rank;
-				sb.Append('[');
-
-				for (int i = 1; i < rank; i++)
-				{
-					sb.Append(',');
-				}
-
-				sb.Append(']');
-			}
 		}
 
 		private static void WriteTypeName(ITypeSymbol type, StringBuilder sb)

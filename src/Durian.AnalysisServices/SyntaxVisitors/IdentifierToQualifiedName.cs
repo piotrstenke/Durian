@@ -14,7 +14,7 @@ namespace Durian.Analysis.SyntaxVisitors
 	/// <summary>
 	/// Replaces <see cref="IdentifierNameSyntax"/> with <see cref="QualifiedNameSyntax"/>.
 	/// </summary>
-	public class IdentifierToQualifiedNameReplacer : CSharpSyntaxRewriter
+	public class IdentifierToQualifiedName : CSharpSyntaxRewriter
 	{
 		/// <summary>
 		/// Determines whether to delete using directives.
@@ -28,28 +28,28 @@ namespace Durian.Analysis.SyntaxVisitors
 		public SemanticModel SemanticModel { get; set; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="IdentifierToQualifiedNameReplacer"/> class.
+		/// Initializes a new instance of the <see cref="IdentifierToQualifiedName"/> class.
 		/// </summary>
-		public IdentifierToQualifiedNameReplacer()
+		public IdentifierToQualifiedName()
 		{
 			SemanticModel = null!;
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="IdentifierToQualifiedNameReplacer"/> class.
+		/// Initializes a new instance of the <see cref="IdentifierToQualifiedName"/> class.
 		/// </summary>
 		/// <param name="semanticModel"><see cref="Microsoft.CodeAnalysis.SemanticModel"/> that is used to identify <see cref="ISymbol"/>s.</param>
-		public IdentifierToQualifiedNameReplacer(SemanticModel semanticModel)
+		public IdentifierToQualifiedName(SemanticModel semanticModel)
 		{
 			SemanticModel = semanticModel;
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="IdentifierToQualifiedNameReplacer"/> class.
+		/// Initializes a new instance of the <see cref="IdentifierToQualifiedName"/> class.
 		/// </summary>
 		/// <param name="semanticModel"><see cref="Microsoft.CodeAnalysis.SemanticModel"/> that is used to identify <see cref="ISymbol"/>s.</param>
 		/// <param name="deleteUsings">Determines whether to delete using directives.</param>
-		public IdentifierToQualifiedNameReplacer(SemanticModel semanticModel, bool deleteUsings)
+		public IdentifierToQualifiedName(SemanticModel semanticModel, bool deleteUsings)
 		{
 			SemanticModel = semanticModel;
 			DeleteUsings = deleteUsings;

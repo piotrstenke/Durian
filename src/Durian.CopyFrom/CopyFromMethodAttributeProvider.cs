@@ -9,9 +9,14 @@ namespace Durian.Analysis.CopyFrom
 	public sealed class CopyFromMethodAttributeProvider : SourceTextProvider
 	{
 		/// <summary>
-		/// Name of the 'CopyAttributes' property.
+		/// Name of the 'AddUsings' property.
 		/// </summary>
-		public const string CopyAttributes = "CopyAttributes";
+		public const string AddUsings = "AddUsings";
+
+		/// <summary>
+		/// Name of the 'AdditionalNodes' property.
+		/// </summary>
+		public const string AdditionalNodes = "AdditionalNodes";
 
 		/// <summary>
 		/// Full name of the provided type.
@@ -71,9 +76,14 @@ namespace {Namespace}
 	public sealed class {TypeName} : Attribute
 	{{
 		/// <summary>
-		/// Determines whether to copy attributes applied to the target. Defaults to <see langword=""false""/>.
+		/// Determines which non-standard nodes from the target type to include in the generated source.
 		/// </summary>
-		public bool {CopyAttributes} {{ get; set; }}
+		public {CopyFromAdditionalNodesProvider.TypeName} {AdditionalNodes} {{ get; set; }}
+
+		/// <summary>
+		/// Specifies, which namespaces should be imported for the generated code.
+		/// </summary>
+		public string[]? {AddUsings} {{ get; set; }}
 
 		/// <summary>
 		/// Source of the copied implementation.

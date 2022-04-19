@@ -11,17 +11,12 @@ namespace Durian.Analysis.CopyFrom
 		/// <summary>
 		/// Name of the 'AddUsings' property.
 		/// </summary>
-		public const string AddUsings = "AddUsings";
+		public const string AddUsings = CopyFromMethodAttributeProvider.AddUsings;
 
 		/// <summary>
-		/// Name of the 'CopyAttributes' property.
+		/// Name of the 'AdditionalNodes' property.
 		/// </summary>
-		public const string CopyAttributes = "CopyAttributes";
-
-		/// <summary>
-		/// Name of the 'CopyUsings' property.
-		/// </summary>
-		public const string CopyUsings = "CopyUsings";
+		public const string AdditionalNodes = CopyFromMethodAttributeProvider.AdditionalNodes;
 
 		/// <summary>
 		/// Full name of the provided type.
@@ -101,19 +96,14 @@ namespace {Namespace}
 	public sealed class {TypeName} : Attribute
 	{{
 		/// <summary>
+		/// Determines which non-standard nodes from the target type to include in the generated source.
+		/// </summary>
+		public {CopyFromAdditionalNodesProvider.TypeName} {AdditionalNodes} {{ get; set; }}
+
+		/// <summary>
 		/// Specifies, which namespaces should be imported for the generated code.
 		/// </summary>
 		public string[]? {AddUsings} {{ get; set; }}
-
-		/// <summary>
-		/// Determines whether to copy attributes applied to the target. Defaults to <see langword=""false""/>.
-		/// </summary>
-		public bool {CopyAttributes} {{ get; set; }}
-
-		/// <summary>
-		/// Determines whether to copy usings from the target type's source file. Defaults to <see langword=""true""/>.
-		/// </summary>
-		public bool {CopyUsings} {{ get; set; }} = true;
 
 		/// <summary>
 		/// Determines whether to automatically replace name of the target type in constructor, destructor and operator declarations. Defaults to <see langword=""true""/>.
@@ -121,14 +111,14 @@ namespace {Namespace}
 		public bool {HandleSpecialMembers} {{ get; set; }} = true;
 
 		/// <summary>
-		/// Partial part of the source type to copy the implementation from.
-		/// </summary>
-		public string? {PartialPart} {{ get; set; }}
-
-		/// <summary>
 		/// Order in which multiple <see cref=""{TypeName}""/>s are applied.
 		/// </summary>
 		public int {Order} {{ get; set; }}
+
+		/// <summary>
+		/// Partial part of the source type to copy the implementation from.
+		/// </summary>
+		public string? {PartialPart} {{ get; set; }}
 
 		/// <summary>
 		/// Source of the copied implementation.

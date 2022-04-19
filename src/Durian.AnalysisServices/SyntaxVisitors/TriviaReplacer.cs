@@ -19,7 +19,8 @@ namespace Durian.Analysis.SyntaxVisitors
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TriviaReplacer"/> class.
 		/// </summary>
-		protected TriviaReplacer()
+		/// <param name="visitIntoStructedTrivia">Determines whether to visit nodes that are part of a structured trivia.</param>
+		protected TriviaReplacer(bool visitIntoStructedTrivia = false) : base(visitIntoStructedTrivia)
 		{
 		}
 
@@ -27,7 +28,8 @@ namespace Durian.Analysis.SyntaxVisitors
 		/// Initializes a new instance of the <see cref="TriviaReplacer"/> class.
 		/// </summary>
 		/// <param name="replacement"><see cref="SyntaxTrivia"/> that is the replacement.</param>
-		protected TriviaReplacer(in SyntaxTrivia replacement)
+		/// <param name="visitIntoStructedTrivia">Determines whether to visit nodes that are part of a structured trivia.</param>
+		protected TriviaReplacer(in SyntaxTrivia replacement, bool visitIntoStructedTrivia = false) : base(visitIntoStructedTrivia)
 		{
 			Replacement = replacement;
 		}

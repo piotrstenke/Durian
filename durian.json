@@ -144,7 +144,8 @@
       ],
       "includedTypes": [
         "Durian.CopyFromTypeAttribute",
-        "Durian.CopyFromMethodAttribute",
+		"Durian.CopyFromMethodAttribute",
+		"Durian.CopyFromAdditionalNodes",
         "Durian.PatternAttribute",
         "Durian.PartialNameAttribute"
       ],

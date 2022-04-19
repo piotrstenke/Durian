@@ -534,7 +534,7 @@ class Test
 	}}
 }}
 ";
-			SingletonGeneratorTestResult result = RunGenerator(input);
+			SingleGeneratorTestResult result = RunGenerator(input);
 			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
 			Assert.True(result.Compare(expected));
 		}
@@ -559,7 +559,7 @@ sealed class Test
 	int value;
 }}
 ";
-			SingletonGeneratorTestResult result = RunGenerator(input);
+			SingleGeneratorTestResult result = RunGenerator(input);
 			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
 			Assert.True(result.Compare(expected));
 		}
@@ -584,7 +584,7 @@ static class Test
 	int value;
 }}
 ";
-			SingletonGeneratorTestResult result = RunGenerator(input);
+			SingleGeneratorTestResult result = RunGenerator(input);
 			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
 			Assert.True(result.Compare(expected));
 		}
@@ -609,7 +609,7 @@ struct Test
 	int value;
 }}
 ";
-			SingletonGeneratorTestResult result = RunGenerator(input);
+			SingleGeneratorTestResult result = RunGenerator(input);
 			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor.Id));
 			Assert.True(result.Compare(expected));
 		}

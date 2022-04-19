@@ -46,37 +46,37 @@ namespace Durian.TestServices
 		}
 
 		/// <inheritdoc/>
-		public sealed override SingletonGeneratorTestResult RunGenerator(string? input, int index, [CallerMemberName] string testName = "")
+		public sealed override SingleGeneratorTestResult RunGenerator(string? input, int index, [CallerMemberName] string testName = "")
 		{
 			return base.RunGenerator(input, UnderlayingGenerator.NumStaticTrees + index, testName);
 		}
 
 		/// <inheritdoc/>
-		public sealed override SingletonGeneratorTestResult RunGenerator(string? input, [CallerMemberName] string testName = "")
+		public sealed override SingleGeneratorTestResult RunGenerator(string? input, [CallerMemberName] string testName = "")
 		{
 			return base.RunGenerator(input, UnderlayingGenerator.NumStaticTrees, testName);
 		}
 
 		/// <inheritdoc/>
-		public override MultiOutputGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, [CallerMemberName] string testName = "")
+		public override MultipleGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, [CallerMemberName] string testName = "")
 		{
 			return base.RunGeneratorWithMultipleOutputs(input, UnderlayingGenerator.NumStaticTrees, testName);
 		}
 
 		/// <inheritdoc/>
-		public override MultiOutputGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, int startIndex, [CallerMemberName] string testName = "")
+		public override MultipleGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, int startIndex, [CallerMemberName] string testName = "")
 		{
 			return base.RunGeneratorWithMultipleOutputs(input, UnderlayingGenerator.NumStaticTrees + startIndex, testName);
 		}
 
 		/// <inheritdoc/>
-		public sealed override SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, int index, [CallerMemberName] string testName = "")
+		public sealed override SingleGeneratorTestResult RunGeneratorWithDependency(string? input, string external, int index, [CallerMemberName] string testName = "")
 		{
 			return base.RunGeneratorWithDependency(input, external, UnderlayingGenerator.NumStaticTrees + index, testName);
 		}
 
 		/// <inheritdoc/>
-		public sealed override SingletonGeneratorTestResult RunGeneratorWithDependency(string? input, string external, [CallerMemberName] string testName = "")
+		public sealed override SingleGeneratorTestResult RunGeneratorWithDependency(string? input, string external, [CallerMemberName] string testName = "")
 		{
 			return base.RunGeneratorWithDependency(input, external, UnderlayingGenerator.NumStaticTrees, testName);
 		}

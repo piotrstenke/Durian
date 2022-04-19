@@ -285,6 +285,45 @@ namespace Durian.Analysis.CopyFrom
 		);
 
 		/// <summary>
+		/// Provides a diagnostic message indicating that the <see cref="CopyFromAdditionalNodesProvider.Documentation"/> value was applied to a member that already has a documentation.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0222_MemberAlreadyHasDocumentation = new(
+			id: "DUR0222",
+			title: "Member already has documentation",
+			messageFormat: "'{0}': Member already has documentation",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0222.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides a diagnostic message indicating that the <see cref="CopyFromAdditionalNodesProvider.Constraints"/> value was applied to a member that already has its own generic constraints.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0223_MemberAlreadyHasConstraints = new(
+			id: "DUR0223",
+			title: "Member already has generic constraints",
+			messageFormat: "'{0}': Member already has generic constraints",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0223.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides a diagnostic message indicating that the <see cref="CopyFromAdditionalNodesProvider.Constraints"/> value was applied to a method or a member that already has its own generic constraints.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember = new(
+			id: "DUR0224",
+			title: "Cannot copy constraints for a method or a non-generic member",
+			messageFormat: "'{0}': Cannot copy constraints for a method or a non-generic member",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0224.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
 		/// Documentation directory of the <c>DefaultParam</c> module.
 		/// </summary>
 		public static string DocsPath => GlobalInfo.Repository + "/tree/master/docs/CopyFrom";

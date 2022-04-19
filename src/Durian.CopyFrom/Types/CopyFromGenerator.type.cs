@@ -50,7 +50,7 @@ namespace Durian.Analysis.CopyFrom
 			return semanticModel;
 		}
 
-		private static TypeDeclarationSyntax[] GetPartialDeclarations(TargetData target)
+		private static TypeDeclarationSyntax[] GetPartialDeclarations(TypeTargetData target)
 		{
 			if (target.PartialPart is not null)
 			{
@@ -172,7 +172,7 @@ namespace Durian.Analysis.CopyFrom
 			}
 		}
 
-		private static void SortByOrder(TargetData[] targets)
+		private static void SortByOrder(TypeTargetData[] targets)
 		{
 			if (targets.Length == 1)
 			{
@@ -267,7 +267,7 @@ namespace Durian.Analysis.CopyFrom
 
 		private bool GenerateDeclarations(
 			CopyFromTypeData type,
-			TargetData target,
+			TypeTargetData target,
 			TypeDeclarationSyntax[] partialDeclarations,
 			string currentName,
 			string keyword,
@@ -346,7 +346,7 @@ namespace Durian.Analysis.CopyFrom
 
 		private bool GenerateType(CopyFromTypeData type, string hintName, CopyFromPassContext context)
 		{
-			TargetData[] targets = type.Targets;
+			TypeTargetData[] targets = type.Targets;
 			SortByOrder(targets);
 
 			bool generated = false;
@@ -358,7 +358,7 @@ namespace Durian.Analysis.CopyFrom
 
 			for (int i = 0; i < targets.Length; i++)
 			{
-				TargetData target = targets[i];
+				TypeTargetData target = targets[i];
 
 				TypeDeclarationSyntax[] partialDeclarations = GetPartialDeclarations(target);
 
@@ -380,7 +380,7 @@ namespace Durian.Analysis.CopyFrom
 			return generated;
 		}
 
-		private GenerateAction GetGenerationMethod(CopyFromTypeData type, TargetData target, TypeParameterReplacer replacer)
+		private GenerateAction GetGenerationMethod(CopyFromTypeData type, TypeTargetData target, TypeParameterReplacer replacer)
 		{
 			if (target.Symbol.IsGenericType)
 			{

@@ -33,7 +33,7 @@ namespace Durian.Analysis.CopyFrom
 	{
 		private const string _groupMethods = "Methods";
 		private const string _groupTypes = "Types";
-		private const int _numStaticTrees = 4;
+		private const int _numStaticTrees = 5;
 
 		/// <inheritdoc/>
 		public override string GeneratorName => "CopyFrom";
@@ -74,6 +74,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			return new ISourceTextProvider[_numStaticTrees - 1]
 			{
+				new CopyFromAdditionalNodesProvider(),
 				new CopyFromTypeAttributeProvider(),
 				new CopyFromMethodAttributeProvider(),
 				new PatternAttributeProvider(),

@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
+using Durian.Analysis.SyntaxVisitors;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -12,7 +14,7 @@ namespace Durian.TestServices
 	/// <summary>
 	/// A <see cref="IGeneratorTestResult"/> that represents multiple sources that were created during the generator pass.
 	/// </summary>
-	public readonly struct MultiOutputGeneratorTestResult : IGeneratorTestResult
+	public readonly struct MultipleGeneratorTestResult : IGeneratorTestResult
 	{
 		private readonly GeneratorRunResult _runResult;
 
@@ -51,7 +53,7 @@ namespace Durian.TestServices
 		/// <exception cref="IndexOutOfRangeException">The specified index is not in the array.</exception>
 		public GeneratedSourceResult this[int index] => GeneratedSources[index];
 
-		private MultiOutputGeneratorTestResult(
+		private MultipleGeneratorTestResult(
 			GeneratorRunResult runResult,
 			ImmutableArray<GeneratedSourceResult> generatesSources,
 			CSharpCompilation inputCompilation,
@@ -65,13 +67,13 @@ namespace Durian.TestServices
 		}
 
 		/// <inheritdoc cref="Create(GeneratorDriver, CSharpCompilation, CSharpCompilation, int)"/>
-		public static MultiOutputGeneratorTestResult Create(GeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
+		public static MultipleGeneratorTestResult Create(GeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
 		{
 			return Create(generatorDriver, inputCompilation, outputCompilation, 0);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="MultiOutputGeneratorTestResult"/> from the specified <paramref name="generatorDriver"/>.
+		/// Creates a new <see cref="MultipleGeneratorTestResult"/> from the specified <paramref name="generatorDriver"/>.
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> that was used to run the generator test.</param>
 		/// <param name="inputCompilation"><see cref="CSharpCompilation"/> that was passed as input to the <paramref name="generatorDriver"/>.</param>
@@ -82,7 +84,7 @@ namespace Durian.TestServices
 		/// <paramref name="inputCompilation"/> is <see langword="null"/>. -or-
 		/// <paramref name="outputCompilation"/> is <see langword="null"/>.
 		/// </exception>
-		public static MultiOutputGeneratorTestResult Create(GeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation, int startIndex)
+		public static MultipleGeneratorTestResult Create(GeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation, int startIndex)
 		{
 			if (generatorDriver is null)
 			{
@@ -111,7 +113,13 @@ namespace Durian.TestServices
 				generatedSources = generatedSources.RemoveRange(0, startIndex);
 			}
 
-			return new MultiOutputGeneratorTestResult(runResult, generatedSources, inputCompilation, outputCompilation);
+			return new MultipleGeneratorTestResult(runResult, generatedSources, inputCompilation, outputCompilation);
+		}
+
+		/// <inheritdoc cref="Compare(string[], bool)"/>
+		public bool Compare(params string[]? expected)
+		{
+			return Compare(expected, false);
 		}
 
 		/// <summary>
@@ -121,7 +129,8 @@ namespace Durian.TestServices
 		/// If <paramref name="expected"/> is <see langword="null"/>, empty, or it's length is not equal to that of <see cref="GeneratedSources"/>, <see langword="false"/> is returned.
 		/// </remarks>
 		/// <param name="expected">Array of <see cref="string"/>s representing <see cref="CSharpSyntaxTree"/>s that were expected to be generated.</param>
-		public bool Compare(params string[]? expected)
+		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
+		public bool Compare(string[]? expected, bool includeStructuredTrivia)
 		{
 			if (expected is null || expected.Length == 0 || expected.Length != Length)
 			{
@@ -130,15 +139,38 @@ namespace Durian.TestServices
 
 			ImmutableArray<GeneratedSourceResult> generatedSources = GeneratedSources;
 
-			for (int i = 0; i < expected.Length; i++)
+			if(includeStructuredTrivia)
 			{
-				if (!generatedSources[0].SyntaxTree.IsEquivalentTo(CSharpSyntaxTree.ParseText(expected[0], encoding: Encoding.UTF8)))
+				StructuredTriviaPreserver preserver = new();
+
+				for (int i = 0; i < expected.Length; i++)
 				{
-					return false;
+					SyntaxNode node = preserver.Visit(generatedSources[0].SyntaxTree.GetRoot());
+
+					if (!node.IsEquivalentTo(preserver.Visit(CSharpSyntaxTree.ParseText(expected[0], encoding: Encoding.UTF8).GetRoot())))
+					{
+						return false;
+					}
+				}
+			}
+			else
+			{
+				for (int i = 0; i < expected.Length; i++)
+				{
+					if (!generatedSources[0].SyntaxTree.IsEquivalentTo(CSharpSyntaxTree.ParseText(expected[0], encoding: Encoding.UTF8)))
+					{
+						return false;
+					}
 				}
 			}
 
 			return true;
+		}
+
+		/// <inheritdoc cref="Compare(CSharpSyntaxTree[], bool)"/>
+		public bool Compare(params CSharpSyntaxTree[]? syntaxTrees)
+		{
+			return Compare(syntaxTrees, false);
 		}
 
 		/// <summary>
@@ -148,7 +180,8 @@ namespace Durian.TestServices
 		/// If <paramref name="syntaxTrees"/> is <see langword="null"/>, empty, or it's length is not equal to that of <see cref="GeneratedSources"/>, <see langword="false"/> is returned.
 		/// </remarks>
 		/// <param name="syntaxTrees">Array of <see cref="CSharpSyntaxTree"/>s to compare.</param>
-		public bool Compare(params CSharpSyntaxTree[]? syntaxTrees)
+		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
+		public bool Compare(CSharpSyntaxTree[]? syntaxTrees, bool includeStructuredTrivia)
 		{
 			if (syntaxTrees is null || syntaxTrees.Length == 0 || syntaxTrees.Length != Length)
 			{
@@ -157,11 +190,28 @@ namespace Durian.TestServices
 
 			ImmutableArray<GeneratedSourceResult> generatedSources = GeneratedSources;
 
-			for (int i = 0; i < syntaxTrees.Length; i++)
+			if(includeStructuredTrivia)
 			{
-				if (!generatedSources[0].SyntaxTree.IsEquivalentTo(syntaxTrees[0]))
+				StructuredTriviaPreserver preserver = new();
+
+				for (int i = 0; i < syntaxTrees.Length; i++)
 				{
-					return false;
+					SyntaxNode node = preserver.Visit(generatedSources[0].SyntaxTree.GetRoot());
+
+					if (!node.IsEquivalentTo(preserver.Visit(syntaxTrees[0].GetRoot())))
+					{
+						return false;
+					}
+				}
+			}
+			else
+			{
+				for (int i = 0; i < syntaxTrees.Length; i++)
+				{
+					if (!generatedSources[0].SyntaxTree.IsEquivalentTo(syntaxTrees[0]))
+					{
+						return false;
+					}
 				}
 			}
 
@@ -173,7 +223,8 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="index">Index at which the <see cref="CSharpSyntaxTree"/> to compare is located at.</param>
 		/// <param name="expected">A <see cref="string"/> that represents a <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
-		public bool Compare(int index, string? expected)
+		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
+		public bool Compare(int index, string? expected, bool includeStructuredTrivia = false)
 		{
 			if (index < 0 && index > Length)
 			{
@@ -185,7 +236,7 @@ namespace Durian.TestServices
 				return false;
 			}
 
-			return Compare_Internal(CSharpSyntaxTree.ParseText(expected, encoding: Encoding.UTF8), index);
+			return Compare_Internal(CSharpSyntaxTree.ParseText(expected, encoding: Encoding.UTF8), index, includeStructuredTrivia);
 		}
 
 		/// <summary>
@@ -193,44 +244,45 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="index">Index at which the <see cref="CSharpSyntaxTree"/> to compare is located at.</param>
 		/// <param name="syntaxTree"><see cref="CSharpSyntaxTree"/> to compare.</param>
-		public bool Compare(int index, CSharpSyntaxTree? syntaxTree)
+		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
+		public bool Compare(int index, CSharpSyntaxTree? syntaxTree, bool includeStructuredTrivia = false)
 		{
 			if (index < 0 && index > Length)
 			{
 				return false;
 			}
 
-			return Compare_Internal(syntaxTree, index);
+			return Compare_Internal(syntaxTree, index, includeStructuredTrivia);
 		}
 
-		bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result)
+		bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result, bool includeStructuredTrivia)
 		{
-			if (result.GeneratedTrees.Length != Length)
+			if (result is null || result.GeneratedTrees.IsDefaultOrEmpty)
 			{
 				return false;
 			}
 
-			int length = Length;
-
-			for (int i = 0; i < length; i++)
-			{
-				if (!result.GeneratedTrees[i].IsEquivalentTo(GeneratedSources[i].SyntaxTree))
-				{
-					return false;
-				}
-			}
-
-			return true;
+			return Compare(result.GeneratedTrees.CastArray<CSharpSyntaxTree>().ToArray());
 		}
 
-		private bool Compare_Internal(SyntaxTree? syntaxTree, int index)
+		private bool Compare_Internal(SyntaxTree? syntaxTree, int index, bool includeStructuredTrivia)
 		{
 			if (syntaxTree is null)
 			{
 				return false;
 			}
 
-			return GeneratedSources[index].SyntaxTree.IsEquivalentTo(syntaxTree);
+			SyntaxTree currentTree = GeneratedSources[index].SyntaxTree;
+
+			if (includeStructuredTrivia)
+			{
+				StructuredTriviaPreserver preserver = new();
+				SyntaxNode node = preserver.Visit(currentTree.GetRoot());
+
+				return node.IsEquivalentTo(preserver.Visit(syntaxTree.GetRoot()));
+			}
+
+			return currentTree.IsEquivalentTo(syntaxTree);
 		}
 	}
 }

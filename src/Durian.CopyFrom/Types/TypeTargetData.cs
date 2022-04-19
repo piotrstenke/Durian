@@ -5,12 +5,12 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Analysis.CopyFrom
+namespace Durian.Analysis.CopyFrom.Types
 {
 	/// <summary>
-	/// Contains data of a <c>CopyFrom</c> target.
+	/// Contains data of a <c>CopyFrom</c> type target.
 	/// </summary>
-	public sealed class TargetData : IEquatable<TargetData>
+	public sealed class TypeTargetData : IEquatable<TypeTargetData>
 	{
 		/// <summary>
 		/// Determines whether to copy attributes applied to the target.
@@ -47,13 +47,13 @@ namespace Durian.Analysis.CopyFrom
 		/// </summary>
 		public string[]? Usings { get; }
 
-		/// <inheritdoc cref="TargetData(INamedTypeSymbol, int, string[], TypeDeclarationSyntax?, string?, bool, bool)"/>
-		public TargetData(INamedTypeSymbol symbol) : this(symbol, default, default)
+		/// <inheritdoc cref="TypeTargetData(INamedTypeSymbol, int, string[], TypeDeclarationSyntax?, string?, bool, bool)"/>
+		public TypeTargetData(INamedTypeSymbol symbol) : this(symbol, default, default)
 		{
 		}
 
-		/// <inheritdoc cref="TargetData(INamedTypeSymbol, int, string[], TypeDeclarationSyntax?, string?, bool, bool)"/>
-		public TargetData(
+		/// <inheritdoc cref="TypeTargetData(INamedTypeSymbol, int, string[], TypeDeclarationSyntax?, string?, bool, bool)"/>
+		public TypeTargetData(
 			INamedTypeSymbol symbol,
 			int order,
 			string[]? usings
@@ -62,7 +62,7 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="TargetData"/> struct.
+		/// Initializes a new instance of the <see cref="TypeTargetData"/> struct.
 		/// </summary>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> of the target member.</param>
 		/// <param name="order">Order in which this target should be applied when comparing to other targets of the member.</param>
@@ -71,7 +71,7 @@ namespace Durian.Analysis.CopyFrom
 		/// <param name="partialPartName">Name of the partial part.</param>
 		/// <param name="handleSpecialMembers">Determines whether to automatically replace name of the target type in constructor, destructor and operator declarations.</param>
 		/// <param name="copyAttributes">Determines whether to copy attributes applied to the target.</param>
-		public TargetData(
+		public TypeTargetData(
 			INamedTypeSymbol symbol,
 			int order,
 			string[]? usings,
@@ -91,13 +91,13 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(TargetData left, TargetData right)
+		public static bool operator !=(TypeTargetData left, TypeTargetData right)
 		{
 			return !(left == right);
 		}
 
 		/// <inheritdoc/>
-		public static bool operator ==(TargetData left, TargetData right)
+		public static bool operator ==(TypeTargetData left, TypeTargetData right)
 		{
 			return left.Equals(right);
 		}
@@ -105,11 +105,11 @@ namespace Durian.Analysis.CopyFrom
 		/// <inheritdoc/>
 		public override bool Equals(object? obj)
 		{
-			return obj is TargetData other && Equals(other);
+			return obj is TypeTargetData other && Equals(other);
 		}
 
 		/// <inheritdoc/>
-		public bool Equals(TargetData other)
+		public bool Equals(TypeTargetData other)
 		{
 			return
 				other.Order == Order &&
@@ -147,10 +147,10 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <summary>
-		/// Returns a new instance of the <see cref="TargetData"/> class being a copy of the current instance, but with the specified <paramref name="symbol"/> instead.
+		/// Returns a new instance of the <see cref="TypeTargetData"/> class being a copy of the current instance, but with the specified <paramref name="symbol"/> instead.
 		/// </summary>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> of the target member.</param>
-		public TargetData WithSymbol(INamedTypeSymbol symbol)
+		public TypeTargetData WithSymbol(INamedTypeSymbol symbol)
 		{
 			return new(symbol, Order, Usings, PartialPart, PartialPartName, HandleSpecialMembers, CopyAttributes);
 		}

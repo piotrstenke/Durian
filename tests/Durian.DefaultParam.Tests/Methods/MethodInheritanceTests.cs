@@ -310,7 +310,7 @@ $@"partial class Child
 	}}
 }}
 ";
-			SingletonGeneratorTestResult result = RunGenerator(input, 1);
+			SingleGeneratorTestResult result = RunGenerator(input, 1);
 
 			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
 			Assert.True(result.Compare(expected));
@@ -355,7 +355,7 @@ $@"partial class Child
 }}
 ";
 
-			SingletonGeneratorTestResult result = RunGenerator(input, 2);
+			SingleGeneratorTestResult result = RunGenerator(input, 2);
 
 			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
 			Assert.True(result.Compare(expected));
@@ -399,7 +399,7 @@ $@"partial class Child
 }}
 ";
 
-			SingletonGeneratorTestResult result = RunGenerator(input, 1);
+			SingleGeneratorTestResult result = RunGenerator(input, 1);
 
 			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
 			Assert.True(result.Compare(expected));

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Durian.Analysis.SyntaxVisitors;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -14,7 +15,7 @@ namespace Durian.TestServices
 	/// <summary>
 	/// A <see cref="IGeneratorTestResult"/> that represents a single <see cref="CSharpSyntaxTree"/> retrieved from a tested <see cref="ISourceGenerator"/>.
 	/// </summary>
-	public readonly struct SingletonGeneratorTestResult : IGeneratorTestResult
+	public readonly struct SingleGeneratorTestResult : IGeneratorTestResult
 	{
 		private readonly GeneratorRunResult _runResult;
 
@@ -58,7 +59,7 @@ namespace Durian.TestServices
 		/// </summary>
 		public CSharpSyntaxTree? SyntaxTree => _sourceResult.SyntaxTree as CSharpSyntaxTree;
 
-		private SingletonGeneratorTestResult(
+		private SingleGeneratorTestResult(
 			GeneratorRunResult runResult,
 			GeneratedSourceResult sourceResult,
 			CSharpCompilation inputCompilation,
@@ -74,13 +75,13 @@ namespace Durian.TestServices
 		}
 
 		/// <inheritdoc cref="Create(CSharpGeneratorDriver, CSharpCompilation, CSharpCompilation, int)"/>
-		public static SingletonGeneratorTestResult Create(CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
+		public static SingleGeneratorTestResult Create(CSharpGeneratorDriver generatorDriver, CSharpCompilation inputCompilation, CSharpCompilation outputCompilation)
 		{
 			return Create(generatorDriver, inputCompilation, outputCompilation, 0);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="SingletonGeneratorTestResult"/> from the specified <paramref name="generatorDriver"/>.
+		/// Creates a new <see cref="SingleGeneratorTestResult"/> from the specified <paramref name="generatorDriver"/>.
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> that was used to run the generator test.</param>
 		/// <param name="inputCompilation"><see cref="CSharpCompilation"/> that was passed as input to the <paramref name="generatorDriver"/>.</param>
@@ -91,7 +92,7 @@ namespace Durian.TestServices
 		/// <paramref name="inputCompilation"/> is <see langword="null"/>. -or-
 		/// <paramref name="outputCompilation"/> is <see langword="null"/>.
 		/// </exception>
-		public static SingletonGeneratorTestResult Create(
+		public static SingleGeneratorTestResult Create(
 			CSharpGeneratorDriver generatorDriver,
 			CSharpCompilation inputCompilation,
 			CSharpCompilation outputCompilation,
@@ -120,33 +121,45 @@ namespace Durian.TestServices
 			{
 				GeneratedSourceResult sourceResult = runResult.GeneratedSources[sourceIndex];
 
-				return new SingletonGeneratorTestResult(runResult, sourceResult, inputCompilation, outputCompilation, true);
+				return new SingleGeneratorTestResult(runResult, sourceResult, inputCompilation, outputCompilation, true);
 			}
 
-			return new SingletonGeneratorTestResult(runResult, default, inputCompilation, outputCompilation, false);
+			return new SingleGeneratorTestResult(runResult, default, inputCompilation, outputCompilation, false);
 		}
 
 		/// <summary>
 		/// Checks if the <paramref name="expected"/> <see cref="CSharpSyntaxTree"/> is equivalent to the <see cref="CSharpSyntaxTree"/> created by the <see cref="ISourceGenerator"/>.
 		/// </summary>
 		/// <param name="expected">A <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
-		public bool Compare(CSharpSyntaxTree? expected)
+		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
+		public bool Compare(CSharpSyntaxTree? expected, bool includeStructuredTrivia = false)
 		{
 			if (expected is null)
 			{
 				return false;
 			}
 
-			return SyntaxTree?.IsEquivalentTo(expected) ?? false;
+			if (SyntaxTree is null)
+			{
+				return false;
+			}
+
+			return Compare_Internal(expected, includeStructuredTrivia);
 		}
 
 		/// <summary>
 		/// Checks if the <see cref="CSharpSyntaxTree"/> created from the <paramref name="expected"/> source is equivalent to the <see cref="CSharpSyntaxTree"/> created by the <see cref="ISourceGenerator"/>.
 		/// </summary>
 		/// <param name="expected">A <see cref="string"/> that represents a <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
-		public bool Compare(string? expected)
+		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
+		public bool Compare(string? expected, bool includeStructuredTrivia = false)
 		{
 			if (expected is null)
+			{
+				return false;
+			}
+
+			if (SyntaxTree is null)
 			{
 				return false;
 			}
@@ -156,22 +169,33 @@ namespace Durian.TestServices
 				return false;
 			}
 
-			return SyntaxTree?.IsEquivalentTo(tree) ?? false;
+			return Compare_Internal(tree, includeStructuredTrivia);
 		}
 
-		bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result)
+		bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result, bool includeStructuredTrivia)
 		{
 			if (result is null || result.GeneratedTrees.IsDefaultOrEmpty)
 			{
 				return false;
 			}
 
-			if (result.GeneratedTrees[0] is not CSharpSyntaxTree tree)
+			return Compare(result.GeneratedTrees[0] as CSharpSyntaxTree, includeStructuredTrivia);
+		}
+
+		private bool Compare_Internal(CSharpSyntaxTree expected, bool includeStructuredTrivia)
+		{
+			if (!includeStructuredTrivia)
 			{
-				return false;
+				return SyntaxTree!.IsEquivalentTo(expected);
 			}
 
-			return SyntaxTree?.IsEquivalentTo(tree) ?? false;
+			StructuredTriviaPreserver preserver = new();
+			SyntaxNode root = SyntaxTree!.GetRoot();
+			root = preserver.Visit(root);
+
+			SyntaxNode exp = preserver.Visit(expected.GetRoot());
+
+			return root.IsEquivalentTo(exp);
 		}
 	}
 }
