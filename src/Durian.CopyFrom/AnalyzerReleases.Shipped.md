@@ -27,3 +27,5 @@ DUR0221 | Durian.CopyFrom | Error |  Circular dependency between target members.
 DUR0222 | Durian.CopyFrom | Warning |  Member already has documentation. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0222.md)]
 DUR0223 | Durian.CopyFrom | Warning |  Member already has generic constraints. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0223.md)]
 DUR0224 | Durian.CopyFrom | Warning |  Cannot copy constraints for a method or a non-generic member. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0224.md)]
+DUR0225 | Durian.CopyFrom | Warning |  Type already has a base type. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0225.md)]
+DUR0226 | Durian.CopyFrom | Warning |  Base type cannot be applied to this kind of member. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0226.md)]

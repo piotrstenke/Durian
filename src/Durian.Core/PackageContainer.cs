@@ -160,6 +160,11 @@ namespace Durian.Info
 			_references = references;
 		}
 
+		void ICollection<PackageReference>.Add(PackageReference item)
+		{
+			Include(item);
+		}
+
 		/// <summary>
 		/// Returns all elements in the container as values of <see cref="DurianPackage"/>.
 		/// </summary>
@@ -178,6 +183,14 @@ namespace Durian.Info
 			}
 
 			return array;
+		}
+
+		IEnumerable<int> IDurianContainer.AsEnums()
+		{
+			DurianPackage[] packages = AsEnums();
+			int[] ints = new int[packages.Length];
+			packages.CopyTo(ints, 0);
+			return ints;
 		}
 
 		/// <summary>
@@ -202,6 +215,11 @@ namespace Durian.Info
 			return array;
 		}
 
+		IEnumerable<IDurianIdentity> IDurianContainer.AsIdentities()
+		{
+			return AsIdentities();
+		}
+
 		/// <summary>
 		/// Returns all elements in the container as <see cref="PackageReference"/>s.
 		/// </summary>
@@ -220,6 +238,11 @@ namespace Durian.Info
 			}
 
 			return array;
+		}
+
+		IEnumerable<IDurianReference> IDurianContainer.AsReferences()
+		{
+			return AsReferences();
 		}
 
 		/// <summary>
@@ -253,6 +276,16 @@ namespace Durian.Info
 			}
 
 			return new PackageContainer(enums, references);
+		}
+
+		IDurianContainer IDurianContainer.Clone(bool sharedReference)
+		{
+			return Clone(sharedReference);
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone(false);
 		}
 
 		/// <summary>
@@ -289,6 +322,17 @@ namespace Durian.Info
 			return false;
 		}
 
+		bool ICollection<PackageReference>.Contains(PackageReference item)
+		{
+			return Contains(item.EnumValue);
+		}
+
+		void ICollection<PackageReference>.CopyTo(PackageReference[] array, int arrayIndex)
+		{
+			InitializeReferences();
+			_references.CopyTo(array, arrayIndex);
+		}
+
 		/// <summary>
 		/// Removes all duplicate package entries from the container.
 		/// </summary>
@@ -312,6 +356,36 @@ namespace Durian.Info
 				_enums.RemoveAt(dup);
 				_references.RemoveAt(dup);
 			}
+		}
+
+		bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
+		{
+			if (other is null)
+			{
+				return false;
+			}
+
+			if (ReferenceEquals(this, other))
+			{
+				return true;
+			}
+
+			if (other is not PackageContainer c || c.Count != Count)
+			{
+				return false;
+			}
+
+			List<DurianPackage> enums = c._enums;
+
+			for (int i = 0; i < Count; i++)
+			{
+				if (enums[i] != _enums[i])
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		/// <summary>
@@ -415,6 +489,33 @@ namespace Durian.Info
 		{
 			InitializeReferences();
 			return _references.GetEnumerator()!;
+		}
+
+		IEnumerator<PackageReference> IEnumerable<PackageReference>.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
+		{
+			if (comparer is null)
+			{
+				throw new ArgumentNullException(nameof(comparer));
+			}
+
+			int hashCode = -507560740;
+
+			foreach (DurianPackage package in _enums)
+			{
+				hashCode = (hashCode * -1521134295) + package.GetHashCode();
+			}
+
+			return hashCode;
 		}
 
 		/// <summary>
@@ -674,6 +775,11 @@ namespace Durian.Info
 			return false;
 		}
 
+		bool ICollection<PackageReference>.Remove(PackageReference item)
+		{
+			return Remove(item.EnumValue);
+		}
+
 		/// <summary>
 		/// Removes all occurrences of the specified Durian <paramref name="package"/> from the container.
 		/// </summary>
@@ -906,112 +1012,6 @@ namespace Durian.Info
 			}
 
 			return false;
-		}
-
-		void ICollection<PackageReference>.Add(PackageReference item)
-		{
-			Include(item);
-		}
-
-		IEnumerable<int> IDurianContainer.AsEnums()
-		{
-			DurianPackage[] packages = AsEnums();
-			int[] ints = new int[packages.Length];
-			packages.CopyTo(ints, 0);
-			return ints;
-		}
-
-		IEnumerable<IDurianIdentity> IDurianContainer.AsIdentities()
-		{
-			return AsIdentities();
-		}
-
-		IEnumerable<IDurianReference> IDurianContainer.AsReferences()
-		{
-			return AsReferences();
-		}
-
-		IDurianContainer IDurianContainer.Clone(bool sharedReference)
-		{
-			return Clone(sharedReference);
-		}
-
-		object ICloneable.Clone()
-		{
-			return Clone(false);
-		}
-
-		bool ICollection<PackageReference>.Contains(PackageReference item)
-		{
-			return Contains(item.EnumValue);
-		}
-
-		void ICollection<PackageReference>.CopyTo(PackageReference[] array, int arrayIndex)
-		{
-			InitializeReferences();
-			_references.CopyTo(array, arrayIndex);
-		}
-
-		bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
-		{
-			if (other is null)
-			{
-				return false;
-			}
-
-			if (ReferenceEquals(this, other))
-			{
-				return true;
-			}
-
-			if (other is not PackageContainer c || c.Count != Count)
-			{
-				return false;
-			}
-
-			List<DurianPackage> enums = c._enums;
-
-			for (int i = 0; i < Count; i++)
-			{
-				if (enums[i] != _enums[i])
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		IEnumerator<PackageReference> IEnumerable<PackageReference>.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
-		{
-			if (comparer is null)
-			{
-				throw new ArgumentNullException(nameof(comparer));
-			}
-
-			int hashCode = -507560740;
-
-			foreach (DurianPackage package in _enums)
-			{
-				hashCode = (hashCode * -1521134295) + package.GetHashCode();
-			}
-
-			return hashCode;
-		}
-
-		bool ICollection<PackageReference>.Remove(PackageReference item)
-		{
-			return Remove(item.EnumValue);
 		}
 
 		private PackageReference GetReference(int index)

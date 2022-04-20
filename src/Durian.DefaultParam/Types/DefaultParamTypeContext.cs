@@ -20,11 +20,10 @@ namespace Durian.Analysis.DefaultParam.Types
 		/// <inheritdoc/>
 		public CancellationToken CancellationToken { get; }
 
-		/// <inheritdoc cref="ISyntaxValidationContext.TargetCompilation"/>
-		public DefaultParamCompilationData TargetCompilation { get; }
-
 		/// <inheritdoc cref="ISyntaxValidationContext.Node"/>
 		public TypeDeclarationSyntax Node { get; }
+
+		CSharpSyntaxNode ISyntaxValidationContext.Node => Node!;
 
 		/// <inheritdoc/>
 		public SemanticModel SemanticModel { get; }
@@ -32,11 +31,12 @@ namespace Durian.Analysis.DefaultParam.Types
 		/// <inheritdoc cref="ISyntaxValidationContext.Symbol"/>
 		public INamedTypeSymbol Symbol { get; }
 
-		ICompilationData ISyntaxValidationContext.TargetCompilation => TargetCompilation;
-
-		CSharpSyntaxNode ISyntaxValidationContext.Node => Node!;
-
 		ISymbol ISyntaxValidationContext.Symbol => Symbol;
+
+		/// <inheritdoc cref="ISyntaxValidationContext.TargetCompilation"/>
+		public DefaultParamCompilationData TargetCompilation { get; }
+
+		ICompilationData ISyntaxValidationContext.TargetCompilation => TargetCompilation;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamTypeContext"/> structure.

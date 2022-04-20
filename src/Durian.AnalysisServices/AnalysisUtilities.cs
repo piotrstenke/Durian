@@ -137,84 +137,6 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Converts the specified <see cref="string"/> <paramref name="value"/> to a <see cref="OverloadableOperator"/>.
-		/// </summary>
-		/// <param name="value">Value to convert to a <see cref="OverloadableOperator"/>.</param>
-		public static OverloadableOperator GetOperatorType(string? value)
-		{
-			string? operatorName = value?.Trim();
-
-			if (string.IsNullOrWhiteSpace(operatorName))
-			{
-				return default;
-			}
-
-			if (char.IsLetter(operatorName![0]))
-			{
-				if (operatorName!.StartsWith("op_"))
-				{
-					operatorName = operatorName.Substring(3);
-				}
-
-				return operatorName switch
-				{
-					"Addition" => OverloadableOperator.Addition,
-					"Subtraction" => OverloadableOperator.Subtraction,
-					"Multiplication" => OverloadableOperator.Multiplication,
-					"Division" => OverloadableOperator.Division,
-					"Equality" => OverloadableOperator.Equality,
-					"Inequality" => OverloadableOperator.Inequality,
-					"Negation" => OverloadableOperator.Negation,
-					"GreaterThan" => OverloadableOperator.GreaterThan,
-					"GreaterThanOrEqual" => OverloadableOperator.GreaterThanOrEqual,
-					"LessThan" => OverloadableOperator.LessThan,
-					"LestThanOrEqual" => OverloadableOperator.LestThanOrEqual,
-					"Complement" => OverloadableOperator.Complement,
-					"LogicalAnd" => OverloadableOperator.LogicalAnd,
-					"LogicalOr" => OverloadableOperator.LogicalOr,
-					"LogicalXor" => OverloadableOperator.LogicalXor,
-					"Remainder" => OverloadableOperator.Remainder,
-					"Increment" => OverloadableOperator.Increment,
-					"Decrement" => OverloadableOperator.Decrement,
-					"False" => OverloadableOperator.False,
-					"True" => OverloadableOperator.True,
-					"UnaryPlus" => OverloadableOperator.UnaryPlus,
-					"UnaryMinus" => OverloadableOperator.UnaryMinus,
-					"RightShift" => OverloadableOperator.RightShift,
-					"LeftShift" => OverloadableOperator.LeftShift,
-					_ => default
-				};
-			}
-
-			return operatorName switch
-			{
-				"+" => OverloadableOperator.Addition,
-				"-" => OverloadableOperator.Subtraction,
-				"*" => OverloadableOperator.Multiplication,
-				"/" => OverloadableOperator.Division,
-				"==" => OverloadableOperator.Equality,
-				"!=" => OverloadableOperator.Inequality,
-				"!" => OverloadableOperator.Negation,
-				">" => OverloadableOperator.GreaterThan,
-				">=" => OverloadableOperator.GreaterThanOrEqual,
-				"<" => OverloadableOperator.LessThan,
-				"<=" => OverloadableOperator.LestThanOrEqual,
-				"~" => OverloadableOperator.Complement,
-				"&" => OverloadableOperator.LogicalAnd,
-				"|" => OverloadableOperator.LogicalOr,
-				"^" => OverloadableOperator.LogicalXor,
-				"%" => OverloadableOperator.Remainder,
-				"++" => OverloadableOperator.Increment,
-				"__" => OverloadableOperator.Decrement,
-				"false" => OverloadableOperator.False,
-				"true" => OverloadableOperator.True,
-				">>" => OverloadableOperator.RightShift,
-				"<<" => OverloadableOperator.LeftShift,
-				_ => default
-			};
-		}
-
-		/// <summary>
 		/// Converts the specified <see cref="string"/> <paramref name="value"/> into a <see cref="string"/> representation of the operator.
 		/// </summary>
 		/// <param name="value"><see cref="string"/> to convert.</param>
@@ -295,6 +217,115 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Converts the specified <see cref="string"/> <paramref name="value"/> to a <see cref="OverloadableOperator"/>.
+		/// </summary>
+		/// <param name="value">Value to convert to a <see cref="OverloadableOperator"/>.</param>
+		public static OverloadableOperator GetOperatorType(string? value)
+		{
+			string? operatorName = value?.Trim();
+
+			if (string.IsNullOrWhiteSpace(operatorName))
+			{
+				return default;
+			}
+
+			if (char.IsLetter(operatorName![0]))
+			{
+				if (operatorName!.StartsWith("op_"))
+				{
+					operatorName = operatorName.Substring(3);
+				}
+
+				return operatorName switch
+				{
+					"Addition" => OverloadableOperator.Addition,
+					"Subtraction" => OverloadableOperator.Subtraction,
+					"Multiplication" => OverloadableOperator.Multiplication,
+					"Division" => OverloadableOperator.Division,
+					"Equality" => OverloadableOperator.Equality,
+					"Inequality" => OverloadableOperator.Inequality,
+					"Negation" => OverloadableOperator.Negation,
+					"GreaterThan" => OverloadableOperator.GreaterThan,
+					"GreaterThanOrEqual" => OverloadableOperator.GreaterThanOrEqual,
+					"LessThan" => OverloadableOperator.LessThan,
+					"LestThanOrEqual" => OverloadableOperator.LestThanOrEqual,
+					"Complement" => OverloadableOperator.Complement,
+					"LogicalAnd" => OverloadableOperator.LogicalAnd,
+					"LogicalOr" => OverloadableOperator.LogicalOr,
+					"LogicalXor" => OverloadableOperator.LogicalXor,
+					"Remainder" => OverloadableOperator.Remainder,
+					"Increment" => OverloadableOperator.Increment,
+					"Decrement" => OverloadableOperator.Decrement,
+					"False" => OverloadableOperator.False,
+					"True" => OverloadableOperator.True,
+					"UnaryPlus" => OverloadableOperator.UnaryPlus,
+					"UnaryMinus" => OverloadableOperator.UnaryMinus,
+					"RightShift" => OverloadableOperator.RightShift,
+					"LeftShift" => OverloadableOperator.LeftShift,
+					_ => default
+				};
+			}
+
+			return operatorName switch
+			{
+				"+" => OverloadableOperator.Addition,
+				"-" => OverloadableOperator.Subtraction,
+				"*" => OverloadableOperator.Multiplication,
+				"/" => OverloadableOperator.Division,
+				"==" => OverloadableOperator.Equality,
+				"!=" => OverloadableOperator.Inequality,
+				"!" => OverloadableOperator.Negation,
+				">" => OverloadableOperator.GreaterThan,
+				">=" => OverloadableOperator.GreaterThanOrEqual,
+				"<" => OverloadableOperator.LessThan,
+				"<=" => OverloadableOperator.LestThanOrEqual,
+				"~" => OverloadableOperator.Complement,
+				"&" => OverloadableOperator.LogicalAnd,
+				"|" => OverloadableOperator.LogicalOr,
+				"^" => OverloadableOperator.LogicalXor,
+				"%" => OverloadableOperator.Remainder,
+				"++" => OverloadableOperator.Increment,
+				"__" => OverloadableOperator.Decrement,
+				"false" => OverloadableOperator.False,
+				"true" => OverloadableOperator.True,
+				">>" => OverloadableOperator.RightShift,
+				"<<" => OverloadableOperator.LeftShift,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Joins the collection of <see cref="string"/>s into a <see cref="QualifiedNameSyntax"/>.
+		/// </summary>
+		/// <param name="names">A collection of <see cref="string"/>s to join into a <see cref="QualifiedNameSyntax"/>.</param>
+		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="names"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="names"/> provided.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="names"/> is <see langword="null"/>.</exception>
+		public static QualifiedNameSyntax? GetQualifiedName(IEnumerable<string> names)
+		{
+			if (names is null)
+			{
+				throw new ArgumentNullException(nameof(names));
+			}
+
+			string[] n = names.ToArray();
+			int length = n.Length;
+
+			if (length < 2)
+			{
+				return null;
+			}
+
+			QualifiedNameSyntax q = SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName(n[0]), SyntaxFactory.IdentifierName(n[1]));
+
+			for (int i = 2; i < length; i++)
+			{
+				q = SyntaxFactory.QualifiedName(q, SyntaxFactory.IdentifierName(n[i]));
+			}
+
+			return q;
+		}
+
+		/// <summary>
 		/// Returns a <see cref="SemanticModel"/> and an <see cref="ISymbol"/> associated with the specified <paramref name="syntaxNode"/>.
 		/// </summary>
 		/// <param name="syntaxNode"><see cref="CSharpSyntaxNode"/> to get the <see cref="ISymbol"/> and <see cref="SemanticModel"/> of.</param>
@@ -350,37 +381,6 @@ namespace Durian.Analysis
 			}
 
 			return (semanticModel, symbol);
-		}
-
-		/// <summary>
-		/// Joins the collection of <see cref="string"/>s into a <see cref="QualifiedNameSyntax"/>.
-		/// </summary>
-		/// <param name="names">A collection of <see cref="string"/>s to join into a <see cref="QualifiedNameSyntax"/>.</param>
-		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="names"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="names"/> provided.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="names"/> is <see langword="null"/>.</exception>
-		public static QualifiedNameSyntax? GetQualifiedName(IEnumerable<string> names)
-		{
-			if (names is null)
-			{
-				throw new ArgumentNullException(nameof(names));
-			}
-
-			string[] n = names.ToArray();
-			int length = n.Length;
-
-			if (length < 2)
-			{
-				return null;
-			}
-
-			QualifiedNameSyntax q = SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName(n[0]), SyntaxFactory.IdentifierName(n[1]));
-
-			for (int i = 2; i < length; i++)
-			{
-				q = SyntaxFactory.QualifiedName(q, SyntaxFactory.IdentifierName(n[i]));
-			}
-
-			return q;
 		}
 
 		/// <summary>
@@ -541,21 +541,6 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Converts a <see cref="SyntaxKind"/> value to an associated <see cref="RefKind"/> value.
-		/// </summary>
-		/// <param name="kind"><see cref="SyntaxKind"/> to convert.</param>
-		public static RefKind SyntaxKindToRef(SyntaxKind kind)
-		{
-			return kind switch
-			{
-				SyntaxKind.RefKeyword => RefKind.Ref,
-				SyntaxKind.InKeyword => RefKind.In,
-				SyntaxKind.OutKeyword => RefKind.Out,
-				_ => RefKind.None
-			};
-		}
-
-		/// <summary>
 		/// Sorts the collection of namespace names.
 		/// </summary>
 		/// <param name="collection">A collection of namespace names.</param>
@@ -582,6 +567,21 @@ namespace Durian.Analysis
 					return 2;
 				}
 			}).ThenBy(n => n);
+		}
+
+		/// <summary>
+		/// Converts a <see cref="SyntaxKind"/> value to an associated <see cref="RefKind"/> value.
+		/// </summary>
+		/// <param name="kind"><see cref="SyntaxKind"/> to convert.</param>
+		public static RefKind SyntaxKindToRef(SyntaxKind kind)
+		{
+			return kind switch
+			{
+				SyntaxKind.RefKeyword => RefKind.Ref,
+				SyntaxKind.InKeyword => RefKind.In,
+				SyntaxKind.OutKeyword => RefKind.Out,
+				_ => RefKind.None
+			};
 		}
 
 		/// <summary>

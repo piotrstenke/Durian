@@ -15,11 +15,6 @@ namespace Durian.Analysis
 	public interface IGeneratorPassContext
 	{
 		/// <summary>
-		/// <see cref="GeneratorExecutionContext"/> created for the current generator pass.
-		/// </summary>
-		ref readonly GeneratorExecutionContext OriginalContext { get; }
-
-		/// <summary>
 		/// <see cref="System.Threading.CancellationToken"/> that can be checked to see if the generation should be canceled.
 		/// </summary>
 		CancellationToken CancellationToken { get; }
@@ -35,14 +30,9 @@ namespace Durian.Analysis
 		IDurianGenerator Generator { get; }
 
 		/// <summary>
-		/// <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="SyntaxNode"/>es that will take part in the generation.
+		/// <see cref="GeneratorExecutionContext"/> created for the current generator pass.
 		/// </summary>
-		IDurianSyntaxReceiver SyntaxReceiver { get; }
-
-		/// <summary>
-		/// <see cref="ICompilationData"/> this <see cref="IDurianGenerator"/> operates on.
-		/// </summary>
-		ICompilationData TargetCompilation { get; }
+		ref readonly GeneratorExecutionContext OriginalContext { get; }
 
 		/// <summary>
 		/// <see cref="CSharpParseOptions"/> that will be used to parse any added sources.
@@ -58,6 +48,16 @@ namespace Durian.Analysis
 		/// Current state of the generator.
 		/// </summary>
 		GeneratorState State { get; }
+
+		/// <summary>
+		/// <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="SyntaxNode"/>es that will take part in the generation.
+		/// </summary>
+		IDurianSyntaxReceiver SyntaxReceiver { get; }
+
+		/// <summary>
+		/// <see cref="ICompilationData"/> this <see cref="IDurianGenerator"/> operates on.
+		/// </summary>
+		ICompilationData TargetCompilation { get; }
 
 		/// <summary>
 		/// Returns a <see cref="IDiagnosticReceiver"/> to be used during the current generation pass.

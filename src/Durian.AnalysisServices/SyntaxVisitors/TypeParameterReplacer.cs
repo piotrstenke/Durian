@@ -38,14 +38,25 @@ namespace Durian.Analysis.SyntaxVisitors
 		}
 
 		/// <inheritdoc/>
-		public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node)
+		public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
 		{
-			if (IsValidForReplace(node.Identifier, node))
+			if (ShouldAnnotate(node.TypeParameterList))
 			{
-				node = node.WithIdentifier(GetReplacementToken(node.Identifier));
+				node = node.WithAdditionalAnnotations(_annotation);
 			}
 
-			return base.VisitIdentifierName(node);
+			return base.VisitClassDeclaration(node);
+		}
+
+		/// <inheritdoc/>
+		public override SyntaxNode? VisitDelegateDeclaration(DelegateDeclarationSyntax node)
+		{
+			if (ShouldAnnotate(node.TypeParameterList))
+			{
+				node = node.WithAdditionalAnnotations(_annotation);
+			}
+
+			return base.VisitDelegateDeclaration(node);
 		}
 
 		/// <inheritdoc/>
@@ -60,6 +71,28 @@ namespace Durian.Analysis.SyntaxVisitors
 		}
 
 		/// <inheritdoc/>
+		public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node)
+		{
+			if (IsValidForReplace(node.Identifier, node))
+			{
+				node = node.WithIdentifier(GetReplacementToken(node.Identifier));
+			}
+
+			return base.VisitIdentifierName(node);
+		}
+
+		/// <inheritdoc/>
+		public override SyntaxNode? VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
+		{
+			if (ShouldAnnotate(node.TypeParameterList))
+			{
+				node = node.WithAdditionalAnnotations(_annotation);
+			}
+
+			return base.VisitInterfaceDeclaration(node);
+		}
+
+		/// <inheritdoc/>
 		public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
 		{
 			if (ShouldAnnotate(node.TypeParameterList))
@@ -68,17 +101,6 @@ namespace Durian.Analysis.SyntaxVisitors
 			}
 
 			return base.VisitMethodDeclaration(node);
-		}
-
-		/// <inheritdoc/>
-		public override SyntaxNode? VisitDelegateDeclaration(DelegateDeclarationSyntax node)
-		{
-			if (ShouldAnnotate(node.TypeParameterList))
-			{
-				node = node.WithAdditionalAnnotations(_annotation);
-			}
-
-			return base.VisitDelegateDeclaration(node);
 		}
 
 		/// <inheritdoc/>
@@ -101,28 +123,6 @@ namespace Durian.Analysis.SyntaxVisitors
 			}
 
 			return base.VisitStructDeclaration(node);
-		}
-
-		/// <inheritdoc/>
-		public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
-		{
-			if (ShouldAnnotate(node.TypeParameterList))
-			{
-				node = node.WithAdditionalAnnotations(_annotation);
-			}
-
-			return base.VisitClassDeclaration(node);
-		}
-
-		/// <inheritdoc/>
-		public override SyntaxNode? VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
-		{
-			if (ShouldAnnotate(node.TypeParameterList))
-			{
-				node = node.WithAdditionalAnnotations(_annotation);
-			}
-
-			return base.VisitInterfaceDeclaration(node);
 		}
 
 		private bool HasParameterWithIdentifier(MemberDeclarationSyntax member)

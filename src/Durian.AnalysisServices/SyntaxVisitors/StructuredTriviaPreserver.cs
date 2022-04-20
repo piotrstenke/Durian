@@ -21,7 +21,7 @@ namespace Durian.Analysis.SyntaxVisitors
 		/// <inheritdoc/>
 		public override SyntaxTrivia VisitTrivia(SyntaxTrivia trivia)
 		{
-			if(trivia.HasStructure)
+			if (trivia.HasStructure)
 			{
 				return trivia;
 			}

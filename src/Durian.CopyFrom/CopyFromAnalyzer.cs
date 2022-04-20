@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
@@ -46,7 +45,9 @@ namespace Durian.Analysis.CopyFrom
 			DUR0221_CircularDependency,
 			DUR0222_MemberAlreadyHasDocumentation,
 			DUR0223_MemberAlreadyHasConstraints,
-			DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember
+			DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember,
+			DUR0225_BaseTypeAlreadySpecified,
+			DUR0226_CannotApplyBaseType
 		);
 
 		/// <summary>
@@ -135,11 +136,6 @@ namespace Durian.Analysis.CopyFrom
 			}
 		}
 
-		private static AttributeData[] GetAttributes(ImmutableArray<AttributeData> attributes, INamedTypeSymbol attrSymbol)
-		{
-			return attributes.Where(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol)).ToArray();
-		}
-
 		private static bool FindAddedUsings(AttributeData attribute, List<string> includedUsings)
 		{
 			string[] attributeUsings = attribute.GetNamedArgumentArrayValue<string>(CopyFromTypeAttributeProvider.AddUsings).ToArray();
@@ -155,7 +151,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				string actual = FormatUsing(@using);
 
-				if(!includedUsings.Contains(actual))
+				if (!includedUsings.Contains(actual))
 				{
 					includedUsings.Add(actual);
 					hasAny = true;
@@ -277,47 +273,19 @@ namespace Durian.Analysis.CopyFrom
 			return actual;
 		}
 
-		private static string[]? GetUsings(
-			AttributeData attribute,
-			MemberDeclarationSyntax declaration,
-			AdditionalNodes additionalNodes
-		)
+		private static AdditionalNodes GetAdditionalNodesConfig(AttributeData attribute)
 		{
-			List<string> list = new();
-
-			if (additionalNodes.HasFlag(AdditionalNodes.Usings))
+			if (attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.AdditionalNodes, out int value))
 			{
-				GetCopiedUsings(list, declaration);
+				return (AdditionalNodes)value;
 			}
 
-			FindAddedUsings(attribute, list);
-
-			return list.Count > 0 ? list.ToArray() : default;
+			return AdditionalNodes.Default;
 		}
 
-		private static void RemoveFlag(ref AdditionalNodes current, AdditionalNodes value)
+		private static AttributeData[] GetAttributes(ImmutableArray<AttributeData> attributes, INamedTypeSymbol attrSymbol)
 		{
-			current &= ~value;
-		}
-
-		private static string[]? GetUsings(
-			AttributeData attribute,
-			MemberDeclarationSyntax declaration,
-			AdditionalNodes additionalNodes,
-			ISymbol symbol,
-			IDiagnosticReceiver diagnosticReceiver
-		)
-		{
-			List<string> list = new();
-
-			if(additionalNodes.HasFlag(AdditionalNodes.Usings))
-			{
-				GetCopiedUsings(list, declaration);
-			}
-
-			FindAddedUsings(attribute, list, symbol, diagnosticReceiver);
-
-			return list.Count > 0 ? list.ToArray() : default;
+			return attributes.Where(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol)).ToArray();
 		}
 
 		private static void GetCopiedUsings(List<string> usings, MemberDeclarationSyntax declaration)
@@ -331,7 +299,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				string str = GetUsingString(@using);
 
-				if(!usings.Contains(str))
+				if (!usings.Contains(str))
 				{
 					usings.Add(str);
 				}
@@ -397,6 +365,49 @@ namespace Durian.Analysis.CopyFrom
 
 			invalidArguments = default;
 			return true;
+		}
+
+		private static void RemoveFlag(ref AdditionalNodes current, AdditionalNodes value)
+		{
+			current &= ~value;
+		}
+
+		private static string[]? RetrieveUsings(
+											AttributeData attribute,
+			MemberDeclarationSyntax declaration,
+			AdditionalNodes additionalNodes
+		)
+		{
+			List<string> list = new();
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Usings))
+			{
+				GetCopiedUsings(list, declaration);
+			}
+
+			FindAddedUsings(attribute, list);
+
+			return list.Count > 0 ? list.ToArray() : default;
+		}
+
+		private static string[]? RetrieveUsings(
+			AttributeData attribute,
+			MemberDeclarationSyntax declaration,
+			AdditionalNodes additionalNodes,
+			ISymbol symbol,
+			IDiagnosticReceiver diagnosticReceiver
+		)
+		{
+			List<string> list = new();
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Usings))
+			{
+				GetCopiedUsings(list, declaration);
+			}
+
+			FindAddedUsings(attribute, list, symbol, diagnosticReceiver);
+
+			return list.Count > 0 ? list.ToArray() : default;
 		}
 	}
 }

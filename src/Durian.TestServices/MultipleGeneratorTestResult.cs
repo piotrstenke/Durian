@@ -139,7 +139,7 @@ namespace Durian.TestServices
 
 			ImmutableArray<GeneratedSourceResult> generatedSources = GeneratedSources;
 
-			if(includeStructuredTrivia)
+			if (includeStructuredTrivia)
 			{
 				StructuredTriviaPreserver preserver = new();
 
@@ -190,7 +190,7 @@ namespace Durian.TestServices
 
 			ImmutableArray<GeneratedSourceResult> generatedSources = GeneratedSources;
 
-			if(includeStructuredTrivia)
+			if (includeStructuredTrivia)
 			{
 				StructuredTriviaPreserver preserver = new();
 

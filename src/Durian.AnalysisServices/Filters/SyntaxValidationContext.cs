@@ -17,9 +17,6 @@ namespace Durian.Analysis.Filters
 		public CancellationToken CancellationToken { get; }
 
 		/// <inheritdoc/>
-		public ICompilationData TargetCompilation { get; }
-
-		/// <inheritdoc/>
 		public CSharpSyntaxNode Node { get; }
 
 		/// <inheritdoc/>
@@ -27,6 +24,9 @@ namespace Durian.Analysis.Filters
 
 		/// <inheritdoc/>
 		public ISymbol Symbol { get; }
+
+		/// <inheritdoc/>
+		public ICompilationData TargetCompilation { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SyntaxValidationContext"/> structure.

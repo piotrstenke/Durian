@@ -189,7 +189,7 @@ namespace Durian.TestServices
 		{
 			UnderlayingGenerator.OnException(e, context, false);
 
-			if(allowLog)
+			if (allowLog)
 			{
 				UnderlayingGenerator.LogHandler.LogException(e, TestName);
 			}

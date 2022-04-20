@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using System.Threading;
-using Durian.Analysis.Data;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -14,24 +13,19 @@ namespace Durian.Analysis.DefaultParam
 	/// </summary>
 	public sealed class DefaultParamPassContext : GeneratorPassBuilderContext
 	{
+		/// <inheritdoc cref="GeneratorPassContext.Generator"/>
+		public new DefaultParamGenerator Generator => (base.Generator as DefaultParamGenerator)!;
+
 		/// <summary>
 		/// Rewrites nodes marked with the <c>DefaultParamAttribute</c>.
 		/// </summary>
 		public DefaultParamRewriter Rewriter { get; }
-
-		/// <inheritdoc cref="GeneratorPassContext.Generator"/>
-		public new DefaultParamGenerator Generator => (base.Generator as DefaultParamGenerator)!;
 
 		/// <inheritdoc cref="GeneratorPassContext.SyntaxReceiver"/>
 		public new DefaultParamSyntaxReceiver SyntaxReceiver => (base.SyntaxReceiver as DefaultParamSyntaxReceiver)!;
 
 		/// <inheritdoc cref="GeneratorPassContext.TargetCompilation"/>
 		public new DefaultParamCompilationData TargetCompilation => (base.TargetCompilation as DefaultParamCompilationData)!;
-
-		internal DefaultParamPassContext(IHintNameProvider? fileNameProvider = default, CSharpParseOptions? parseOptions = default) : base(fileNameProvider, parseOptions)
-		{
-			Rewriter = new();
-		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamPassContext"/> class.
@@ -54,6 +48,11 @@ namespace Durian.Analysis.DefaultParam
 			IGeneratorServiceResolver services,
 			CancellationToken cancellationToken = default
 		) : base(originalContext, generator, targetCompilation, syntaxReceiver, parseOptions, fileNameProvider, services, cancellationToken)
+		{
+			Rewriter = new();
+		}
+
+		internal DefaultParamPassContext(IHintNameProvider? fileNameProvider = default, CSharpParseOptions? parseOptions = default) : base(fileNameProvider, parseOptions)
 		{
 			Rewriter = new();
 		}

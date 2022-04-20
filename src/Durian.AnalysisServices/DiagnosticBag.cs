@@ -63,6 +63,16 @@ namespace Durian.Analysis
 			}
 		}
 
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		void IDiagnosticReceiverWithBuffer.Push()
+		{
+			// Do nothing.
+		}
+
 		/// <summary>
 		/// Reports a diagnostic.
 		/// </summary>
@@ -86,16 +96,6 @@ namespace Durian.Analysis
 			}
 
 			_diagnostics.Add(Diagnostic.Create(descriptor, location, messageArgs));
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		void IDiagnosticReceiverWithBuffer.Push()
-		{
-			// Do nothing.
 		}
 	}
 }

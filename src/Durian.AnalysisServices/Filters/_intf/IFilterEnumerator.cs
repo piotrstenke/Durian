@@ -15,14 +15,14 @@ namespace Durian.Analysis.Filters
 	public interface IFilterEnumerator<T> where T : ISyntaxValidationContext
 	{
 		/// <summary>
-		/// <see cref="IMemberData"/> at the current position in the enumerator.
-		/// </summary>
-		IMemberData? Current { get; }
-
-		/// <summary>
 		/// Parent <see cref="ICompilationData"/> of the provided <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
 		ICompilationData Compilation { get; }
+
+		/// <summary>
+		/// <see cref="IMemberData"/> at the current position in the enumerator.
+		/// </summary>
+		IMemberData? Current { get; }
 
 		/// <summary>
 		/// <see cref="ISyntaxValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.

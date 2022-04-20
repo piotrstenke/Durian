@@ -59,15 +59,6 @@ namespace Durian.Analysis.Logging
 		}
 
 		/// <summary>
-		/// Enables generator logging if <see cref="LoggingConfiguration.IsGloballyEnabled"/> is <see langword="true"/>.
-		/// </summary>
-		/// <param name="logHandler"><see cref="IGeneratorLogHandler"/> to enable logging for.</param>
-		public static void EnableLoggingIfSupported(this IGeneratorLogHandler logHandler)
-		{
-			logHandler.LoggingConfiguration.EnableLoggingIfSupported();
-		}
-
-		/// <summary>
 		/// Enables diagnostics if <see cref="LoggingConfiguration.SupportedLogs"/> of the <paramref name="configuration"/> is <see langword="true"/>.
 		/// </summary>
 		/// <param name="configuration"><see cref="LoggingConfiguration"/> to enable diagnostics for.</param>
@@ -77,6 +68,15 @@ namespace Durian.Analysis.Logging
 			{
 				configuration.EnableDiagnostics = true;
 			}
+		}
+
+		/// <summary>
+		/// Enables generator logging if <see cref="LoggingConfiguration.IsGloballyEnabled"/> is <see langword="true"/>.
+		/// </summary>
+		/// <param name="logHandler"><see cref="IGeneratorLogHandler"/> to enable logging for.</param>
+		public static void EnableLoggingIfSupported(this IGeneratorLogHandler logHandler)
+		{
+			logHandler.LoggingConfiguration.EnableLoggingIfSupported();
 		}
 
 		/// <summary>

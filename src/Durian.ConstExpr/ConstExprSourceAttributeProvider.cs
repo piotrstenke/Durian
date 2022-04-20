@@ -11,6 +11,11 @@ namespace Durian.ConstExpr
 	public sealed class ConstExprSourceAttributeProvider : SourceTextProvider
 	{
 		/// <summary>
+		/// Name of the 'Arguments' property.
+		/// </summary>
+		public const string Arguments = "Arguments";
+
+		/// <summary>
 		/// Full name of the provided type.
 		/// </summary>
 		public const string FullName = Namespace + "." + TypeName;
@@ -24,11 +29,6 @@ namespace Durian.ConstExpr
 		/// Namespace the provided type is located in.
 		/// </summary>
 		public const string Namespace = DurianStrings.MainNamespace;
-
-		/// <summary>
-		/// Name of the 'Arguments' property.
-		/// </summary>
-		public const string Arguments = "Arguments";
 
 		/// <summary>
 		/// Name of the 'Source' property.

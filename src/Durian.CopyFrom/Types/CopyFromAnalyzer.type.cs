@@ -54,7 +54,7 @@ namespace Durian.Analysis.CopyFrom
 				in context,
 				out ImmutableArray<AttributeData> attributes,
 				out _,
-				out List<TypeTargetData>? targetTypes,
+				out List<TargetTypeData>? targetTypes,
 				diagnosticReceiver
 			);
 
@@ -75,7 +75,7 @@ namespace Durian.Analysis.CopyFrom
 			in CopyFromTypeContext context,
 			out ImmutableArray<AttributeData> attributes,
 			[NotNullWhen(true)] out List<INamedTypeSymbol>? dependencies,
-			[NotNullWhen(true)] out List<TypeTargetData>? targetTypes,
+			[NotNullWhen(true)] out List<TargetTypeData>? targetTypes,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
@@ -102,7 +102,7 @@ namespace Durian.Analysis.CopyFrom
 			in CopyFromTypeContext context,
 			out ImmutableArray<AttributeData> attributes,
 			[NotNullWhen(true)] out List<INamedTypeSymbol>? dependencies,
-			[NotNullWhen(true)] out List<TypeTargetData>? targetTypes
+			[NotNullWhen(true)] out List<TargetTypeData>? targetTypes
 		)
 		{
 			AttributeData[]? copyFroms = GetCopyFromAttributes(context.Symbol, context.Compilation, out attributes);
@@ -162,7 +162,7 @@ namespace Durian.Analysis.CopyFrom
 
 			List<INamedTypeSymbol> dependencies = new();
 
-			ValidateTargetTypes(in context, targets, dependencies, out List<TypeTargetData>? targetTypes, false);
+			ValidateTargetTypes(in context, targets, dependencies, out List<TargetTypeData>? targetTypes, false);
 
 			bool isValid = EnsureIsInPartialContext(context.Symbol, diagnosticReceiver);
 			isValid &= ValidateTargetType(in context, copyFroms[index], targetTypes!, dependencies);
@@ -190,18 +190,20 @@ namespace Durian.Analysis.CopyFrom
 			return false;
 		}
 
-		private static TypeTargetData CreateTargetData(
+		private static TargetTypeData CreateTargetTypeData(
 			AttributeData attribute,
 			INamedTypeSymbol target,
+			AdditionalNodes additionalNodes,
 			string[]? usings
 		)
 		{
-			return CreateTargetData(attribute, target, usings, default, default);
+			return CreateTargetTypeData(attribute, target, additionalNodes, usings, default, default);
 		}
 
-		private static TypeTargetData CreateTargetData(
+		private static TargetTypeData CreateTargetTypeData(
 			AttributeData attribute,
 			INamedTypeSymbol target,
+			AdditionalNodes additionalNodes,
 			string[]? usings,
 			TypeDeclarationSyntax? partialPart,
 			string? partialPartName
@@ -209,9 +211,8 @@ namespace Durian.Analysis.CopyFrom
 		{
 			int order = GetOrder(attribute);
 			bool handleSpecialMembers = ShouldHandleSpecialMembers(attribute);
-			bool copyAttributes = ShouldCopyAttributes(attribute);
 
-			return new(target, order, usings, partialPart, partialPartName, handleSpecialMembers, copyAttributes);
+			return new(target, order, additionalNodes, usings, partialPart, partialPartName, handleSpecialMembers);
 		}
 
 		private static bool EnsureIsInPartialContext(INamedTypeSymbol type)
@@ -409,6 +410,91 @@ namespace Durian.Analysis.CopyFrom
 			return symbol.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Interface;
 		}
 
+		private static AdditionalNodes RetrieveNonStandardTypeConfig(AttributeData attribute, INamedTypeSymbol symbol, CopyFromCompilationData compilation)
+		{
+			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
+
+			if (additionalNodes == AdditionalNodes.None || additionalNodes == AdditionalNodes.All)
+			{
+				return additionalNodes;
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Constraints) && (!symbol.IsGenericType || symbol.HasConstraint()))
+			{
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Documentation) && symbol.HasDocumentation())
+			{
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Documentation);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.BaseType) && (symbol.HasExplicitBaseType(compilation.Compilation) || !symbol.SupportsExplicitBaseType()))
+			{
+				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseType);
+			}
+
+			return additionalNodes;
+		}
+
+		private static AdditionalNodes RetrieveNonStandardTypeConfig(
+			AttributeData attribute,
+			INamedTypeSymbol symbol,
+			CopyFromCompilationData compilation,
+			IDiagnosticReceiver diagnosticReceiver
+		)
+		{
+			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
+
+			if (additionalNodes == AdditionalNodes.None || additionalNodes == AdditionalNodes.All)
+			{
+				return additionalNodes;
+			}
+
+			Location? location = default;
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Constraints))
+			{
+				if (!symbol.IsGenericType)
+				{
+					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+					diagnosticReceiver.ReportDiagnostic(DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember, location, symbol);
+					RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
+				}
+				else if (symbol.HasConstraint())
+				{
+					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+					diagnosticReceiver.ReportDiagnostic(DUR0223_MemberAlreadyHasConstraints, location, symbol);
+					RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
+				}
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Documentation) && symbol.HasDocumentation())
+			{
+				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+				diagnosticReceiver.ReportDiagnostic(DUR0222_MemberAlreadyHasDocumentation, location, symbol);
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Documentation);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.BaseType))
+			{
+				if (symbol.HasExplicitBaseType(compilation.Compilation))
+				{
+					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+					diagnosticReceiver.ReportDiagnostic(DUR0225_BaseTypeAlreadySpecified, location, symbol);
+					RemoveFlag(ref additionalNodes, AdditionalNodes.BaseType);
+				}
+				else if (!symbol.SupportsExplicitBaseType())
+				{
+					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+					diagnosticReceiver.ReportDiagnostic(DUR0226_CannotApplyBaseType, location, symbol);
+					RemoveFlag(ref additionalNodes, AdditionalNodes.BaseType);
+				}
+			}
+
+			return additionalNodes;
+		}
+
 		private static bool ShouldHandleSpecialMembers(AttributeData attribute)
 		{
 			if (attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.HandleSpecialMembers, out bool value))
@@ -453,14 +539,16 @@ namespace Durian.Analysis.CopyFrom
 		private static bool ValidatePartialNameAndAddTarget(
 			in CopyFromTypeContext context,
 			AttributeData attribute,
-			List<TypeTargetData> copyFromTypes,
-			string[]? usings,
+			List<TargetTypeData> copyFromTypes,
 			INamedTypeSymbol target,
 			bool isValid,
 			ref Location? location,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
+			AdditionalNodes additionalNodes = RetrieveNonStandardTypeConfig(attribute, context.Symbol, context.Compilation, diagnosticReceiver);
+			string[]? usings = RetrieveUsings(attribute, context.Node!, additionalNodes, context.Symbol, diagnosticReceiver);
+
 			if (TryGetPartialPartName(attribute, out string? partialPartName))
 			{
 				if (!TryGetPartialPart(target, context.Compilation, partialPartName, out TypeDeclarationSyntax? partialPart))
@@ -477,7 +565,7 @@ namespace Durian.Analysis.CopyFrom
 				}
 				else if (isValid)
 				{
-					copyFromTypes.Add(CreateTargetData(attribute, target, usings, partialPart, partialPartName));
+					copyFromTypes.Add(CreateTargetTypeData(attribute, target, additionalNodes, usings, partialPart, partialPartName));
 				}
 			}
 			else if (copyFromTypes.Any(t => SymbolEqualityComparer.Default.Equals(t.Symbol, target)))
@@ -487,7 +575,7 @@ namespace Durian.Analysis.CopyFrom
 			}
 			else if (isValid)
 			{
-				copyFromTypes.Add(CreateTargetData(attribute, target, usings));
+				copyFromTypes.Add(CreateTargetTypeData(attribute, target, additionalNodes, usings));
 			}
 
 			return isValid;
@@ -496,7 +584,7 @@ namespace Durian.Analysis.CopyFrom
 		private static bool ValidateTargetType(
 			in CopyFromTypeContext context,
 			AttributeData attribute,
-			List<TypeTargetData> copyFromTypes,
+			List<TargetTypeData> copyFromTypes,
 			List<INamedTypeSymbol> dependencies
 		)
 		{
@@ -509,7 +597,8 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			string[]? usings = GetUsings(attribute, context.Node!);
+			AdditionalNodes additionalNodes = RetrieveNonStandardTypeConfig(attribute, context.Symbol, context.Compilation);
+			string[]? usings = RetrieveUsings(attribute, context.Node!, additionalNodes);
 
 			if (TryGetPartialPartName(attribute, out string? partialPartName))
 			{
@@ -523,13 +612,13 @@ namespace Durian.Analysis.CopyFrom
 					return true;
 				}
 
-				copyFromTypes.Add(CreateTargetData(attribute, target, usings, partialPart, partialPartName));
+				copyFromTypes.Add(CreateTargetTypeData(attribute, target, additionalNodes, usings, partialPart, partialPartName));
 				return true;
 			}
 
 			if (!copyFromTypes.Any(t => SymbolEqualityComparer.Default.Equals(t.Symbol, target)))
 			{
-				copyFromTypes.Add(CreateTargetData(attribute, target, usings));
+				copyFromTypes.Add(CreateTargetTypeData(attribute, target, additionalNodes, usings));
 			}
 
 			return true;
@@ -538,7 +627,7 @@ namespace Durian.Analysis.CopyFrom
 		private static bool ValidateTargetType(
 			in CopyFromTypeContext context,
 			AttributeData attribute,
-			List<TypeTargetData> copyFromTypes,
+			List<TargetTypeData> copyFromTypes,
 			List<INamedTypeSymbol> dependencies,
 			IDiagnosticReceiver diagnosticReceiver
 		)
@@ -590,13 +679,10 @@ namespace Durian.Analysis.CopyFrom
 				}
 			}
 
-			string[]? usings = GetUsings(attribute, context.Node!, context.Symbol, diagnosticReceiver);
-
 			return ValidatePartialNameAndAddTarget(
 				in context,
 				attribute,
 				copyFromTypes,
-				usings,
 				target,
 				isValid,
 				ref location,
@@ -604,61 +690,15 @@ namespace Durian.Analysis.CopyFrom
 			);
 		}
 
-		private static AdditionalNodes RetrieveNonStandardTypeConfig(AttributeData attribute)
-		{
-		}
-
-		private static AdditionalNodes RetrieveNonStandardTypeConfig(AttributeData attribute, INamedTypeSymbol symbol, IDiagnosticReceiver diagnosticReceiver)
-		{
-			if (!attribute.TryGetNamedArgumentValue(CopyFromTypeAttributeProvider.AdditionalNodes, out int value))
-			{
-				return default;
-			}
-
-			Location? location = default;
-
-			AdditionalNodes additionalNodes = (AdditionalNodes)value;
-
-			if(additionalNodes == AdditionalNodes.All)
-			{
-				return additionalNodes;
-			}
-
-			if (additionalNodes.HasFlag(AdditionalNodes.Constraints))
-			{
-				if(!symbol.IsGenericType)
-				{
-					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
-					diagnosticReceiver.ReportDiagnostic(DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember, location, symbol);
-					RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
-				}
-				else if(symbol.HasConstraint())
-				{
-					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
-					diagnosticReceiver.ReportDiagnostic(DUR0223_MemberAlreadyHasConstraints, location, symbol);
-					RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
-				}
-			}
-
-			if (additionalNodes.HasFlag(AdditionalNodes.Documentation) && symbol.HasDocumentation())
-			{
-				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
-				diagnosticReceiver.ReportDiagnostic(DUR0222_MemberAlreadyHasDocumentation, location, symbol);
-				RemoveFlag(ref additionalNodes, AdditionalNodes.Documentation);
-			}
-
-			return additionalNodes;
-		}
-
 		private static bool ValidateTargetTypes(
 			in CopyFromTypeContext context,
 			AttributeData[] attributes,
 			List<INamedTypeSymbol> dependencies,
-			[NotNullWhen(true)] out List<TypeTargetData>? targetTypes,
+			[NotNullWhen(true)] out List<TargetTypeData>? targetTypes,
 			bool returnIfInvalid
 		)
 		{
-			List<TypeTargetData> copyFromTypes = new();
+			List<TargetTypeData> copyFromTypes = new();
 			bool isValid = true;
 
 			foreach (AttributeData attribute in attributes)
@@ -683,11 +723,11 @@ namespace Durian.Analysis.CopyFrom
 			in CopyFromTypeContext context,
 			AttributeData[] attributes,
 			List<INamedTypeSymbol> dependencies,
-			[NotNullWhen(true)] out List<TypeTargetData>? targetTypes,
+			[NotNullWhen(true)] out List<TargetTypeData>? targetTypes,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			List<TypeTargetData> copyFromTypes = new();
+			List<TargetTypeData> copyFromTypes = new();
 
 			bool isValid = true;
 

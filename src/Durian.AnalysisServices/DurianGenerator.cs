@@ -44,13 +44,6 @@ namespace Durian.Analysis
 			_serviceContainer = InitServices();
 		}
 
-		private IGeneratorServiceContainer InitServices()
-		{
-			GeneratorServiceContainer services = new();
-			ConfigureServices(services);
-			return services;
-		}
-
 		/// <summary>
 		/// Configures services used by this generator.
 		/// </summary>
@@ -60,17 +53,17 @@ namespace Durian.Analysis
 			// Do nothing by default.
 		}
 
-		/// <inheritdoc/>
-		public override void Initialize(GeneratorInitializationContext context)
-		{
-			base.Initialize(context);
-		}
-
 		/// <summary>
 		/// Creates a new instance of <see cref="ICompilationData"/> to be used the current generator pass.
 		/// </summary>
 		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
 		public abstract ICompilationData? CreateCompilationData(CSharpCompilation compilation);
+
+		/// <inheritdoc/>
+		public override void Initialize(GeneratorInitializationContext context)
+		{
+			base.Initialize(context);
+		}
 
 		/// <inheritdoc/>
 		protected internal override void AddSourceCore(CSharpSyntaxTree tree, string hintName, TContext context)
@@ -158,6 +151,13 @@ namespace Durian.Analysis
 			return pass;
 		}
 
+		/// <inheritdoc/>
+		protected internal override void OnException(Exception e, TContext context, bool allowLog)
+		{
+			base.OnException(e, context, allowLog);
+			context.State = GeneratorState.Failed;
+		}
+
 		/// <summary>
 		/// Creates a new <typeparamref name="TContext"/> for the current generator pass.
 		/// </summary>
@@ -174,13 +174,6 @@ namespace Durian.Analysis
 			// Do nothing by default.
 		}
 
-		/// <inheritdoc/>
-		protected internal override void OnException(Exception e, TContext context, bool allowLog)
-		{
-			base.OnException(e, context, allowLog);
-			context.State = GeneratorState.Failed;
-		}
-
 		/// <summary>
 		/// Validates the <paramref name="syntaxReceiver"/>.
 		/// </summary>
@@ -188,6 +181,13 @@ namespace Durian.Analysis
 		protected virtual bool ValidateSyntaxReceiver(IDurianSyntaxReceiver syntaxReceiver)
 		{
 			return !syntaxReceiver.IsEmpty();
+		}
+
+		private IGeneratorServiceContainer InitServices()
+		{
+			GeneratorServiceContainer services = new();
+			ConfigureServices(services);
+			return services;
 		}
 	}
 

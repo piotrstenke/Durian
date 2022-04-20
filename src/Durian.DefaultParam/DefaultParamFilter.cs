@@ -63,9 +63,9 @@ namespace Durian.Analysis.DefaultParam
 			[NotNullWhen(true)] out TContext? context
 		);
 
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		/// <inheritdoc/>
 		[Obsolete("Use TryCreateContext with TypeParameterContainer instead.")]
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		protected sealed override bool TryCreateContext(
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 			in SyntaxValidationContext validationContext,

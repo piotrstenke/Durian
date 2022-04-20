@@ -27,11 +27,12 @@ namespace Durian.Analysis.Filters
 		/// <inheritdoc/>
 		public IMemberData? Current { readonly get; private set; }
 
+		readonly IMemberData IEnumerator<IMemberData>.Current => Current!;
+
+		readonly object IEnumerator.Current => Current!;
+
 		/// <inheritdoc/>
 		public readonly ISyntaxValidator<T> Validator { get; }
-
-		readonly IMemberData IEnumerator<IMemberData>.Current => Current!;
-		readonly object IEnumerator.Current => Current!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FilterEnumerator{T}"/> struct.
@@ -75,6 +76,11 @@ namespace Durian.Analysis.Filters
 			Current = default;
 		}
 
+		readonly void IDisposable.Dispose()
+		{
+			// Do nothing.
+		}
+
 		/// <inheritdoc/>
 		[MemberNotNullWhen(true, nameof(Current))]
 		public bool MoveNext(CancellationToken cancellationToken = default)
@@ -99,6 +105,11 @@ namespace Durian.Analysis.Filters
 			return false;
 		}
 
+		bool IEnumerator.MoveNext()
+		{
+			return MoveNext();
+		}
+
 		/// <summary>
 		/// Resets the enumerator.
 		/// </summary>
@@ -106,16 +117,6 @@ namespace Durian.Analysis.Filters
 		{
 			Current = default;
 			_nodes.Reset();
-		}
-
-		readonly void IDisposable.Dispose()
-		{
-			// Do nothing.
-		}
-
-		bool IEnumerator.MoveNext()
-		{
-			return MoveNext();
 		}
 	}
 }

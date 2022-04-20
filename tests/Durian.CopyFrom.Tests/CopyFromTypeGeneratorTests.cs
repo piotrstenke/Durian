@@ -749,12 +749,136 @@ partial class Test
 		}
 
 		[Fact]
+		public void Success_When_CopiesBaseType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
+partial class Test
+{{
+}}
+
+class Target : System.Exception, System.IDisposable
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+
+	public void Dispose()
+	{{
+	}}
+}}
+";
+			string expected =
+$@"partial class Test : System.Exception
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+
+	{GetCodeGenerationAttributes("Target.Dispose()")}
+	public void Dispose()
+	{{
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_CopiesBaseType_And_HasPattern()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
+[{PatternAttributeProvider.TypeName}(""System\.Exception"", ""System.Attribute"")]
+partial class Test
+{{
+}}
+
+class Target : System.Exception, System.IDisposable
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+
+	public void Dispose()
+	{{
+	}}
+}}
+";
+			string expected =
+$@"partial class Test : System.Attribute
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+
+	{GetCodeGenerationAttributes("Target.Dispose()")}
+	public void Dispose()
+	{{
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_CopiesBaseType_And_TargetHasNoBaseType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
+partial class Test
+{{
+}}
+
+class Target
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial class Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
 		public void Success_When_CopiesConstraints_And_HasPattern()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target<TType>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Constraints})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target<TType>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 [{PatternAttributeProvider.TypeName}(""TType"", ""T"")]
 partial class Test<T>
 {{
@@ -787,12 +911,44 @@ $@"partial class Test<T> where T : struct
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Constraints})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 partial class Test<T>
 {{
 }}
 
 class Target<T> where T : struct
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial class Test<T> where T : struct
+{{
+	{GetCodeGenerationAttributes("Target<T>.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_CopiesConstraints_And_TargetIsGenericWithoutConstraints()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
+partial class Test<T>
+{{
+}}
+
+class Target<T>
 {{
 	void Method()
 	{{
@@ -814,44 +970,12 @@ $@"partial class Test<T>
 		}
 
 		[Fact]
-		public void Success_When_CopiesConstraints_And_TargetIsGenericWithoutConstraints()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Constraints})]
-partial class Test<T>
-{{
-}}
-
-class Target<T>
-{{
-	void Method()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			string expected =
-	$@"partial class Test<T>
-{{
-	{GetCodeGenerationAttributes("Target<T>.Method()")}
-	void Method()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
 		public void Success_When_CopiesConstraints_And_TargetIsNotGeneric()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Constraints})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 partial class Test<T>
 {{
 }}
@@ -883,7 +1007,7 @@ $@"partial class Test<T>
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Documentation})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Documentation})]
 partial class Test
 {{
 }}
@@ -919,7 +1043,7 @@ partial class Test
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Documentation})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Documentation})]
 [{PatternAttributeProvider.TypeName}(""Hello"", ""No"")]
 partial class Test
 {{
@@ -953,12 +1077,67 @@ partial class Test
 		}
 
 		[Fact]
+		public void Success_When_CopiesDuplicateInterface()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseInterfaces})]
+partial class Test : System.ICloneable
+{{
+}}
+
+class Target : System.Exception, System.IDisposable, System.ICloneable
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+
+	public void Dispose()
+	{{
+	}}
+
+	public object Clone()
+	{{
+		return this;
+	}}
+}}
+";
+			string expected =
+$@"partial class Test : System.IDisposable
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+
+	{GetCodeGenerationAttributes("Target.Dispose()")}
+	public void Dispose()
+	{{
+	}}
+
+	{GetCodeGenerationAttributes("Target.Clone()")}
+	public object Clone()
+	{{
+		return this;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
 		public void Success_When_CopiesFromTypeWithAttribtes_And_AllowsCopyFromAttributes_And_HasPattern()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Attributes})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
 [{PatternAttributeProvider.TypeName}(""DEBUG"", ""RELEASE"")]
 partial class Test
 {{
@@ -1028,7 +1207,7 @@ partial class Test
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Attributes})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
 partial class Test
 {{
 }}
@@ -1159,12 +1338,140 @@ partial class Test
 		}
 
 		[Fact]
+		public void Success_When_CopiesInterfaces()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseInterfaces})]
+partial class Test
+{{
+}}
+
+class Target : System.Exception, System.IDisposable
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+
+	public void Dispose()
+	{{
+	}}
+}}
+";
+			string expected =
+$@"partial class Test : System.IDisposable
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+
+	{GetCodeGenerationAttributes("Target.Dispose()")}
+	public void Dispose()
+	{{
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_CopiesInterfaces_And_HasPattern()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseInterfaces})]
+[{PatternAttributeProvider.TypeName}(""System.IDisposable"", ""System.ICloneable"")]
+partial class Test
+{{
+	public object Clone()
+	{{
+		return this;
+	}}
+}}
+
+class Target : System.Exception, System.IDisposable
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+
+	public void Dispose()
+	{{
+	}}
+}}
+";
+			string expected =
+$@"partial class Test : System.Cloneable
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+
+	{GetCodeGenerationAttributes("Target.Dispose()")}
+	public void Dispose()
+	{{
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_CopiesInterfaces_And_TargetHasNoInterfaces()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseInterfaces})]
+partial class Test
+{{
+}}
+
+class Target
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial class Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
 		public void Success_When_CopyAttributes_And_TargetHasMultiplePartialParts()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Attributes})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
 partial class Test
 {{
 }}
@@ -1707,7 +2014,7 @@ $@"using {DurianStrings.MainNamespace};
 /// <summary>
 /// ABC
 /// </summary>
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.All})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 partial class Test
 {{
 }}
@@ -1742,7 +2049,7 @@ $@"partial class Test
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.All})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 partial class Test<T> where T : class
 {{
 }}
@@ -1774,7 +2081,7 @@ $@"partial class Test<T>
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.All})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 partial class Test
 {{
 }}
@@ -1798,6 +2105,181 @@ $@"partial class Test
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_IncludesAllNonStandardNodes_And_TargetHasBaseType_And_AlreadyHasBaseType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
+partial class Test : System.Attribute
+{{
+}}
+
+class Target : System.Exception
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial struct Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0225_BaseTypeAlreadySpecified));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_IncludesAllNonStandardNodes_And_TargetHasBaseType_And_IsInterface()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
+partial interface ITest
+{{
+}}
+
+class Target : System.Exception
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial interface ITest
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_IncludesAllNonStandardNodes_And_TargetHasBaseType_And_IsSealed()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
+sealed partial class Test
+{{
+}}
+
+class Target : System.Exception
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial class Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_IncludesAllNonStandardNodes_And_TargetHasBaseType_And_IsStatic()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
+static partial class Test
+{{
+}}
+
+class Target : System.Exception
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial class Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_IncludesAllNonStandardNodes_And_TargetHasBaseType_And_IsStruct()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
+partial struct Test
+{{
+}}
+
+class Target : System.Exception
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial struct Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
 		}
 
 		[Fact]
@@ -3163,12 +3645,187 @@ partial class Test
 		}
 
 		[Fact]
+		public void Warning_When_CopiesBaseType_And_AlreadyHasBaseType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
+partial class Test : System.Attribute
+{{
+}}
+
+class Target : System.Exception
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial class Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0225_BaseTypeAlreadySpecified.Id));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Warning_When_CopiesBaseType_And_IsInterface()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
+partial interface ITest
+{{
+}}
+
+class Target : System.Exception
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial interface ITest
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0226_CannotApplyBaseType.Id));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Warning_When_CopiesBaseType_And_IsSealed()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
+sealed partial class Test
+{{
+}}
+
+class Target : System.Exception
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial class Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0226_CannotApplyBaseType.Id));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Warning_When_CopiesBaseType_And_IsStatic()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
+static partial class Test
+{{
+}}
+
+class Target : System.Exception
+{{
+	static void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial class Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	static void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0226_CannotApplyBaseType.Id));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Warning_When_CopiesBaseType_And_IsStruct()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
+partial struct Test
+{{
+}}
+
+class Target : System.Exception
+{{
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"partial struct Test
+{{
+	{GetCodeGenerationAttributes("Target.Method()")}
+	void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0226_CannotApplyBaseType.Id));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
 		public void Warning_When_CopiesConstraints_And_AlreadyHasConstraints()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Constraints})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 [{PatternAttributeProvider.TypeName}(""TType"", ""T"")]
 partial class Test<T> where T : class
 {{
@@ -3204,7 +3861,7 @@ $@"partial class Test<T>
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Constraints})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 [{PatternAttributeProvider.TypeName}(""TType"", ""T"")]
 partial class Test
 {{
@@ -3243,7 +3900,7 @@ $@"using {DurianStrings.MainNamespace};
 /// <summary>
 /// hello there
 /// <summary>
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Documentation})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Documentation})]
 partial class Test
 {{
 }}

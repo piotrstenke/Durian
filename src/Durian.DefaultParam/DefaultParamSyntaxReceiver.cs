@@ -74,6 +74,32 @@ namespace Durian.Analysis.DefaultParam
 			AllowsCollectingLocalFunctions = collectLocalFunctions;
 		}
 
+		IEnumerable<CSharpSyntaxNode> INodeProvider.GetNodes()
+		{
+			foreach (MethodDeclarationSyntax m in CandidateMethods)
+			{
+				yield return m;
+			}
+
+			foreach (DelegateDeclarationSyntax d in CandidateDelegates)
+			{
+				yield return d;
+			}
+
+			foreach (TypeDeclarationSyntax t in CandidateTypes)
+			{
+				yield return t;
+			}
+
+			if (CandidateLocalFunctions is not null)
+			{
+				foreach (LocalFunctionStatementSyntax fn in CandidateLocalFunctions)
+				{
+					yield return fn;
+				}
+			}
+		}
+
 		/// <inheritdoc/>
 		public bool IsEmpty()
 		{
@@ -102,32 +128,6 @@ namespace Durian.Analysis.DefaultParam
 			else if (AllowsCollectingLocalFunctions && syntaxNode is LocalFunctionStatementSyntax f)
 			{
 				CollectLocalFunction(f);
-			}
-		}
-
-		IEnumerable<CSharpSyntaxNode> INodeProvider.GetNodes()
-		{
-			foreach (MethodDeclarationSyntax m in CandidateMethods)
-			{
-				yield return m;
-			}
-
-			foreach (DelegateDeclarationSyntax d in CandidateDelegates)
-			{
-				yield return d;
-			}
-
-			foreach (TypeDeclarationSyntax t in CandidateTypes)
-			{
-				yield return t;
-			}
-
-			if (CandidateLocalFunctions is not null)
-			{
-				foreach (LocalFunctionStatementSyntax fn in CandidateLocalFunctions)
-				{
-					yield return fn;
-				}
 			}
 		}
 

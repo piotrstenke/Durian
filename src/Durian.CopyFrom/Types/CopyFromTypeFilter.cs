@@ -40,7 +40,7 @@ namespace Durian.Analysis.CopyFrom.Types
 				in context,
 				out ImmutableArray<AttributeData> attributes,
 				out List<INamedTypeSymbol>? dependencies,
-				out List<TypeTargetData>? targetTypes
+				out List<TargetTypeData>? targetTypes
 			);
 
 			bool hasTarget = targetTypes?.Count > 0;
@@ -98,7 +98,7 @@ namespace Durian.Analysis.CopyFrom.Types
 				in context,
 				out ImmutableArray<AttributeData> attributes,
 				out List<INamedTypeSymbol>? dependencies,
-				out List<TypeTargetData>? targetTypes,
+				out List<TargetTypeData>? targetTypes,
 				diagnosticReceiver
 			);
 

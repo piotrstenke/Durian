@@ -28,14 +28,14 @@ namespace Durian.Analysis.Logging
 		public IGeneratorLogHandler LogHandler { get; }
 
 		/// <summary>
-		/// Determines what to output when a <see cref="SyntaxNode"/> is being logged.
-		/// </summary>
-		public NodeOutput NodeOutput { get; set; }
-
-		/// <summary>
 		/// Target <see cref="CSharpSyntaxNode"/>.
 		/// </summary>
 		public CSharpSyntaxNode? Node { get; private set; }
+
+		/// <summary>
+		/// Determines what to output when a <see cref="SyntaxNode"/> is being logged.
+		/// </summary>
+		public NodeOutput NodeOutput { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LogReceiver"/> class.

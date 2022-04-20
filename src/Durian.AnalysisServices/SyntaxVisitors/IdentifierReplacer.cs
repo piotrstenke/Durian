@@ -86,17 +86,6 @@ namespace Durian.Analysis.SyntaxVisitors
 		}
 
 		/// <inheritdoc/>
-		public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node)
-		{
-			if (ShouldReplace(node.Identifier))
-			{
-				node = node.WithIdentifier(GetReplacementToken(node.Identifier));
-			}
-
-			return base.VisitIdentifierName(node);
-		}
-
-		/// <inheritdoc/>
 		public override SyntaxNode? VisitGenericName(GenericNameSyntax node)
 		{
 			if (ShouldReplace(node.Identifier))
@@ -105,6 +94,17 @@ namespace Durian.Analysis.SyntaxVisitors
 			}
 
 			return base.VisitGenericName(node);
+		}
+
+		/// <inheritdoc/>
+		public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node)
+		{
+			if (ShouldReplace(node.Identifier))
+			{
+				node = node.WithIdentifier(GetReplacementToken(node.Identifier));
+			}
+
+			return base.VisitIdentifierName(node);
 		}
 
 		/// <summary>

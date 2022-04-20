@@ -368,7 +368,7 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		private bool Generate(
-																	IMemberData data,
+			IMemberData data,
 			string hintName,
 			CopyFromPassContext context,
 			Queue<(SyntaxReference, string)> dependencies,

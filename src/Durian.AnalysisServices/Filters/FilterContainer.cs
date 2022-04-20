@@ -37,6 +37,8 @@ namespace Durian.Analysis.Filters
 			}
 		}
 
+		bool ICollection<FilterGroup<TFilter>>.IsReadOnly => IsSealed;
+
 		/// <summary>
 		/// Determines whether this <see cref="FilterContainer{TFilter}"/> is sealed by calling the <see cref="Seal"/> method.
 		/// </summary>
@@ -46,8 +48,6 @@ namespace Durian.Analysis.Filters
 		/// Number of filter groups in this list.
 		/// </summary>
 		public int NumGroups => _filterGroups.Count;
-
-		bool ICollection<FilterGroup<TFilter>>.IsReadOnly => IsSealed;
 
 		/// <inheritdoc cref="GetGroup(int)"/>
 		public FilterGroup<TFilter> this[int index] => GetGroup(index);
@@ -121,6 +121,11 @@ namespace Durian.Analysis.Filters
 			RegisterGroups(groups);
 		}
 
+		void ICollection<FilterGroup<TFilter>>.Add(FilterGroup<TFilter> item)
+		{
+			RegisterGroup(item);
+		}
+
 		/// <inheritdoc/>
 		public void AddFilter(int index, TFilter filter)
 		{
@@ -156,6 +161,11 @@ namespace Durian.Analysis.Filters
 			_filterGroups.Clear();
 		}
 
+		bool ICollection<FilterGroup<TFilter>>.Contains(FilterGroup<TFilter> item)
+		{
+			return ContainsGroup(item);
+		}
+
 		/// <inheritdoc/>
 		public bool ContainsGroup(string name)
 		{
@@ -175,10 +185,35 @@ namespace Durian.Analysis.Filters
 			return _filterGroups.Contains(group);
 		}
 
+		bool IFilterContainer<TFilter>.ContainsGroup(IFilterGroup<TFilter> group)
+		{
+			return group is FilterGroup<TFilter> g && ContainsGroup(g);
+		}
+
+		void ICollection<FilterGroup<TFilter>>.CopyTo(FilterGroup<TFilter>[] array, int arrayIndex)
+		{
+			_filterGroups.CopyTo(array, arrayIndex);
+		}
+
 		/// <inheritdoc/>
 		public IEnumerator<FilterGroup<TFilter>> GetEnumerator()
 		{
 			return _filterGroups.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		IEnumerator<IReadOnlyFilterGroup<TFilter>> IEnumerable<IReadOnlyFilterGroup<TFilter>>.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		IEnumerator<IFilterGroup<TFilter>> IEnumerable<IFilterGroup<TFilter>>.GetEnumerator()
+		{
+			return GetEnumerator();
 		}
 
 		/// <inheritdoc/>
@@ -210,6 +245,26 @@ namespace Durian.Analysis.Filters
 			}
 
 			return group;
+		}
+
+		IFilterGroup<TFilter> IFilterContainer<TFilter>.GetGroup(int index)
+		{
+			return GetGroup(index);
+		}
+
+		IFilterGroup<TFilter> IFilterContainer<TFilter>.GetGroup(string name)
+		{
+			return GetGroup(name);
+		}
+
+		IReadOnlyFilterGroup<TFilter> IReadOnlyFilterContainer<TFilter>.GetGroup(int index)
+		{
+			return GetGroup(index);
+		}
+
+		IReadOnlyFilterGroup<TFilter> IReadOnlyFilterContainer<TFilter>.GetGroup(string name)
+		{
+			return GetGroup(name);
 		}
 
 		/// <inheritdoc/>
@@ -312,6 +367,21 @@ namespace Durian.Analysis.Filters
 			return index;
 		}
 
+		int IFilterContainer<TFilter>.RegisterGroup(IFilterGroup<TFilter> group)
+		{
+			if (group is null)
+			{
+				throw new ArgumentNullException(nameof(group));
+			}
+
+			if (group is not FilterGroup<TFilter> g)
+			{
+				throw new ArgumentException($"Unsupported type: '{group.GetType()}'", nameof(group));
+			}
+
+			return RegisterGroup(g);
+		}
+
 		/// <inheritdoc/>
 		public void RegisterGroups(IEnumerable<FilterGroup<TFilter>> groups)
 		{
@@ -331,6 +401,37 @@ namespace Durian.Analysis.Filters
 
 				RegisterGroup_Internal(group);
 			}
+		}
+
+		void IFilterContainer<TFilter>.RegisterGroups(IEnumerable<IFilterGroup<TFilter>> groups)
+		{
+			ThrowIfSealed();
+
+			if (groups is null)
+			{
+				throw new ArgumentNullException(nameof(groups));
+			}
+
+			foreach (IFilterGroup<TFilter> group in groups)
+			{
+				if (group is null)
+				{
+					continue;
+				}
+
+				if (group is not FilterGroup<TFilter> g)
+				{
+					throw new ArgumentException($"Unsupported element type: '{group.GetType()}'", nameof(groups));
+				}
+
+				RegisterGroup_Internal(g);
+			}
+		}
+
+		bool ICollection<FilterGroup<TFilter>>.Remove(FilterGroup<TFilter> item)
+		{
+			UnregisterGroup(item);
+			return true;
 		}
 
 		/// <inheritdoc/>
@@ -405,6 +506,16 @@ namespace Durian.Analysis.Filters
 			return _filterGroups.ToArray();
 		}
 
+		IFilterGroup<TFilter>[] IFilterContainer<TFilter>.ToArray()
+		{
+			return ToArray();
+		}
+
+		IReadOnlyFilterGroup<TFilter>[] IReadOnlyFilterContainer<TFilter>.ToArray()
+		{
+			return ToArray();
+		}
+
 		/// <inheritdoc/>
 		public void UnregisterGroup(int index)
 		{
@@ -457,6 +568,21 @@ namespace Durian.Analysis.Filters
 			return index;
 		}
 
+		int IFilterContainer<TFilter>.UnregisterGroup(IFilterGroup<TFilter> group)
+		{
+			if (group is null)
+			{
+				throw new ArgumentNullException(nameof(group));
+			}
+
+			if (group is not FilterGroup<TFilter> g)
+			{
+				throw new ArgumentException($"Unsupported type: '{group.GetType()}'", nameof(group));
+			}
+
+			return UnregisterGroup(g);
+		}
+
 		/// <inheritdoc/>
 		public void UnregisterGroups(int index, int count)
 		{
@@ -476,32 +602,6 @@ namespace Durian.Analysis.Filters
 		public void Unseal()
 		{
 			IsSealed = false;
-		}
-
-		void ICollection<FilterGroup<TFilter>>.Add(FilterGroup<TFilter> item)
-		{
-			RegisterGroup(item);
-		}
-
-		bool ICollection<FilterGroup<TFilter>>.Contains(FilterGroup<TFilter> item)
-		{
-			return ContainsGroup(item);
-		}
-
-		void ICollection<FilterGroup<TFilter>>.CopyTo(FilterGroup<TFilter>[] array, int arrayIndex)
-		{
-			_filterGroups.CopyTo(array, arrayIndex);
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		bool ICollection<FilterGroup<TFilter>>.Remove(FilterGroup<TFilter> item)
-		{
-			UnregisterGroup(item);
-			return true;
 		}
 
 		private static ArgumentException Exc_GroupWithNameAlreadyDefined(string name)
@@ -576,106 +676,6 @@ namespace Durian.Analysis.Filters
 			{
 				throw new InvalidOperationException("Filter container is sealed!");
 			}
-		}
-
-		bool IFilterContainer<TFilter>.ContainsGroup(IFilterGroup<TFilter> group)
-		{
-			return group is FilterGroup<TFilter> g && ContainsGroup(g);
-		}
-
-		IFilterGroup<TFilter> IFilterContainer<TFilter>.GetGroup(int index)
-		{
-			return GetGroup(index);
-		}
-
-		IFilterGroup<TFilter> IFilterContainer<TFilter>.GetGroup(string name)
-		{
-			return GetGroup(name);
-		}
-
-		int IFilterContainer<TFilter>.RegisterGroup(IFilterGroup<TFilter> group)
-		{
-			if (group is null)
-			{
-				throw new ArgumentNullException(nameof(group));
-			}
-
-			if (group is not FilterGroup<TFilter> g)
-			{
-				throw new ArgumentException($"Unsupported type: '{group.GetType()}'", nameof(group));
-			}
-
-			return RegisterGroup(g);
-		}
-
-		void IFilterContainer<TFilter>.RegisterGroups(IEnumerable<IFilterGroup<TFilter>> groups)
-		{
-			ThrowIfSealed();
-
-			if (groups is null)
-			{
-				throw new ArgumentNullException(nameof(groups));
-			}
-
-			foreach (IFilterGroup<TFilter> group in groups)
-			{
-				if (group is null)
-				{
-					continue;
-				}
-
-				if (group is not FilterGroup<TFilter> g)
-				{
-					throw new ArgumentException($"Unsupported element type: '{group.GetType()}'", nameof(groups));
-				}
-
-				RegisterGroup_Internal(g);
-			}
-		}
-
-		IFilterGroup<TFilter>[] IFilterContainer<TFilter>.ToArray()
-		{
-			return ToArray();
-		}
-
-		int IFilterContainer<TFilter>.UnregisterGroup(IFilterGroup<TFilter> group)
-		{
-			if (group is null)
-			{
-				throw new ArgumentNullException(nameof(group));
-			}
-
-			if (group is not FilterGroup<TFilter> g)
-			{
-				throw new ArgumentException($"Unsupported type: '{group.GetType()}'", nameof(group));
-			}
-
-			return UnregisterGroup(g);
-		}
-
-		IReadOnlyFilterGroup<TFilter> IReadOnlyFilterContainer<TFilter>.GetGroup(int index)
-		{
-			return GetGroup(index);
-		}
-
-		IReadOnlyFilterGroup<TFilter> IReadOnlyFilterContainer<TFilter>.GetGroup(string name)
-		{
-			return GetGroup(name);
-		}
-
-		IReadOnlyFilterGroup<TFilter>[] IReadOnlyFilterContainer<TFilter>.ToArray()
-		{
-			return ToArray();
-		}
-
-		IEnumerator<IReadOnlyFilterGroup<TFilter>> IEnumerable<IReadOnlyFilterGroup<TFilter>>.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		IEnumerator<IFilterGroup<TFilter>> IEnumerable<IFilterGroup<TFilter>>.GetEnumerator()
-		{
-			return GetEnumerator();
 		}
 	}
 }

@@ -31,18 +31,33 @@ namespace Durian.Analysis.CopyFrom
 		Constraints = 2,
 
 		/// <summary>
+		/// Specifies that the base type list of the target member should also be copied.
+		/// </summary>
+		BaseType = 4,
+
+		/// <summary>
+		/// Specifies that the base interface list of the target member should also be copied.
+		/// </summary>
+		BaseInterfaces = 8,
+
+		/// <summary>
 		/// Specifies that the documentation of the target member should also be copied.
 		/// </summary>
-		Documentation = 4,
+		Documentation = 16,
 
 		/// <summary>
 		/// Specifies that all using directives in the file where target member is located should also be copied.
 		/// </summary>
-		Usings = 8,
+		Usings = 32,
 
 		/// <summary>
 		/// Specifies that all available non-standard nodes of the target member should also be copied.
 		/// </summary>
 		All = Attributes | Constraints | Documentation | Usings,
+
+		/// <summary>
+		/// Specifies that the default configuration should be used.
+		/// </summary>
+		Default = Usings
 	}
 }

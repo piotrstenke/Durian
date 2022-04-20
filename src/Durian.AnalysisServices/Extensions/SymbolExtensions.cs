@@ -2952,6 +2952,21 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> can have an explicit base type.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check whether can have an explicit base type.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static bool SupportsExplicitBaseType(this INamedTypeSymbol type)
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.TypeKind == TypeKind.Class && !type.IsStatic && !type.IsSealed;
+		}
+
+		/// <summary>
 		/// Attempts to return a <see cref="CSharpSyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to return.</typeparam>

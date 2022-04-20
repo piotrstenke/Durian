@@ -8,17 +8,17 @@ namespace Durian.Samples.InterfaceTargets
 	{
 	}
 
+	// This interface can only be implemented by classes.
+	[InterfaceTargets(Durian.InterfaceTargets.Class)]
+	public interface IInterface
+	{
+	}
+
 	internal class Program
 	{
 		private static void Main()
 		{
 		}
-	}
-
-	// This interface can only be implemented by classes.
-	[InterfaceTargets(Durian.InterfaceTargets.Class)]
-	public interface IInterface
-	{
 	}
 
 	// Error!

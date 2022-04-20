@@ -91,18 +91,6 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public override void Reset()
-		{
-			base.Reset();
-
-			_defaultParamAtttribute = default;
-			_defaultParamConfigurationAttribute = default;
-			_defaultParamScopedConfigurationAttribute = default;
-			_dpTypeConventionAttribute = default;
-			_dpMethodConventionAttribute = default;
-		}
-
-		/// <inheritdoc/>
 		public override void ForceReset()
 		{
 			base.ForceReset();
@@ -112,6 +100,18 @@ namespace Durian.Analysis.DefaultParam
 			_defaultParamScopedConfigurationAttribute = IncludeType(DefaultParamScopedConfigurationAttributeProvider.TypeName);
 			_dpTypeConventionAttribute = IncludeType(DPTypeConventionProvider.TypeName);
 			_dpMethodConventionAttribute = IncludeType(DPMethodConventionProvider.TypeName);
+		}
+
+		/// <inheritdoc/>
+		public override void Reset()
+		{
+			base.Reset();
+
+			_defaultParamAtttribute = default;
+			_defaultParamConfigurationAttribute = default;
+			_defaultParamScopedConfigurationAttribute = default;
+			_dpTypeConventionAttribute = default;
+			_dpMethodConventionAttribute = default;
 		}
 
 		private static DefaultParamConfiguration BuildConfiguration(AttributeData attribute)

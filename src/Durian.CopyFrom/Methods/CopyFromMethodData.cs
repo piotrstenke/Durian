@@ -32,7 +32,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// <summary>
 		/// Target method.
 		/// </summary>
-		public MethodTargetData Target { get; }
+		public TargetMethodData Target { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromMethodData"/> class.
@@ -48,7 +48,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 		public CopyFromMethodData(
 			MethodDeclarationSyntax declaration,
 			CopyFromCompilationData compilation,
-			MethodTargetData target,
+			TargetMethodData target,
 			IMethodSymbol[]? dependencies,
 			PatternData[]? patterns = default
 		) : base(declaration, compilation)
@@ -76,7 +76,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 			CopyFromCompilationData compilation,
 			IMethodSymbol symbol,
 			SemanticModel semanticModel,
-			MethodTargetData target,
+			TargetMethodData target,
 			IMethodSymbol[]? dependencies,
 			PatternData[]? patterns = default,
 			IEnumerable<ITypeData>? containingTypes = default,

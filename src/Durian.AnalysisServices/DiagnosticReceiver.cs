@@ -11,8 +11,8 @@ namespace Durian.Analysis
 	/// </summary>
 	public sealed partial class DiagnosticReceiver : IDiagnosticReceiver
 	{
-		private readonly ReportAction.Direct _directAction;
 		private readonly ReportAction.Basic _basicAction;
+		private readonly ReportAction.Direct _directAction;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DiagnosticReceiver"/> class.

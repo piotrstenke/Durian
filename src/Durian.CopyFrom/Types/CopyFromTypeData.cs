@@ -32,7 +32,7 @@ namespace Durian.Analysis.CopyFrom.Types
 		/// <summary>
 		/// A collection of target types.
 		/// </summary>
-		public TypeTargetData[] Targets { get; }
+		public TargetTypeData[] Targets { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromTypeData"/> class.
@@ -48,7 +48,7 @@ namespace Durian.Analysis.CopyFrom.Types
 		public CopyFromTypeData(
 			TypeDeclarationSyntax declaration,
 			CopyFromCompilationData compilation,
-			TypeTargetData[] targets,
+			TargetTypeData[] targets,
 			INamedTypeSymbol[]? dependencies = default,
 			PatternData[]? patterns = default
 		) : base(declaration, compilation)
@@ -78,7 +78,7 @@ namespace Durian.Analysis.CopyFrom.Types
 			CopyFromCompilationData compilation,
 			INamedTypeSymbol symbol,
 			SemanticModel semanticModel,
-			TypeTargetData[] targets,
+			TargetTypeData[] targets,
 			INamedTypeSymbol[]? dependencies = default,
 			PatternData[]? patterns = default,
 			IEnumerable<TypeDeclarationSyntax>? partialDeclarations = null,

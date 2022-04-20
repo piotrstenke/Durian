@@ -24,6 +24,7 @@ namespace Durian.Analysis
 		#region Diagnostics copied from Durian.Core.Analyzer
 
 #pragma warning disable IDE1006 // Naming Styles
+
 		private static readonly DiagnosticDescriptor DUR0001_ProjectMustReferenceDurianCore = new(
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning disable RS2008 // Enable analyzer release tracking
@@ -38,6 +39,7 @@ namespace Durian.Analysis
 		);
 
 #pragma warning disable IDE1006 // Naming Styles
+
 		private static readonly DiagnosticDescriptor DUR0004_DurianModulesAreValidOnlyInCSharp = new(
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning disable RS2008 // Enable analyzer release tracking

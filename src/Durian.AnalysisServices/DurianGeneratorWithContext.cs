@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.Filters;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
@@ -442,10 +441,10 @@ namespace Durian.Analysis
 			}
 		}
 
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		/// <inheritdoc/>
 		[Obsolete("Use GetCurrentPassContext() instead")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		protected sealed override IGeneratorPassContext? GetCurrentPassContextCore()
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 		{
@@ -488,7 +487,7 @@ namespace Durian.Analysis
 		/// <param name="allowLog">Determines whether to log the <see cref="Exception"/>.</param>
 		protected internal virtual void OnException(Exception e, TContext context, bool allowLog)
 		{
-			if(allowLog)
+			if (allowLog)
 			{
 				LogHandler.LogException(e);
 			}

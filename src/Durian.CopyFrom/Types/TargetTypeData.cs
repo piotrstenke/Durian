@@ -10,12 +10,12 @@ namespace Durian.Analysis.CopyFrom.Types
 	/// <summary>
 	/// Contains data of a <c>CopyFrom</c> type target.
 	/// </summary>
-	public sealed class TypeTargetData : IEquatable<TypeTargetData>
+	public sealed class TargetTypeData : IEquatable<TargetTypeData>, ICloneable
 	{
 		/// <summary>
-		/// Determines whether to copy attributes applied to the target.
+		/// Specifies which non-standard nodes should also be copied.
 		/// </summary>
-		public bool CopyAttributes { get; }
+		public AdditionalNodes AdditionalNodes { get; }
 
 		/// <summary>
 		/// Determines whether to automatically replace name of the target type in constructor, destructor and operator declarations.
@@ -47,38 +47,39 @@ namespace Durian.Analysis.CopyFrom.Types
 		/// </summary>
 		public string[]? Usings { get; }
 
-		/// <inheritdoc cref="TypeTargetData(INamedTypeSymbol, int, string[], TypeDeclarationSyntax?, string?, bool, bool)"/>
-		public TypeTargetData(INamedTypeSymbol symbol) : this(symbol, default, default)
+		/// <inheritdoc cref="TargetTypeData(INamedTypeSymbol, int, AdditionalNodes, string[], TypeDeclarationSyntax?, string?, bool)"/>
+		public TargetTypeData(INamedTypeSymbol symbol) : this(symbol, default, default, default)
 		{
 		}
 
-		/// <inheritdoc cref="TypeTargetData(INamedTypeSymbol, int, string[], TypeDeclarationSyntax?, string?, bool, bool)"/>
-		public TypeTargetData(
+		/// <inheritdoc cref="TargetTypeData(INamedTypeSymbol, int, AdditionalNodes, string[], TypeDeclarationSyntax?, string?, bool)"/>
+		public TargetTypeData(
 			INamedTypeSymbol symbol,
 			int order,
+			AdditionalNodes additionalNodes,
 			string[]? usings
-		) : this(symbol, order, usings, default, default, default, default)
+		) : this(symbol, order, additionalNodes, usings, default, default, default)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="TypeTargetData"/> struct.
+		/// Initializes a new instance of the <see cref="TargetTypeData"/> struct.
 		/// </summary>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> of the target member.</param>
 		/// <param name="order">Order in which this target should be applied when comparing to other targets of the member.</param>
+		/// <param name="additionalNodes">Specifies which non-standard nodes should also be copied.</param>
 		/// <param name="usings">Array of usings that should be used when generating syntax tree.</param>
 		/// <param name="partialPart">Partial part of the source type to copy the implementation from.</param>
 		/// <param name="partialPartName">Name of the partial part.</param>
 		/// <param name="handleSpecialMembers">Determines whether to automatically replace name of the target type in constructor, destructor and operator declarations.</param>
-		/// <param name="copyAttributes">Determines whether to copy attributes applied to the target.</param>
-		public TypeTargetData(
+		public TargetTypeData(
 			INamedTypeSymbol symbol,
 			int order,
+			AdditionalNodes additionalNodes,
 			string[]? usings,
 			TypeDeclarationSyntax? partialPart,
 			string? partialPartName,
-			bool handleSpecialMembers,
-			bool copyAttributes
+			bool handleSpecialMembers
 		)
 		{
 			Symbol = symbol;
@@ -87,34 +88,45 @@ namespace Durian.Analysis.CopyFrom.Types
 			Order = order;
 			HandleSpecialMembers = handleSpecialMembers;
 			Usings = usings;
-			CopyAttributes = copyAttributes;
+			AdditionalNodes = additionalNodes;
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(TypeTargetData left, TypeTargetData right)
+		public static bool operator !=(TargetTypeData left, TargetTypeData right)
 		{
 			return !(left == right);
 		}
 
 		/// <inheritdoc/>
-		public static bool operator ==(TypeTargetData left, TypeTargetData right)
+		public static bool operator ==(TargetTypeData left, TargetTypeData right)
 		{
 			return left.Equals(right);
+		}
+
+		/// <inheritdoc cref="ICloneable.Clone"/>
+		public TargetTypeData Clone()
+		{
+			return WithSymbol(Symbol);
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 
 		/// <inheritdoc/>
 		public override bool Equals(object? obj)
 		{
-			return obj is TypeTargetData other && Equals(other);
+			return obj is TargetTypeData other && Equals(other);
 		}
 
 		/// <inheritdoc/>
-		public bool Equals(TypeTargetData other)
+		public bool Equals(TargetTypeData other)
 		{
 			return
 				other.Order == Order &&
 				other.HandleSpecialMembers == HandleSpecialMembers &&
-				other.CopyAttributes == CopyAttributes &&
+				other.AdditionalNodes == AdditionalNodes &&
 				other.PartialPartName == PartialPartName &&
 				other.PartialPart == PartialPart &&
 				SymbolEqualityComparer.Default.Equals(other.Symbol, Symbol) &&
@@ -127,7 +139,7 @@ namespace Durian.Analysis.CopyFrom.Types
 			int hashCode = 565389259;
 			hashCode = (hashCode * -1521134295) + Order.GetHashCode();
 			hashCode = (hashCode * -1521134295) + HandleSpecialMembers.GetHashCode();
-			hashCode = (hashCode * -1521134295) + CopyAttributes.GetHashCode();
+			hashCode = (hashCode * -1521134295) + AdditionalNodes.GetHashCode();
 			hashCode = (hashCode * -1521134295) + PartialPartName?.GetHashCode() ?? 0;
 			hashCode = (hashCode * -1521134295) + PartialPart?.GetHashCode() ?? 0;
 			hashCode = (hashCode * -1521134295) + SymbolEqualityComparer.Default.GetHashCode(Symbol);
@@ -147,12 +159,12 @@ namespace Durian.Analysis.CopyFrom.Types
 		}
 
 		/// <summary>
-		/// Returns a new instance of the <see cref="TypeTargetData"/> class being a copy of the current instance, but with the specified <paramref name="symbol"/> instead.
+		/// Returns a new instance of the <see cref="TargetTypeData"/> class being a copy of the current instance, but with the specified <paramref name="symbol"/> instead.
 		/// </summary>
 		/// <param name="symbol"><see cref="INamedTypeSymbol"/> of the target member.</param>
-		public TypeTargetData WithSymbol(INamedTypeSymbol symbol)
+		public TargetTypeData WithSymbol(INamedTypeSymbol symbol)
 		{
-			return new(symbol, Order, Usings, PartialPart, PartialPartName, HandleSpecialMembers, CopyAttributes);
+			return new(symbol, Order, AdditionalNodes, Usings, PartialPart, PartialPartName, HandleSpecialMembers);
 		}
 	}
 }

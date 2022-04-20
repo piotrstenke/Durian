@@ -169,17 +169,6 @@ namespace Durian.Analysis.Logging
 			sb.AppendLine();
 		}
 
-		private string GetNodeOutput(SyntaxNode node, NodeOutput nodeOutput)
-		{
-			return nodeOutput switch
-			{
-				NodeOutput.Node => node.ToFullString(),
-				NodeOutput.Containing => node.Parent?.ToFullString() ?? node.ToFullString(),
-				NodeOutput.SyntaxTree => node.SyntaxTree.ToString(),
-				_ => GetNodeOutput(node, LoggingConfiguration.DefaultNodeOutput),
-			};
-		}
-
 		private static void TryAppendAllText(string file, string text)
 		{
 			try
@@ -232,6 +221,17 @@ namespace Durian.Analysis.Logging
 					}
 				}
 			}
+		}
+
+		private string GetNodeOutput(SyntaxNode node, NodeOutput nodeOutput)
+		{
+			return nodeOutput switch
+			{
+				NodeOutput.Node => node.ToFullString(),
+				NodeOutput.Containing => node.Parent?.ToFullString() ?? node.ToFullString(),
+				NodeOutput.SyntaxTree => node.SyntaxTree.ToString(),
+				_ => GetNodeOutput(node, LoggingConfiguration.DefaultNodeOutput),
+			};
 		}
 
 		private void WriteToFile(string hintName, StringBuilder sb, string subDirectory)

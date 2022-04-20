@@ -20,69 +20,6 @@ namespace Durian.Analysis.Extensions
 	public static class SemanticModelExtensions
 	{
 		/// <summary>
-		/// Looks for all <see cref="AttributeSyntax"/>ex that correspond to the <paramref name="attrSymbol"/> and are defined on the specified <paramref name="syntaxNode"/>.
-		/// </summary>
-		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
-		/// <param name="syntaxNode"><see cref="MemberDeclarationSyntax"/> the attributes are declared on.</param>
-		/// <param name="attrSymbol">Type of attributes to look for.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns>
-		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
-		/// </returns>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="semanticModel"/> is <see langword="null"/>. -or-
-		/// <paramref name="syntaxNode"/> is <see langword="null"/>.
-		/// <paramref name="attrSymbol"/> is <see langword="null"/>.
-		/// </exception>
-		public static IEnumerable<AttributeSyntax> GetAttributes(this SemanticModel semanticModel, MemberDeclarationSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
-		{
-			ValidateGetAttributesParameters(semanticModel, syntaxNode, attrSymbol);
-			return GetAllAttributes_Internal(semanticModel, attrSymbol, () => syntaxNode.AttributeLists, cancellationToken);
-		}
-
-		/// <summary>
-		/// Looks for all <see cref="AttributeSyntax"/>ex that correspond to the <paramref name="attrSymbol"/> and are defined on the specified <paramref name="syntaxNode"/>.
-		/// </summary>
-		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
-		/// <param name="syntaxNode"><see cref="TypeParameterSyntax"/> the attributes are declared on.</param>
-		/// <param name="attrSymbol">Type of attributes to look for.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns>
-		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
-		/// </returns>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="semanticModel"/> is <see langword="null"/>. -or-
-		/// <paramref name="syntaxNode"/> is <see langword="null"/>.
-		/// <paramref name="attrSymbol"/> is <see langword="null"/>.
-		/// </exception>
-		public static IEnumerable<AttributeSyntax> GetAttributes(this SemanticModel semanticModel, TypeParameterSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
-		{
-			ValidateGetAttributesParameters(semanticModel, syntaxNode, attrSymbol);
-			return GetAllAttributes_Internal(semanticModel, attrSymbol, () => syntaxNode.AttributeLists, cancellationToken);
-		}
-
-		/// <summary>
-		/// Looks for all <see cref="AttributeSyntax"/>es that correspond to the <paramref name="attrSymbol"/> and are defined on the specified <paramref name="syntaxNode"/>.
-		/// </summary>
-		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
-		/// <param name="syntaxNode"><see cref="ParameterSyntax"/> the attributes are declared on.</param>
-		/// <param name="attrSymbol">Type of attributes to look for.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns>
-		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
-		/// </returns>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="semanticModel"/> is <see langword="null"/>. -or-
-		/// <paramref name="syntaxNode"/> is <see langword="null"/>.
-		/// <paramref name="attrSymbol"/> is <see langword="null"/>.
-		/// </exception>
-		public static IEnumerable<AttributeSyntax> GetAttributes(this SemanticModel semanticModel, ParameterSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
-		{
-			ValidateGetAttributesParameters(semanticModel, syntaxNode, attrSymbol);
-			return GetAllAttributes_Internal(semanticModel, attrSymbol, () => syntaxNode.AttributeLists, cancellationToken);
-		}
-
-		/// <summary>
 		/// Looks for <see cref="AttributeSyntax"/> that corresponds to the <paramref name="attrSymbol"/> and is defined on the specified <paramref name="syntaxNode"/>.
 		/// </summary>
 		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
@@ -143,6 +80,69 @@ namespace Durian.Analysis.Extensions
 		{
 			ValidateGetAttributesParameters(semanticModel, syntaxNode, attrSymbol);
 			return GetAllAttributes_Internal(semanticModel, attrSymbol, () => syntaxNode.AttributeLists, cancellationToken).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Looks for all <see cref="AttributeSyntax"/>ex that correspond to the <paramref name="attrSymbol"/> and are defined on the specified <paramref name="syntaxNode"/>.
+		/// </summary>
+		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
+		/// <param name="syntaxNode"><see cref="MemberDeclarationSyntax"/> the attributes are declared on.</param>
+		/// <param name="attrSymbol">Type of attributes to look for.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns>
+		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="semanticModel"/> is <see langword="null"/>. -or-
+		/// <paramref name="syntaxNode"/> is <see langword="null"/>.
+		/// <paramref name="attrSymbol"/> is <see langword="null"/>.
+		/// </exception>
+		public static IEnumerable<AttributeSyntax> GetAttributes(this SemanticModel semanticModel, MemberDeclarationSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
+		{
+			ValidateGetAttributesParameters(semanticModel, syntaxNode, attrSymbol);
+			return GetAllAttributes_Internal(semanticModel, attrSymbol, () => syntaxNode.AttributeLists, cancellationToken);
+		}
+
+		/// <summary>
+		/// Looks for all <see cref="AttributeSyntax"/>ex that correspond to the <paramref name="attrSymbol"/> and are defined on the specified <paramref name="syntaxNode"/>.
+		/// </summary>
+		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
+		/// <param name="syntaxNode"><see cref="TypeParameterSyntax"/> the attributes are declared on.</param>
+		/// <param name="attrSymbol">Type of attributes to look for.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns>
+		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="semanticModel"/> is <see langword="null"/>. -or-
+		/// <paramref name="syntaxNode"/> is <see langword="null"/>.
+		/// <paramref name="attrSymbol"/> is <see langword="null"/>.
+		/// </exception>
+		public static IEnumerable<AttributeSyntax> GetAttributes(this SemanticModel semanticModel, TypeParameterSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
+		{
+			ValidateGetAttributesParameters(semanticModel, syntaxNode, attrSymbol);
+			return GetAllAttributes_Internal(semanticModel, attrSymbol, () => syntaxNode.AttributeLists, cancellationToken);
+		}
+
+		/// <summary>
+		/// Looks for all <see cref="AttributeSyntax"/>es that correspond to the <paramref name="attrSymbol"/> and are defined on the specified <paramref name="syntaxNode"/>.
+		/// </summary>
+		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
+		/// <param name="syntaxNode"><see cref="ParameterSyntax"/> the attributes are declared on.</param>
+		/// <param name="attrSymbol">Type of attributes to look for.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <returns>
+		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="semanticModel"/> is <see langword="null"/>. -or-
+		/// <paramref name="syntaxNode"/> is <see langword="null"/>.
+		/// <paramref name="attrSymbol"/> is <see langword="null"/>.
+		/// </exception>
+		public static IEnumerable<AttributeSyntax> GetAttributes(this SemanticModel semanticModel, ParameterSyntax syntaxNode, INamedTypeSymbol attrSymbol, CancellationToken cancellationToken = default)
+		{
+			ValidateGetAttributesParameters(semanticModel, syntaxNode, attrSymbol);
+			return GetAllAttributes_Internal(semanticModel, attrSymbol, () => syntaxNode.AttributeLists, cancellationToken);
 		}
 
 		/// <summary>

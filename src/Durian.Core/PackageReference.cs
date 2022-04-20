@@ -129,6 +129,16 @@ namespace Durian.Info
 			return new(_package);
 		}
 
+		object ICloneable.Clone()
+		{
+			return Clone();
+		}
+
+		IDurianReference IDurianReference.Clone()
+		{
+			return Clone();
+		}
+
 		/// <summary>
 		/// Removes from memory the <see cref="PackageIdentity"/> this <see cref="PackageReference"/> references.
 		/// </summary>
@@ -152,6 +162,11 @@ namespace Durian.Info
 		public bool Equals(PackageReference? other)
 		{
 			return other == this;
+		}
+
+		object? IDurianReference.GetAllocatedValue()
+		{
+			return GetPackage();
 		}
 
 		/// <inheritdoc/>
@@ -187,21 +202,6 @@ namespace Durian.Info
 		public override string ToString()
 		{
 			return EnumValue.ToString();
-		}
-
-		object ICloneable.Clone()
-		{
-			return Clone();
-		}
-
-		IDurianReference IDurianReference.Clone()
-		{
-			return Clone();
-		}
-
-		object? IDurianReference.GetAllocatedValue()
-		{
-			return GetPackage();
 		}
 	}
 }

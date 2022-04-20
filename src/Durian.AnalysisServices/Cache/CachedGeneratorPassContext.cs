@@ -21,31 +21,31 @@ namespace Durian.Analysis.Cache
 	{
 		internal CachedGeneratorExecutionContext<TData> _cachedContext;
 
-		/// <summary>
-		/// <typeparamref name="TContext"/> that actually contains the context data.
-		/// </summary>
-		public TContext UnderlayingContext { get; }
-
-		/// <inheritdoc/>
-		public ref readonly CachedGeneratorExecutionContext<TData> OriginalContext => ref _cachedContext;
-
-		ref readonly GeneratorExecutionContext IGeneratorPassContext.OriginalContext => ref UnderlayingContext.OriginalContext;
-
 		CancellationToken IGeneratorPassContext.CancellationToken => UnderlayingContext.CancellationToken;
 
 		IHintNameProvider IGeneratorPassContext.FileNameProvider => UnderlayingContext.FileNameProvider;
 
 		IDurianGenerator IGeneratorPassContext.Generator => UnderlayingContext.Generator;
 
-		IDurianSyntaxReceiver IGeneratorPassContext.SyntaxReceiver => UnderlayingContext.SyntaxReceiver;
+		/// <inheritdoc/>
+		public ref readonly CachedGeneratorExecutionContext<TData> OriginalContext => ref _cachedContext;
 
-		ICompilationData IGeneratorPassContext.TargetCompilation => UnderlayingContext.TargetCompilation;
+		ref readonly GeneratorExecutionContext IGeneratorPassContext.OriginalContext => ref UnderlayingContext.OriginalContext;
 
 		CSharpParseOptions IGeneratorPassContext.ParseOptions => UnderlayingContext.ParseOptions;
 
 		IGeneratorServiceResolver IGeneratorPassContext.Services => UnderlayingContext.Services;
 
 		GeneratorState IGeneratorPassContext.State => UnderlayingContext.State;
+
+		IDurianSyntaxReceiver IGeneratorPassContext.SyntaxReceiver => UnderlayingContext.SyntaxReceiver;
+
+		ICompilationData IGeneratorPassContext.TargetCompilation => UnderlayingContext.TargetCompilation;
+
+		/// <summary>
+		/// <typeparamref name="TContext"/> that actually contains the context data.
+		/// </summary>
+		public TContext UnderlayingContext { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CachedGeneratorPassContext{TData, TContext}"/> class.

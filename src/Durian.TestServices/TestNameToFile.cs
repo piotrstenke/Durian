@@ -104,6 +104,11 @@ namespace Durian.TestServices
 			}
 		}
 
+		string IHintNameProvider.GetHintName(ISymbol symbol)
+		{
+			return GetHintName();
+		}
+
 		/// <inheritdoc/>
 		public void Initialize()
 		{
@@ -130,11 +135,6 @@ namespace Durian.TestServices
 				_counter++;
 				_current = $"{_testName}_{_counter}";
 			}
-		}
-
-		string IHintNameProvider.GetHintName(ISymbol symbol)
-		{
-			return GetHintName();
 		}
 	}
 }

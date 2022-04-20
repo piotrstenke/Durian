@@ -238,10 +238,10 @@ namespace Durian.Analysis.Filters
 			return true;
 		}
 
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		/// <inheritdoc/>
 		[Obsolete("This method has no effect.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		protected sealed override bool TryCreateContext(
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 			in SyntaxValidationContext validationContext,

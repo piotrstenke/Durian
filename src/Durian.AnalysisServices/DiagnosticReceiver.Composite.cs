@@ -26,14 +26,14 @@ namespace Durian.Analysis
 				}
 			}
 
-			private readonly List<Entry> _receivers;
 			private readonly DiagnosticBag _bag;
-
-			/// <inheritdoc/>
-			public int NumReceivers => _receivers.Count;
+			private readonly List<Entry> _receivers;
 
 			/// <inheritdoc/>
 			public int Count => _bag.Count;
+
+			/// <inheritdoc/>
+			public int NumReceivers => _receivers.Count;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Composite"/> class.
@@ -180,6 +180,11 @@ namespace Durian.Analysis
 				{
 					yield return entry.DiagnosticReceiver;
 				}
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
 			}
 
 			/// <inheritdoc/>
@@ -418,11 +423,6 @@ namespace Durian.Analysis
 				}
 
 				throw new ArgumentException("Target is not present in the current receiver", nameof(diagnosticReceiver));
-			}
-
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
 			}
 		}
 	}

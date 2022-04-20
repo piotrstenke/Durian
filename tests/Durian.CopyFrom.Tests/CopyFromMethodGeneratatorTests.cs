@@ -1495,7 +1495,7 @@ $@"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Documentation})]
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Documentation})]
 	partial void Method();
 
 	/// <summary>
@@ -1529,7 +1529,7 @@ $@"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Documentation})]
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Documentation})]
 	[{PatternAttributeProvider.TypeName}(""Hello"", ""No"")]
 	partial void Method();
 
@@ -1566,7 +1566,7 @@ $@"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Attributes})]
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
 	[{PatternAttributeProvider.TypeName}(""DEBUG"", ""RELEASE"")]
 	partial void Method();
 
@@ -1599,7 +1599,7 @@ $@"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Attributes})]
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
 	partial void Method();
 
 	[System.Diagnostics.Conditional(""DEBUG"")]
@@ -2171,7 +2171,7 @@ $@"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target<T>"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.All})]
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target<T>"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 	partial void Method<T>();
 
 	void Target<T>() where T : struct
@@ -2190,7 +2190,10 @@ $@"partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
+			SingleGeneratorTestResult result = RunGenerator(input);
+
+			Assert.True(result.Compare(expected));
+			Assert.True(result.SucceededAndDoesNotContainDiagnostics(DUR0225_BaseTypeAlreadySpecified, DUR0226_CannotApplyBaseType));
 		}
 
 		[Fact]
@@ -2204,7 +2207,7 @@ partial class Test
 	/// <summary>
 	/// ABC
 	/// </summary>
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.All})]
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 	partial void Method();
 
 	/// <summary>
@@ -3455,6 +3458,76 @@ partial class Test
 		}
 
 		[Fact]
+		public void Warning_When_CopiesBaseInterfaces()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseInterfaces})]
+	partial void Method();
+
+	void Target()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Target()")}
+	partial void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
+		public void Warning_When_CopiesBaseType()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
+	partial void Method();
+
+	void Target()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Target()")}
+	partial void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			SingleGeneratorTestResult runResult = RunGenerator(input);
+
+			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0226_CannotApplyBaseType));
+			Assert.True(runResult.Compare(expected));
+		}
+
+		[Fact]
 		public void Warning_When_CopiesConstraints()
 		{
 			string input =
@@ -3462,7 +3535,7 @@ $@"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target<T>"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Constraints})]
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target<T>"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 	partial void Method<T>();
 
 	void Target<T>() where T : struct
@@ -3498,7 +3571,7 @@ partial class Test
 	/// <summary>
 	/// hello there
 	/// <summary>
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.Documentation})]
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Documentation})]
 	partial void Method();
 
 	/// <summary>

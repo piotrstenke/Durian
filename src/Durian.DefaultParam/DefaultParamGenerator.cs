@@ -135,12 +135,6 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		protected override DefaultParamPassContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
-		{
-			return new DefaultParamPassContext();
-		}
-
-		/// <inheritdoc/>
 		protected internal override bool Generate(IMemberData data, string hintName, DefaultParamPassContext context)
 		{
 			if (data is not IDefaultParamTarget target)
@@ -154,20 +148,10 @@ namespace Durian.Analysis.DefaultParam
 			return true;
 		}
 
-		private static string GetTargetName(ITypeSymbol targetType)
+		/// <inheritdoc/>
+		protected override DefaultParamPassContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
 		{
-			if (targetType is INamedTypeSymbol t)
-			{
-				return t.Arity > 0 ? t.GetGenericName(GenericSubstitution.TypeArguments) : AnalysisUtilities.TypeToKeyword(targetType.Name);
-			}
-			else if (targetType is IArrayTypeSymbol a)
-			{
-				return a.ToString();
-			}
-			else
-			{
-				return AnalysisUtilities.TypeToKeyword(targetType.Name);
-			}
+			return new DefaultParamPassContext();
 		}
 
 		private static CSharpSyntaxNode[] CreateDefaultParamDeclarations(in TypeParameterContainer parameters, DefaultParamPassContext context)
@@ -220,17 +204,19 @@ namespace Durian.Analysis.DefaultParam
 			return members;
 		}
 
-		private void GenerateAllVersionsOfTarget(IDefaultParamTarget target, DefaultParamPassContext context)
+		private static string GetTargetName(ITypeSymbol targetType)
 		{
-			IDefaultParamDeclarationBuilder declBuilder = target.GetDeclarationBuilder(context.CancellationToken);
-			context.Rewriter.Acquire(declBuilder);
-			CSharpSyntaxNode[] members = CreateDefaultParamDeclarations(in target.TypeParameters, context);
-
-			if (members.Length > 0)
+			if (targetType is INamedTypeSymbol t)
 			{
-				WriteTargetLeadDeclaration(target, context);
-				WriteGeneratedMembers(members, target, context);
-				context.CodeBuilder.EndAllScopes();
+				return t.Arity > 0 ? t.GetGenericName(GenericSubstitution.TypeArguments) : AnalysisUtilities.TypeToKeyword(targetType.Name);
+			}
+			else if (targetType is IArrayTypeSymbol a)
+			{
+				return a.ToString();
+			}
+			else
+			{
+				return AnalysisUtilities.TypeToKeyword(targetType.Name);
 			}
 		}
 
@@ -252,6 +238,20 @@ namespace Durian.Analysis.DefaultParam
 			}
 
 			context.CodeBuilder.WriteParentDeclarations(target.GetContainingTypes());
+		}
+
+		private void GenerateAllVersionsOfTarget(IDefaultParamTarget target, DefaultParamPassContext context)
+		{
+			IDefaultParamDeclarationBuilder declBuilder = target.GetDeclarationBuilder(context.CancellationToken);
+			context.Rewriter.Acquire(declBuilder);
+			CSharpSyntaxNode[] members = CreateDefaultParamDeclarations(in target.TypeParameters, context);
+
+			if (members.Length > 0)
+			{
+				WriteTargetLeadDeclaration(target, context);
+				WriteGeneratedMembers(members, target, context);
+				context.CodeBuilder.EndAllScopes();
+			}
 		}
 	}
 }

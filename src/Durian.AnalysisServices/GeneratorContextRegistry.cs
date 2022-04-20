@@ -471,6 +471,11 @@ namespace Durian.Analysis
 			_generators.AddOrUpdate(generatorId, context, (_, value) => ReferenceEquals(value, data) ? context : value);
 		}
 
+		private static InvalidOperationException Exc_WrongContextType(Type type)
+		{
+			return new InvalidOperationException($"Registered context is not of type '{type}'");
+		}
+
 		private static bool TryGetContext_Internal(Guid generatorId, ReadOnlySpan<int> threads, [NotNullWhen(true)] out IGeneratorPassContext? context)
 		{
 			if (!_generators.TryGetValue(generatorId, out object? value))
@@ -497,11 +502,6 @@ namespace Durian.Analysis
 
 			context = default;
 			return false;
-		}
-
-		private static InvalidOperationException Exc_WrongContextType(Type type)
-		{
-			return new InvalidOperationException($"Registered context is not of type '{type}'");
 		}
 	}
 }

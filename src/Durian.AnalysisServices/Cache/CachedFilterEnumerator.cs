@@ -92,6 +92,7 @@ namespace Durian.Analysis.Cache
 
 		/// <inheritdoc/>
 #pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
+
 		public static explicit operator CachedFilterEnumerator<TData, TContext>(in FilterEnumerator<TContext> a)
 		{
 			return new CachedFilterEnumerator<TData, TContext>(a.Compilation, a._nodes, a.Validator, CachedData<TData>.Empty);
@@ -102,6 +103,7 @@ namespace Durian.Analysis.Cache
 		{
 			return new FilterEnumerator<TContext>(a.Compilation, a._nodes, a.Validator);
 		}
+
 #pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 
 		/// <inheritdoc/>

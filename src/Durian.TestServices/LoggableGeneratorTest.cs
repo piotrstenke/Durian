@@ -70,27 +70,6 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Returns a <see cref="MultipleGeneratorTestResult"/> created by performing a test on the target <see cref="ISourceGenerator"/>.
-		/// </summary>
-		/// <param name="input">Input for the generator.</param>
-		/// <param name="testName">Name of the test that is currently performed.</param>
-		public virtual MultipleGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, [CallerMemberName] string testName = "")
-		{
-			return RunGeneratorWithMultipleOutputs(input, 0, testName);
-		}
-
-		/// <summary>
-		/// Returns a <see cref="MultipleGeneratorTestResult"/> created by performing a test on the target <see cref="ISourceGenerator"/>.
-		/// </summary>
-		/// <param name="input">Input for the generator.</param>
-		/// <param name="startIndex">Number of generated sources to skip.</param>
-		/// <param name="testName">Name of the test that is currently performed.</param>
-		public virtual MultipleGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, int startIndex, [CallerMemberName] string testName = "")
-		{
-			return GeneratorTest.RunGeneratorWithMultipleOutputs(GetGeneratorAndTryEnableDiagnostics(testName), input, startIndex);
-		}
-
-		/// <summary>
 		/// Returns a <see cref="SingleGeneratorTestResult"/> created by performing a test on the target <see cref="ISourceGenerator"/>.
 		/// </summary>
 		/// <param name="input">Input for the generator.</param>
@@ -113,6 +92,27 @@ namespace Durian.TestServices
 		public virtual SingleGeneratorTestResult RunGeneratorWithDependency(string? input, string external, int index, [CallerMemberName] string testName = "")
 		{
 			return GeneratorTest.RunGeneratorWithDependency(GetGeneratorAndTryEnableDiagnostics(testName), input, external, index);
+		}
+
+		/// <summary>
+		/// Returns a <see cref="MultipleGeneratorTestResult"/> created by performing a test on the target <see cref="ISourceGenerator"/>.
+		/// </summary>
+		/// <param name="input">Input for the generator.</param>
+		/// <param name="testName">Name of the test that is currently performed.</param>
+		public virtual MultipleGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, [CallerMemberName] string testName = "")
+		{
+			return RunGeneratorWithMultipleOutputs(input, 0, testName);
+		}
+
+		/// <summary>
+		/// Returns a <see cref="MultipleGeneratorTestResult"/> created by performing a test on the target <see cref="ISourceGenerator"/>.
+		/// </summary>
+		/// <param name="input">Input for the generator.</param>
+		/// <param name="startIndex">Number of generated sources to skip.</param>
+		/// <param name="testName">Name of the test that is currently performed.</param>
+		public virtual MultipleGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, int startIndex, [CallerMemberName] string testName = "")
+		{
+			return GeneratorTest.RunGeneratorWithMultipleOutputs(GetGeneratorAndTryEnableDiagnostics(testName), input, startIndex);
 		}
 
 		/// <summary>

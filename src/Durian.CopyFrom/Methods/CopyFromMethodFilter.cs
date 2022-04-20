@@ -35,7 +35,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 				ref newContext,
 				out ImmutableArray<AttributeData> attributes,
 				out List<IMethodSymbol>? dependencies,
-				out IMethodSymbol? targetMethod,
+				out TargetMethodData? targetMethod,
 				diagnosticReceiver
 			);
 
@@ -84,7 +84,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 				ref newContext,
 				out ImmutableArray<AttributeData> attributes,
 				out List<IMethodSymbol>? dependencies,
-				out IMethodSymbol? targetMethod
+				out TargetMethodData? targetMethod
 			);
 
 			bool hasTarget = targetMethod is not null;

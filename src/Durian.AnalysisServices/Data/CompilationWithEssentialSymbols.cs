@@ -15,22 +15,27 @@ namespace Durian.Analysis.Data
 	/// </summary>
 	public class CompilationWithEssentialSymbols : CompilationData, ICompilationDataWithSymbols
 	{
-		private string? _durianGeneratedAttributeName;
-		private string? _enableModuleAttributeName;
-		private string? _generatedCodeAttributeName;
-
 		private INamedTypeSymbol? _durianGeneratedAttribute;
+		private string? _durianGeneratedAttributeName;
 		private INamedTypeSymbol? _enableModuleAttribute;
+		private string? _enableModuleAttributeName;
 		private INamedTypeSymbol? _generatedCodeAttribute;
+		private string? _generatedCodeAttributeName;
 
 		/// <inheritdoc/>
 		public INamedTypeSymbol? DurianGeneratedAttribute => IncludeType(GetDurianGeneratedAttributeName(), ref _durianGeneratedAttribute);
 
+		INamedTypeSymbol ICompilationDataWithSymbols.DurianGeneratedAttribute => DurianGeneratedAttribute!;
+
 		/// <inheritdoc/>
 		public INamedTypeSymbol? EnableModuleAttribute => IncludeType(GetEnableModuleAttributeName(), ref _enableModuleAttribute);
 
+		INamedTypeSymbol ICompilationDataWithSymbols.EnableModuleAttribute => EnableModuleAttribute!;
+
 		/// <inheritdoc/>
 		public INamedTypeSymbol? GeneratedCodeAttribute => IncludeType(GetGeneratedCodeAttributeName(), ref _generatedCodeAttribute);
+
+		INamedTypeSymbol ICompilationDataWithSymbols.GeneratedCodeAttribute => GeneratedCodeAttribute!;
 
 		/// <inheritdoc/>
 		[MemberNotNullWhen(false, nameof(GeneratedCodeAttribute), nameof(DurianGeneratedAttribute), nameof(EnableModuleAttribute))]
@@ -39,12 +44,6 @@ namespace Durian.Analysis.Data
 			get => base.HasErrors;
 			protected set => base.HasErrors = value;
 		}
-
-		INamedTypeSymbol ICompilationDataWithSymbols.DurianGeneratedAttribute => DurianGeneratedAttribute!;
-
-		INamedTypeSymbol ICompilationDataWithSymbols.EnableModuleAttribute => EnableModuleAttribute!;
-
-		INamedTypeSymbol ICompilationDataWithSymbols.GeneratedCodeAttribute => GeneratedCodeAttribute!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CompilationWithEssentialSymbols"/> class.
@@ -56,14 +55,6 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc/>
-		public override void Reset()
-		{
-			_durianGeneratedAttribute = default;
-			_generatedCodeAttribute = default;
-			_enableModuleAttribute = default;
-		}
-
-		/// <inheritdoc/>
 		public override void ForceReset()
 		{
 			_durianGeneratedAttribute = IncludeType(GetDurianGeneratedAttributeName());
@@ -71,19 +62,27 @@ namespace Durian.Analysis.Data
 			_enableModuleAttribute = IncludeType(GetEnableModuleAttributeName());
 		}
 
+		/// <inheritdoc/>
+		public override void Reset()
+		{
+			_durianGeneratedAttribute = default;
+			_generatedCodeAttribute = default;
+			_enableModuleAttribute = default;
+		}
+
 		private string GetDurianGeneratedAttributeName()
 		{
 			return _durianGeneratedAttributeName ??= typeof(DurianGeneratedAttribute).ToString();
 		}
 
-		private string GetGeneratedCodeAttributeName()
-		{
-			return _generatedCodeAttributeName ??= typeof(GeneratedCodeAttribute).ToString();
-		}
-
 		private string GetEnableModuleAttributeName()
 		{
 			return _enableModuleAttributeName ??= typeof(EnableModuleAttribute).ToString();
+		}
+
+		private string GetGeneratedCodeAttributeName()
+		{
+			return _generatedCodeAttributeName ??= typeof(GeneratedCodeAttribute).ToString();
 		}
 	}
 }

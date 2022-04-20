@@ -50,19 +50,19 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <summary>
-		/// Resets all collected <see cref="ISymbol"/>s.
-		/// </summary>
-		public virtual void Reset()
-		{
-			ForceReset();
-		}
-
-		/// <summary>
 		/// Resets all collected <see cref="ISymbol"/>s without lazy initialization.
 		/// </summary>
 		public virtual void ForceReset()
 		{
 			// Do nothing by default.
+		}
+
+		/// <summary>
+		/// Resets all collected <see cref="ISymbol"/>s.
+		/// </summary>
+		public virtual void Reset()
+		{
+			ForceReset();
 		}
 
 		/// <inheritdoc/>

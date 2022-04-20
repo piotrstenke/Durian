@@ -12,6 +12,28 @@ namespace Durian.Info
 		private const int _maxPackageType = (int)PackageType.CodeFixLibrary;
 
 		/// <summary>
+		/// Returns a new instance of <see cref="PackageIdentity"/> corresponding with the specified <see cref="DurianPackage"/>.
+		/// </summary>
+		/// <param name="package"><see cref="DurianPackage"/> to get the <see cref="PackageIdentity"/> of.</param>
+		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
+		public static PackageIdentity GetPackage(DurianPackage package)
+		{
+			return package switch
+			{
+				DurianPackage.Main => PackageRepository.Main,
+				DurianPackage.AnalysisServices => PackageRepository.AnalysisServices,
+				DurianPackage.Core => PackageRepository.Core,
+				DurianPackage.CoreAnalyzer => PackageRepository.CoreAnalyzer,
+				DurianPackage.DefaultParam => PackageRepository.DefaultParam,
+				DurianPackage.TestServices => PackageRepository.TestServices,
+				DurianPackage.FriendClass => PackageRepository.FriendClass,
+				DurianPackage.InterfaceTargets => PackageRepository.InterfaceTargets,
+				DurianPackage.CopyFrom => PackageRepository.CopyFrom,
+				_ => throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!")
+			};
+		}
+
+		/// <summary>
 		/// Returns the <see cref="PackageType"/> associated with the specified <paramref name="package"/>.
 		/// </summary>
 		/// <param name="package"><see cref="DurianPackage"/> to get the <see cref="PackageType"/> associated with.</param>
@@ -110,28 +132,6 @@ namespace Durian.Info
 					_ => false
 				};
 			}
-		}
-
-		/// <summary>
-		/// Returns a new instance of <see cref="PackageIdentity"/> corresponding with the specified <see cref="DurianPackage"/>.
-		/// </summary>
-		/// <param name="package"><see cref="DurianPackage"/> to get the <see cref="PackageIdentity"/> of.</param>
-		/// <exception cref="InvalidOperationException">Unknown <see cref="DurianPackage"/> value detected.</exception>
-		public static PackageIdentity GetPackage(DurianPackage package)
-		{
-			return package switch
-			{
-				DurianPackage.Main => PackageRepository.Main,
-				DurianPackage.AnalysisServices => PackageRepository.AnalysisServices,
-				DurianPackage.Core => PackageRepository.Core,
-				DurianPackage.CoreAnalyzer => PackageRepository.CoreAnalyzer,
-				DurianPackage.DefaultParam => PackageRepository.DefaultParam,
-				DurianPackage.TestServices => PackageRepository.TestServices,
-				DurianPackage.FriendClass => PackageRepository.FriendClass,
-				DurianPackage.InterfaceTargets => PackageRepository.InterfaceTargets,
-				DurianPackage.CopyFrom => PackageRepository.CopyFrom,
-				_ => throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!")
-			};
 		}
 
 		/// <summary>

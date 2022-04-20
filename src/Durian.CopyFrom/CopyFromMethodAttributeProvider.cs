@@ -9,14 +9,14 @@ namespace Durian.Analysis.CopyFrom
 	public sealed class CopyFromMethodAttributeProvider : SourceTextProvider
 	{
 		/// <summary>
-		/// Name of the 'AddUsings' property.
-		/// </summary>
-		public const string AddUsings = "AddUsings";
-
-		/// <summary>
 		/// Name of the 'AdditionalNodes' property.
 		/// </summary>
 		public const string AdditionalNodes = "AdditionalNodes";
+
+		/// <summary>
+		/// Name of the 'AddUsings' property.
+		/// </summary>
+		public const string AddUsings = "AddUsings";
 
 		/// <summary>
 		/// Full name of the provided type.

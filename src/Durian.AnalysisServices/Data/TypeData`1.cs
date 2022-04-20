@@ -23,6 +23,8 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new TDeclaration Declaration => (base.Declaration as TDeclaration)!;
 
+		BaseTypeDeclarationSyntax ITypeData.Declaration => Declaration;
+
 		/// <inheritdoc/>
 		public SyntaxToken[] Modifiers => _modifiers ??= GetPartialDeclarations().GetModifiers().ToArray();
 
@@ -31,7 +33,9 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
 
-		BaseTypeDeclarationSyntax ITypeData.Declaration => Declaration;
+		internal TypeData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		{
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TypeData{TDeclaration}"/> class.
@@ -42,10 +46,6 @@ namespace Durian.Analysis.Data
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
 		protected TypeData(TDeclaration declaration, ICompilationData compilation) : base(declaration, compilation)
-		{
-		}
-
-		internal TypeData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 

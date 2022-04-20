@@ -43,21 +43,6 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Determines whether <see cref="DurianPackage"/> with the given <paramref name="packageName"/> is of the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="packageName">Name of the Durian package to check whether is of the specified <paramref name="type"/>.</param>
-		/// <param name="type">Type of the package.</param>
-		/// <exception cref="ArgumentException">
-		/// <paramref name="packageName"/> is <see langword="null"/> or empty. -or-
-		/// Unknown Durian package name: <paramref name="packageName"/>.
-		/// </exception>
-		public static bool IsPackageType(string packageName, PackageType type)
-		{
-			DurianPackage package = ParsePackage(packageName);
-			return IsPackageType(package, type);
-		}
-
-		/// <summary>
 		/// Returns a collection of all existing Durian packages.
 		/// </summary>
 		/// <returns>A new instance of <see cref="PackageContainer"/> that contains all the existing Durian packages.</returns>
@@ -303,6 +288,21 @@ namespace Durian.Info
 				type.HasFlag(PackageType.StaticGenerator) ||
 				type.HasFlag(PackageType.SyntaxBasedGenerator) ||
 				type.HasFlag(PackageType.FileBasedGenerator);
+		}
+
+		/// <summary>
+		/// Determines whether <see cref="DurianPackage"/> with the given <paramref name="packageName"/> is of the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="packageName">Name of the Durian package to check whether is of the specified <paramref name="type"/>.</param>
+		/// <param name="type">Type of the package.</param>
+		/// <exception cref="ArgumentException">
+		/// <paramref name="packageName"/> is <see langword="null"/> or empty. -or-
+		/// Unknown Durian package name: <paramref name="packageName"/>.
+		/// </exception>
+		public static bool IsPackageType(string packageName, PackageType type)
+		{
+			DurianPackage package = ParsePackage(packageName);
+			return IsPackageType(package, type);
 		}
 
 		/// <summary>

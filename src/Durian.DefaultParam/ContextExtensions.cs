@@ -21,6 +21,7 @@ namespace Durian.Analysis.DefaultParam
 		{
 			return ref context._typeParameters;
 		}
+
 		/// <summary>
 		/// Returns a reference to the <see cref="TypeParameterContainer"/> contained within the specified <paramref name="context"/>.
 		/// </summary>

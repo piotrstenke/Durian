@@ -39,12 +39,16 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new TDeclaration Declaration => (base.Declaration as TDeclaration)!;
 
+		BaseMethodDeclarationSyntax IMethodData.Declaration => Declaration;
+
 		/// <summary>
 		/// <see cref="IMethodSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		public new IMethodSymbol Symbol => (base.Symbol as IMethodSymbol)!;
 
-		BaseMethodDeclarationSyntax IMethodData.Declaration => Declaration;
+		internal MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		{
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MethodData{TDeclaration}"/> class.
@@ -55,10 +59,6 @@ namespace Durian.Analysis.Data
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
 		protected MethodData(TDeclaration declaration, ICompilationData compilation) : base(declaration, compilation)
-		{
-		}
-
-		internal MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 

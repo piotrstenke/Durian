@@ -324,6 +324,32 @@ namespace Durian.Analysis.CopyFrom
 		);
 
 		/// <summary>
+		/// Provides a diagnostic message indicating that the <see cref="CopyFromAdditionalNodesProvider.BaseType"/> value was applied to a type that already has a base type specified.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0225_BaseTypeAlreadySpecified = new(
+			id: "DUR0225",
+			title: "Type already has a base type",
+			messageFormat: "'{0}': Type already has a base type",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0225.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
+		/// Provides a diagnostic message indicating that the <see cref="CopyFromAdditionalNodesProvider.BaseType"/> or <see cref="CopyFromAdditionalNodesProvider.BaseInterfaces"/> value was applied to a method or a type that does not support inheritance.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0226_CannotApplyBaseType = new(
+			id: "DUR0226",
+			title: "Base type cannot be applied to this kind of member",
+			messageFormat: "'{0}': Base type cannot be applied to this kind of member",
+			category: "Durian.CopyFrom",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0226.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
 		/// Documentation directory of the <c>DefaultParam</c> module.
 		/// </summary>
 		public static string DocsPath => GlobalInfo.Repository + "/tree/master/docs/CopyFrom";

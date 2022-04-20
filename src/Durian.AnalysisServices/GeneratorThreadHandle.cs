@@ -16,9 +16,9 @@ namespace Durian.Analysis
 		public Guid GeneratorId { get; }
 
 		/// <summary>
-		/// Id of target thread.
+		/// Determines whether the current <see cref="ThreadId"/> represents id of the main thread.
 		/// </summary>
-		public int ThreadId { get; }
+		public bool IsMainThread => ThreadId == AnalysisUtilities.MainThreadId;
 
 		/// <summary>
 		/// Id of parent thread.
@@ -26,9 +26,9 @@ namespace Durian.Analysis
 		public int SourceThreadId { get; }
 
 		/// <summary>
-		/// Determines whether the current <see cref="ThreadId"/> represents id of the main thread.
+		/// Id of target thread.
 		/// </summary>
-		public bool IsMainThread => ThreadId == AnalysisUtilities.MainThreadId;
+		public int ThreadId { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorThreadHandle"/> structure.
@@ -41,6 +41,18 @@ namespace Durian.Analysis
 			GeneratorId = generatorId;
 			ThreadId = threadId;
 			SourceThreadId = sourceThreadId;
+		}
+
+		/// <inheritdoc/>
+		public static bool operator !=(in GeneratorThreadHandle left, in GeneratorThreadHandle right)
+		{
+			return !(left == right);
+		}
+
+		/// <inheritdoc/>
+		public static bool operator ==(in GeneratorThreadHandle left, in GeneratorThreadHandle right)
+		{
+			return left.Equals(right);
 		}
 
 		/// <inheritdoc cref="Deconstruct(out Guid, out int, out int, out bool)"/>
@@ -79,6 +91,11 @@ namespace Durian.Analysis
 				other.SourceThreadId == SourceThreadId;
 		}
 
+		bool IEquatable<GeneratorThreadHandle>.Equals(GeneratorThreadHandle other)
+		{
+			return Equals(in other);
+		}
+
 		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
@@ -93,23 +110,6 @@ namespace Durian.Analysis
 		public override string ToString()
 		{
 			return $"{GeneratorId}, {ThreadId}-{SourceThreadId}";
-		}
-
-		/// <inheritdoc/>
-		public static bool operator ==(in GeneratorThreadHandle left, in GeneratorThreadHandle right)
-		{
-			return left.Equals(right);
-		}
-
-		/// <inheritdoc/>
-		public static bool operator !=(in GeneratorThreadHandle left, in GeneratorThreadHandle right)
-		{
-			return !(left == right);
-		}
-
-		bool IEquatable<GeneratorThreadHandle>.Equals(GeneratorThreadHandle other)
-		{
-			return Equals(in other);
 		}
 	}
 }

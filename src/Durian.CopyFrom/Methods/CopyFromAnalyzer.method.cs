@@ -62,7 +62,7 @@ namespace Durian.Analysis.CopyFrom
 				ref context,
 				out ImmutableArray<AttributeData> attributes,
 				out _,
-				out IMethodSymbol? targetMethod,
+				out TargetMethodData? targetMethod,
 				diagnosticReceiver
 			);
 
@@ -89,7 +89,7 @@ namespace Durian.Analysis.CopyFrom
 			ref CopyFromMethodContext context,
 			out ImmutableArray<AttributeData> attributes,
 			[NotNullWhen(true)] out List<IMethodSymbol>? dependencies,
-			[NotNullWhen(true)] out IMethodSymbol? targetMethod,
+			[NotNullWhen(true)] out TargetMethodData? targetMethod,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
@@ -115,7 +115,7 @@ namespace Durian.Analysis.CopyFrom
 			ref CopyFromMethodContext context,
 			out ImmutableArray<AttributeData> attributes,
 			[NotNullWhen(true)] out List<IMethodSymbol>? dependencies,
-			[NotNullWhen(true)] out IMethodSymbol? targetMethod
+			[NotNullWhen(true)] out TargetMethodData? targetMethod
 		)
 		{
 			AttributeData? copyFrom = GetAttribute(context.Symbol, context.Compilation, out attributes);
@@ -377,6 +377,79 @@ namespace Durian.Analysis.CopyFrom
 			return null;
 		}
 
+		private static AdditionalNodes RetrieveNonStandardMethodConfig(AttributeData attribute, IMethodSymbol symbol)
+		{
+			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
+
+			if (additionalNodes == AdditionalNodes.None || additionalNodes == AdditionalNodes.All)
+			{
+				return additionalNodes;
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Constraints))
+			{
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Documentation) && symbol.HasDocumentation())
+			{
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Documentation);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.BaseType))
+			{
+				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseType);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.BaseInterfaces))
+			{
+				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseInterfaces);
+			}
+
+			return additionalNodes;
+		}
+
+		private static AdditionalNodes RetrieveNonStandardMethodConfig(AttributeData attribute, IMethodSymbol symbol, IDiagnosticReceiver diagnosticReceiver)
+		{
+			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
+
+			if (additionalNodes == AdditionalNodes.None || additionalNodes == AdditionalNodes.All)
+			{
+				return additionalNodes;
+			}
+
+			Location? location = default;
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Constraints))
+			{
+				location ??= attribute.GetNamedArgumentLocation(CopyFromMethodAttributeProvider.AdditionalNodes);
+				diagnosticReceiver.ReportDiagnostic(DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember, location, symbol);
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Documentation) && symbol.HasDocumentation())
+			{
+				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+				diagnosticReceiver.ReportDiagnostic(DUR0222_MemberAlreadyHasDocumentation, location, symbol);
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Documentation);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.BaseType))
+			{
+				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+				diagnosticReceiver.ReportDiagnostic(DUR0226_CannotApplyBaseType, location, symbol);
+				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseType);
+			}
+			else if (additionalNodes.HasFlag(AdditionalNodes.BaseInterfaces))
+			{
+				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+				diagnosticReceiver.ReportDiagnostic(DUR0226_CannotApplyBaseType, location, symbol);
+				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseInterfaces);
+			}
+
+			return additionalNodes;
+		}
+
 		private static bool IsCircularDependency(in CopyFromMethodContext context, IMethodSymbol target, List<IMethodSymbol> dependencies)
 		{
 			AttributeData? attribute = target.GetAttribute(context.Compilation.CopyFromMethodAttribute!);
@@ -605,7 +678,7 @@ namespace Durian.Analysis.CopyFrom
 			in CopyFromMethodContext context,
 			AttributeData attribute,
 			List<IMethodSymbol> dependencies,
-			[NotNullWhen(true)] out IMethodSymbol? targetMethod
+			[NotNullWhen(true)] out TargetMethodData? targetMethod
 		)
 		{
 			if (GetTargetMethod(in context, attribute, out _, out _) is IMethodSymbol target &&
@@ -615,7 +688,10 @@ namespace Durian.Analysis.CopyFrom
 				HasValidTypeArguments(target, out _)
 			)
 			{
-				targetMethod = target;
+				AdditionalNodes additionalNodes = RetrieveNonStandardMethodConfig(attribute, context.Symbol);
+				string[]? usings = RetrieveUsings(attribute, context.Node!, additionalNodes);
+
+				targetMethod = new(target, additionalNodes, usings);
 				return true;
 			}
 
@@ -627,62 +703,63 @@ namespace Durian.Analysis.CopyFrom
 			in CopyFromMethodContext context,
 			AttributeData attribute,
 			List<IMethodSymbol> dependencies,
-			[NotNullWhen(true)] out IMethodSymbol? targetMethod,
+			[NotNullWhen(true)] out TargetMethodData? targetMethod,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			if (GetTargetMethod(in context, attribute, out DiagnosticDescriptor? diagnostic, out object? value) is IMethodSymbol target)
+			if (GetTargetMethod(in context, attribute, out DiagnosticDescriptor? diagnostic, out object? value) is not IMethodSymbol target)
 			{
-				bool isValid = true;
-				Location? location = default;
-
-				if (CopiesFromItself(context.Symbol, target))
+				if (diagnostic is not null)
 				{
-					isValid = false;
-					location ??= attribute.GetLocation();
-					diagnosticReceiver.ReportDiagnostic(DUR0207_MemberCannotCopyFromItselfOrItsParent, location, context.Symbol);
-				}
-				else if (IsInDifferentAssembly(target, context.Compilation))
-				{
-					isValid = false;
-					location ??= attribute.GetLocation();
-					diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, location, context.Symbol, target);
-				}
-				else if (IsCircularDependency(in context, target, dependencies))
-				{
-					isValid = false;
-					location ??= attribute.GetLocation();
-					diagnosticReceiver.ReportDiagnostic(DUR0221_CircularDependency, location, context.Symbol);
+					diagnosticReceiver.ReportDiagnostic(diagnostic, attribute.GetLocation(), context.Symbol, value);
 				}
 
-				if (!HasValidTypeArguments(target, out List<ITypeSymbol>? invalidArguments))
-				{
-					isValid = false;
+				targetMethod = default;
+				return false;
+			}
 
-					if (invalidArguments is not null)
+			bool isValid = true;
+			Location? location = default;
+
+			if (CopiesFromItself(context.Symbol, target))
+			{
+				isValid = false;
+				location ??= attribute.GetLocation();
+				diagnosticReceiver.ReportDiagnostic(DUR0207_MemberCannotCopyFromItselfOrItsParent, location, context.Symbol);
+			}
+			else if (IsInDifferentAssembly(target, context.Compilation))
+			{
+				isValid = false;
+				location ??= attribute.GetLocation();
+				diagnosticReceiver.ReportDiagnostic(DUR0205_ImplementationNotAccessible, location, context.Symbol, target);
+			}
+			else if (IsCircularDependency(in context, target, dependencies))
+			{
+				isValid = false;
+				location ??= attribute.GetLocation();
+				diagnosticReceiver.ReportDiagnostic(DUR0221_CircularDependency, location, context.Symbol);
+			}
+
+			if (!HasValidTypeArguments(target, out List<ITypeSymbol>? invalidArguments))
+			{
+				isValid = false;
+
+				if (invalidArguments is not null)
+				{
+					location ??= attribute.GetLocation();
+
+					foreach (ITypeSymbol type in invalidArguments)
 					{
-						location ??= attribute.GetLocation();
-
-						foreach (ITypeSymbol type in invalidArguments)
-						{
-							diagnosticReceiver.ReportDiagnostic(DUR0217_TypeParameterIsNotValid, location, context.Symbol, type);
-						}
+						diagnosticReceiver.ReportDiagnostic(DUR0217_TypeParameterIsNotValid, location, context.Symbol, type);
 					}
 				}
-
-				if (isValid)
-				{
-					targetMethod = target;
-					return true;
-				}
-			}
-			else if (diagnostic is not null)
-			{
-				diagnosticReceiver.ReportDiagnostic(diagnostic, attribute.GetLocation(), context.Symbol, value);
 			}
 
-			targetMethod = default;
-			return false;
+			AdditionalNodes additionalNodes = RetrieveNonStandardMethodConfig(attribute, context.Symbol, diagnosticReceiver);
+			string[]? usings = RetrieveUsings(attribute, context.Node!, additionalNodes, context.Symbol, diagnosticReceiver);
+
+			targetMethod = isValid ? new TargetMethodData(target, additionalNodes, usings) : default;
+			return isValid;
 		}
 	}
 }

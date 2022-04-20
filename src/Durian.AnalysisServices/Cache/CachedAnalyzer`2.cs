@@ -25,9 +25,9 @@ namespace Durian.Analysis.Cache
 		{
 		}
 
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		/// <inheritdoc/>
 		[Obsolete("This method shouldn't be used directly - use Register(IDurianAnalysisContext, TCompilation, ConcurrentDictionary<FileLinePositionSpan, TTarget>) instead.")]
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		public sealed override void Register(IDurianAnalysisContext context, TCompilation compilation)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 		{
