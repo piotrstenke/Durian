@@ -1410,7 +1410,7 @@ class Target : System.Exception, System.IDisposable
 }}
 ";
 			string expected =
-$@"partial class Test : System.Cloneable
+$@"partial class Test : System.ICloneable
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()

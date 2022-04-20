@@ -550,6 +550,16 @@ namespace Durian.Analysis.CopyFrom
 			}
 		}
 
+		private static string TryApplyPattern(ICopyFromMember member, CopyFromPassContext context, string input)
+		{
+			if (member.Patterns is not null)
+			{
+				return ApplyPattern(member, context, input);
+			}
+
+			return input;
+		}
+
 		private void WriteGeneratedMember(
 			ICopyFromMember member,
 			CSharpSyntaxNode node,

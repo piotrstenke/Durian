@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using Durian.Analysis.CopyFrom.Types;
 using Durian.Analysis.Extensions;
@@ -280,15 +281,14 @@ namespace Durian.Analysis.CopyFrom
 
 			semanticModel = default;
 
-			if (target.AdditionalNodes.HasFlag(AdditionalNodes.Documentation) && !hasDocumentation)
+			if (target.AdditionalNodes.HasFlag(AdditionalNodes.Documentation) &&
+				!hasDocumentation &&
+				declaration.GetLeadingTrivia().Where(t => t.HasStructure).Select(t => t.GetStructure()).OfType<DocumentationCommentTriviaSyntax>().FirstOrDefault() is DocumentationCommentTriviaSyntax doc
+			)
 			{
 				ApplyLead(ref semanticModel);
 				hasDocumentation = true;
-
-				if (target.Symbol.GetDocumentationCommentXml() is string doc)
-				{
-					context.CodeBuilder.WriteLine(doc);
-				}
+				context.CodeBuilder.WriteLine(doc.ToString());
 			}
 
 			if (target.AdditionalNodes.HasFlag(AdditionalNodes.Attributes) && declaration.AttributeLists.Any())
@@ -300,50 +300,72 @@ namespace Durian.Analysis.CopyFrom
 			string? name = default;
 			bool hasColon = false;
 
-			if (target.AdditionalNodes.HasFlag(AdditionalNodes.BaseType))
+			if(declaration.BaseList is not null && declaration.BaseList.Types.Any())
 			{
-				if (target.PartialPart is null || target.PartialPart.BaseList?.Types.FirstOrDefault() is BaseTypeSyntax)
-				{
-					ApplyLead(ref semanticModel);
-					name += " : " + target.Symbol.GetGenericName();
-					hasColon = true;
-				}
-			}
+				bool? hasBaseType = null;
+				SemanticModel? currentModel = default;
 
-			if (target.AdditionalNodes.HasFlag(AdditionalNodes.BaseInterfaces))
-			{
-				IEnumerable<string>? interfaces;
+				if(target.AdditionalNodes.HasFlag(AdditionalNodes.BaseType))
+				{
+					currentModel = GetCurrentSemanticModel(type, declaration, ref semanticModelCache);
 
-				if (target.PartialPart is null)
-				{
-					interfaces = target.Symbol.Interfaces.Select(i => i.GetGenericName());
-				}
-				else if (target.PartialPart.BaseList is not null && target.PartialPart.BaseList.Types.Count > 1)
-				{
-					interfaces = target.PartialPart.BaseList.Types.Skip(1).Select(i => i.ToString());
-				}
-				else
-				{
-					interfaces = default;
-				}
+					TypeSyntax firstType = declaration.BaseList.Types[0].Type;
 
-				if (interfaces is not null)
-				{
-					ApplyLead(ref semanticModel);
-
-					if (!hasColon)
+					if (currentModel.GetTypeInfo(firstType).Type is INamedTypeSymbol t && t.TypeKind == TypeKind.Class)
 					{
-						name += " : ";
+						hasBaseType = true;
+
+						semanticModel = currentModel;
+						ApplyLead(ref semanticModel);
+
+						name += TryApplyPattern(type, context, " : " + firstType.ToString());
+						hasColon = true;
+					}
+				}
+
+				if(target.AdditionalNodes.HasFlag(AdditionalNodes.BaseInterfaces))
+				{
+					currentModel ??= GetCurrentSemanticModel(type, declaration, ref semanticModelCache);
+
+					TypeSyntax firstType = declaration.BaseList.Types[0].Type;
+
+					bool skipFirst;
+
+					if(hasBaseType == true)
+					{
+						skipFirst = true;
+					}
+					else if(!hasBaseType.HasValue)
+					{
+						skipFirst = currentModel.GetTypeInfo(firstType).Type is not INamedTypeSymbol t || t.TypeKind != TypeKind.Interface;
+					}
+					else
+					{
+						skipFirst = false;
 					}
 
-					name += string.Join(", ", interfaces);
+					IEnumerable<BaseTypeSyntax> interfaces = skipFirst
+						? declaration.BaseList.Types.Skip(1)
+						: declaration.BaseList.Types;
+
+					semanticModel = currentModel;
+					ApplyLead(ref semanticModel);
+
+					if (hasColon)
+					{
+						name += TryApplyPattern(type, context, string.Join(", ", interfaces));
+					}
+					else
+					{
+						name += TryApplyPattern(type, context, " : " + string.Join(", ", interfaces));
+					}
 				}
 			}
 
 			if (target.AdditionalNodes.HasFlag(AdditionalNodes.Constraints) && declaration.ConstraintClauses.Any())
 			{
 				ApplyLead(ref semanticModel);
-				name += string.Join(" ", declaration.ConstraintClauses);
+				name += TryApplyPattern(type, context, string.Join(" ", declaration.ConstraintClauses));
 			}
 
 			if (hasLead)
