@@ -297,22 +297,14 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 		public static string GetKeyword(this BaseTypeDeclarationSyntax type)
 		{
-			if (type is TypeDeclarationSyntax t)
+			return type switch
 			{
-				return t.Keyword.ToString();
-			}
-
-			if (type is EnumDeclarationSyntax)
-			{
-				return "enum";
-			}
-
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			throw new ArgumentException($"Unknown type declaration format: {type}");
+				EnumDeclarationSyntax => "enum",
+				RecordDeclarationSyntax record => record.ClassOrStructKeyword == default ? "record" : $"record {record.ClassOrStructKeyword}",
+				TypeDeclarationSyntax t => t.Keyword.ToString(),
+				null => throw new ArgumentNullException(nameof(type)),
+				_ => throw new ArgumentException($"Unknown type declaration format: {type}")
+			};
 		}
 
 		/// <summary>
@@ -343,6 +335,7 @@ namespace Durian.Analysis.Extensions
 				MethodDeclarationSyntax => new MethodData((MethodDeclarationSyntax)member, compilation),
 				FieldDeclarationSyntax => new FieldData((FieldDeclarationSyntax)member, compilation),
 				PropertyDeclarationSyntax => new PropertyData((PropertyDeclarationSyntax)member, compilation),
+				BaseNamespaceDeclarationSyntax => new NamespaceData((BaseNamespaceDeclarationSyntax)member, compilation),
 				EventDeclarationSyntax => new EventData((EventDeclarationSyntax)member, compilation),
 				EventFieldDeclarationSyntax => new EventData((EventFieldDeclarationSyntax)member, compilation),
 				DelegateDeclarationSyntax => new DelegateData((DelegateDeclarationSyntax)member, compilation),

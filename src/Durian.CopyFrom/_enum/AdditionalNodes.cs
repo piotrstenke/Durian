@@ -53,7 +53,7 @@ namespace Durian.Analysis.CopyFrom
 		/// <summary>
 		/// Specifies that all available non-standard nodes of the target member should also be copied.
 		/// </summary>
-		All = Attributes | Constraints | Documentation | Usings,
+		All = Attributes | Constraints | BaseType | BaseInterfaces | Documentation | Usings,
 
 		/// <summary>
 		/// Specifies that the default configuration should be used.

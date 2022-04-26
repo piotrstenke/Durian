@@ -168,12 +168,6 @@ namespace Durian.Analysis.CopyFrom
 			return new();
 		}
 
-		/// <inheritdoc/>
-		protected override void Dispose(bool disposing)
-		{
-			base.Dispose(disposing);
-		}
-
 		private static string ApplyPattern(ICopyFromMember member, CopyFromPassContext context, string input)
 		{
 			string current = input;
@@ -413,6 +407,11 @@ namespace Durian.Analysis.CopyFrom
 			if (data is Types.CopyFromTypeData type)
 			{
 				return GenerateType(type, hintName, context);
+			}
+
+			if(data is Methods.CopyFromMethodData method)
+			{
+				return GenerateMethod(method, hintName, context);
 			}
 
 			return false;

@@ -377,15 +377,8 @@ namespace Durian.Analysis.CopyFrom
 			return null;
 		}
 
-		private static AdditionalNodes RetrieveNonStandardMethodConfig(AttributeData attribute, IMethodSymbol symbol)
+		private static AdditionalNodes RemoveInvalidFlags(AdditionalNodes additionalNodes, IMethodSymbol symbol)
 		{
-			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
-
-			if (additionalNodes == AdditionalNodes.None || additionalNodes == AdditionalNodes.All)
-			{
-				return additionalNodes;
-			}
-
 			if (additionalNodes.HasFlag(AdditionalNodes.Constraints))
 			{
 				RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
@@ -409,15 +402,33 @@ namespace Durian.Analysis.CopyFrom
 			return additionalNodes;
 		}
 
-		private static AdditionalNodes RetrieveNonStandardMethodConfig(AttributeData attribute, IMethodSymbol symbol, IDiagnosticReceiver diagnosticReceiver)
+		private static AdditionalNodes RetrieveNonStandardMethodConfig(AttributeData attribute, IMethodSymbol symbol)
 		{
 			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
 
-			if (additionalNodes == AdditionalNodes.None || additionalNodes == AdditionalNodes.All)
+			if (additionalNodes == AdditionalNodes.None)
 			{
 				return additionalNodes;
 			}
 
+			return RemoveInvalidFlags(additionalNodes, symbol);
+		}
+
+		private static AdditionalNodes RetrieveNonStandardMethodConfig(AttributeData attribute, IMethodSymbol symbol, IDiagnosticReceiver diagnosticReceiver)
+		{
+			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
+
+			if (additionalNodes == AdditionalNodes.None)
+			{
+				return additionalNodes;
+			}
+
+			if(additionalNodes == AdditionalNodes.All)
+			{
+				return RemoveInvalidFlags(additionalNodes, symbol);
+			}
+
+			bool hasBaseTypeDiagnostics = false;
 			Location? location = default;
 
 			if (additionalNodes.HasFlag(AdditionalNodes.Constraints))
@@ -439,11 +450,17 @@ namespace Durian.Analysis.CopyFrom
 				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
 				diagnosticReceiver.ReportDiagnostic(DUR0226_CannotApplyBaseType, location, symbol);
 				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseType);
+				hasBaseTypeDiagnostics = true;
 			}
-			else if (additionalNodes.HasFlag(AdditionalNodes.BaseInterfaces))
+
+			if (additionalNodes.HasFlag(AdditionalNodes.BaseInterfaces))
 			{
-				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
-				diagnosticReceiver.ReportDiagnostic(DUR0226_CannotApplyBaseType, location, symbol);
+				if(!hasBaseTypeDiagnostics)
+				{
+					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+					diagnosticReceiver.ReportDiagnostic(DUR0226_CannotApplyBaseType, location, symbol);
+				}
+
 				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseInterfaces);
 			}
 

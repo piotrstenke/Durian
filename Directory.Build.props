@@ -8,9 +8,9 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Nullable>enable</Nullable>
-    <LangVersion>9.0</LangVersion>
+	<LangVersion>10.0</LangVersion>
     <PreferredUILang>en-US</PreferredUILang>
-	  <NeutralLanguage>en</NeutralLanguage>
+	<NeutralLanguage>en</NeutralLanguage>
   
   </PropertyGroup>
   

@@ -414,11 +414,16 @@ namespace Durian.Analysis.CopyFrom
 		{
 			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
 
-			if (additionalNodes == AdditionalNodes.None || additionalNodes == AdditionalNodes.All)
+			if (additionalNodes == AdditionalNodes.None)
 			{
 				return additionalNodes;
 			}
 
+			return RemoveInvalidFlags(additionalNodes, symbol, compilation);
+		}
+
+		private static AdditionalNodes RemoveInvalidFlags(AdditionalNodes additionalNodes, INamedTypeSymbol symbol, CopyFromCompilationData compilation)
+		{
 			if (additionalNodes.HasFlag(AdditionalNodes.Constraints) && (!symbol.IsGenericType || symbol.HasConstraint()))
 			{
 				RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
@@ -446,9 +451,14 @@ namespace Durian.Analysis.CopyFrom
 		{
 			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
 
-			if (additionalNodes == AdditionalNodes.None || additionalNodes == AdditionalNodes.All)
+			if (additionalNodes == AdditionalNodes.None)
 			{
 				return additionalNodes;
+			}
+
+			if(additionalNodes == AdditionalNodes.All)
+			{
+				return RemoveInvalidFlags(additionalNodes, symbol, compilation);
 			}
 
 			Location? location = default;

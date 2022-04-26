@@ -1024,7 +1024,9 @@ class Target
 }}
 ";
 			string expected =
-$@"/// <inheritdoc cref=""Target""/>
+$@"/// <summary>
+/// Hello there
+/// </summary>
 partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
@@ -1074,61 +1076,6 @@ partial class Test
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected, true));
-		}
-
-		[Fact]
-		public void Success_When_CopiesDuplicateInterface()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseInterfaces})]
-partial class Test : System.ICloneable
-{{
-}}
-
-class Target : System.Exception, System.IDisposable, System.ICloneable
-{{
-	void Method()
-	{{
-		string a = string.Empty;
-	}}
-
-	public void Dispose()
-	{{
-	}}
-
-	public object Clone()
-	{{
-		return this;
-	}}
-}}
-";
-			string expected =
-$@"partial class Test : System.IDisposable
-{{
-	{GetCodeGenerationAttributes("Target.Method()")}
-	void Method()
-	{{
-		string a = string.Empty;
-	}}
-
-	{GetCodeGenerationAttributes("Target.Dispose()")}
-	public void Dispose()
-	{{
-	}}
-
-	{GetCodeGenerationAttributes("Target.Clone()")}
-	public object Clone()
-	{{
-		return this;
-	}}
-}}
-";
-			SingleGeneratorTestResult runResult = RunGenerator(input);
-
-			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
-			Assert.True(runResult.Compare(expected));
 		}
 
 		[Fact]
@@ -1471,7 +1418,7 @@ $@"partial class Test
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
 partial class Test
 {{
 }}
@@ -1851,7 +1798,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
+			Assert.True(RunGenerator(input).Compare(expected, true));
 		}
 
 		[Fact]
@@ -1967,45 +1914,6 @@ partial class Test
 		}
 
 		[Fact]
-		public void Success_When_HasXmlComment_And_TargetHasXmlComment()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-/// <summary>
-/// Documentation
-/// </summary>
-[{CopyFromTypeAttributeProvider.TypeName}(typeof(Target))]
-partial class Test
-{{
-}}
-
-/// <summary>
-/// Hello there
-/// </summary>
-class Target
-{{
-	void Method()
-	{{
-	}}
-}}
-";
-			string expected =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	/// <inheritdoc cref=""Target.Method()""/>
-	{ GetCodeGenerationAttributes("Target.Method()")}
-	void Method()
-	{{
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
 		public void Success_When_IncludesAllNonStandardNodes_And_HasDocumentation()
 		{
 			string input =
@@ -2031,7 +1939,9 @@ class Target
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2049,7 +1959,7 @@ $@"partial class Test
 			string input =
 $@"using {DurianStrings.MainNamespace};
 
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
+[{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 partial class Test<T> where T : class
 {{
 }}
@@ -2063,7 +1973,9 @@ class Target<T> where T : struct
 }}
 ";
 			string expected =
-$@"partial class Test<T>
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test<T>
 {{
 	{GetCodeGenerationAttributes("Target<T>.Method()")}
 	void Method()
@@ -2095,7 +2007,9 @@ class Target<T> where T : struct
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
 {{
 	{GetCodeGenerationAttributes("Target<T>.Method()")}
 	void Method()
@@ -2127,7 +2041,9 @@ class Target : System.Exception
 }}
 ";
 			string expected =
-$@"partial struct Test
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2162,7 +2078,9 @@ class Target : System.Exception
 }}
 ";
 			string expected =
-$@"partial interface ITest
+$@"using {DurianStrings.MainNamespace};
+
+partial interface ITest
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2197,7 +2115,9 @@ class Target : System.Exception
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2232,7 +2152,9 @@ class Target : System.Exception
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2267,7 +2189,9 @@ class Target : System.Exception
 }}
 ";
 			string expected =
-$@"partial struct Test
+$@"using {DurianStrings.MainNamespace};
+
+partial struct Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2389,7 +2313,7 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
+			Assert.True(RunGenerator(input).Compare(expected, true));
 		}
 
 		[Fact]
@@ -2519,14 +2443,13 @@ $@"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
-	/// <inheritdoc cref=""Target.Method()""/>
 	{ GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
 	{{
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
+			Assert.True(RunGenerator(input).Compare(expected, true));
 		}
 
 		[Fact]

@@ -13,7 +13,7 @@ using Durian.Analysis.SyntaxVisitors;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using GenerateAction = System.Action<Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode, Microsoft.CodeAnalysis.ISymbol, Durian.Analysis.CopyFrom.CopyFromPassContext>;
+using GenerateAction = System.Action<Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode, Microsoft.CodeAnalysis.ISymbol, Durian.Analysis.CopyFrom.CopyFromPassContext, Durian.Analysis.GenerateDocumentation>;
 
 namespace Durian.Analysis.CopyFrom
 {
@@ -277,6 +277,8 @@ namespace Durian.Analysis.CopyFrom
 			[NotNullWhen(true)] out SemanticModel? semanticModel
 		)
 		{
+			string? name = default;
+			bool hasColon = false;
 			bool hasLead = false;
 
 			semanticModel = default;
@@ -288,7 +290,8 @@ namespace Durian.Analysis.CopyFrom
 			{
 				ApplyLead(ref semanticModel);
 				hasDocumentation = true;
-				context.CodeBuilder.WriteLine(doc.ToString());
+
+				context.CodeBuilder.WriteLine(TryApplyPattern(type, context, doc.ToFullString()));
 			}
 
 			if (target.AdditionalNodes.HasFlag(AdditionalNodes.Attributes) && declaration.AttributeLists.Any())
@@ -296,9 +299,6 @@ namespace Durian.Analysis.CopyFrom
 				ApplyLead(ref semanticModel);
 				context.CodeBuilder.Write(HandleAttributeText(type, SkipGeneratorAttributes(declaration, semanticModel, context), context));
 			}
-
-			string? name = default;
-			bool hasColon = false;
 
 			if(declaration.BaseList is not null && declaration.BaseList.Types.Any())
 			{
@@ -323,42 +323,9 @@ namespace Durian.Analysis.CopyFrom
 					}
 				}
 
-				if(target.AdditionalNodes.HasFlag(AdditionalNodes.BaseInterfaces))
+				if (target.AdditionalNodes.HasFlag(AdditionalNodes.BaseInterfaces) && HandleBaseInterfaces(ref name, hasBaseType, ref currentModel))
 				{
-					currentModel ??= GetCurrentSemanticModel(type, declaration, ref semanticModelCache);
-
-					TypeSyntax firstType = declaration.BaseList.Types[0].Type;
-
-					bool skipFirst;
-
-					if(hasBaseType == true)
-					{
-						skipFirst = true;
-					}
-					else if(!hasBaseType.HasValue)
-					{
-						skipFirst = currentModel.GetTypeInfo(firstType).Type is not INamedTypeSymbol t || t.TypeKind != TypeKind.Interface;
-					}
-					else
-					{
-						skipFirst = false;
-					}
-
-					IEnumerable<BaseTypeSyntax> interfaces = skipFirst
-						? declaration.BaseList.Types.Skip(1)
-						: declaration.BaseList.Types;
-
 					semanticModel = currentModel;
-					ApplyLead(ref semanticModel);
-
-					if (hasColon)
-					{
-						name += TryApplyPattern(type, context, string.Join(", ", interfaces));
-					}
-					else
-					{
-						name += TryApplyPattern(type, context, " : " + string.Join(", ", interfaces));
-					}
 				}
 			}
 
@@ -388,6 +355,57 @@ namespace Durian.Analysis.CopyFrom
 				}
 			}
 #pragma warning restore CS8777 // Parameter must have a non-null value when exiting.
+
+			bool HandleBaseInterfaces(ref string? name, bool? hasBaseType, ref SemanticModel? currentModel)
+			{
+				currentModel ??= GetCurrentSemanticModel(type, declaration, ref semanticModelCache);
+
+				TypeSyntax firstType = declaration.BaseList.Types[0].Type;
+
+				bool skipFirst;
+
+				if (hasBaseType == true)
+				{
+					skipFirst = true;
+				}
+				else if (!hasBaseType.HasValue)
+				{
+					skipFirst = currentModel.GetTypeInfo(firstType).Type is not INamedTypeSymbol t || t.TypeKind != TypeKind.Interface;
+				}
+				else
+				{
+					skipFirst = false;
+				}
+
+				IEnumerable<BaseTypeSyntax> interfaces;
+
+				if (skipFirst)
+				{
+					if (declaration.BaseList.Types.Count < 2)
+					{
+						return false;
+					}
+
+					interfaces = declaration.BaseList.Types.Skip(1);
+				}
+				else
+				{
+					interfaces = declaration.BaseList.Types;
+				}
+
+				ApplyLead(ref currentModel);
+
+				if (hasColon)
+				{
+					name += TryApplyPattern(type, context, string.Join(", ", interfaces));
+				}
+				else
+				{
+					name += TryApplyPattern(type, context, " : " + string.Join(", ", interfaces));
+				}
+
+				return true;
+			}
 		}
 
 		private bool GenerateDeclarations(
@@ -426,9 +444,9 @@ namespace Durian.Analysis.CopyFrom
 					out SemanticModel? semanticModel
 				))
 				{
-					if (!members.Any())
+					if (members.Any())
 					{
-						goto END_SCOPE;
+						GenerateMembers(target, context, generateAction, members, semanticModel);
 					}
 				}
 				else if (members.Any())
@@ -437,37 +455,12 @@ namespace Durian.Analysis.CopyFrom
 					context.CodeBuilder.Indent();
 					context.CodeBuilder.BeginDeclation($"partial {keyword} {type.Symbol.GetGenericName()}");
 					semanticModel = GetCurrentSemanticModel(type, partial, ref semanticModelCache);
+					GenerateMembers(target, context, generateAction, members, semanticModel);
 				}
 				else
 				{
 					continue;
 				}
-
-				for (int j = 0; j < members.Count; j++)
-				{
-					MemberDeclarationSyntax member = members[j];
-
-					if (TryGetMutlipleMembers(
-						member,
-						semanticModel,
-						context,
-						out ISymbol? symbol,
-						out List<(ISymbol original, MemberDeclarationSyntax generated)>? fields)
-					)
-					{
-						foreach ((ISymbol original, MemberDeclarationSyntax generated) in fields)
-						{
-							generateAction(generated, original, context);
-						}
-					}
-					else if (symbol is not null)
-					{
-						member = SkipGeneratorAttributes(member, semanticModel, context);
-						generateAction(member, symbol, context);
-					}
-				}
-
-			END_SCOPE:
 
 				context.CodeBuilder.EndAllScopes();
 
@@ -477,6 +470,41 @@ namespace Durian.Analysis.CopyFrom
 			}
 
 			return isGenerated;
+		}
+
+		private static void GenerateMembers(
+			TargetTypeData target,
+			CopyFromPassContext context,
+			GenerateAction generateAction,
+			SyntaxList<MemberDeclarationSyntax> members,
+			SemanticModel semanticModel
+		)
+		{
+			for (int j = 0; j < members.Count; j++)
+			{
+				MemberDeclarationSyntax member = members[j];
+
+				if (TryGetMutlipleMembers(
+					member,
+					semanticModel,
+					context,
+					out ISymbol? symbol,
+					out List<(ISymbol original, MemberDeclarationSyntax generated)>? fields)
+				)
+				{
+					GenerateDocumentation inheridoc = target.Symbol.HasInheritableDocumentation() ? GenerateDocumentation.Always : GenerateDocumentation.Never;
+
+					foreach ((ISymbol original, MemberDeclarationSyntax generated) in fields)
+					{
+						generateAction(generated, original, context, inheridoc);
+					}
+				}
+				else if (symbol is not null)
+				{
+					member = SkipGeneratorAttributes(member, semanticModel, context);
+					generateAction(member, symbol, context, GenerateDocumentation.WhenPossible);
+				}
+			}
 		}
 
 		private bool GenerateType(CopyFromTypeData type, string hintName, CopyFromPassContext context)
@@ -523,10 +551,10 @@ namespace Durian.Analysis.CopyFrom
 
 				if (target.HandleSpecialMembers)
 				{
-					return (member, symbol, context) =>
+					return (member, symbol, context, applyInheritdoc) =>
 					{
 						HandleSpecialMemberTypes(ref member, type, target.Symbol);
-						ReplaceAndGenerate(member, symbol, context);
+						ReplaceAndGenerate(member, symbol, context, applyInheritdoc);
 					};
 				}
 				else
@@ -534,7 +562,7 @@ namespace Durian.Analysis.CopyFrom
 					return ReplaceAndGenerate;
 				}
 
-				void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol, CopyFromPassContext context)
+				void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol, CopyFromPassContext context, GenerateDocumentation applyInheritdoc)
 				{
 					foreach ((string identifier, string replacement) in replacements)
 					{
@@ -544,20 +572,20 @@ namespace Durian.Analysis.CopyFrom
 						replaced = (CSharpSyntaxNode)replacer.Visit(replaced);
 					}
 
-					WriteGeneratedMember(type, replaced, symbol, context, GenerateDocumentation.Never);
+					WriteGeneratedMember(type, replaced, symbol, context, applyInheritdoc);
 				}
 			}
 
 			if (target.HandleSpecialMembers)
 			{
-				return (member, symbol, context) =>
+				return (member, symbol, context, applyInheritdoc) =>
 				{
 					HandleSpecialMemberTypes(ref member, type, target.Symbol);
-					WriteGeneratedMember(type, member, symbol, context, GenerateDocumentation.Never);
+					WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
 				};
 			}
 
-			return (member, symbol, context) => WriteGeneratedMember(type, member, symbol, context, GenerateDocumentation.Never);
+			return (member, symbol, context, applyInheritdoc) => WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
 		}
 	}
 }

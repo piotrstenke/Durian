@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading;
 using Durian.Analysis.Data;
@@ -15,11 +17,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis
 {
+
 	/// <summary>
 	/// A wrapper for the <see cref="StringBuilder"/> class that helps generating C# code.
 	/// </summary>
 	[DebuggerDisplay("{TextBuilder}")]
-	public sealed class CodeBuilder
+	public sealed partial class CodeBuilder2
 	{
 		private readonly IDurianGenerator? _generator;
 		private int _currentIndent;
@@ -161,63 +164,111 @@ namespace Durian.Analysis
 			BeginScope();
 		}
 
-		/// <inheritdoc cref="BeginMethodDeclaration(MethodData, bool, bool)"/>
-		public void BeginMethodDeclaration(MethodData method, bool blockOrExpression)
+		public void BeginDeclaration(MemberDeclarationSyntax declaration)
 		{
-			BeginMethodDeclaration(method, blockOrExpression, false);
+			switch (declaration)
+			{
+				
+			}
+		}
+
+		public void BeginFieldDeclaration(FieldDeclarationSyntax field)
+		{
+		}
+
+		public void BeginEventDeclaration(EventFieldDeclarationSyntax @event)
+		{
+
+		}
+
+		public void BeginEventDeclaration(EventDeclarationSyntax @event)
+		{
+
+		}
+
+		public void BeginPropertyDeclaration(PropertyDeclarationSyntax property)
+		{
+
+		}
+
+		public void BeginIndexerDeclaration(IndexerDeclarationSyntax indexer)
+		{
+
+		}
+
+		public void BeginConstructorDeclaration(ConstructorDeclarationSyntax ctor)
+		{
+
+		}
+
+		public void BeginDestructorDeclaration(DestructorDeclarationSyntax destructor)
+		{
+
+		}
+
+		public void BeginDelegateDeclaration(DelegateDeclarationSyntax @delegate)
+		{
+
+		}
+
+		public void BeginOperatorDeclaration(OperatorDeclarationSyntax @operator)
+		{
+
+		}
+
+		public void BeginOperatorDeclaration(ConversionOperatorDeclarationSyntax @operator)
+		{
+
 		}
 
 		/// <summary>
-		/// Writes declaration of a method.
+		/// Writes declaration of a namespace.
 		/// </summary>
-		/// <param name="method"><see cref="MethodData"/> that contains all the needed info about the target method.</param>
-		/// <param name="blockOrExpression">
-		/// Determines whether to begin a block body ('{') or an expression body ('=>').
-		/// <see langword="true"/> for block, <see langword="false"/> for expression.
-		/// </param>
-		/// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="method"/></param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public void BeginMethodDeclaration(MethodData method, bool blockOrExpression, bool includeTrivia)
+		/// <param name="namespace"><see cref="NamespaceData"/> that contains all the needed info about the target namespace.</param>
+		/// <param name="type">Type of namespace declaration to write.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
+		public void BeginNamespaceDeclaration(NamespaceData @namespace, NamespaceType type = NamespaceType.Default)
 		{
-			if (method is null)
+			if(@namespace is null)
 			{
-				throw new ArgumentNullException(nameof(method));
+				throw new ArgumentNullException(nameof(@namespace));
 			}
 
-			BeginMethodDeclaration_Internal(method.Declaration, blockOrExpression, includeTrivia);
-		}
-
-		/// <inheritdoc cref="BeginMethodDeclaration(MethodDeclarationSyntax, bool, bool)"/>
-		public void BeginMethodDeclaration(MethodDeclarationSyntax method, bool blockOrExpression)
-		{
-			BeginMethodDeclaration(method, blockOrExpression, false);
+			BeginNamespaceDeclaration_Internal(@namespace.GetContainingNamespaces(), type);
 		}
 
 		/// <summary>
-		/// Writes declaration of a method.
+		/// Writes declaration of a namespace.
 		/// </summary>
-		/// <param name="method"><see cref="MethodDeclarationSyntax"/> to copy the method signature from.</param>
-		/// <param name="blockOrExpression">
-		/// Determines whether to begin a block body ('{') or an expression body ('=>').
-		/// <see langword="true"/> for block, <see langword="false"/> for expression.
-		/// </param>
-		/// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="method"/></param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public void BeginMethodDeclaration(MethodDeclarationSyntax method, bool blockOrExpression, bool includeTrivia)
+		/// <param name="namespace"><see cref="BaseNamespaceDeclarationSyntax"/> to copy the name from. </param>
+		/// <param name="type">Type of namespace declaration to write.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
+		public void BeginNamespaceDeclaration(BaseNamespaceDeclarationSyntax @namespace, NamespaceType type = NamespaceType.Default)
 		{
-			if (method is null)
+			if (@namespace is null)
 			{
-				throw new ArgumentNullException(nameof(method));
+				throw new ArgumentNullException(nameof(@namespace));
 			}
 
-			BeginMethodDeclaration_Internal(method, blockOrExpression, includeTrivia);
+			BeginNamespaceDeclaration_Internal(@namespace.Name.ToString(), type);
+		}
+
+		/// <summary>
+		/// Writes declaration of a namespace.
+		/// </summary>
+		/// <param name="namespace"><see cref="NamespaceData"/> that contains all the needed info about the target namespace.</param>
+		/// <param name="type">Type of namespace declaration to write.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
+		public void BeginNamespaceDeclaration(INamespaceSymbol @namespace, NamespaceType type = NamespaceType.Default)
+		{
+
 		}
 
 		/// <summary>
 		/// Writes declaration of a namespace using the specified collection of <paramref name="namespaces"/>.
 		/// </summary>
 		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to write the names of.</param>
-		public void BeginNamespaceDeclaration(IEnumerable<INamespaceSymbol> namespaces)
+		public void BeginNamespaceDeclaration(IEnumerable<INamespaceSymbol> namespaces, NamespaceType type = NamespaceType.Default)
 		{
 			if (namespaces is null)
 			{
@@ -231,7 +282,7 @@ namespace Durian.Analysis
 		/// Writes declaration of a namespace using the specified collection of <paramref name="namespaces"/>.
 		/// </summary>
 		/// <param name="namespaces">A collection of namespace names s to write.</param>
-		public void BeginNamespaceDeclaration(IEnumerable<string> namespaces)
+		public void BeginNamespaceDeclaration(IEnumerable<string> namespaces, NamespaceType type = NamespaceType.Default)
 		{
 			if (namespaces is null)
 			{
@@ -246,7 +297,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="namespace">Name of namespace to begin the declaration of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(string @namespace)
+		public void BeginNamespaceDeclaration(string @namespace, NamespaceType type = NamespaceType.Defaul)
 		{
 			if (@namespace is null)
 			{
@@ -327,26 +378,19 @@ namespace Durian.Analysis
 			BeginTypeDeclaration_Internal(type);
 		}
 
-		/// <inheritdoc cref="BeginTypeDeclaration(TypeDeclarationSyntax, bool)"/>
-		public void BeginTypeDeclaration(TypeDeclarationSyntax type)
-		{
-			BeginTypeDeclaration(type, false);
-		}
-
 		/// <summary>
 		/// Writes declaration of a type.
 		/// </summary>
-		/// <param name="type"><see cref="TypeDeclarationSyntax"/> to convert to a <see cref="string"/> and append to the <see cref="TextBuilder"/>.</param>
-		/// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="type"/></param>
+		/// <param name="type"><see cref="BaseTypeDeclarationSyntax"/> to convert to a <see cref="string"/> and append to the <see cref="TextBuilder"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public void BeginTypeDeclaration(TypeDeclarationSyntax type, bool includeTrivia)
+		public void BeginTypeDeclaration(BaseTypeDeclarationSyntax type)
 		{
 			if (type is null)
 			{
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			BeginTypeDeclaration_Internal(type, includeTrivia);
+			BeginTypeDeclaration_Internal(type);
 		}
 
 		/// <summary>
@@ -479,9 +523,22 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc cref="WriteDeclarationLead(IMemberData, IEnumerable{string}, string, string)"/>
-		public void WriteDeclarationLead(IMemberData member, IEnumerable<string> usings, string? generatorName)
+		public void WriteDeclarationLead(IMemberData member, IEnumerable<string>? usings)
 		{
-			WriteDeclarationLead(member, usings, generatorName, null);
+			if (Generator is null)
+			{
+				WriteDeclarationLead(member, usings, default, default);
+			}
+			else
+			{
+				WriteDeclarationLead(member, usings, Generator.GeneratorName, Generator.GeneratorVersion);
+			}
+		}
+
+		/// <inheritdoc cref="WriteDeclarationLead(IMemberData, IEnumerable{string}, string, string)"/>
+		public void WriteDeclarationLead(IMemberData member, IEnumerable<string>? usings, string? generatorName)
+		{
+			WriteDeclarationLead(member, usings, generatorName, default);
 		}
 
 		/// <summary>
@@ -724,55 +781,28 @@ namespace Durian.Analysis
 			WriteUsings_Internal(namespaces.Select(n => n.Name).Where(n => n != string.Empty));
 		}
 
-		private static string GetDeclarationText(MemberDeclarationSyntax declaration, bool includeTrivia)
+		private void BeginNamespaceDeclaration_Internal(IEnumerable<INamespaceSymbol> namespaces, NamespaceType type)
 		{
-			if (includeTrivia)
-			{
-				MemberDeclarationSyntax decl = declaration
-					.WithLeadingTrivia(declaration.GetLeadingTrivia())
-					.WithTrailingTrivia(declaration.GetTrailingTrivia());
-
-				return decl.ToFullString();
-			}
-
-			return declaration.ToString();
+			BeginNamespaceDeclaration_Internal(namespaces.JoinNamespaces(), type);
 		}
 
-		private void BeginMethodDeclaration_Internal(MethodDeclarationSyntax method, bool blockOrExpression, bool includeTrivia)
-		{
-			TextBuilder.Append(GetDeclarationText(SyntaxFactory.MethodDeclaration(method.ReturnType, method.Identifier), includeTrivia));
-
-			if (blockOrExpression)
-			{
-				TextBuilder.AppendLine();
-				Indent();
-				CurrentIndent++;
-				TextBuilder.AppendLine("{");
-			}
-			else
-			{
-				TextBuilder.Append(" => ");
-			}
-		}
-
-		private void BeginNamespaceDeclaration_Internal(IEnumerable<INamespaceSymbol> namespaces)
-		{
-			BeginNamespaceDeclaration_Internal(namespaces.JoinNamespaces());
-		}
-
-		private void BeginNamespaceDeclaration_Internal(string @namespace)
+		private void BeginNamespaceDeclaration_Internal(string @namespace, NamespaceType type)
 		{
 			Indent();
 			TextBuilder.Append("namespace ").AppendLine(@namespace);
-			Indent();
-			TextBuilder.AppendLine("{");
-			CurrentIndent++;
+
+			if(type == NamespaceType.FileScoped)
+			{
+				TextBuilder.Append(';');
+			}
+			else
+			{
+				BeginScope();
+			}
 		}
 
 		private void BeginTypeDeclaration_Internal(ITypeData type)
 		{
-			Indent();
-
 			foreach (SyntaxToken modifier in type.Modifiers)
 			{
 				TextBuilder.Append(modifier.ValueText);
@@ -788,9 +818,33 @@ namespace Durian.Analysis
 			TextBuilder.AppendLine("{");
 		}
 
-		private void BeginTypeDeclaration_Internal(TypeDeclarationSyntax type, bool includeTrivia)
+		private void BeginTypeDeclaration_Internal(BaseTypeDeclarationSyntax type)
 		{
-			TextBuilder.Append(GetDeclarationText(SyntaxFactory.TypeDeclaration(type.Kind(), type.Identifier), includeTrivia));
+			foreach (SyntaxToken modifier in type.Modifiers)
+			{
+				TextBuilder.Append(modifier.ValueText);
+				TextBuilder.Append(' ');
+			}
+
+			TextBuilder.Append(type.GetKeyword());
+			TextBuilder.Append(' ');
+
+			TextBuilder.Append(type.Identifier.ToString());
+
+			if (type is TypeDeclarationSyntax t)
+			{
+				WriteTypeParameters(t.TypeParameterList);
+
+				if (type is RecordDeclarationSyntax record)
+				{
+					WriteParameters(record.ParameterList);
+				}
+
+				WriteConstraints(t.ConstraintClauses);
+			}
+
+			TextBuilder.AppendLine();
+			BeginScope();
 		}
 
 		private void WriteDeclarationLead_Internal(IMemberData member, IEnumerable<string>? usings, string? generatorName, string? version)
@@ -821,6 +875,7 @@ namespace Durian.Analysis
 		{
 			foreach (ITypeData parent in types)
 			{
+				Indent();
 				BeginTypeDeclaration_Internal(parent);
 			}
 		}

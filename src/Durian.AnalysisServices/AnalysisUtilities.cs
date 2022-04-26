@@ -82,6 +82,24 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Converts the specified <paramref name="accessibility"/> into its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="accessibility"><see cref="Accessibility"/> to convert to text.</param>
+		/// <exception cref="ArgumentException"><paramref name="accessibility"/> is not a valid <see cref="Accessibility"/> value.</exception>
+		public static string GetAccessiblityText(Accessibility accessibility)
+		{
+			return accessibility switch
+			{
+				Accessibility.Public => "public",
+				Accessibility.Protected => "protected",
+				Accessibility.Internal => "internal",
+				Accessibility.ProtectedOrInternal => "protected internal",
+				Accessibility.ProtectedAndInternal => "private protected",
+				_ => throw new ArgumentException($"Invalid accessibility value: '{accessibility}'")
+			};
+		}
+
+		/// <summary>
 		/// Returns a <see cref="string"/> containing generic identifier combined of the specified <paramref name="name"/> and the collection of <paramref name="typeParameters"/>.
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>
