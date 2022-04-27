@@ -32,7 +32,6 @@
    1. [CopyFrom](#copyfrom)
 4. [Experimental](#experimental) 
    1. [ConstExpr](#constexpr)
-   2. [ConstParam](#constparam)
 
 ## Current State
 
