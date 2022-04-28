@@ -14,6 +14,11 @@ namespace Durian.Analysis.Data
 	public class InterfaceData : TypeData<InterfaceDeclarationSyntax>
 	{
 		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="TypeData{TDeclaration}.Declaration"/>.
+		/// </summary>
+		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="InterfaceData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="InterfaceDeclarationSyntax"/> this <see cref="InterfaceData"/> represents.</param>

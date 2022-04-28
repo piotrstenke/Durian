@@ -60,12 +60,22 @@ namespace Durian.Analysis
 		/// <returns>A <see cref="string"/> representing a dot-separated name. -or- <see cref="string.Empty"/> if the <paramref name="parts"/> were null or empty or white-space only.</returns>
 		public static string CreateName(params string[]? parts)
 		{
+			StringBuilder builder = new();
+			CreateName(builder, parts);
+			return builder.ToString();
+		}
+
+		/// <summary>
+		/// Writes a <see cref="string"/> representing a dot-separated name to the specified <paramref name="builder"/>.
+		/// </summary>
+		/// <param name="parts">Parts of the name. Each part will be separated by a dot.</param>
+		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
+		public static void CreateName(StringBuilder builder, params string[]? parts)
+		{
 			if (parts is null || parts.Length == 0)
 			{
-				return string.Empty;
+				return;
 			}
-
-			StringBuilder builder = new();
 
 			foreach (string part in parts)
 			{
@@ -78,7 +88,6 @@ namespace Durian.Analysis
 			}
 
 			builder.Remove(builder.Length - 2, 1);
-			return builder.ToString();
 		}
 
 		/// <summary>
@@ -107,41 +116,62 @@ namespace Durian.Analysis
 		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <see langword="null"/>.</exception>
 		public static string GetGenericName(IEnumerable<string> typeParameters, string? name)
 		{
-			return (name ?? string.Empty) + GetGenericName(typeParameters);
+			StringBuilder builder = new();
+			GetGenericNameInto(typeParameters, name, builder);
+			return builder.ToString();
+		}
+
+		/// <summary>
+		/// Writes a <see cref="string"/> containing generic identifier combined of the specified <paramref name="name"/> and the collection of <paramref name="typeParameters"/> to the specified <paramref name="builder"/>.
+		/// </summary>
+		/// <param name="typeParameters">Type parameters to use to built the generic name.</param>
+		/// <param name="name">Actual member identifier.</param>
+		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
+		public static void GetGenericNameInto(IEnumerable<string> typeParameters, string? name, StringBuilder builder)
+		{
+			if(!string.IsNullOrWhiteSpace(name))
+			{
+				builder.Append(name);
+			}
+
+			GetGenericNameInto(typeParameters, builder);
 		}
 
 		/// <summary>
 		/// Returns a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeParameters"/>.
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="typeParameters"/> is <see langword="null"/>.</exception>
 		public static string GetGenericName(IEnumerable<string> typeParameters)
 		{
-			if (typeParameters is null)
-			{
-				throw new ArgumentNullException(nameof(typeParameters));
-			}
+			StringBuilder builder = new();
+			GetGenericNameInto(typeParameters, builder);
+			return builder.ToString();
+		}
 
+		/// <summary>
+		/// Writes a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeParameters"/> to the specified <paramref name="builder"/>.
+		/// </summary>
+		/// <param name="typeParameters">Type parameters to use to built the generic name.</param>
+		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
+		public static void GetGenericNameInto(IEnumerable<string> typeParameters, StringBuilder builder)
+		{
 			string[] parameters = typeParameters.ToArray();
 			int length = parameters.Length;
 
 			if (length == 0)
 			{
-				return string.Empty;
+				return;
 			}
 
-			StringBuilder sb = new();
-			sb.Append('<');
-			sb.Append(parameters[0]);
+			builder.Append('<');
+			builder.Append(parameters[0]);
 
 			for (int i = 1; i < length; i++)
 			{
-				sb.Append(", ").Append(parameters[i]);
+				builder.Append(", ").Append(parameters[i]);
 			}
 
-			sb.Append('>');
-
-			return sb.ToString();
+			builder.Append('>');
 		}
 
 		/// <summary>

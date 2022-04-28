@@ -539,12 +539,6 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 			Assert.True(((ITypeSymbol[])parameters).GetGenericName("Test") == "Test<T>");
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_TypeArgumentsIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((IEnumerable<ITypeSymbol>)null!).GetGenericName("Test"));
-		}
-
 		private static bool RunWithSymbol(ITypeSymbol symbol, string expectedArgName)
 		{
 			return new ITypeSymbol[] { symbol }.GetGenericName("Test") == $"Test<{expectedArgName}>";

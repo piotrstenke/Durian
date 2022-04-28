@@ -48,13 +48,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(symbol.GetGenericName() == "Test");
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_MethodIsNull()
-		{
-			INamedTypeSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetGenericName());
-		}
-
 		private INamedTypeSymbol GetSymbolForArgument(string source)
 		{
 			BaseTypeSyntax b = GetNode<BaseTypeSyntax>(source)!;

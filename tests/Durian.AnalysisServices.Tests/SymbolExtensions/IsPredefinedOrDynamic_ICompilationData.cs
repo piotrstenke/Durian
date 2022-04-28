@@ -35,20 +35,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.False(symbol.IsPredefinedOrDynamic(_compilation));
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationDataIsNull()
-		{
-			INamedTypeSymbol symbol = Mock.Of<INamedTypeSymbol>();
-			Assert.Throws<ArgumentNullException>(() => symbol.IsPredefinedOrDynamic((ICompilationData)null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
-		{
-			INamedTypeSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.IsPredefinedOrDynamic(_compilation));
-		}
-
 		[Theory]
 		[ClassData(typeof(Utilities.PredefinedTypeCollection))]
 		public void True(SpecialType type)

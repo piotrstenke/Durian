@@ -38,12 +38,5 @@ namespace Durian.Analysis.Tests.SyntaxNodeExtensions
 			MemberDeclarationSyntax member = GetNode<PropertyDeclarationSyntax>("class Test { string Name { get; set; } }")!;
 			Assert.True(member.GetTypeParameterList() is null);
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_MemberIsNull()
-		{
-			MemberDeclarationSyntax member = null!;
-			Assert.Throws<ArgumentNullException>(() => member.GetTypeParameterList());
-		}
 	}
 }

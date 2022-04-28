@@ -51,12 +51,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(n is not null && n.Name == "N1");
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetRootNamespace());
-		}
-
 		private INamedTypeSymbol GetSymbol(string source)
 		{
 			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source)!;

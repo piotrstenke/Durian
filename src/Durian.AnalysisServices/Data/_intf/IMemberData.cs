@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -14,9 +15,9 @@ namespace Durian.Analysis.Data
 	public interface IMemberData
 	{
 		/// <summary>
-		/// Target <see cref="MemberDeclarationSyntax"/>.
+		/// Target <see cref="CSharpSyntaxNode"/>.
 		/// </summary>
-		MemberDeclarationSyntax Declaration { get; }
+		CSharpSyntaxNode Declaration { get; }
 
 		/// <summary>
 		/// Parent compilation of this <see cref="IMemberData"/>.

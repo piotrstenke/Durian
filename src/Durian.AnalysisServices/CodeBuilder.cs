@@ -22,7 +22,7 @@ namespace Durian.Analysis
 	/// A wrapper for the <see cref="StringBuilder"/> class that helps generating C# code.
 	/// </summary>
 	[DebuggerDisplay("{TextBuilder}")]
-	public sealed partial class CodeBuilder2
+	public sealed partial class CodeBuilder
 	{
 		private readonly IDurianGenerator? _generator;
 		private int _currentIndent;
@@ -227,7 +227,7 @@ namespace Durian.Analysis
 		/// <param name="namespace"><see cref="NamespaceData"/> that contains all the needed info about the target namespace.</param>
 		/// <param name="type">Type of namespace declaration to write.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(NamespaceData @namespace, NamespaceType type = NamespaceType.Default)
+		public void BeginNamespaceDeclaration(NamespaceData @namespace, NamespaceScope type = NamespaceScope.Default)
 		{
 			if(@namespace is null)
 			{
@@ -243,14 +243,14 @@ namespace Durian.Analysis
 		/// <param name="namespace"><see cref="BaseNamespaceDeclarationSyntax"/> to copy the name from. </param>
 		/// <param name="type">Type of namespace declaration to write.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(BaseNamespaceDeclarationSyntax @namespace, NamespaceType type = NamespaceType.Default)
+		public void BeginNamespaceDeclaration(BaseNamespaceDeclarationSyntax @namespace, NamespaceScope type = NamespaceScope.Default)
 		{
 			if (@namespace is null)
 			{
 				throw new ArgumentNullException(nameof(@namespace));
 			}
 
-			BeginNamespaceDeclaration_Internal(@namespace.Name.ToString(), type);
+			BeginNamespace_Internal(@namespace.Name.ToString(), type);
 		}
 
 		/// <summary>
@@ -259,7 +259,7 @@ namespace Durian.Analysis
 		/// <param name="namespace"><see cref="NamespaceData"/> that contains all the needed info about the target namespace.</param>
 		/// <param name="type">Type of namespace declaration to write.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(INamespaceSymbol @namespace, NamespaceType type = NamespaceType.Default)
+		public void BeginNamespaceDeclaration(INamespaceSymbol @namespace, NamespaceScope type = NamespaceScope.Default)
 		{
 
 		}
@@ -268,7 +268,7 @@ namespace Durian.Analysis
 		/// Writes declaration of a namespace using the specified collection of <paramref name="namespaces"/>.
 		/// </summary>
 		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to write the names of.</param>
-		public void BeginNamespaceDeclaration(IEnumerable<INamespaceSymbol> namespaces, NamespaceType type = NamespaceType.Default)
+		public void BeginNamespaceDeclaration(IEnumerable<INamespaceSymbol> namespaces, NamespaceScope type = NamespaceScope.Default)
 		{
 			if (namespaces is null)
 			{
@@ -282,7 +282,7 @@ namespace Durian.Analysis
 		/// Writes declaration of a namespace using the specified collection of <paramref name="namespaces"/>.
 		/// </summary>
 		/// <param name="namespaces">A collection of namespace names s to write.</param>
-		public void BeginNamespaceDeclaration(IEnumerable<string> namespaces, NamespaceType type = NamespaceType.Default)
+		public void BeginNamespaceDeclaration(IEnumerable<string> namespaces, NamespaceScope type = NamespaceScope.Default)
 		{
 			if (namespaces is null)
 			{
@@ -297,7 +297,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="namespace">Name of namespace to begin the declaration of.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(string @namespace, NamespaceType type = NamespaceType.Defaul)
+		public void BeginNamespaceDeclaration(string @namespace, NamespaceScope type = NamespaceScope.Default)
 		{
 			if (@namespace is null)
 			{
@@ -781,17 +781,17 @@ namespace Durian.Analysis
 			WriteUsings_Internal(namespaces.Select(n => n.Name).Where(n => n != string.Empty));
 		}
 
-		private void BeginNamespaceDeclaration_Internal(IEnumerable<INamespaceSymbol> namespaces, NamespaceType type)
+		private void BeginNamespaceDeclaration_Internal(IEnumerable<INamespaceSymbol> namespaces, NamespaceScope type)
 		{
-			BeginNamespaceDeclaration_Internal(namespaces.JoinNamespaces(), type);
+			BeginNamespace_Internal(namespaces.JoinNamespaces(), type);
 		}
 
-		private void BeginNamespaceDeclaration_Internal(string @namespace, NamespaceType type)
+		private void BeginNamespace_Internal(string @namespace, NamespaceScope type)
 		{
 			Indent();
 			TextBuilder.Append("namespace ").AppendLine(@namespace);
 
-			if(type == NamespaceType.FileScoped)
+			if(type == NamespaceScope.File)
 			{
 				TextBuilder.Append(';');
 			}

@@ -82,56 +82,6 @@ namespace Durian.Analysis.Tests.SemanticModelExtensions
 			);
 		}
 
-		[Fact]
-		public void ThrowsArgumentException_When_GlobalNamespaceIsNotActuallyGlobal()
-		{
-			IMemberData member = GetClass("namespace N { class Test { } }")!;
-			Assert.Throws<ArgumentException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, member.Symbol.ContainingNamespace));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_AssemblySymbolIsNull()
-		{
-			IMemberData member = GetClass("class Test { }")!;
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, assembly: null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationDataIsNull()
-		{
-			IMemberData member = GetClass("class Test { }")!;
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, compilationData: null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			IMemberData member = GetClass("class Test { }")!;
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, compilation: null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_GlobalNamespaceIsNull()
-		{
-			IMemberData member = GetClass("class Test { }")!;
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(member.Declaration, globalNamespace: null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SemanticModelIsNull()
-		{
-			IMemberData member = GetClass("class Test { }")!;
-			SemanticModel? semanticModel = null;
-			Assert.Throws<ArgumentNullException>(() => semanticModel!.GetContainingNamespaces(member.Declaration, Compilation));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SyntaxNodeIsNull()
-		{
-			IMemberData member = GetClass("class Test { }")!;
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetContainingNamespaces(null!, Compilation));
-		}
-
 		private INamespaceSymbol[] Execute(string src, bool includeGlobal = false, int index = 0)
 		{
 			IMemberData member = GetClass(src, index)!;

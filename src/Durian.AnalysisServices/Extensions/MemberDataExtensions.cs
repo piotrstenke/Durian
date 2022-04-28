@@ -40,28 +40,36 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
 		public static string GetParentTypesString(this IMemberData member, bool includeSelf = true, bool includeParameters = false)
 		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
+			StringBuilder builder = new();
+			member.GetParentTypesStringInto(builder, includeSelf, includeParameters);
+			return builder.ToString();
+		}
 
-			StringBuilder sb = new();
-
+		/// <summary>
+		/// Writes a <see cref="string"/> that contains all the parent types of the specified <paramref name="member"/> and the <paramref name="member"/>'s name separated by the dot ('.') character to the specified <paramref name="builder"/>.
+		/// </summary>
+		/// <remarks>If the <paramref name="member"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
+		/// <param name="member"><see cref="IMemberData"/> to get the <see cref="string"/> of.</param>
+		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="member"/> in the returned <see cref="string"/>.</param>
+		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
+		public static void GetParentTypesStringInto(this IMemberData member, StringBuilder builder, bool includeSelf = true, bool includeParameters = false)
+		{
 			foreach (ITypeData type in member.GetContainingTypes())
 			{
-				sb.Append(type.Symbol.GetGenericName()).Append('.');
+				type.Symbol.GetGenericNameInto(builder);
+				builder.Append('.');
 			}
 
 			if (includeSelf)
 			{
-				sb.Append(member.Symbol.GetGenericName(includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None));
+				member.Symbol.GetGenericNameInto(builder, includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None);
 			}
-			else if (sb.Length > 0)
+			else if (builder.Length > 0)
 			{
-				sb.Remove(sb.Length - 1, 1);
+				builder.Remove(builder.Length - 1, 1);
 			}
-
-			return sb.ToString();
 		}
 
 		/// <summary>
@@ -86,46 +94,64 @@ namespace Durian.Analysis.Extensions
 		/// <param name="includeSelf">Determines whether to include the <paramref name="member"/> in the returned <see cref="string"/>.</param>
 		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public static string GetXmlParentTypesString(this IMemberData member, bool includeSelf = true, bool includeParameters = false)
+		public static string GetXmlParentTypes(this IMemberData member, bool includeSelf = true, bool includeParameters = false)
 		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
+			StringBuilder builder = new();
+			member.GetXmlParentTypesInto(builder, includeSelf, includeParameters);
+			return builder.ToString();
+		}
 
-			StringBuilder sb = new();
-
+		/// <summary>
+		/// Writes a <see cref="string"/> that contains all the parent types of the specified <paramref name="member"/> and the <paramref name="member"/>'s separated by the dot ('.') character to the specified <paramref name="builder"/>. Can be used in XML documentation.
+		/// </summary>
+		/// <param name="member"><see cref="IMemberData"/> to get the <see cref="string"/> of.</param>
+		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="member"/> in the returned <see cref="string"/>.</param>
+		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
+		public static void GetXmlParentTypesInto(this IMemberData member, StringBuilder builder, bool includeSelf = true, bool includeParameters = false)
+		{
 			foreach (ITypeData type in member.GetContainingTypes())
 			{
-				sb.Append(AnalysisUtilities.ToXmlCompatible(type.Symbol.GetGenericName())).Append('.');
+				builder.Append(AnalysisUtilities.ToXmlCompatible(type.Symbol.GetGenericName())).Append('.');
 			}
 
 			if (includeSelf)
 			{
-				sb.Append(member.Symbol.GetXmlCompatibleName(includeParameters));
+				builder.Append(member.Symbol.GetXmlCompatibleName(includeParameters));
 			}
-			else if (sb.Length > 0)
+			else if (builder.Length > 0)
 			{
-				sb.Remove(sb.Length - 1, 1);
+				builder.Remove(builder.Length - 1, 1);
 			}
-
-			return sb.ToString();
 		}
 
 		/// <summary>
 		/// Returns full namespace of the target <paramref name="member"/>.
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to get the parent namespace of.</param>
-		/// <returns>The full namespace of the target <paramref name="member"/>. -or- <see langword="null"/> if the <paramref name="member"/> is not contained withing a namespace. -or- <paramref name="member"/> is contained within global namespace.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public static string? JoinNamespaces(this IMemberData member)
+		/// <param name="includeSelf">Determines whether to include name of the <paramref name="member"/> if it represents a <see cref="INamespaceSymbol"/>.</param>
+		public static string? JoinNamespaces(this IMemberData member, bool includeSelf = true)
 		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
+			StringBuilder builder = new();
+			member.JoinNamespacesInto(builder, includeSelf);
+			return builder.ToString();
+		}
 
-			return member.GetContainingNamespaces().JoinNamespaces();
+		/// <summary>
+		/// Writes full namespace of the target <paramref name="member"/> to the specified <paramref name="builder"/>.
+		/// </summary>
+		/// <param name="member"><see cref="IMemberData"/> to get the parent namespace of.</param>
+		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
+		/// <param name="includeSelf">Determines whether to include name of the <paramref name="member"/> if it represents a <see cref="INamespaceSymbol"/>.</param>
+		public static void JoinNamespacesInto(this IMemberData member, StringBuilder builder, bool includeSelf = true)
+		{
+			member.GetContainingNamespaces().JoinNamespacesInto(builder);
+
+			if(member.Symbol is INamespaceSymbol @namespace && includeSelf)
+			{
+				builder.Append('.').Append(@namespace.Name);
+			}
 		}
 	}
 }

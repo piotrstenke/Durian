@@ -63,11 +63,5 @@ namespace Durian.Analysis.Tests.MemberDataExtensions
 		{
 			Assert.True(GetMethod("class Test { void Method(int a) { } }")!.GetParentTypesString(true, true) == "Test.Method(int)");
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_MemberIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => GetClass(null)!.GetParentTypesString());
-		}
 	}
 }

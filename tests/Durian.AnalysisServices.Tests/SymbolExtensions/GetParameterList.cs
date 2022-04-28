@@ -168,13 +168,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(symbol.GetParameterList() == "(void*)");
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_MethodIsNull()
-		{
-			IMethodSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetParameterList());
-		}
-
 		private IMethodSymbol GetSymbol(string source)
 		{
 			return GetSymbol<IMethodSymbol, MethodDeclarationSyntax>(source)!;

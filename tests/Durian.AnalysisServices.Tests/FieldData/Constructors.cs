@@ -68,13 +68,6 @@ namespace Durian.Analysis.Tests.FieldData
 		}
 
 		[Fact]
-		public void ThrowsIndexOutOfRangeException_When_IndexIsNotWithinTheRangeOfDeclaredFields()
-		{
-			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int field; }")!;
-			Assert.Throws<IndexOutOfRangeException>(() => new Data.FieldData(field, Compilation, 1));
-		}
-
-		[Fact]
 		public void VariableIsSetThroughConstructor()
 		{
 			FieldDeclarationSyntax field = GetNode<FieldDeclarationSyntax>("class Test { int field1; }")!;

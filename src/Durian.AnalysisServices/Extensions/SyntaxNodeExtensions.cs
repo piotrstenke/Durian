@@ -265,6 +265,31 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the body of the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="LocalFunctionStatementSyntax"/> to get the body of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static CSharpSyntaxNode? GetBody(this LocalFunctionStatementSyntax method)
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			if (method.Body is not null)
+			{
+				return method.Body;
+			}
+
+			if (method.ExpressionBody is not null)
+			{
+				return method.ExpressionBody;
+			}
+
+			return null;
+		}
+
+		/// <summary>
 		/// Returns type of the body of the specified <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="BaseMethodDeclarationSyntax"/> to get the type of body of.</param>
@@ -313,7 +338,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to get the data of.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IMemberData GetMemberData(this MemberDeclarationSyntax member, ICompilationData compilation)
+		public static IMemberData GetMemberData(this CSharpSyntaxNode member, ICompilationData compilation)
 		{
 			if (member is null)
 			{
@@ -339,11 +364,15 @@ namespace Durian.Analysis.Extensions
 				EventDeclarationSyntax => new EventData((EventDeclarationSyntax)member, compilation),
 				EventFieldDeclarationSyntax => new EventData((EventFieldDeclarationSyntax)member, compilation),
 				DelegateDeclarationSyntax => new DelegateData((DelegateDeclarationSyntax)member, compilation),
+				ParameterSyntax => new ParameterData((ParameterSyntax)member, compilation),
+				TypeParameterSyntax => new TypeParameterData((TypeParameterSyntax)member, compilation),
 				IndexerDeclarationSyntax => new IndexerData((IndexerDeclarationSyntax)member, compilation),
 				ConstructorDeclarationSyntax => new ConstructorData((ConstructorDeclarationSyntax)member, compilation),
 				DestructorDeclarationSyntax => new DestructorData((DestructorDeclarationSyntax)member, compilation),
 				OperatorDeclarationSyntax => new OperatorData((OperatorDeclarationSyntax)member, compilation),
 				ConversionOperatorDeclarationSyntax => new ConversionOperatorData((ConversionOperatorDeclarationSyntax)member, compilation),
+				LocalFunctionStatementSyntax => new LocalFunctionData((LocalFunctionStatementSyntax)member, compilation),
+				LocalDeclarationStatementSyntax => new LocalData((LocalDeclarationStatementSyntax)member, compilation),
 
 				_ => new MemberData(member, compilation),
 			};

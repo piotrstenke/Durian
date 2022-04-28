@@ -140,11 +140,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(n.Length == 2 && n[0].Name == "Parent" && n[1].Name == "Test");
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetContainingNamespacesAndTypes());
-		}
 
 		private INamedTypeSymbol GetSymbol(string source, int index = 0)
 		{

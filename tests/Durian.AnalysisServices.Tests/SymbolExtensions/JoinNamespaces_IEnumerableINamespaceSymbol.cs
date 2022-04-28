@@ -40,11 +40,5 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 			Assert.True(new INamespaceSymbol[] { n.Object }.JoinNamespaces() == "System");
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_NamespacesIsIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((INamespaceSymbol[])null!).JoinNamespaces());
-		}
 	}
 }

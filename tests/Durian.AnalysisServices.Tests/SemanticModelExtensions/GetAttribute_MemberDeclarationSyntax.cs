@@ -49,32 +49,10 @@ namespace Durian.Analysis.Tests.SemanticModelExtensions
 			Assert.True(Execute("[Other][Test(\"name\")][Test]class Test { }")!.ToString() == "Test(\"name\")");
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_AttributeSymbolIsNull()
-		{
-			IMemberData member = GetClass("class Test { }")!;
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetAttribute(member.Declaration, null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SemanticModelIsNull()
-		{
-			IMemberData member = GetClass("class Test { }")!;
-			SemanticModel? semanticModel = null;
-			Assert.Throws<ArgumentNullException>(() => semanticModel!.GetAttribute(member.Declaration, AttributeSymbol));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SyntaxNodelIsNull()
-		{
-			IMemberData member = GetClass("class Test { }")!;
-			Assert.Throws<ArgumentNullException>(() => member.SemanticModel.GetAttribute((MemberDeclarationSyntax)null!, AttributeSymbol));
-		}
-
 		private AttributeSyntax? Execute(string src)
 		{
 			IMemberData member = GetClass(src)!;
-			return member.SemanticModel.GetAttribute(member.Declaration, AttributeSymbol);
+			return member.SemanticModel.GetAttribute((member.Declaration as MemberDeclarationSyntax)!, AttributeSymbol);
 		}
 	}
 }

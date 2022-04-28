@@ -69,22 +69,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		}
 
 		[Fact]
-		public void ThrowsArgumentNullException_When_FirstIsNull()
-		{
-			IMethodSymbol first = null!;
-			IMethodSymbol second = GetSymbol("class Test { void Method(int value) { }");
-			Assert.Throws<ArgumentNullException>(() => first.HasEquivalentParameters(second));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SecondIsNull()
-		{
-			IMethodSymbol first = GetSymbol("class Test { void Method(int value) { }");
-			IMethodSymbol second = null!;
-			Assert.Throws<ArgumentNullException>(() => first.HasEquivalentParameters(second));
-		}
-
-		[Fact]
 		public void True_When_BothMethodsAreParameterless()
 		{
 			IMethodSymbol first = GetSymbol("class Test { void Method() { } }");

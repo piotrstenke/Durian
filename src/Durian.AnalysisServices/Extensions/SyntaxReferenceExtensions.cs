@@ -16,19 +16,8 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="reference"><see cref="SyntaxReference"/> to check if points to the given <paramref name="node"/>.</param>
 		/// <param name="node"><see cref="SyntaxNode"/> to check.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="reference"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>.</exception>
 		public static bool HasReference(this SyntaxReference reference, SyntaxNode node)
 		{
-			if (reference is null)
-			{
-				throw new ArgumentNullException(nameof(reference));
-			}
-
-			if (node is null)
-			{
-				throw new ArgumentNullException(nameof(node));
-			}
-
 			return reference.SyntaxTree == node.SyntaxTree && reference.Span.Contains(node.Span);
 		}
 
@@ -37,19 +26,8 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="reference"><see cref="SyntaxReference"/> to check if points to the given <paramref name="symbol"/>.</param>
 		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="reference"/> is <see langword="null"/>. -or- <paramref name="symbol"/> is <see langword="null"/>.</exception>
 		public static bool HasReference(this SyntaxReference reference, ISymbol symbol)
 		{
-			if (reference is null)
-			{
-				throw new ArgumentNullException(nameof(reference));
-			}
-
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
 			foreach (SyntaxReference r in symbol.DeclaringSyntaxReferences)
 			{
 				if (r == reference || (reference.SyntaxTree == r.SyntaxTree && reference.Span.Contains(r.Span)))

@@ -25,11 +25,5 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 		{
 			Assert.True(Analysis.AnalysisUtilities.JoinNamespaces(new string[] { "System" }) == "System");
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_NamespacesIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => Analysis.AnalysisUtilities.JoinNamespaces(null!));
-		}
 	}
 }

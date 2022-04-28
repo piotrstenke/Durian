@@ -44,12 +44,5 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 			Assert.True(partialDecls.Length == 1 && partialDecls[0].IsEquivalentTo(decl));
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_TypeIsNull()
-		{
-			INamedTypeSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetPartialDeclarations<TypeDeclarationSyntax>());
-		}
 	}
 }

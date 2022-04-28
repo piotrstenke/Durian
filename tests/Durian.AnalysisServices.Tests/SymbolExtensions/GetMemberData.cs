@@ -125,20 +125,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(ValidateMember<StructData, StructDeclarationSyntax>("struct Test { }"));
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			INamedTypeSymbol symbol = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }")!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetMemberData(null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
-		{
-			ISymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetMemberData(Compilation));
-		}
-
 		private bool ValidateMember<TData, TDeclaration>(string src)
 			where TData : class, IMemberData
 			where TDeclaration : MemberDeclarationSyntax

@@ -26,32 +26,5 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 				SymbolEqualityComparer.Default.Equals(newSymbol, oldSymbol)
 			);
 		}
-
-		[Fact]
-		public void ThrowsArgumentException_When_SyntaxNodeDoesNotRepresentAnySymbols()
-		{
-			BlockSyntax node = GetNode<BlockSyntax>("class Test { void Method() { } }")!;
-			Assert.Throws<ArgumentException>(() => Analysis.AnalysisUtilities.GetSymbolAndSemanticModel<IMethodSymbol>(node, Compilation));
-		}
-
-		[Fact]
-		public void ThrowsArgumentException_When_SyntaxNodeIsNotCompatibleWithTargetSymbolType()
-		{
-			ClassDeclarationSyntax node = GetNode<ClassDeclarationSyntax>("class Test { }")!;
-			Assert.Throws<ArgumentException>(() => Analysis.AnalysisUtilities.GetSymbolAndSemanticModel<IMethodSymbol>(node, Compilation));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			ClassDeclarationSyntax node = GetNode<ClassDeclarationSyntax>("class Test { }")!;
-			Assert.Throws<ArgumentNullException>(() => Analysis.AnalysisUtilities.GetSymbolAndSemanticModel<INamedTypeSymbol>(node, null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SyntaxNodeIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => Analysis.AnalysisUtilities.GetSymbolAndSemanticModel<INamedTypeSymbol>(null!, Compilation));
-		}
 	}
 }

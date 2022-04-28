@@ -39,12 +39,6 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 		}
 
 		[Fact]
-		public void ThrowsArgumentNullException_When_CollectionIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => Analysis.AnalysisUtilities.SortUsings(null!));
-		}
-
-		[Fact]
 		public void UsingsThatOnlyStartWithSystemAreNotFirst()
 		{
 			string[] input = { "Xunit", "SystemTest", "Durian", "Durian.Extensions" };

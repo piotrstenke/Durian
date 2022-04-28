@@ -6,7 +6,7 @@ namespace Durian.Analysis
 	/// <summary>
 	/// Type of namespace declaration.
 	/// </summary>
-	public enum NamespaceType
+	public enum NamespaceScope
 	{
 		/// <summary>
 		/// Default namespace declaration (e.g. <c>namespace System { }</c>).
@@ -16,6 +16,6 @@ namespace Durian.Analysis
 		/// <summary>
 		/// File-scoped namespace declaration (e.g. <c>namespace System;</c>).
 		/// </summary>
-		FileScoped
+		File
 	}
 }

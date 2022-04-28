@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis
 {
-	public partial class CodeBuilder2
+	public partial class CodeBuilder
 	{
 		/// <summary>
 		/// Writes declaration of a method.

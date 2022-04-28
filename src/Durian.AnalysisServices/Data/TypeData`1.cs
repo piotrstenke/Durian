@@ -29,11 +29,13 @@ namespace Durian.Analysis.Data
 		public SyntaxToken[] Modifiers => _modifiers ??= GetPartialDeclarations().GetModifiers().ToArray();
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.
+		/// <see cref="ITypeSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
-		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
+		public new ITypeSymbol Symbol => (base.Symbol as ITypeSymbol)!;
 
-		internal TypeData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		INamedTypeSymbol ITypeData.Symbol => (Symbol as INamedTypeSymbol)!;
+
+		internal TypeData(ITypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 
@@ -54,7 +56,7 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="declaration"><see cref="BaseTypeDeclarationSyntax"/> this <see cref="TypeData{TDeclaration}"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="TypeData{TDeclaration}"/>.</param>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> this <see cref="TypeData{TDeclaration}"/> represents.</param>
+		/// <param name="symbol"><see cref="ITypeSymbol"/> this <see cref="TypeData{TDeclaration}"/> represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
 		/// <param name="partialDeclarations">A collection of <see cref="BaseTypeDeclarationSyntax"/> that represent the partial declarations of the target <paramref name="symbol"/>.</param>
 		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
@@ -64,7 +66,7 @@ namespace Durian.Analysis.Data
 		protected TypeData(
 			TDeclaration declaration,
 			ICompilationData compilation,
-			INamedTypeSymbol symbol,
+			ITypeSymbol symbol,
 			SemanticModel semanticModel,
 			IEnumerable<TDeclaration>? partialDeclarations = null,
 			IEnumerable<SyntaxToken>? modifiers = null,

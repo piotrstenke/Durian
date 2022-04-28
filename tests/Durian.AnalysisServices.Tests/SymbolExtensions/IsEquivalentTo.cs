@@ -37,22 +37,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		}
 
 		[Fact]
-		public void ThrowsArgumentNullException_When_FirstIsNull()
-		{
-			IParameterSymbol first = null!;
-			IParameterSymbol second = GetSymbol("class Test { void Method(int value) { }");
-			Assert.Throws<ArgumentNullException>(() => first.IsEquivalentTo(second));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SecondIsNull()
-		{
-			IParameterSymbol first = GetSymbol("class Test { void Method(int value) { }");
-			IParameterSymbol second = null!;
-			Assert.Throws<ArgumentNullException>(() => first.IsEquivalentTo(second));
-		}
-
-		[Fact]
 		public void True_When_BothParametersHaveTheSameType()
 		{
 			IParameterSymbol first = GetSymbol("class Test { void Method(int a) { } }");

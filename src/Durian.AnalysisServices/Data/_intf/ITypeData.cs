@@ -23,7 +23,7 @@ namespace Durian.Analysis.Data
 		SyntaxToken[] Modifiers { get; }
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.
+		/// <see cref="ITypeSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		new INamedTypeSymbol Symbol { get; }
 

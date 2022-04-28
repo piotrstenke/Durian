@@ -10,21 +10,15 @@ using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis
 {
-	public partial class CodeBuilder2
+	public partial class CodeBuilder
 	{
 		/// <summary>
-		/// Writes declaration of a method.
+		/// Begins declaration of a method.
 		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to write the declaration for.</param>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration for.</param>
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public void BeginMethodDeclaration(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		public CodeBuilder BeginMethodDeclaration(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
-			if (method is null)
-			{
-				throw new ArgumentNullException(nameof(method));
-			}
-
 			TextBuilder.Append(AnalysisUtilities.GetAccessiblityText(method.DeclaredAccessibility));
 			TextBuilder.Append(' ');
 
@@ -94,12 +88,12 @@ namespace Durian.Analysis
 
 			if (method.IsGenericMethod)
 			{
-				WriteTypeParameters(method.TypeParameters);
+				TypeParameterList(method.TypeParameters);
 			}
 
 			WriteParameters(method.Parameters);
 
-
+			return this;
 		}
 
 		public void WriteParameters(ImmutableArray<IParameterSymbol> parameters)
@@ -108,36 +102,43 @@ namespace Durian.Analysis
 
 			if (parameters.Length > 0)
 			{
-				WriteParameter(parameters[0]);
+				Parameter(parameters[0]);
 
 				for (int i = 1; i < parameters.Length; i++)
 				{
 					TextBuilder.Append(',');
 					TextBuilder.Append(' ');
-					WriteParameter(parameters[i]);
+					Parameter(parameters[i]);
 				}
 			}
 
 			TextBuilder.Append(')');
 		}
 
-		public void WriteParameters(IParameterSymbol[] parameters)
+		public void ParameterList(IParameterSymbol[] parameters)
 		{
-			if (parameters is null)
-			{
-				throw new ArgumentNullException(nameof(parameters));
-			}
-
 			WriteParameters(parameters.ToImmutableArray());
 		}
 
-		public void WriteParameter(IParameterSymbol parameter)
+		/// <summary>
+		/// Begins declaration of a <paramref name="namespace"/>.
+		/// </summary>
+		/// <param name="namespace"><see cref="INamespaceSymbol"/> to begin declaration of.</param>
+		/// <param name="type">Type of namespace declaration to write.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
+		public CodeBuilder BeginNamespace(INamespaceSymbol @namespace, NamespaceScope type = NamespaceScope.Default)
 		{
-			if (parameter is null)
-			{
-				throw new ArgumentNullException(nameof(parameter));
-			}
+			BeginNamespace_Internal(@namespace.JoinNamespaces())
 
+			return this;
+		}
+
+		/// <summary>
+		/// Writes the specified <paramref name="parameter"/>.
+		/// </summary>
+		/// <param name="parameter"><see cref="IParameterSymbol"/> to write.</param>
+		public CodeBuilder Parameter(IParameterSymbol parameter)
+		{
 			if (parameter.RefKind != RefKind.None)
 			{
 				switch (parameter.RefKind)
@@ -156,14 +157,18 @@ namespace Durian.Analysis
 				}
 			}
 
-			WriteTypeName(parameter.Type);
+			return Type(parameter.Type);
 		}
 
-		public void WriteTypeParameters(ImmutableArray<ITypeParameterSymbol> typeParameters)
+		/// <summary>
+		/// Writes all specified <paramref name="typeParameters"/>.
+		/// </summary>
+		/// <param name="typeParameters">Collection of <see cref="ITypeParameterSymbol"/> to write.</param>
+		public CodeBuilder TypeParameterList(ImmutableArray<ITypeParameterSymbol> typeParameters)
 		{
 			if (typeParameters.Length == 0)
 			{
-				return;
+				return this;
 			}
 
 			TextBuilder.Append('<');
@@ -177,24 +182,41 @@ namespace Durian.Analysis
 			}
 
 			TextBuilder.Append('>');
+
+			return this;
 		}
 
-		public void WriteTypeParameters(ITypeParameterSymbol[] typeParameters)
+		/// <summary>
+		/// Writes all specified <paramref name="typeParameters"/>.
+		/// </summary>
+		/// <param name="typeParameters">Collection of <see cref="ITypeParameterSymbol"/> to write.</param>
+		public CodeBuilder TypeParameterList(ITypeParameterSymbol[] typeParameters)
 		{
-			if (typeParameters is null)
-			{
-				throw new ArgumentNullException(nameof(typeParameters));
-			}
-
 			if (typeParameters.Length == 0)
 			{
-				return;
+				return this;
 			}
 
-			WriteTypeParameters(typeParameters.ToImmutableArray());
+			return TypeParameterList(typeParameters.ToImmutableArray());
 		}
 
-		public void WriteArray(IArrayTypeSymbol array)
+
+		/// <summary>
+		/// Writes the specified <paramref name="typeParameter"/>.
+		/// </summary>
+		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to write.</param>
+		public CodeBuilder TypeParameter(ITypeParameterSymbol typeParameter)
+		{
+			TextBuilder.Append(typeParameter.Name);
+			return this;
+		}
+
+		/// <summary>
+		/// Writes the specified <paramref name="array"/>.
+		/// </summary>
+		/// <param name="array"><see cref="IArrayTypeSymbol"/> to write.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="array"/> is <see langword="null"/>.</exception>
+		public CodeBuilder Array(IArrayTypeSymbol array)
 		{
 			ITypeSymbol element = array.ElementType;
 
@@ -209,7 +231,7 @@ namespace Durian.Analysis
 					elementArray = (element as IArrayTypeSymbol)!;
 				}
 
-				WriteTypeName(element);
+				Type(element);
 				WriteArrayBrackets(array);
 
 				while (childArrays.Count > 0)
@@ -221,11 +243,13 @@ namespace Durian.Analysis
 			}
 			else
 			{
-				WriteTypeName(element);
+				Type(element);
 				WriteArrayBrackets(array);
 			}
 
 			CheckNullable(array);
+
+			return this;
 
 			void CheckNullable(IArrayTypeSymbol a)
 			{
@@ -249,13 +273,12 @@ namespace Durian.Analysis
 			}
 		}
 
-		public void WriteFunctionPointer(IFunctionPointerTypeSymbol pointer)
+		/// <summary>
+		/// Writes the specified <paramref name="pointer"/>.
+		/// </summary>
+		/// <param name="pointer"><see cref="IFunctionPointerTypeSymbol"/> to write.</param>
+		public CodeBuilder FunctionPointer(IFunctionPointerTypeSymbol pointer)
 		{
-			if (pointer is null)
-			{
-				throw new ArgumentNullException(nameof(pointer));
-			}
-
 			IMethodSymbol signature = pointer.Signature;
 
 			TextBuilder.Append("delegate*");
@@ -284,59 +307,78 @@ namespace Durian.Analysis
 
 			if (parameters.Length > 0)
 			{
-				WriteParameter(parameters[0]);
+				Parameter(parameters[0]);
 
 				for (int i = 1; i < parameters.Length; i++)
 				{
 					TextBuilder.Append(", ");
-					WriteParameter(parameters[i]);
+					Parameter(parameters[i]);
 				}
 			}
 
-			WriteTypeName(signature.ReturnType);
+			Type(signature.ReturnType);
 
 			TextBuilder.Append('>');
+
+			return this;
 		}
 
-		public void WritePointer(IPointerTypeSymbol pointer)
+		/// <summary>
+		/// Writes the specified <paramref name="pointer"/>.
+		/// </summary>
+		/// <param name="pointer"><see cref="IPointerTypeSymbol"/> to write.</param>
+		public CodeBuilder Pointer(IPointerTypeSymbol pointer)
 		{
-			if (pointer is null)
-			{
-				throw new ArgumentNullException(nameof(pointer));
-			}
-
-			WriteTypeName(pointer.PointedAtType);
+			Type(pointer.PointedAtType);
 			TextBuilder.Append('*');
+
+			return this;
 		}
 
-		public void WriteTypeName(ITypeSymbol type)
+		/// <summary>
+		/// Writes the <see langword="dynamic"/> type.
+		/// </summary>
+		/// <param name="type"><see cref="IDynamicTypeSymbol"/> to write.</param>
+		public CodeBuilder Dynamic(IDynamicTypeSymbol type)
 		{
-			if (type is null)
+			TextBuilder.Append("dynamic");
+
+			if (type.NullableAnnotation == NullableAnnotation.Annotated)
 			{
-				throw new ArgumentNullException(nameof(type));
+				TextBuilder.Append('?');
 			}
 
+			return this;
+		}
+
+		/// <summary>
+		/// Writes the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to write.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public CodeBuilder Type(ITypeSymbol type)
+		{
 			switch (type)
 			{
 				case INamedTypeSymbol named:
-					WriteTypeName(named);
-					return;
+					Type(named);
+					return this;
 
 				case IArrayTypeSymbol array:
-					WriteArray(array);
-					return;
+					Array(array);
+					return this;
 
 				case IDynamicTypeSymbol:
 					TextBuilder.Append("dynamic");
 					break;
 
 				case IPointerTypeSymbol pointer:
-					WritePointer(pointer);
-					return;
+					Pointer(pointer);
+					return this;
 
 				case IFunctionPointerTypeSymbol functionPointer:
-					WriteFunctionPointer(functionPointer);
-					return;
+					FunctionPointer(functionPointer);
+					return this;
 
 				default:
 					TextBuilder.Append(type.Name);
@@ -347,15 +389,17 @@ namespace Durian.Analysis
 			{
 				TextBuilder.Append('?');
 			}
+
+			return this;
 		}
 
-		public void WriteTypeName(INamedTypeSymbol type)
+		/// <summary>
+		/// Writes the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to write.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public CodeBuilder Type(INamedTypeSymbol type)
 		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
 			if (type.IsValueType && type.ConstructedFrom is not null && type.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T && type.TypeArguments.Length > 0)
 			{
 				string name = type.TypeArguments[0].GetGenericName(GenericSubstitution.TypeArguments);
@@ -372,6 +416,8 @@ namespace Durian.Analysis
 					TextBuilder.Append('?');
 				}
 			}
+
+			return this;
 		}
 	}
 }

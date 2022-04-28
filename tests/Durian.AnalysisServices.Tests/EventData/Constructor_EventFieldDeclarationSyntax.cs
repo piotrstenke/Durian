@@ -127,13 +127,6 @@ namespace Durian.Analysis.Tests.EventData
 		}
 
 		[Fact]
-		public void ThrowsIndexOutOfRangeException_When_IndexIsNotWithinTheRangeOfDeclaredFields()
-		{
-			EventFieldDeclarationSyntax field = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action e; }")!;
-			Assert.Throws<IndexOutOfRangeException>(() => new Data.EventData(field, Compilation, 1));
-		}
-
-		[Fact]
 		public void VariableIsSetThroughConstructor_When_EventIsField()
 		{
 			EventFieldDeclarationSyntax field = GetNode<EventFieldDeclarationSyntax>("class Test { event System.Action e; }")!;

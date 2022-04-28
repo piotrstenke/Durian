@@ -58,12 +58,5 @@ namespace Durian.Analysis.Tests.SyntaxNodeExtensions
 			string[] namespaces = member.GetParentNamespaces().ToArray();
 			Assert.True(namespaces.Length == 1 && namespaces[0] == "N");
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_NodeIsNull()
-		{
-			MemberDeclarationSyntax member = null!;
-			Assert.Throws<ArgumentNullException>(() => member.GetParentNamespaces());
-		}
 	}
 }

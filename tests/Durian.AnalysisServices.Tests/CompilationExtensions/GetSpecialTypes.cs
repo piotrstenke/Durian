@@ -72,12 +72,5 @@ namespace Durian.Analysis.Tests.CompilationExtensions
 		{
 			Assert.True(_fixture.Set.Count == _numSpecialTypes);
 		}
-
-		[Fact]
-		public void ThrowsNull_When_CompilationIsNull()
-		{
-			CSharpCompilation compilation = null!;
-			Assert.Throws<ArgumentNullException>(() => compilation.GetSpecialTypes());
-		}
 	}
 }

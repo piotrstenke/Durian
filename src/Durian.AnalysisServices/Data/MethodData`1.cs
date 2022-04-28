@@ -10,15 +10,20 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
 {
-	/// <summary>
-	/// Encapsulates data associated with a single <see cref="BaseMethodDeclarationSyntax"/>.
-	/// </summary>
-	public abstract class MethodData<TDeclaration> : MemberData, IMethodData where TDeclaration : BaseMethodDeclarationSyntax
-	{
-		private CSharpSyntaxNode? _body;
 
+	/// <summary>
+	/// Encapsulates data associated with a single method declaration.
+	/// </summary>
+	/// <typeparam name="TDeclaration">Type of method declaration this class represents.</typeparam>
+	public abstract class MethodData<TDeclaration> : MemberData, IMethodData where TDeclaration : CSharpSyntaxNode
+	{
 		/// <inheritdoc/>
-		public CSharpSyntaxNode? Body => _body ??= Declaration.GetBody();
+		public virtual CSharpSyntaxNode? Body => BodyRaw ??= (Declaration as BaseMethodDeclarationSyntax)!.GetBody();
+
+		/// <summary>
+		/// Returns the cached body of the method or <see langword="null"/> if there is no currently cached value.
+		/// </summary>
+		protected CSharpSyntaxNode? BodyRaw { get; set; }
 
 		/// <inheritdoc/>
 		public MethodBody BodyType
@@ -38,8 +43,6 @@ namespace Durian.Analysis.Data
 		/// Target <see cref="BaseMethodDeclarationSyntax"/>.
 		/// </summary>
 		public new TDeclaration Declaration => (base.Declaration as TDeclaration)!;
-
-		BaseMethodDeclarationSyntax IMethodData.Declaration => Declaration;
 
 		/// <summary>
 		/// <see cref="IMethodSymbol"/> associated with the <see cref="Declaration"/>.

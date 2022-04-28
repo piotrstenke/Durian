@@ -23,11 +23,6 @@ namespace Durian.Analysis.Data
 		MethodBody BodyType { get; }
 
 		/// <summary>
-		/// Target <see cref="BaseMethodDeclarationSyntax"/>.
-		/// </summary>
-		new BaseMethodDeclarationSyntax Declaration { get; }
-
-		/// <summary>
 		/// <see cref="IMethodSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		new IMethodSymbol Symbol { get; }

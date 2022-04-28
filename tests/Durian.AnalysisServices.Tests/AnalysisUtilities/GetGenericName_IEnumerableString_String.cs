@@ -32,11 +32,5 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 		{
 			Assert.True(Analysis.AnalysisUtilities.GetGenericName(Array.Empty<string>(), "Test") == "Test");
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_TypeParametersIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => Analysis.AnalysisUtilities.GetGenericName(null!, "Test"));
-		}
 	}
 }

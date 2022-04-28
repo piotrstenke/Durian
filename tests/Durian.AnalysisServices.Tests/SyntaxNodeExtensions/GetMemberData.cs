@@ -125,20 +125,6 @@ namespace Durian.Analysis.Tests.SyntaxNodeExtensions
 			Assert.True(ValidateMember<StructData, StructDeclarationSyntax>("struct Test { }"));
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			MemberDeclarationSyntax member = GetNode<ClassDeclarationSyntax>("class Test { }")!;
-			Assert.Throws<ArgumentNullException>(() => member.GetMemberData(null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_MemberIsNull()
-		{
-			MemberDeclarationSyntax member = null!;
-			Assert.Throws<ArgumentNullException>(() => member.GetMemberData(Compilation));
-		}
-
 		private bool ValidateMember<TData, TDeclaration>(string src)
 			where TData : class, IMemberData
 			where TDeclaration : MemberDeclarationSyntax

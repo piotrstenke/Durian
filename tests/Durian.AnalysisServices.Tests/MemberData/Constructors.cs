@@ -27,30 +27,6 @@ namespace Durian.Analysis.Tests.MemberData
 		}
 
 		[Fact]
-		public void ConstructorThrowsArgumentException_When_DeclarationDoesNotRepresentAnySymbol()
-		{
-			CompilationUnitSyntax unit = CompilationUnit();
-			ClassDeclarationSyntax decl = ClassDeclaration("Test");
-			FieldDeclarationSyntax field = FieldDeclaration(VariableDeclaration(PredefinedType(Token(SyntaxKind.IntKeyword)), SingletonSeparatedList(VariableDeclarator("field"))));
-
-			unit = unit.AddMembers(decl.AddMembers(field));
-
-			Assert.Throws<ArgumentException>(() => new Data.MemberData(decl, CreateValidCompilationData(unit.SyntaxTree)));
-		}
-
-		[Fact]
-		public void ConstructorThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => new Data.MemberData(declaration: ClassDeclaration("Test"), null!));
-		}
-
-		[Fact]
-		public void ConstructorThrowsArgumentNullException_When_DeclarationIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => new Data.MemberData(declaration: null!, Mock.Of<ICompilationData>()));
-		}
-
-		[Fact]
 		public void DeclarationReturnsDeclarationPassedAsArgument()
 		{
 			MemberDeclarationSyntax member = CreateValidDeclaration();

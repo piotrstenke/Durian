@@ -21,11 +21,5 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 			QualifiedNameSyntax? syntax = Analysis.AnalysisUtilities.GetQualifiedName(new string[] { "System", "Collections", "Generic" });
 			Assert.True(syntax is not null && syntax.ToFullString() == "System.Collections.Generic");
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_NamesIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => Analysis.AnalysisUtilities.GetQualifiedName(null!));
-		}
 	}
 }

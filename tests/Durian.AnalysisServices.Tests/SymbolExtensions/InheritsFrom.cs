@@ -97,22 +97,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(child.Object.InheritsFrom(intf));
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_BaseTypeIsNull()
-		{
-			INamedTypeSymbol child = null!;
-			INamedTypeSymbol parent = GetClass("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => child.InheritsFrom(parent));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_TypeIsNull()
-		{
-			INamedTypeSymbol child = GetClass("class Test { }");
-			INamedTypeSymbol parent = null!;
-			Assert.Throws<ArgumentNullException>(() => child.InheritsFrom(parent));
-		}
-
 		private INamedTypeSymbol GetClass(string source)
 		{
 			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source)!;

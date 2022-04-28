@@ -33,11 +33,5 @@ namespace Durian.Analysis.Tests.MemberDataExtensions
 		{
 			Assert.True(GetClass("namespace N1 { namespace N2 { class Type { } } }")!.JoinNamespaces() == "N1.N2");
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_MemberIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => GetClass(null)!.JoinNamespaces());
-		}
 	}
 }

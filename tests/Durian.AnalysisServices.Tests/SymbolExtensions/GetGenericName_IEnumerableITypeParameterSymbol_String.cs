@@ -43,12 +43,6 @@ namespace Durian.Analysis.Tests.AnalysisUtilities
 			Assert.True(Array.Empty<ITypeParameterSymbol>().GetGenericName("Test") == "Test");
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_TypeParametersIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((IEnumerable<ITypeParameterSymbol>)null!).GetGenericName("Test"));
-		}
-
 		private static ITypeParameterSymbol GetValidTypeParameter()
 		{
 			Mock<ITypeParameterSymbol> parameter = new();

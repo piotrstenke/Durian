@@ -46,25 +46,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(type.IsValidForTypeParameter(GetTypeParameter()));
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_ParameterIsNull()
-		{
-			ITypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Test { }")!;
-
-			Assert.Throws<ArgumentNullException>(() => type.IsValidForTypeParameter(null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_TypelIsNull()
-		{
-			ITypeSymbol type = null!;
-			Mock<ITypeParameterSymbol> parameter = new();
-			parameter.SetupGet(p => p.Name).Returns("T");
-			parameter.SetupGet(p => p.ConstraintTypes).Returns(ImmutableArray.Create<ITypeSymbol>());
-
-			Assert.Throws<ArgumentNullException>(() => type.IsValidForTypeParameter(parameter.Object));
-		}
-
 		private static ITypeParameterSymbol GetTypeParameter()
 		{
 			Mock<ITypeParameterSymbol> parameter = new();

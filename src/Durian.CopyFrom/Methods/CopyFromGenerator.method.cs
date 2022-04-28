@@ -12,7 +12,7 @@ namespace Durian.Analysis.CopyFrom
 			context.CodeBuilder.WriteDeclarationLead(method, method.Target.Usings);
 
 			context.CodeBuilder.Indent();
-			context.CodeBuilder.BeginMethodDeclaration(method, MethodBody.Block);
+			//context.CodeBuilder.BeginMethodDeclaration(method, MethodBody.Block);
 			context.CodeBuilder.EndAllScopes();
 
 			AddSourceWithOriginal(method.Declaration, hintName, context);

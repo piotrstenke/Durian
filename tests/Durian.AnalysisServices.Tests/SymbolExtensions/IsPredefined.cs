@@ -42,13 +42,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.False(symbol.IsPredefined());
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
-		{
-			INamedTypeSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.IsPredefined());
-		}
-
 		[Theory]
 		[ClassData(typeof(Utilities.PredefinedTypeCollection))]
 		public void True(SpecialType type)

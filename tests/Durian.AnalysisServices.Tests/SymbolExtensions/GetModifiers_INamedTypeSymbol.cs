@@ -72,12 +72,5 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			SyntaxToken[] tokens = symbol.GetModifiers().ToArray();
 			Assert.True(tokens.Length == 0);
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_TypeIsNull()
-		{
-			INamedTypeSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetModifiers());
-		}
 	}
 }

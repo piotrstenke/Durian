@@ -36,12 +36,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(GetSymbol("namespace N1 { namespace N2 { class Type { } } }").JoinNamespaces() == "N1.N2");
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_MemberIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).JoinNamespaces());
-		}
-
 		private INamedTypeSymbol GetSymbol(string source)
 		{
 			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source)!;

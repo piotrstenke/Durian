@@ -99,11 +99,5 @@ namespace Durian.Analysis.Tests.MemberDataExtensions
 		{
 			Assert.True(GetClass("class Parent<T> { class Test { } }", 1)!.GetXmlFullyQualifiedName() == "Parent{T}.Test");
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_MemberIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => GetClass(null)!.GetXmlFullyQualifiedName());
-		}
 	}
 }

@@ -38,12 +38,5 @@ namespace Durian.Analysis.Tests.SyntaxNodeExtensions
 			MethodDeclarationSyntax method = GetNode<MethodDeclarationSyntax>("class Test { int Method() => 1; }")!;
 			Assert.True(method.HasBody());
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_MethodIsNull()
-		{
-			MethodDeclarationSyntax method = null!;
-			Assert.Throws<ArgumentNullException>(() => method.HasBody());
-		}
 	}
 }

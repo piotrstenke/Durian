@@ -31,21 +31,5 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 
 			Assert.True(parent.ContainsSymbol(child));
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_ChildIsNull()
-		{
-			INamedTypeSymbol child = null!;
-			INamedTypeSymbol parent = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Parent { }")!;
-			Assert.Throws<ArgumentNullException>(() => parent.ContainsSymbol(child));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_ParentIsNull()
-		{
-			INamedTypeSymbol child = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("class Child { }")!;
-			INamedTypeSymbol parent = null!;
-			Assert.Throws<ArgumentNullException>(() => parent.ContainsSymbol(child));
-		}
 	}
 }

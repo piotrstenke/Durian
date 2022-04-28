@@ -102,12 +102,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(GetSymbol("class Parent<T> { class Test { } }", 1).GetXmlFullyQualifiedName() == "Parent{T}.Test");
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_MemberIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((ISymbol)null!).GetXmlFullyQualifiedName());
-		}
-
 		private INamedTypeSymbol GetSymbol(string source, int index = 0)
 		{
 			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source, index)!;

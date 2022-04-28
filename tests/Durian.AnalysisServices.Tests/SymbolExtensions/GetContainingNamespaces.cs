@@ -67,12 +67,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			);
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetContainingNamespaces());
-		}
-
 		private INamedTypeSymbol GetSymbol(string source)
 		{
 			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source)!;

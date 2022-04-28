@@ -46,20 +46,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(data is null);
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
-		{
-			INamedTypeSymbol attr = GetAttr();
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetAttribute(attr));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SyntaxIsNull()
-		{
-			INamedTypeSymbol type = GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>("[Test]class Test { }")!;
-			Assert.Throws<ArgumentNullException>(() => type.GetAttribute(syntax: null!));
-		}
-
 		private INamedTypeSymbol GetAttr()
 		{
 			return Compilation.CurrentCompilation.GetTypeByMetadataName("TestAttribute")!;

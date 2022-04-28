@@ -46,19 +46,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(containingTypes.Length == 2 && containingTypes[0].Symbol.Name == "Test" && containingTypes[1].Symbol.Name == "Parent");
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			INamedTypeSymbol type = GetSymbol("class Test { }");
-			Assert.Throws<ArgumentNullException>(() => type.GetContainingTypesAsData(null!));
-		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_SymbolIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((INamedTypeSymbol)null!).GetContainingTypesAsData(Compilation));
-		}
-
 		private INamedTypeSymbol GetSymbol(string source, int index = 0)
 		{
 			return GetSymbol<INamedTypeSymbol, ClassDeclarationSyntax>(source, index)!;

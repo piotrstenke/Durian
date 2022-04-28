@@ -83,13 +83,6 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			Assert.True(symbol.GetGenericName() == "Method");
 		}
 
-		[Fact]
-		public void ThrowsArgumentNullException_When_MethodIsNull()
-		{
-			IMethodSymbol symbol = null!;
-			Assert.Throws<ArgumentNullException>(() => symbol.GetGenericName());
-		}
-
 		private IMethodSymbol GetSymbolForArgument(string source)
 		{
 			InvocationExpressionSyntax inv = GetNode<InvocationExpressionSyntax>(source)!;

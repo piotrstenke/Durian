@@ -36,11 +36,5 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 			QualifiedNameSyntax? syntax = new INamespaceSymbol[] { n1.Object, n2.Object, n3.Object }.JoinIntoQualifiedName();
 			Assert.True(syntax is not null && syntax.ToFullString() == "System.Collections.Generic");
 		}
-
-		[Fact]
-		public void ThrowsArgumentNullException_When_NamespacesIsIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => ((INamespaceSymbol[])null!).JoinIntoQualifiedName());
-		}
 	}
 }

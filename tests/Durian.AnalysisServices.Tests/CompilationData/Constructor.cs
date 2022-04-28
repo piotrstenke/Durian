@@ -17,12 +17,6 @@ namespace Durian.Analysis.Tests.CompilationData
 		}
 
 		[Fact]
-		public void ConstructorThrowsArgumentNullException_When_CompilationIsNull()
-		{
-			Assert.Throws<ArgumentNullException>(() => new Data.CompilationData(null!));
-		}
-
-		[Fact]
 		public void HasErrorsReturnsFalseByDefault()
 		{
 			Data.CompilationData data = new(RoslynUtilities.CreateBaseCompilation());

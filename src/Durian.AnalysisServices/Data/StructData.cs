@@ -14,6 +14,11 @@ namespace Durian.Analysis.Data
 	public class StructData : TypeData<StructDeclarationSyntax>
 	{
 		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="TypeData{TDeclaration}.Declaration"/>.
+		/// </summary>
+		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="StructData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="StructDeclarationSyntax"/> this <see cref="StructData"/> represents.</param>
