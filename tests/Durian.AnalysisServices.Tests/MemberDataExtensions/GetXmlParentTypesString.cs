@@ -13,55 +13,55 @@ namespace Durian.Analysis.Tests.MemberDataExtensions
 		[Fact]
 		public void IsSuccess_When_HasMultipleParentTypes()
 		{
-			Assert.True(GetClass("class Parent { class Child1 { class Child2 { } } }", 2)!.GetXmlParentTypes() == "Parent.Child1.Child2");
+			Assert.True(GetClass("class Parent { class Child1 { class Child2 { } } }", 2)!.GetXmlContainingTypes() == "Parent.Child1.Child2");
 		}
 
 		[Fact]
 		public void IsSuccess_When_IsGeneric()
 		{
-			Assert.True(GetClass("class Parent { class Child<T> { } }", 1)!.GetXmlParentTypes() == "Parent.Child{T}");
+			Assert.True(GetClass("class Parent { class Child<T> { } }", 1)!.GetXmlContainingTypes() == "Parent.Child{T}");
 		}
 
 		[Fact]
 		public void IsSuccess_When_IsGeneric_And_HasMultipleTypeParameters()
 		{
-			Assert.True(GetClass("class Parent { class Child<T, U> { } }", 1)!.GetXmlParentTypes() == "Parent.Child{T, U}");
+			Assert.True(GetClass("class Parent { class Child<T, U> { } }", 1)!.GetXmlContainingTypes() == "Parent.Child{T, U}");
 		}
 
 		[Fact]
 		public void IsSuccess_When_IsGeneric_And_ParentIsGeneric()
 		{
-			Assert.True(GetClass("class Parent<T> { class Child<U> { } }", 1)!.GetXmlParentTypes() == "Parent{T}.Child{U}");
+			Assert.True(GetClass("class Parent<T> { class Child<U> { } }", 1)!.GetXmlContainingTypes() == "Parent{T}.Child{U}");
 		}
 
 		[Fact]
 		public void IsSuccess_When_ParentIsGeneric()
 		{
-			Assert.True(GetClass("class Parent<T> { class Child { } }", 1)!.GetXmlParentTypes() == "Parent{T}.Child");
+			Assert.True(GetClass("class Parent<T> { class Child { } }", 1)!.GetXmlContainingTypes() == "Parent{T}.Child");
 		}
 
 		[Fact]
 		public void ReturnsMemberName_When_HasNoParentTypes()
 		{
-			Assert.True(GetClass("class Test { }")!.GetXmlParentTypes() == "Test");
+			Assert.True(GetClass("class Test { }")!.GetXmlContainingTypes() == "Test");
 		}
 
 		[Fact]
 		public void ReturnsNameWithParameters_When_IsGenericMethod_And_IncludeParametersIsTrue()
 		{
-			Assert.True(GetMethod("class Test { void Method<T>(int a) { } }")!.GetXmlParentTypes(true, true) == "Test.Method{T}(int)");
+			Assert.True(GetMethod("class Test { void Method<T>(int a) { } }")!.GetXmlContainingTypes(true, true) == "Test.Method{T}(int)");
 		}
 
 		[Fact]
 		public void ReturnsNameWithParameters_When_IsGenericMethod_And_ParentIsGeneric_And_IncludeParametersIsTrue()
 		{
-			Assert.True(GetMethod("class Test<T> { void Method<U>(U a, int b) { } }")!.GetXmlParentTypes(true, true) == "Test{T}.Method{U}(U, int)");
+			Assert.True(GetMethod("class Test<T> { void Method<U>(U a, int b) { } }")!.GetXmlContainingTypes(true, true) == "Test{T}.Method{U}(U, int)");
 		}
 
 		[Fact]
 		public void ReturnsNameWithParameters_When_IsMethod_And_IncludeParametersIsTrue()
 		{
-			Assert.True(GetMethod("class Test { void Method(int a) { } }")!.GetXmlParentTypes(true, true) == "Test.Method(int)");
+			Assert.True(GetMethod("class Test { void Method(int a) { } }")!.GetXmlContainingTypes(true, true) == "Test.Method(int)");
 		}
 	}
 }

@@ -849,7 +849,7 @@ namespace Durian.Analysis.DefaultParam
 			{
 				string baseFullName = baseMethod.ToString();
 				List<string> methodNames = new() { fullName, baseFullName };
-				methodNames.AddRange(baseMethod.GetBaseMethods().Select(m => m.ToString()));
+				methodNames.AddRange(baseMethod.GetOverriddenSymbols().Select(m => m.ToString()));
 
 				return members.Where(s =>
 				{
@@ -1020,7 +1020,7 @@ namespace Durian.Analysis.DefaultParam
 
 		private static bool HasPartialKeyword(INamedTypeSymbol symbol, CancellationToken cancellationToken)
 		{
-			return symbol.GetModifiers(cancellationToken).Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+			return symbol.GetModifiers(cancellationToken).Any(m => m == "partial");
 		}
 
 		private static bool HasTypeParameterAsConstraint(ITypeParameterSymbol currentTypeParameter, in TypeParameterContainer typeParameters)

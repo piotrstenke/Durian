@@ -22,38 +22,6 @@ namespace Durian.Analysis.Extensions
 	public static class SymbolExtensions
 	{
 		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> can inherit from other types.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if can inherit.</param>
-		public static bool CanInherit(this INamedTypeSymbol type)
-		{
-			return type.TypeKind == TypeKind.Class && !type.IsStatic;
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="child"/> is contained withing the <paramref name="parent"/> at any nesting level.
-		/// </summary>
-		/// <param name="parent">Parent <see cref="ISymbol"/>.</param>
-		/// <param name="child">Child <see cref="ISymbol"/>.</param>
-		/// <returns>True if the <paramref name="parent"/> contains the <paramref name="child"/> or the <paramref name="parent"/> is equivalent to <paramref name="child"/>, otherwise false.</returns>
-		public static bool ContainsSymbol(this ISymbol parent, ISymbol child)
-		{
-			ISymbol? current = child;
-
-			while (current is not null)
-			{
-				if (SymbolEqualityComparer.Default.Equals(current, parent))
-				{
-					return true;
-				}
-
-				current = current.ContainingSymbol;
-			}
-
-			return false;
-		}
-
-		/// <summary>
 		/// Creates a <see cref="TypeSyntax"/> representing the specified <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
@@ -74,7 +42,7 @@ namespace Durian.Analysis.Extensions
 					SyntaxFactory.Identifier(type.Name),
 					SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(arguments)));
 			}
-			else if (type.GetPredefineTypeSyntax() is PredefinedTypeSyntax predefined)
+			else if (GetPredefineTypeSyntax(type) is PredefinedTypeSyntax predefined)
 			{
 				syntax = predefined;
 			}
@@ -239,6 +207,7 @@ namespace Durian.Analysis.Extensions
 			{
 				return method.CreateTypeSyntax();
 			}
+
 			return SyntaxFactory.IdentifierName(symbol.Name);
 		}
 
@@ -265,10 +234,10 @@ namespace Durian.Analysis.Extensions
 				SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(arguments)));
 		}
 
-		/// <inheritdoc cref="GetAllMembers(INamedTypeSymbol, string)"/>
-		public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type)
+		/// <inheritdoc cref="GetAllMembers(INamedTypeSymbol, string, ReturnOrder)"/>
+		public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, ReturnOrder order = ReturnOrder.Parent)
 		{
-			return type.GetMembers().Concat(GetBaseTypes(type).SelectMany(t => t.GetMembers()));
+			return type.GetBaseTypes(true, order).SelectMany(t => t.GetMembers());
 		}
 
 		/// <summary>
@@ -276,18 +245,10 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="type"><see cref="ITypeSymbol"/> to get the members of.</param>
 		/// <param name="name">Name of the members to find.</param>
-		public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, string name)
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, string name, ReturnOrder order = ReturnOrder.Parent)
 		{
-			if (type.TypeKind == TypeKind.Interface)
-			{
-				return type.GetMembers(name)
-					.Concat(type.AllInterfaces
-						.SelectMany(intf => intf.GetMembers(name)));
-			}
-
-			return type.GetMembers(name)
-				.Concat(GetBaseTypes(type)
-					.SelectMany(t => t.GetMembers(name)));
+			return type.GetBaseTypes(true, order).SelectMany(t => t.GetMembers(name));
 		}
 
 		/// <summary>
@@ -345,6 +306,143 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns a keyword used to refer to the specified <paramref name="symbol"/> inside an attribute list.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the associated attribute target keyword of.</param>
+		/// <param name="targetKind">Determines which keyword to return when there is more than one option (e.g '<see langword="method"/>' and '<see langword="return"/>' for methods).</param>
+		/// <exception cref="ArgumentException"><paramref name="symbol"/> does not support attribute targets.</exception>
+		public static string GetAttributeTarget(this ISymbol symbol, AttributeTargetKind targetKind = default)
+		{
+			if (symbol is IMethodSymbol method)
+			{
+				if (AnalysisUtilities.GetAttributeTarget(method.MethodKind, targetKind) is string methodTarget)
+				{
+					return methodTarget;
+				}
+			}
+			else if (symbol is IEventSymbol @event && !@event.IsFieldEvent())
+			{
+				return "event";
+			}
+			else if (AnalysisUtilities.GetAttributeTarget(symbol.Kind, targetKind) is string target)
+			{
+				return target;
+			}
+
+			throw new ArgumentException($"Symbol '{symbol}' does not support attribute targets", nameof(symbol));
+		}
+
+		/// <summary>
+		/// Returns the type of result of awaiting on the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the type of result of awaiting on.</param>
+		public static ITypeSymbol? GetAwaitResult(this INamedTypeSymbol type)
+		{
+			bool hasIsCompleted = false;
+			bool hasGetResult = false;
+
+			ITypeSymbol? resultType = default;
+
+			if (!type.IsINotifyCompletion())
+			{
+				foreach (IMethodSymbol method in type.GetAllMembers().OfType<IMethodSymbol>())
+				{
+					if(SymbolFacts.IsGetAwaiterRaw(method, out INamedTypeSymbol? returnType) && HandleAwaiterType(type))
+					{
+						return resultType;
+					}
+				}
+
+				return default;
+			}
+
+			List<INamedTypeSymbol> awaiters = new();
+
+			foreach (ISymbol symbol in type.GetAllMembers())
+			{
+				bool? handleResultType = HandleResultType(symbol);
+
+				if(handleResultType.HasValue)
+				{
+					if(handleResultType.Value)
+					{
+						return resultType;
+					}
+				}
+				else if(symbol is IMethodSymbol method && SymbolFacts.IsGetAwaiterRaw(method, out INamedTypeSymbol? awaiter))
+				{
+					awaiters.Add(awaiter);
+				}
+			}
+
+			foreach (INamedTypeSymbol awaiter in awaiters)
+			{
+				if(HandleAwaiterType(awaiter))
+				{
+					return resultType;
+				}
+			}
+
+			return default;
+
+			bool HandleAwaiterType(INamedTypeSymbol type)
+			{
+				if (!type.IsINotifyCompletion())
+				{
+					return false;
+				}
+
+				resultType = default;
+
+				hasIsCompleted = false;
+				hasGetResult = false;
+
+				foreach (ISymbol symbol in type.GetAllMembers())
+				{
+					bool? handleResultType = HandleResultType(symbol);
+
+					if (handleResultType == true)
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			bool? HandleResultType(ISymbol symbol)
+			{
+				if (!hasIsCompleted && symbol.IsSpecialMember(SpecialMember.IsCompleted))
+				{
+					if (hasGetResult)
+					{
+						return true;
+					}
+
+					hasIsCompleted = true;
+
+					return false;
+				}
+				else if (!hasGetResult && symbol.IsSpecialMember(SpecialMember.GetResult))
+				{
+					IMethodSymbol method = (symbol as IMethodSymbol)!;
+					resultType = method.ReturnsVoid ? default : method.ReturnType;
+
+					if (hasIsCompleted)
+					{
+						return true;
+					}
+
+					hasGetResult = true;
+
+					return false;
+				}
+
+				return default;
+			}
+		}
+
+		/// <summary>
 		/// Returns the backing field of the specified <paramref name="property"/> or <see langword="null"/> if the <paramref name="property"/> is not auto-implemented.
 		/// </summary>
 		/// <param name="property"><see cref="IPropertySymbol"/> to get the backing field of.</param>
@@ -357,40 +455,42 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns all <see cref="IMethodSymbol"/> this <paramref name="method"/> overrides.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the base methods of.</param>
-		public static IEnumerable<IMethodSymbol> GetBaseMethods(this IMethodSymbol method)
-		{
-			IMethodSymbol? m = method;
-
-			while ((m = m!.OverriddenMethod) is not null)
-			{
-				yield return m;
-			}
-		}
-
-		/// <summary>
 		/// Returns all types the specified <paramref name="type"/> inherits from.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the base types of.</param>
 		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection.</param>
-		public static IEnumerable<INamedTypeSymbol> GetBaseTypes(this INamedTypeSymbol type, bool includeSelf = false)
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static IEnumerable<INamedTypeSymbol> GetBaseTypes(this INamedTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.Parent)
 		{
-			if (includeSelf)
+			return AnalysisUtilities.ByOrder(Yield(), order);
+
+			IEnumerable<INamedTypeSymbol> Yield()
 			{
-				yield return type;
-			}
+				if (includeSelf)
+				{
+					yield return type;
+				}
 
-			INamedTypeSymbol? currentType = type.BaseType;
+				if (type.TypeKind == TypeKind.Interface)
+				{
+					foreach (INamedTypeSymbol t in type.AllInterfaces)
+					{
+						yield return t;
+					}
 
-			if (currentType is not null)
-			{
-				yield return currentType;
+					yield break;
+				}
 
-				while ((currentType = currentType!.BaseType) is not null)
+				INamedTypeSymbol? currentType = type.BaseType;
+
+				if (currentType is not null)
 				{
 					yield return currentType;
+
+					while ((currentType = currentType!.BaseType) is not null)
+					{
+						yield return currentType;
+					}
 				}
 			}
 		}
@@ -489,7 +589,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this ISymbol symbol, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
 		{
-			IEnumerable<INamespaceSymbol> namespaces = ReturnByOrder(GetNamespaces(), order);
+			IEnumerable<INamespaceSymbol> namespaces = AnalysisUtilities.ByOrder(GetNamespaces(), order);
 
 			if (!includeGlobal)
 			{
@@ -519,22 +619,24 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types and namespaces of.</param>
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well</param>
-		public static IEnumerable<INamespaceOrTypeSymbol> GetContainingNamespacesAndTypes(this ISymbol symbol, bool includeGlobal = false)
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static IEnumerable<INamespaceOrTypeSymbol> GetContainingNamespacesAndTypes(this ISymbol symbol, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
 		{
-			return GetNamespacesAndTypes();
+			IEnumerable<INamespaceOrTypeSymbol> first;
+			IEnumerable<INamespaceOrTypeSymbol> second;
 
-			IEnumerable<INamespaceOrTypeSymbol> GetNamespacesAndTypes()
+			if (order == ReturnOrder.Root)
 			{
-				foreach (INamespaceSymbol s in GetContainingNamespaces(symbol, includeGlobal))
-				{
-					yield return s;
-				}
-
-				foreach (INamedTypeSymbol s in GetContainingTypes(symbol))
-				{
-					yield return s;
-				}
+				first = symbol.GetContainingNamespaces(includeGlobal, order);
+				second = symbol.GetContainingTypes(false, order);
 			}
+			else
+			{
+				first = symbol.GetContainingTypes(false, order);
+				second = symbol.GetContainingNamespaces(includeGlobal, order);
+			}
+
+			return first.Concat(second);
 		}
 
 		/// <summary>
@@ -545,9 +647,9 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IEnumerable<INamedTypeSymbol> GetContainingTypes(this ISymbol symbol, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
 		{
-			return ReturnByOrder(GetTypes(), order);
+			return AnalysisUtilities.ByOrder(Yield(), order);
 
-			IEnumerable<INamedTypeSymbol> GetTypes()
+			IEnumerable<INamedTypeSymbol> Yield()
 			{
 				if (includeSelf && symbol is INamedTypeSymbol t)
 				{
@@ -575,15 +677,14 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
 		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
 		/// <param name="order">Specifies ordering of the returned members.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<ITypeData> GetContainingTypesAsData(this ISymbol symbol, ICompilationData compilation, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
 		{
 			INamedTypeSymbol[] parentSymbols = GetContainingTypes(symbol, includeSelf, order).ToArray();
 			List<ITypeData> parentList = new(parentSymbols.Length);
 
-			return parentSymbols.Select<INamedTypeSymbol, ITypeData>(parent =>
+			return parentSymbols.Select(parent =>
 			{
-				if(parent.GetMemberData(compilation) is not ITypeData data)
+				if (parent.ToData(compilation) is not ITypeData data)
 				{
 					throw new InvalidOperationException($"Invalid type kind of '{parent}'");
 				}
@@ -591,6 +692,52 @@ namespace Durian.Analysis.Extensions
 				parentList.Add(data);
 				return data;
 			});
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> that contains all the parent types of the specified <paramref name="symbol"/> and the <paramref name="symbol"/>'s name separated by the dot ('.') character.
+		/// </summary>
+		/// <remarks>If the <paramref name="symbol"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="string"/> of.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned <see cref="string"/>.</param>
+		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		public static string GetContainingTypesAsString(this ISymbol symbol, bool includeSelf = true, bool includeParameters = false)
+		{
+			StringBuilder builder = new();
+			builder.WriteContainingTypes(symbol, includeSelf, includeParameters);
+			return builder.ToString();
+		}
+
+		/// <summary>
+		/// Returns a keyword used to declare the specified <paramref name="symbol"/> (e.g. <see langword="class"/>, <see langword="event"/>).
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the keyword of.</param>
+		public static string? GetDeclaredKeyword(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				INamedTypeSymbol type => type.GetDeclaredKeyword(),
+				IEventSymbol => "event",
+				IMethodSymbol method when method.IsOperator() => "operator",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns a keyword used to declare the specified <paramref name="type"/> (e.g. <see langword="class"/>, <see langword="enum"/>).
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the keyword of.</param>
+		public static string? GetDeclaredKeyword(this INamedTypeSymbol type)
+		{
+			return type.TypeKind switch
+			{
+				TypeKind.Class => type.IsRecord ? "record" : "class",
+				TypeKind.Struct => type.IsRecord ? "record struct" : "struct",
+				TypeKind.Interface => "interface",
+				TypeKind.Enum => "enum",
+				TypeKind.Delegate => "delegate",
+				_ => default
+			};
 		}
 
 		/// <summary>
@@ -682,7 +829,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IEnumerable<ITypeSymbol> GetElementTypes(this IArrayTypeSymbol array, ReturnOrder order = ReturnOrder.Root)
 		{
-			return ReturnByOrder(Yield(), order);
+			return AnalysisUtilities.ByOrder(Yield(), order);
 
 			IEnumerable<ITypeSymbol> Yield()
 			{
@@ -699,6 +846,23 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns fully qualified name of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the fully qualified name of.</param>
+		/// <param name="metadata">Determines whether the format the created fully qualified name to using metadata naming conventions.</param>
+		public static string GetFullyQualifiedName(this ISymbol symbol, bool metadata = false)
+		{
+			if (metadata)
+			{
+				return symbol.ToString();
+			}
+
+			StringBuilder builder = new();
+			builder.WriteFullyQualifiedName(symbol);
+			return builder.ToString();
+		}
+
+		/// <summary>
 		/// Returns a <see cref="string"/> containing generic identifier of the specified <paramref name="symbol"/> or name of the <paramref name="symbol"/> if it is not an <see cref="IMethodSymbol"/> or <see cref="INamedTypeSymbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the generic name of.</param>
@@ -706,30 +870,8 @@ namespace Durian.Analysis.Extensions
 		public static string GetGenericName(this ISymbol symbol, GenericSubstitution substitution = default)
 		{
 			StringBuilder builder = new();
-			symbol.GetGenericNameInto(builder, substitution);
+			builder.WriteGenericName(symbol, substitution);
 			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> containing generic identifier of the specified <paramref name="symbol"/> or name of the <paramref name="symbol"/> if it is not an <see cref="IMethodSymbol"/> or <see cref="INamedTypeSymbol"/> to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the generic name of.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		public static void GetGenericNameInto(this ISymbol symbol, StringBuilder builder, GenericSubstitution substitution = default)
-		{
-			if (symbol is INamedTypeSymbol t)
-			{
-				t.GetGenericNameInto(builder, substitution);
-			}
-			else if (symbol is IMethodSymbol m)
-			{
-				m.GetGenericNameInto(builder, substitution);
-			}
-			else
-			{
-				builder.Append(symbol.Name);
-			}
 		}
 
 		/// <summary>
@@ -740,31 +882,8 @@ namespace Durian.Analysis.Extensions
 		public static string GetGenericName(this IMethodSymbol method, GenericSubstitution substitution = default)
 		{
 			StringBuilder builder = new();
-			method.GetGenericNameInto(builder, substitution);
+			builder.WriteGenericName(method, substitution);
 			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> containing generic identifier of the specified <paramref name="method"/> to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the generic name of.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		public static void GetGenericNameInto(this IMethodSymbol method, StringBuilder builder, GenericSubstitution substitution = default)
-		{
-			if(substitution.HasFlag(GenericSubstitution.TypeArguments))
-			{
-				method.TypeArguments.GetGenericNameInto(builder, method.Name);
-			}
-			else
-			{
-				method.TypeParameters.GetGenericNameInto(builder, method.Name, substitution.HasFlag(GenericSubstitution.Variance));
-			}
-
-			if (substitution.HasFlag(GenericSubstitution.ParameterList))
-			{
-				method.GetParameterListInto(builder, substitution);
-			}
 		}
 
 		/// <summary>
@@ -775,33 +894,8 @@ namespace Durian.Analysis.Extensions
 		public static string GetGenericName(this INamedTypeSymbol type, GenericSubstitution substitution = default)
 		{
 			StringBuilder builder = new();
-			type.GetGenericNameInto(builder, substitution);
+			builder.WriteGenericName(type, substitution);
 			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> containing generic identifier of the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the generic name of.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		public static void GetGenericNameInto(this INamedTypeSymbol type, StringBuilder builder, GenericSubstitution substitution = default)
-		{
-			string typeName = type.GetTypeKeyword() ?? type.Name;
-
-			if(substitution.HasFlag(GenericSubstitution.TypeArguments))
-			{
-				type.TypeArguments.GetGenericNameInto(builder, typeName);
-			}
-			else
-			{
-				type.TypeParameters.GetGenericNameInto(builder, typeName, substitution.HasFlag(GenericSubstitution.Variance));
-			}
-
-			if (substitution.HasFlag(GenericSubstitution.ParameterList) && type.DelegateInvokeMethod is not null)
-			{
-				type.DelegateInvokeMethod.GetParameterListInto(builder, substitution);
-			}
 		}
 
 		/// <summary>
@@ -812,19 +906,7 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="InvalidOperationException">Pointers can't be used as generic arguments.</exception>
 		public static string GetGenericName(this IEnumerable<ITypeParameterSymbol> typeParameters, bool includeVariance = false)
 		{
-			return typeParameters.GetGenericName(null, includeVariance);
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeParameters"/> to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <param name="typeParameters">Type parameters.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="typeParameters"/>.</param>
-		/// <exception cref="InvalidOperationException">Pointers can't be used as generic arguments.</exception>
-		public static void GetGenericNameInto(this IEnumerable<ITypeParameterSymbol> typeParameters, StringBuilder builder, bool includeVariance = false)
-		{
-			typeParameters.GetGenericNameInto(builder, null, includeVariance);
+			return GetGenericName(typeParameters, null, includeVariance);
 		}
 
 		/// <summary>
@@ -853,33 +935,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Writes a <see cref="string"/> containing generic identifier combined of the specified <paramref name="name"/> and the collection of <paramref name="typeParameters"/> to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <param name="typeParameters">Type parameters.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <param name="name">Actual member identifier.</param>
-		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="typeParameters"/>.</param>
-		public static void GetGenericNameInto(this IEnumerable<ITypeParameterSymbol> typeParameters, StringBuilder builder, string? name, bool includeVariance = false)
-		{
-			if (includeVariance)
-			{
-				AnalysisUtilities.GetGenericNameInto(typeParameters.Select(p =>
-				{
-					if (p.Variance == VarianceKind.Out || p.Variance == VarianceKind.In)
-					{
-						return $"{p.Variance.ToString().ToLower()} {p.Name}";
-					}
-
-					return p.Name;
-				}),
-				name,
-				builder);
-			}
-
-			AnalysisUtilities.GetGenericNameInto(typeParameters.Select(p => p.Name), name, builder);
-		}
-
-		/// <summary>
 		/// Returns a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeArguments"/>.
 		/// </summary>
 		/// <param name="typeArguments">Type arguments.</param>
@@ -887,54 +942,8 @@ namespace Durian.Analysis.Extensions
 		public static string GetGenericName(this IEnumerable<ITypeSymbol> typeArguments)
 		{
 			StringBuilder builder = new();
-			typeArguments.GetGenericNameInto(builder);
+			builder.WriteGenericName(typeArguments);
 			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeArguments"/> to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <param name="typeArguments">Type arguments.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <exception cref="InvalidOperationException">Pointers can't be used as generic arguments.</exception>
-		public static void GetGenericNameInto(this IEnumerable<ITypeSymbol> typeArguments, StringBuilder builder)
-		{
-			if (typeArguments is IEnumerable<ITypeParameterSymbol> parameters)
-			{
-				parameters.GetGenericNameInto(builder);
-				return;
-			}
-
-			ITypeSymbol[] symbols = typeArguments.ToArray();
-
-			if (symbols.Length == 0)
-			{
-				return;
-			}
-
-			CodeBuilder cb = new(builder);
-
-			builder.Append('<');
-
-			foreach (ITypeSymbol argument in symbols)
-			{
-				if (argument is null)
-				{
-					continue;
-				}
-
-				if (argument is IPointerTypeSymbol or IFunctionPointerTypeSymbol)
-				{
-					throw new InvalidOperationException("Pointers can't be used as generic arguments!");
-				}
-
-				cb.Type(argument);
-
-				builder.Append(", ");
-			}
-
-			builder.Remove(builder.Length - 2, 2);
-			builder.Append('>');
 		}
 
 		/// <summary>
@@ -945,30 +954,145 @@ namespace Durian.Analysis.Extensions
 		public static string GetGenericName(this IEnumerable<ITypeSymbol> typeArguments, string? name)
 		{
 			StringBuilder builder = new();
-			typeArguments.GetGenericNameInto(builder, name);
+			builder.WriteGenericName(typeArguments, name);
 			return builder.ToString();
 		}
 
 		/// <summary>
-		/// Writes a <see cref="string"/> containing generic identifier combined of the specified <paramref name="name"/> and the collection of <paramref name="typeArguments"/> to the specified <paramref name="builder"/>.
+		/// Returns the <see cref="ISymbol"/> hidden by the specified <paramref name="symbol"/> using the <see langword="new"/> keyword.
 		/// </summary>
-		/// <param name="typeArguments">Type arguments.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <param name="name">Actual member identifier.</param>
-		public static void GetGenericNameInto(this IEnumerable<ITypeSymbol> typeArguments, StringBuilder builder, string? name)
+		/// <param name="symbol"><see cref="ISymbol"/> to get the symbol hidden by.</param>
+		public static ISymbol? GetHiddenSymbol(this ISymbol symbol)
 		{
-			if (typeArguments is IEnumerable<ITypeParameterSymbol> parameters)
+			return symbol switch
 			{
-				parameters.GetGenericNameInto(builder, name);
-				return;
+				INamedTypeSymbol type => type.GetHiddenSymbol(),
+				IMethodSymbol method => method.GetHiddenSymbol(),
+				IPropertySymbol property => property.GetHiddenSymbol(),
+				IFieldSymbol field => field.GetHiddenSymbol(),
+				IEventSymbol @event => @event.GetHiddenSymbol(),
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns the <see cref="ISymbol"/> hidden by the specified <paramref name="method"/> using the <see langword="new"/> keyword.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the symbol hidden by.</param>
+		public static ISymbol? GetHiddenSymbol(this IMethodSymbol method)
+		{
+			if (method.MethodKind != MethodKind.Ordinary || method.ContainingType is null)
+			{
+				return default;
 			}
 
-			if(!string.IsNullOrWhiteSpace(name))
+			if (method.Arity == 0)
 			{
-				builder.Append(name);
+				return method.ContainingType
+					.GetAllMembers(method.Name)
+					.FirstOrDefault(member => member switch
+					{
+						INamedTypeSymbol type => type.Arity == 0,
+						IMethodSymbol other => SymbolFacts.CanHideSymbol_Internal(method, other),
+						IPropertySymbol property => !property.IsIndexer,
+						IFieldSymbol or IFieldSymbol => true,
+						_ => false
+					});
 			}
 
-			typeArguments.GetGenericNameInto(builder);
+			return method.ContainingType
+				.GetAllMembers(method.Name)
+				.FirstOrDefault(member => member switch
+				{
+					INamedTypeSymbol type => type.Arity == method.Arity,
+					IMethodSymbol other => SymbolFacts.CanHideSymbol_Internal(method, other),
+					_ => false
+				});
+		}
+
+		/// <summary>
+		/// Returns the <see cref="ISymbol"/> hidden by the specified <paramref name="type"/> using the <see langword="new"/> keyword.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the symbol hidden by.</param>
+		public static ISymbol? GetHiddenSymbol(this INamedTypeSymbol type)
+		{
+			if (type.ContainingType is null || !type.IsDeclarationKind())
+			{
+				return default;
+			}
+
+			if (type.Arity == 0)
+			{
+				return GetHiddenSymbol_Internal(type);
+			}
+
+			return type.ContainingType
+				.GetAllMembers(type.Name)
+				.FirstOrDefault(member => member switch
+				{
+					INamedTypeSymbol other => other.Arity == type.Arity,
+					IMethodSymbol method => method.Arity == type.Arity,
+					_ => false
+				});
+		}
+
+		/// <summary>
+		/// Returns the <see cref="ISymbol"/> hidden by the specified <paramref name="property"/> using the <see langword="new"/> keyword.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to get the symbol hidden by.</param>
+		public static ISymbol? GetHiddenSymbol(this IPropertySymbol property)
+		{
+			if (property.ContainingType is null)
+			{
+				return default;
+			}
+
+			if (property.IsIndexer)
+			{
+				return property.ContainingType
+					.GetAllMembers()
+					.OfType<IPropertySymbol>()
+					.FirstOrDefault(p => p.IsIndexer && SymbolFacts.ParametersAreEquivalent(property.Parameters, p.Parameters));
+			}
+
+			return GetHiddenSymbol_Internal(property);
+		}
+
+		/// <summary>
+		/// Returns the <see cref="ISymbol"/> hidden by the specified <paramref name="field"/> using the <see langword="new"/> keyword.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to get the symbol hidden by.</param>
+		public static ISymbol? GetHiddenSymbol(this IFieldSymbol field)
+		{
+			if (field.ContainingType is null)
+			{
+				return default;
+			}
+
+			return GetHiddenSymbol_Internal(field);
+		}
+
+		/// <summary>
+		/// Returns the <see cref="ISymbol"/> hidden by the specified <paramref name="event"/> using the <see langword="new"/> keyword.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to get the symbol hidden by.</param>
+		public static ISymbol? GetHiddenSymbol(this IEventSymbol @event)
+		{
+			if (@event.ContainingType is null)
+			{
+				return default;
+			}
+
+			return @event.ContainingType
+				.GetAllMembers(@event.Name)
+				.FirstOrDefault(member => member switch
+				{
+					INamedTypeSymbol type => type.Arity == 0,
+					IMethodSymbol method => method.Arity == 0,
+					IPropertySymbol property => !property.IsIndexer,
+					IFieldSymbol or IFieldSymbol => true,
+					_ => false
+				});
 		}
 
 		/// <summary>
@@ -991,360 +1115,60 @@ namespace Durian.Analysis.Extensions
 				return default;
 			}
 
-			return AutoGenerated.GetInheritdoc(symbol.GetXmlParentTypes(true, true));
+			return AutoGenerated.GetInheritdoc(AnalysisUtilities.ToXmlCompatible(symbol.GetContainingTypesAsString(true, true)));
 		}
 
 		/// <summary>
-		/// Returns a collection of all inner types of the specified <paramref name="symbol"/>.
+		/// Returns a collection of all inner types of the specified <paramref name="type"/>.
 		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to get the inner types of.</param>
-		public static IEnumerable<INamedTypeSymbol> GetInnerTypes(this INamedTypeSymbol symbol)
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the inner types of.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static IEnumerable<INamedTypeSymbol> GetInnerTypes(this INamedTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.Parent)
 		{
-			return GetInnerTypes_Internal(symbol);
-		}
+			const int capacity = 32;
 
-		/// <summary>
-		/// Returns a collection of all inner types of the specified <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamespaceSymbol"/> to get the inner types of.</param>
-		public static IEnumerable<INamedTypeSymbol> GetInnerTypes(this INamespaceSymbol symbol)
-		{
-			return Yield(symbol);
+			return AnalysisUtilities.ByOrder(Yield(), order);
 
-			static IEnumerable<INamedTypeSymbol> Yield(INamespaceSymbol @namespace)
+			IEnumerable<INamedTypeSymbol> Yield()
 			{
-				foreach (INamedTypeSymbol type in @namespace.GetTypeMembers())
+				if (includeSelf)
 				{
 					yield return type;
+				}
 
-					foreach (INamedTypeSymbol inner in GetInnerTypes_Internal(type))
+				ImmutableArray<INamedTypeSymbol> array = type.GetTypeMembers();
+
+				if (array.Length == 0)
+				{
+					yield break;
+				}
+
+				Stack<INamedTypeSymbol> innerTypes = new(array.Length > capacity ? array.Length : capacity);
+
+				foreach (INamedTypeSymbol t in array)
+				{
+					innerTypes.Push(t);
+				}
+
+				while (innerTypes.Count > 0)
+				{
+					INamedTypeSymbol t = innerTypes.Pop();
+					yield return t;
+
+					array = t.GetTypeMembers();
+
+					if (array.Length == 0)
 					{
-						yield return inner;
+						continue;
+					}
+
+					foreach (INamedTypeSymbol child in array.Reverse())
+					{
+						innerTypes.Push(child);
 					}
 				}
-
-				foreach (INamespaceSymbol n in @namespace.GetNamespaceMembers())
-				{
-					foreach (INamedTypeSymbol type in Yield(n))
-					{
-						yield return type;
-					}
-				}
 			}
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="event"/> is a field-like <see langword="event"/>.
-		/// </summary>
-		/// <param name="event"><see cref="IEventSymbol"/> to check if is a field-like <see langword="event"/>.</param>
-		public static bool IsFieldEvent(this IEventSymbol @event)
-		{
-			if(@event.AddMethod is not null && !@event.AddMethod.IsImplicitlyDeclared)
-			{
-				return false;
-			}
-
-			if(@event.RemoveMethod is not null && !@event.RemoveMethod.IsImplicitlyDeclared)
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		/// <summary>
-		/// Returns a keyword used to refer to the specified <paramref name="symbol"/> inside an attribute list.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the associated attribute target keyword of.</param>
-		/// <param name="targetKind">Determines which keyword to return when there is more than one option (e.g '<see langword="method"/>' and '<see langword="return"/>' for methods).</param>
-		/// <exception cref="ArgumentException"><paramref name="symbol"/> does not support attribute targets.</exception>
-		public static string GetAttributeTarget(this ISymbol symbol, AttributeTargetKind targetKind = default)
-		{
-			if(symbol is IMethodSymbol method)
-			{
-				if(method.MethodKind.GetAttributeTarget(targetKind) is string methodTarget)
-				{
-					return methodTarget;
-				}
-			}
-			else if(symbol is IEventSymbol @event && !@event.IsFieldEvent())
-			{
-				return "event";
-			}
-			else if(symbol.Kind.GetAttributeTarget(targetKind) is string target)
-			{
-				return target;
-			}
-
-			throw new ArgumentException($"Symbol '{symbol}' does not support attribute targets", nameof(symbol));
-		}
-
-		/// <summary>
-		/// Returns a keyword used to refer to a <see cref="ISymbol"/> of the specified <paramref name="kind"/> inside an attribute list.
-		/// </summary>
-		/// <param name="kind">Kind of method to get the keyword for.</param>
-		/// <param name="targetKind">Determines which keyword to return when there is more than one option.</param>
-		public static string? GetAttributeTarget(this SymbolKind kind, AttributeTargetKind targetKind = default)
-		{
-			return kind switch
-			{
-				SymbolKind.NamedType => "type",
-				SymbolKind.Field => "field",
-				SymbolKind.Method => targetKind == AttributeTargetKind.FieldOrReturn ? "return" : "method",
-				SymbolKind.Property => targetKind == AttributeTargetKind.FieldOrReturn ? "field" : "property",
-				SymbolKind.Event => targetKind switch
-				{
-					AttributeTargetKind.FieldOrReturn => "field",
-					AttributeTargetKind.MethodOrParam => "method",
-					_ => "event"
-				},
-				SymbolKind.TypeParameter => "typevar",
-				SymbolKind.Parameter => "param",
-				SymbolKind.Assembly => "assembly",
-				SymbolKind.NetModule => "module",
-				_ => default
-			};
-		}
-
-		/// <summary>
-		/// Returns a keyword used to refer to a <see cref="IMethodSymbol"/> of the specified <paramref name="kind"/> inside an attribute list.
-		/// </summary>
-		/// <param name="kind">Kind of method to get the keyword for.</param>
-		/// <param name="targetKind">Determines which keyword to return when there is more than one option.</param>
-		public static string? GetAttributeTarget(this MethodKind kind, AttributeTargetKind targetKind = default)
-		{
-			return kind switch
-			{
-				MethodKind.EventAdd or
-				MethodKind.EventRemove or
-				MethodKind.PropertySet => targetKind switch
-				{
-					AttributeTargetKind.FieldOrReturn => "return",
-					AttributeTargetKind.MethodOrParam => "param",
-					_ => "method"
-				},
-				_ => targetKind == AttributeTargetKind.FieldOrReturn ? "return" : "method"
-			};
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is a constructor (either instance or static).
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is a constructor.</param>
-		public static bool IsConstructor(this IMethodSymbol method)
-		{
-			return method.MethodKind is MethodKind.Constructor or MethodKind.StaticConstructor;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is an operator.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an operator.</param>
-		public static bool IsOperator(this IMethodSymbol method)
-		{
-			return method.MethodKind is MethodKind.Conversion or MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator;
-		}
-
-		/// <summary>
-		/// Returns a keyword used to declare the specified <paramref name="symbol"/> (e.g. <see langword="class"/>, <see langword="event"/>).
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the keyword of.</param>
-		public static string? GetDeclaredKeyword(this ISymbol symbol)
-		{
-			return symbol switch
-			{
-				INamedTypeSymbol type => type.GetDeclaredKeyword(),
-				IEventSymbol => "event",
-				IMethodSymbol method when method.IsOperator() => "operator",
-				_ => default
-			};
-		}
-
-		/// <summary>
-		/// Returns a keyword used to declare the specified <paramref name="type"/> (e.g. <see langword="class"/>, <see langword="enum"/>).
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the keyword of.</param>
-		public static string? GetDeclaredKeyword(this INamedTypeSymbol type)
-		{
-			return type.TypeKind switch
-			{
-				TypeKind.Class => type.IsRecord ? "record" : "class",
-				TypeKind.Struct => type.IsRecord ? "record struct" : "struct",
-				TypeKind.Interface => "interface",
-				TypeKind.Enum => "enum",
-				TypeKind.Delegate => "delegate",
-				_ => default
-			};
-		}
-
-		/// <summary>
-		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
-		public static IMemberData GetMemberData(this INamedTypeSymbol type, ICompilationData compilation)
-		{
-			if (type.IsRecord)
-			{
-				return new RecordData(type, compilation);
-			}
-
-			return type.TypeKind switch
-			{
-				TypeKind.Class => new ClassData(type, compilation),
-				TypeKind.Struct => new StructData(type, compilation),
-				TypeKind.Interface => new InterfaceData(type, compilation),
-				TypeKind.Delegate => new DelegateData(type, compilation),
-				TypeKind.Enum => new EnumData(type, compilation),
-				_ => new UnknownTypeData(type, compilation)
-			};
-		}
-
-		/// <summary>
-		/// Returns new <see cref="IMethodData"/> created for the specified <paramref name="method"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodData"/> to create the <see cref="IMethodSymbol"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMethodSymbol"/> from.</param>
-		public static IMethodData GetMemberData(this IMethodSymbol method, ICompilationData compilation)
-		{
-			return method.MethodKind switch
-			{
-				MethodKind.Ordinary => new MethodData(method, compilation),
-				MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator => new OperatorData(method, compilation),
-				MethodKind.Constructor or MethodKind.StaticConstructor => new ConstructorData(method, compilation),
-				MethodKind.Destructor => new DestructorData(method, compilation),
-				MethodKind.LocalFunction => new LocalFunctionData(method, compilation),
-				MethodKind.Conversion => new ConversionOperatorData(method, compilation),
-				_ => new UnknownMethodData(method, compilation)
-			};
-		}
-
-		/// <summary>
-		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="field"/>.
-		/// </summary>
-		/// <param name="field"><see cref="IFieldSymbol"/> to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
-		public static IMemberData GetMemberData(this IFieldSymbol field, ICompilationData compilation)
-		{
-			return new FieldData(field, compilation);
-		}
-
-		/// <summary>
-		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="event"/>.
-		/// </summary>
-		/// <param name="event"><see cref="IEventSymbol"/> to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
-		public static IMemberData GetMemberData(this IEventSymbol @event, ICompilationData compilation)
-		{
-			return new EventData(@event, compilation);
-		}
-
-		/// <summary>
-		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="property"/>.
-		/// </summary>
-		/// <param name="property"><see cref="IPropertySymbol"/> to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
-		public static IMemberData GetMemberData(this IPropertySymbol property, ICompilationData compilation)
-		{
-			if (property.IsIndexer)
-			{
-				return new IndexerData(property, compilation);
-			}
-
-			return new PropertyData(property, compilation);
-		}
-
-		/// <summary>
-		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="namespace"/>.
-		/// </summary>
-		/// <param name="namespace"><see cref="INamespaceSymbol"/> to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
-		public static IMemberData GetMembetData(this INamespaceSymbol @namespace, ICompilationData compilation)
-		{
-			return new NamespaceData(@namespace, compilation);
-		}
-
-		/// <summary>
-		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="local"/>.
-		/// </summary>
-		/// <param name="local"><see cref="ILocalSymbol"/> to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
-		public static IMemberData GetMemberData(this ILocalSymbol local, ICompilationData compilation)
-		{
-			return new LocalData(local, compilation);
-		}
-
-		/// <summary>
-		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="typeParameter"/>.
-		/// </summary>
-		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
-		public static IMemberData GetMemberData(this ITypeParameterSymbol typeParameter, ICompilationData compilation)
-		{
-			return new TypeParameterData(typeParameter, compilation);
-		}
-
-		/// <summary>
-		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="parameter"/>.
-		/// </summary>
-		/// <param name="parameter"><see cref="IParameterSymbol"/> to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
-		public static IMemberData GetMemberData(this IParameterSymbol parameter, ICompilationData compilation)
-		{
-			return new ParameterData(parameter, compilation);
-		}
-
-		/// <summary>
-		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamespaceOrTypeSymbol"/> to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
-		public static IMemberData GetMemberData(this INamespaceOrTypeSymbol symbol, ICompilationData compilation)
-		{
-			if(symbol is INamespaceSymbol @namespace)
-			{
-				return @namespace.GetMemberData(compilation);
-			}
-
-			if(symbol is INamedTypeSymbol type)
-			{
-				return type.GetMemberData(compilation);
-			}
-
-			if(symbol is ITypeParameterSymbol typeParameter)
-			{
-				return typeParameter.GetMemberData(compilation);
-			}
-
-			if(symbol is ITypeSymbol unknownType)
-			{
-				return new UnknownTypeData(unknownType, compilation);
-			}
-
-			return new MemberData(symbol, compilation);
-		}
-
-		/// <summary>
-		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
-		public static IMemberData GetMemberData(this ISymbol symbol, ICompilationData compilation)
-		{
-			return symbol switch
-			{
-				ITypeParameterSymbol typeParameter => typeParameter.GetMemberData(compilation),
-				INamedTypeSymbol type => type.GetMemberData(compilation),
-				IMethodSymbol method => method.GetMemberData(compilation),
-				IPropertySymbol property => property.GetMemberData(compilation),
-				IFieldSymbol field => field.GetMemberData(compilation),
-				IEventSymbol @event => @event.GetMemberData(compilation),
-				IParameterSymbol parameter => parameter.GetMemberData(compilation),
-				INamespaceSymbol @namespace => @namespace.GetMemberData(compilation),
-				ILocalSymbol local => local.GetMemberData(compilation),
-				ITypeSymbol unknownType => new UnknownTypeData(unknownType, compilation),
-				_ => new MemberData(symbol, compilation)
-			};
 		}
 
 		/// <summary>
@@ -1352,19 +1176,20 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the modifiers of.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public static IEnumerable<SyntaxToken> GetModifiers(this INamedTypeSymbol type, CancellationToken cancellationToken = default)
+		public static IEnumerable<string> GetModifiers(this INamedTypeSymbol type, CancellationToken cancellationToken = default)
 		{
 			return type.DeclaringSyntaxReferences
 				.Select(e => e.GetSyntax(cancellationToken))
 				.Cast<TypeDeclarationSyntax>()
-				.GetModifiers();
+				.GetModifiers()
+				.Select(m => m.ValueText);
 		}
 
 		/// <summary>
 		/// Returns text of operator this <paramref name="method"/> overloads.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the kind of the overloaded operator.</param>
-		public static string? GetOperatorText(this IMethodSymbol method)
+		public static string? GetOperatorToken(this IMethodSymbol method)
 		{
 			if (method.MethodKind != MethodKind.UserDefinedOperator && method.MethodKind != MethodKind.BuiltinOperator)
 			{
@@ -1389,94 +1214,84 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the <see cref="ISymbol"/> overridden by the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the symbol overridden by.</param>
+		public static ISymbol? GetOverriddenSymbol(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				IMethodSymbol method => method.OverriddenMethod,
+				IPropertySymbol property => property.OverriddenProperty,
+				IEventSymbol @event => @event.OverriddenEvent,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns all <see cref="IMethodSymbol"/>s overridden by the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the methods overridden by.</param>
+		public static IEnumerable<IMethodSymbol> GetOverriddenSymbols(this IMethodSymbol method)
+		{
+			IMethodSymbol? m = method;
+
+			while ((m = m!.OverriddenMethod) is not null)
+			{
+				yield return m;
+			}
+		}
+
+		/// <summary>
+		/// Returns all <see cref="IPropertySymbol"/>s overridden by the specified <paramref name="property"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to get the properties overridden by.</param>
+		public static IEnumerable<IPropertySymbol> GetOverriddenSymbols(this IPropertySymbol property)
+		{
+			IPropertySymbol? p = property;
+
+			while ((p = p!.OverriddenProperty) is not null)
+			{
+				yield return p;
+			}
+		}
+
+		/// <summary>
+		/// Returns all <see cref="IEventSymbol"/>s overridden by the specified <paramref name="event"/>.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to get the events overridden by.</param>
+		public static IEnumerable<IEventSymbol> GetOverriddenSymbols(this IEventSymbol @event)
+		{
+			IEventSymbol? e = @event;
+
+			while ((e = e!.OverriddenEvent) is not null)
+			{
+				yield return e;
+			}
+		}
+
+		/// <summary>
+		/// Returns all <see cref="ISymbol"/>s overridden by the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the symbols overridden by.</param>
+		public static IEnumerable<ISymbol> GetOverriddenSymbols(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				IMethodSymbol method => method.GetOverriddenSymbols(),
+				IPropertySymbol property => property.GetOverriddenSymbols(),
+				IEventSymbol @event => @event.GetOverriddenSymbols(),
+				_ => Array.Empty<ISymbol>()
+			};
+		}
+
+		/// <summary>
 		/// Returns the parameterless constructor of the specified <paramref name="type"/> if it has one.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the parameterless constructor of.</param>
 		public static IMethodSymbol? GetParameterlessConstructor(this INamedTypeSymbol type)
 		{
 			return type.InstanceConstructors.FirstOrDefault(ctor => ctor.Parameters.Length == 0);
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> that represents the parameter signature of the <paramref name="method"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the signature of.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		public static string GetParameterList(this IMethodSymbol method, GenericSubstitution substitution = default)
-		{
-			StringBuilder builder = new();
-			method.GetParameterListInto(builder, substitution);
-			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> that represents the parameter signature of the <paramref name="method"/> to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the signature of.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		public static void GetParameterListInto(this IMethodSymbol method, StringBuilder builder, GenericSubstitution substitution = default)
-		{
-			ImmutableArray<IParameterSymbol> parameters = substitution.HasFlag(GenericSubstitution.TypeArguments) || method.ConstructedFrom is null
-				? method.Parameters
-				: method.ConstructedFrom.Parameters;
-
-			CodeBuilder cd = new(builder);
-
-			builder.Append('(');
-
-			if (parameters.Length > 0)
-			{
-				cd.Parameter(parameters[0]);
-
-				for (int i = 1; i < parameters.Length; i++)
-				{
-					builder.Append(", ");
-					cd.Parameter(parameters[i]);
-				}
-			}
-
-			builder.Append(')');
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> that contains all the parent types of the specified <paramref name="symbol"/> and the <paramref name="symbol"/>'s name separated by the dot ('.') character.
-		/// </summary>
-		/// <remarks>If the <paramref name="symbol"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="string"/> of.</param>
-		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned <see cref="string"/>.</param>
-		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-		public static string GetParentTypesString(this ISymbol symbol, bool includeSelf = true, bool includeParameters = false)
-		{
-			StringBuilder builder = new();
-			symbol.GetParentTypesStringInto(builder, includeSelf, includeParameters);
-			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> that contains all the parent types of the specified <paramref name="symbol"/> and the <paramref name="symbol"/>'s name separated by the dot ('.') character to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <remarks>If the <paramref name="symbol"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="string"/> of.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned <see cref="string"/>.</param>
-		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-		public static void GetParentTypesStringInto(this ISymbol symbol, StringBuilder builder, bool includeSelf = true, bool includeParameters = false)
-		{
-			foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
-			{
-				type.GetGenericNameInto(builder);
-				builder.Append('.');
-			}
-
-			if (includeSelf)
-			{
-				symbol.GetGenericNameInto(builder, includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None);
-			}
-			else if (builder.Length > 0)
-			{
-				builder.Remove(builder.Length - 1, 1);
-			}
 		}
 
 		/// <summary>
@@ -1541,6 +1356,16 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns an <see cref="ISymbol"/> representing the given kind of <paramref name="specialMember"/> available from the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the special member from.</param>
+		/// <param name="specialMember">Kind of special member to return.</param>
+		public static ISymbol? GetSpecialMember(this INamedTypeSymbol type, SpecialMember specialMember)
+		{
+			return type.GetAllMembers().FirstOrDefault(member => member.IsSpecialMember(specialMember));
+		}
+
+		/// <summary>
 		/// Returns a <see cref="CSharpSyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="method"/>.
 		/// </summary>
 		/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to return.</typeparam>
@@ -1566,6 +1391,25 @@ namespace Durian.Analysis.Extensions
 		public static MethodDeclarationSyntax? GetSyntax(this IMethodSymbol method, CancellationToken cancellationToken = default)
 		{
 			return method.GetSyntax<MethodDeclarationSyntax>(cancellationToken);
+		}
+
+		/// <summary>
+		/// Returns a <see cref="string"/> representation of a C# keyword associated with the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to get the keyword associated with.</param>
+		public static string? GetTypeKeyword(this ITypeSymbol type)
+		{
+			if (type is IDynamicTypeSymbol)
+			{
+				return "dynamic";
+			}
+
+			if (type.SpecialType == SpecialType.None)
+			{
+				return type.Name;
+			}
+
+			return AnalysisUtilities.GetTypeKeyword(type.SpecialType);
 		}
 
 		/// <summary>
@@ -1648,886 +1492,54 @@ namespace Durian.Analysis.Extensions
 		/// <param name="includeParameters">If the value of <paramref name="method"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
 		public static string GetXmlCompatibleName(this IMethodSymbol method, bool includeParameters = false)
 		{
-			string name;
+			StringBuilder builder = new();
 
 			switch (method.MethodKind)
 			{
 				case MethodKind.Constructor:
-					name = method.ContainingType.Name;
+					builder.Append(method.ContainingType.Name);
 					break;
 
 				case MethodKind.UserDefinedOperator:
-					name = $"operator {method.GetOperatorText()}";
+					builder.Append("operator ");
+					builder.Append(method.GetOperatorToken());
 					break;
 
 				case MethodKind.Conversion:
 
+					string keyword;
+
 					if (method.IsImplicitOperator())
 					{
-						name = $"implicit operator {method.ReturnType.GetXmlFullyQualifiedName()}";
+						keyword = "implicit";
 					}
 					else if (method.IsExplicitOperator())
 					{
-						name = $"explicit operator {method.ReturnType.GetXmlFullyQualifiedName()}";
+						keyword = "explicit";
 					}
 					else
 					{
 						goto default;
 					}
 
+					builder.Append("implicit ");
+					builder.Append(keyword);
+					builder.Append(' ');
+					builder.WriteFullyQualifiedName(method.ReturnType);
+
 					break;
 
 				default:
-					name = AnalysisUtilities.ToXmlCompatible(method.GetGenericName());
+					builder.WriteGenericName(method);
 					break;
 			}
 
 			if (includeParameters)
 			{
-				name += method.GetXmlParameterList();
+				builder.WriteParameterList(method);
 			}
 
-			return name;
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> representing the fully qualified name of the <paramref name="symbol"/> that can be used in the XML documentation.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the fully qualified name of.</param>
-		public static string GetXmlFullyQualifiedName(this ISymbol symbol)
-		{
-			return AnalysisUtilities.ToXmlCompatible(symbol.ToString());
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> that represents the parameter signature of the <paramref name="method"/> compatible with 'inheritdoc' tags.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the signature of.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		public static string GetXmlParameterList(this IMethodSymbol method, GenericSubstitution substitution = default)
-		{
-			string parameterList = method.GetParameterList(substitution);
-
-			return AnalysisUtilities.ToXmlCompatible(parameterList);
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> that contains all the parent types of the specified <paramref name="symbol"/> and the <paramref name="symbol"/>'s separated by the dot ('.') character. Can be used in XML documentation.
-		/// </summary>
-		/// <param name="symbol"><see cref="IMemberData"/> to get the <see cref="string"/> of.</param>
-		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned <see cref="string"/>.</param>
-		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-		public static string GetXmlParentTypes(this ISymbol symbol, bool includeSelf = true, bool includeParameters = false)
-		{
-			StringBuilder builder = new();
-			symbol.GetXmlParentTypesInto(builder, includeSelf, includeParameters);
-			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> that contains all the parent types of the specified <paramref name="symbol"/> and the <paramref name="symbol"/>'s separated by the dot ('.') character to the specified <paramref name="builder"/>. Can be used in XML documentation.
-		/// </summary>
-		/// <param name="symbol"><see cref="IMemberData"/> to get the <see cref="string"/> of.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned <see cref="string"/>.</param>
-		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-		public static void GetXmlParentTypesInto(this ISymbol symbol, StringBuilder builder, bool includeSelf = true, bool includeParameters = false)
-		{
-			foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
-			{
-				builder.Append(AnalysisUtilities.ToXmlCompatible(type.GetGenericName())).Append('.');
-			}
-
-			if (includeSelf)
-			{
-				builder.Append(symbol.GetXmlCompatibleName(includeParameters));
-			}
-			else if (builder.Length > 0)
-			{
-				builder.Remove(builder.Length - 1, 1);
-			}
-		}
-
-		/// <summary>
-		/// Checks if an attribute of type <paramref name="attrSymbol"/> is defined on the target <paramref name="symbol"/>
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check if contains the specified attribute.</param>
-		/// <param name="attrSymbol"><see cref="INamedTypeSymbol"/> of attribute to check for.</param>
-		public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attrSymbol)
-		{
-			return GetAttribute(symbol, attrSymbol) is not null;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> has at least one generic constraint.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if has at least one generic constraint.</param>
-		public static bool HasConstraint(this INamedTypeSymbol type)
-		{
-			return type.IsGenericType && type.TypeParameters.Any(p => p.HasConstraint());
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> has at least one generic constraint.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if has at least one generic constraint.</param>
-		public static bool HasConstraint(this IMethodSymbol method)
-		{
-			return method.IsGenericMethod && method.TypeParameters.Any(p => p.HasConstraint());
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="parameter"/> has at least one generic constraint.
-		/// </summary>
-		/// <param name="parameter"><see cref="ITypeParameterSymbol"/> to check if has at least one generic constraint.</param>
-		public static bool HasConstraint(this ITypeParameterSymbol parameter)
-		{
-			return
-				parameter.HasConstructorConstraint ||
-				parameter.HasValueTypeConstraint ||
-				parameter.HasReferenceTypeConstraint ||
-				parameter.HasUnmanagedTypeConstraint ||
-				parameter.HasNotNullConstraint ||
-				parameter.ConstraintTypes.Length > 0;
-		}
-
-		/// <summary>
-		/// Determines whether the given <paramref name="parameter"/> has a specific <paramref name="constraint"/> applied.
-		/// </summary>
-		/// <param name="parameter"><see cref="ITypeParameterSymbol"/> to check if has a specific <paramref name="constraint"/> applied.</param>
-		/// <param name="constraint"><see cref="GenericConstraint"/> to check if is applied to the <paramref name="parameter"/>.</param>
-		/// <param name="strict">Determines whether to only include constraints that are explicitly applied to the <paramref name="parameter"/>.</param>
-		public static bool HasConstraint(this ITypeParameterSymbol parameter, GenericConstraint constraint, bool strict = true)
-		{
-			switch (constraint)
-			{
-				case GenericConstraint.Class:
-
-					if (parameter.HasReferenceTypeConstraint)
-					{
-						return true;
-					}
-
-					if (strict)
-					{
-						return false;
-					}
-
-					return parameter.ConstraintTypes.Any(type =>
-					{
-						if (type.TypeKind == TypeKind.Class)
-						{
-							return true;
-						}
-
-						if (type.TypeKind == TypeKind.TypeParameter)
-						{
-							return (type as ITypeParameterSymbol)?.HasConstraint(GenericConstraint.Class, false) ?? false;
-						}
-
-						return true;
-					});
-
-				case GenericConstraint.Struct:
-
-					if (parameter.HasValueTypeConstraint)
-					{
-						return true;
-					}
-
-					return !strict && parameter.HasUnmanagedTypeConstraint;
-
-				case GenericConstraint.Unmanaged:
-					return parameter.HasUnmanagedTypeConstraint;
-
-				case GenericConstraint.Type:
-					return parameter.ConstraintTypes.Length > 0;
-
-				case GenericConstraint.NotNull:
-					return parameter.HasNotNullConstraint;
-
-				case GenericConstraint.New:
-
-					if (parameter.HasConstructorConstraint)
-					{
-						return true;
-					}
-
-					return !strict && (parameter.HasConstructorConstraint || parameter.HasUnmanagedTypeConstraint);
-
-				//case GenericConstraint.Default:
-				//	break;
-
-				case GenericConstraint.None:
-					return !parameter.HasConstraint();
-
-				default:
-					return false;
-			}
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="symbol"/> has a documentation.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check if has documentation.</param>
-		public static bool HasDocumentation(this ISymbol symbol)
-		{
-			return !string.IsNullOrEmpty(symbol.GetDocumentationCommentXml());
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="first"/> <see cref="IMethodSymbol"/> has equivalent parameters to the <paramref name="second"/> <see cref="IMethodSymbol"/>.
-		/// </summary>
-		/// <param name="first">First <see cref="IMethodSymbol"/>.</param>
-		/// <param name="second">Second <see cref="IMethodSymbol"/>.</param>
-		public static bool HasEquivalentParameters(this IMethodSymbol first, IMethodSymbol second)
-		{
-			ImmutableArray<IParameterSymbol> firstParameters = first.Parameters;
-			ImmutableArray<IParameterSymbol> secondParameters = second.Parameters;
-
-			if (firstParameters.Length != secondParameters.Length)
-			{
-				return false;
-			}
-
-			for (int i = 0; i < firstParameters.Length; i++)
-			{
-				if (!IsEquivalentTo(firstParameters[i], secondParameters[i]))
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> has an explicitly specified base type.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if has an explicit base type.</param>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> that provides a <see cref="INamedTypeSymbol"/> for the <see langword="object"/> type.</param>
-		public static bool HasExplicitBaseType(this INamedTypeSymbol type, CSharpCompilation compilation)
-		{
-			if (type.BaseType is null || type.TypeKind != TypeKind.Class)
-			{
-				return false;
-			}
-
-			return !SymbolEqualityComparer.Default.Equals(type.BaseType, compilation.ObjectType);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> has an implementation in code.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if has implementation.</param>
-		public static bool HasImplementation(this IMethodSymbol method)
-		{
-			return !(method.IsExtern || method.IsAbstract || method.IsImplicitlyDeclared || method.IsPartialDefinition);
-		}
-
-		/// <summary>
-		/// Determines whether the documentation of the specified <paramref name="symbol"/> can be references in an 'inheritdoc' tag.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check whether has inheritable documentation.</param>
-		public static bool HasInheritableDocumentation(this ISymbol symbol)
-		{
-			bool canHaveDocumentation = symbol switch
-			{
-				IMethodSymbol method => method.MethodKind is
-					MethodKind.Ordinary or
-					MethodKind.Constructor or
-					MethodKind.Destructor or
-					MethodKind.Conversion or
-					MethodKind.UserDefinedOperator,
-
-				INamedTypeSymbol type => type.TypeKind is
-					TypeKind.Class or
-					TypeKind.Struct or
-					TypeKind.Delegate or
-					TypeKind.Enum or
-					TypeKind.Interface,
-
-				_ => symbol is
-					IPropertySymbol or
-					IFieldSymbol or
-					IEventSymbol
-			};
-
-			return canHaveDocumentation && symbol.HasDocumentation();
-		}
-
-		/// <summary>
-		/// Determines whether the target <paramref name="type"/> inherits the <paramref name="baseType"/>.
-		/// </summary>
-		/// <param name="type">Type to check if inherits the <paramref name="baseType"/>.</param>
-		/// <param name="baseType">Base type to check if is inherited by the target <paramref name="type"/>.</param>
-		/// <param name="toReturnIfSame">Determines what to return when the <paramref name="type"/> and <paramref name="baseType"/> are the same.</param>
-		public static bool InheritsFrom(this ITypeSymbol type, ITypeSymbol baseType, bool toReturnIfSame = true)
-		{
-			if (SymbolEqualityComparer.Default.Equals(type, baseType))
-			{
-				return toReturnIfSame;
-			}
-
-			if (baseType.TypeKind == TypeKind.Interface)
-			{
-				if (type.AllInterfaces.IsDefaultOrEmpty)
-				{
-					return false;
-				}
-
-				foreach (INamedTypeSymbol intf in type.AllInterfaces)
-				{
-					if (SymbolEqualityComparer.Default.Equals(baseType, intf))
-					{
-						return true;
-					}
-				}
-			}
-			else
-			{
-				INamedTypeSymbol? current = type.BaseType;
-
-				while (current is not null)
-				{
-					if (SymbolEqualityComparer.Default.Equals(current, baseType))
-					{
-						return true;
-					}
-
-					current = current.BaseType;
-				}
-			}
-
-			return false;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is an accessor of the given <paramref name="event"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an accessor of the given <paramref name="event"/>.</param>
-		/// <param name="event"><see cref="IEventSymbol"/> to check if the <paramref name="method"/> is an accessor of.</param>
-		public static bool IsAccessor(this IMethodSymbol method, IEventSymbol @event)
-		{
-			return SymbolEqualityComparer.Default.Equals(method.AssociatedSymbol, @event);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is an accessor of the given <paramref name="property"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an accessor of the given <paramref name="property"/>.</param>
-		/// <param name="property"><see cref="IEventSymbol"/> to check if the <paramref name="method"/> is an accessor of.</param>
-		public static bool IsAccessor(this IMethodSymbol method, IPropertySymbol property)
-		{
-			return SymbolEqualityComparer.Default.Equals(method.AssociatedSymbol, property);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is a property or event accessor.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is a property or event accessor.</param>
-		public static bool IsAccessor(this IMethodSymbol method)
-		{
-			return method.AssociatedSymbol is not null && method.AssociatedSymbol is IPropertySymbol or IEventSymbol;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="symbol"/> is an attribute type.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is an attribute type.</param>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> that is used to resolve the <see cref="Attribute"/> type.</param>
-		/// <exception cref="InvalidOperationException">Type '<see cref="Attribute"/>' could not be resolved.</exception>
-		public static bool IsAttribute(this INamedTypeSymbol symbol, CSharpCompilation compilation)
-		{
-			if (compilation.GetTypeByMetadataName("System.Attribute") is not INamedTypeSymbol attr)
-			{
-				throw new InvalidOperationException("Type 'System.Attribute' could not be resolved!");
-			}
-
-			return symbol.InheritsFrom(attr);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="property"/> is auto-implemented.
-		/// </summary>
-		/// <param name="property"><see cref="IPropertySymbol"/> to check if is auto-implemented.</param>
-		public static bool IsAutoProperty(this IPropertySymbol property)
-		{
-			return !property.IsIndexer && property.GetBackingField() is not null;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is an accessor of an auto-implemented property.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an accessor of an auto-implemented property.</param>
-		public static bool IsAutoPropertyAccessor(this IMethodSymbol method)
-		{
-			return method.AssociatedSymbol is IPropertySymbol property && property.GetBackingField() is not null;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="field"/> is a backing field of a property.
-		/// </summary>
-		/// <param name="field"><see cref="IFieldSymbol"/> to check if is a backing field.</param>
-		public static bool IsBackingField(this IFieldSymbol field)
-		{
-			return field.AssociatedSymbol is not null;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="field"/> is a backing field of the given <paramref name="property"/>.
-		/// </summary>
-		/// <param name="field"><see cref="IFieldSymbol"/> to check if is a backing field of the given <paramref name="property"/>.</param>
-		/// <param name="property"><see cref="IParameterSymbol"/> to check if the specified <paramref name="field"/> is a backing field of.</param>
-		public static bool IsBackingField(this IFieldSymbol field, IPropertySymbol property)
-		{
-			return SymbolEqualityComparer.Default.Equals(field.AssociatedSymbol, property);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is constructed from a generic type.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is constructed from a generic type.</param>
-		public static bool IsConstructed(this INamedTypeSymbol type)
-		{
-			return type.ConstructedFrom is not null && !SymbolEqualityComparer.Default.Equals(type, type.ConstructedFrom);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is constructed from a generic type.
-		/// </summary>
-		/// <param name="method"><see cref="INamedTypeSymbol"/> to check if is constructed from a generic type.</param>
-		public static bool IsConstructed(this IMethodSymbol method)
-		{
-			return method.ConstructedFrom is not null && !SymbolEqualityComparer.Default.Equals(method, method.ConstructedFrom);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> was constructed from the <paramref name="target"/> type.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is constructed from the <paramref name="target"/> type.</param>
-		/// <param name="target"><see cref="INamedTypeSymbol"/> to check if the <paramref name="type"/> is constructed from.</param>
-		public static bool IsConstructedFrom(this INamedTypeSymbol type, INamedTypeSymbol target)
-		{
-			return type.ConstructedFrom is not null && SymbolEqualityComparer.Default.Equals(type.ConstructedFrom, target);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> was constructed from the <paramref name="target"/> method.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is constructed from the <paramref name="target"/> method.</param>
-		/// <param name="target"><see cref="IMethodSymbol"/> to check if the <paramref name="method"/> is constructed from.</param>
-		public static bool IsConstructedFrom(this IMethodSymbol method, IMethodSymbol target)
-		{
-			return method.ConstructedFrom is not null && SymbolEqualityComparer.Default.Equals(method.ConstructedFrom, target);
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="first"/> <see cref="IParameterSymbol"/> is equivalent to the <paramref name="second"/> <see cref="IParameterSymbol"/>.
-		/// </summary>
-		/// <param name="first">First <see cref="IParameterSymbol"/>.</param>
-		/// <param name="second">Second <see cref="IParameterSymbol"/>.</param>
-		public static bool IsEquivalentTo(this IParameterSymbol first, IParameterSymbol second)
-		{
-			if (AnalysisUtilities.IsValidRefKindForOverload(first.RefKind, second.RefKind))
-			{
-				return false;
-			}
-
-			if (!SymbolEqualityComparer.Default.Equals(first.Type, second.Type))
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is an event accessor.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an event accessor.</param>
-		public static bool IsEventAccessor(this IMethodSymbol method)
-		{
-			return method.AssociatedSymbol is IEventSymbol;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="symbol"/> is an exception type.
-		/// </summary>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> to check if is an exception type.</param>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> that is used to resolve the <see cref="Exception"/> type.</param>
-		/// <exception cref="InvalidOperationException">Type '<see cref="Exception"/>' could not be resolved.</exception>
-		public static bool IsException(this INamedTypeSymbol symbol, CSharpCompilation compilation)
-		{
-			if (compilation.GetTypeByMetadataName("System.Exception") is not INamedTypeSymbol exc)
-			{
-				throw new InvalidOperationException("Type 'System.Exception' could not be resolved!");
-			}
-
-			return symbol.InheritsFrom(exc);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is an explicit conversion operator.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an explicit conversion operator.</param>
-		public static bool IsExplicitOperator(this IMethodSymbol method)
-		{
-			return method.MethodKind == MethodKind.Conversion && method.Name == "op_Explicit";
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="symbol"/> was generated from the <paramref name="target"/> <see cref="ISymbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
-		/// <param name="target"><see cref="ISymbol"/> to check if the <paramref name="symbol"/> is generated from.</param>
-		/// <param name="compilation"><see cref="CompilationWithEssentialSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
-		/// <exception cref="InvalidOperationException">Target <paramref name="compilation"/> has errors.</exception>
-		public static bool IsGeneratedFrom(this ISymbol symbol, ISymbol target, CompilationWithEssentialSymbols compilation)
-		{
-			return IsGeneratedFrom(symbol, target?.ToString()!, compilation);
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="symbol"/> was generated from the <paramref name="target"/> member.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check.</param>
-		/// <param name="target"><see cref="string"/> representing a <see cref="ISymbol"/> to check if the <paramref name="symbol"/> was generated from.</param>
-		/// <param name="compilation"><see cref="CompilationWithEssentialSymbols"/> to get the needed <see cref="INamedTypeSymbol"/> from.</param>
-		public static bool IsGeneratedFrom(this ISymbol symbol, string target, CompilationWithEssentialSymbols compilation)
-		{
-			AttributeData? attribute = symbol.GetAttribute(compilation.DurianGeneratedAttribute!);
-
-			if (attribute is null)
-			{
-				return false;
-			}
-
-			return attribute.ConstructorArguments.FirstOrDefault().Value is string value && value == target;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="symbol"/> is generic.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to check if is generic.</param>
-		public static bool IsGeneric(this ISymbol symbol)
-		{
-			return symbol switch
-			{
-				IMethodSymbol method => method.IsGenericMethod,
-				INamedTypeSymbol type => type.IsGenericType,
-				_ => false
-			};
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is an implicit conversion operator.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an implicit conversion operator.</param>
-		public static bool IsImplicitOperator(this IMethodSymbol method)
-		{
-			return method.MethodKind == MethodKind.Conversion && method.Name == "op_Implicit";
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is an inner type.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is an inner type.</param>
-		public static bool IsInnerType(this INamedTypeSymbol type)
-		{
-			return type.ContainingType is not null;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is the <paramref name="typeParameter"/> or if it uses it as its element type (for <see cref="IArrayTypeSymbol"/>) or pointed at type (for <see cref="IPointerTypeSymbol"/>).
-		/// </summary>
-		/// <param name="type"><see cref="ITypeSymbol"/> to check.</param>
-		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to check if is used by the target <paramref name="type"/>.</param>
-		public static bool IsOrUsesTypeParameter(this ITypeSymbol type, ITypeParameterSymbol typeParameter)
-		{
-			if (SymbolEqualityComparer.Default.Equals(type, typeParameter))
-			{
-				return true;
-			}
-
-			ITypeSymbol symbol;
-
-			if (type is IArrayTypeSymbol array)
-			{
-				symbol = array.GetEffectiveElementType();
-			}
-			else if (type is IPointerTypeSymbol pointer)
-			{
-				symbol = pointer.GetEffectivePointerAtType();
-			}
-			else
-			{
-				return false;
-			}
-
-			if (SymbolEqualityComparer.Default.Equals(symbol, typeParameter))
-			{
-				return true;
-			}
-
-			if (symbol is INamedTypeSymbol t && t.Arity > 0)
-			{
-				foreach (ITypeSymbol s in t.TypeArguments)
-				{
-					if (IsOrUsesTypeParameter(s, typeParameter))
-					{
-						return true;
-					}
-				}
-			}
-
-			return false;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is <see langword="partial"/>.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is <see langword="partial"/>.</param>
-		public static bool IsPartial(this INamedTypeSymbol type)
-		{
-			if (type.Locations.Length > 1)
-			{
-				return true;
-			}
-
-			if (type.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is TypeDeclarationSyntax syntax)
-			{
-				return syntax.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
-			}
-
-			return false;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
-		/// <param name="declarationRetriever">Function that returns a <see cref="MethodDeclarationSyntax"/> of the specified <paramref name="method"/> if it is needed.</param>
-		public static bool IsPartial(this IMethodSymbol method, Func<MethodDeclarationSyntax?> declarationRetriever)
-		{
-			if (method.MethodKind != MethodKind.Ordinary)
-			{
-				return false;
-			}
-
-			if (method.IsPartialDefinition)
-			{
-				return true;
-			}
-
-			if (method.MethodKind != MethodKind.Ordinary)
-			{
-				return false;
-			}
-
-			if (method.DeclaringSyntaxReferences.Length > 1 ||
-				method.PartialImplementationPart is not null ||
-				method.PartialDefinitionPart is not null)
-			{
-				return true;
-			}
-
-			if (declarationRetriever() is MethodDeclarationSyntax declaration)
-			{
-				return declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
-			}
-
-			return false;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
-		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
-		/// <remarks>If <paramref name="declaration"/> is <see langword="null"/>, a <see cref="MethodDeclarationSyntax"/> is retrieved using the <see cref="ISymbol.DeclaringSyntaxReferences"/> property.</remarks>
-		public static bool IsPartial(this IMethodSymbol method, MethodDeclarationSyntax? declaration = default)
-		{
-			return method.IsPartial(() => declaration ?? method?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as MethodDeclarationSyntax);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is <see langword="partial"/>.</param>
-		public static bool IsPartialContext(this INamedTypeSymbol type)
-		{
-			return type.IsPartial() && type.GetContainingTypes().All(t => t.IsPartial());
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="method"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check.</param>
-		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
-		/// <remarks>If <paramref name="declaration"/> is <see langword="null"/>, a <see cref="MethodDeclarationSyntax"/> is retrieved using the <see cref="ISymbol.DeclaringSyntaxReferences"/> property.</remarks>
-		public static bool IsPartialContext(this IMethodSymbol method, MethodDeclarationSyntax? declaration = default)
-		{
-			return method.IsPartial(declaration) && method.GetContainingTypes().All(t => t.IsPartial());
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>..
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
-		/// <param name="declarationRetriever">Function that returns a <see cref="MethodDeclarationSyntax"/> of the specified <paramref name="method"/> if it is needed.</param>
-		public static bool IsPartialContext(this IMethodSymbol method, Func<MethodDeclarationSyntax?> declarationRetriever)
-		{
-			return method.IsPartial(declarationRetriever) && method.GetContainingTypes().All(t => t.IsPartial());
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="type"/> is a predefined type (any primitive, <see cref="string"/>, <see cref="void"/>, <see cref="object"/>).
-		/// </summary>
-		/// <param name="type">Type to check.</param>
-		public static bool IsPredefined(this ITypeSymbol type)
-		{
-			if (type.SpecialType == SpecialType.None)
-			{
-				return false;
-			}
-
-			return
-				type.SpecialType is
-				SpecialType.System_Void or
-				SpecialType.System_String or
-				SpecialType.System_Int32 or
-				SpecialType.System_Int64 or
-				SpecialType.System_Boolean or
-				SpecialType.System_Single or
-				SpecialType.System_Double or
-				SpecialType.System_Decimal or
-				SpecialType.System_Char or
-				SpecialType.System_Int16 or
-				SpecialType.System_Byte or
-				SpecialType.System_UInt16 or
-				SpecialType.System_UInt32 or
-				SpecialType.System_UInt64 or
-				SpecialType.System_SByte or
-				SpecialType.System_Object;
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="type"/> is a predefined type (any primitive, <see cref="string"/>, <see cref="void"/>, <see cref="object"/>) or a dynamic type.
-		/// </summary>
-		/// <param name="type">Type to check.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to get the dynamic symbol from.</param>
-		/// <returns><see langword="true"/> if the type is predefined or dynamic, otherwise <see langword="false"/>.</returns>
-		public static bool IsPredefinedOrDynamic(this ITypeSymbol type, ICompilationData compilation)
-		{
-			return IsPredefined(type) || SymbolEqualityComparer.Default.Equals(type, compilation.Compilation.DynamicType);
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="type"/> is a predefined type (any primitive, <see cref="string"/>, <see cref="void"/>, <see cref="object"/>) or a dynamic type.
-		/// </summary>
-		/// <param name="type">Type to check.</param>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to get the dynamic symbol from.</param>
-		/// <returns><see langword="true"/> if the type is predefined or dynamic, otherwise <see langword="false"/>.</returns>
-		public static bool IsPredefinedOrDynamic(this ITypeSymbol type, CSharpCompilation compilation)
-		{
-			return IsPredefined(type) || SymbolEqualityComparer.Default.Equals(type, compilation.DynamicType);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is a property accessor.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if is a property accessor.</param>
-		public static bool IsPropertyAccessor(this IMethodSymbol method)
-		{
-			return method.AssociatedSymbol is IPropertySymbol;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is of sealed kind (struct or sealed/static class).
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is sealed.</param>
-		public static bool IsSealedKind(this INamedTypeSymbol type)
-		{
-			return type.IsSealed || type.IsValueType || type.IsStatic;
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="type"/> can be applied to the <paramref name="parameter"/>.
-		/// </summary>
-		/// <param name="type"><see cref="ITypeSymbol"/> to check if is valid for the <paramref name="parameter"/>.</param>
-		/// <param name="parameter">Target <see cref="ITypeParameterSymbol"/>.</param>
-		/// <remarks>Symbols other than <see cref="INamedTypeSymbol"/>, <see cref="IArrayTypeSymbol"/>, <see cref="ITypeParameterSymbol"/> and <see cref="IDynamicTypeSymbol"/> will never be valid.</remarks>
-		public static bool IsValidForTypeParameter(this ITypeSymbol type, ITypeParameterSymbol parameter)
-		{
-			if (type is not INamedTypeSymbol and not IArrayTypeSymbol and not ITypeParameterSymbol and not IDynamicTypeSymbol)
-			{
-				return false;
-			}
-
-			if (type.IsStatic || type.IsRefLikeType || type is IErrorTypeSymbol)
-			{
-				return false;
-			}
-
-			if (type is INamedTypeSymbol s && s.IsUnboundGenericType)
-			{
-				return false;
-			}
-
-			if (parameter.HasReferenceTypeConstraint)
-			{
-				if (!type.IsReferenceType)
-				{
-					return false;
-				}
-			}
-			else if (parameter.HasUnmanagedTypeConstraint)
-			{
-				if (!type.IsUnmanagedType)
-				{
-					return false;
-				}
-			}
-			else if (parameter.HasValueTypeConstraint)
-			{
-				if (!type.IsValueType)
-				{
-					return false;
-				}
-			}
-
-			if (parameter.HasConstructorConstraint)
-			{
-				if (type is INamedTypeSymbol n)
-				{
-					if (!n.InstanceConstructors.Any(ctor => ctor.Parameters.Length == 0 && ctor.DeclaredAccessibility == Accessibility.Public))
-					{
-						return false;
-					}
-				}
-				else if (type is not IDynamicTypeSymbol)
-				{
-					return false;
-				}
-			}
-
-			foreach (ITypeSymbol t in parameter.ConstraintTypes)
-			{
-				if (t is ITypeParameterSymbol p)
-				{
-					if (!IsValidForTypeParameter(type, p))
-					{
-						return false;
-					}
-				}
-				else if (!InheritsFrom(type, t))
-				{
-					return false;
-				}
-			}
-
-			return true;
+			return AnalysisUtilities.ToXmlCompatible(builder.ToString());
 		}
 
 		/// <summary>
@@ -2548,30 +1560,8 @@ namespace Durian.Analysis.Extensions
 		public static string JoinNamespaces(this ISymbol symbol, bool includeSelf = true)
 		{
 			StringBuilder builder = new();
-			symbol.JoinNamespacesInto(builder, includeSelf);
+			builder.WriteNamespacesOf(symbol, includeSelf);
 			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> that is created by joining the names of the namespaces the provided <paramref name="symbol"/> is contained in to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the containing namespaces of.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <param name="includeSelf">Determines whether to include name of the <paramref name="symbol"/> if its a <see cref="INamespaceSymbol"/>.</param>
-		public static void JoinNamespacesInto(this ISymbol symbol, StringBuilder builder, bool includeSelf = true)
-		{
-			if(symbol is INamespaceSymbol @namespace)
-			{
-				@namespace.JoinNamespacesInto(builder, includeSelf);
-				return;
-			}
-
-			if (symbol.ContainingNamespace is null || symbol.ContainingNamespace.IsGlobalNamespace)
-			{
-				return;
-			}
-
-			symbol.GetContainingNamespaces().JoinNamespacesInto(builder);
 		}
 
 		/// <summary>
@@ -2582,24 +1572,8 @@ namespace Durian.Analysis.Extensions
 		public static string JoinNamespaces(this INamespaceSymbol @namespace, bool includeSelf = true)
 		{
 			StringBuilder builder = new();
-			@namespace.JoinNamespacesInto(builder, includeSelf);
+			builder.WriteNamespace(@namespace, includeSelf);
 			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> that is created by joining the names of parent namespaces of the provided <paramref name="namespace"/> to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <param name="namespace">A collection of <see cref="INamespaceSymbol"/>s create the <see cref="string"/> from.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		/// <param name="includeSelf">Determines whether to include name of the <paramref name="namespace"/>.</param>
-		public static void JoinNamespacesInto(this INamespaceSymbol @namespace, StringBuilder builder, bool includeSelf = true)
-		{
-			@namespace.GetContainingNamespaces().JoinNamespacesInto(builder);
-
-			if(includeSelf)
-			{
-				builder.Append('.').Append(@namespace.Name);
-			}
 		}
 
 		/// <summary>
@@ -2609,71 +1583,178 @@ namespace Durian.Analysis.Extensions
 		public static string JoinNamespaces(this IEnumerable<INamespaceSymbol> namespaces)
 		{
 			StringBuilder builder = new();
-			namespaces.JoinNamespacesInto(builder);
+			builder.WriteNamespaces(namespaces);
 			return builder.ToString();
 		}
 
 		/// <summary>
-		/// Writes a <see cref="string"/> that is created by joining the names of the provided <paramref name="namespaces"/> to the specified <paramref name="builder"/>.
+		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="type"/>.
 		/// </summary>
-		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s create the <see cref="string"/> from.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		public static void JoinNamespacesInto(this IEnumerable<INamespaceSymbol> namespaces, StringBuilder builder)
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		public static IMemberData ToData(this INamedTypeSymbol type, ICompilationData compilation)
 		{
-			bool any = false;
-
-			foreach (INamespaceSymbol n in namespaces)
+			if (type.IsRecord)
 			{
-				if (n is null)
-				{
-					continue;
-				}
-
-				any = true;
-
-				builder.Append(n.Name).Append('.');
+				return new RecordData(type, compilation);
 			}
 
-			if(any)
+			return type.TypeKind switch
 			{
-				builder.Remove(builder.Length - 1, 1);
-			}
+				TypeKind.Class => new ClassData(type, compilation),
+				TypeKind.Struct => new StructData(type, compilation),
+				TypeKind.Interface => new InterfaceData(type, compilation),
+				TypeKind.Delegate => new DelegateData(type, compilation),
+				TypeKind.Enum => new EnumData(type, compilation),
+				_ => new UnknownTypeData(type, compilation)
+			};
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is overrides the <paramref name="other"/> symbol either directly or through additional child types.
+		/// Returns new <see cref="IMethodData"/> created for the specified <paramref name="method"/>.
 		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check if overrides the <paramref name="other"/> symbol.</param>
-		/// <param name="other"><see cref="IMethodSymbol"/> to check if is overridden by the specified <paramref name="method"/>.</param>
-		public static bool Overrides(this IMethodSymbol method, IMethodSymbol other)
+		/// <param name="method"><see cref="IMethodData"/> to create the <see cref="IMethodSymbol"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMethodSymbol"/> from.</param>
+		public static IMethodData ToData(this IMethodSymbol method, ICompilationData compilation)
 		{
-			if (SymbolEqualityComparer.Default.Equals(method, other))
+			return method.MethodKind switch
 			{
-				return false;
-			}
-
-			IMethodSymbol? baseMethod = method.OverriddenMethod;
-
-			while (baseMethod is not null)
-			{
-				if (SymbolEqualityComparer.Default.Equals(other, baseMethod))
-				{
-					return true;
-				}
-
-				baseMethod = baseMethod.OverriddenMethod;
-			}
-
-			return false;
+				MethodKind.Ordinary => new MethodData(method, compilation),
+				MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator => new OperatorData(method, compilation),
+				MethodKind.Constructor or MethodKind.StaticConstructor => new ConstructorData(method, compilation),
+				MethodKind.Destructor => new DestructorData(method, compilation),
+				MethodKind.LocalFunction => new LocalFunctionData(method, compilation),
+				MethodKind.Conversion => new ConversionOperatorData(method, compilation),
+				_ => new UnknownMethodData(method, compilation)
+			};
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> can have an explicit base type.
+		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="field"/>.
 		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check whether can have an explicit base type.</param>
-		public static bool SupportsExplicitBaseType(this INamedTypeSymbol type)
+		/// <param name="field"><see cref="IFieldSymbol"/> to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		public static IMemberData ToData(this IFieldSymbol field, ICompilationData compilation)
 		{
-			return type.TypeKind == TypeKind.Class && !type.IsStatic && !type.IsSealed;
+			return new FieldData(field, compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="event"/>.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		public static IMemberData ToData(this IEventSymbol @event, ICompilationData compilation)
+		{
+			return new EventData(@event, compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="property"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		public static IMemberData ToData(this IPropertySymbol property, ICompilationData compilation)
+		{
+			if (property.IsIndexer)
+			{
+				return new IndexerData(property, compilation);
+			}
+
+			return new PropertyData(property, compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="local"/>.
+		/// </summary>
+		/// <param name="local"><see cref="ILocalSymbol"/> to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		public static IMemberData ToData(this ILocalSymbol local, ICompilationData compilation)
+		{
+			return new LocalData(local, compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="typeParameter"/>.
+		/// </summary>
+		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		public static IMemberData ToData(this ITypeParameterSymbol typeParameter, ICompilationData compilation)
+		{
+			return new TypeParameterData(typeParameter, compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="parameter"/>.
+		/// </summary>
+		/// <param name="parameter"><see cref="IParameterSymbol"/> to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		public static IMemberData ToData(this IParameterSymbol parameter, ICompilationData compilation)
+		{
+			return new ParameterData(parameter, compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamespaceOrTypeSymbol"/> to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		public static IMemberData ToData(this INamespaceOrTypeSymbol symbol, ICompilationData compilation)
+		{
+			if (symbol is INamespaceSymbol @namespace)
+			{
+				return @namespace.ToData(compilation);
+			}
+
+			if (symbol is INamedTypeSymbol type)
+			{
+				return type.ToData(compilation);
+			}
+
+			if (symbol is ITypeParameterSymbol typeParameter)
+			{
+				return typeParameter.ToData(compilation);
+			}
+
+			if (symbol is ITypeSymbol unknownType)
+			{
+				return new UnknownTypeData(unknownType, compilation);
+			}
+
+			return new MemberData(symbol, compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		public static IMemberData ToData(this ISymbol symbol, ICompilationData compilation)
+		{
+			return symbol switch
+			{
+				ITypeParameterSymbol typeParameter => typeParameter.ToData(compilation),
+				INamedTypeSymbol type => type.ToData(compilation),
+				IMethodSymbol method => method.ToData(compilation),
+				IPropertySymbol property => property.ToData(compilation),
+				IFieldSymbol field => field.ToData(compilation),
+				IEventSymbol @event => @event.ToData(compilation),
+				IParameterSymbol parameter => parameter.ToData(compilation),
+				INamespaceSymbol @namespace => @namespace.ToData(compilation),
+				ILocalSymbol local => local.ToData(compilation),
+				ITypeSymbol unknownType => new UnknownTypeData(unknownType, compilation),
+				_ => new MemberData(symbol, compilation)
+			};
+		}
+
+		/// <summary>
+		/// Returns new <see cref="IMemberData"/> created for the specified <paramref name="namespace"/>.
+		/// </summary>
+		/// <param name="namespace"><see cref="INamespaceSymbol"/> to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		public static IMemberData ToData(this INamespaceSymbol @namespace, ICompilationData compilation)
+		{
+			return new NamespaceData(@namespace, compilation);
 		}
 
 		/// <summary>
@@ -2689,60 +1770,6 @@ namespace Durian.Analysis.Extensions
 			return syntax is not null;
 		}
 
-		/// <summary>
-		/// Returns a <see cref="string"/> representation of a C# keyword associated with the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="type"><see cref="ITypeSymbol"/> to get the keyword associated with.</param>
-		public static string GetTypeKeyword(this ITypeSymbol type)
-		{
-			if (type is IDynamicTypeSymbol)
-			{
-				return "dynamic";
-			}
-
-			if (type.SpecialType == SpecialType.None)
-			{
-				return type.Name;
-			}
-
-			return type.SpecialType.GetTypeKeyword() ?? throw new ArgumentException($"Type '{type}' does not have a type keyword", nameof(type));
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> representation of a C# keyword associated with the specified <paramref name="specialType"/> value.
-		/// </summary>
-		/// <param name="specialType">Value of <see cref="SpecialType"/> to get the C# keyword associated with.</param>
-		public static string? GetTypeKeyword(this SpecialType specialType)
-		{
-			if(specialType == SpecialType.None)
-			{
-				return default;
-			}
-
-			return specialType switch
-			{
-				SpecialType.System_Byte => "byte",
-				SpecialType.System_Char => "char",
-				SpecialType.System_Boolean => "bool",
-				SpecialType.System_Decimal => "decimal",
-				SpecialType.System_Double => "double",
-				SpecialType.System_Int16 => "short",
-				SpecialType.System_Int32 => "int",
-				SpecialType.System_Int64 => "long",
-				SpecialType.System_Object => "object",
-				SpecialType.System_SByte => "sbyte",
-				SpecialType.System_Single => "float",
-				SpecialType.System_String => "string",
-				SpecialType.System_UInt16 => "ushort",
-				SpecialType.System_UInt32 => "uint",
-				SpecialType.System_UInt64 => "ulong",
-				SpecialType.System_IntPtr => "nint",
-				SpecialType.System_UIntPtr => "nuint",
-				SpecialType.System_Void => "void",
-				_ => default
-			};
-		}
-
 		private static TypeSyntax ApplyAnnotation(TypeSyntax syntax, NullableAnnotation annotation)
 		{
 			if (annotation == NullableAnnotation.Annotated)
@@ -2753,27 +1780,18 @@ namespace Durian.Analysis.Extensions
 			return syntax;
 		}
 
-		private static IEnumerable<INamedTypeSymbol> GetInnerTypes_Internal(INamedTypeSymbol symbol)
+		private static ISymbol? GetHiddenSymbol_Internal(ISymbol symbol)
 		{
-			foreach (INamedTypeSymbol s in symbol.GetTypeMembers())
-			{
-				yield return s;
-
-				foreach (INamedTypeSymbol inner in GetInnerTypes_Internal(s))
+			return symbol.ContainingType
+				.GetAllMembers(symbol.Name)
+				.FirstOrDefault(member => member switch
 				{
-					yield return inner;
-				}
-			}
-		}
-
-		private static IEnumerable<T> ReturnByOrder<T>(IEnumerable<T> collection, ReturnOrder order)
-		{
-			if (order == ReturnOrder.Root)
-			{
-				return collection.Reverse();
-			}
-
-			return collection;
+					INamedTypeSymbol type => type.Arity == 0,
+					IMethodSymbol method => method.Arity == 0,
+					IPropertySymbol property => !property.IsIndexer,
+					IFieldSymbol or IFieldSymbol => true,
+					_ => false
+				});
 		}
 	}
 }

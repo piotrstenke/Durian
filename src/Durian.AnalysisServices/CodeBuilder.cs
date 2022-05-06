@@ -11,13 +11,13 @@ using System.Text;
 using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
+using Durian.Analysis.CodeGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis
 {
-
 	/// <summary>
 	/// A wrapper for the <see cref="StringBuilder"/> class that helps generating C# code.
 	/// </summary>
@@ -68,9 +68,14 @@ namespace Durian.Analysis
 		public GeneratorPassContext? PassContext { get; }
 
 		/// <summary>
-		/// <see cref="StringBuilder"/> this <see cref="CodeBuilder"/> writes to.
+		/// <see cref="StringBuilder"/> to write the generated code to.
 		/// </summary>
 		public StringBuilder TextBuilder { get; }
+
+		/// <summary>
+		/// Builder that write single keywords.
+		/// </summary>
+		public KeywordWriter Keyword { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CodeBuilder"/> class.
@@ -158,261 +163,48 @@ namespace Durian.Analysis
 		/// Begins a member declaration using the specified raw text.
 		/// </summary>
 		/// <param name="member">Raw text to write.</param>
-		public void BeginDeclation(string member)
+		public CodeBuilder BeginDeclation(string member)
 		{
 			TextBuilder?.AppendLine(member);
 			BeginScope();
-		}
 
-		public void BeginDeclaration(MemberDeclarationSyntax declaration)
-		{
-			switch (declaration)
-			{
-				
-			}
-		}
-
-		public void BeginFieldDeclaration(FieldDeclarationSyntax field)
-		{
-		}
-
-		public void BeginEventDeclaration(EventFieldDeclarationSyntax @event)
-		{
-
-		}
-
-		public void BeginEventDeclaration(EventDeclarationSyntax @event)
-		{
-
-		}
-
-		public void BeginPropertyDeclaration(PropertyDeclarationSyntax property)
-		{
-
-		}
-
-		public void BeginIndexerDeclaration(IndexerDeclarationSyntax indexer)
-		{
-
-		}
-
-		public void BeginConstructorDeclaration(ConstructorDeclarationSyntax ctor)
-		{
-
-		}
-
-		public void BeginDestructorDeclaration(DestructorDeclarationSyntax destructor)
-		{
-
-		}
-
-		public void BeginDelegateDeclaration(DelegateDeclarationSyntax @delegate)
-		{
-
-		}
-
-		public void BeginOperatorDeclaration(OperatorDeclarationSyntax @operator)
-		{
-
-		}
-
-		public void BeginOperatorDeclaration(ConversionOperatorDeclarationSyntax @operator)
-		{
-
-		}
-
-		/// <summary>
-		/// Writes declaration of a namespace.
-		/// </summary>
-		/// <param name="namespace"><see cref="NamespaceData"/> that contains all the needed info about the target namespace.</param>
-		/// <param name="type">Type of namespace declaration to write.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(NamespaceData @namespace, NamespaceScope type = NamespaceScope.Default)
-		{
-			if(@namespace is null)
-			{
-				throw new ArgumentNullException(nameof(@namespace));
-			}
-
-			BeginNamespaceDeclaration_Internal(@namespace.GetContainingNamespaces(), type);
-		}
-
-		/// <summary>
-		/// Writes declaration of a namespace.
-		/// </summary>
-		/// <param name="namespace"><see cref="BaseNamespaceDeclarationSyntax"/> to copy the name from. </param>
-		/// <param name="type">Type of namespace declaration to write.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(BaseNamespaceDeclarationSyntax @namespace, NamespaceScope type = NamespaceScope.Default)
-		{
-			if (@namespace is null)
-			{
-				throw new ArgumentNullException(nameof(@namespace));
-			}
-
-			BeginNamespace_Internal(@namespace.Name.ToString(), type);
-		}
-
-		/// <summary>
-		/// Writes declaration of a namespace.
-		/// </summary>
-		/// <param name="namespace"><see cref="NamespaceData"/> that contains all the needed info about the target namespace.</param>
-		/// <param name="type">Type of namespace declaration to write.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(INamespaceSymbol @namespace, NamespaceScope type = NamespaceScope.Default)
-		{
-
-		}
-
-		/// <summary>
-		/// Writes declaration of a namespace using the specified collection of <paramref name="namespaces"/>.
-		/// </summary>
-		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to write the names of.</param>
-		public void BeginNamespaceDeclaration(IEnumerable<INamespaceSymbol> namespaces, NamespaceScope type = NamespaceScope.Default)
-		{
-			if (namespaces is null)
-			{
-				throw new ArgumentNullException(nameof(namespaces));
-			}
-
-			BeginNamespaceDeclaration_Internal(namespaces);
-		}
-
-		/// <summary>
-		/// Writes declaration of a namespace using the specified collection of <paramref name="namespaces"/>.
-		/// </summary>
-		/// <param name="namespaces">A collection of namespace names s to write.</param>
-		public void BeginNamespaceDeclaration(IEnumerable<string> namespaces, NamespaceScope type = NamespaceScope.Default)
-		{
-			if (namespaces is null)
-			{
-				throw new ArgumentNullException(nameof(namespaces));
-			}
-
-			BeginNamespaceDeclaration_Internal(AnalysisUtilities.JoinNamespaces(namespaces));
-		}
-
-		/// <summary>
-		/// Writes declaration of the specified <paramref name="namespace"/>.
-		/// </summary>
-		/// <param name="namespace">Name of namespace to begin the declaration of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclaration(string @namespace, NamespaceScope type = NamespaceScope.Default)
-		{
-			if (@namespace is null)
-			{
-				throw new ArgumentNullException(nameof(@namespace));
-			}
-
-			BeginNamespaceDeclaration_Internal(@namespace);
-		}
-
-		/// <summary>
-		/// Writes declaration of the parent namespace of the specified <paramref name="member"/>.
-		/// </summary>
-		/// <param name="member"><see cref="IMemberData"/> to write the full namespace it is declared in.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclarationOf(IMemberData member)
-		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
-
-			BeginNamespaceDeclaration_Internal(member.GetContainingNamespaces());
-		}
-
-		/// <summary>
-		/// Writes declaration of the parent namespace of the specified <paramref name="member"/>.
-		/// </summary>
-		/// <param name="member"><see cref="ISymbol"/> to write the full namespace it is declared in.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclarationOf(ISymbol member)
-		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
-
-			BeginNamespaceDeclaration_Internal(member.GetContainingNamespaces(false));
-		}
-
-		/// <summary>
-		/// Writes declaration of the parent namespace of the specified <paramref name="node"/>.
-		/// </summary>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the full namespace it is declared in.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="node"/> is <see langword="null"/>.</exception>
-		public void BeginNamespaceDeclarationOf(CSharpSyntaxNode node)
-		{
-			if (node is null)
-			{
-				throw new ArgumentNullException(nameof(node));
-			}
-
-			BeginNamespaceDeclaration_Internal(AnalysisUtilities.JoinNamespaces(node.GetParentNamespaces()));
+			return this;
 		}
 
 		/// <summary>
 		/// Begins a new scope.
 		/// </summary>
-		public void BeginScope()
+		public CodeBuilder BeginScope()
 		{
 			Indent();
 			TextBuilder.AppendLine("{");
 			CurrentIndent++;
-		}
 
-		/// <summary>
-		/// Writes declaration of a type.
-		/// </summary>
-		/// <param name="type"><see cref="ITypeData"/> that contains all the needed info about the target type.</param>
-		/// <returns>An <see cref="int"/> that represents the modified indentation level.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public void BeginTypeDeclaration(ITypeData type)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			BeginTypeDeclaration_Internal(type);
-		}
-
-		/// <summary>
-		/// Writes declaration of a type.
-		/// </summary>
-		/// <param name="type"><see cref="BaseTypeDeclarationSyntax"/> to convert to a <see cref="string"/> and append to the <see cref="TextBuilder"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public void BeginTypeDeclaration(BaseTypeDeclarationSyntax type)
-		{
-			if (type is null)
-			{
-				throw new ArgumentNullException(nameof(type));
-			}
-
-			BeginTypeDeclaration_Internal(type);
+			return this;
 		}
 
 		/// <summary>
 		/// Clears the builder.
 		/// </summary>
-		public void Clear()
+		public CodeBuilder Clear()
 		{
 			TextBuilder.Clear();
+			return this;
 		}
 
 		/// <summary>
 		/// Decrements the value of the <see cref="CurrentIndent"/>.
 		/// </summary>
-		public void DecrementIndent()
+		public CodeBuilder DecrementIndent()
 		{
 			CurrentIndent--;
+			return this;
 		}
 
 		/// <summary>
 		/// Ends all the remaining scope.
 		/// </summary>
-		public void EndAllScopes()
+		public CodeBuilder EndAllScopes()
 		{
 			int length = CurrentIndent;
 
@@ -422,44 +214,121 @@ namespace Durian.Analysis
 				Indent();
 				TextBuilder.AppendLine("}");
 			}
+
+			return this;
 		}
 
 		/// <summary>
 		/// Ends the current scope.
 		/// </summary>
-		public void EndScope()
+		public CodeBuilder EndScope()
 		{
 			CurrentIndent--;
 			Indent();
 			TextBuilder.AppendLine("}");
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a space.
+		/// </summary>
+		public CodeBuilder Space()
+		{
+			TextBuilder.Append(' ');
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a tab.
+		/// </summary>
+		public CodeBuilder Tab()
+		{
+			TextBuilder.Append('\t');
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <paramref name="number"/> of tabs.
+		/// </summary>
+		/// <param name="number">Number of tabs to write.</param>
+		public CodeBuilder Tab(int number)
+		{
+			for (int i = 0; i < number; i++)
+			{
+				TextBuilder.Append('\t');
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <paramref name="number"/> of spaces.
+		/// </summary>
+		/// <param name="number">Number of spaces to write.</param>
+		public CodeBuilder Space(int number)
+		{
+			for (int i = 0; i < number; i++)
+			{
+				TextBuilder.Append(' ');
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a new line.
+		/// </summary>
+		public CodeBuilder NewLine()
+		{
+			TextBuilder.AppendLine();
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <paramref name="number"/> of new lines.
+		/// </summary>
+		/// <param name="number">Number of new lines to write.</param>
+		public CodeBuilder NewLine(int number)
+		{
+			for (int i = 0; i < number; i++)
+			{
+				TextBuilder.AppendLine();
+			}
+
+			return this;
 		}
 
 		/// <summary>
 		/// Increments the value of the <see cref="CurrentIndent"/>.
 		/// </summary>
-		public void IncrementIndent()
+		public CodeBuilder IncrementIndent()
 		{
 			CurrentIndent++;
+			return this;
 		}
 
 		/// <summary>
 		/// Applies indentation according to the value of <see cref="CurrentIndent"/>.
 		/// </summary>
-		public void Indent()
+		public CodeBuilder Indent()
 		{
 			Indent(_currentIndent);
+			return this;
 		}
 
 		/// <summary>
 		/// Applies indentation according to the specified <paramref name="value"/>.
 		/// </summary>
 		/// <param name="value">Indentation level to apply.</param>
-		public void Indent(int value)
+		public CodeBuilder Indent(int value)
 		{
 			for (int i = 0; i < value; i++)
 			{
 				TextBuilder.Append('\t');
 			}
+
+			return this;
 		}
 
 		/// <inheritdoc cref="ParseSyntaxTree(CSharpParseOptions)"/>
@@ -492,81 +361,19 @@ namespace Durian.Analysis
 		/// Appends the <paramref name="value"/> to the <see cref="TextBuilder"/>.
 		/// </summary>
 		/// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>
-		public void Write(string value)
+		public CodeBuilder Write(string value)
 		{
 			TextBuilder.Append(value);
-		}
-
-		/// <summary>
-		/// Writes the attribute text.
-		/// </summary>
-		/// <param name="attributeName">Name of the attribute to write.</param>
-		/// <param name="args">Arguments of the attribute.</param>
-		public void WriteAttribute(string? attributeName, params object[] args)
-		{
-			TextBuilder.Append('[').Append(attributeName ?? string.Empty);
-
-			if (args is not null)
-			{
-				TextBuilder.Append('(');
-
-				foreach (object arg in args)
-				{
-					TextBuilder.Append(arg).Append(", ");
-				}
-
-				TextBuilder.Remove(TextBuilder.Length - 2, 2);
-				TextBuilder.Append(')');
-			}
-
-			TextBuilder.Append(']');
-		}
-
-		/// <inheritdoc cref="WriteDeclarationLead(IMemberData, IEnumerable{string}, string, string)"/>
-		public void WriteDeclarationLead(IMemberData member, IEnumerable<string>? usings)
-		{
-			if (Generator is null)
-			{
-				WriteDeclarationLead(member, usings, default, default);
-			}
-			else
-			{
-				WriteDeclarationLead(member, usings, Generator.GeneratorName, Generator.GeneratorVersion);
-			}
-		}
-
-		/// <inheritdoc cref="WriteDeclarationLead(IMemberData, IEnumerable{string}, string, string)"/>
-		public void WriteDeclarationLead(IMemberData member, IEnumerable<string>? usings, string? generatorName)
-		{
-			WriteDeclarationLead(member, usings, generatorName, default);
-		}
-
-		/// <summary>
-		/// Writes all the text that is needed before the actual member declaration, that is: the 'auto-generated' header, usings, namespace and parent types declarations.
-		/// </summary>
-		/// <param name="member">The <see cref="IMemberData"/> that contains all needed info, such as the <see cref="SemanticModel"/> or the <see cref="ISymbol"/>.</param>
-		/// <param name="usings">A collection of usings to apply.</param>
-		/// <param name="generatorName">Name of generator that created the following code.</param>
-		/// <param name="version">Version of the generator.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void WriteDeclarationLead(IMemberData member, IEnumerable<string>? usings, string? generatorName, string? version)
-		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
-
-			WriteDeclarationLead_Internal(member, usings, generatorName, version);
+			return this;
 		}
 
 		/// <summary>
 		/// Writes the file header returned by the <see cref="AutoGenerated.GetHeader(string?, string?)"/> method using values provided by the <see cref="Generator"/>.
 		/// </summary>
 		/// <remarks>If the <see cref="Generator"/> is <see langword="null"/>, calls the <see cref="AutoGenerated.GetHeader()"/> method instead.</remarks>
-		public void WriteHeader()
+		public CodeBuilder WriteHeader()
 		{
 			string text;
-
 			if (Generator is null)
 			{
 				text = AutoGenerated.GetHeader();
@@ -577,15 +384,17 @@ namespace Durian.Analysis
 			}
 
 			TextBuilder.Append(text);
+			return this;
 		}
 
 		/// <summary>
 		/// Writes the file header returned by the <see cref="AutoGenerated.GetHeader(string?)"/> method.
 		/// </summary>
 		/// <param name="generatorName">Name of generator that created the following code.</param>
-		public void WriteHeader(string? generatorName)
+		public CodeBuilder WriteHeader(string? generatorName)
 		{
 			TextBuilder.Append(AutoGenerated.GetHeader(generatorName));
+			return this;
 		}
 
 		/// <summary>
@@ -593,310 +402,184 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="generatorName">Name of generator that created the following code.</param>
 		/// <param name="version">Version of the generator that created the following code.</param>
-		public void WriteHeader(string? generatorName, string? version)
+		public CodeBuilder WriteHeader(string? generatorName, string? version)
 		{
 			TextBuilder.Append(AutoGenerated.GetHeader(generatorName, version));
+			return this;
 		}
 
 		/// <summary>
 		/// Appends a new line character to the <see cref="TextBuilder"/>.
 		/// </summary>
-		public void WriteLine()
+		public CodeBuilder WriteLine()
 		{
 			TextBuilder.AppendLine();
+			return this;
 		}
 
 		/// <summary>
 		/// Appends the <paramref name="value"/> followed by a new line to the <see cref="TextBuilder"/>.
 		/// </summary>
 		/// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>v
-		public void WriteLine(string value)
+		public CodeBuilder WriteLine(string value)
 		{
 			TextBuilder.AppendLine(value);
+			return this;
 		}
 
-		/// <summary>
-		/// Writes declarations of the specified <paramref name="member"/>'s parent types.
-		/// </summary>
-		/// <param name="member">Target member.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void WriteParentDeclarations(IMemberData member)
-		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
+		///// <summary>
+		///// Writes all usings that are needed by the specified <paramref name="node"/>.
+		///// </summary>
+		///// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
+		///// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
+		///// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		///// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>.</exception>
+		///// <exception cref="InvalidOperationException">
+		///// <see cref="Generator"/> returned null <see cref="IGeneratorPassContext"/>. -or-
+		///// If both the <see cref="Generator"/> and <see cref="PassContext"/> are <see langword="null"/>,
+		///// a <see cref="INamespaceSymbol"/> of the assembly's global namespace must be explicitly provided using one of WriteUsings 3-parameter overloads.
+		///// </exception>
+		//public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, CancellationToken cancellationToken = default)
+		//{
+		//	ICompilationData? targetCompilation;
 
-			WriteParentDeclarations_Internal(member.GetContainingTypes());
-		}
+		//	if (PassContext is not null)
+		//	{
+		//		targetCompilation = PassContext.TargetCompilation;
+		//	}
+		//	else if (_generator is not null)
+		//	{
+		//		targetCompilation = _generator.GetCurrentPassContext()?.TargetCompilation;
 
-		/// <summary>
-		/// Writes declarations of all the parent <paramref name="types"/>.
-		/// </summary>
-		/// <param name="types">A collection of parent <see cref="ITypeData"/>s to write the declarations of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="types"/> is <see langword="null"/>.</exception>
-		public void WriteParentDeclarations(IEnumerable<ITypeData> types)
-		{
-			if (types is null)
-			{
-				throw new ArgumentNullException(nameof(types));
-			}
+		//		if (targetCompilation is null)
+		//		{
+		//			throw new InvalidOperationException($"Generator returned null {nameof(IGeneratorPassContext)}");
+		//		}
+		//	}
+		//	else
+		//	{
+		//		throw new InvalidOperationException($"If both the {nameof(Generator)} and {nameof(PassContext)} are null, a {nameof(INamespaceSymbol)} of the assembly's global namespace must be explicitly provided using one of WriteUsings 3-parameter overloads.");
+		//	}
 
-			WriteParentDeclarations_Internal(types);
-		}
+		//	WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, targetCompilation, true, cancellationToken));
+		//}
 
-		/// <summary>
-		/// Writes all usings that are needed by the specified <paramref name="member"/>.
-		/// </summary>
-		/// <param name="member">Target <see cref="IMemberData"/> to write the used namespaces of.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void WriteUsings(IMemberData member, CancellationToken cancellationToken = default)
-		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
+		//private void BeginNamespaceDeclaration_Internal(IEnumerable<INamespaceSymbol> namespaces, NamespaceScope type)
+		//{
+		//	BeginNamespace_Internal(namespaces.JoinNamespaces(), type);
+		//}
 
-			WriteUsings_Internal(member.SemanticModel.GetUsedNamespaces(member.Declaration, member.ParentCompilation, true, cancellationToken));
-		}
+		//private void BeginNamespace_Internal(string @namespace, NamespaceScope type)
+		//{
+		//	Indent();
+		//	TextBuilder.Append("namespace ").AppendLine(@namespace);
 
-		/// <summary>
-		/// Writes all usings that are needed by the specified <paramref name="node"/>.
-		/// </summary>
-		/// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">
-		/// <see cref="Generator"/> returned null <see cref="IGeneratorPassContext"/>. -or-
-		/// If both the <see cref="Generator"/> and <see cref="PassContext"/> are <see langword="null"/>,
-		/// a <see cref="INamespaceSymbol"/> of the assembly's global namespace must be explicitly provided using one of WriteUsings 3-parameter overloads.
-		/// </exception>
-		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, CancellationToken cancellationToken = default)
-		{
-			ICompilationData? targetCompilation;
+		//	if(type == NamespaceScope.File)
+		//	{
+		//		TextBuilder.Append(';');
+		//	}
+		//	else
+		//	{
+		//		BeginScope();
+		//	}
+		//}
 
-			if (PassContext is not null)
-			{
-				targetCompilation = PassContext.TargetCompilation;
-			}
-			else if (_generator is not null)
-			{
-				targetCompilation = _generator.GetCurrentPassContext()?.TargetCompilation;
+		//private void BeginTypeDeclaration_Internal(ITypeData type)
+		//{
+		//	foreach (SyntaxToken modifier in type.Modifiers)
+		//	{
+		//		TextBuilder.Append(modifier.ValueText);
+		//		TextBuilder.Append(' ');
+		//	}
 
-				if (targetCompilation is null)
-				{
-					throw new InvalidOperationException($"Generator returned null {nameof(IGeneratorPassContext)}");
-				}
-			}
-			else
-			{
-				throw new InvalidOperationException($"If both the {nameof(Generator)} and {nameof(PassContext)} are null, a {nameof(INamespaceSymbol)} of the assembly's global namespace must be explicitly provided using one of WriteUsings 3-parameter overloads.");
-			}
+		//	TextBuilder.Append(type.Declaration.GetKeyword());
+		//	TextBuilder.Append(' ');
 
-			WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, targetCompilation, true, cancellationToken));
-		}
+		//	TextBuilder.AppendLine(type.Symbol.GetGenericName(GenericSubstitution.Variance));
+		//	Indent();
+		//	CurrentIndent++;
+		//	TextBuilder.AppendLine("{");
+		//}
 
-		/// <summary>
-		/// Writes all usings that are needed by the specified <paramref name="node"/>.
-		/// </summary>
-		/// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
-		/// <param name="compilationData"><see cref="ICompilationData"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilationData"/> is <see langword="null"/>.</exception>
-		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, ICompilationData compilationData, CancellationToken cancellationToken = default)
-		{
-			WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, compilationData, true, cancellationToken));
-		}
+		//private void BeginTypeDeclaration_Internal(BaseTypeDeclarationSyntax type)
+		//{
+		//	foreach (SyntaxToken modifier in type.Modifiers)
+		//	{
+		//		TextBuilder.Append(modifier.ValueText);
+		//		TextBuilder.Append(' ');
+		//	}
 
-		/// <summary>
-		/// Writes all usings that are needed by the specified <paramref name="node"/>.
-		/// </summary>
-		/// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, CSharpCompilation compilation, CancellationToken cancellationToken = default)
-		{
-			WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, compilation, true, cancellationToken));
-		}
+		//	TextBuilder.Append(type.GetKeyword());
+		//	TextBuilder.Append(' ');
 
-		/// <summary>
-		/// Writes all usings that are needed by the specified <paramref name="node"/>.
-		/// </summary>
-		/// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> the specified <paramref name="node"/> is defined in.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, IAssemblySymbol assembly, CancellationToken cancellationToken = default)
-		{
-			WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, assembly, true, cancellationToken));
-		}
+		//	TextBuilder.Append(type.Identifier.ToString());
 
-		/// <summary>
-		/// Writes all usings that are needed by the specified <paramref name="node"/>.
-		/// </summary>
-		/// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
-		/// <param name="globalNamespace"><see cref="INamespaceSymbol"/> that represents the assembly's global namespace.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="globalNamespace"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="globalNamespace"/> is not an actual global namespace.</exception>
-		public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, INamespaceSymbol globalNamespace, CancellationToken cancellationToken = default)
-		{
-			WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, globalNamespace, true, cancellationToken));
-		}
+		//	if (type is TypeDeclarationSyntax t)
+		//	{
+		//		WriteTypeParameters(t.TypeParameterList);
 
-		/// <summary>
-		/// Writes usings for all the specified <paramref name="namespaces"/>.
-		/// </summary>
-		/// <param name="namespaces">A collection of namespaces to write.</param>
-		/// <exception cref="ArgumentNullException"> <paramref name="namespaces"/> is <see langword="null"/>.</exception>
-		public void WriteUsings(IEnumerable<string> namespaces)
-		{
-			if (namespaces is null)
-			{
-				throw new ArgumentNullException(nameof(namespaces));
-			}
+		//		if (type is RecordDeclarationSyntax record)
+		//		{
+		//			WriteParameters(record.ParameterList);
+		//		}
 
-			WriteUsings_Internal(namespaces);
-		}
+		//		WriteConstraints(t.ConstraintClauses);
+		//	}
 
-		/// <summary>
-		/// Writes usings for all the specified <paramref name="namespaces"/>.
-		/// </summary>
-		/// <param name="namespaces">A collection of namespaces to write.</param>
-		/// <exception cref="ArgumentNullException"> <paramref name="namespaces"/> is <see langword="null"/>.</exception>
-		public void WriteUsings(IEnumerable<INamespaceSymbol> namespaces)
-		{
-			if (namespaces is null)
-			{
-				throw new ArgumentNullException(nameof(namespaces));
-			}
+		//	TextBuilder.AppendLine();
+		//	BeginScope();
+		//}
 
-			WriteUsings_Internal(namespaces.Select(n => n.Name).Where(n => n != string.Empty));
-		}
+		//private void WriteDeclarationLead_Internal(IMemberData member, IEnumerable<string>? usings, string? generatorName, string? version)
+		//{
+		//	WriteHeader(generatorName, version);
+		//	TextBuilder.AppendLine();
 
-		private void BeginNamespaceDeclaration_Internal(IEnumerable<INamespaceSymbol> namespaces, NamespaceScope type)
-		{
-			BeginNamespace_Internal(namespaces.JoinNamespaces(), type);
-		}
+		//	if (usings is not null)
+		//	{
+		//		int length = TextBuilder.Length;
+		//		WriteUsings_Internal(usings);
 
-		private void BeginNamespace_Internal(string @namespace, NamespaceScope type)
-		{
-			Indent();
-			TextBuilder.Append("namespace ").AppendLine(@namespace);
+		//		if (TextBuilder.Length > length)
+		//		{
+		//			TextBuilder.AppendLine();
+		//		}
+		//	}
 
-			if(type == NamespaceScope.File)
-			{
-				TextBuilder.Append(';');
-			}
-			else
-			{
-				BeginScope();
-			}
-		}
+		//	if (member.Symbol.ContainingNamespace is not null && !member.Symbol.ContainingNamespace.IsGlobalNamespace)
+		//	{
+		//		BeginNamespaceDeclaration_Internal(member.GetContainingNamespaces());
+		//	}
 
-		private void BeginTypeDeclaration_Internal(ITypeData type)
-		{
-			foreach (SyntaxToken modifier in type.Modifiers)
-			{
-				TextBuilder.Append(modifier.ValueText);
-				TextBuilder.Append(' ');
-			}
+		//	WriteParentDeclarations_Internal(member.GetContainingTypes());
+		//}
 
-			TextBuilder.Append(type.Declaration.GetKeyword());
-			TextBuilder.Append(' ');
+		//private void WriteParentDeclarations_Internal(IEnumerable<ITypeData> types)
+		//{
+		//	foreach (ITypeData parent in types)
+		//	{
+		//		Indent();
+		//		BeginTypeDeclaration_Internal(parent);
+		//	}
+		//}
 
-			TextBuilder.AppendLine(type.Symbol.GetGenericName(GenericSubstitution.Variance));
-			Indent();
-			CurrentIndent++;
-			TextBuilder.AppendLine("{");
-		}
-
-		private void BeginTypeDeclaration_Internal(BaseTypeDeclarationSyntax type)
-		{
-			foreach (SyntaxToken modifier in type.Modifiers)
-			{
-				TextBuilder.Append(modifier.ValueText);
-				TextBuilder.Append(' ');
-			}
-
-			TextBuilder.Append(type.GetKeyword());
-			TextBuilder.Append(' ');
-
-			TextBuilder.Append(type.Identifier.ToString());
-
-			if (type is TypeDeclarationSyntax t)
-			{
-				WriteTypeParameters(t.TypeParameterList);
-
-				if (type is RecordDeclarationSyntax record)
-				{
-					WriteParameters(record.ParameterList);
-				}
-
-				WriteConstraints(t.ConstraintClauses);
-			}
-
-			TextBuilder.AppendLine();
-			BeginScope();
-		}
-
-		private void WriteDeclarationLead_Internal(IMemberData member, IEnumerable<string>? usings, string? generatorName, string? version)
-		{
-			WriteHeader(generatorName, version);
-			TextBuilder.AppendLine();
-
-			if (usings is not null)
-			{
-				int length = TextBuilder.Length;
-				WriteUsings_Internal(usings);
-
-				if (TextBuilder.Length > length)
-				{
-					TextBuilder.AppendLine();
-				}
-			}
-
-			if (member.Symbol.ContainingNamespace is not null && !member.Symbol.ContainingNamespace.IsGlobalNamespace)
-			{
-				BeginNamespaceDeclaration_Internal(member.GetContainingNamespaces());
-			}
-
-			WriteParentDeclarations_Internal(member.GetContainingTypes());
-		}
-
-		private void WriteParentDeclarations_Internal(IEnumerable<ITypeData> types)
-		{
-			foreach (ITypeData parent in types)
-			{
-				Indent();
-				BeginTypeDeclaration_Internal(parent);
-			}
-		}
-
-		private void WriteUsings_Internal(IEnumerable<string> namespaces)
-		{
-			if (CurrentIndent == 0)
-			{
-				foreach (string u in namespaces)
-				{
-					TextBuilder.Append("using ").Append(u).AppendLine(";");
-				}
-			}
-			else
-			{
-				foreach (string u in namespaces)
-				{
-					Indent();
-					TextBuilder.Append("using ").Append(u).AppendLine(";");
-				}
-			}
-		}
+		//private void WriteUsings_Internal(IEnumerable<string> namespaces)
+		//{
+		//	if (CurrentIndent == 0)
+		//	{
+		//		foreach (string u in namespaces)
+		//		{
+		//			TextBuilder.Append("using ").Append(u).AppendLine(";");
+		//		}
+		//	}
+		//	else
+		//	{
+		//		foreach (string u in namespaces)
+		//		{
+		//			Indent();
+		//			TextBuilder.Append("using ").Append(u).AppendLine(";");
+		//		}
+		//	}
+		//}
 	}
 }

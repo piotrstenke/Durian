@@ -99,14 +99,8 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Returns the <see cref="Location"/> of the specified <paramref name="attribute"/>.
 		/// </summary>
-		/// <param name="attribute"><see cref="AttributeData"/> to get the location of.</param>
 		public static Location? GetLocation(this AttributeData attribute)
 		{
-			if (attribute is null)
-			{
-				throw new ArgumentNullException(nameof(attribute));
-			}
-
 			if (attribute.ApplicationSyntaxReference is null)
 			{
 				return null;

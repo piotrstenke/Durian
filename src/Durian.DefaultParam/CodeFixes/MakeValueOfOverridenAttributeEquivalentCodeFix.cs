@@ -93,7 +93,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 				return null;
 			}
 
-			foreach (IMethodSymbol m in symbol.GetBaseMethods())
+			foreach (IMethodSymbol m in symbol.GetOverriddenSymbols())
 			{
 				if (m.TypeParameters[ordinal].GetAttribute(attribute) is AttributeData data)
 				{

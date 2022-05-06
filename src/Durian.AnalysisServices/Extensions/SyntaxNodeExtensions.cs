@@ -21,14 +21,8 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilationUnit"><see cref="CompilationUnitSyntax"/> to add the using directive to.</param>
 		/// <param name="namespace"><see cref="INamespaceSymbol"/> to build the <see cref="UsingDirectiveSyntax"/> from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="compilationUnit"/> is <see langword="null"/>. -or- <paramref name="namespace"/> is <see langword="null"/>.</exception>
 		public static CompilationUnitSyntax AddUsings(this CompilationUnitSyntax compilationUnit, INamespaceSymbol @namespace)
 		{
-			if (compilationUnit is null)
-			{
-				throw new ArgumentNullException(nameof(compilationUnit));
-			}
-
 			UsingDirectiveSyntax directive = @namespace.GetUsingDirective();
 			string name = directive.Name.ToString();
 
@@ -45,20 +39,8 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="compilationUnit"><see cref="CompilationUnitSyntax"/> to add the using directives to.</param>
 		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to build the <see cref="UsingDirectiveSyntax"/>es from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="compilationUnit"/> is <see langword="null"/>. -or- <paramref name="namespaces"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException"><paramref name="namespaces"/> cannot be empty.</exception>
 		public static CompilationUnitSyntax AddUsings(this CompilationUnitSyntax compilationUnit, IEnumerable<INamespaceSymbol>? namespaces)
 		{
-			if (compilationUnit is null)
-			{
-				throw new ArgumentNullException(nameof(compilationUnit));
-			}
-
-			if (namespaces is null)
-			{
-				throw new ArgumentNullException(nameof(namespaces));
-			}
-
 			HashSet<string> usings = new(compilationUnit.Usings.Where(u => u.Alias is null).Select(u => u.Name.ToString()));
 			UsingDirectiveSyntax[] directives = namespaces
 				.Where(n => n.Name != string.Empty)
@@ -81,28 +63,8 @@ namespace Durian.Analysis.Extensions
 		/// <param name="attribute"><see cref="AttributeSyntax"/> to get the argument of.</param>
 		/// <param name="argumentName">Name of argument to get.</param>
 		/// <param name="includeParameters">Determines whether to include arguments with colons in the search.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="attribute"/> is <see langword="null"/>. -or-
-		/// <paramref name="argumentName"/> is <see langword="null"/>.
-		/// </exception>
-		/// <exception cref="ArgumentException"><paramref name="argumentName"/> cannot be empty or white space only.</exception>
 		public static AttributeArgumentSyntax? GetArgument(this AttributeSyntax attribute, string argumentName, bool includeParameters = false)
 		{
-			if (attribute is null)
-			{
-				throw new ArgumentNullException(nameof(attribute));
-			}
-
-			if (argumentName is null)
-			{
-				throw new ArgumentNullException(nameof(argumentName));
-			}
-
-			if (string.IsNullOrWhiteSpace(argumentName))
-			{
-				throw new ArgumentException("Property cannot be empty or white space only!", nameof(argumentName));
-			}
-
 			if (attribute.ArgumentList is null)
 			{
 				return null;
@@ -145,20 +107,8 @@ namespace Durian.Analysis.Extensions
 		/// <param name="attribute"><see cref="AttributeSyntax"/> to get the argument of.</param>
 		/// <param name="position">Position of argument to get.</param>
 		/// <param name="argumentName">Name of the argument to get the location of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="position"/> cannot be less than <c>0</c>.</exception>
 		public static AttributeArgumentSyntax? GetArgument(this AttributeSyntax attribute, int position, string? argumentName = null)
 		{
-			if (attribute is null)
-			{
-				throw new ArgumentNullException(nameof(attribute));
-			}
-
-			if (position < 0)
-			{
-				throw new ArgumentOutOfRangeException(nameof(position), "Argument position cannot be less than 0!");
-			}
-
 			if (attribute.ArgumentList is null)
 			{
 				return null;
@@ -201,11 +151,6 @@ namespace Durian.Analysis.Extensions
 		/// <param name="attribute"><see cref="AttributeSyntax"/> to get the location of argument of.</param>
 		/// <param name="argumentName">Name of the argument to get the location of.</param>
 		/// <param name="includeParameters">Determines whether to include arguments with colons in the search.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="attribute"/> is <see langword="null"/>. -or-
-		/// <paramref name="argumentName"/> is <see langword="null"/>.
-		/// </exception>
-		/// <exception cref="ArgumentException"><paramref name="argumentName"/> cannot be empty or white space only.</exception>
 		public static Location GetArgumentLocation(this AttributeSyntax attribute, string argumentName, bool includeParameters = false)
 		{
 			AttributeArgumentSyntax? arg = attribute.GetArgument(argumentName, includeParameters);
@@ -225,8 +170,6 @@ namespace Durian.Analysis.Extensions
 		/// <param name="attribute"><see cref="AttributeSyntax"/> to get the location of argument of.</param>
 		/// <param name="position">Position of argument to get.</param>
 		/// <param name="argumentName">Name of the argument to get the location of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="position"/> cannot be less than <c>0</c>.</exception>
 		public static Location GetArgumentLocation(this AttributeSyntax attribute, int position, string? argumentName = null)
 		{
 			AttributeArgumentSyntax? arg = attribute.GetArgument(position, argumentName);
@@ -243,14 +186,8 @@ namespace Durian.Analysis.Extensions
 		/// Returns the body of the specified <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="BaseMethodDeclarationSyntax"/> to get the body of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
 		public static CSharpSyntaxNode? GetBody(this BaseMethodDeclarationSyntax method)
 		{
-			if (method is null)
-			{
-				throw new ArgumentNullException(nameof(method));
-			}
-
 			if (method.Body is not null)
 			{
 				return method.Body;
@@ -268,14 +205,8 @@ namespace Durian.Analysis.Extensions
 		/// Returns the body of the specified <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="LocalFunctionStatementSyntax"/> to get the body of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
 		public static CSharpSyntaxNode? GetBody(this LocalFunctionStatementSyntax method)
 		{
-			if (method is null)
-			{
-				throw new ArgumentNullException(nameof(method));
-			}
-
 			if (method.Body is not null)
 			{
 				return method.Body;
@@ -293,14 +224,8 @@ namespace Durian.Analysis.Extensions
 		/// Returns type of the body of the specified <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="BaseMethodDeclarationSyntax"/> to get the type of body of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
 		public static MethodBody GetBodyType(this BaseMethodDeclarationSyntax method)
 		{
-			if (method is null)
-			{
-				throw new ArgumentNullException(nameof(method));
-			}
-
 			if (method.Body is not null)
 			{
 				return MethodBody.Block;
@@ -318,17 +243,14 @@ namespace Durian.Analysis.Extensions
 		/// Returns the keyword that is used to declare the given <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="BaseTypeDeclarationSyntax"/> to get the keyword of.</param>
-		/// <exception cref="ArgumentException">Unknown type declaration format.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static string GetKeyword(this BaseTypeDeclarationSyntax type)
+		public static string? GetKeyword(this BaseTypeDeclarationSyntax type)
 		{
 			return type switch
 			{
 				EnumDeclarationSyntax => "enum",
 				RecordDeclarationSyntax record => record.ClassOrStructKeyword == default ? "record" : $"record {record.ClassOrStructKeyword}",
-				TypeDeclarationSyntax t => t.Keyword.ToString(),
-				null => throw new ArgumentNullException(nameof(type)),
-				_ => throw new ArgumentException($"Unknown type declaration format: {type}")
+				TypeDeclarationSyntax t => t.Keyword.ValueText,
+				_ => default
 			};
 		}
 
@@ -337,19 +259,8 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to get the data of.</param>
 		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static IMemberData GetMemberData(this CSharpSyntaxNode member, ICompilationData compilation)
 		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
-
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
 			return member switch
 			{
 				ClassDeclarationSyntax => new ClassData((ClassDeclarationSyntax)member, compilation),
@@ -382,34 +293,23 @@ namespace Durian.Analysis.Extensions
 		/// Returns modifiers contained withing the given collection of <see cref="TypeDeclarationSyntax"/>es.
 		/// </summary>
 		/// <param name="decl">Collection of <see cref="TypeDeclarationSyntax"/>es to get the modifiers from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="decl"/> is <see langword="null"/>.</exception>
 		public static IEnumerable<SyntaxToken> GetModifiers(this IEnumerable<MemberDeclarationSyntax> decl)
 		{
-			if (decl is null)
+			List<SyntaxToken> tokens = new();
+
+			foreach (TypeDeclarationSyntax d in decl)
 			{
-				throw new ArgumentNullException(nameof(decl));
-			}
-
-			return Yield();
-
-			IEnumerable<SyntaxToken> Yield()
-			{
-				List<SyntaxToken> tokens = new();
-
-				foreach (TypeDeclarationSyntax d in decl)
+				if (d is null)
 				{
-					if (d is null)
-					{
-						continue;
-					}
+					continue;
+				}
 
-					foreach (SyntaxToken modifier in d.Modifiers)
+				foreach (SyntaxToken modifier in d.Modifiers)
+				{
+					if (!tokens.Exists(m => m.IsKind(modifier.Kind())))
 					{
-						if (!tokens.Exists(m => m.IsKind(modifier.Kind())))
-						{
-							tokens.Add(modifier);
-							yield return modifier;
-						}
+						tokens.Add(modifier);
+						yield return modifier;
 					}
 				}
 			}
@@ -432,7 +332,7 @@ namespace Durian.Analysis.Extensions
 				return syntax.NameColon.GetName();
 			}
 
-			return null;
+			return default;
 		}
 
 		/// <summary>
@@ -457,15 +357,10 @@ namespace Durian.Analysis.Extensions
 		/// Returns parent namespaces of the specified <paramref name="node"/>.
 		/// </summary>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the parent namespaces of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="node"/> is <see langword="null"/>.</exception>
-		public static IEnumerable<string> GetParentNamespaces(this SyntaxNode node)
+		/// <param name="order">Specifies ordering of the returned values.</param>
+		public static IEnumerable<string> GetContainingNamespaces(this SyntaxNode node, ReturnOrder order = ReturnOrder.Parent)
 		{
-			if (node is null)
-			{
-				throw new ArgumentNullException(nameof(node));
-			}
-
-			return Yield().Reverse();
+			return AnalysisUtilities.ByOrder(Yield(), order);
 
 			IEnumerable<string> Yield()
 			{
@@ -491,14 +386,8 @@ namespace Durian.Analysis.Extensions
 		/// Returns a <see cref="TypeParameterListSyntax"/> of the <paramref name="member"/> or <see langword="null"/> if the <paramref name="member"/> has no type parameters.
 		/// </summary>
 		/// <param name="member"><see cref="MemberDeclarationSyntax"/> to get the <see cref="TypeParameterListSyntax"/> of.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
 		public static TypeParameterListSyntax? GetTypeParameterList(this MemberDeclarationSyntax member)
 		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
-
 			return member switch
 			{
 				TypeDeclarationSyntax t => t.TypeParameterList,
@@ -512,7 +401,6 @@ namespace Durian.Analysis.Extensions
 		/// Checks if the target <paramref name="method"/> has a body, either block or expression.
 		/// </summary>
 		/// <param name="method"><see cref="BaseMethodDeclarationSyntax"/> to check if has a body.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
 		public static bool HasBody(this BaseMethodDeclarationSyntax method)
 		{
 			return method.GetBody() is not null;

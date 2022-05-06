@@ -16,7 +16,7 @@ namespace Durian.Analysis.Tests.SyntaxNodeExtensions
 		public void IsSuccess_When_IsNotDirectlyInNamespaceScope()
 		{
 			MemberDeclarationSyntax member = GetNode<ClassDeclarationSyntax>("namespace N { class Parent { class Child { } } }", 1)!;
-			string[] namespaces = member.GetParentNamespaces().ToArray();
+			string[] namespaces = member.GetContainingNamespaces().ToArray();
 			Assert.True(namespaces.Length == 1 && namespaces[0] == "N");
 		}
 
@@ -24,14 +24,14 @@ namespace Durian.Analysis.Tests.SyntaxNodeExtensions
 		public void ReturnsEmpty_When_IsInGlobalNamespace()
 		{
 			MemberDeclarationSyntax member = GetNode<ClassDeclarationSyntax>("class Test { }")!;
-			Assert.True(!member.GetParentNamespaces().Any());
+			Assert.True(!member.GetContainingNamespaces().Any());
 		}
 
 		[Fact]
 		public void ReturnsMultipleNamespaces_When_IsInNestedNamespace()
 		{
 			MemberDeclarationSyntax member = GetNode<ClassDeclarationSyntax>("namespace N1.N2 { class Test { } }")!;
-			string[] namespaces = member.GetParentNamespaces().ToArray();
+			string[] namespaces = member.GetContainingNamespaces().ToArray();
 			Assert.True(namespaces.Length == 2 && namespaces.Contains("N1") && namespaces.Contains("N2"));
 		}
 
@@ -39,7 +39,7 @@ namespace Durian.Analysis.Tests.SyntaxNodeExtensions
 		public void ReturnsMultipleNamespaces_When_IsInNestedNamespace_And_NamespacesAreWrittenSeparately()
 		{
 			MemberDeclarationSyntax member = GetNode<ClassDeclarationSyntax>("namespace N1 { namespace N2 { class Test { } } }")!;
-			string[] namespaces = member.GetParentNamespaces().ToArray();
+			string[] namespaces = member.GetContainingNamespaces().ToArray();
 			Assert.True(namespaces.Length == 2 && namespaces.Contains("N1") && namespaces.Contains("N2"));
 		}
 
@@ -47,7 +47,7 @@ namespace Durian.Analysis.Tests.SyntaxNodeExtensions
 		public void ReturnsNamespacesFromLeftToRight()
 		{
 			MemberDeclarationSyntax member = GetNode<ClassDeclarationSyntax>("namespace N1 { namespace N2 { class Test { } } }")!;
-			string[] namespaces = member.GetParentNamespaces().ToArray();
+			string[] namespaces = member.GetContainingNamespaces().ToArray();
 			Assert.True(namespaces.Length == 2 && namespaces[0] == "N1" && namespaces[1] == "N2");
 		}
 
@@ -55,7 +55,7 @@ namespace Durian.Analysis.Tests.SyntaxNodeExtensions
 		public void ReturnsParentNamespace_When_IsInSingleNamespace()
 		{
 			MemberDeclarationSyntax member = GetNode<ClassDeclarationSyntax>("namespace N { class Test { } }")!;
-			string[] namespaces = member.GetParentNamespaces().ToArray();
+			string[] namespaces = member.GetContainingNamespaces().ToArray();
 			Assert.True(namespaces.Length == 1 && namespaces[0] == "N");
 		}
 	}

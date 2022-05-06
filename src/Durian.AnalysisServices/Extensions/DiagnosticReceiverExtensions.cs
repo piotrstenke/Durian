@@ -29,7 +29,7 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <inheritdoc cref="ReportDiagnostic(IDiagnosticReceiver, DiagnosticDescriptor, ISymbol?, object[])"/>
-		public static void ReportDiagnostic(this IDiagnosticReceiver diagnosticReceiver, DiagnosticDescriptor descriptor, ISymbol? symbol)
+		public static void ReportDiagnostic(this IDiagnosticReceiver diagnosticReceiver, DiagnosticDescriptor? descriptor, ISymbol? symbol)
 		{
 			if (diagnosticReceiver is null)
 			{

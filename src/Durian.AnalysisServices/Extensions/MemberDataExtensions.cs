@@ -38,10 +38,10 @@ namespace Durian.Analysis.Extensions
 		/// <param name="includeSelf">Determines whether to include the <paramref name="member"/> in the returned <see cref="string"/>.</param>
 		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public static string GetParentTypesString(this IMemberData member, bool includeSelf = true, bool includeParameters = false)
+		public static string GetContainingTypesAsString(this IMemberData member, bool includeSelf = true, bool includeParameters = false)
 		{
 			StringBuilder builder = new();
-			member.GetParentTypesStringInto(builder, includeSelf, includeParameters);
+			member.GetContainingTypesAsStringInto(builder, includeSelf, includeParameters);
 			return builder.ToString();
 		}
 
@@ -54,7 +54,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="includeSelf">Determines whether to include the <paramref name="member"/> in the returned <see cref="string"/>.</param>
 		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public static void GetParentTypesStringInto(this IMemberData member, StringBuilder builder, bool includeSelf = true, bool includeParameters = false)
+		public static void GetContainingTypesAsStringInto(this IMemberData member, StringBuilder builder, bool includeSelf = true, bool includeParameters = false)
 		{
 			foreach (ITypeData type in member.GetContainingTypes())
 			{
@@ -94,10 +94,10 @@ namespace Durian.Analysis.Extensions
 		/// <param name="includeSelf">Determines whether to include the <paramref name="member"/> in the returned <see cref="string"/>.</param>
 		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public static string GetXmlParentTypes(this IMemberData member, bool includeSelf = true, bool includeParameters = false)
+		public static string GetXmlContainingTypes(this IMemberData member, bool includeSelf = true, bool includeParameters = false)
 		{
 			StringBuilder builder = new();
-			member.GetXmlParentTypesInto(builder, includeSelf, includeParameters);
+			member.GetXmlContainingTypesInto(builder, includeSelf, includeParameters);
 			return builder.ToString();
 		}
 
@@ -109,7 +109,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="includeSelf">Determines whether to include the <paramref name="member"/> in the returned <see cref="string"/>.</param>
 		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public static void GetXmlParentTypesInto(this IMemberData member, StringBuilder builder, bool includeSelf = true, bool includeParameters = false)
+		public static void GetXmlContainingTypesInto(this IMemberData member, StringBuilder builder, bool includeSelf = true, bool includeParameters = false)
 		{
 			foreach (ITypeData type in member.GetContainingTypes())
 			{

@@ -11,126 +11,126 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Not an operator.
 		/// </summary>
-		None,
+		None = 0,
 
 		/// <summary>
 		/// Represents the unary plus operator: +x.
 		/// </summary>
-		UnaryPlus,
+		UnaryPlus = 1,
 
 		/// <summary>
 		/// Represents the unary minus operator: -x.
 		/// </summary>
-		UnaryMinus,
+		UnaryMinus = 2,
 
 		/// <summary>
 		/// Represents the negation operator: !x.
 		/// </summary>
-		Negation,
+		Negation = 3,
 
 		/// <summary>
 		/// Represents the bitwise complement operator: ~x.
 		/// </summary>
-		Complement,
+		Complement = 4,
 
 		/// <summary>
 		/// Represents the increment operator: ++x or x++.
 		/// </summary>
-		Increment,
+		Increment = 5,
 
 		/// <summary>
 		/// Represents the decrement operator: --x or x--.
 		/// </summary>
-		Decrement,
+		Decrement = 6,
 
 		/// <summary>
 		/// Represents the <see langword="true"/> operator: if(x).
 		/// </summary>
-		True,
+		True = 7,
 
 		/// <summary>
 		/// Represents the <see langword="false"/> operator: if(x).
 		/// </summary>
-		False,
+		False = 8,
 
 		/// <summary>
 		/// Represents the addition operator: x + y.
 		/// </summary>
-		Addition,
+		Addition = 9,
 
 		/// <summary>
 		/// Represents the subtraction operator: x - y.
 		/// </summary>
-		Subtraction,
+		Subtraction = 10,
 
 		/// <summary>
 		/// Represents the multiplication operator: x * y.
 		/// </summary>
-		Multiplication,
+		Multiplication = 11,
 
 		/// <summary>
 		/// Represents the division operator: x / y.
 		/// </summary>
-		Division,
+		Division = 12,
 
 		/// <summary>
 		/// Represents the remainder operator: x % y.
 		/// </summary>
-		Remainder,
+		Remainder = 13,
 
 		/// <summary>
 		/// Represents the logical <see langword="and"/> operator: x &amp; y.
 		/// </summary>
-		LogicalAnd,
+		LogicalAnd = 14,
 
 		/// <summary>
 		/// Represents the logical <see langword="or"/> operator: x | y.
 		/// </summary>
-		LogicalOr,
+		LogicalOr = 15,
 
 		/// <summary>
 		/// Represents the logical <see langword="xor"/> operator: x ^ y.
 		/// </summary>
-		LogicalXor,
+		LogicalXor = 16,
 
 		/// <summary>
 		/// Represents the left shift operator: x &lt;&lt; y.
 		/// </summary>
-		LeftShift,
+		LeftShift = 17,
 
 		/// <summary>
 		/// Represents the right shift operator: x &gt;&gt; y.
 		/// </summary>
-		RightShift,
+		RightShift = 18,
 
 		/// <summary>
 		/// Represents the equality operator: x == y.
 		/// </summary>
-		Equality,
+		Equality = 19,
 
 		/// <summary>
 		/// Represents the inequality operator: x != y.
 		/// </summary>
-		Inequality,
+		Inequality = 20,
 
 		/// <summary>
 		/// Represents the less than operator: x &lt; y.
 		/// </summary>
-		LessThan,
+		LessThan = 21,
 
 		/// <summary>
 		/// Represents the greater than operator: x &gt; y.
 		/// </summary>
-		GreaterThan,
+		GreaterThan = 22,
 
 		/// <summary>
 		/// Represents the less than or equal operator: x &lt;= y.
 		/// </summary>
-		LestThanOrEqual,
+		LestThanOrEqual = 23,
 
 		/// <summary>
 		/// Represents the greater than or equal operator: x &gt;= y.
 		/// </summary>
-		GreaterThanOrEqual
+		GreaterThanOrEqual = 24
 	}
 }

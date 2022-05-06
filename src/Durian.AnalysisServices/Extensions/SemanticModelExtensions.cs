@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
@@ -26,9 +24,6 @@ namespace Durian.Analysis.Extensions
 		/// <param name="syntaxNode"><see cref="MemberDeclarationSyntax"/> the attribute is declared on.</param>
 		/// <param name="attrSymbol">Type of attribute to look for.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns>
-		/// The <see cref="AttributeSyntax"/> that corresponds to the <paramref name="attrSymbol"/>. -or- <see langword="null"/> if no such <see cref="AttributeSyntax"/> found.
-		/// </returns>
 		public static AttributeSyntax? GetAttribute(
 			this SemanticModel semanticModel,
 			MemberDeclarationSyntax syntaxNode,
@@ -46,9 +41,6 @@ namespace Durian.Analysis.Extensions
 		/// <param name="syntaxNode"><see cref="TypeParameterSyntax"/> the attribute is declared on.</param>
 		/// <param name="attrSymbol">Type of attribute to look for.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns>
-		/// The <see cref="AttributeSyntax"/> that corresponds to the <paramref name="attrSymbol"/>. -or- <see langword="null"/> if no such <see cref="AttributeSyntax"/> found.
-		/// </returns>
 		public static AttributeSyntax? GetAttribute(
 			this SemanticModel semanticModel,
 			TypeParameterSyntax syntaxNode,
@@ -66,9 +58,6 @@ namespace Durian.Analysis.Extensions
 		/// <param name="syntaxNode"><see cref="ParameterSyntax"/> the attribute is declared on.</param>
 		/// <param name="attrSymbol">Type of attribute to look for.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns>
-		/// The <see cref="AttributeSyntax"/> that corresponds to the <paramref name="attrSymbol"/>. -or- <see langword="null"/> if no such <see cref="AttributeSyntax"/> found.
-		/// </returns>
 		public static AttributeSyntax? GetAttribute(
 			this SemanticModel semanticModel,
 			ParameterSyntax syntaxNode,
@@ -86,9 +75,6 @@ namespace Durian.Analysis.Extensions
 		/// <param name="syntaxNode"><see cref="MemberDeclarationSyntax"/> the attributes are declared on.</param>
 		/// <param name="attrSymbol">Type of attributes to look for.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns>
-		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
-		/// </returns>
 		public static IEnumerable<AttributeSyntax> GetAttributes(
 			this SemanticModel semanticModel,
 			MemberDeclarationSyntax syntaxNode,
@@ -106,9 +92,6 @@ namespace Durian.Analysis.Extensions
 		/// <param name="syntaxNode"><see cref="TypeParameterSyntax"/> the attributes are declared on.</param>
 		/// <param name="attrSymbol">Type of attributes to look for.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns>
-		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
-		/// </returns>
 		public static IEnumerable<AttributeSyntax> GetAttributes(
 			this SemanticModel semanticModel,
 			TypeParameterSyntax syntaxNode,
@@ -126,9 +109,6 @@ namespace Durian.Analysis.Extensions
 		/// <param name="syntaxNode"><see cref="ParameterSyntax"/> the attributes are declared on.</param>
 		/// <param name="attrSymbol">Type of attributes to look for.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <returns>
-		/// A collection of <see cref="AttributeSyntax"/>es that corresponds to the <paramref name="attrSymbol"/>. -or- an empty collection if no such <see cref="AttributeSyntax"/>es found.
-		/// </returns>
 		public static IEnumerable<AttributeSyntax> GetAttributes(
 			this SemanticModel semanticModel,
 			ParameterSyntax syntaxNode,

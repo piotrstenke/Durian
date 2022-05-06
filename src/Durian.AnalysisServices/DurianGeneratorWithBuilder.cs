@@ -134,14 +134,14 @@ namespace Durian.Analysis
 			{
 				if (method.MethodKind == MethodKind.StaticConstructor)
 				{
-					return method.GetParentTypesString(false) + ".static " + method.ContainingType.Name + "()";
+					return method.GetContainingTypesAsString(false) + ".static " + method.ContainingType.Name + "()";
 				}
 
 				if (method.MethodKind == MethodKind.ExplicitInterfaceImplementation && method.ExplicitInterfaceImplementations.Length > 0)
 				{
 					IMethodSymbol interfaceMethod = method.ExplicitInterfaceImplementations[0];
 					string interfaceName = interfaceMethod.ContainingType.GetGenericName();
-					string methodName = method.GetParentTypesString(false) + '.' + interfaceMethod.GetGenericName(GenericSubstitution.ParameterList);
+					string methodName = method.GetContainingTypesAsString(false) + '.' + interfaceMethod.GetGenericName(GenericSubstitution.ParameterList);
 					return $"({interfaceName}){methodName}";
 				}
 			}

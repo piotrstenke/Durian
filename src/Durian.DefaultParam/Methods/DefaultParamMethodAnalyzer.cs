@@ -872,7 +872,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		{
 			TypeParameterContainer parameters = TypeParameterContainer.CreateFrom(baseMethod, compilation, cancellationToken);
 
-			foreach (IMethodSymbol m in baseMethod.GetBaseMethods())
+			foreach (IMethodSymbol m in baseMethod.GetOverriddenSymbols())
 			{
 				TypeParameterContainer t = TypeParameterContainer.CreateFrom(m, compilation, cancellationToken);
 

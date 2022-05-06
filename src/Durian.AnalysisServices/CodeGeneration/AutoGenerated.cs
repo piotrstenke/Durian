@@ -3,7 +3,7 @@
 
 using System.Text;
 
-namespace Durian.Analysis
+namespace Durian.Analysis.CodeGeneration
 {
 	/// <summary>
 	/// Contains various utility methods that generate text of the &lt;auto-generated&gt; header or the <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/>.

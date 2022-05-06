@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Extensions
@@ -13,18 +15,102 @@ namespace Durian.Analysis.Extensions
 	public static class CompilationExtensions
 	{
 		/// <summary>
+		/// Returns a collection of all <see cref="INamespaceSymbol"/>s contained withing the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="compilation"><see cref="Compilation"/> to get the namespaces from.</param>
+		/// <param name="includeExternal">Determines whether to include namespaces from referenced assemblies.</param>
+		public static IEnumerable<INamespaceSymbol> GetAllNamespaces(this Compilation compilation, bool includeExternal = false)
+		{
+			INamespaceSymbol globalNamespace = includeExternal ? compilation.GlobalNamespace : compilation.Assembly.GlobalNamespace;
+
+			Stack<INamespaceSymbol> namespaces = new(32);
+
+			foreach (INamespaceSymbol @namespace in globalNamespace.GetNamespaceMembers())
+			{
+				namespaces.Push(@namespace);
+			}
+
+			while(namespaces.Count > 0)
+			{
+				INamespaceSymbol current = namespaces.Pop();
+
+				yield return current;
+
+				foreach (INamespaceSymbol child in current.GetNamespaceMembers().Reverse())
+				{
+					namespaces.Push(child);
+				}
+			}
+		}
+
+		/// <summary>
 		/// Returns a collection of all types declared in the specified <paramref name="compilation"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the types from.</param>
-		/// <param name="includeReferences">Determines whether to include types from referenced assemblies.</param>
-		public static IEnumerable<INamedTypeSymbol> GetAllTypes(this Compilation compilation, bool includeReferences = false)
+		/// <param name="includeExternal">Determines whether to include types from referenced assemblies.</param>
+		public static IEnumerable<INamedTypeSymbol> GetAllTypes(this Compilation compilation, bool includeExternal = false)
 		{
-			if (includeReferences)
+			const int capacity = 32;
+			INamespaceSymbol globalNamespace = includeExternal ? compilation.GlobalNamespace : compilation.Assembly.GlobalNamespace;
+
+			Stack<INamedTypeSymbol> innerTypes = new(capacity);
+
+			foreach (INamedTypeSymbol globalType in globalNamespace.GetTypeMembers())
 			{
-				return compilation.GlobalNamespace.GetInnerTypes();
+				yield return globalType;
+
+				if(FillStack(globalType))
+				{
+					while (innerTypes.Count > 0)
+					{
+						yield return PushChildren();
+					}
+				}
 			}
 
-			return compilation.Assembly.GlobalNamespace.GetInnerTypes();
+			foreach (INamespaceSymbol @namespace in compilation.GetAllNamespaces(includeExternal))
+			{
+				if(FillStack(@namespace))
+				{
+					while(innerTypes.Count > 0)
+					{
+						yield return PushChildren();
+					}
+				}
+			}
+
+			bool FillStack(INamespaceOrTypeSymbol currentSymbol)
+			{
+				ImmutableArray<INamedTypeSymbol> array = currentSymbol.GetTypeMembers();
+
+				if (array.Length == 0)
+				{
+					return false;
+				}
+
+				foreach (INamedTypeSymbol t in array.Reverse())
+				{
+					innerTypes.Push(t);
+				}
+
+				return true;
+			}
+
+			INamedTypeSymbol PushChildren()
+			{
+				INamedTypeSymbol t = innerTypes.Pop();
+				ImmutableArray<INamedTypeSymbol>  array = t.GetTypeMembers();
+
+				if (array.Length > 0)
+				{
+					foreach (INamedTypeSymbol child in array.Reverse())
+					{
+						innerTypes.Push(child);
+					}
+				}
+
+				return t;
+			}
 		}
 
 		/// <summary>

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -61,41 +62,15 @@ namespace Durian.Analysis
 		public static string CreateName(params string[]? parts)
 		{
 			StringBuilder builder = new();
-			CreateName(builder, parts);
+			builder.WriteName(parts);
 			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> representing a dot-separated name to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <param name="parts">Parts of the name. Each part will be separated by a dot.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		public static void CreateName(StringBuilder builder, params string[]? parts)
-		{
-			if (parts is null || parts.Length == 0)
-			{
-				return;
-			}
-
-			foreach (string part in parts)
-			{
-				if (string.IsNullOrWhiteSpace(part))
-				{
-					continue;
-				}
-
-				builder.Append(part).Append('.');
-			}
-
-			builder.Remove(builder.Length - 2, 1);
 		}
 
 		/// <summary>
 		/// Converts the specified <paramref name="accessibility"/> into its <see cref="string"/> representation.
 		/// </summary>
 		/// <param name="accessibility"><see cref="Accessibility"/> to convert to text.</param>
-		/// <exception cref="ArgumentException"><paramref name="accessibility"/> is not a valid <see cref="Accessibility"/> value.</exception>
-		public static string GetAccessiblityText(Accessibility accessibility)
+		public static string? GetAccessiblityText(Accessibility accessibility)
 		{
 			return accessibility switch
 			{
@@ -104,7 +79,55 @@ namespace Durian.Analysis
 				Accessibility.Internal => "internal",
 				Accessibility.ProtectedOrInternal => "protected internal",
 				Accessibility.ProtectedAndInternal => "private protected",
-				_ => throw new ArgumentException($"Invalid accessibility value: '{accessibility}'")
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns a keyword used to refer to a <see cref="ISymbol"/> of the specified <paramref name="kind"/> inside an attribute list.
+		/// </summary>
+		/// <param name="kind">Kind of method to get the keyword for.</param>
+		/// <param name="targetKind">Determines which keyword to return when there is more than one option.</param>
+		public static string? GetAttributeTarget(SymbolKind kind, AttributeTargetKind targetKind = default)
+		{
+			return kind switch
+			{
+				SymbolKind.NamedType => "type",
+				SymbolKind.Field => "field",
+				SymbolKind.Method => targetKind == AttributeTargetKind.FieldOrReturn ? "return" : "method",
+				SymbolKind.Property => targetKind == AttributeTargetKind.FieldOrReturn ? "field" : "property",
+				SymbolKind.Event => targetKind switch
+				{
+					AttributeTargetKind.FieldOrReturn => "field",
+					AttributeTargetKind.MethodOrParam => "method",
+					_ => "event"
+				},
+				SymbolKind.TypeParameter => "typevar",
+				SymbolKind.Parameter => "param",
+				SymbolKind.Assembly => "assembly",
+				SymbolKind.NetModule => "module",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns a keyword used to refer to a <see cref="IMethodSymbol"/> of the specified <paramref name="kind"/> inside an attribute list.
+		/// </summary>
+		/// <param name="kind">Kind of method to get the keyword for.</param>
+		/// <param name="targetKind">Determines which keyword to return when there is more than one option.</param>
+		public static string? GetAttributeTarget(MethodKind kind, AttributeTargetKind targetKind = default)
+		{
+			return kind switch
+			{
+				MethodKind.EventAdd or
+				MethodKind.EventRemove or
+				MethodKind.PropertySet => targetKind switch
+				{
+					AttributeTargetKind.FieldOrReturn => "return",
+					AttributeTargetKind.MethodOrParam => "param",
+					_ => "method"
+				},
+				_ => targetKind == AttributeTargetKind.FieldOrReturn ? "return" : "method"
 			};
 		}
 
@@ -117,24 +140,8 @@ namespace Durian.Analysis
 		public static string GetGenericName(IEnumerable<string> typeParameters, string? name)
 		{
 			StringBuilder builder = new();
-			GetGenericNameInto(typeParameters, name, builder);
+			builder.WriteGenericName(typeParameters, name);
 			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> containing generic identifier combined of the specified <paramref name="name"/> and the collection of <paramref name="typeParameters"/> to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <param name="typeParameters">Type parameters to use to built the generic name.</param>
-		/// <param name="name">Actual member identifier.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		public static void GetGenericNameInto(IEnumerable<string> typeParameters, string? name, StringBuilder builder)
-		{
-			if(!string.IsNullOrWhiteSpace(name))
-			{
-				builder.Append(name);
-			}
-
-			GetGenericNameInto(typeParameters, builder);
 		}
 
 		/// <summary>
@@ -144,34 +151,8 @@ namespace Durian.Analysis
 		public static string GetGenericName(IEnumerable<string> typeParameters)
 		{
 			StringBuilder builder = new();
-			GetGenericNameInto(typeParameters, builder);
+			builder.WriteGenericName(typeParameters);
 			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Writes a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeParameters"/> to the specified <paramref name="builder"/>.
-		/// </summary>
-		/// <param name="typeParameters">Type parameters to use to built the generic name.</param>
-		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
-		public static void GetGenericNameInto(IEnumerable<string> typeParameters, StringBuilder builder)
-		{
-			string[] parameters = typeParameters.ToArray();
-			int length = parameters.Length;
-
-			if (length == 0)
-			{
-				return;
-			}
-
-			builder.Append('<');
-			builder.Append(parameters[0]);
-
-			for (int i = 1; i < length; i++)
-			{
-				builder.Append(", ").Append(parameters[i]);
-			}
-
-			builder.Append('>');
 		}
 
 		/// <summary>
@@ -432,6 +413,55 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Returns a <see cref="string"/> representation of a C# keyword associated with the specified <paramref name="specialType"/> value.
+		/// </summary>
+		/// <param name="specialType">Value of <see cref="SpecialType"/> to get the C# keyword associated with.</param>
+		public static string? GetTypeKeyword(SpecialType specialType)
+		{
+			if (specialType == SpecialType.None)
+			{
+				return default;
+			}
+
+			return specialType switch
+			{
+				SpecialType.System_Byte => "byte",
+				SpecialType.System_Char => "char",
+				SpecialType.System_Boolean => "bool",
+				SpecialType.System_Decimal => "decimal",
+				SpecialType.System_Double => "double",
+				SpecialType.System_Int16 => "short",
+				SpecialType.System_Int32 => "int",
+				SpecialType.System_Int64 => "long",
+				SpecialType.System_Object => "object",
+				SpecialType.System_SByte => "sbyte",
+				SpecialType.System_Single => "float",
+				SpecialType.System_String => "string",
+				SpecialType.System_UInt16 => "ushort",
+				SpecialType.System_UInt32 => "uint",
+				SpecialType.System_UInt64 => "ulong",
+				SpecialType.System_IntPtr => "nint",
+				SpecialType.System_UIntPtr => "nuint",
+				SpecialType.System_Void => "void",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="TypeKind"/> a declaration kind.
+		/// </summary>
+		/// <param name="kind"><see cref="TypeKind"/> to determine whether is a declaration kind.</param>
+		public static bool IsDeclarationKind(TypeKind kind)
+		{
+			return kind is
+				TypeKind.Class or
+				TypeKind.Struct or
+				TypeKind.Enum or
+				TypeKind.Interface or
+				TypeKind.Delegate;
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="value"/> is a reserved C# keyword.
 		/// </summary>
 		/// <param name="value">Value to check if is a C# keyword.</param>
@@ -496,17 +526,9 @@ namespace Durian.Analysis
 		/// <param name="second">Second <see cref="RefKind"/>.</param>
 		public static bool IsValidRefKindForOverload(RefKind first, RefKind second)
 		{
-			if (first == RefKind.None)
-			{
-				return second != RefKind.None;
-			}
-
-			if (first is RefKind.In or RefKind.Ref or RefKind.Out)
-			{
-				return second is not RefKind.In and not RefKind.Ref and not RefKind.Out;
-			}
-
-			return false;
+			return first == RefKind.None
+				? second != RefKind.None
+				: second == RefKind.None;
 		}
 
 		/// <summary>
@@ -703,6 +725,16 @@ namespace Durian.Analysis
 			}
 
 			return true;
+		}
+
+		internal static IEnumerable<T> ByOrder<T>(IEnumerable<T> collection, ReturnOrder order)
+		{
+			if (order == ReturnOrder.Root)
+			{
+				return collection.Reverse();
+			}
+
+			return collection;
 		}
 
 		internal static int GetArrayHashCode<T>(T[]? array)
