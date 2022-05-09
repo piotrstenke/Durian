@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-namespace Durian.Analysis
+namespace Durian.Analysis.CodeGeneration
 {
 	/// <summary>
 	/// Type of namespace declaration.
@@ -11,11 +11,11 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Default namespace declaration (e.g. <c>namespace System { }</c>).
 		/// </summary>
-		Default,
+		Default = 0,
 
 		/// <summary>
 		/// File-scoped namespace declaration (e.g. <c>namespace System;</c>).
 		/// </summary>
-		File
+		File = 1
 	}
 }

@@ -17,56 +17,56 @@ namespace Durian.Analysis
 		/// <summary>
 		/// The member is not special.
 		/// </summary>
-		None,
+		None = 0,
 
 		/// <summary>
 		/// The member is equivalent to the <see cref="IEnumerator.Current"/>, <see cref="IEnumerator{T}.Current"/> or <see cref="IAsyncEnumerator{T}.Current"/> property.
 		/// </summary>
-		Current,
+		Current = 1,
 
 		/// <summary>
 		/// The member is equivalent to the <see cref="IEnumerator.MoveNext"/> method.
 		/// </summary>
-		MoveNext,
+		MoveNext = 2,
 
 		/// <summary>
 		/// The member is equivalent to the <see cref="IAsyncEnumerator{T}.MoveNextAsync"/> method.
 		/// </summary>
-		MoveNextAsync,
+		MoveNextAsync = 3,
 
 		/// <summary>
 		/// The member is equivalent to the <see cref="IEnumerable.GetEnumerator"/> or <see cref="IEnumerable{T}.GetEnumerator"/> method.
 		/// </summary>
-		GetEnumerator,
+		GetEnumerator = 4,
 
 		/// <summary>
 		/// The members is equivalent to the <see cref="IAsyncEnumerable{T}.GetAsyncEnumerator(System.Threading.CancellationToken)"/> method.
 		/// </summary>
-		GetAsyncEnumerator,
+		GetAsyncEnumerator = 5,
 
 		/// <summary>
 		/// The member is the tuple construction method.
 		/// </summary>
-		Deconstruct,
+		Deconstruct = 6,
 
 		/// <summary>
 		/// The member is equivalent to the <see cref="Task.GetAwaiter()"/> method.
 		/// </summary>
-		GetAwaiter,
+		GetAwaiter = 7,
 
 		/// <summary>
 		/// The member is equivalent to the <see cref="IList.Add(object)"/> method.
 		/// </summary>
-		Add,
+		Add = 8,
 
 		/// <summary>
 		/// The member is equivalent to the <see cref="TaskAwaiter.IsCompleted"/> property.
 		/// </summary>
-		IsCompleted,
+		IsCompleted = 9,
 
 		/// <summary>
 		/// The member is equivalent to the <see cref="TaskAwaiter.GetResult"/> method.
 		/// </summary>
-		GetResult
+		GetResult = 10
 	}
 }

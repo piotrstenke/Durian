@@ -11,21 +11,21 @@ namespace Durian.Analysis
 		/// <summary>
 		/// No valid state.
 		/// </summary>
-		None,
+		None = 0,
 
 		/// <summary>
 		/// The generator is still running.
 		/// </summary>
-		Running,
+		Running = 1,
 
 		/// <summary>
 		/// The generator pass has successfully ended.
 		/// </summary>
-		Success,
+		Success = 2,
 
 		/// <summary>
 		/// The generator pass has failed.
 		/// </summary>
-		Failed
+		Failed = 3
 	}
 }

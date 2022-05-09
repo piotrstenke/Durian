@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
@@ -52,6 +53,48 @@ namespace Durian.Analysis
 		static AnalysisUtilities()
 		{
 			MainThreadId = Environment.CurrentManagedThreadId;
+		}
+
+		/// <summary>
+		/// Applies the verbatim identifier '@' token if the <paramref name="value"/> is equivalent to an existing C# keyword.
+		/// </summary>
+		/// <param name="value">Value to apply the verbatim identifier '@' token to.</param>
+		public static bool ApplyVerbatimIfNecessary(ref string value)
+		{
+			if(IsKeyword(value))
+			{
+				value = '@' + value;
+				return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="suffix"/> to an associated <see cref="DecimalLiteralSuffix"/> value.
+		/// </summary>
+		/// <param name="suffix"><see cref="NumericLiteralSuffix"/> to convert.</param>
+		public static DecimalLiteralSuffix ConvertSuffix(NumericLiteralSuffix suffix)
+		{
+			int value = (int)suffix - (int)NumericLiteralSuffix.LongUpperUnsignedUpper;
+
+			if (value < 0)
+			{
+				return default;
+			}
+
+			return (DecimalLiteralSuffix)value;
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="suffix"/> to an associated <see cref="NumericLiteralSuffix"/> value.
+		/// </summary>
+		/// <param name="suffix"><see cref="DecimalLiteralSuffix"/> to convert.</param>
+		public static NumericLiteralSuffix ConvertSuffix(DecimalLiteralSuffix suffix)
+		{
+			return suffix == DecimalLiteralSuffix.None
+				? NumericLiteralSuffix.None
+				: (NumericLiteralSuffix)(suffix + (int)NumericLiteralSuffix.LongUpperUnsignedUpper);
 		}
 
 		/// <summary>
@@ -115,7 +158,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="kind">Kind of method to get the keyword for.</param>
 		/// <param name="targetKind">Determines which keyword to return when there is more than one option.</param>
-		public static string? GetAttributeTarget(MethodKind kind, AttributeTargetKind targetKind = default)
+		public static string GetAttributeTarget(MethodKind kind, AttributeTargetKind targetKind = default)
 		{
 			return kind switch
 			{
@@ -324,6 +367,22 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Returns the actual <see cref="string"/> value represented by the specified numeric literal <paramref name="prefix"/>.
+		/// </summary>
+		/// <param name="prefix"><see cref="NumericLiteralPrefix"/> to get the <see cref="string"/> represented by.</param>
+		public static string? GetPrefix(NumericLiteralPrefix prefix)
+		{
+			return prefix switch
+			{
+				NumericLiteralPrefix.HexadecimalLower => "0x",
+				NumericLiteralPrefix.HexadecimalUpper => "0X",
+				NumericLiteralPrefix.BinaryLower => "0b",
+				NumericLiteralPrefix.BinaryUpper => "0B",
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Joins the collection of <see cref="string"/>s into a <see cref="QualifiedNameSyntax"/>.
 		/// </summary>
 		/// <param name="names">A collection of <see cref="string"/>s to join into a <see cref="QualifiedNameSyntax"/>.</param>
@@ -352,6 +411,45 @@ namespace Durian.Analysis
 			}
 
 			return q;
+		}
+
+		/// <summary>
+		/// Returns the actual <see cref="string"/> value represented by the specified numeric literal <paramref name="suffix"/>.
+		/// </summary>
+		/// <param name="suffix"><see cref="DecimalLiteralSuffix"/> to get the <see cref="string"/> represented by.</param>
+		public static string? GetSuffix(DecimalLiteralSuffix suffix)
+		{
+			return GetSuffix(ConvertSuffix(suffix));
+		}
+
+		/// <summary>
+		/// Returns the actual <see cref="string"/> value represented by the specified numeric literal <paramref name="suffix"/>.
+		/// </summary>
+		/// <param name="suffix"><see cref="NumericLiteralSuffix"/> to get the <see cref="string"/> represented by.</param>
+		public static string? GetSuffix(NumericLiteralSuffix suffix)
+		{
+			return suffix switch
+			{
+				NumericLiteralSuffix.UnsignedLower => "u",
+				NumericLiteralSuffix.UnsignedUpper => "U",
+				NumericLiteralSuffix.LongLower => "l",
+				NumericLiteralSuffix.LongUpper => "L",
+				NumericLiteralSuffix.FloatLower => "f",
+				NumericLiteralSuffix.FloatUpper => "F",
+				NumericLiteralSuffix.DoubleLower => "d",
+				NumericLiteralSuffix.DoubleUpper => "D",
+				NumericLiteralSuffix.DecimalLower => "m",
+				NumericLiteralSuffix.DecimalUpper => "M",
+				NumericLiteralSuffix.UnsignedLowerLongLower => "ul",
+				NumericLiteralSuffix.UnsignedLowerLongUpper => "uL",
+				NumericLiteralSuffix.UnsignedUpperLongLower => "Ul",
+				NumericLiteralSuffix.UnsignedUpperLongUpper => "UL",
+				NumericLiteralSuffix.LongLowerUnsignedLower => "lu",
+				NumericLiteralSuffix.LongLowerUnsignedUpper => "lU",
+				NumericLiteralSuffix.LongUpperUnsignedLower => "Lu",
+				NumericLiteralSuffix.LongUpperUnsignedUpper => "LU",
+				_ => default
+			};
 		}
 
 		/// <summary>
@@ -467,11 +565,6 @@ namespace Durian.Analysis
 		/// <param name="value">Value to check if is a C# keyword.</param>
 		public static bool IsKeyword([NotNullWhen(true)] string? value)
 		{
-			if (string.IsNullOrWhiteSpace(value))
-			{
-				return false;
-			}
-
 			return _keywordsHashed.Contains(value!);
 		}
 

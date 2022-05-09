@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Durian.Analysis.Cache;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.Filters;

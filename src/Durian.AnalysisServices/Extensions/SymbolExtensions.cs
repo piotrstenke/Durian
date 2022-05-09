@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -39,7 +40,7 @@ namespace Durian.Analysis.Extensions
 				}
 
 				syntax = SyntaxFactory.GenericName(
-					SyntaxFactory.Identifier(type.Name),
+					SyntaxFactory.Identifier(type.GetVerbatimName()),
 					SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(arguments)));
 			}
 			else if (GetPredefineTypeSyntax(type) is PredefinedTypeSyntax predefined)
@@ -48,7 +49,7 @@ namespace Durian.Analysis.Extensions
 			}
 			else
 			{
-				syntax = SyntaxFactory.IdentifierName(type.Name);
+				syntax = SyntaxFactory.IdentifierName(type.GetVerbatimName());
 			}
 
 			return ApplyAnnotation(syntax, NullableAnnotation.Annotated);
@@ -162,7 +163,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to get the <see cref="TypeSyntax"/> for.</param>
 		public static TypeSyntax CreateTypeSyntax(this ITypeParameterSymbol typeParameter)
 		{
-			return ApplyAnnotation(SyntaxFactory.IdentifierName(typeParameter.Name), typeParameter.NullableAnnotation);
+			return ApplyAnnotation(SyntaxFactory.IdentifierName(typeParameter.GetVerbatimName()), typeParameter.NullableAnnotation);
 		}
 
 		/// <summary>
@@ -188,7 +189,7 @@ namespace Durian.Analysis.Extensions
 				ITypeParameterSymbol typeParameter => typeParameter.CreateTypeSyntax(),
 				IPointerTypeSymbol pointer => pointer.CreateTypeSyntax(),
 				IFunctionPointerTypeSymbol functionPointer => functionPointer.CreateTypeSyntax(),
-				_ => ApplyAnnotation(SyntaxFactory.IdentifierName(type.Name), type.NullableAnnotation),
+				_ => ApplyAnnotation(SyntaxFactory.IdentifierName(type.GetVerbatimName()), type.NullableAnnotation),
 			};
 		}
 
@@ -208,7 +209,7 @@ namespace Durian.Analysis.Extensions
 				return method.CreateTypeSyntax();
 			}
 
-			return SyntaxFactory.IdentifierName(symbol.Name);
+			return SyntaxFactory.IdentifierName(symbol.GetVerbatimName());
 		}
 
 		/// <summary>
@@ -219,7 +220,7 @@ namespace Durian.Analysis.Extensions
 		{
 			if (!method.IsGenericMethod)
 			{
-				return SyntaxFactory.IdentifierName(method.Name);
+				return SyntaxFactory.IdentifierName(method.GetVerbatimName());
 			}
 
 			List<TypeSyntax> arguments = new(method.TypeArguments.Length);
@@ -230,7 +231,7 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return SyntaxFactory.GenericName(
-				SyntaxFactory.Identifier(method.Name),
+				SyntaxFactory.Identifier(method.GetVerbatimName()),
 				SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(arguments)));
 		}
 
@@ -347,7 +348,7 @@ namespace Durian.Analysis.Extensions
 			{
 				foreach (IMethodSymbol method in type.GetAllMembers().OfType<IMethodSymbol>())
 				{
-					if(SymbolFacts.IsGetAwaiterRaw(method, out INamedTypeSymbol? returnType) && HandleAwaiterType(type))
+					if (SymbolFacts.IsGetAwaiterRaw(method, out INamedTypeSymbol? returnType) && HandleAwaiterType(type))
 					{
 						return resultType;
 					}
@@ -362,14 +363,14 @@ namespace Durian.Analysis.Extensions
 			{
 				bool? handleResultType = HandleResultType(symbol);
 
-				if(handleResultType.HasValue)
+				if (handleResultType.HasValue)
 				{
-					if(handleResultType.Value)
+					if (handleResultType.Value)
 					{
 						return resultType;
 					}
 				}
-				else if(symbol is IMethodSymbol method && SymbolFacts.IsGetAwaiterRaw(method, out INamedTypeSymbol? awaiter))
+				else if (symbol is IMethodSymbol method && SymbolFacts.IsGetAwaiterRaw(method, out INamedTypeSymbol? awaiter))
 				{
 					awaiters.Add(awaiter);
 				}
@@ -377,7 +378,7 @@ namespace Durian.Analysis.Extensions
 
 			foreach (INamedTypeSymbol awaiter in awaiters)
 			{
-				if(HandleAwaiterType(awaiter))
+				if (HandleAwaiterType(awaiter))
 				{
 					return resultType;
 				}
@@ -923,15 +924,15 @@ namespace Durian.Analysis.Extensions
 				{
 					if (p.Variance == VarianceKind.Out || p.Variance == VarianceKind.In)
 					{
-						return $"{p.Variance.ToString().ToLower()} {p.Name}";
+						return $"{p.Variance.ToString().ToLower()} {p.GetVerbatimName()}";
 					}
 
-					return p.Name;
+					return p.GetVerbatimName();
 				}),
 				name);
 			}
 
-			return AnalysisUtilities.GetGenericName(typeParameters.Select(p => p.Name), name);
+			return AnalysisUtilities.GetGenericName(typeParameters.Select(p => p.GetVerbatimName()), name);
 		}
 
 		/// <summary>
@@ -989,7 +990,7 @@ namespace Durian.Analysis.Extensions
 			if (method.Arity == 0)
 			{
 				return method.ContainingType
-					.GetAllMembers(method.Name)
+					.GetAllMembers(method.GetVerbatimName())
 					.FirstOrDefault(member => member switch
 					{
 						INamedTypeSymbol type => type.Arity == 0,
@@ -1001,7 +1002,7 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return method.ContainingType
-				.GetAllMembers(method.Name)
+				.GetAllMembers(method.GetVerbatimName())
 				.FirstOrDefault(member => member switch
 				{
 					INamedTypeSymbol type => type.Arity == method.Arity,
@@ -1027,7 +1028,7 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return type.ContainingType
-				.GetAllMembers(type.Name)
+				.GetAllMembers(type.GetVerbatimName())
 				.FirstOrDefault(member => member switch
 				{
 					INamedTypeSymbol other => other.Arity == type.Arity,
@@ -1084,7 +1085,7 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return @event.ContainingType
-				.GetAllMembers(@event.Name)
+				.GetAllMembers(@event.GetVerbatimName())
 				.FirstOrDefault(member => member switch
 				{
 					INamedTypeSymbol type => type.Arity == 0,
@@ -1404,11 +1405,6 @@ namespace Durian.Analysis.Extensions
 				return "dynamic";
 			}
 
-			if (type.SpecialType == SpecialType.None)
-			{
-				return type.Name;
-			}
-
 			return AnalysisUtilities.GetTypeKeyword(type.SpecialType);
 		}
 
@@ -1426,7 +1422,7 @@ namespace Durian.Analysis.Extensions
 			}
 			else
 			{
-				name = SyntaxFactory.IdentifierName(@namespace.Name);
+				name = SyntaxFactory.IdentifierName(@namespace.GetVerbatimName());
 			}
 
 			return SyntaxFactory.UsingDirective(name);
@@ -1447,7 +1443,7 @@ namespace Durian.Analysis.Extensions
 			}
 			else if (namespaces.FirstOrDefault() is INamespaceSymbol first)
 			{
-				name = SyntaxFactory.IdentifierName(first.Name);
+				name = SyntaxFactory.IdentifierName(first.GetVerbatimName());
 			}
 			else
 			{
@@ -1455,6 +1451,17 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return SyntaxFactory.UsingDirective(name);
+		}
+
+		/// <summary>
+		/// Returns name of the <paramref name="symbol"/> with a verbatim identifier '@' token applied if necessary.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the effective name of.</param>
+		public static string GetVerbatimName(this ISymbol symbol)
+		{
+			string value = symbol.Name;
+			AnalysisUtilities.ApplyVerbatimIfNecessary(ref value);
+			return value;
 		}
 
 		/// <summary>
@@ -1549,7 +1556,7 @@ namespace Durian.Analysis.Extensions
 		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="namespaces"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="namespaces"/> provided.</returns>
 		public static QualifiedNameSyntax? JoinIntoQualifiedName(this IEnumerable<INamespaceSymbol> namespaces)
 		{
-			return AnalysisUtilities.GetQualifiedName(namespaces.Select(n => n.Name));
+			return AnalysisUtilities.GetQualifiedName(namespaces.Select(n => n.GetVerbatimName()));
 		}
 
 		/// <summary>
@@ -1783,7 +1790,7 @@ namespace Durian.Analysis.Extensions
 		private static ISymbol? GetHiddenSymbol_Internal(ISymbol symbol)
 		{
 			return symbol.ContainingType
-				.GetAllMembers(symbol.Name)
+				.GetAllMembers(symbol.GetVerbatimName())
 				.FirstOrDefault(member => member switch
 				{
 					INamedTypeSymbol type => type.Arity == 0,

@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
 using Durian.Info;

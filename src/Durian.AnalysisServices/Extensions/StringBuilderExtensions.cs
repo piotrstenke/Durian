@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Extensions
@@ -34,6 +35,35 @@ namespace Durian.Analysis.Extensions
 			if (includeSelf)
 			{
 				builder.WriteGenericName(symbol, includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None);
+			}
+			else if (builder.Length > 0)
+			{
+				builder.Remove(builder.Length - 1, 1);
+			}
+
+			return builder;
+		}
+
+		/// <summary>
+		/// Writes a <see cref="string"/> that contains all the parent types of the specified <paramref name="member"/> and the <paramref name="member"/>'s name separated by the dot ('.') character to the specified <paramref name="builder"/>.
+		/// </summary>
+		/// <remarks>If the <paramref name="member"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
+		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
+		/// <param name="member"><see cref="IMemberData"/> to get the <see cref="string"/> of.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="member"/> in the returned <see cref="string"/>.</param>
+		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
+		public static StringBuilder WriteContainingTypes(this StringBuilder builder, IMemberData member, bool includeSelf = true, bool includeParameters = false)
+		{
+			foreach (ITypeData type in member.GetContainingTypes())
+			{
+				builder.WriteGenericName(type.Symbol);
+				builder.Append('.');
+			}
+
+			if (includeSelf)
+			{
+				builder.WriteGenericName(member.Symbol, includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None);
 			}
 			else if (builder.Length > 0)
 			{
@@ -83,7 +113,7 @@ namespace Durian.Analysis.Extensions
 			}
 			else
 			{
-				builder.Append(symbol.Name);
+				builder.Append(symbol.GetVerbatimName());
 			}
 
 			return builder;
@@ -99,11 +129,11 @@ namespace Durian.Analysis.Extensions
 		{
 			if (substitution.HasFlag(GenericSubstitution.TypeArguments))
 			{
-				builder.WriteGenericName(method.TypeArguments, method.Name);
+				builder.WriteGenericName(method.TypeArguments, method.GetVerbatimName());
 			}
 			else
 			{
-				builder.WriteGenericName(method.TypeParameters, method.Name, substitution.HasFlag(GenericSubstitution.Variance));
+				builder.WriteGenericName(method.TypeParameters, method.GetVerbatimName(), substitution.HasFlag(GenericSubstitution.Variance));
 			}
 
 			if (substitution.HasFlag(GenericSubstitution.ParameterList))
@@ -122,7 +152,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
 		public static StringBuilder WriteGenericName(this StringBuilder builder, INamedTypeSymbol type, GenericSubstitution substitution = default)
 		{
-			string typeName = type.GetTypeKeyword() ?? type.Name;
+			string typeName = type.GetTypeKeyword() ?? type.GetVerbatimName();
 
 			if (substitution.HasFlag(GenericSubstitution.TypeArguments))
 			{
@@ -212,15 +242,15 @@ namespace Durian.Analysis.Extensions
 				{
 					if (p.Variance == VarianceKind.Out || p.Variance == VarianceKind.In)
 					{
-						return $"{p.Variance.ToString().ToLower()} {p.Name}";
+						return $"{p.Variance.ToString().ToLower()} {p.GetVerbatimName()}";
 					}
 
-					return p.Name;
+					return p.GetVerbatimName();
 				}),
 				name);
 			}
 
-			return builder.WriteGenericName(typeParameters.Select(p => p.Name), name);
+			return builder.WriteGenericName(typeParameters.Select(p => p.GetVerbatimName()), name);
 		}
 
 		/// <summary>
@@ -327,7 +357,7 @@ namespace Durian.Analysis.Extensions
 
 			if (includeSelf)
 			{
-				builder.Append('.').Append(@namespace.Name);
+				builder.Append('.').Append(@namespace.GetVerbatimName());
 			}
 
 			return builder;
@@ -351,7 +381,7 @@ namespace Durian.Analysis.Extensions
 
 				any = true;
 
-				builder.Append(n.Name).Append('.');
+				builder.Append(n.GetVerbatimName()).Append('.');
 			}
 
 			if (any)
@@ -381,6 +411,22 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return builder.WriteNamespaces(symbol.GetContainingNamespaces());
+		}
+
+		/// <summary>
+		/// Writes full namespace of the target <paramref name="member"/> to the specified <paramref name="builder"/>.
+		/// </summary>
+		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
+		/// <param name="member"><see cref="IMemberData"/> to get the parent namespace of.</param>
+		/// <param name="includeSelf">Determines whether to include name of the <paramref name="member"/> if it represents a <see cref="INamespaceSymbol"/>.</param>
+		public static void WriteNamespacesOf(this StringBuilder builder, IMemberData member, bool includeSelf = true)
+		{
+			builder.WriteNamespaces(member.GetContainingNamespaces());
+
+			if (member.Symbol is INamespaceSymbol @namespace && includeSelf)
+			{
+				builder.Append('.').Append(@namespace.GetVerbatimName());
+			}
 		}
 
 		/// <summary>
@@ -431,6 +477,33 @@ namespace Durian.Analysis.Extensions
 			if (includeSelf)
 			{
 				builder.Append(symbol.GetXmlCompatibleName(includeParameters));
+			}
+			else if (builder.Length > 0)
+			{
+				builder.Remove(builder.Length - 1, 1);
+			}
+
+			return builder;
+		}
+
+		/// <summary>
+		/// Writes a <see cref="string"/> that contains all the parent types of the specified <paramref name="member"/> and the <paramref name="member"/>'s separated by the dot ('.') character to the specified <paramref name="builder"/>. Can be used in XML documentation.
+		/// </summary>
+		/// <param name="builder"><see cref="StringBuilder"/> to write to.</param>
+		/// <param name="member"><see cref="IMemberData"/> to get the <see cref="string"/> of.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="member"/> in the returned <see cref="string"/>.</param>
+		/// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
+		public static StringBuilder WriteXmlContainingTypes(this StringBuilder builder, IMemberData member, bool includeSelf = true, bool includeParameters = false)
+		{
+			foreach (ITypeData type in member.GetContainingTypes())
+			{
+				builder.Append(AnalysisUtilities.ToXmlCompatible(type.Symbol.GetGenericName())).Append('.');
+			}
+
+			if (includeSelf)
+			{
+				builder.Append(member.Symbol.GetXmlCompatibleName(includeParameters));
 			}
 			else if (builder.Length > 0)
 			{

@@ -7,7 +7,7 @@ using System.Text;
 namespace Durian.Analysis.CodeGeneration
 {
 	/// <summary>
-	/// Writes single keywords.
+	/// Writes single character tokens.
 	/// </summary>
 	public sealed class KeywordWriter
 	{

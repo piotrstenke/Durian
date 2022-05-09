@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-namespace Durian.Analysis
+namespace Durian.Analysis.CodeGeneration
 {
 	/// <summary>
 	/// Determines when to generate XML documentation.
@@ -11,16 +11,16 @@ namespace Durian.Analysis
 		/// <summary>
 		/// The XML documentation is never generated.
 		/// </summary>
-		Never,
+		Never = 0,
 
 		/// <summary>
 		/// The XML documentation is always generated, even if the source symbol has no documentation.
 		/// </summary>
-		Always,
+		Always = 1,
 
 		/// <summary>
 		/// The XML documentation is generated only if the source symbol has documentation.
 		/// </summary>
-		WhenPossible
+		WhenPossible = 2
 	};
 }

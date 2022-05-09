@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;

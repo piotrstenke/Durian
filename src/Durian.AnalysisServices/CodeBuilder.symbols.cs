@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reflection.Metadata;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 
@@ -66,6 +67,183 @@ namespace Durian.Analysis
 			}
 		}
 
+		/// <summary>
+		/// Begins declaration of an anonymous function.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="functionBody">Determines what kind of anonymous function body to begin.</param>
+		/// <param name="explicitType">Determines whether to apply explicit return type.</param>
+		public CodeBuilder BeginAnonymousFunction(IMethodSymbol method, AnonymousFunctionBody functionBody = AnonymousFunctionBody.Expression, bool explicitType = false)
+		{
+			if (method.IsStatic)
+			{
+				TextBuilder.Append("static ");
+			}
+
+			if (method.IsAsync)
+			{
+				TextBuilder.Append("async ");
+			}
+
+			if (functionBody == AnonymousFunctionBody.Method)
+			{
+				TextBuilder.Append("delegate");
+			}
+			else
+			{
+				if (explicitType)
+				{
+					WriteReturnType(method);
+				}
+
+				ImmutableArray<IParameterSymbol> parameters = method.Parameters;
+
+				if (parameters.Length == 0)
+				{
+					TextBuilder.Append('(');
+					TextBuilder.Append(')');
+				}
+				else if (parameters.Length == 1)
+				{
+					TextBuilder.Append(method.Parameters[0].GetVerbatimName());
+				}
+				else
+				{
+					TextBuilder.Append('(');
+					TextBuilder.Append(method.Parameters[0].GetVerbatimName());
+
+					for (int i = 1; i < parameters.Length; i++)
+					{
+						TextBuilder.Append(',');
+						TextBuilder.Append(' ');
+						TextBuilder.Append(method.Parameters[i].GetVerbatimName());
+					}
+
+					TextBuilder.Append(')');
+				}
+			}
+
+			switch (functionBody)
+			{
+				case AnonymousFunctionBody.Block:
+					TextBuilder.Append(' ');
+					TextBuilder.Append('=');
+					TextBuilder.Append('>');
+					TextBuilder.Append(' ');
+					TextBuilder.AppendLine();
+					BeginScope();
+					break;
+
+				case AnonymousFunctionBody.Expression:
+					TextBuilder.Append(' ');
+					TextBuilder.Append('=');
+					TextBuilder.Append('>');
+					TextBuilder.Append(' ');
+					break;
+
+				case AnonymousFunctionBody.Method:
+					BeginScope();
+					break;
+
+				default:
+					TextBuilder.Append(';');
+					break;
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins declaration of a constructor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder BeginConstructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		{
+			Accessibility(method);
+			TextBuilder.Append(' ');
+
+			if (method.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
+
+			TextBuilder.Append(method.ContainingType.GetVerbatimName());
+
+			ParameterList(method.Parameters, method.IsVararg);
+			BeginMethodBody(methodBody);
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins declaration of a constructor with a <see langword="this"/> or <see langword="base"/> call.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="initializer">Determines which constructor initializer to use.</param>
+		public CodeBuilder BeginConstructorWithInitializer(IMethodSymbol method, ConstructorInitializer initializer = ConstructorInitializer.None)
+		{
+			Accessibility(method);
+			TextBuilder.Append(' ');
+
+			if (method.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
+
+			TextBuilder.Append(method.ContainingType.GetVerbatimName());
+
+			ParameterList(method.Parameters, method.IsVararg);
+
+			switch (initializer)
+			{
+				case ConstructorInitializer.This:
+					TextBuilder.Append(" : this");
+					break;
+
+				case ConstructorInitializer.Base:
+					TextBuilder.Append(" : base");
+					break;
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins declaration of a conversion operator.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder BeginConversionOperator(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		{
+			Accessibility(method);
+
+			TextBuilder.Append(" static ");
+
+			if (method.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
+
+			if (method.Name == "op_Implicit")
+			{
+				TextBuilder.Append("implicit ");
+			}
+			else
+			{
+				TextBuilder.Append("explicit ");
+			}
+
+			TextBuilder.Append("operator ");
+
+			Type(method.ReturnType);
+
+			ParameterList(method.Parameters, method.IsVararg);
+			BeginMethodBody(methodBody);
+
+			return this;
+		}
+
 		public CodeBuilder BeginDeclaration(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
 			return method.MethodKind switch
@@ -83,63 +261,61 @@ namespace Durian.Analysis
 			};
 		}
 
-		public CodeBuilder BeginAnonymousFunction(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
-		{
-
-		}
-
-		public CodeBuilder BeginExplicitInterfaceImplementation(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
-		{
-
-		}
-
-		public CodeBuilder BeginLocal(ILocalSymbol method)
-		{
-		}
-
 		/// <summary>
-		/// Begins declaration of a constructor with a <see langword="this"/> or <see langword="base"/> call.
+		/// Begins declaration of a destructor.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="initializer">Determines which constructor initializer to use.</param>
-		public CodeBuilder BeginConstructorWithInitializer(IMethodSymbol method, ConstructorInitializer initializer = ConstructorInitializer.None)
+		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder BeginDestructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
-			Accessibility(method);
-
-			TextBuilder.Append(' ');
-			TextBuilder.Append(method.ContainingType.Name);
-
-			ParameterList(method.Parameters);
-
-			switch (initializer)
+			if (method.IsUnsafe())
 			{
-				case ConstructorInitializer.This:
-					TextBuilder.Append(" : this");
-					break;
-
-				case ConstructorInitializer.Base:
-					TextBuilder.Append(" : base");
-					break;
+				TextBuilder.Append("unsafe ");
 			}
+
+			TextBuilder.Append('~');
+			TextBuilder.Append(method.ContainingType.GetVerbatimName());
+			TextBuilder.Append('(');
+			TextBuilder.Append(')');
+
+			BeginMethodBody(methodBody);
 
 			return this;
 		}
 
 		/// <summary>
-		/// Begins declaration of a constructor.
+		/// Begins declaration of an explicit interface method implementation.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginConstructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		public CodeBuilder BeginExplicitInterfaceImplementation(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
-			Accessibility(method);
+			if (method.IsReadOnly)
+			{
+				TextBuilder.Append("readonly ");
+			}
 
-			TextBuilder.Append(' ');
-			TextBuilder.Append(method.ContainingType.Name);
+			if (method.IsExtern)
+			{
+				TextBuilder.Append("extern ");
+			}
 
-			ParameterList(method.Parameters);
-			BeginMethodBody(methodBody);
+			if (method.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
 
+			if (method.IsAsync)
+			{
+				TextBuilder.Append("async ");
+			}
+
+			if (method.ExplicitInterfaceImplementations.Length > 0)
+			{
+				Type(method.ExplicitInterfaceImplementations[0].ContainingType);
+			}
+
+			WriteMethodHead(method, methodBody);
 			return this;
 		}
 
@@ -150,138 +326,27 @@ namespace Durian.Analysis
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder BeginLocalFunction(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
-			if(method.IsStatic)
+			if (method.IsStatic)
 			{
 				TextBuilder.Append("static ");
 			}
 
-			if(method.IsExtern)
+			if (method.IsExtern)
 			{
 				TextBuilder.Append("extern ");
 			}
 
-			if(method.IsUnsafe())
+			if (method.IsUnsafe())
 			{
 				TextBuilder.Append("unsafe ");
 			}
 
-			if(method.IsAsync)
+			if (method.IsAsync)
 			{
 				TextBuilder.Append("async ");
 			}
 
 			WriteMethodHead(method, methodBody);
-			return this;
-		}
-
-		/// <summary>
-		/// Begins declaration of a static constructor.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginStaticConstructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
-		{
-			TextBuilder.Append("static ");
-
-			if(method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
-
-			TextBuilder.Append(method.ContainingType.Name);
-			TextBuilder.Append('(');
-			TextBuilder.Append(')');
-
-			BeginMethodBody(methodBody);
-
-			return this;
-		}
-
-		/// <summary>
-		/// Begins declaration of a destructor.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginDestructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
-		{
-			if(method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
-
-			TextBuilder.Append('~');
-			TextBuilder.Append(method.ContainingType.Name);
-			TextBuilder.Append('(');
-			TextBuilder.Append(')');
-
-			BeginMethodBody(methodBody);
-
-			return this;
-		}
-
-		/// <summary>
-		/// Begins declaration of a conversion operator.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginConversionOperator(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
-		{
-			Accessibility(method);
-
-			TextBuilder.Append(" static ");
-
-			if(method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
-
-			if(method.Name == "op_Implicit")
-			{
-				TextBuilder.Append("implicit ");
-			}
-			else
-			{
-				TextBuilder.Append("explicit ");
-			}
-
-			TextBuilder.Append("operator ");
-
-			Type(method.ReturnType);
-
-			ParameterList(method.Parameters);
-			BeginMethodBody(methodBody);
-
-			return this;
-		}
-
-		/// <summary>
-		/// Begins declaration of an operator.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginOperator(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
-		{
-			Accessibility(method);
-
-			TextBuilder.Append(" static ");
-
-			if(method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
-
-			Type(method.ReturnType);
-
-			TextBuilder.Append(" operator ");
-
-			if(AnalysisUtilities.GetOperatorText(method.Name) is string operatorName)
-			{
-				TextBuilder.Append(operatorName);
-			}
-
-			ParameterList(method.Parameters);
-			BeginMethodBody(methodBody);
-
 			return this;
 		}
 
@@ -292,7 +357,7 @@ namespace Durian.Analysis
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder BeginMethod(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
-			if(method.ReducedFrom is not null)
+			if (method.ReducedFrom is not null)
 			{
 				method = method.ReducedFrom;
 			}
@@ -334,7 +399,7 @@ namespace Durian.Analysis
 				TextBuilder.Append("readonly ");
 			}
 
-			if(method.IsUnsafe())
+			if (method.IsUnsafe())
 			{
 				TextBuilder.Append("unsafe ");
 			}
@@ -353,49 +418,11 @@ namespace Durian.Analysis
 			return this;
 		}
 
-		private void WriteMethodHead(IMethodSymbol method, MethodBody methodBody)
-		{
-			if (method.ReturnsVoid)
-			{
-				TextBuilder.Append("void ");
-			}
-			else
-			{
-				if (method.ReturnsByRefReadonly)
-				{
-					TextBuilder.Append("ref readonly ");
-				}
-				else if (method.ReturnsByRef)
-				{
-					TextBuilder.Append("ref ");
-				}
-
-				Type(method.ReturnType);
-				TextBuilder.Append(' ');
-			}
-
-			TextBuilder.Append(method.Name);
-
-			if (method.IsGenericMethod)
-			{
-				TypeParameterList(method.TypeParameters);
-			}
-
-			ParameterList(method.Parameters, method.IsVararg);
-
-			if (method.IsGenericMethod)
-			{
-				ConstraintList(method.TypeParameters);
-			}
-
-			BeginMethodBody(methodBody);
-		}
-
 		/// <summary>
 		/// Begins a method body.
 		/// </summary>
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public void BeginMethodBody(MethodBody methodBody)
+		public CodeBuilder BeginMethodBody(MethodBody methodBody)
 		{
 			switch (methodBody)
 			{
@@ -413,6 +440,8 @@ namespace Durian.Analysis
 					TextBuilder.AppendLine();
 					break;
 			}
+
+			return this;
 		}
 
 		/// <summary>
@@ -437,6 +466,60 @@ namespace Durian.Analysis
 				TextBuilder.AppendLine();
 				BeginScope();
 			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins declaration of an operator.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder BeginOperator(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		{
+			Accessibility(method);
+
+			TextBuilder.Append(" static ");
+
+			if (method.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
+
+			Type(method.ReturnType);
+
+			TextBuilder.Append(" operator ");
+
+			if (AnalysisUtilities.GetOperatorText(method.Name) is string operatorName)
+			{
+				TextBuilder.Append(operatorName);
+			}
+
+			ParameterList(method.Parameters, method.IsVararg);
+			BeginMethodBody(methodBody);
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins declaration of a static constructor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder BeginStaticConstructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		{
+			TextBuilder.Append("static ");
+
+			if (method.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
+
+			TextBuilder.Append(method.ContainingType.GetVerbatimName());
+			TextBuilder.Append('(');
+			TextBuilder.Append(')');
+
+			BeginMethodBody(methodBody);
 
 			return this;
 		}
@@ -534,7 +617,7 @@ namespace Durian.Analysis
 			foreach (ITypeParameterSymbol typeParameter in typeParameters)
 			{
 				TextBuilder.Append(" where ");
-				TextBuilder.Append(typeParameters[0].Name);
+				TextBuilder.Append(typeParameters[0].GetVerbatimName());
 				TextBuilder.Append(':');
 				TextBuilder.Append(' ');
 				Constraint(typeParameter);
@@ -696,14 +779,14 @@ namespace Durian.Analysis
 					Parameter(parameters[i]);
 				}
 
-				if(isArgList)
+				if (isArgList)
 				{
 					TextBuilder.Append(',');
 					TextBuilder.Append(' ');
 					TextBuilder.Append("__arglist");
 				}
 			}
-			else if(isArgList)
+			else if (isArgList)
 			{
 				TextBuilder.Append("__arglist");
 			}
@@ -777,7 +860,7 @@ namespace Durian.Analysis
 					return TypeParameter(typeParameter, annotation);
 
 				default:
-					TextBuilder.Append(type.Name);
+					TextBuilder.Append(type.GetVerbatimName());
 					ApplyNullable(annotation);
 					return this;
 			}
@@ -875,7 +958,7 @@ namespace Durian.Analysis
 		/// <param name="annotation"><see cref="NullableAnnotation"/> that should be used instead of the <paramref name="typeParameter"/>'s actual <see cref="NullableAnnotation"/>.</param>>
 		public CodeBuilder TypeParameter(ITypeParameterSymbol typeParameter, NullableAnnotation annotation)
 		{
-			TextBuilder.Append(typeParameter.Name);
+			TextBuilder.Append(typeParameter.GetVerbatimName());
 			ApplyNullable(annotation);
 
 			return this;
@@ -893,13 +976,13 @@ namespace Durian.Analysis
 			}
 
 			TextBuilder.Append('<');
-			TextBuilder.Append(typeParameters[0].Name);
+			TextBuilder.Append(typeParameters[0].GetVerbatimName());
 
 			for (int i = 1; i < typeParameters.Length; i++)
 			{
 				TextBuilder.Append(' ');
 				TextBuilder.Append(',');
-				TextBuilder.Append(typeParameters[i].Name);
+				TextBuilder.Append(typeParameters[i].GetVerbatimName());
 			}
 
 			TextBuilder.Append('>');
@@ -921,6 +1004,14 @@ namespace Durian.Analysis
 			return TypeParameterList(typeParameters.ToImmutableArray());
 		}
 
+		private void Accessibility(ISymbol symbol)
+		{
+			if (AnalysisUtilities.GetAccessiblityText(symbol.DeclaredAccessibility) is string keyword)
+			{
+				TextBuilder.Append(keyword);
+			}
+		}
+
 		private void ApplyNullable(ITypeSymbol type)
 		{
 			ApplyNullable(type.NullableAnnotation);
@@ -934,11 +1025,46 @@ namespace Durian.Analysis
 			}
 		}
 
-		private void Accessibility(ISymbol symbol)
+		private void WriteMethodHead(IMethodSymbol method, MethodBody methodBody)
 		{
-			if(AnalysisUtilities.GetAccessiblityText(symbol.DeclaredAccessibility) is string keyword)
+			WriteReturnType(method);
+
+			TextBuilder.Append(method.GetVerbatimName());
+
+			if (method.IsGenericMethod)
 			{
-				TextBuilder.Append(keyword);
+				TypeParameterList(method.TypeParameters);
+			}
+
+			ParameterList(method.Parameters, method.IsVararg);
+
+			if (method.IsGenericMethod)
+			{
+				ConstraintList(method.TypeParameters);
+			}
+
+			BeginMethodBody(methodBody);
+		}
+
+		private void WriteReturnType(IMethodSymbol method)
+		{
+			if (method.ReturnsVoid)
+			{
+				TextBuilder.Append("void ");
+			}
+			else
+			{
+				if (method.ReturnsByRefReadonly)
+				{
+					TextBuilder.Append("ref readonly ");
+				}
+				else if (method.ReturnsByRef)
+				{
+					TextBuilder.Append("ref ");
+				}
+
+				Type(method.ReturnType);
+				TextBuilder.Append(' ');
 			}
 		}
 	}
