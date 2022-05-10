@@ -254,7 +254,7 @@ namespace Durian.Analysis
 				MethodKind.Conversion => BeginConversionOperator(method, methodBody),
 				MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator => BeginOperator(method, methodBody),
 				MethodKind.ExplicitInterfaceImplementation => BeginExplicitInterfaceImplementation(method, methodBody),
-				MethodKind.LambdaMethod => BeginAnonymousFunction(method, methodBody),
+				MethodKind.LambdaMethod => BeginAnonymousFunction(method, AnalysisUtilities.ConvertEnum(methodBody)),
 				MethodKind.Destructor => BeginDestructor(method, methodBody),
 				MethodKind.Constructor => BeginConstructor(method, methodBody),
 				_ => throw new ArgumentException($"Method '{method}' does not support declaration", nameof(method))
@@ -373,7 +373,7 @@ namespace Durian.Analysis
 
 			if (method.IsExtern)
 			{
-				TextBuilder.Append("extern");
+				TextBuilder.Append("extern ");
 			}
 
 			if (method.IsAbstract)
@@ -1006,7 +1006,7 @@ namespace Durian.Analysis
 
 		private void Accessibility(ISymbol symbol)
 		{
-			if (AnalysisUtilities.GetAccessiblityText(symbol.DeclaredAccessibility) is string keyword)
+			if (AnalysisUtilities.GetText(symbol.DeclaredAccessibility) is string keyword)
 			{
 				TextBuilder.Append(keyword);
 			}

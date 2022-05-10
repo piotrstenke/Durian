@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using Durian.Analysis.CodeGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
 {
 	/// <summary>
-	/// Encapsulates data associated with a single <see cref="NamespaceDeclarationSyntax"/>.
+	/// Encapsulates data associated with a single <see cref="BaseNamespaceDeclarationSyntax"/>.
 	/// </summary>
 	public class NamespaceData : MemberData
 	{
@@ -42,7 +43,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PropertyData"/> class.
 		/// </summary>
-		/// <param name="declaration"><see cref="PropertyDeclarationSyntax"/> this <see cref="PropertyData"/> represents.</param>
+		/// <param name="declaration"><see cref="BaseNamespaceDeclarationSyntax"/> this <see cref="PropertyData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="PropertyData"/>.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
@@ -58,14 +59,14 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PropertyData"/> class.
 		/// </summary>
-		/// <param name="declaration"><see cref="NamespaceDeclarationSyntax"/> this <see cref="PropertyData"/> represents.</param>
+		/// <param name="declaration"><see cref="BaseNamespaceDeclarationSyntax"/> this <see cref="PropertyData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="PropertyData"/>.</param>
 		/// <param name="symbol"><see cref="INamespaceSymbol"/> this <see cref="PropertyData"/> represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
 		protected internal NamespaceData(
-			NamespaceDeclarationSyntax declaration,
+			BaseNamespaceDeclarationSyntax declaration,
 			ICompilationData compilation,
 			INamespaceSymbol symbol,
 			SemanticModel semanticModel,

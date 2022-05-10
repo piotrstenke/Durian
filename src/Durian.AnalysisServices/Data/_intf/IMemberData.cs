@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,6 +19,16 @@ namespace Durian.Analysis.Data
 		/// Target <see cref="CSharpSyntaxNode"/>.
 		/// </summary>
 		CSharpSyntaxNode Declaration { get; }
+
+		/// <summary>
+		/// Location of the member.
+		/// </summary>
+		Location Location { get; }
+
+		/// <summary>
+		/// Name of the underlaying symbol including the verbatim identifier '@' token.
+		/// </summary>
+		string Name { get; }
 
 		/// <summary>
 		/// Parent compilation of this <see cref="IMemberData"/>.
@@ -42,11 +53,16 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Returns all <see cref="INamespaceSymbol"/>s that contain the <see cref="Symbol"/>.
 		/// </summary>
-		IEnumerable<INamespaceSymbol> GetContainingNamespaces();
+		NamespaceContainer GetContainingNamespaces();
+
+		/// <summary>
+		/// Returns all modifiers of the current symbol.
+		/// </summary>
+		string[] GetModifiers();
 
 		/// <summary>
 		/// Returns all <see cref="ITypeData"/>s that contain the <see cref="Symbol"/>.
 		/// </summary>
-		IEnumerable<ITypeData> GetContainingTypes();
+		TypeContainer GetContainingTypes();
 	}
 }

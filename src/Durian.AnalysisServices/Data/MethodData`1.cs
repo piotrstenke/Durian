@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -10,7 +11,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
 {
-
 	/// <summary>
 	/// Encapsulates data associated with a single method declaration.
 	/// </summary>

@@ -14,7 +14,7 @@ namespace Durian.Analysis.Data
 	/// <typeparam name="TDeclaration">Specific type of the target <see cref="TypeDeclarationSyntax"/>.</typeparam>
 	public abstract class TypeData<TDeclaration> : MemberData, ITypeData where TDeclaration : BaseTypeDeclarationSyntax
 	{
-		internal SyntaxToken[]? _modifiers;
+		internal string[]? _modifiers;
 
 		internal TDeclaration[]? _partialDeclarations;
 
@@ -24,9 +24,6 @@ namespace Durian.Analysis.Data
 		public new TDeclaration Declaration => (base.Declaration as TDeclaration)!;
 
 		BaseTypeDeclarationSyntax ITypeData.Declaration => Declaration;
-
-		/// <inheritdoc/>
-		public SyntaxToken[] Modifiers => _modifiers ??= GetPartialDeclarations().GetModifiers().ToArray();
 
 		/// <summary>
 		/// <see cref="ITypeSymbol"/> associated with the <see cref="Declaration"/>.
@@ -69,7 +66,7 @@ namespace Durian.Analysis.Data
 			ITypeSymbol symbol,
 			SemanticModel semanticModel,
 			IEnumerable<TDeclaration>? partialDeclarations = null,
-			IEnumerable<SyntaxToken>? modifiers = null,
+			string[]? modifiers = null,
 			IEnumerable<ITypeData>? containingTypes = null,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
 			IEnumerable<AttributeData>? attributes = null
@@ -84,27 +81,34 @@ namespace Durian.Analysis.Data
 		)
 		{
 			_partialDeclarations = partialDeclarations?.OfType<TDeclaration>().ToArray();
+			_modifiers = modifiers;
+		}
 
-			if (modifiers is not null)
+		/// <inheritdoc/>
+		public virtual IEnumerable<ITypeData> GetContainingTypes(bool includeSelf)
+		{
+			if(!includeSelf)
 			{
-				_modifiers = modifiers.ToArray();
+				return GetContainingTypes();
+			}
+
+			return Yield();
+
+			IEnumerable<ITypeData> Yield()
+			{
+				foreach (ITypeData parent in GetContainingTypes())
+				{
+					yield return parent;
+				}
+
+				yield return this;
 			}
 		}
 
-		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.
-		/// </summary>
-		public IEnumerable<ITypeData> GetContainingTypes(bool includeSelf)
+		/// <inheritdoc/>
+		public virtual string[] GetModifiers()
 		{
-			foreach (ITypeData parent in GetContainingTypes())
-			{
-				yield return parent;
-			}
-
-			if (includeSelf)
-			{
-				yield return this;
-			}
+			return _modifiers ??= Symbol.GetModifiers();
 		}
 
 		/// <summary>

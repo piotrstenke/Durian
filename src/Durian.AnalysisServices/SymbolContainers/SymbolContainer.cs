@@ -1,0 +1,214 @@
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text;
+using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
+using Microsoft.CodeAnalysis;
+
+namespace Durian.Analysis.SymbolContainers
+{
+	/// <summary>
+	/// Provides methods for returning symbol representations using either <see cref="ISymbol"/>s or <see cref="IMemberData"/>s.
+	/// </summary>
+	public abstract class SymbolContainer : ISymbolContainer, IEnumerable
+	{
+		private IEnumerable<object>? _collection;
+		private object[]? _array;
+
+		/// <inheritdoc/>
+		public ReturnOrder Order { get; }
+
+		/// <summary>
+		/// <see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.
+		/// </summary>
+		public ICompilationData? TargetCompilation { get; }
+
+		/// <summary>
+		/// Determines whether the <see cref="GetData()"/> method is safe to call.
+		/// </summary>
+		public bool CanRetrieveData { get; }
+
+		private SymbolContainer()
+		{
+			_collection = default!;
+		}
+
+		private SymbolContainer(IEnumerable<object> collection, ReturnOrder order)
+		{
+			if (collection is null)
+			{
+				throw new ArgumentNullException(nameof(collection));
+			}
+
+			_collection = collection;
+			Order = order;
+		}
+
+		private protected SymbolContainer(IEnumerable<ISymbol> collection, ICompilationData? compilation, ReturnOrder order) : this(collection, order)
+		{
+			if(compilation is not null)
+			{
+				TargetCompilation = compilation;
+				CanRetrieveData = true;
+			}
+		}
+
+		private protected SymbolContainer(IEnumerable<IMemberData> collection, ReturnOrder order) : this(collection as IEnumerable<object>, order)
+		{
+			CanRetrieveData = true;
+		}
+
+		/// <inheritdoc/>
+		public abstract void Build(StringBuilder builder);
+
+		/// <inheritdoc/>
+		/// <exception cref="InvalidOperationException"><see cref="ISymbol"/>s cannot be converted into <see cref="IMemberData"/>, because <see cref="TargetCompilation"/> wasn't specified for the current container.</exception>
+		public ImmutableArray<IMemberData> GetData()
+		{
+			InitArray();
+
+			if(_array is IMemberData[] members)
+			{
+				return ImmutableArray.Create(members);
+			}
+
+			if (TargetCompilation is null)
+			{
+				throw new InvalidOperationException("ISymbols cannot be converted into IMemberDatas, because TargetCompilation wasn't specified for the current container");
+			}
+
+			ISymbol[] symbols = (_array as ISymbol[])!;
+			members = new IMemberData[symbols.Length];
+
+			ImmutableArray<IMemberData>.Builder builder = ImmutableArray.CreateBuilder<IMemberData>(symbols.Length);
+
+			for (int i = 0; i < symbols.Length; i++)
+			{
+				IMemberData member = GetData(symbols[i], TargetCompilation!);
+				builder.Add(member);
+				members[i] = member;
+			}
+
+			_array = members;
+			return builder.ToImmutable();
+		}
+
+		/// <inheritdoc/>
+		public virtual ImmutableArray<string> GetNames()
+		{
+			InitArray();
+
+			ImmutableArray<string>.Builder builder = ImmutableArray.CreateBuilder<string>(_array.Length);
+
+			if (_array is IMemberData[] members)
+			{
+				for (int i = 0; i < _array.Length; i++)
+				{
+					builder.Add(members[i].Name);
+				}
+			}
+			else
+			{
+				ISymbol[] symbols = (_array as ISymbol[])!;
+
+				for (int i = 0; i < _array.Length; i++)
+				{
+					builder.Add(symbols[i].GetVerbatimName());
+				}
+			}
+
+			return builder.ToImmutableArray();
+		}
+
+		/// <inheritdoc/>
+		public ImmutableArray<ISymbol> GetSymbols()
+		{
+			InitArray();
+
+			if(_array is ISymbol[] symbols)
+			{
+				return ImmutableArray.Create(symbols);
+			}
+
+			IMemberData[] members = (_array as IMemberData[])!;
+
+			ImmutableArray<ISymbol>.Builder builder = ImmutableArray.CreateBuilder<ISymbol>(members.Length);
+
+			for (int i = 0; i < members.Length; i++)
+			{
+				builder.Add(members[i].Symbol);
+			}
+
+			return builder.ToImmutable();
+		}
+
+		/// <inheritdoc/>
+		public override string ToString()
+		{
+			StringBuilder builder = new();
+			Build(builder);
+			return builder.ToString();
+		}
+
+		/// <summary>
+		/// Returns a <see cref="IMemberData"/>s created for the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/>s to create the <see cref="IMemberData"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> the given <see cref="ISymbol"/> is part of.</param>
+		protected abstract IMemberData GetData(ISymbol symbol, ICompilationData compilation);
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetArray().GetEnumerator();
+		}
+
+		private protected object[] GetArray()
+		{
+			InitArray();
+			return _array;
+		}
+
+		[MemberNotNull(nameof(_array))]
+		private void InitArray()
+		{
+			if(_array is not null)
+			{
+				return;
+			}
+
+			if(_collection is IEnumerable<ISymbol> symbols)
+			{
+				_array = symbols.ToArray();
+			}
+			else
+			{
+				_array = (_collection as IEnumerable<IMemberData>)!.ToArray();
+			}
+
+			_collection = default;
+		}
+
+		internal static void DefaultBuild(StringBuilder builder, ImmutableArray<string> names)
+		{
+			if (names.Length == 0)
+			{
+				return;
+			}
+
+			builder.Append(names[1]);
+
+			for (int i = 1; i < names.Length; i++)
+			{
+				builder.Append('.');
+				builder.Append(names[i]);
+			}
+		}
+	}
+}

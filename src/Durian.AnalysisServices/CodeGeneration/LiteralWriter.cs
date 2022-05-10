@@ -462,7 +462,7 @@ namespace Durian.Analysis.CodeGeneration
 		/// <param name="prefix">Prefix of the numeric value.</param>
 		public LiteralWriter NumericPrefix(NumericLiteralPrefix prefix)
 		{
-			if (AnalysisUtilities.GetPrefix(prefix) is string value)
+			if (AnalysisUtilities.GetText(prefix) is string value)
 			{
 				TextBuilder.Append(value);
 			}

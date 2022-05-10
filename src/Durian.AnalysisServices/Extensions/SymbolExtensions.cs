@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -142,7 +143,7 @@ namespace Durian.Analysis.Extensions
 						return SyntaxFactory.FunctionPointerParameter(default, SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.RefKeyword), SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword)), parameterType);
 
 					default:
-						SyntaxKind kind = AnalysisUtilities.RefKindToSyntax(refKind);
+						SyntaxKind kind = refKind.AsSyntax();
 						return SyntaxFactory.FunctionPointerParameter(default, SyntaxFactory.TokenList(SyntaxFactory.Token(kind)), parameterType);
 				}
 			}
@@ -316,7 +317,7 @@ namespace Durian.Analysis.Extensions
 		{
 			if (symbol is IMethodSymbol method)
 			{
-				if (AnalysisUtilities.GetAttributeTarget(method.MethodKind, targetKind) is string methodTarget)
+				if (method.MethodKind.GetAttributeTarget(targetKind) is string methodTarget)
 				{
 					return methodTarget;
 				}
@@ -325,7 +326,7 @@ namespace Durian.Analysis.Extensions
 			{
 				return "event";
 			}
-			else if (AnalysisUtilities.GetAttributeTarget(symbol.Kind, targetKind) is string target)
+			else if (symbol.Kind.GetAttributeTarget(targetKind) is string target)
 			{
 				return target;
 			}
@@ -463,37 +464,49 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IEnumerable<INamedTypeSymbol> GetBaseTypes(this INamedTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.Parent)
 		{
-			return AnalysisUtilities.ByOrder(Yield(), order);
+			return AnalysisUtilities.ByOrder(GetBaseTypes_Internal(type, includeSelf), order);
+		}
 
-			IEnumerable<INamedTypeSymbol> Yield()
+		private static IEnumerable<INamedTypeSymbol> GetBaseTypes_Internal(INamedTypeSymbol type, bool includeSelf)
+		{
+			if (includeSelf)
 			{
-				if (includeSelf)
+				yield return type;
+			}
+
+			if (type.TypeKind == TypeKind.Interface)
+			{
+				foreach (INamedTypeSymbol t in type.AllInterfaces)
 				{
-					yield return type;
+					yield return t;
 				}
 
-				if (type.TypeKind == TypeKind.Interface)
-				{
-					foreach (INamedTypeSymbol t in type.AllInterfaces)
-					{
-						yield return t;
-					}
+				yield break;
+			}
 
-					yield break;
-				}
+			INamedTypeSymbol? currentType = type.BaseType;
 
-				INamedTypeSymbol? currentType = type.BaseType;
+			if (currentType is not null)
+			{
+				yield return currentType;
 
-				if (currentType is not null)
+				while ((currentType = currentType!.BaseType) is not null)
 				{
 					yield return currentType;
-
-					while ((currentType = currentType!.BaseType) is not null)
-					{
-						yield return currentType;
-					}
 				}
 			}
+		}
+
+		/// <summary>
+		/// Returns all types the specified <paramref name="type"/> inherits from.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the base types of.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static TypeContainer GetBaseTypes(this INamedTypeSymbol type, ICompilationData? compilation, bool includeSelf = false, ReturnOrder order = ReturnOrder.Parent)
+		{
+			return SymbolContainer.Types(GetBaseTypes_Internal(type, includeSelf), compilation, true, order);
 		}
 
 		/// <summary>
@@ -1091,7 +1104,7 @@ namespace Durian.Analysis.Extensions
 					INamedTypeSymbol type => type.Arity == 0,
 					IMethodSymbol method => method.Arity == 0,
 					IPropertySymbol property => !property.IsIndexer,
-					IFieldSymbol or IFieldSymbol => true,
+					IFieldSymbol or IEventSymbol => true,
 					_ => false
 				});
 		}
@@ -1173,17 +1186,333 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns modifiers applied to the target <see cref="ISymbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the modifiers of.</param>
+		public static string[] GetModifiers(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				INamedTypeSymbol type => type.GetModifiers(),
+				IMethodSymbol method => method.GetModifiers(),
+				IPropertySymbol property => property.GetModifiers(),
+				IFieldSymbol field => field.GetModifiers(),
+				IEventSymbol @event => @event.GetModifiers(),
+				_ => Array.Empty<string>()
+			};
+		}
+
+		/// <summary>
+		/// Returns modifiers applied to the target <see cref="IFieldSymbol"/>.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to get the modifiers of.</param>
+		public static string[] GetModifiers(this IFieldSymbol field)
+		{
+			List<string> modifiers = new(4);
+
+			AddAccessibilityModifiers(modifiers, field.DeclaredAccessibility);
+
+			if(field.IsConst)
+			{
+				modifiers.Add("const");
+			}
+			else if (field.IsStatic)
+			{
+				modifiers.Add("static");
+			}
+
+			if(field.IsReadOnly)
+			{
+				modifiers.Add("readonly");
+			}
+
+			if(field.IsUnsafe())
+			{
+				modifiers.Add("unsafe");
+			}
+
+			if (field.IsVolatile)
+			{
+				modifiers.Add("volatile");
+			}
+
+			if (field.IsFixedSizeBuffer)
+			{
+				modifiers.Add("fixed");
+			}
+
+			return modifiers.ToArray();
+		}
+
+		/// <summary>
+		/// Returns modifiers applied to the target <see cref="ILocalSymbol"/>.
+		/// </summary>
+		/// <param name="local"><see cref="ILocalSymbol"/> to get the modifiers of.</param>
+		public static string[] GetModifiers(this ILocalSymbol local)
+		{
+			List<string> modifiers = new(2);
+
+			if(local.IsConst)
+			{
+				modifiers.Add("const");
+			}
+
+			switch (local.RefKind)
+			{
+				case RefKind.Ref:
+					modifiers.Add("ref");
+					break;
+
+				case RefKind.RefReadOnly:
+					modifiers.Add("ref");
+					modifiers.Add("readonly");
+					break;
+			}
+
+			return modifiers.ToArray();
+		}
+
+		/// <summary>
+		/// Returns modifiers applied to the target <see cref="ILocalSymbol"/>.
+		/// </summary>
+		/// <param name="parameter"><see cref="ILocalSymbol"/> to get the modifiers of.</param>
+		public static string[] GetModifiers(this IParameterSymbol parameter)
+		{
+			List<string> modifiers = new(2);
+
+			if(parameter.IsThis)
+			{
+				modifiers.Add("this");
+			}
+
+			if(parameter.RefKind.GetText() is string refKind)
+			{
+				modifiers.Add(refKind);
+			}
+
+			if(parameter.IsParams)
+			{
+				modifiers.Add("params");
+			}
+
+			return modifiers.ToArray();
+		}
+
+		/// <summary>
+		/// Returns modifiers applied to the target <see cref="IPropertySymbol"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to get the modifiers of.</param>
+		public static string[] GetModifiers(this IPropertySymbol property)
+		{
+			List<string> modifiers = new(8);
+
+			AddAccessibilityModifiers(modifiers, property.DeclaredAccessibility);
+			AddBasicMethodModifiers(modifiers, property);
+
+			if(property.IsReadOnly)
+			{
+				CheckAccessor(property.GetMethod);
+			}
+			else if(property.IsWriteOnly)
+			{
+				CheckAccessor(property.SetMethod);
+			}
+			else if(property.GetMethod?.IsReadOnly == true && property.SetMethod?.IsReadOnly == true)
+			{
+				modifiers.Add("readonly");
+			}
+
+			if (property.IsUnsafe())
+			{
+				modifiers.Add("unsafe");
+			}
+
+			return modifiers.ToArray();
+
+			void CheckAccessor(IMethodSymbol? accessor)
+			{
+				if (accessor is not null && accessor.IsReadOnly)
+				{
+					modifiers.Add("readonly");
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns modifiers applied to the target <see cref="IEventSymbol"/>.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to get the modifiers of.</param>
+		public static string[] GetModifiers(this IEventSymbol @event)
+		{
+			List<string> modifiers = new(8);
+
+			AddAccessibilityModifiers(modifiers, @event.DeclaredAccessibility);
+			AddBasicMethodModifiers(modifiers, @event);
+
+			if(@event.AddMethod?.IsReadOnly == true && @event.RemoveMethod?.IsReadOnly == true)
+			{
+				modifiers.Add("readonly");
+			}
+
+			if (@event.IsUnsafe())
+			{
+				modifiers.Add("unsafe");
+			}
+
+			return modifiers.ToArray();
+		}
+
+		private static void AddBasicMethodModifiers(List<string> modifiers, ISymbol symbol)
+		{
+			if (symbol.IsStatic)
+			{
+				modifiers.Add("static");
+			}
+
+			if (symbol.IsExtern)
+			{
+				modifiers.Add("extern");
+			}
+
+			if (symbol.IsNew())
+			{
+				modifiers.Add("new");
+			}
+
+			if (symbol.IsAbstract)
+			{
+				modifiers.Add("abstract");
+			}
+			else if (symbol.IsSealed)
+			{
+				modifiers.Add("sealed");
+			}
+			else if (symbol.IsVirtual)
+			{
+				modifiers.Add("virtual");
+			}
+
+			if (symbol.IsOverride)
+			{
+				modifiers.Add("override");
+			}
+		}
+
+		private static void AddAccessibilityModifiers(List<string> modifiers, Accessibility accessibility)
+		{
+			switch (accessibility)
+			{
+				case Accessibility.Public:
+					modifiers.Add("public");
+					break;
+
+				case Accessibility.Private:
+					modifiers.Add("private");
+					break;
+
+				case Accessibility.Protected:
+					modifiers.Add("protected");
+					break;
+
+				case Accessibility.Internal:
+					modifiers.Add("internal");
+					break;
+
+				case Accessibility.ProtectedOrInternal:
+					modifiers.Add("protected");
+					modifiers.Add("internal");
+					break;
+
+				case Accessibility.ProtectedAndInternal:
+					modifiers.Add("private");
+					modifiers.Add("protected");
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Returns modifiers applied to the target <see cref="IMethodSymbol"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the modifiers of.</param>
+		public static string[] GetModifiers(this IMethodSymbol method)
+		{
+			List<string> modifiers = new(8);
+
+			AddAccessibilityModifiers(modifiers, method.DeclaredAccessibility);
+			AddBasicMethodModifiers(modifiers, method);
+
+			if (method.IsReadOnly)
+			{
+				modifiers.Add("readonly");
+			}
+
+			if (method.IsUnsafe())
+			{
+				modifiers.Add("unsafe");
+			}
+
+			if (method.IsAsync)
+			{
+				modifiers.Add("async");
+			}
+
+			if (method.IsPartial(true))
+			{
+				modifiers.Add("partial");
+			}
+
+			return modifiers.ToArray();
+		}
+
+		/// <summary>
 		/// Returns modifiers applied to the target <see cref="INamedTypeSymbol"/>.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the modifiers of.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public static IEnumerable<string> GetModifiers(this INamedTypeSymbol type, CancellationToken cancellationToken = default)
+		public static string[] GetModifiers(this INamedTypeSymbol type)
 		{
-			return type.DeclaringSyntaxReferences
-				.Select(e => e.GetSyntax(cancellationToken))
-				.Cast<TypeDeclarationSyntax>()
-				.GetModifiers()
-				.Select(m => m.ValueText);
+			List<string> modifiers = new(8);
+
+			AddAccessibilityModifiers(modifiers, type.DeclaredAccessibility);
+
+			if (type.IsStatic)
+			{
+				modifiers.Add("static");
+			}
+
+			if (type.IsNew())
+			{
+				modifiers.Add("new");
+			}
+
+			if (type.IsAbstract)
+			{
+				modifiers.Add("abstract");
+			}
+			else if(type.IsRefLikeType)
+			{
+				modifiers.Add("ref");
+			}
+			else if(type.IsSealed)
+			{
+				modifiers.Add("sealed");
+			}
+
+			if(type.IsReadOnly)
+			{
+				modifiers.Add("readonly");
+			}
+
+			if (type.IsUnsafe())
+			{
+				modifiers.Add("unsafe");
+			}
+
+			if (type.IsPartial())
+			{
+				modifiers.Add("partial");
+			}
+
+			return modifiers.ToArray();
 		}
 
 		/// <summary>
@@ -1405,7 +1734,7 @@ namespace Durian.Analysis.Extensions
 				return "dynamic";
 			}
 
-			return AnalysisUtilities.GetTypeKeyword(type.SpecialType);
+			return type.SpecialType.GetKeyword();
 		}
 
 		/// <summary>

@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Durian.Analysis;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Logging;
 
 namespace Durian.TestServices

@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using Durian.Analysis.Extensions;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -17,24 +18,21 @@ namespace Durian.Analysis.Data
 	[DebuggerDisplay("{Symbol}")]
 	public class MemberData : IMemberData
 	{
-		internal ImmutableArray<AttributeData> _attributes;
-		internal INamespaceSymbol[]? _containingNamespaces;
-		internal ITypeData[]? _containingTypes;
+		private ImmutableArray<AttributeData> _attributes;
+		private NamespaceContainer? _containingNamespaces;
+		private TypeContainer? _containingTypes;
+		private string[]? _modifiers;
 
 		private Location? _location;
 
 		/// <inheritdoc/>
 		public CSharpSyntaxNode Declaration { get; }
 
-		/// <summary>
-		/// <see cref="Microsoft.CodeAnalysis.Location"/> of the <see cref="Declaration"/>.
-		/// </summary>
+		/// <inheritdoc/>
 		public Location Location => _location ??= Declaration.GetLocation();
 
-		/// <summary>
-		/// Name of the member.
-		/// </summary>
-		public string Name => Symbol.Name;
+		/// <inheritdoc/>
+		public string Name { get; }
 
 		/// <inheritdoc/>
 		public ICompilationData ParentCompilation { get; }
@@ -61,6 +59,7 @@ namespace Durian.Analysis.Data
 			(SemanticModel, Symbol) = AnalysisUtilities.GetSymbolAndSemanticModel(declaration, compilation);
 			Declaration = declaration;
 			ParentCompilation = compilation;
+			Name = Symbol.GetVerbatimName();
 		}
 
 		internal MemberData(ISymbol symbol, ICompilationData compilation)
@@ -74,6 +73,7 @@ namespace Durian.Analysis.Data
 			Declaration = decl;
 			SemanticModel = compilation.Compilation.GetSemanticModel(decl.SyntaxTree);
 			ParentCompilation = compilation;
+			Name = Symbol.GetVerbatimName();
 		}
 
 		/// <summary>
@@ -100,13 +100,25 @@ namespace Durian.Analysis.Data
 			ParentCompilation = compilation;
 			Symbol = symbol;
 			SemanticModel = semanticModel;
-			_containingTypes = containingTypes?.ToArray();
+
+			if(containingTypes is not null)
+			{
+				_containingTypes = SymbolContainer.Types(containingTypes, true, ReturnOrder.Root);
+			}
+
+			if(containingNamespaces is not null)
+			{
+				_containingNamespaces = SymbolContainer.Namespaces(containingNamespaces, ReturnOrder.Root);
+			}
+
 			_containingNamespaces = containingNamespaces?.ToArray();
 
 			if (attributes is not null)
 			{
 				_attributes = attributes.ToImmutableArray();
 			}
+
+			Name = Symbol.GetVerbatimName();
 		}
 
 		/// <inheritdoc/>
@@ -116,15 +128,22 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc/>
-		public virtual IEnumerable<INamespaceSymbol> GetContainingNamespaces()
+		public virtual NamespaceContainer GetContainingNamespaces()
 		{
+
 			return _containingNamespaces ??= Symbol.GetContainingNamespaces().ToArray();
 		}
 
 		/// <inheritdoc/>
-		public virtual IEnumerable<ITypeData> GetContainingTypes()
+		public virtual TypeContainer GetContainingTypes()
 		{
 			return _containingTypes ??= Symbol.GetContainingTypesAsData(ParentCompilation).ToArray();
+		}
+
+		/// <inheritdoc/>
+		public virtual string[] GetModifiers()
+		{
+			return _modifiers ??= Symbol.GetModifiers();
 		}
 
 		private protected static InvalidOperationException Exc_NoSyntaxReference(ISymbol symbol)

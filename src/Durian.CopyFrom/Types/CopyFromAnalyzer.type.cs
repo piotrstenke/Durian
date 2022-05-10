@@ -434,7 +434,7 @@ namespace Durian.Analysis.CopyFrom
 				RemoveFlag(ref additionalNodes, AdditionalNodes.Documentation);
 			}
 
-			if (additionalNodes.HasFlag(AdditionalNodes.BaseType) && (symbol.HasExplicitBaseType(compilation.Compilation) || !symbol.SupportsExplicitBaseType()))
+			if (additionalNodes.HasFlag(AdditionalNodes.BaseType) && (symbol.HasExplicitBaseType() || !symbol.SupportsExplicitBaseType()))
 			{
 				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseType);
 			}
@@ -488,7 +488,7 @@ namespace Durian.Analysis.CopyFrom
 
 			if (additionalNodes.HasFlag(AdditionalNodes.BaseType))
 			{
-				if (symbol.HasExplicitBaseType(compilation.Compilation))
+				if (symbol.HasExplicitBaseType())
 				{
 					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
 					diagnosticReceiver.ReportDiagnostic(DUR0225_BaseTypeAlreadySpecified, location, symbol);

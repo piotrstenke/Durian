@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Durian.Analysis;
+using Durian.Analysis.CodeGeneration;
 using Durian.Generator;
 using Durian.Info;
 using Durian.TestServices;

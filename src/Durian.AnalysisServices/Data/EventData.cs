@@ -16,14 +16,19 @@ namespace Durian.Analysis.Data
 	public class EventData : MemberData
 	{
 		/// <summary>
-		/// Returns the <see cref="MemberData.Declaration"/> as a <see cref="EventFieldDeclarationSyntax"/>.
+		/// Returns the <see cref="Declaration"/> as a <see cref="EventFieldDeclarationSyntax"/>.
 		/// </summary>
 		public EventFieldDeclarationSyntax? AsField => Declaration as EventFieldDeclarationSyntax;
 
 		/// <summary>
-		/// Returns the <see cref="MemberData.Declaration"/> as a <see cref="EventDeclarationSyntax"/>.
+		/// Returns the <see cref="Declaration"/> as a <see cref="EventDeclarationSyntax"/>.
 		/// </summary>
 		public EventDeclarationSyntax? AsProperty => Declaration as EventDeclarationSyntax;
+
+		/// <summary>
+		/// Target <see cref="MemberDeclarationSyntax"/>.
+		/// </summary>
+		public new MemberDeclarationSyntax Declaration => (base.Declaration as MemberDeclarationSyntax)!;
 
 		/// <summary>
 		/// Index of this field in the <see cref="MemberData.Declaration"/>. Returns <c>0</c> if the event is defined as a property.

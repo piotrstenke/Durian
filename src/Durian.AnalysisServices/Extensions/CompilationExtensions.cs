@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Extensions
 {
@@ -111,6 +112,21 @@ namespace Durian.Analysis.Extensions
 
 				return t;
 			}
+		}
+
+		public static SemanticModel GetSemanticModel(this Compilation compilation, SyntaxNode node)
+		{
+
+		}
+
+		public static SemanticModel GetSemanticModel(this Compilation compilation, MemberDeclarationSyntax node, out ISymbol symbol)
+		{
+
+		}
+
+		public static SemanticModel GetSemanticModel(this Compilation compilation)
+		{
+
 		}
 
 		/// <summary>

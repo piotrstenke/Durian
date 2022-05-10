@@ -12,6 +12,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Durian.Generator;
 using System.Diagnostics.CodeAnalysis;
+using Durian.Analysis.CodeGeneration;
+using Durian.Analysis.SymbolContainers;
 
 #if ENABLE_REFLECTION
 
@@ -830,7 +832,16 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether is of a declaration kind.</param>
 		public static bool IsDeclarationKind(this INamedTypeSymbol type)
 		{
-			return AnalysisUtilities.IsDeclarationKind(type.TypeKind);
+			return type.TypeKind.IsDeclarationKind();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is a compiler-generated parameterless constructor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check whether is a compiler-generated parameterless constructor.</param>
+		public static bool IsDefaultConstructor(this IMethodSymbol method)
+		{
+			return method.IsImplicitlyDeclared && method.IsParameterlessConstructor();
 		}
 
 		/// <summary>
@@ -1040,6 +1051,30 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> is declared using the <see langword="new"/> keyword.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check whether is declared using the <see langword="new"/> keyword.</param>
+		public static bool IsNew(this ISymbol symbol)
+		{
+			if(symbol.IsTopLevel())
+			{
+				return false;
+			}
+
+#if ENABLE_REFLECTION
+			if (symbol.GetType().GetProperty("IsNew") is PropertyInfo property && property.GetValue(symbol) is bool value)
+			{
+				return value;
+			}
+#endif
+
+			return symbol.DeclaringSyntaxReferences
+				.Select(r => r.GetSyntax())
+				.OfType<MemberDeclarationSyntax>()
+				.Any(m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.NewKeyword)));
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="type"/> is nullable.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check whether is nullable.</param>
@@ -1190,6 +1225,15 @@ namespace Durian.Analysis.Extensions
 		public static bool IsParameterless(this INamedTypeSymbol type)
 		{
 			return type.DelegateInvokeMethod is not null && type.DelegateInvokeMethod.IsParameterless();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is a parameterless constructor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check whether is a parameterless constructor.</param>
+		public static bool IsParameterlessConstructor(this IMethodSymbol method)
+		{
+			return method.MethodKind == MethodKind.Constructor && method.IsParameterless();
 		}
 
 		/// <summary>
@@ -1441,6 +1485,24 @@ namespace Durian.Analysis.Extensions
 				default:
 					return false;
 			}
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> is a top-level symbol (is not contained within a type).
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check whether is a top-level type.</param>
+		public static bool IsTopLevel(this ISymbol symbol)
+		{
+			return symbol.ContainingSymbol is INamespaceSymbol;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="namespace"/> is a top-level namespace (is not contained within other namespace).
+		/// </summary>
+		/// <param name="namespace"><see cref="INamespaceSymbol"/> to check whether is a top-level type.</param>
+		public static bool IsTopLevel(this INamespaceSymbol @namespace)
+		{
+			return @namespace.ContainingSymbol is not INamespaceSymbol parent || parent.IsGlobalNamespace;
 		}
 
 		/// <summary>
@@ -1730,7 +1792,7 @@ namespace Durian.Analysis.Extensions
 				IParameterSymbol first = firstParameters[i];
 				IParameterSymbol second = secondParameters[i];
 
-				if (AnalysisUtilities.IsValidRefKindForOverload(first.RefKind, second.RefKind))
+				if (first.RefKind.IsValidForOverload(second.RefKind))
 				{
 					return false;
 				}

@@ -25,28 +25,28 @@ namespace Durian.Analysis.Tests.SymbolExtensions
 		[ClassData(typeof(Utilities.NonPredefinedTypeCollection))]
 		public void False(SpecialType type)
 		{
-			Assert.False(_compilation.GetSpecialType(type).IsPredefinedOrDynamic(_compilation));
+			Assert.False(_compilation.GetSpecialType(type).IsPredefinedOrDynamic());
 		}
 
 		[Fact]
 		public void False_When_IsNotSpecialType()
 		{
 			INamedTypeSymbol symbol = Mock.Of<INamedTypeSymbol>();
-			Assert.False(symbol.IsPredefinedOrDynamic(_compilation));
+			Assert.False(symbol.IsPredefinedOrDynamic());
 		}
 
 		[Theory]
 		[ClassData(typeof(Utilities.PredefinedTypeCollection))]
 		public void True(SpecialType type)
 		{
-			Assert.True(_compilation.GetSpecialType(type).IsPredefinedOrDynamic(_compilation));
+			Assert.True(_compilation.GetSpecialType(type).IsPredefinedOrDynamic());
 		}
 
 		[Fact]
 		public void True_When_IsDynamic()
 		{
 			ITypeSymbol symbol = _compilation.DynamicType;
-			Assert.True(symbol.IsPredefinedOrDynamic(_compilation));
+			Assert.True(symbol.IsPredefinedOrDynamic());
 		}
 	}
 }
