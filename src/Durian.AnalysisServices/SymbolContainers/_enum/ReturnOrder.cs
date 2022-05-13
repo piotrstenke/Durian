@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 namespace Durian.Analysis.SymbolContainers
+{
 	/// <summary>
 	/// Specifies order at which members should be returned.
 	/// </summary>

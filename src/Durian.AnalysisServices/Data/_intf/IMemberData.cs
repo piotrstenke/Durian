@@ -21,6 +21,21 @@ namespace Durian.Analysis.Data
 		CSharpSyntaxNode Declaration { get; }
 
 		/// <summary>
+		/// Determines whether the current member is declared using the <see langword="new"/> keyword.
+		/// </summary>
+		bool IsNew { get; }
+
+		/// <summary>
+		/// Determines whether the current member is declared using the <see langword="partial"/> keyword.
+		/// </summary>
+		bool IsPartial { get; }
+
+		/// <summary>
+		/// Determines whether the current member is declared using the <see langword="unsafe"/> keyword.
+		/// </summary>
+		bool IsUnsafe { get; }
+
+		/// <summary>
 		/// Location of the member.
 		/// </summary>
 		Location Location { get; }

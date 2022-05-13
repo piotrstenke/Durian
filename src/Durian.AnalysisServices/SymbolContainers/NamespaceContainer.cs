@@ -14,8 +14,15 @@ namespace Durian.Analysis.SymbolContainers
 	/// <summary>
 	/// <see cref="ISymbolContainer"/> that handles <see cref="INamespaceSymbol"/>s.
 	/// </summary>
-	public sealed class NamespaceContainer : SymbolContainer, IEnumerable<INamespaceSymbol>, IEnumerable<NamespaceData>
+	public sealed class NamespaceContainer : SymbolContainer, IEnumerable<INamespaceSymbol>
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="NamespaceContainer"/> class.
+		/// </summary>
+		public NamespaceContainer()
+		{
+		}
+
 		internal NamespaceContainer(IEnumerable<INamespaceSymbol> collection, ICompilationData? compilation, ReturnOrder order) : base(collection, compilation, order)
 		{
 		}
@@ -53,20 +60,15 @@ namespace Durian.Analysis.SymbolContainers
 			return new NamespaceData((symbol as INamespaceSymbol)!, compilation);
 		}
 
-		IEnumerator<INamespaceSymbol> IEnumerable<INamespaceSymbol>.GetEnumerator()
+		/// <inheritdoc/>
+		public IEnumerator<INamespaceSymbol> GetEnumerator()
 		{
 			IEnumerable<INamespaceSymbol> symbols = GetSymbols();
 			return symbols.GetEnumerator();
 		}
-
-		IEnumerator<NamespaceData> IEnumerable<NamespaceData>.GetEnumerator()
-		{
-			IEnumerable<NamespaceData> namespaces = GetData();
-			return namespaces.GetEnumerator();
-		}
 	}
 
-	public partial class SymbolContainerFactory
+	public static partial class SymbolContainerFactory
 	{
 		/// <summary>
 		/// Creates a new <see cref="NamespaceContainer"/>.
@@ -82,19 +84,9 @@ namespace Durian.Analysis.SymbolContainers
 		/// Creates a new <see cref="NamespaceContainer"/>.
 		/// </summary>
 		/// <param name="symbols">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static NamespaceContainer ToContainer(this IEnumerable<INamespaceSymbol> symbols, ReturnOrder order = ReturnOrder.Root)
-		{
-			return new(symbols, null, order);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="NamespaceContainer"/>.
-		/// </summary>
-		/// <param name="symbols">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
 		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static NamespaceContainer ToContainer(this IEnumerable<INamespaceSymbol> symbols, ICompilationData? compilation, ReturnOrder order = ReturnOrder.Root)
+		public static NamespaceContainer ToContainer(this IEnumerable<INamespaceSymbol> symbols, ICompilationData? compilation = default, ReturnOrder order = ReturnOrder.Root)
 		{
 			return new(symbols, compilation, order);
 		}

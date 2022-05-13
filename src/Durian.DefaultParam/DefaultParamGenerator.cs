@@ -250,7 +250,7 @@ namespace Durian.Analysis.DefaultParam
 			{
 				WriteTargetLeadDeclaration(target, context);
 				WriteGeneratedMembers(members, target, context);
-				context.CodeBuilder.EndAllScopes();
+				context.CodeBuilder.EndAllBlocks();
 			}
 		}
 	}

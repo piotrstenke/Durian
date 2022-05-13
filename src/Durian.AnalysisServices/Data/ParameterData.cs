@@ -46,6 +46,7 @@ namespace Durian.Analysis.Data
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="ParameterData"/>.</param>
 		/// <param name="symbol"><see cref="IParameterSymbol"/> this <see cref="ParameterData"/> represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
@@ -54,6 +55,7 @@ namespace Durian.Analysis.Data
 			ICompilationData compilation,
 			IParameterSymbol symbol,
 			SemanticModel semanticModel,
+			string[]? modifiers = null,
 			IEnumerable<ITypeData>? containingTypes = null,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
 			IEnumerable<AttributeData>? attributes = null
@@ -62,6 +64,7 @@ namespace Durian.Analysis.Data
 			compilation,
 			symbol,
 			semanticModel,
+			modifiers,
 			containingTypes,
 			containingNamespaces,
 			attributes

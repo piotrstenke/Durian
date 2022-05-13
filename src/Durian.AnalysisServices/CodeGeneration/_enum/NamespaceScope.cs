@@ -9,13 +9,18 @@ namespace Durian.Analysis.CodeGeneration
 	public enum NamespaceScope
 	{
 		/// <summary>
-		/// Default namespace declaration (e.g. <c>namespace System { }</c>).
+		/// Default namespace declaration (e.g. <c>namespace System.Collections { }</c>).
 		/// </summary>
 		Default = 0,
 
 		/// <summary>
-		/// File-scoped namespace declaration (e.g. <c>namespace System;</c>).
+		/// Nested namespace declaration (e.g. <c>namespace System { namespace Collections { } }</c>.
 		/// </summary>
-		File = 1
+		Nested = 1,
+
+		/// <summary>
+		/// File-scoped namespace declaration (e.g. <c>namespace System.Collections;</c>).
+		/// </summary>
+		File = 2
 	}
 }

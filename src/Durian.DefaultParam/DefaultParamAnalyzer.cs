@@ -268,7 +268,7 @@ namespace Durian.Analysis.DefaultParam
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			ITypeData[] types = symbol.GetContainingTypesAsData(compilation).ToArray();
+			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
 			bool isValid = true;
 
 			if (types.Length > 0)
@@ -382,7 +382,7 @@ namespace Durian.Analysis.DefaultParam
 			[NotNullWhen(true)] out ITypeData[]? containingTypes
 		)
 		{
-			ITypeData[] types = symbol.GetContainingTypesAsData(compilation).ToArray();
+			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
 
 			if (types.Length > 0)
 			{

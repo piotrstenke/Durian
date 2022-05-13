@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+
 namespace Durian.Analysis.SymbolContainers
 {
 	/// <summary>
@@ -8,5 +10,13 @@ namespace Durian.Analysis.SymbolContainers
 	/// </summary>
 	public static partial class SymbolContainerFactory
 	{
+		/// <summary>
+		/// Returns a new empty container.
+		/// </summary>
+		/// <typeparam name="T">Type of container to create.</typeparam>
+		public static T Empty<T>() where T : ISymbolContainer, new()
+		{
+			return new T();
+		}
 	}
 }

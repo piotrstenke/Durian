@@ -577,7 +577,7 @@ namespace Durian.Analysis.Extensions
 
 					if (info.Symbol is INamedTypeSymbol t)
 					{
-						if (t.IsPredefined())
+						if (t.IsKeyword())
 						{
 							continue;
 						}

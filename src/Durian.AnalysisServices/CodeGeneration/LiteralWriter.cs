@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Text;
+using Durian.Analysis.Extensions;
 
 namespace Durian.Analysis.CodeGeneration
 {
@@ -462,7 +463,7 @@ namespace Durian.Analysis.CodeGeneration
 		/// <param name="prefix">Prefix of the numeric value.</param>
 		public LiteralWriter NumericPrefix(NumericLiteralPrefix prefix)
 		{
-			if (AnalysisUtilities.GetText(prefix) is string value)
+			if (prefix.GetText() is string value)
 			{
 				TextBuilder.Append(value);
 			}
@@ -476,7 +477,7 @@ namespace Durian.Analysis.CodeGeneration
 		/// <param name="suffix">Suffix of the numeric value.</param>
 		public LiteralWriter NumericSuffix(NumericLiteralSuffix suffix)
 		{
-			if (AnalysisUtilities.GetSuffix(suffix) is string value)
+			if (suffix.GetText() is string value)
 			{
 				TextBuilder.Append(value);
 			}
@@ -490,7 +491,7 @@ namespace Durian.Analysis.CodeGeneration
 		/// <param name="suffix">Suffix of the numeric value.</param>
 		public LiteralWriter NumericSuffix(DecimalLiteralSuffix suffix)
 		{
-			if (AnalysisUtilities.GetSuffix(suffix) is string value)
+			if (suffix.GetText() is string value)
 			{
 				TextBuilder.Append(value);
 			}

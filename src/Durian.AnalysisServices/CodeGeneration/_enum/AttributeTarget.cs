@@ -9,9 +9,9 @@ namespace Durian.Analysis.CodeGeneration
 	public enum AttributeTarget
 	{
 		/// <summary>
-		/// The default attribute target.
+		/// No attribute target specified.
 		/// </summary>
-		Default = 0,
+		None = 0,
 
 		/// <summary>
 		/// The attribute targets a method.

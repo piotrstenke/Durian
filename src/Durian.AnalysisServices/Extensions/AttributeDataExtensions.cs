@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Durian.Analysis.CodeGeneration;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Extensions
@@ -189,6 +191,64 @@ namespace Durian.Analysis.Extensions
 		{
 			TryGetNamedArgumentValue(attribute, argumentName, out T? value);
 			return value;
+		}
+
+		/// <summary>
+		/// Returns target of the specified <paramref name="attribute"/>.
+		/// </summary>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the target of.</param>
+		public static AttributeTarget GetTarget(this AttributeData attribute)
+		{
+			if(attribute.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax node || node.Parent is not AttributeListSyntax list || list.Target is not AttributeTargetSpecifierSyntax target)
+			{
+				return AttributeTarget.None;
+			}
+
+			return target.Identifier.ValueText switch
+			{
+				"assembly" => AttributeTarget.Assembly,
+				"return" => AttributeTarget.Return,
+				"field" => AttributeTarget.Field,
+				"event" => AttributeTarget.Event,
+				"method" => AttributeTarget.Method,
+				"type" => AttributeTarget.Type,
+				"property" => AttributeTarget.Property,
+				"param" => AttributeTarget.Param,
+				"module" => AttributeTarget.Module,
+				"typevar" => AttributeTarget.TypeVar,
+				_ => AttributeTarget.None
+			};
+		}
+
+		/// <summary>
+		/// Returns target <see cref="ISymbol"/> of the specified <paramref name="attribute"/>.
+		/// </summary>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the target <see cref="ISymbol"/> of.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> this attribute is applied to.</param>
+		public static ISymbol? GetTargetSymbol(this AttributeData attribute, ISymbol symbol)
+		{
+			if (attribute.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax node || node.Parent is not AttributeListSyntax list || list.Target is not AttributeTargetSpecifierSyntax target)
+			{
+				return default;
+			}
+
+
+
+
+			return target.Identifier.ValueText switch
+			{
+				"assembly" => semanticModel.Compilation.Assembly,
+				"return" => AttributeTarget.Return,
+				"field" => AttributeTarget.Field,
+				"event" => AttributeTarget.Event,
+				"method" => AttributeTarget.Method,
+				"type" => AttributeTarget.Type,
+				"property" => AttributeTarget.Property,
+				"param" => AttributeTarget.Param,
+				"module" => semanticModel.Compilation.mod,
+				"typevar" => AttributeTarget.TypeVar,
+				_ => AttributeTarget.None
+			};
 		}
 
 		/// <summary>

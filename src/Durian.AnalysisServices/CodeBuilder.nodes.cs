@@ -50,7 +50,7 @@ namespace Durian.Analysis
 			{
 				case MethodBody.Block:
 					TextBuilder.AppendLine();
-					BeginScope();
+					BeginBlock();
 					break;
 
 				case MethodBody.Expression:

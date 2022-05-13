@@ -22,7 +22,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// <see cref="ITypeSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
-		new INamedTypeSymbol Symbol { get; }
+		new ITypeSymbol Symbol { get; }
 
 		/// <summary>
 		/// Returns all <see cref="ITypeData"/>s that contain the symbol.
@@ -32,8 +32,8 @@ namespace Durian.Analysis.Data
 
 		/// <summary>
 		/// If the type is partial, returns all declarations of the type (including <see cref="IMemberData.Declaration"/>), otherwise returns only <see cref="IMemberData.Declaration"/>.
-		/// <para>If the type is not <see cref="TypeDeclarationSyntax"/>, an empty collection is returned instead.</para>
+		/// <para>If the type is not <see cref="BaseTypeDeclarationSyntax"/>, an empty collection is returned instead.</para>
 		/// </summary>
-		ImmutableArray<TypeDeclarationSyntax> GetPartialDeclarations();
+		ImmutableArray<BaseTypeDeclarationSyntax> GetPartialDeclarations();
 	}
 }

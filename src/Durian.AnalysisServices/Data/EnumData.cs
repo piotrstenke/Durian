@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -50,7 +51,7 @@ namespace Durian.Analysis.Data
 			ICompilationData compilation,
 			INamedTypeSymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<SyntaxToken>? modifiers = null,
+			string[]? modifiers = null,
 			IEnumerable<ITypeData>? containingTypes = null,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
 			IEnumerable<AttributeData>? attributes = null
@@ -59,13 +60,19 @@ namespace Durian.Analysis.Data
 			compilation,
 			symbol,
 			semanticModel,
-			null,
 			modifiers,
+			null,
 			containingTypes,
 			containingNamespaces,
 			attributes
 		)
 		{
+		}
+
+		/// <inheritdoc/>
+		public override ImmutableArray<EnumDeclarationSyntax> GetPartialDeclarations()
+		{
+			return ImmutableArray<EnumDeclarationSyntax>.Empty;
 		}
 	}
 }

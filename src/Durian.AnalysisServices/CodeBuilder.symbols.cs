@@ -14,10 +14,43 @@ namespace Durian.Analysis
 	public partial class CodeBuilder
 	{
 		/// <summary>
+		/// Writes accessibility modifier of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to write the accessibility modifier of.</param>
+		/// <param name="skipDefault">Determines whether to skip the accessibility modifier if it's default in the current context (see <see cref="SymbolFacts.HasDefaultAccessibility(ISymbol)"/> for more details).</param>
+		public CodeBuilder Accessibility(ISymbol symbol, bool skipDefault = true)
+		{
+			InitBuilder();
+
+			if(skipDefault && symbol.HasDefaultAccessibility())
+			{
+				return this;
+			}
+
+			return Accessibility(symbol.DeclaredAccessibility);
+		}
+
+		/// <summary>
+		/// Writes an accessibility modifier.
+		/// </summary>
+		/// <param name="accessibility">Accessibility modifier to write.</param>
+		public CodeBuilder Accessibility(Accessibility accessibility)
+		{
+			InitBuilder();
+
+			if (accessibility.GetText() is string keyword)
+			{
+				TextBuilder.Append(keyword);
+				Space();
+			}
+
+			return this;
+		}
+
+		/// <summary>
 		/// Writes the specified <paramref name="array"/>.
 		/// </summary>
 		/// <param name="array"><see cref="IArrayTypeSymbol"/> to write.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="array"/> is <see langword="null"/>.</exception>
 		public CodeBuilder Array(IArrayTypeSymbol array)
 		{
 			ITypeSymbol element = array.ElementType;
@@ -39,7 +72,7 @@ namespace Durian.Analysis
 				while (childArrays.Count > 0)
 				{
 					elementArray = childArrays.Dequeue();
-					ApplyNullable(elementArray);
+					Nullability(elementArray);
 					WriteArrayBrackets(elementArray);
 				}
 			}
@@ -49,7 +82,7 @@ namespace Durian.Analysis
 				WriteArrayBrackets(array);
 			}
 
-			ApplyNullable(array);
+			Nullability(array);
 
 			return this;
 
@@ -68,6 +101,91 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Writes a list of base types of the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to write the base type list of.</param>
+		public CodeBuilder BaseTypeList(INamedTypeSymbol type)
+		{
+			InitBuilder();
+
+			ImmutableArray<INamedTypeSymbol> interfaces = type.Interfaces;
+
+			bool hasBegun = false;
+
+			if (type.HasExplicitBaseType())
+			{
+				Space();
+				TextBuilder.Append(':');
+				Space();
+
+				Name(type.BaseType!, SymbolName.Substituted);
+				hasBegun = true;
+			}
+
+			if(interfaces.Length == 0)
+			{
+				return this;
+			}
+
+			if(hasBegun)
+			{
+				CommaSpace();
+			}
+			else
+			{
+				Space();
+				TextBuilder.Append(':');
+				Space();
+			}
+
+			Name(interfaces[0], SymbolName.Substituted);
+
+			for (int i = 1; i < interfaces.Length; i++)
+			{
+				CommaSpace();
+				Name(interfaces[i], SymbolName.Substituted);
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a list of base <paramref name="types"/>.
+		/// </summary>
+		/// <param name="types">Collection of <see cref="INamedTypeSymbol"/> to write.</param>
+		public CodeBuilder BaseTypeList(IEnumerable<INamedTypeSymbol> types)
+		{
+			return BaseTypeList(types.ToImmutableArray());
+		}
+
+		/// <summary>
+		/// Writes a list of base <paramref name="types"/>.
+		/// </summary>
+		/// <param name="types">Collection of <see cref="INamedTypeSymbol"/> to write.</param>
+		public CodeBuilder BaseTypeList(ImmutableArray<INamedTypeSymbol> types)
+		{
+			InitBuilder();
+
+			if (types.Length == 0)
+			{
+				return this;
+			}
+
+			TextBuilder.Append(':');
+			Space();
+
+			Name(types[0], SymbolName.Substituted);
+
+			for (int i = 1; i < types.Length; i++)
+			{
+				CommaSpace();
+				Name(types[i], SymbolName.Substituted);
+			}
+
+			return this;
+		}
+
+		/// <summary>
 		/// Begins declaration of an anonymous function.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
@@ -75,6 +193,8 @@ namespace Durian.Analysis
 		/// <param name="explicitType">Determines whether to apply explicit return type.</param>
 		public CodeBuilder BeginAnonymousFunction(IMethodSymbol method, AnonymousFunctionBody functionBody = AnonymousFunctionBody.Expression, bool explicitType = false)
 		{
+			InitBuilder();
+
 			if (method.IsStatic)
 			{
 				TextBuilder.Append("static ");
@@ -93,7 +213,7 @@ namespace Durian.Analysis
 			{
 				if (explicitType)
 				{
-					WriteReturnType(method);
+					ReturnType(method);
 				}
 
 				ImmutableArray<IParameterSymbol> parameters = method.Parameters;
@@ -105,18 +225,17 @@ namespace Durian.Analysis
 				}
 				else if (parameters.Length == 1)
 				{
-					TextBuilder.Append(method.Parameters[0].GetVerbatimName());
+					SimpleName(method.Parameters[0]);
 				}
 				else
 				{
 					TextBuilder.Append('(');
-					TextBuilder.Append(method.Parameters[0].GetVerbatimName());
+					SimpleName(method.Parameters[0]);
 
 					for (int i = 1; i < parameters.Length; i++)
 					{
-						TextBuilder.Append(',');
-						TextBuilder.Append(' ');
-						TextBuilder.Append(method.Parameters[i].GetVerbatimName());
+						CommaSpace();
+						SimpleName(method.Parameters[i]);
 					}
 
 					TextBuilder.Append(')');
@@ -126,23 +245,23 @@ namespace Durian.Analysis
 			switch (functionBody)
 			{
 				case AnonymousFunctionBody.Block:
-					TextBuilder.Append(' ');
+					Space();
 					TextBuilder.Append('=');
 					TextBuilder.Append('>');
-					TextBuilder.Append(' ');
-					TextBuilder.AppendLine();
-					BeginScope();
+					Space();
+					NewLine();
+					BeginBlock();
 					break;
 
 				case AnonymousFunctionBody.Expression:
-					TextBuilder.Append(' ');
+					Space();
 					TextBuilder.Append('=');
 					TextBuilder.Append('>');
-					TextBuilder.Append(' ');
+					Space();
 					break;
 
 				case AnonymousFunctionBody.Method:
-					BeginScope();
+					BeginBlock();
 					break;
 
 				default:
@@ -154,6 +273,56 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Begins declaration of a class.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
+		public CodeBuilder BeginClass(INamedTypeSymbol type)
+		{
+			Accessibility(type);
+
+			if (type.IsStatic)
+			{
+				TextBuilder.Append("static ");
+			}
+			else if (type.IsAbstract)
+			{
+				TextBuilder.Append("abstract ");
+			}
+			else if (type.IsSealed)
+			{
+				TextBuilder.Append("sealed ");
+			}
+
+			if (type.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
+
+			if (type.IsPartial())
+			{
+				TextBuilder.Append("partial ");
+			}
+
+			TextBuilder.Append("class ");
+
+			SimpleName(type);
+
+			if (type.IsGenericType)
+			{
+				TypeParameterList(type.TypeParameters);
+				BaseTypeList(type);
+				ConstraintList(type.TypeParameters);
+			}
+			else
+			{
+				BaseTypeList(type);
+			}
+
+			NewLine();
+			return BeginBlock();
+		}
+
+		/// <summary>
 		/// Begins declaration of a constructor.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
@@ -161,16 +330,15 @@ namespace Durian.Analysis
 		public CodeBuilder BeginConstructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
 			Accessibility(method);
-			TextBuilder.Append(' ');
 
 			if (method.IsUnsafe())
 			{
 				TextBuilder.Append("unsafe ");
 			}
 
-			TextBuilder.Append(method.ContainingType.GetVerbatimName());
+			SimpleName(method.ContainingType);
 
-			ParameterList(method.Parameters, method.IsVararg);
+			ParameterList(method);
 			BeginMethodBody(methodBody);
 
 			return this;
@@ -184,16 +352,15 @@ namespace Durian.Analysis
 		public CodeBuilder BeginConstructorWithInitializer(IMethodSymbol method, ConstructorInitializer initializer = ConstructorInitializer.None)
 		{
 			Accessibility(method);
-			TextBuilder.Append(' ');
 
 			if (method.IsUnsafe())
 			{
 				TextBuilder.Append("unsafe ");
 			}
 
-			TextBuilder.Append(method.ContainingType.GetVerbatimName());
+			SimpleName(method.ContainingType);
 
-			ParameterList(method.Parameters, method.IsVararg);
+			ParameterList(method);
 
 			switch (initializer)
 			{
@@ -218,14 +385,14 @@ namespace Durian.Analysis
 		{
 			Accessibility(method);
 
-			TextBuilder.Append(" static ");
+			TextBuilder.Append("static ");
 
 			if (method.IsUnsafe())
 			{
 				TextBuilder.Append("unsafe ");
 			}
 
-			if (method.Name == "op_Implicit")
+			if (method.Name == WellKnownMemberNames.ImplicitConversionName)
 			{
 				TextBuilder.Append("implicit ");
 			}
@@ -238,26 +405,56 @@ namespace Durian.Analysis
 
 			Type(method.ReturnType);
 
-			ParameterList(method.Parameters, method.IsVararg);
+			ParameterList(method);
 			BeginMethodBody(methodBody);
 
 			return this;
 		}
 
+		/// <summary>
+		/// Begins declaration of a method of any valid kind.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		/// <exception cref="ArgumentException"><paramref name="method"/> is of kind does not support declarations.</exception>
 		public CodeBuilder BeginDeclaration(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
 			return method.MethodKind switch
 			{
-				MethodKind.Ordinary or MethodKind.ReducedExtension => BeginMethod(method, methodBody),
+				MethodKind.Ordinary => BeginMethod(method, methodBody),
+				MethodKind.ReducedExtension => BeginMethod(method.ReducedFrom!, methodBody),
 				MethodKind.StaticConstructor => BeginStaticConstructor(method, methodBody),
 				MethodKind.LocalFunction => BeginLocalFunction(method, methodBody),
 				MethodKind.Conversion => BeginConversionOperator(method, methodBody),
 				MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator => BeginOperator(method, methodBody),
 				MethodKind.ExplicitInterfaceImplementation => BeginExplicitInterfaceImplementation(method, methodBody),
-				MethodKind.LambdaMethod => BeginAnonymousFunction(method, AnalysisUtilities.ConvertEnum(methodBody)),
+				MethodKind.LambdaMethod => BeginAnonymousFunction(method, methodBody.AsAnonymousFunction()),
 				MethodKind.Destructor => BeginDestructor(method, methodBody),
 				MethodKind.Constructor => BeginConstructor(method, methodBody),
-				_ => throw new ArgumentException($"Method '{method}' does not support declaration", nameof(method))
+				_ => throw new ArgumentException($"Method '{method}' is of kind that does not support declarations", nameof(method))
+			};
+		}
+
+		/// <summary>
+		/// Begins declaration of a type of any valid kind.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
+		/// <exception cref="ArgumentException"><paramref name="type"/> is of kind does not support declarations.</exception>
+		public CodeBuilder BeginDeclaration(INamedTypeSymbol type)
+		{
+			if (type.IsRecord)
+			{
+				return BeginRecord(type);
+			}
+
+			return type.TypeKind switch
+			{
+				TypeKind.Class => BeginClass(type),
+				TypeKind.Struct => BeginStruct(type),
+				TypeKind.Enum => BeginEnum(type),
+				TypeKind.Delegate => Delegate(type),
+				TypeKind.Interface => BeginInterface(type),
+				_ => throw new ArgumentException($"Type '{type}' is of kind that does not support declarations", nameof(type))
 			};
 		}
 
@@ -268,17 +465,44 @@ namespace Durian.Analysis
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder BeginDestructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
+			InitBuilder();
+
 			if (method.IsUnsafe())
 			{
 				TextBuilder.Append("unsafe ");
 			}
 
 			TextBuilder.Append('~');
-			TextBuilder.Append(method.ContainingType.GetVerbatimName());
+			SimpleName(method.ContainingType);
 			TextBuilder.Append('(');
 			TextBuilder.Append(')');
 
 			BeginMethodBody(methodBody);
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins declaration of an enum.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
+		public CodeBuilder BeginEnum(INamedTypeSymbol type)
+		{
+			Accessibility(type);
+			TextBuilder.Append("enum ");
+			SimpleName(type);
+
+			if(type.EnumUnderlyingType is not null && type.EnumUnderlyingType.SpecialType == SpecialType.System_Int32)
+			{
+				Space();
+				TextBuilder.Append(':');
+				Space();
+
+				TextBuilder.Append(type.EnumUnderlyingType.SpecialType.GetKeyword()!);
+			}
+
+			NewLine();
+			BeginBlock();
 
 			return this;
 		}
@@ -290,6 +514,8 @@ namespace Durian.Analysis
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder BeginExplicitInterfaceImplementation(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
+			InitBuilder();
+
 			if (method.IsReadOnly)
 			{
 				TextBuilder.Append("readonly ");
@@ -320,12 +546,60 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Begins an attribute list.
+		/// </summary>
+		/// <param name="type">Type of first attribute in the list.</param>
+		public CodeBuilder BeginAttributeList(INamedTypeSymbol type)
+		{
+			TextBuilder.Append('[');
+			return Name(type);
+		}
+
+		/// <summary>
+		/// Begins declaration of an interface.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
+		public CodeBuilder BeginInterface(INamedTypeSymbol type)
+		{
+			Accessibility(type);
+
+			if(type.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
+
+			if(type.IsPartial())
+			{
+				TextBuilder.Append("partial ");
+			}
+
+			TextBuilder.Append("interface ");
+			SimpleName(type);
+
+			if (type.IsGenericType)
+			{
+				TypeParameterList(type.TypeParameters, true);
+				BaseTypeList(type.Interfaces);
+				ConstraintList(type.TypeParameters);
+			}
+			else
+			{
+				BaseTypeList(type.Interfaces);
+			}
+
+			NewLine();
+			return BeginBlock();
+		}
+
+		/// <summary>
 		/// Begins declaration of a local function.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder BeginLocalFunction(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
+			InitBuilder();
+
 			if (method.IsStatic)
 			{
 				TextBuilder.Append("static ");
@@ -357,14 +631,7 @@ namespace Durian.Analysis
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder BeginMethod(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
-			if (method.ReducedFrom is not null)
-			{
-				method = method.ReducedFrom;
-			}
-
 			Accessibility(method);
-
-			TextBuilder.Append(' ');
 
 			if (method.IsStatic)
 			{
@@ -424,11 +691,13 @@ namespace Durian.Analysis
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder BeginMethodBody(MethodBody methodBody)
 		{
+			InitBuilder();
+
 			switch (methodBody)
 			{
 				case MethodBody.Block:
-					TextBuilder.AppendLine();
-					BeginScope();
+					NewLine();
+					BeginBlock();
 					break;
 
 				case MethodBody.Expression:
@@ -437,7 +706,7 @@ namespace Durian.Analysis
 
 				default:
 					TextBuilder.Append(';');
-					TextBuilder.AppendLine();
+					NewLine();
 					break;
 			}
 
@@ -448,23 +717,52 @@ namespace Durian.Analysis
 		/// Begins declaration of a <paramref name="namespace"/>.
 		/// </summary>
 		/// <param name="namespace"><see cref="INamespaceSymbol"/> to begin declaration of.</param>
+		/// <param name="includeParent">Determines whether to include parent namespaces in the declaration.</param>
 		/// <param name="type">Type of namespace declaration to write.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
-		public CodeBuilder BeginNamespace(INamespaceSymbol @namespace, NamespaceScope type = NamespaceScope.Default)
+		public CodeBuilder BeginNamespace(INamespaceSymbol @namespace, bool includeParent = true, NamespaceScope type = NamespaceScope.Default)
 		{
-			Indent();
-			TextBuilder.Append("namespace ");
-			TextBuilder.WriteNamespacesOf(@namespace, true);
+			InitBuilder();
 
-			if (type == NamespaceScope.File)
+			TextBuilder.Append("namespace ");
+
+			if(includeParent && @namespace.ContainingNamespace is not null)
 			{
-				TextBuilder.Append(';');
-				TextBuilder.AppendLine();
+				foreach (INamespaceSymbol parent in @namespace.ContainingNamespace.GetContainingNamespaces())
+				{
+					SimpleName(parent);
+					TextBuilder.Append('.');
+				}
+
+				SimpleName(@namespace.ContainingNamespace);
 			}
-			else
+
+			switch (type)
 			{
-				TextBuilder.AppendLine();
-				BeginScope();
+				case NamespaceScope.Default:
+					TextBuilder.Append('.');
+					SimpleName(@namespace);
+					NewLine();
+					BeginBlock();
+					break;
+
+				case NamespaceScope.File:
+					TextBuilder.Append('.');
+					SimpleName(@namespace);
+					TextBuilder.Append(';');
+					NewLine();
+					break;
+
+				case NamespaceScope.Nested:
+					NewLine();
+					BeginBlock();
+					Indent();
+					SimpleName(@namespace);
+					NewLine();
+					BeginBlock();
+					break;
+
+				default:
+					goto case NamespaceScope.Default;
 			}
 
 			return this;
@@ -479,7 +777,7 @@ namespace Durian.Analysis
 		{
 			Accessibility(method);
 
-			TextBuilder.Append(" static ");
+			TextBuilder.Append("static ");
 
 			if (method.IsUnsafe())
 			{
@@ -495,10 +793,53 @@ namespace Durian.Analysis
 				TextBuilder.Append(operatorName);
 			}
 
-			ParameterList(method.Parameters, method.IsVararg);
+			ParameterList(method);
 			BeginMethodBody(methodBody);
 
 			return this;
+		}
+
+		/// <summary>
+		/// Begins declaration of a record.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
+		/// <param name="explicitClass">Determines whether to write the <see langword="class"/> keyword if this <paramref name="type"/> is a reference type.</param>
+		public CodeBuilder BeginRecord(INamedTypeSymbol type, bool explicitClass = false)
+		{
+			Accessibility(type);
+
+			if(type.IsReadOnly)
+			{
+				TextBuilder.Append("readonly ");
+			}
+
+			if (type.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
+
+			if (type.IsPartial())
+			{
+				TextBuilder.Append("partial ");
+			}
+
+			TextBuilder.Append("record ");
+
+			if(type.IsValueType)
+			{
+				TextBuilder.Append("struct ");
+			}
+			else if(explicitClass)
+			{
+				TextBuilder.Append("class ");
+			}
+
+			SimpleName(type);
+			type.constructor
+			if(type.IsGenericType)
+			{
+				TypeParameterList(type.TypeParameters);
+			}
 		}
 
 		/// <summary>
@@ -508,6 +849,8 @@ namespace Durian.Analysis
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder BeginStaticConstructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
 		{
+			InitBuilder();
+
 			TextBuilder.Append("static ");
 
 			if (method.IsUnsafe())
@@ -515,7 +858,7 @@ namespace Durian.Analysis
 				TextBuilder.Append("unsafe ");
 			}
 
-			TextBuilder.Append(method.ContainingType.GetVerbatimName());
+			SimpleName(method.ContainingType);
 			TextBuilder.Append('(');
 			TextBuilder.Append(')');
 
@@ -525,11 +868,59 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Begins declaration of a struct.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
+		public CodeBuilder BeginStruct(INamedTypeSymbol type)
+		{
+			Accessibility(type);
+
+			if (type.IsReadOnly)
+			{
+				TextBuilder.Append("readonly ");
+			}
+
+			if (type.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
+
+			if (type.IsRefLikeType)
+			{
+				TextBuilder.Append("ref ");
+			}
+
+			if (type.IsPartial())
+			{
+				TextBuilder.Append("partial ");
+			}
+
+			TextBuilder.Append("struct ");
+			SimpleName(type);
+
+			if (type.IsGenericType)
+			{
+				TypeParameterList(type.TypeParameters);
+				BaseTypeList(type);
+				ConstraintList(type.TypeParameters);
+			}
+			else
+			{
+				BaseTypeList(type);
+			}
+
+			NewLine();
+			return BeginBlock();
+		}
+
+		/// <summary>
 		/// Writes constraint of the specified <paramref name="typeParameter"/>.
 		/// </summary>
 		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to write the constraint of.</param>
 		public CodeBuilder Constraint(ITypeParameterSymbol typeParameter)
 		{
+			InitBuilder();
+
 			bool hasConstraint = false;
 
 			if (typeParameter.HasReferenceTypeConstraint)
@@ -569,8 +960,7 @@ namespace Durian.Analysis
 
 				for (int i = 1; i < constraintTypes.Length; i++)
 				{
-					TextBuilder.Append(',');
-					TextBuilder.Append(' ');
+					CommaSpace();
 					Type(constraintTypes[i], nullables[i]);
 				}
 			}
@@ -587,8 +977,7 @@ namespace Durian.Analysis
 			{
 				if (hasConstraint)
 				{
-					TextBuilder.Append(',');
-					TextBuilder.Append(' ');
+					CommaSpace();
 					hasConstraint = true;
 				}
 			}
@@ -598,30 +987,90 @@ namespace Durian.Analysis
 		/// Writes a list of constraints of the specified <paramref name="typeParameters"/>.
 		/// </summary>
 		/// <param name="typeParameters">Collection of <see cref="ITypeParameterSymbol"/> to write the constraints of.</param>
-		public CodeBuilder ConstraintList(ITypeParameterSymbol[] typeParameters)
+		public CodeBuilder ConstraintList(IEnumerable<ITypeParameterSymbol> typeParameters)
 		{
-			if (typeParameters.Length == 0)
+			InitBuilder();
+
+			foreach (ITypeParameterSymbol typeParameter in typeParameters)
 			{
-				return this;
+				if (typeParameter.HasConstraint())
+				{
+					TextBuilder.Append(" where ");
+					SimpleName(typeParameter);
+					TextBuilder.Append(':');
+					Space();
+					Constraint(typeParameter);
+				}
 			}
 
-			return ConstraintList(typeParameters.ToImmutableArray());
+			return this;
 		}
 
 		/// <summary>
-		/// Writes a list of constraints of the specified <paramref name="typeParameters"/>.
+		/// Writes default value of the specified <paramref name="parameter"/>.
 		/// </summary>
-		/// <param name="typeParameters">Collection of <see cref="ITypeParameterSymbol"/> to write the constraints of.</param>
-		public CodeBuilder ConstraintList(ImmutableArray<ITypeParameterSymbol> typeParameters)
+		/// <param name="parameter"><see cref="IParameterSymbol"/> to write the default value of.</param>
+		public CodeBuilder DefaultValue(IParameterSymbol parameter)
 		{
-			foreach (ITypeParameterSymbol typeParameter in typeParameters)
+			InitBuilder();
+
+			if (parameter.HasExplicitDefaultValue)
 			{
-				TextBuilder.Append(" where ");
-				TextBuilder.Append(typeParameters[0].GetVerbatimName());
-				TextBuilder.Append(':');
-				TextBuilder.Append(' ');
-				Constraint(typeParameter);
+				Space();
+				TextBuilder.Append('=');
+				Space();
+
+				if (parameter.ExplicitDefaultValue is null)
+				{
+					TextBuilder.Append("default");
+				}
+				else
+				{
+					TextBuilder.Append(parameter.ExplicitDefaultValue.ToString());
+				}
 			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a delegate declaration.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to write the declaration of.</param>
+		/// <exception cref="ArgumentException"><see cref="INamedTypeSymbol.DelegateInvokeMethod"/> cannot be <see langword="null"/>.</exception>
+		public CodeBuilder Delegate(INamedTypeSymbol type)
+		{
+			if(type.DelegateInvokeMethod is null)
+			{
+				throw new ArgumentException("DelegateInvokeMethod cannot be null", nameof(type));
+			}
+
+			Accessibility(type);
+
+			if(type.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
+
+			TextBuilder.Append("delegate ");
+
+			ReturnType(type.DelegateInvokeMethod);
+
+			SimpleName(type);
+
+			if (type.IsGenericType)
+			{
+				TypeParameterList(type.TypeParameters, true);
+				ParameterList(type.DelegateInvokeMethod);
+				ConstraintList(type.TypeParameters);
+			}
+			else
+			{
+				ParameterList(type.DelegateInvokeMethod);
+			}
+
+			TextBuilder.Append(';');
+			NewLine();
 
 			return this;
 		}
@@ -632,20 +1081,19 @@ namespace Durian.Analysis
 		/// <param name="type"><see cref="IDynamicTypeSymbol"/> to write.</param>
 		public CodeBuilder Dynamic(IDynamicTypeSymbol type)
 		{
-			TextBuilder.Append("dynamic");
-			ApplyNullable(type);
-
-			return this;
+			return Dynamic(type.NullableAnnotation);
 		}
 
 		/// <summary>
 		/// Writes the <see langword="dynamic"/> type.
 		/// </summary>
 		/// <param name="annotation"><see cref="NullableAnnotation"/> that should be used.</param>>
-		public CodeBuilder Dynamic(NullableAnnotation annotation)
+		public CodeBuilder Dynamic(NullableAnnotation annotation = default)
 		{
+			InitBuilder();
+
 			TextBuilder.Append("dynamic");
-			ApplyNullable(annotation);
+			Nullability(annotation);
 			return this;
 		}
 
@@ -655,6 +1103,8 @@ namespace Durian.Analysis
 		/// <param name="pointer"><see cref="IFunctionPointerTypeSymbol"/> to write.</param>
 		public CodeBuilder FunctionPointer(IFunctionPointerTypeSymbol pointer)
 		{
+			InitBuilder();
+
 			IMethodSymbol signature = pointer.Signature;
 
 			TextBuilder.Append("delegate*");
@@ -700,25 +1150,80 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Writes name of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to write the name of.</param>
+		/// <param name="format">Format of the name.</param>
+		public CodeBuilder Name(ISymbol symbol, SymbolName format = default)
+		{
+			InitBuilder();
+
+			if (symbol is INamedTypeSymbol type && KeywordType(type, format == SymbolName.SystemName))
+			{
+				return this;
+			}
+
+			switch (format)
+			{
+				case SymbolName.Default:
+					SimpleName(symbol);
+					break;
+
+				case SymbolName.Generic:
+					GenericName(symbol, false, false);
+					break;
+
+				case SymbolName.VarianceGeneric:
+					GenericName(symbol, false, true);
+					break;
+
+				case SymbolName.Substituted:
+					GenericName(symbol, true, false);
+					break;
+
+				default:
+					goto case SymbolName.Default;
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes nullability marker '?' if the specified <paramref name="type"/> is nullable.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to write the nullability of.</param>
+		public CodeBuilder Nullability(ITypeSymbol type)
+		{
+			return Nullability(type.NullableAnnotation);
+		}
+
+		/// <summary>
+		/// Writes nullability marker if the <paramref name="annotation"/> is equal to <see cref="NullableAnnotation.Annotated"/>.
+		/// </summary>
+		/// <param name="annotation"><see cref="NullableAnnotation"/> to write.</param>
+		public CodeBuilder Nullability(NullableAnnotation annotation)
+		{
+			InitBuilder();
+
+			if (annotation == NullableAnnotation.Annotated)
+			{
+				TextBuilder.Append('?');
+			}
+
+			return this;
+		}
+
+		/// <summary>
 		/// Writes the specified <paramref name="parameter"/>.
 		/// </summary>
 		/// <param name="parameter"><see cref="IParameterSymbol"/> to write.</param>
 		public CodeBuilder Parameter(IParameterSymbol parameter)
 		{
-			if (parameter.IsDiscard)
-			{
-				TextBuilder.Append('_');
-				return this;
-			}
+			InitBuilder();
 
 			if (parameter.IsThis)
 			{
 				TextBuilder.Append("this ");
-			}
-
-			if (parameter.IsParams)
-			{
-				TextBuilder.Append("params ");
 			}
 
 			if (parameter.RefKind != RefKind.None)
@@ -739,24 +1244,31 @@ namespace Durian.Analysis
 				}
 			}
 
-			Type(parameter.Type);
-
-			if (parameter.HasExplicitDefaultValue)
+			if (parameter.IsDiscard)
 			{
-				TextBuilder.Append('=');
-				TextBuilder.Append(' ');
-
-				if (parameter.ExplicitDefaultValue is null)
-				{
-					TextBuilder.Append("default");
-				}
-				else
-				{
-					TextBuilder.Append(parameter.ExplicitDefaultValue.ToString());
-				}
+				TextBuilder.Append('_');
+				return this;
 			}
 
+			if (parameter.IsParams)
+			{
+				TextBuilder.Append("params ");
+			}
+
+			Type(parameter.Type);
+			SimpleName(parameter);
+			DefaultValue(parameter);
+
 			return this;
+		}
+
+		/// <summary>
+		/// Writes parameter list of the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to write the parameter list of.</param>
+		public CodeBuilder ParameterList(IMethodSymbol method)
+		{
+			return ParameterList(method.Parameters, method.IsVararg);
 		}
 
 		/// <summary>
@@ -766,6 +1278,8 @@ namespace Durian.Analysis
 		/// <param name="isArgList">Determines whether the <see langword="__arglist"/> should be written in the parameter list.</param>
 		public CodeBuilder ParameterList(ImmutableArray<IParameterSymbol> parameters, bool isArgList = false)
 		{
+			InitBuilder();
+
 			TextBuilder.Append('(');
 
 			if (parameters.Length > 0)
@@ -774,15 +1288,13 @@ namespace Durian.Analysis
 
 				for (int i = 1; i < parameters.Length; i++)
 				{
-					TextBuilder.Append(',');
-					TextBuilder.Append(' ');
+					CommaSpace();
 					Parameter(parameters[i]);
 				}
 
 				if (isArgList)
 				{
-					TextBuilder.Append(',');
-					TextBuilder.Append(' ');
+					CommaSpace();
 					TextBuilder.Append("__arglist");
 				}
 			}
@@ -801,13 +1313,8 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="parameters">Collection of <see cref="IParameterSymbol"/> to write.</param>
 		/// <param name="isArgList">Determines whether the <see langword="__arglist"/> should be written in the parameter list.</param>
-		public CodeBuilder ParameterList(IParameterSymbol[] parameters, bool isArgList = false)
+		public CodeBuilder ParameterList(IEnumerable<IParameterSymbol> parameters, bool isArgList = false)
 		{
-			if (parameters.Length == 0)
-			{
-				return this;
-			}
-
 			return ParameterList(parameters.ToImmutableArray(), isArgList);
 		}
 
@@ -819,6 +1326,36 @@ namespace Durian.Analysis
 		{
 			Type(pointer.PointedAtType);
 			TextBuilder.Append('*');
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes the return type of the specified <paramref name="method"/> (including the <see langword="ref"/> and <see langword="ref"/> <see langword="readonly"/> modifiers).
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to write the return type of.</param>
+		public CodeBuilder ReturnType(IMethodSymbol method)
+		{
+			InitBuilder();
+
+			if (method.ReturnsVoid)
+			{
+				TextBuilder.Append("void ");
+			}
+			else
+			{
+				if (method.ReturnsByRefReadonly)
+				{
+					TextBuilder.Append("ref readonly ");
+				}
+				else if (method.ReturnsByRef)
+				{
+					TextBuilder.Append("ref ");
+				}
+
+				Type(method.ReturnType);
+				Space();
+			}
 
 			return this;
 		}
@@ -839,6 +1376,8 @@ namespace Durian.Analysis
 		/// <param name="annotation"><see cref="NullableAnnotation"/> that should be used instead of the <paramref name="type"/>'s actual <see cref="NullableAnnotation"/>.</param>>
 		public CodeBuilder Type(ITypeSymbol type, NullableAnnotation annotation)
 		{
+			InitBuilder();
+
 			switch (type)
 			{
 				case INamedTypeSymbol named:
@@ -860,8 +1399,8 @@ namespace Durian.Analysis
 					return TypeParameter(typeParameter, annotation);
 
 				default:
-					TextBuilder.Append(type.GetVerbatimName());
-					ApplyNullable(annotation);
+					SimpleName(type);
+					Nullability(annotation);
 					return this;
 			}
 		}
@@ -884,27 +1423,15 @@ namespace Durian.Analysis
 		{
 			if (type.IsNullableValueType())
 			{
-				WriteTypeName(type.TypeArguments[0]);
+				Name(type.TypeArguments[0], SymbolName.Substituted);
 				TextBuilder.Append('?');
 				return this;
 			}
 
-			WriteTypeName(type);
-			ApplyNullable(annotation);
+			Name(type, SymbolName.Substituted);
+			Nullability(annotation);
 
 			return this;
-
-			void WriteTypeName(ITypeSymbol type)
-			{
-				if (type.SpecialType == SpecialType.None)
-				{
-					TextBuilder.WriteGenericName(type, GenericSubstitution.TypeArguments);
-				}
-				else
-				{
-					TextBuilder.Append(AnalysisUtilities.TypeToKeyword(type.Name));
-				}
-			}
 		}
 
 		/// <summary>
@@ -913,6 +1440,8 @@ namespace Durian.Analysis
 		/// <param name="typeArguments">Collection of <see cref="ITypeSymbol"/> to write.</param>
 		public CodeBuilder TypeArgumentList(ImmutableArray<ITypeSymbol> typeArguments)
 		{
+			InitBuilder();
+
 			if (typeArguments.Length == 0)
 			{
 				return this;
@@ -923,8 +1452,7 @@ namespace Durian.Analysis
 
 			for (int i = 1; i < typeArguments.Length; i++)
 			{
-				TextBuilder.Append(' ');
-				TextBuilder.Append(',');
+				CommaSpace();
 				Type(typeArguments[0]);
 			}
 
@@ -937,7 +1465,7 @@ namespace Durian.Analysis
 		/// Writes a list of specified <paramref name="typeArguments"/>.
 		/// </summary>
 		/// <param name="typeArguments">Collection of <see cref="ITypeSymbol"/> to write.</param>
-		public CodeBuilder TypeArgumentList(ITypeSymbol[] typeArguments)
+		public CodeBuilder TypeArgumentList(IEnumerable<ITypeSymbol> typeArguments)
 		{
 			return TypeArgumentList(typeArguments.ToImmutableArray());
 		}
@@ -958,8 +1486,10 @@ namespace Durian.Analysis
 		/// <param name="annotation"><see cref="NullableAnnotation"/> that should be used instead of the <paramref name="typeParameter"/>'s actual <see cref="NullableAnnotation"/>.</param>>
 		public CodeBuilder TypeParameter(ITypeParameterSymbol typeParameter, NullableAnnotation annotation)
 		{
-			TextBuilder.Append(typeParameter.GetVerbatimName());
-			ApplyNullable(annotation);
+			InitBuilder();
+
+			SimpleName(typeParameter);
+			Nullability(annotation);
 
 			return this;
 		}
@@ -968,21 +1498,39 @@ namespace Durian.Analysis
 		/// Writes a list of specified <paramref name="typeParameters"/>.
 		/// </summary>
 		/// <param name="typeParameters">Collection of <see cref="ITypeParameterSymbol"/> to write.</param>
-		public CodeBuilder TypeParameterList(ImmutableArray<ITypeParameterSymbol> typeParameters)
+		/// <param name="includeVariance">Determines whether to include variance of the <paramref name="typeParameters"/>.</param>
+		public CodeBuilder TypeParameterList(ImmutableArray<ITypeParameterSymbol> typeParameters, bool includeVariance = false)
 		{
+			InitBuilder();
+
 			if (typeParameters.Length == 0)
 			{
 				return this;
 			}
 
 			TextBuilder.Append('<');
-			TextBuilder.Append(typeParameters[0].GetVerbatimName());
 
-			for (int i = 1; i < typeParameters.Length; i++)
+			if (includeVariance)
 			{
-				TextBuilder.Append(' ');
-				TextBuilder.Append(',');
-				TextBuilder.Append(typeParameters[i].GetVerbatimName());
+				Variance(typeParameters[0]);
+				SimpleName(typeParameters[0]);
+
+				for (int i = 1; i < typeParameters.Length; i++)
+				{
+					CommaSpace();
+					Variance(typeParameters[i]);
+					SimpleName(typeParameters[i]);
+				}
+			}
+			else
+			{
+				SimpleName(typeParameters[0]);
+
+				for (int i = 1; i < typeParameters.Length; i++)
+				{
+					CommaSpace();
+					SimpleName(typeParameters[i]);
+				}
 			}
 
 			TextBuilder.Append('>');
@@ -994,78 +1542,130 @@ namespace Durian.Analysis
 		/// Writes all specified <paramref name="typeParameters"/>.
 		/// </summary>
 		/// <param name="typeParameters">Collection of <see cref="ITypeParameterSymbol"/> to write.</param>
-		public CodeBuilder TypeParameterList(ITypeParameterSymbol[] typeParameters)
+		///  <param name="includeVariance">Determines whether to include variance of the <paramref name="typeParameters"/>.</param>
+		public CodeBuilder TypeParameterList(IEnumerable<ITypeParameterSymbol> typeParameters, bool includeVariance = false)
 		{
-			if (typeParameters.Length == 0)
-			{
-				return this;
-			}
-
-			return TypeParameterList(typeParameters.ToImmutableArray());
+			return TypeParameterList(typeParameters.ToImmutableArray(), includeVariance);
 		}
 
-		private void Accessibility(ISymbol symbol)
+		/// <summary>
+		/// Writes variance of the specified <paramref name="typeParameter"/>.
+		/// </summary>
+		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to write the variance of.</param>
+		public CodeBuilder Variance(ITypeParameterSymbol typeParameter)
 		{
-			if (AnalysisUtilities.GetText(symbol.DeclaredAccessibility) is string keyword)
+			return Variance(typeParameter.Variance);
+		}
+
+		/// <summary>
+		/// Writes the specified <paramref name="variance"/>.
+		/// </summary>
+		/// <param name="variance">Kind of variance to write.</param>
+		public CodeBuilder Variance(VarianceKind variance)
+		{
+			InitBuilder();
+
+			if (variance.GetText() is string value)
+			{
+				TextBuilder.Append(value);
+			}
+
+			return this;
+		}
+
+		private void GenericName(ISymbol symbol, bool parametersOrArguments, bool includeVariance)
+		{
+			if (symbol is INamedTypeSymbol t)
+			{
+				GenericName(t, parametersOrArguments, includeVariance);
+			}
+			else if (symbol is IMethodSymbol m)
+			{
+				GenericName(m, includeVariance, includeVariance);
+			}
+			else
+			{
+				TextBuilder.Append(symbol.GetVerbatimName());
+			}
+		}
+
+		private void GenericName(INamedTypeSymbol type, bool parametersOrArguments, bool includeVariance)
+		{
+			SimpleName(type);
+
+			if (parametersOrArguments)
+			{
+				TypeParameterList(type.TypeParameters, includeVariance);
+			}
+			else
+			{
+				TypeArgumentList(type.TypeArguments);
+			}
+		}
+
+		private void GenericName(IMethodSymbol method, bool parametersOrArguments, bool includeVariance)
+		{
+			SimpleName(method);
+
+			if (parametersOrArguments)
+			{
+				TypeParameterList(method.TypeParameters, includeVariance);
+			}
+			else
+			{
+				TypeArgumentList(method.TypeArguments);
+			}
+		}
+
+		private bool KeywordType(INamedTypeSymbol type, bool useSystemName)
+		{
+			if (useSystemName)
+			{
+				if (type is IDynamicTypeSymbol)
+				{
+					TextBuilder.Append("Object");
+					return true;
+				}
+				else if (type.SpecialType.IsKeyword())
+				{
+					TextBuilder.Append(type.Name);
+					return true;
+				}
+
+				return false;
+			}
+
+			if (type.GetTypeKeyword() is string keyword)
 			{
 				TextBuilder.Append(keyword);
+				return true;
 			}
+
+			return false;
 		}
 
-		private void ApplyNullable(ITypeSymbol type)
+		private void SimpleName(ISymbol symbol)
 		{
-			ApplyNullable(type.NullableAnnotation);
-		}
-
-		private void ApplyNullable(NullableAnnotation annotation)
-		{
-			if (annotation == NullableAnnotation.Annotated)
-			{
-				TextBuilder.Append('?');
-			}
+			TextBuilder.Append(symbol.GetVerbatimName());
 		}
 
 		private void WriteMethodHead(IMethodSymbol method, MethodBody methodBody)
 		{
-			WriteReturnType(method);
-
-			TextBuilder.Append(method.GetVerbatimName());
+			ReturnType(method);
+			SimpleName(method);
 
 			if (method.IsGenericMethod)
 			{
 				TypeParameterList(method.TypeParameters);
-			}
-
-			ParameterList(method.Parameters, method.IsVararg);
-
-			if (method.IsGenericMethod)
-			{
+				ParameterList(method);
 				ConstraintList(method.TypeParameters);
-			}
-
-			BeginMethodBody(methodBody);
-		}
-
-		private void WriteReturnType(IMethodSymbol method)
-		{
-			if (method.ReturnsVoid)
-			{
-				TextBuilder.Append("void ");
 			}
 			else
 			{
-				if (method.ReturnsByRefReadonly)
-				{
-					TextBuilder.Append("ref readonly ");
-				}
-				else if (method.ReturnsByRef)
-				{
-					TextBuilder.Append("ref ");
-				}
-
-				Type(method.ReturnType);
-				TextBuilder.Append(' ');
+				ParameterList(method);
 			}
+
+			BeginMethodBody(methodBody);
 		}
 	}
 }

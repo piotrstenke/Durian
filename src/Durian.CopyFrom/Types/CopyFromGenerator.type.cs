@@ -463,7 +463,7 @@ namespace Durian.Analysis.CopyFrom
 					continue;
 				}
 
-				context.CodeBuilder.EndAllScopes();
+				context.CodeBuilder.EndAllBlocks();
 
 				AddSourceWithOriginal(type.Declaration, partialName, context);
 				isGenerated = true;

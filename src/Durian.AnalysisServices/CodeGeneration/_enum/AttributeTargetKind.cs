@@ -9,18 +9,42 @@ namespace Durian.Analysis.CodeGeneration
 	public enum AttributeTargetKind
 	{
 		/// <summary>
-		/// The attribute targets the member itself.
+		/// Kind not applicable.
 		/// </summary>
-		This = 0,
+		None = 0,
 
 		/// <summary>
-		/// The attribute targets a field behind the member or its return type.
+		/// The attribute targets the member itself. Applicable targets:
+		/// <list type="bullet">
+		/// <item><see langword="field"/> for fields.</item>
+		/// <item><see langword="method"/> for methods.</item>
+		/// <item><see langword="type"/> for types.</item>
+		/// <item><see langword="typevar"/> for type parameters.</item>
+		/// <item><see langword="property"/> for properties.</item>
+		/// <item><see langword="event"/> for events.</item>
+		/// <item><see langword="param"/> for parameters.</item>
+		/// <item><see langword="assembly"/> for assemblies.</item>
+		/// <item><see langword="module"/> for modules.</item>
+		/// </list>
 		/// </summary>
-		FieldOrReturn = 1,
+		This = 1,
 
 		/// <summary>
-		/// The attribute targets a method behind the member or its parameter.
+		/// The attribute targets a the actual value of the member. Applicable targets:
+		/// <list type="bullet">
+		/// <item><see langword="field"/> for properties and events.</item>
+		/// <item><see langword="return"/> for methods, delegates, property getters and event accessors.</item>
+		/// </list>
 		/// </summary>
-		MethodOrParam = 2,
+		Value = 2,
+
+		/// <summary>
+		/// The attribute targets a generated handler member. Applicable targets:
+		/// <list type="bullet">
+		/// <item><see langword="method"/> for events.</item>
+		/// <item><see langword="param"/> for property setters and event accessors.</item>
+		/// </list>
+		/// </summary>
+		Handler = 3,
 	}
 }

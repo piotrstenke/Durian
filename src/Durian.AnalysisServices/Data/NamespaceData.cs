@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Durian.Analysis.CodeGeneration;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -40,6 +43,9 @@ namespace Durian.Analysis.Data
 			}
 		}
 
+		internal CSharpSyntaxNode BaseDeclaration => base.Declaration;
+		internal ISymbol BaseSymbol => base.Symbol;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PropertyData"/> class.
 		/// </summary>
@@ -52,7 +58,11 @@ namespace Durian.Analysis.Data
 		{
 		}
 
-		internal NamespaceData(INamespaceSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		internal NamespaceData(MemberDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
+		{
+		}
+
+		internal NamespaceData(ISymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 
@@ -63,6 +73,7 @@ namespace Durian.Analysis.Data
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="PropertyData"/>.</param>
 		/// <param name="symbol"><see cref="INamespaceSymbol"/> this <see cref="PropertyData"/> represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
 		protected internal NamespaceData(
@@ -70,6 +81,7 @@ namespace Durian.Analysis.Data
 			ICompilationData compilation,
 			INamespaceSymbol symbol,
 			SemanticModel semanticModel,
+			string[]? modifiers = null,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
 			IEnumerable<AttributeData>? attributes = null
 		) : base(
@@ -77,6 +89,7 @@ namespace Durian.Analysis.Data
 			compilation,
 			symbol,
 			semanticModel,
+			modifiers,
 			default,
 			containingNamespaces,
 			attributes
@@ -84,10 +97,32 @@ namespace Durian.Analysis.Data
 		{
 		}
 
-		/// <inheritdoc/>
-		public override IEnumerable<ITypeData> GetContainingTypes()
+		private protected NamespaceData(
+			MemberDeclarationSyntax declaration,
+			ICompilationData compilation,
+			INamespaceOrTypeSymbol symbol,
+			SemanticModel semanticModel,
+			string[]? modifiers = null,
+			IEnumerable<ITypeData>? containingTypes = null,
+			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
+			IEnumerable<AttributeData>? attributes = null
+		) : base(
+			declaration,
+			compilation,
+			symbol,
+			semanticModel,
+			modifiers,
+			containingTypes,
+			containingNamespaces,
+			attributes
+		)
 		{
-			return Array.Empty<ITypeData>();
+		}
+
+		/// <inheritdoc/>
+		public override TypeContainer GetContainingTypes()
+		{
+			return SymbolContainerFactory.Empty<TypeContainer>();
 		}
 	}
 }

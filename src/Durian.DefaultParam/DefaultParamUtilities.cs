@@ -208,7 +208,7 @@ namespace Durian.Analysis.DefaultParam
 			{
 				ref readonly TypeParameterData data = ref parameters.GetDefaultParamAtIndex(i);
 
-				if (data.TargetType is null || data.TargetType.IsPredefined())
+				if (data.TargetType is null || data.TargetType.IsKeyword())
 				{
 					continue;
 				}

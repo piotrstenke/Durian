@@ -302,6 +302,30 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> has default accessibility in the context it is located in:
+		/// <list type="bullet">
+		/// <item>For interface members, the default is <see cref="Accessibility.Public"/>.</item>
+		/// <item>For top-level members, the default is <see cref="Accessibility.Internal"/>.</item>
+		/// <item>For all other members, the default is <see cref="Accessibility.Private"/>.</item>
+		/// </list>
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether has the default accessibility.</param>
+		public static bool HasDefaultAccessibility(this ISymbol symbol)
+		{
+			if(symbol.IsTopLevel())
+			{
+				return symbol.DeclaredAccessibility == Accessibility.Internal;
+			}
+
+			if(symbol.ContainingSymbol is INamedTypeSymbol type && type.TypeKind == TypeKind.Interface)
+			{
+				return symbol.DeclaredAccessibility == Accessibility.Public;
+			}
+
+			return symbol.DeclaredAccessibility == Accessibility.Private;
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="symbol"/> has a documentation.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check if has documentation.</param>
@@ -321,7 +345,7 @@ namespace Durian.Analysis.Extensions
 				return false;
 			}
 
-			return type.BaseType.MetadataName != nameof(Object) && type.BaseType.IsWithinNamespace(nameof(System), false);
+			return type.BaseType.SpecialType != SpecialType.System_Object;
 		}
 
 		/// <summary>
@@ -362,6 +386,24 @@ namespace Durian.Analysis.Extensions
 			};
 
 			return canHaveDocumentation && symbol.HasDocumentation();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> is declared using the <see langword="readonly"/> keyword.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to check whether is declared using the <see langword="readonly"/> keyword.</param>
+		public static bool HasReadOnlyModifier(this IPropertySymbol property)
+		{
+			return property.GetMethod?.IsReadOnly == true && property.SetMethod?.IsReadOnly == true;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> is declared using the <see langword="readonly"/> keyword.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to check whether is declared using the <see langword="readonly"/> keyword.</param>
+		public static bool HasReadOnlyModifier(this IEventSymbol @event)
+		{
+			return @event.AddMethod?.IsReadOnly == true && @event.RemoveMethod?.IsReadOnly == true;
 		}
 
 		/// <summary>
@@ -981,7 +1023,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an explicit conversion operator.</param>
 		public static bool IsExplicitOperator(this IMethodSymbol method)
 		{
-			return method.MethodKind == MethodKind.Conversion && method.Name == "op_Explicit";
+			return method.MethodKind == MethodKind.Conversion && method.Name == WellKnownMemberNames.ExplicitConversionName;
 		}
 
 		/// <summary>
@@ -1023,7 +1065,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an implicit conversion operator.</param>
 		public static bool IsImplicitOperator(this IMethodSymbol method)
 		{
-			return method.MethodKind == MethodKind.Conversion && method.Name == "op_Implicit";
+			return method.MethodKind == MethodKind.Conversion && method.Name == WellKnownMemberNames.ImplicitConversionName;
 		}
 
 		/// <summary>
@@ -1051,20 +1093,34 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the <paramref name="type"/> is a predefined keyword type (e.g. <see cref="string"/>, <see cref="int"/>, <see langword="dynamic"/>).
+		/// </summary>
+		/// <param name="type">Type to check.</param>
+		public static bool IsKeyword(this ITypeSymbol type)
+		{
+			if (type is IDynamicTypeSymbol)
+			{
+				return true;
+			}
+
+			return type.SpecialType.IsKeyword();
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="symbol"/> is declared using the <see langword="new"/> keyword.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check whether is declared using the <see langword="new"/> keyword.</param>
 		public static bool IsNew(this ISymbol symbol)
 		{
-			if(symbol.IsTopLevel())
+			if (symbol.IsTopLevel())
 			{
 				return false;
 			}
 
 #if ENABLE_REFLECTION
-			if (symbol.GetType().GetProperty("IsNew") is PropertyInfo property && property.GetValue(symbol) is bool value)
+			if (CheckReflectionBool(symbol, "IsNew"))
 			{
-				return value;
+				return true;
 			}
 #endif
 
@@ -1237,6 +1293,20 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> is <see langword="partial"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check if is <see langword="partial"/>.</param>
+		public static bool IsPartial(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				INamedTypeSymbol type => type.IsPartial(),
+				IMethodSymbol method => method.IsPartial(true),
+				_ => false
+			};
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="type"/> is <see langword="partial"/>.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is <see langword="partial"/>.</param>
@@ -1246,6 +1316,13 @@ namespace Durian.Analysis.Extensions
 			{
 				return true;
 			}
+
+#if ENABLE_REFLECTION
+			if (CheckReflectionBool(type, "IsPartial"))
+			{
+				return true;
+			}
+#endif
 
 			if (type.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is TypeDeclarationSyntax syntax)
 			{
@@ -1263,9 +1340,9 @@ namespace Durian.Analysis.Extensions
 		public static bool IsPartial(this IMethodSymbol method, bool retrieveNode = false)
 		{
 #if ENABLE_REFLECTION
-			if(method.GetType().GetProperty("IsPartial") is PropertyInfo property && property.GetValue(method) is bool value)
+			if (CheckReflectionBool(method, "IsPartial"))
 			{
-				return value;
+				return true;
 			}
 #endif
 			if (retrieveNode)
@@ -1284,6 +1361,20 @@ namespace Durian.Analysis.Extensions
 		public static bool IsPartial(this IMethodSymbol method, MethodDeclarationSyntax declaration)
 		{
 			return IsPartial_Internal(method, () => declaration);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check if is <see langword="partial"/>.</param>
+		public static bool IsPartialContext(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				INamedTypeSymbol type => type.IsPartialContext(),
+				IMethodSymbol method => method.IsPartialContext(),
+				_ => false
+			};
 		}
 
 		/// <summary>
@@ -1313,45 +1404,6 @@ namespace Durian.Analysis.Extensions
 		public static bool IsPartialContext(this IMethodSymbol method, MethodDeclarationSyntax declaration)
 		{
 			return method.IsPartial(declaration) && method.GetContainingTypes().All(t => t.IsPartial());
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="type"/> is a predefined type (any primitive, <see cref="string"/>, <see cref="void"/>, <see cref="object"/>).
-		/// </summary>
-		/// <param name="type">Type to check.</param>
-		public static bool IsPredefined(this ITypeSymbol type)
-		{
-			if (type.SpecialType == SpecialType.None)
-			{
-				return false;
-			}
-
-			return type.SpecialType is
-				SpecialType.System_Void or
-				SpecialType.System_String or
-				SpecialType.System_Int32 or
-				SpecialType.System_Int64 or
-				SpecialType.System_Boolean or
-				SpecialType.System_Single or
-				SpecialType.System_Double or
-				SpecialType.System_Decimal or
-				SpecialType.System_Char or
-				SpecialType.System_Int16 or
-				SpecialType.System_Byte or
-				SpecialType.System_UInt16 or
-				SpecialType.System_UInt32 or
-				SpecialType.System_UInt64 or
-				SpecialType.System_SByte or
-				SpecialType.System_Object;
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="type"/> is a predefined type (any primitive, <see cref="string"/>, <see cref="void"/>, <see cref="object"/>) or a dynamic type.
-		/// </summary>
-		/// <param name="type">Type to check if is predefined or dynamic type.</param>
-		public static bool IsPredefinedOrDynamic(this ITypeSymbol type)
-		{
-			return type is IDynamicTypeSymbol || type.IsPredefined();
 		}
 
 		/// <summary>
@@ -1512,9 +1564,9 @@ namespace Durian.Analysis.Extensions
 		public static bool IsUnsafe(this ISymbol symbol)
 		{
 #if ENABLE_REFLECTION
-			if (symbol.GetType().GetProperty("IsUnsafe") is PropertyInfo property && property.GetValue(symbol) is bool value)
+			if (CheckReflectionBool(symbol, "IsUnsafe"))
 			{
-				return value;
+				return true;
 			}
 #endif
 
@@ -1692,6 +1744,95 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether any attribute target can be applied to the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether any attribute target can be applied to.</param>
+		public static bool SupportsAttributeTargets(this ISymbol symbol)
+		{
+			if(symbol is IMethodSymbol method)
+			{
+				return method.SupportsAttributeTargets();
+			}
+
+			return symbol is
+				INamedTypeSymbol or
+				ITypeParameterSymbol or
+				IPropertySymbol or
+				IEventSymbol or
+				IFieldSymbol or
+				IAssemblySymbol or
+				IModuleSymbol or
+				IParameterSymbol;
+		}
+
+		/// <summary>
+		/// Determines whether any attribute target can be applied to the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether any attribute target can be applied to.</param>
+		public static bool SupportsAttributeTargets(this IMethodSymbol method)
+		{
+			return method.MethodKind is
+				not MethodKind.BuiltinOperator and
+				not MethodKind.FunctionPointerSignature and
+				not MethodKind.EventRaise;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> supports more than one attribute target kind.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether supports more than one attribute target kind.</param>
+		public static bool SupportsAlternativeAttributeTargets(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				IMethodSymbol method => method.SupportsAlternativeAttributeTargets(),
+				IPropertySymbol property => property.SupportsAlternativeAttributeTargets(),
+				IEventSymbol @event => @event.SupportsAlternativeAttributeTargets(),
+				INamedTypeSymbol type => type.SupportsAlternativeAttributeTargets(),
+				_ => false,
+			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> supports more than one attribute target kind.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether supports more than one attribute target kind.</param>
+		public static bool SupportsAlternativeAttributeTargets(this IMethodSymbol method)
+		{
+			return
+				method.SupportsAttributeTargets() &&
+				!method.IsConstructor() &&
+				method.MethodKind != MethodKind.Destructor;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> supports more than one attribute target kind.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to determine whether supports more than one attribute target kind.</param>
+		public static bool SupportsAlternativeAttributeTargets(this IPropertySymbol property)
+		{
+			return property.IsAutoProperty();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> supports more than one attribute target kind.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to determine whether supports more than one attribute target kind.</param>
+		public static bool SupportsAlternativeAttributeTargets(this IEventSymbol @event)
+		{
+			return @event.IsFieldEvent();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> supports more than one attribute target kind.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether supports more than one attribute target kind.</param>
+		public static bool SupportsAlternativeAttributeTargets(this INamedTypeSymbol type)
+		{
+			return type.TypeKind == TypeKind.Delegate;
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="type"/> supports collection initializers.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check whether supports collection initializers.</param>
@@ -1831,6 +1972,18 @@ namespace Durian.Analysis.Extensions
 			return method.Arity == 0 && method.Name == property.Name;
 		}
 
+#if ENABLE_REFLECTION
+		private static bool CheckReflectionBool(ISymbol symbol, string propertyName)
+		{
+			if (symbol.GetType().GetProperty(propertyName) is PropertyInfo property && property.GetValue(symbol) is bool value)
+			{
+				return value;
+			}
+
+			return false;
+		}
+#endif
+
 		private static bool IsDurianGeneratedAttribute(AttributeData attr)
 		{
 			return
@@ -1883,9 +2036,9 @@ namespace Durian.Analysis.Extensions
 			}
 
 #if ENABLE_REFLECTION
-			if (method.GetType().GetProperty("IsIterator") is PropertyInfo property && property.GetValue(method) is bool value)
+			if (CheckReflectionBool(method, "IsIterator"))
 			{
-				return value;
+				return true;
 			}
 #endif
 

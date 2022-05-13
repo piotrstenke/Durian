@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
@@ -22,11 +24,22 @@ namespace Durian.Analysis.Data
 		private NamespaceContainer? _containingNamespaces;
 		private TypeContainer? _containingTypes;
 		private string[]? _modifiers;
-
 		private Location? _location;
+		private bool? _isUnsafe;
+		private bool? _isNew;
+		private bool? _isPartial;
 
 		/// <inheritdoc/>
 		public CSharpSyntaxNode Declaration { get; }
+
+		/// <inheritdoc/>
+		public bool IsNew => _isNew ??= Symbol.IsNew();
+
+		/// <inheritdoc/>
+		public bool IsPartial => _isPartial ??= Symbol.IsPartial();
+
+		/// <inheritdoc/>
+		public bool IsUnsafe => _isUnsafe ??= Symbol.IsUnsafe();
 
 		/// <inheritdoc/>
 		public Location Location => _location ??= Declaration.GetLocation();
@@ -51,12 +64,21 @@ namespace Durian.Analysis.Data
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
 		/// </exception>
-		/// <exception cref="ArgumentException">
-		/// Specified <paramref name="declaration"/> doesn't represent any symbols.
-		/// </exception>
+		/// <exception cref="ArgumentException">Specified <paramref name="declaration"/> doesn't represent any symbols. </exception>
 		public MemberData(CSharpSyntaxNode declaration, ICompilationData compilation)
 		{
-			(SemanticModel, Symbol) = AnalysisUtilities.GetSymbolAndSemanticModel(declaration, compilation);
+			if(declaration is null)
+			{
+				throw new ArgumentNullException(nameof(declaration));
+			}
+
+			if(compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			SemanticModel = compilation.Compilation.GetSemanticModel(declaration, out ISymbol symbol);
+			Symbol = symbol;
 			Declaration = declaration;
 			ParentCompilation = compilation;
 			Name = Symbol.GetVerbatimName();
@@ -83,6 +105,7 @@ namespace Durian.Analysis.Data
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="MemberData"/>.</param>
 		/// <param name="symbol"><see cref="ISymbol"/> this <see cref="MemberData"/> represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
+		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
@@ -91,9 +114,10 @@ namespace Durian.Analysis.Data
 			ICompilationData compilation,
 			ISymbol symbol,
 			SemanticModel semanticModel,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
+			string[]? modifiers = default,
+			IEnumerable<ITypeData>? containingTypes = default,
+			IEnumerable<INamespaceSymbol>? containingNamespaces = default,
+			IEnumerable<AttributeData>? attributes = default
 		)
 		{
 			Declaration = declaration;
@@ -101,17 +125,17 @@ namespace Durian.Analysis.Data
 			Symbol = symbol;
 			SemanticModel = semanticModel;
 
+			_modifiers = modifiers;
+
 			if(containingTypes is not null)
 			{
-				_containingTypes = SymbolContainer.Types(containingTypes, true, ReturnOrder.Root);
+				_containingTypes = containingTypes.ToContainer(true, ReturnOrder.Root);
 			}
 
 			if(containingNamespaces is not null)
 			{
-				_containingNamespaces = SymbolContainer.Namespaces(containingNamespaces, ReturnOrder.Root);
+				_containingNamespaces = containingNamespaces.ToContainer(compilation, ReturnOrder.Root);
 			}
-
-			_containingNamespaces = containingNamespaces?.ToArray();
 
 			if (attributes is not null)
 			{
@@ -130,20 +154,24 @@ namespace Durian.Analysis.Data
 		/// <inheritdoc/>
 		public virtual NamespaceContainer GetContainingNamespaces()
 		{
-
-			return _containingNamespaces ??= Symbol.GetContainingNamespaces().ToArray();
+			return _containingNamespaces ??= Symbol.GetContainingNamespaces(ParentCompilation);
 		}
 
 		/// <inheritdoc/>
 		public virtual TypeContainer GetContainingTypes()
 		{
-			return _containingTypes ??= Symbol.GetContainingTypesAsData(ParentCompilation).ToArray();
+			return GetContainingTypes(false);
 		}
 
 		/// <inheritdoc/>
 		public virtual string[] GetModifiers()
 		{
 			return _modifiers ??= Symbol.GetModifiers();
+		}
+
+		private protected TypeContainer GetContainingTypes(bool includeSelf)
+		{
+			return _containingTypes ??= Symbol.GetContainingTypes(ParentCompilation, includeSelf);
 		}
 
 		private protected static InvalidOperationException Exc_NoSyntaxReference(ISymbol symbol)

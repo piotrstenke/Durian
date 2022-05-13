@@ -38,7 +38,7 @@ namespace Durian.Analysis.CodeFixes
 				return SyntaxFactory.ParseName(targetType.GetGenericName(GenericSubstitution.TypeArguments));
 			}
 
-			if (targetType.IsPredefinedOrDynamic())
+			if (targetType.IsKeyword())
 			{
 				return SyntaxFactory.IdentifierName(targetType.Name);
 			}
@@ -86,7 +86,7 @@ namespace Durian.Analysis.CodeFixes
 		{
 			if (targetType.ContainingNamespace is null ||
 				targetType.ContainingNamespace.IsGlobalNamespace ||
-				targetType.IsPredefinedOrDynamic()
+				targetType.IsKeyword()
 			)
 			{
 				return SyntaxFactory.IdentifierName(GetIdentifier(targetType.Name));
@@ -147,7 +147,7 @@ namespace Durian.Analysis.CodeFixes
 		{
 			if (targetType.ContainingNamespace is null ||
 				targetType.ContainingNamespace.IsGlobalNamespace ||
-				targetType.IsPredefinedOrDynamic()
+				targetType.IsKeyword()
 			)
 			{
 				return true;

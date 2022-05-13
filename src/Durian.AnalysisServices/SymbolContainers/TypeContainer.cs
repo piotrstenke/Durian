@@ -15,12 +15,19 @@ namespace Durian.Analysis.SymbolContainers
 	/// <summary>
 	/// <see cref="ISymbolContainer"/> that handles <see cref="INamedTypeSymbol"/>s.
 	/// </summary>
-	public sealed class TypeContainer : SymbolContainer, IEnumerable<INamedTypeSymbol>, IEnumerable<ITypeData>
+	public sealed class TypeContainer : SymbolContainer, IEnumerable<INamedTypeSymbol>
 	{
 		/// <summary>
 		/// Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.
 		/// </summary>
 		public bool UseArguments { get; set; }
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TypeContainer"/> class.
+		/// </summary>
+		public TypeContainer()
+		{
+		}
 
 		internal TypeContainer(IEnumerable<INamedTypeSymbol> collection, ICompilationData? compilation, bool useArguments, ReturnOrder order) : base(collection, compilation, order)
 		{
@@ -50,9 +57,12 @@ namespace Durian.Analysis.SymbolContainers
 		/// <inheritdoc/>
 		public override ImmutableArray<string> GetNames()
 		{
-			GenericSubstitution substituion = UseArguments ? GenericSubstitution.TypeArguments : default;
+			if(!TryGetArray(out object[]? array))
+			{
+				return ImmutableArray<string>.Empty;
+			}
 
-			object[] array = GetArray();
+			GenericSubstitution substituion = UseArguments ? GenericSubstitution.TypeArguments : default;
 
 			ImmutableArray<string>.Builder builder = ImmutableArray.CreateBuilder<string>(array.Length);
 
@@ -90,20 +100,15 @@ namespace Durian.Analysis.SymbolContainers
 			return (symbol as INamedTypeSymbol)!.ToData(compilation);
 		}
 
-		IEnumerator<INamedTypeSymbol> IEnumerable<INamedTypeSymbol>.GetEnumerator()
+		/// <inheritdoc/>
+		public IEnumerator<INamedTypeSymbol> GetEnumerator()
 		{
 			IEnumerable<INamedTypeSymbol> symbols = GetSymbols();
 			return symbols.GetEnumerator();
 		}
-
-		IEnumerator<ITypeData> IEnumerable<ITypeData>.GetEnumerator()
-		{
-			IEnumerable<ITypeData> types = GetData();
-			return types.GetEnumerator();
-		}
 	}
 
-	public partial class SymbolContainerFactory
+	public static partial class SymbolContainerFactory
 	{
 		/// <summary>
 		/// Creates a new <see cref="TypeContainer"/>.
@@ -120,21 +125,10 @@ namespace Durian.Analysis.SymbolContainers
 		/// Creates a new <see cref="TypeContainer"/>.
 		/// </summary>
 		/// <param name="symbols">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
-		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static TypeContainer ToContainer(this IEnumerable<INamedTypeSymbol> symbols, bool useArguments = false, ReturnOrder order = ReturnOrder.Root)
-		{
-			return new(symbols, null, useArguments, order);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="TypeContainer"/>.
-		/// </summary>
-		/// <param name="symbols">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
 		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
 		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static TypeContainer ToContainer(this IEnumerable<INamedTypeSymbol> symbols, ICompilationData? compilation, bool useArguments = false, ReturnOrder order = ReturnOrder.Root)
+		public static TypeContainer ToContainer(this IEnumerable<INamedTypeSymbol> symbols, ICompilationData? compilation = default, bool useArguments = false, ReturnOrder order = ReturnOrder.Root)
 		{
 			return new(symbols, compilation, useArguments, order);
 		}

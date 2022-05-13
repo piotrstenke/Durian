@@ -308,30 +308,232 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns a keyword used to refer to the specified <paramref name="symbol"/> inside an attribute list.
+		/// Returns the <see cref="ISymbol"/> that is accessed by using the specified <paramref name="target"/> in the context of the given <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the attribute target symbol of.</param>
+		/// <param name="target">Kind of attribute target.</param>
+		/// <remarks><b>Note</b>: In actual code the <see langword="method"/> target applied to an event refers to both the <see langword="add"/> and <see langword="remove"/> accessors. In such case, this method returns the event itself.</remarks>
+		public static ISymbol? GetAttributeTarget(this ISymbol symbol, AttributeTarget target)
+		{
+			switch (target)
+			{
+				case AttributeTarget.Assembly:
+					return symbol.ContainingAssembly;
+
+				case AttributeTarget.Return:
+				{
+					if(symbol is IMethodSymbol method)
+					{
+						if(!method.IsConstructor() && method.MethodKind != MethodKind.Destructor)
+						{
+							return method.ReturnType;
+						}
+					}
+					else if(symbol is INamedTypeSymbol type)
+					{
+						if(type.DelegateInvokeMethod is not null)
+						{
+							return type.DelegateInvokeMethod.ReturnType;
+						}
+					}
+
+					return default;
+				}
+
+				case AttributeTarget.Field:
+				{
+					if(symbol is IPropertySymbol property)
+					{
+						if(property.GetBackingField() is IFieldSymbol backingField)
+						{
+							return backingField;
+						}
+					}
+					else if(symbol is IEventSymbol @event)
+					{
+						if(@event.GetBackingField() is IFieldSymbol backingField)
+						{
+							return backingField;
+						}
+					}
+
+					return symbol as IFieldSymbol;
+				}
+
+				case AttributeTarget.Method:
+					return symbol is IMethodSymbol or IEventSymbol ? symbol : default;
+
+				case AttributeTarget.Property:
+					return symbol as IPropertySymbol;
+
+				case AttributeTarget.Event:
+					return symbol as IEventSymbol;
+
+				case AttributeTarget.Type:
+					return symbol as INamedTypeSymbol;
+
+				case AttributeTarget.Param:
+				{
+					if(symbol is IMethodSymbol method && method.MethodKind is MethodKind.PropertySet or MethodKind.EventAdd or MethodKind.EventRemove)
+					{
+						return method.Parameters[0];
+					}
+
+					return symbol as IParameterSymbol;
+				}
+
+				case AttributeTarget.Module:
+					return symbol.ContainingModule;
+
+				case AttributeTarget.TypeVar:
+					return symbol as ITypeParameterSymbol;
+
+				default:
+					return default;
+			}
+		}
+
+		/// <summary>
+		/// Returns the <see cref="ISymbol"/> that is accessed by using an attribute target if the specified <paramref name="kind"/> in the context of the given <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the attribute target symbol of.</param>
+		/// <param name="kind">Kind of attribute target.</param>
+		/// <remarks><b>Note</b>: In actual code the <see langword="method"/> target applied to an event refers to both the <see langword="add"/> and <see langword="remove"/> accessors. In such case, this method returns the event itself.</remarks>
+		public static ISymbol? GetAttributeTarget(this ISymbol symbol, AttributeTargetKind kind)
+		{
+			return symbol switch
+			{
+				IAssemblySymbol => ThisOrDefault(),
+				IFieldSymbol => ThisOrDefault(),
+				IMethodSymbol method => kind switch
+				{
+					AttributeTargetKind.This => method.SupportsAttributeTargets() ? method : default,
+					AttributeTargetKind.Value => method.SupportsAlternativeAttributeTargets() && method.MethodKind != MethodKind.PropertySet ? method.ReturnType : default,
+					AttributeTargetKind.Handler when method.MethodKind == MethodKind.PropertySet || method.IsEventAccessor() => method.Parameters[0],
+					_ => default
+				},
+				IPropertySymbol property => kind switch
+				{
+					AttributeTargetKind.This => property,
+					AttributeTargetKind.Value => property.GetBackingField(),
+					_ => default
+				},
+				IEventSymbol @event => kind switch
+				{
+					AttributeTargetKind.This => @event,
+					AttributeTargetKind.Value => @event.GetBackingField(),
+					AttributeTargetKind.Handler when @event.IsFieldEvent() => @event,
+					_ => default
+				},
+				INamedTypeSymbol type => kind switch
+				{
+					AttributeTargetKind.This => type,
+					AttributeTargetKind.Value when type.DelegateInvokeMethod is IMethodSymbol method => method.ReturnType,
+					_ => default
+				},
+				IParameterSymbol => ThisOrDefault(),
+				ITypeParameterSymbol => ThisOrDefault(),
+				IModuleSymbol => ThisOrDefault(),
+				_ => default
+			};
+
+			ISymbol? ThisOrDefault()
+			{
+				return kind == AttributeTargetKind.This ? symbol : default;
+			}
+		}
+
+		/// <summary>
+		/// Determines the kind of the specified attribute <paramref name="target"/> used in context of the given <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the kind of attribute target of.</param>
+		/// <param name="target">Attribute target to get the kind of.</param>
+		public static AttributeTargetKind GetAttributeTargetKind(this ISymbol symbol, AttributeTarget target)
+		{
+			return target switch
+			{
+				AttributeTarget.Assembly => symbol is IAssemblySymbol ? AttributeTargetKind.This : default,
+				AttributeTarget.Field => symbol switch
+				{
+					IFieldSymbol => AttributeTargetKind.This,
+					IPropertySymbol property => property.IsAutoProperty() ? AttributeTargetKind.Value : default,
+					IEventSymbol @event when @event.IsFieldEvent() => AttributeTargetKind.Value,
+					_ => default
+				},
+				AttributeTarget.Return => symbol switch
+				{
+					IMethodSymbol method => method.SupportsAlternativeAttributeTargets() && method.MethodKind != MethodKind.PropertySet ? AttributeTargetKind.Value : default,
+					INamedTypeSymbol type when type.SupportsAlternativeAttributeTargets() => AttributeTargetKind.Value,
+					_ => default
+				},
+				AttributeTarget.Method => symbol switch
+				{
+					IMethodSymbol => AttributeTargetKind.This,
+					IEventSymbol @event when @event.IsFieldEvent() => AttributeTargetKind.Handler,
+					_ => default
+				},
+				AttributeTarget.Property => symbol is IPropertySymbol ? AttributeTargetKind.This : default,
+				AttributeTarget.Event => symbol is IEventSymbol ? AttributeTargetKind.This : default,
+				AttributeTarget.Type => symbol is INamedTypeSymbol ? AttributeTargetKind.This : default,
+				AttributeTarget.Param => symbol switch
+				{
+					IParameterSymbol => AttributeTargetKind.This,
+					IMethodSymbol method when method.MethodKind == MethodKind.PropertySet || method.IsEventAccessor() => AttributeTargetKind.Handler,
+					_ => default
+				},
+				AttributeTarget.TypeVar => symbol is ITypeParameterSymbol ? AttributeTargetKind.This : default,
+				AttributeTarget.Module => symbol is IModuleSymbol ? AttributeTargetKind.This : default,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns an attribute target keyword used to refer to the specified <paramref name="symbol"/> inside an attribute list.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the associated attribute target keyword of.</param>
-		/// <param name="targetKind">Determines which keyword to return when there is more than one option (e.g '<see langword="method"/>' and '<see langword="return"/>' for methods).</param>
-		/// <exception cref="ArgumentException"><paramref name="symbol"/> does not support attribute targets.</exception>
-		public static string GetAttributeTarget(this ISymbol symbol, AttributeTargetKind targetKind = default)
+		/// <param name="kind">Determines which keyword to return when there is more than one option (e.g '<see langword="method"/>' and '<see langword="return"/>' for methods).</param>
+		public static AttributeTarget GetAttributeTargetKind(this ISymbol symbol, AttributeTargetKind kind = AttributeTargetKind.This)
 		{
-			if (symbol is IMethodSymbol method)
+			return symbol switch
 			{
-				if (method.MethodKind.GetAttributeTarget(targetKind) is string methodTarget)
+				IAssemblySymbol => ThisOrDefault(AttributeTarget.Assembly),
+				IFieldSymbol => ThisOrDefault(AttributeTarget.Field),
+				IMethodSymbol method => kind switch
 				{
-					return methodTarget;
-				}
-			}
-			else if (symbol is IEventSymbol @event && !@event.IsFieldEvent())
-			{
-				return "event";
-			}
-			else if (symbol.Kind.GetAttributeTarget(targetKind) is string target)
-			{
-				return target;
-			}
+					AttributeTargetKind.This => method.SupportsAttributeTargets() ? AttributeTarget.Method : default,
+					AttributeTargetKind.Value => method.SupportsAlternativeAttributeTargets() && method.MethodKind != MethodKind.PropertySet ? AttributeTarget.Return : default,
+					AttributeTargetKind.Handler when method.MethodKind == MethodKind.PropertySet || method.IsEventAccessor() => AttributeTarget.Param,
+					_ => default
+				},
+				IPropertySymbol property => kind switch
+				{
+					AttributeTargetKind.This => AttributeTarget.Property,
+					AttributeTargetKind.Value when property.IsAutoProperty() => AttributeTarget.Field,
+					_ => default
+				},
+				IEventSymbol @event => kind switch
+				{
+					AttributeTargetKind.This => AttributeTarget.Event,
+					AttributeTargetKind.Value => @event.IsFieldEvent() ? AttributeTarget.Field : default,
+					AttributeTargetKind.Handler when @event.IsFieldEvent() => AttributeTarget.Method,
+					_ => default
+				},
+				INamedTypeSymbol type => kind switch
+				{
+					AttributeTargetKind.This => AttributeTarget.Type,
+					AttributeTargetKind.Value when type.SupportsAlternativeAttributeTargets() => AttributeTarget.Return,
+					_ => default
+				},
+				IParameterSymbol => ThisOrDefault(AttributeTarget.Param),
+				ITypeParameterSymbol => ThisOrDefault(AttributeTarget.TypeVar),
+				IModuleSymbol => ThisOrDefault(AttributeTarget.Module),
+				_ => default,
+			};
 
-			throw new ArgumentException($"Symbol '{symbol}' does not support attribute targets", nameof(symbol));
+			AttributeTarget ThisOrDefault(AttributeTarget @this)
+			{
+				return kind == AttributeTargetKind.This ? @this : default;
+			}
 		}
 
 		/// <summary>
@@ -457,6 +659,18 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the backing field of the specified <paramref name="event"/> or <see langword="null"/> if the <paramref name="event"/> is not a field-like event.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to get the backing field of.</param>
+		public static IFieldSymbol? GetBackingField(this IEventSymbol @event)
+		{
+			return @event.ContainingType?
+				.GetMembers()
+				.OfType<IFieldSymbol>()
+				.FirstOrDefault(f => SymbolEqualityComparer.Default.Equals(f.AssociatedSymbol, @event));
+		}
+
+		/// <summary>
 		/// Returns all types the specified <paramref name="type"/> inherits from.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the base types of.</param>
@@ -467,36 +681,6 @@ namespace Durian.Analysis.Extensions
 			return AnalysisUtilities.ByOrder(GetBaseTypes_Internal(type, includeSelf), order);
 		}
 
-		private static IEnumerable<INamedTypeSymbol> GetBaseTypes_Internal(INamedTypeSymbol type, bool includeSelf)
-		{
-			if (includeSelf)
-			{
-				yield return type;
-			}
-
-			if (type.TypeKind == TypeKind.Interface)
-			{
-				foreach (INamedTypeSymbol t in type.AllInterfaces)
-				{
-					yield return t;
-				}
-
-				yield break;
-			}
-
-			INamedTypeSymbol? currentType = type.BaseType;
-
-			if (currentType is not null)
-			{
-				yield return currentType;
-
-				while ((currentType = currentType!.BaseType) is not null)
-				{
-					yield return currentType;
-				}
-			}
-		}
-
 		/// <summary>
 		/// Returns all types the specified <paramref name="type"/> inherits from.
 		/// </summary>
@@ -504,9 +688,15 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
 		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection.</param>
 		/// <param name="order">Specifies ordering of the returned members.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static TypeContainer GetBaseTypes(this INamedTypeSymbol type, ICompilationData? compilation, bool includeSelf = false, ReturnOrder order = ReturnOrder.Parent)
 		{
-			return SymbolContainer.Types(GetBaseTypes_Internal(type, includeSelf), compilation, true, order);
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			return GetBaseTypes_Internal(type, includeSelf).ToContainer(compilation, true, order);
 		}
 
 		/// <summary>
@@ -603,29 +793,25 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this ISymbol symbol, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
 		{
-			IEnumerable<INamespaceSymbol> namespaces = AnalysisUtilities.ByOrder(GetNamespaces(), order);
+			return AnalysisUtilities.ByOrder(GetContainingNamespaces_Internal(symbol, includeGlobal), order);
+		}
 
-			if (!includeGlobal)
+		/// <summary>
+		/// Returns all <see cref="INamespaceSymbol"/>s that contain the target <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the parent namespaces of.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
+		public static NamespaceContainer GetContainingNamespaces(this ISymbol symbol, ICompilationData compilation, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
+		{
+			if (compilation is null)
 			{
-				namespaces = namespaces.Where(n => !n.IsGlobalNamespace);
+				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			return namespaces;
-
-			IEnumerable<INamespaceSymbol> GetNamespaces()
-			{
-				INamespaceSymbol parent = symbol.ContainingNamespace;
-
-				if (parent is not null)
-				{
-					yield return parent;
-
-					while ((parent = parent!.ContainingNamespace) is not null)
-					{
-						yield return parent;
-					}
-				}
-			}
+			return GetContainingNamespaces_Internal(symbol, includeGlobal).ToContainer(compilation, order);
 		}
 
 		/// <summary>
@@ -654,6 +840,27 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns all <see cref="INamespaceOrTypeSymbol"/>s contain the target <paramref name="symbol"/> in namespace-first order.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types and namespaces of.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <param name="includeGlobal">Determines whether to return the global namespace as well</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
+		public static NamespacesAndTypesContainer GetContainingNamespacesAndTypes(this ISymbol symbol, ICompilationData compilation, bool includeGlobal, ReturnOrder order = ReturnOrder.Root)
+		{
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			IEnumerable<INamespaceOrTypeSymbol> namespaces = symbol.GetContainingNamespaces(includeGlobal, ReturnOrder.Root);
+			IEnumerable<INamespaceOrTypeSymbol> types = symbol.GetContainingTypes(includeGlobal, ReturnOrder.Root);
+
+			return namespaces.Concat(types).ToContainer(compilation, false, order);
+		}
+
+		/// <summary>
 		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
@@ -661,65 +868,25 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IEnumerable<INamedTypeSymbol> GetContainingTypes(this ISymbol symbol, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
 		{
-			return AnalysisUtilities.ByOrder(Yield(), order);
-
-			IEnumerable<INamedTypeSymbol> Yield()
-			{
-				if (includeSelf && symbol is INamedTypeSymbol t)
-				{
-					yield return t;
-				}
-
-				INamedTypeSymbol parent = symbol.ContainingType;
-
-				if (parent is not null)
-				{
-					yield return parent;
-
-					while ((parent = parent!.ContainingType) is not null)
-					{
-						yield return parent;
-					}
-				}
-			}
+			return AnalysisUtilities.ByOrder(GetContainingTypes_Internal(symbol, includeSelf), order);
 		}
 
 		/// <summary>
-		/// Returns all <see cref="ITypeData"/>s that contain the target <paramref name="symbol"/>.
+		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
-		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
 		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
 		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static IEnumerable<ITypeData> GetContainingTypesAsData(this ISymbol symbol, ICompilationData compilation, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
+		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
+		public static TypeContainer GetContainingTypes(this ISymbol symbol, ICompilationData compilation, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
 		{
-			INamedTypeSymbol[] parentSymbols = GetContainingTypes(symbol, includeSelf, order).ToArray();
-			List<ITypeData> parentList = new(parentSymbols.Length);
-
-			return parentSymbols.Select(parent =>
+			if (compilation is null)
 			{
-				if (parent.ToData(compilation) is not ITypeData data)
-				{
-					throw new InvalidOperationException($"Invalid type kind of '{parent}'");
-				}
+				throw new ArgumentNullException(nameof(compilation));
+			}
 
-				parentList.Add(data);
-				return data;
-			});
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> that contains all the parent types of the specified <paramref name="symbol"/> and the <paramref name="symbol"/>'s name separated by the dot ('.') character.
-		/// </summary>
-		/// <remarks>If the <paramref name="symbol"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="string"/> of.</param>
-		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned <see cref="string"/>.</param>
-		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-		public static string GetContainingTypesAsString(this ISymbol symbol, bool includeSelf = true, bool includeParameters = false)
-		{
-			StringBuilder builder = new();
-			builder.WriteContainingTypes(symbol, includeSelf, includeParameters);
-			return builder.ToString();
+			return GetContainingTypes_Internal(symbol, includeSelf).ToContainer(compilation, false, order);
 		}
 
 		/// <summary>
@@ -1129,7 +1296,9 @@ namespace Durian.Analysis.Extensions
 				return default;
 			}
 
-			return AutoGenerated.GetInheritdoc(AnalysisUtilities.ToXmlCompatible(symbol.GetContainingTypesAsString(true, true)));
+			StringBuilder builder = new();
+			builder.WriteContainingTypes(symbol, true, true);
+			return AutoGenerated.GetInheritdoc(AnalysisUtilities.ToXmlCompatible(builder.ToString()));
 		}
 
 		/// <summary>
@@ -1212,7 +1381,7 @@ namespace Durian.Analysis.Extensions
 
 			AddAccessibilityModifiers(modifiers, field.DeclaredAccessibility);
 
-			if(field.IsConst)
+			if (field.IsConst)
 			{
 				modifiers.Add("const");
 			}
@@ -1221,12 +1390,12 @@ namespace Durian.Analysis.Extensions
 				modifiers.Add("static");
 			}
 
-			if(field.IsReadOnly)
+			if (field.IsReadOnly)
 			{
 				modifiers.Add("readonly");
 			}
 
-			if(field.IsUnsafe())
+			if (field.IsUnsafe())
 			{
 				modifiers.Add("unsafe");
 			}
@@ -1252,7 +1421,7 @@ namespace Durian.Analysis.Extensions
 		{
 			List<string> modifiers = new(2);
 
-			if(local.IsConst)
+			if (local.IsConst)
 			{
 				modifiers.Add("const");
 			}
@@ -1280,17 +1449,17 @@ namespace Durian.Analysis.Extensions
 		{
 			List<string> modifiers = new(2);
 
-			if(parameter.IsThis)
+			if (parameter.IsThis)
 			{
 				modifiers.Add("this");
 			}
 
-			if(parameter.RefKind.GetText() is string refKind)
+			if (parameter.RefKind.GetText() is string refKind)
 			{
 				modifiers.Add(refKind);
 			}
 
-			if(parameter.IsParams)
+			if (parameter.IsParams)
 			{
 				modifiers.Add("params");
 			}
@@ -1309,15 +1478,15 @@ namespace Durian.Analysis.Extensions
 			AddAccessibilityModifiers(modifiers, property.DeclaredAccessibility);
 			AddBasicMethodModifiers(modifiers, property);
 
-			if(property.IsReadOnly)
+			if (property.IsReadOnly)
 			{
 				CheckAccessor(property.GetMethod);
 			}
-			else if(property.IsWriteOnly)
+			else if (property.IsWriteOnly)
 			{
 				CheckAccessor(property.SetMethod);
 			}
-			else if(property.GetMethod?.IsReadOnly == true && property.SetMethod?.IsReadOnly == true)
+			else if (property.HasReadOnlyModifier())
 			{
 				modifiers.Add("readonly");
 			}
@@ -1349,7 +1518,7 @@ namespace Durian.Analysis.Extensions
 			AddAccessibilityModifiers(modifiers, @event.DeclaredAccessibility);
 			AddBasicMethodModifiers(modifiers, @event);
 
-			if(@event.AddMethod?.IsReadOnly == true && @event.RemoveMethod?.IsReadOnly == true)
+			if (@event.HasReadOnlyModifier())
 			{
 				modifiers.Add("readonly");
 			}
@@ -1360,74 +1529,6 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return modifiers.ToArray();
-		}
-
-		private static void AddBasicMethodModifiers(List<string> modifiers, ISymbol symbol)
-		{
-			if (symbol.IsStatic)
-			{
-				modifiers.Add("static");
-			}
-
-			if (symbol.IsExtern)
-			{
-				modifiers.Add("extern");
-			}
-
-			if (symbol.IsNew())
-			{
-				modifiers.Add("new");
-			}
-
-			if (symbol.IsAbstract)
-			{
-				modifiers.Add("abstract");
-			}
-			else if (symbol.IsSealed)
-			{
-				modifiers.Add("sealed");
-			}
-			else if (symbol.IsVirtual)
-			{
-				modifiers.Add("virtual");
-			}
-
-			if (symbol.IsOverride)
-			{
-				modifiers.Add("override");
-			}
-		}
-
-		private static void AddAccessibilityModifiers(List<string> modifiers, Accessibility accessibility)
-		{
-			switch (accessibility)
-			{
-				case Accessibility.Public:
-					modifiers.Add("public");
-					break;
-
-				case Accessibility.Private:
-					modifiers.Add("private");
-					break;
-
-				case Accessibility.Protected:
-					modifiers.Add("protected");
-					break;
-
-				case Accessibility.Internal:
-					modifiers.Add("internal");
-					break;
-
-				case Accessibility.ProtectedOrInternal:
-					modifiers.Add("protected");
-					modifiers.Add("internal");
-					break;
-
-				case Accessibility.ProtectedAndInternal:
-					modifiers.Add("private");
-					modifiers.Add("protected");
-					break;
-			}
 		}
 
 		/// <summary>
@@ -1488,16 +1589,16 @@ namespace Durian.Analysis.Extensions
 			{
 				modifiers.Add("abstract");
 			}
-			else if(type.IsRefLikeType)
+			else if (type.IsRefLikeType)
 			{
 				modifiers.Add("ref");
 			}
-			else if(type.IsSealed)
+			else if (type.IsSealed)
 			{
 				modifiers.Add("sealed");
 			}
 
-			if(type.IsReadOnly)
+			if (type.IsReadOnly)
 			{
 				modifiers.Add("readonly");
 			}
@@ -1675,6 +1776,46 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the primary constructor of the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the primary constructor of.</param>
+		public static IMethodSymbol? GetPrimaryConstructor(this INamedTypeSymbol type)
+		{
+			if(!type.IsRecord)
+			{
+				return default;
+			}
+
+#if ENABLE_REFLECTION
+			if(type.InstanceConstructors.FirstOrDefault(m =>
+				m.DeclaredAccessibility == Accessibility.Public &&
+				m.GetType().Name == "SynthesizedRecordConstructor"
+			) is IMethodSymbol ctor)
+			{
+				return ctor;
+			}
+#endif
+
+			RecordDeclarationSyntax decl = type.GetSyntax
+
+			return type.InstanceConstructors.FirstOrDefault(m =>
+				m.DeclaredAccessibility == Accessibility.Public &&
+				m.gets)
+		}
+
+		/// <summary>
+		/// Returns the copy constructor of the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the copy constructor of.</param>
+		public static IMethodSymbol? GetCopyConstructor(this INamedTypeSymbol type)
+		{
+			return type.InstanceConstructors.FirstOrDefault(ctor =>
+				ctor.Parameters.Length == 1 &&
+				SymbolEqualityComparer.Default.Equals(ctor.Parameters[0], type)
+			);
+		}
+
+		/// <summary>
 		/// Returns root namespace of the <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the root namespaces of.</param>
@@ -1696,31 +1837,47 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns a <see cref="CSharpSyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="method"/>.
+		/// Returns a <see cref="CSharpSyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to return.</typeparam>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the <see cref="CSharpSyntaxNode"/> associated with.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="CSharpSyntaxNode"/> associated with.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="InvalidOperationException"><paramref name="method"/> is not associated with a syntax node of type <typeparamref name="T"/>.</exception>
-		public static T? GetSyntax<T>(this IMethodSymbol method, CancellationToken cancellationToken = default) where T : CSharpSyntaxNode
+		/// <exception cref="InvalidOperationException"><paramref name="symbol"/> is not associated with a syntax node of type <typeparamref name="T"/>.</exception>
+		public static T GetSyntax<T>(this ISymbol symbol, CancellationToken cancellationToken = default) where T : CSharpSyntaxNode
 		{
-			if (!method.TryGetSyntax<T>(out T? declaration, cancellationToken))
+			if (!symbol.TryGetSyntax(out T? declaration, cancellationToken))
 			{
-				throw new InvalidOperationException($"Method '{method}' is not associated with a syntax node of type '{typeof(T).Name}'");
+				throw new InvalidOperationException($"Method '{symbol}' is not associated with a syntax node of type '{typeof(T).Name}'");
 			}
 
 			return declaration;
 		}
 
 		/// <summary>
-		/// Returns a <see cref="MethodDeclarationSyntax"/> associated with the specified <paramref name="method"/>.
+		/// Returns a <see cref="BaseMethodDeclarationSyntax"/> associated with the specified <paramref name="method"/>.
 		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the <see cref="MethodDeclarationSyntax"/> associated with.</param>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the <see cref="BaseMethodDeclarationSyntax"/> associated with.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="InvalidOperationException"><paramref name="method"/> is not associated with a <see cref="MethodDeclarationSyntax"/>.</exception>
-		public static MethodDeclarationSyntax? GetSyntax(this IMethodSymbol method, CancellationToken cancellationToken = default)
+		/// <exception cref="InvalidOperationException"><paramref name="method"/> is not associated with a <see cref="BaseMethodDeclarationSyntax"/>.</exception>
+		public static BaseMethodDeclarationSyntax GetSyntax(this IMethodSymbol method, CancellationToken cancellationToken = default)
 		{
-			return method.GetSyntax<MethodDeclarationSyntax>(cancellationToken);
+			return method.GetSyntax<BaseMethodDeclarationSyntax>(cancellationToken);
+		}
+
+		/// <summary>
+		/// Returns a <see cref="BaseTypeDeclarationSyntax"/> associated with the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the <see cref="BaseTypeDeclarationSyntax"/> associated with.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="InvalidOperationException"><paramref name="type"/> is not associated with a <see cref="BaseTypeDeclarationSyntax"/>.</exception>
+		public static BaseTypeDeclarationSyntax GetSyntax(this INamedTypeSymbol type, CancellationToken cancellationToken = default)
+		{
+			return type.GetSyntax<BaseTypeDeclarationSyntax>(cancellationToken);
+		}
+
+		public static ParameterSyntax GetSyntax(this IParameterSymbol parameter, CancellationToken cancellationToken = default)
+		{
+
 		}
 
 		/// <summary>
@@ -2052,12 +2209,7 @@ namespace Durian.Analysis.Extensions
 				return typeParameter.ToData(compilation);
 			}
 
-			if (symbol is ITypeSymbol unknownType)
-			{
-				return new UnknownTypeData(unknownType, compilation);
-			}
-
-			return new MemberData(symbol, compilation);
+			return new NamespaceOrTypeData(symbol, compilation);
 		}
 
 		/// <summary>
@@ -2106,6 +2258,74 @@ namespace Durian.Analysis.Extensions
 			return syntax is not null;
 		}
 
+		private static void AddAccessibilityModifiers(List<string> modifiers, Accessibility accessibility)
+		{
+			switch (accessibility)
+			{
+				case Accessibility.Public:
+					modifiers.Add("public");
+					break;
+
+				case Accessibility.Private:
+					modifiers.Add("private");
+					break;
+
+				case Accessibility.Protected:
+					modifiers.Add("protected");
+					break;
+
+				case Accessibility.Internal:
+					modifiers.Add("internal");
+					break;
+
+				case Accessibility.ProtectedOrInternal:
+					modifiers.Add("protected");
+					modifiers.Add("internal");
+					break;
+
+				case Accessibility.ProtectedAndInternal:
+					modifiers.Add("private");
+					modifiers.Add("protected");
+					break;
+			}
+		}
+
+		private static void AddBasicMethodModifiers(List<string> modifiers, ISymbol symbol)
+		{
+			if (symbol.IsStatic)
+			{
+				modifiers.Add("static");
+			}
+
+			if (symbol.IsExtern)
+			{
+				modifiers.Add("extern");
+			}
+
+			if (symbol.IsNew())
+			{
+				modifiers.Add("new");
+			}
+
+			if (symbol.IsAbstract)
+			{
+				modifiers.Add("abstract");
+			}
+			else if (symbol.IsSealed)
+			{
+				modifiers.Add("sealed");
+			}
+			else if (symbol.IsVirtual)
+			{
+				modifiers.Add("virtual");
+			}
+
+			if (symbol.IsOverride)
+			{
+				modifiers.Add("override");
+			}
+		}
+
 		private static TypeSyntax ApplyAnnotation(TypeSyntax syntax, NullableAnnotation annotation)
 		{
 			if (annotation == NullableAnnotation.Annotated)
@@ -2114,6 +2334,83 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return syntax;
+		}
+
+		private static IEnumerable<INamedTypeSymbol> GetBaseTypes_Internal(INamedTypeSymbol type, bool includeSelf)
+		{
+			if (includeSelf)
+			{
+				yield return type;
+			}
+
+			if (type.TypeKind == TypeKind.Interface)
+			{
+				foreach (INamedTypeSymbol t in type.AllInterfaces)
+				{
+					yield return t;
+				}
+
+				yield break;
+			}
+
+			INamedTypeSymbol? currentType = type.BaseType;
+
+			if (currentType is not null)
+			{
+				yield return currentType;
+
+				while ((currentType = currentType!.BaseType) is not null)
+				{
+					yield return currentType;
+				}
+			}
+		}
+
+		private static IEnumerable<INamespaceSymbol> GetContainingNamespaces_Internal(ISymbol symbol, bool includeGlobal)
+		{
+			IEnumerable<INamespaceSymbol> namespaces = GetNamespaces();
+
+			if (!includeGlobal)
+			{
+				namespaces = namespaces.Where(n => !n.IsGlobalNamespace);
+			}
+
+			return namespaces;
+
+			IEnumerable<INamespaceSymbol> GetNamespaces()
+			{
+				INamespaceSymbol parent = symbol.ContainingNamespace;
+
+				if (parent is not null)
+				{
+					yield return parent;
+
+					while ((parent = parent!.ContainingNamespace) is not null)
+					{
+						yield return parent;
+					}
+				}
+			}
+		}
+
+		private static IEnumerable<INamedTypeSymbol> GetContainingTypes_Internal(ISymbol symbol, bool includeSelf)
+		{
+			if (includeSelf && symbol is INamedTypeSymbol t)
+			{
+				yield return t;
+			}
+
+			INamedTypeSymbol parent = symbol.ContainingType;
+
+			if (parent is not null)
+			{
+				yield return parent;
+
+				while ((parent = parent!.ContainingType) is not null)
+				{
+					yield return parent;
+				}
+			}
 		}
 
 		private static ISymbol? GetHiddenSymbol_Internal(ISymbol symbol)

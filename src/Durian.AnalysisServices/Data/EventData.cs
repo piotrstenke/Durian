@@ -105,6 +105,7 @@ namespace Durian.Analysis.Data
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
 		/// <param name="variable"><see cref="VariableDeclaratorSyntax"/> that represents the target variable.</param>
 		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
+		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="IEventSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
@@ -115,6 +116,7 @@ namespace Durian.Analysis.Data
 			SemanticModel semanticModel,
 			VariableDeclaratorSyntax variable,
 			int index,
+			string[]? modifiers = null,
 			IEnumerable<ITypeData>? containingTypes = null,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
 			IEnumerable<AttributeData>? attributes = null
@@ -123,6 +125,7 @@ namespace Durian.Analysis.Data
 			compilation,
 			symbol,
 			semanticModel,
+			modifiers,
 			containingTypes,
 			containingNamespaces,
 			attributes
@@ -132,32 +135,33 @@ namespace Durian.Analysis.Data
 			Variable = variable;
 		}
 
-		/// <inheritdoc cref="EventData(EventFieldDeclarationSyntax, ICompilationData, IEventSymbol, SemanticModel, VariableDeclaratorSyntax, int, IEnumerable{ITypeData}?, IEnumerable{INamespaceSymbol}?, IEnumerable{AttributeData}?)"/>
+		/// <inheritdoc cref="EventData(EventFieldDeclarationSyntax, ICompilationData, IEventSymbol, SemanticModel, VariableDeclaratorSyntax, int, string[], IEnumerable{ITypeData}?, IEnumerable{INamespaceSymbol}?, IEnumerable{AttributeData}?)"/>
 		protected internal EventData(
 			EventDeclarationSyntax declaration,
 			ICompilationData compilation,
 			IEventSymbol symbol,
 			SemanticModel semanticModel,
+			string[]? modifiers = null,
 			IEnumerable<ITypeData>? containingTypes = null,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
 			IEnumerable<AttributeData>? attributes = null
-		) : base(declaration, compilation, symbol, semanticModel, containingTypes, containingNamespaces, attributes)
+		) : base(declaration, compilation, symbol, semanticModel, modifiers, containingTypes, containingNamespaces, attributes)
 		{
 		}
 
 		private EventData(
-					EventFieldDeclarationSyntax declaration,
-					ICompilationData compilation,
-					IEventSymbol symbol,
-					SemanticModel semanticModel,
-					VariableDeclaratorSyntax variable,
-					int index
-				) : base(
-					declaration,
-					compilation,
-					symbol,
-					semanticModel
-				)
+			EventFieldDeclarationSyntax declaration,
+			ICompilationData compilation,
+			IEventSymbol symbol,
+			SemanticModel semanticModel,
+			VariableDeclaratorSyntax variable,
+			int index
+		) : base(
+			declaration,
+			compilation,
+			symbol,
+			semanticModel
+		)
 		{
 			Variable = variable;
 			Index = index;

@@ -2,19 +2,10 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection.Metadata;
 using System.Text;
-using System.Threading;
-using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.CodeGeneration;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis
 {
@@ -26,6 +17,12 @@ namespace Durian.Analysis
 	{
 		private readonly IDurianGenerator? _generator;
 		private int _currentIndent;
+		private int _currentLength;
+
+		/// <summary>
+		/// Determines whether the last method call has changed state of the builder.
+		/// </summary>
+		public bool Changed => _currentIndent != TextBuilder.Length;
 
 		/// <summary>
 		/// Current indentation level.
@@ -63,6 +60,11 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Builder that write single keywords.
+		/// </summary>
+		public KeywordWriter Keyword { get; }
+
+		/// <summary>
 		/// <see cref="GeneratorPassContext"/> to use when writing data.
 		/// </summary>
 		public GeneratorPassContext? PassContext { get; }
@@ -71,11 +73,6 @@ namespace Durian.Analysis
 		/// <see cref="StringBuilder"/> to write the generated code to.
 		/// </summary>
 		public StringBuilder TextBuilder { get; }
-
-		/// <summary>
-		/// Builder that write single keywords.
-		/// </summary>
-		public KeywordWriter Keyword { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CodeBuilder"/> class.
@@ -160,26 +157,62 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Begins an attribute list.
+		/// </summary>
+		public CodeBuilder BeginAttributeList()
+		{
+			TextBuilder.Append('[');
+			return this;
+		}
+
+		/// <summary>
+		/// Begins an attribute list with an <see cref="AttributeTarget"/>.
+		/// </summary>
+		/// <param name="target">Target of the attribute.</param>
+		public CodeBuilder BeginAttributeList(AttributeTarget target)
+		{
+			target.gette
+		}
+
+		/// <summary>
+		/// Begins a new scope.
+		/// </summary>
+		public CodeBuilder BeginBlock()
+		{
+			Indent();
+			TextBuilder.AppendLine("{");
+			CurrentIndent++;
+
+			return this;
+		}
+
+		/// <summary>
 		/// Begins a member declaration using the specified raw text.
 		/// </summary>
 		/// <param name="member">Raw text to write.</param>
 		public CodeBuilder BeginDeclation(string member)
 		{
 			TextBuilder?.AppendLine(member);
-			BeginScope();
+			BeginBlock();
 
 			return this;
 		}
 
 		/// <summary>
-		/// Begins a new scope.
+		/// Begins a parameter list.
 		/// </summary>
-		public CodeBuilder BeginScope()
+		public CodeBuilder BeginParameterList()
 		{
-			Indent();
-			TextBuilder.AppendLine("{");
-			CurrentIndent++;
+			TextBuilder.Append('(');
+			return this;
+		}
 
+		/// <summary>
+		/// Begins a type parameter list.
+		/// </summary>
+		public CodeBuilder BeginTypeParameterList()
+		{
+			TextBuilder.Append('<');
 			return this;
 		}
 
@@ -204,7 +237,7 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Ends all the remaining scope.
 		/// </summary>
-		public CodeBuilder EndAllScopes()
+		public CodeBuilder EndAllBlocks()
 		{
 			int length = CurrentIndent;
 
@@ -219,9 +252,19 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Ends an attribute list.
+		/// </summary>
+		public CodeBuilder EndAttributeList()
+		{
+			TextBuilder.Append(']');
+			NewLine();
+			return this;
+		}
+
+		/// <summary>
 		/// Ends the current scope.
 		/// </summary>
-		public CodeBuilder EndScope()
+		public CodeBuilder EndBlock()
 		{
 			CurrentIndent--;
 			Indent();
@@ -231,71 +274,20 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Writes a space.
+		/// Ends a parameter list.
 		/// </summary>
-		public CodeBuilder Space()
+		public CodeBuilder EndParameterList()
 		{
-			TextBuilder.Append(' ');
+			TextBuilder.Append(')');
 			return this;
 		}
 
 		/// <summary>
-		/// Writes a tab.
+		/// Ends a type parameter list.
 		/// </summary>
-		public CodeBuilder Tab()
+		public CodeBuilder EndTypeParameterList()
 		{
-			TextBuilder.Append('\t');
-			return this;
-		}
-
-		/// <summary>
-		/// Writes a <paramref name="number"/> of tabs.
-		/// </summary>
-		/// <param name="number">Number of tabs to write.</param>
-		public CodeBuilder Tab(int number)
-		{
-			for (int i = 0; i < number; i++)
-			{
-				TextBuilder.Append('\t');
-			}
-
-			return this;
-		}
-
-		/// <summary>
-		/// Writes a <paramref name="number"/> of spaces.
-		/// </summary>
-		/// <param name="number">Number of spaces to write.</param>
-		public CodeBuilder Space(int number)
-		{
-			for (int i = 0; i < number; i++)
-			{
-				TextBuilder.Append(' ');
-			}
-
-			return this;
-		}
-
-		/// <summary>
-		/// Writes a new line.
-		/// </summary>
-		public CodeBuilder NewLine()
-		{
-			TextBuilder.AppendLine();
-			return this;
-		}
-
-		/// <summary>
-		/// Writes a <paramref name="number"/> of new lines.
-		/// </summary>
-		/// <param name="number">Number of new lines to write.</param>
-		public CodeBuilder NewLine(int number)
-		{
-			for (int i = 0; i < number; i++)
-			{
-				TextBuilder.AppendLine();
-			}
-
+			TextBuilder.Append('>');
 			return this;
 		}
 
@@ -331,6 +323,29 @@ namespace Durian.Analysis
 			return this;
 		}
 
+		/// <summary>
+		/// Writes a new line.
+		/// </summary>
+		public CodeBuilder NewLine()
+		{
+			TextBuilder.AppendLine();
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <paramref name="number"/> of new lines.
+		/// </summary>
+		/// <param name="number">Number of new lines to write.</param>
+		public CodeBuilder NewLine(int number)
+		{
+			for (int i = 0; i < number; i++)
+			{
+				TextBuilder.AppendLine();
+			}
+
+			return this;
+		}
+
 		/// <inheritdoc cref="ParseSyntaxTree(CSharpParseOptions)"/>
 		public CSharpSyntaxTree ParseSyntaxTree()
 		{
@@ -349,6 +364,52 @@ namespace Durian.Analysis
 				options: options,
 				encoding: Encoding.UTF8
 			);
+		}
+
+		/// <summary>
+		/// Writes a space.
+		/// </summary>
+		public CodeBuilder Space()
+		{
+			TextBuilder.Append(' ');
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <paramref name="number"/> of spaces.
+		/// </summary>
+		/// <param name="number">Number of spaces to write.</param>
+		public CodeBuilder Space(int number)
+		{
+			for (int i = 0; i < number; i++)
+			{
+				TextBuilder.Append(' ');
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a tab.
+		/// </summary>
+		public CodeBuilder Tab()
+		{
+			TextBuilder.Append('\t');
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <paramref name="number"/> of tabs.
+		/// </summary>
+		/// <param name="number">Number of tabs to write.</param>
+		public CodeBuilder Tab(int number)
+		{
+			for (int i = 0; i < number; i++)
+			{
+				TextBuilder.Append('\t');
+			}
+
+			return this;
 		}
 
 		/// <inheritdoc/>
@@ -425,6 +486,17 @@ namespace Durian.Analysis
 		{
 			TextBuilder.AppendLine(value);
 			return this;
+		}
+
+		private void CommaSpace()
+		{
+			TextBuilder.Append(',');
+			Space();
+		}
+
+		private void InitBuilder()
+		{
+			_currentLength = TextBuilder.Length;
 		}
 
 		///// <summary>

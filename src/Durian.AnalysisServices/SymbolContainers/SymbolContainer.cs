@@ -35,9 +35,10 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public bool CanRetrieveData { get; }
 
-		private SymbolContainer()
+		private protected SymbolContainer(ReturnOrder order = default)
 		{
 			_collection = default!;
+			Order = order;
 		}
 
 		private SymbolContainer(IEnumerable<object> collection, ReturnOrder order)
@@ -47,7 +48,7 @@ namespace Durian.Analysis.SymbolContainers
 				throw new ArgumentNullException(nameof(collection));
 			}
 
-			_collection = collection;
+			_collection = AnalysisUtilities.ByOrder(collection, order);
 			Order = order;
 		}
 
@@ -72,9 +73,12 @@ namespace Durian.Analysis.SymbolContainers
 		/// <exception cref="InvalidOperationException"><see cref="ISymbol"/>s cannot be converted into <see cref="IMemberData"/>, because <see cref="TargetCompilation"/> wasn't specified for the current container.</exception>
 		public ImmutableArray<IMemberData> GetData()
 		{
-			InitArray();
+			if (!InitArray())
+			{
+				return ImmutableArray<IMemberData>.Empty;
+			}
 
-			if(_array is IMemberData[] members)
+			if (_array is IMemberData[] members)
 			{
 				return ImmutableArray.Create(members);
 			}
@@ -103,7 +107,10 @@ namespace Durian.Analysis.SymbolContainers
 		/// <inheritdoc/>
 		public virtual ImmutableArray<string> GetNames()
 		{
-			InitArray();
+			if (!InitArray())
+			{
+				return ImmutableArray<string>.Empty;
+			}
 
 			ImmutableArray<string>.Builder builder = ImmutableArray.CreateBuilder<string>(_array.Length);
 
@@ -130,7 +137,10 @@ namespace Durian.Analysis.SymbolContainers
 		/// <inheritdoc/>
 		public ImmutableArray<ISymbol> GetSymbols()
 		{
-			InitArray();
+			if(!InitArray())
+			{
+				return ImmutableArray<ISymbol>.Empty;
+			}
 
 			if(_array is ISymbol[] symbols)
 			{
@@ -166,21 +176,37 @@ namespace Durian.Analysis.SymbolContainers
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return GetArray().GetEnumerator();
+			if(InitArray())
+			{
+				return _array.GetEnumerator();
+			}
+
+			return Array.Empty<object>().GetEnumerator();
 		}
 
-		private protected object[] GetArray()
+		private protected bool TryGetArray([NotNullWhen(true)]out object[]? array)
 		{
-			InitArray();
-			return _array;
+			if(InitArray())
+			{
+				array = _array;
+				return true;
+			}
+
+			array = default;
+			return false;
 		}
 
-		[MemberNotNull(nameof(_array))]
-		private void InitArray()
+		[MemberNotNullWhen(true, nameof(_array))]
+		private bool InitArray()
 		{
 			if(_array is not null)
 			{
-				return;
+				return true;
+			}
+
+			if(_collection is null)
+			{
+				return false;
 			}
 
 			if(_collection is IEnumerable<ISymbol> symbols)
@@ -193,6 +219,7 @@ namespace Durian.Analysis.SymbolContainers
 			}
 
 			_collection = default;
+			return true;
 		}
 
 		internal static void DefaultBuild(StringBuilder builder, ImmutableArray<string> names)

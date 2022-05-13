@@ -274,64 +274,6 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SemanticModel"/> and an <see cref="ISymbol"/> associated with the specified <paramref name="syntaxNode"/>.
-		/// </summary>
-		/// <param name="syntaxNode"><see cref="CSharpSyntaxNode"/> to get the <see cref="ISymbol"/> and <see cref="SemanticModel"/> of.</param>
-		/// <param name="compilation">Current <see cref="ICompilationData"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="syntaxNode"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
-		/// </exception>
-		/// <exception cref="ArgumentException">
-		/// Specified <paramref name="syntaxNode"/> doesn't represent any symbols.
-		/// </exception>
-		public static (SemanticModel semanticModel, ISymbol symbol) GetSymbolAndSemanticModel(CSharpSyntaxNode syntaxNode, ICompilationData compilation, CancellationToken cancellationToken = default)
-		{
-			if (syntaxNode is null)
-			{
-				throw new ArgumentNullException(nameof(syntaxNode));
-			}
-
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(syntaxNode));
-			}
-
-			SemanticModel semanticModel = compilation.Compilation.GetSemanticModel(syntaxNode.SyntaxTree);
-			ISymbol? symbol = semanticModel.GetDeclaredSymbol(syntaxNode, cancellationToken);
-
-			if (symbol is null)
-			{
-				throw new ArgumentException($"Syntax node '{nameof(syntaxNode)}' doesn't represent any symbols!");
-			}
-
-			return (semanticModel, symbol);
-		}
-
-		/// <summary>
-		/// Returns a <see cref="SemanticModel"/> and an <see cref="ISymbol"/> associated with the specified <paramref name="syntaxNode"/>.
-		/// </summary>
-		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/> to return.</typeparam>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="syntaxNode"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
-		/// </exception>
-		/// <exception cref="ArgumentException">
-		/// Specified <paramref name="syntaxNode"/> doesn't represent any symbols. -or-
-		/// Specified <paramref name="syntaxNode"/> is not compatible with the <typeparamref name="TSymbol"/> symbol type.
-		/// </exception>
-		public static (SemanticModel semanticModel, TSymbol symbol) GetSymbolAndSemanticModel<TSymbol>(CSharpSyntaxNode syntaxNode, ICompilationData compilation) where TSymbol : class, ISymbol
-		{
-			(SemanticModel semanticModel, ISymbol s) = GetSymbolAndSemanticModel(syntaxNode, compilation);
-
-			if (s is not TSymbol symbol)
-			{
-				throw new ArgumentException($"Specified syntax node is not compatible with the '{nameof(TSymbol)}' symbol type!");
-			}
-
-			return (semanticModel, symbol);
-		}
-
-		/// <summary>
 		/// Determines whether the specified <paramref name="value"/> is a reserved C# keyword.
 		/// </summary>
 		/// <param name="value">Value to check if is a C# keyword.</param>

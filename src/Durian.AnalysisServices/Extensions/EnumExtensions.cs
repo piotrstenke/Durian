@@ -63,12 +63,12 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <see cref="SyntaxKind"/> to an associated <see cref="RefKind"/> value.
+		/// Converts the specified <paramref name="value"/>to an associated <see cref="RefKind"/> value.
 		/// </summary>
-		/// <param name="kind"><see cref="SyntaxKind"/> to convert.</param>
-		public static RefKind AsRef(this SyntaxKind kind)
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static RefKind AsRef(this SyntaxKind value)
 		{
-			return kind switch
+			return value switch
 			{
 				SyntaxKind.RefKeyword => RefKind.Ref,
 				SyntaxKind.InKeyword => RefKind.In,
@@ -78,12 +78,26 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <see cref="RefKind"/> to an associated <see cref="SyntaxKind"/> value.
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="GenericSubstitution"/> value.
 		/// </summary>
-		/// <param name="kind"><see cref="RefKind"/> to convert.</param>
-		public static SyntaxKind AsSyntax(this RefKind kind)
+		/// <param name="value"><see cref="SymbolName"/> to convert.</param>
+		public static GenericSubstitution AsSubstitution(this SymbolName value)
 		{
-			return kind switch
+			if(value == SymbolName.Substituted)
+			{
+				return GenericSubstitution.TypeArguments;
+			}
+
+			return GenericSubstitution.None;
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="RefKind"/> to convert.</param>
+		public static SyntaxKind AsSyntax(this RefKind value)
+		{
+			return value switch
 			{
 				RefKind.Ref => SyntaxKind.RefKeyword,
 				RefKind.Out => SyntaxKind.OutKeyword,
@@ -101,15 +115,16 @@ namespace Durian.Analysis.Extensions
 		{
 			return kind switch
 			{
-				SymbolKind.NamedType => "type",
+				SymbolKind.NamedType => targetKind == AttributeTargetKind.Value ? "return" : "type",
 				SymbolKind.Field => "field",
-				SymbolKind.Method => targetKind == AttributeTargetKind.FieldOrReturn ? "return" : "method",
-				SymbolKind.Property => targetKind == AttributeTargetKind.FieldOrReturn ? "field" : "property",
+				SymbolKind.Method => targetKind == AttributeTargetKind.Value ? "return" : "method",
+				SymbolKind.Property => targetKind == AttributeTargetKind.Value ? "field" : "property",
 				SymbolKind.Event => targetKind switch
 				{
-					AttributeTargetKind.FieldOrReturn => "field",
-					AttributeTargetKind.MethodOrParam => "method",
-					_ => "event"
+					AttributeTargetKind.This => "event",
+					AttributeTargetKind.Value => "field",
+					AttributeTargetKind.Handler => "method",
+					_ => default
 				},
 				SymbolKind.TypeParameter => "typevar",
 				SymbolKind.Parameter => "param",
@@ -132,11 +147,11 @@ namespace Durian.Analysis.Extensions
 				MethodKind.EventRemove or
 				MethodKind.PropertySet => targetKind switch
 				{
-					AttributeTargetKind.FieldOrReturn => "return",
-					AttributeTargetKind.MethodOrParam => "param",
+					AttributeTargetKind.Value => "return",
+					AttributeTargetKind.Handler => "param",
 					_ => "method"
 				},
-				_ => targetKind == AttributeTargetKind.FieldOrReturn ? "return" : "method"
+				_ => targetKind == AttributeTargetKind.Value ? "return" : "method"
 			};
 		}
 
@@ -176,7 +191,7 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <see cref="Accessibility"/> <paramref name="value"/> to a <see cref="string"/> representation.
+		/// Converts the specified <see cref="Accessibility"/> <paramref name="value"/> to its <see cref="string"/> representation.
 		/// </summary>
 		/// <param name="value"><see cref="Accessibility"/> to convert to a <see cref="string"/> representation.</param>
 		public static string? GetText(this Accessibility value)
@@ -193,7 +208,7 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <see cref="OverloadableOperator"/> <paramref name="value"/> to a <see cref="string"/> representation.
+		/// Converts the specified <see cref="OverloadableOperator"/> <paramref name="value"/> to its <see cref="string"/> representation.
 		/// </summary>
 		/// <param name="value"><see cref="OverloadableOperator"/> to convert to a <see cref="string"/> representation.</param>
 		public static string? GetText(this OverloadableOperator value)
@@ -227,7 +242,7 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <see cref="RefKind"/> <paramref name="value"/> to a <see cref="string"/> representation.
+		/// Converts the specified <see cref="RefKind"/> <paramref name="value"/> to its <see cref="string"/> representation.
 		/// </summary>
 		/// <param name="value"><see cref="RefKind"/> to convert to a <see cref="string"/> representation.</param>
 		/// <param name="useIn">Determines whether to return <see langword="in"/> instead of <see langword="ref"/> <see langword="readonly"/>.</param>
@@ -243,7 +258,21 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <see cref="NumericLiteralPrefix"/> <paramref name="value"/> to a <see cref="string"/> representation.
+		/// Converts the specified <see cref="VarianceKind"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="VarianceKind"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this VarianceKind value)
+		{
+			return value switch
+			{
+				VarianceKind.In => "in",
+				VarianceKind.Out => "out",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="NumericLiteralPrefix"/> <paramref name="value"/> to its <see cref="string"/> representation.
 		/// </summary>
 		/// <param name="value"><see cref="NumericLiteralPrefix"/> to convert to a <see cref="string"/> representation.</param>
 		public static string? GetText(this NumericLiteralPrefix value)
@@ -259,7 +288,7 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <see cref="DecimalLiteralSuffix"/> <paramref name="value"/> to a <see cref="string"/> representation.
+		/// Converts the specified <see cref="DecimalLiteralSuffix"/> <paramref name="value"/> to its <see cref="string"/> representation.
 		/// </summary>
 		/// <param name="value"><see cref="DecimalLiteralSuffix"/> to convert to a <see cref="string"/> representation.</param>
 		public static string? GetText(this DecimalLiteralSuffix value)
@@ -268,7 +297,7 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <see cref="NumericLiteralSuffix"/> <paramref name="value"/> to a <see cref="string"/> representation.
+		/// Converts the specified <see cref="NumericLiteralSuffix"/> <paramref name="value"/> to its <see cref="string"/> representation.
 		/// </summary>
 		/// <param name="value"><see cref="NumericLiteralSuffix"/> to convert to a <see cref="string"/> representation.</param>
 		public static string? GetText(this NumericLiteralSuffix value)
@@ -298,7 +327,29 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Determines whether the specified <see cref="TypeKind"/> a declaration kind.
+		/// Converts the specified <see cref="AttributeTarget"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="AttributeTarget"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this AttributeTarget value)
+		{
+			return value switch
+			{
+				AttributeTarget.Assembly => "assembly",
+				AttributeTarget.Field => "field",
+				AttributeTarget.Return => "return",
+				AttributeTarget.Method => "method",
+				AttributeTarget.Property => "property",
+				AttributeTarget.Event => "event",
+				AttributeTarget.Type => "type",
+				AttributeTarget.TypeVar => "typevar",
+				AttributeTarget.Param => "param",
+				AttributeTarget.Module => "module",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="kind"/> is a declaration kind.
 		/// </summary>
 		/// <param name="kind"><see cref="TypeKind"/> to determine whether is a declaration kind.</param>
 		public static bool IsDeclarationKind(this TypeKind kind)
@@ -309,6 +360,25 @@ namespace Durian.Analysis.Extensions
 				TypeKind.Enum or
 				TypeKind.Interface or
 				TypeKind.Delegate;
+		}
+
+		/// <summary>
+		/// Determines whether the specified ?<paramref name="specialType"/> can be represented using a C# keyword.
+		/// </summary>
+		/// <param name="specialType"><see cref="SpecialType"/> to determine whether can be represented using a C# keyword.</param>
+		public static bool IsKeyword(this SpecialType specialType)
+		{
+			if(specialType == SpecialType.None)
+			{
+				return false;
+			}
+
+			if(specialType == SpecialType.System_Object)
+			{
+				return true;
+			}
+
+			return specialType >= SpecialType.System_Void && specialType <= SpecialType.System_UIntPtr;
 		}
 
 		/// <summary>
