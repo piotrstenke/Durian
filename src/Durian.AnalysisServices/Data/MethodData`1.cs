@@ -26,15 +26,15 @@ namespace Durian.Analysis.Data
 		protected CSharpSyntaxNode? BodyRaw { get; set; }
 
 		/// <inheritdoc/>
-		public MethodBody BodyType
+		public MethodStyle BodyType
 		{
 			get
 			{
 				return Body switch
 				{
-					BlockSyntax => MethodBody.Block,
-					ArrowExpressionClauseSyntax => MethodBody.Expression,
-					_ => MethodBody.None
+					BlockSyntax => MethodStyle.Block,
+					ArrowExpressionClauseSyntax => MethodStyle.Expression,
+					_ => MethodStyle.None
 				};
 			}
 		}

@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using Durian.Analysis.CodeGeneration;
@@ -236,6 +237,15 @@ namespace Durian.Analysis.Extensions
 				SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(arguments)));
 		}
 
+		/// <summary>
+		/// Returns the kind of accessor the specified <paramref name="method"/> represents.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the accessor kind of.</param>
+		public static Accessor GetAccessorKind(this IMethodSymbol method)
+		{
+			return method.MethodKind.AsAccessor();
+		}
+
 		/// <inheritdoc cref="GetAllMembers(INamedTypeSymbol, string, ReturnOrder)"/>
 		public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, ReturnOrder order = ReturnOrder.Parent)
 		{
@@ -322,16 +332,16 @@ namespace Durian.Analysis.Extensions
 
 				case AttributeTarget.Return:
 				{
-					if(symbol is IMethodSymbol method)
+					if (symbol is IMethodSymbol method)
 					{
-						if(!method.IsConstructor() && method.MethodKind != MethodKind.Destructor)
+						if (!method.IsConstructor() && method.MethodKind != MethodKind.Destructor)
 						{
 							return method.ReturnType;
 						}
 					}
-					else if(symbol is INamedTypeSymbol type)
+					else if (symbol is INamedTypeSymbol type)
 					{
-						if(type.DelegateInvokeMethod is not null)
+						if (type.DelegateInvokeMethod is not null)
 						{
 							return type.DelegateInvokeMethod.ReturnType;
 						}
@@ -342,16 +352,16 @@ namespace Durian.Analysis.Extensions
 
 				case AttributeTarget.Field:
 				{
-					if(symbol is IPropertySymbol property)
+					if (symbol is IPropertySymbol property)
 					{
-						if(property.GetBackingField() is IFieldSymbol backingField)
+						if (property.GetBackingField() is IFieldSymbol backingField)
 						{
 							return backingField;
 						}
 					}
-					else if(symbol is IEventSymbol @event)
+					else if (symbol is IEventSymbol @event)
 					{
-						if(@event.GetBackingField() is IFieldSymbol backingField)
+						if (@event.GetBackingField() is IFieldSymbol backingField)
 						{
 							return backingField;
 						}
@@ -374,7 +384,7 @@ namespace Durian.Analysis.Extensions
 
 				case AttributeTarget.Param:
 				{
-					if(symbol is IMethodSymbol method && method.MethodKind is MethodKind.PropertySet or MethodKind.EventAdd or MethodKind.EventRemove)
+					if (symbol is IMethodSymbol method && method.MethodKind is MethodKind.PropertySet or MethodKind.EventAdd or MethodKind.EventRemove)
 					{
 						return method.Parameters[0];
 					}
@@ -551,7 +561,7 @@ namespace Durian.Analysis.Extensions
 			{
 				foreach (IMethodSymbol method in type.GetAllMembers().OfType<IMethodSymbol>())
 				{
-					if (SymbolFacts.IsGetAwaiterRaw(method, out INamedTypeSymbol? returnType) && HandleAwaiterType(type))
+					if (method.IsGetAwaiterRaw(out INamedTypeSymbol? returnType) && HandleAwaiterType(type))
 					{
 						return resultType;
 					}
@@ -573,7 +583,7 @@ namespace Durian.Analysis.Extensions
 						return resultType;
 					}
 				}
-				else if (symbol is IMethodSymbol method && SymbolFacts.IsGetAwaiterRaw(method, out INamedTypeSymbol? awaiter))
+				else if (symbol is IMethodSymbol method && method.IsGetAwaiterRaw(out INamedTypeSymbol? awaiter))
 				{
 					awaiters.Add(awaiter);
 				}
@@ -786,6 +796,35 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns value representing special kind of the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the special constructor kind of.</param>
+		public static SpecialConstructor GetConstructorKind(this IMethodSymbol method)
+		{
+			if(method.MethodKind == MethodKind.StaticConstructor)
+			{
+				return SpecialConstructor.Static;
+			}
+
+			if(method.IsVararg)
+			{
+				return default;
+			}
+
+			if(method.Parameters.Length == 0)
+			{
+				return method.IsImplicitlyDeclared ? SpecialConstructor.Default : SpecialConstructor.Parameterless;
+			}
+
+			if(method.Parameters.Length == 1 && method.Parameters[0].RefKind == RefKind.None && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, method.ContainingType))
+			{
+				return SpecialConstructor.Copy;
+			}
+
+			return default;
+		}
+
+		/// <summary>
 		/// Returns all <see cref="INamespaceSymbol"/>s that contain the target <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent namespaces of.</param>
@@ -922,12 +961,35 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns the default constructor of the specified <paramref name="type"/> if it has one.
+		/// Returns the default <see cref="Accessibility"/> in the context of the specified <paramref name="symbol"/>.
+		/// <para>Default <see cref="Accessibility"/> is determined by the following rules:</para>
+		/// <list type="bullet">
+		/// <item>For interface members, the default is <see cref="Accessibility.Public"/>.</item>
+		/// <item>For top-level members, the default is <see cref="Accessibility.Internal"/>.</item>
+		/// <item>For property accessors, the default is the accessibility of the parent property.</item>
+		/// <item>For all other members, the default is <see cref="Accessibility.Private"/>.</item>
+		/// </list>
 		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the default constructor of.</param>
-		public static IMethodSymbol? GetDefaultConstructor(this INamedTypeSymbol type)
+		/// <param name="symbol"><see cref="ISymbol"/> to get the default accessibility of.</param>
+		/// <param name="includeAssociated">Determines whether accessibility of an associated member of the <paramref name="symbol"/> (e.g. parent property of an accessor) should be treated as default.</param>
+		public static Accessibility GetDefaultAccessibility(this ISymbol symbol, bool includeAssociated = true)
 		{
-			return type.InstanceConstructors.FirstOrDefault(ctor => ctor.IsImplicitlyDeclared && ctor.Parameters.Length == 0);
+			if (symbol.IsTopLevel())
+			{
+				return Accessibility.Internal;
+			}
+
+			if (symbol.ContainingSymbol is INamedTypeSymbol type && type.TypeKind == TypeKind.Interface)
+			{
+				return Accessibility.Public;
+			}
+
+			if (includeAssociated && symbol is IMethodSymbol method && method.IsPropertyAccessor())
+			{
+				return method.AssociatedSymbol!.DeclaredAccessibility;
+			}
+
+			return Accessibility.Private;
 		}
 
 		/// <summary>
@@ -1486,7 +1548,7 @@ namespace Durian.Analysis.Extensions
 			{
 				CheckAccessor(property.SetMethod);
 			}
-			else if (property.HasReadOnlyModifier())
+			else if (property.IsReadOnlyContext())
 			{
 				modifiers.Add("readonly");
 			}
@@ -1518,7 +1580,7 @@ namespace Durian.Analysis.Extensions
 			AddAccessibilityModifiers(modifiers, @event.DeclaredAccessibility);
 			AddBasicMethodModifiers(modifiers, @event);
 
-			if (@event.HasReadOnlyModifier())
+			if (@event.IsReadOnlyContext())
 			{
 				modifiers.Add("readonly");
 			}
@@ -1717,15 +1779,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns the parameterless constructor of the specified <paramref name="type"/> if it has one.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the parameterless constructor of.</param>
-		public static IMethodSymbol? GetParameterlessConstructor(this INamedTypeSymbol type)
-		{
-			return type.InstanceConstructors.FirstOrDefault(ctor => ctor.Parameters.Length == 0);
-		}
-
-		/// <summary>
 		/// Returns all <see cref="TypeDeclarationSyntax"/>es of the specified <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the <see cref="TypeDeclarationSyntax"/>es of.</param>
@@ -1781,38 +1834,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the primary constructor of.</param>
 		public static IMethodSymbol? GetPrimaryConstructor(this INamedTypeSymbol type)
 		{
-			if(!type.IsRecord)
-			{
-				return default;
-			}
-
-#if ENABLE_REFLECTION
-			if(type.InstanceConstructors.FirstOrDefault(m =>
-				m.DeclaredAccessibility == Accessibility.Public &&
-				m.GetType().Name == "SynthesizedRecordConstructor"
-			) is IMethodSymbol ctor)
-			{
-				return ctor;
-			}
-#endif
-
-			RecordDeclarationSyntax decl = type.GetSyntax
-
-			return type.InstanceConstructors.FirstOrDefault(m =>
-				m.DeclaredAccessibility == Accessibility.Public &&
-				m.gets)
-		}
-
-		/// <summary>
-		/// Returns the copy constructor of the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the copy constructor of.</param>
-		public static IMethodSymbol? GetCopyConstructor(this INamedTypeSymbol type)
-		{
-			return type.InstanceConstructors.FirstOrDefault(ctor =>
-				ctor.Parameters.Length == 1 &&
-				SymbolEqualityComparer.Default.Equals(ctor.Parameters[0], type)
-			);
+			return type.InstanceConstructors.FirstOrDefault(ctor => ctor.IsPrimaryConstructor());
 		}
 
 		/// <summary>
@@ -1824,6 +1846,21 @@ namespace Durian.Analysis.Extensions
 		public static INamespaceSymbol? GetRootNamespace(this ISymbol symbol, bool includeGlobal = false)
 		{
 			return GetContainingNamespaces(symbol, includeGlobal).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Returns an <see cref="IMethodSymbol"/> representing the given kind of special constructor available from the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the special member from.</param>
+		/// <param name="kind">Kind of special constructor to return.</param>
+		public static IMethodSymbol? GetSpecialConstructor(this INamedTypeSymbol type, SpecialConstructor kind)
+		{
+			return kind switch
+			{
+				SpecialConstructor.Static => type.StaticConstructors.FirstOrDefault(),
+				SpecialConstructor.None => default,
+				_ => type.InstanceConstructors.FirstOrDefault(ctor => ctor.GetConstructorKind() == kind),
+			};
 		}
 
 		/// <summary>
@@ -1847,7 +1884,7 @@ namespace Durian.Analysis.Extensions
 		{
 			if (!symbol.TryGetSyntax(out T? declaration, cancellationToken))
 			{
-				throw new InvalidOperationException($"Method '{symbol}' is not associated with a syntax node of type '{typeof(T).Name}'");
+				throw Exc_SymbolNotAssociatedWithNode(symbol, typeof(T));
 			}
 
 			return declaration;
@@ -1875,9 +1912,96 @@ namespace Durian.Analysis.Extensions
 			return type.GetSyntax<BaseTypeDeclarationSyntax>(cancellationToken);
 		}
 
+		/// <summary>
+		/// Returns a <see cref="ParameterSyntax"/> associated with the specified <paramref name="parameter"/>.
+		/// </summary>
+		/// <param name="parameter"><see cref="IParameterSymbol"/> to get the <see cref="ParameterSyntax"/> associated with.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="InvalidOperationException"><paramref name="parameter"/> is not associated with a <see cref="ParameterSyntax"/>.</exception>
 		public static ParameterSyntax GetSyntax(this IParameterSymbol parameter, CancellationToken cancellationToken = default)
 		{
+			return parameter.GetSyntax<ParameterSyntax>(cancellationToken);
+		}
 
+		/// <summary>
+		/// Returns a <see cref="TypeParameterSyntax"/> associated with the specified <paramref name="parameter"/>.
+		/// </summary>
+		/// <param name="parameter"><see cref="INamedTypeSymbol"/> to get the <see cref="TypeParameterSyntax"/> associated with.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="TypeParameterSyntax"><paramref name="parameter"/> is not associated with a <see cref="TypeParameterSyntax"/>.</exception>
+		public static TypeParameterSyntax GetSyntax(this ITypeParameterSymbol parameter, CancellationToken cancellationToken = default)
+		{
+			return parameter.GetSyntax<TypeParameterSyntax>(cancellationToken);
+		}
+
+		/// <summary>
+		/// Returns a <see cref="EventFieldDeclarationSyntax"/> associated with the specified <paramref name="event"/>.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to get the <see cref="EventFieldDeclarationSyntax"/> associated with.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="InvalidOperationException"><paramref name="event"/> is not associated with a <see cref="EventFieldDeclarationSyntax"/>.</exception>
+		public static EventFieldDeclarationSyntax GetSyntax(this IEventSymbol @event, CancellationToken cancellationToken = default)
+		{
+			if (!@event.TryGetSyntax(out VariableDeclaratorSyntax? syntax, cancellationToken) || syntax.Parent?.Parent is not EventFieldDeclarationSyntax decl)
+			{
+				throw Exc_SymbolNotAssociatedWithNode(@event, typeof(EventFieldDeclarationSyntax));
+			}
+
+			return decl;
+		}
+
+		/// <summary>
+		/// Returns a <see cref="FieldDeclarationSyntax"/> associated with the specified <paramref name="field"/>.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to get the <see cref="FieldDeclarationSyntax"/> associated with.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="InvalidOperationException"><paramref name="field"/> is not associated with a <see cref="FieldDeclarationSyntax"/>.</exception>
+		public static FieldDeclarationSyntax GetSyntax(this IFieldSymbol field, CancellationToken cancellationToken = default)
+		{
+			if (!field.TryGetSyntax(out VariableDeclaratorSyntax? syntax, cancellationToken) || syntax.Parent?.Parent is not FieldDeclarationSyntax decl)
+			{
+				throw Exc_SymbolNotAssociatedWithNode(field, typeof(FieldDeclarationSyntax));
+			}
+
+			return decl;
+		}
+
+		/// <summary>
+		/// Returns a <see cref="LocalDeclarationStatementSyntax"/> associated with the specified <paramref name="local"/>.
+		/// </summary>
+		/// <param name="local"><see cref="ILocalSymbol"/> to get the <see cref="LocalDeclarationStatementSyntax"/> associated with.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="InvalidOperationException"><paramref name="local"/> is not associated with a <see cref="LocalDeclarationStatementSyntax"/>.</exception>
+		public static LocalDeclarationStatementSyntax GetSyntax(this ILocalSymbol local, CancellationToken cancellationToken = default)
+		{
+			if (!local.TryGetSyntax(out VariableDeclaratorSyntax? syntax, cancellationToken) || syntax.Parent?.Parent is not LocalDeclarationStatementSyntax decl)
+			{
+				throw Exc_SymbolNotAssociatedWithNode(local, typeof(LocalDeclarationStatementSyntax));
+			}
+
+			return decl;
+		}
+
+		/// <summary>
+		/// Returns a <see cref="BasePropertyDeclarationSyntax"/> associated with the specified <paramref name="property"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to get the <see cref="BasePropertyDeclarationSyntax"/> associated with.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="InvalidOperationException"><paramref name="property"/> is not associated with a <see cref="BasePropertyDeclarationSyntax"/>.</exception>
+		public static BasePropertyDeclarationSyntax GetSyntax(this IPropertySymbol property, CancellationToken cancellationToken = default)
+		{
+			return property.GetSyntax<BasePropertyDeclarationSyntax>(cancellationToken);
+		}
+
+		/// <summary>
+		/// Returns a <see cref="LabeledStatementSyntax"/> associated with the specified <paramref name="label"/>.
+		/// </summary>
+		/// <param name="label"><see cref="ILabelSymbol"/> to get the <see cref="LabeledStatementSyntax"/> associated with.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		/// <exception cref="InvalidOperationException"><paramref name="label"/> is not associated with a <see cref="LabeledStatementSyntax"/>.</exception>
+		public static LabeledStatementSyntax GetSyntax(this ILabelSymbol label, CancellationToken cancellationToken = default)
+		{
+			return label.GetSyntax<LabeledStatementSyntax>(cancellationToken);
 		}
 
 		/// <summary>
@@ -2334,6 +2458,12 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return syntax;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static InvalidOperationException Exc_SymbolNotAssociatedWithNode(ISymbol symbol, Type type)
+		{
+			return new InvalidOperationException($"Method '{symbol}' is not associated with a syntax node of type '{type.Name}'");
 		}
 
 		private static IEnumerable<INamedTypeSymbol> GetBaseTypes_Internal(INamedTypeSymbol type, bool includeSelf)

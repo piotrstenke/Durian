@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -14,6 +15,11 @@ namespace Durian.Analysis.Data
 	public class ConstructorData : MethodData<ConstructorDeclarationSyntax>
 	{
 		/// <summary>
+		/// Kind of the constructor, or <see cref="SpecialConstructor.None"/> if its not special.
+		/// </summary>
+		public SpecialConstructor SpecialKind { get; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="ConstructorData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="ConstructorDeclarationSyntax"/> this <see cref="ConstructorData"/> represents.</param>
@@ -23,10 +29,12 @@ namespace Durian.Analysis.Data
 		/// </exception>
 		public ConstructorData(ConstructorDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
 		{
+			SpecialKind = Symbol.GetConstructorKind();
 		}
 
 		internal ConstructorData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
+			SpecialKind = Symbol.GetConstructorKind();
 		}
 
 		/// <summary>
@@ -60,6 +68,7 @@ namespace Durian.Analysis.Data
 			attributes
 		)
 		{
+			SpecialKind = Symbol.GetConstructorKind();
 		}
 	}
 }

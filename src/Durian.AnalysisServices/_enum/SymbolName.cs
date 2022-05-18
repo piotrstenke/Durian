@@ -34,6 +34,11 @@ namespace Durian.Analysis
 		/// <summary>
 		/// For built-in types includes only their actual, non-aliased names (e.g. <c>Int32</c> instead of <see langword="int"/>).
 		/// </summary>
-		SystemName = 4
+		SystemName = 4,
+
+		/// <summary>
+		/// Removes the 'Attribute' suffix from the name.
+		/// </summary>
+		Attribute = 5
 	}
 }

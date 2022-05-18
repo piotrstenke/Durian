@@ -67,6 +67,26 @@ namespace Durian.Analysis
 		/// <summary>
 		/// The member is equivalent to the <see cref="TaskAwaiter.GetResult"/> method.
 		/// </summary>
-		GetResult = 10
+		GetResult = 10,
+
+		/// <summary>
+		/// The member is equivalent to the PrintMembers method in record declarations.
+		/// </summary>
+		PrintMembers = 11,
+
+		/// <summary>
+		/// The member is equivalent to the <see cref="List{T}.Count"/> property.
+		/// </summary>
+		Count = 12,
+
+		/// <summary>
+		/// The member is equivalent to the <see cref="Array.Length"/> property.
+		/// </summary>
+		Length = 13,
+
+		/// <summary>
+		/// The member is equivalent to the <see cref="ReadOnlySpan{T}.Slice(int, int)"/> method.
+		/// </summary>
+		Slice = 14
 	}
 }

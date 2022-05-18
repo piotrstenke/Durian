@@ -8,43 +8,255 @@ using System.Reflection.Metadata;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis
 {
 	public partial class CodeBuilder
 	{
+		public CodeBuilder Field(IFieldSymbol field)
+		{
+		}
+
+		public CodeBuilder Event(IEventSymbol @event)
+		{
+		}
+
+		public CodeBuilder EventList()
+		{
+
+		}
+
+		public CodeBuilder FieldList()
+		{
+
+		}
+
+		public CodeBuilder LocalList()
+		{
+
+		}
+
+		/// <summary>
+		/// Begins declaration of an indexer.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Indexer(IPropertySymbol property, MethodStyle body = CodeGeneration.MethodStyle.Block)
+		{
+			Accessibility(property);
+			WritePropertyModifiers(property);
+			ReturnType(property);
+
+			TextBuilder.Append("this[");
+
+			ImmutableArray<IParameterSymbol> parameters = property.Parameters;
+
+			if(parameters.Length > 0)
+			{
+				Parameter(parameters[0]);
+
+				for (int i = 1; i < parameters.Length; i++)
+				{
+					CommaSpace();
+					Parameter(parameters[i]);
+				}
+			}
+
+			TextBuilder.Append(']');
+
+			return MethodBody(body);
+		}
+
+		/// <summary>
+		/// Begins declaration of a property.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to begin the declaration of.</param>
+		/// <param name="kind">Kind of auto-property to write.</param>
+		public CodeBuilder Property(IPropertySymbol property, AutoPropertyKind kind)
+		{
+			Accessibility(property);
+
+			if (property.IsStatic)
+			{
+				TextBuilder.Append("static ");
+			}
+
+			WritePropertyModifiers(property);
+			ReturnType(property);
+			SimpleName(property);
+
+			switch (kind)
+			{
+				case AutoPropertyKind.GetOnly:
+					TextBuilder.Append(" { get; }");
+					break;
+
+				case AutoPropertyKind.GetSet:
+					TextBuilder.Append(" { get; set; }");
+					break;
+
+				case AutoPropertyKind.GetInit:
+					TextBuilder.Append(" { get; init; }");
+					break;
+			}
+
+			return this;
+		}
+
+		private void WritePropertyModifiers(IPropertySymbol property)
+		{
+			WriteExternAndVirtualityModifiers(property);
+
+			if (property.IsReadOnlyContext())
+			{
+				TextBuilder.Append("readonly ");
+			}
+
+			TryUnsafe(property);
+		}
+
+		/// <summary>
+		/// Begins declaration of a property.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Property(IPropertySymbol property, MethodStyle body = CodeGeneration.MethodStyle.Block)
+		{
+			Accessibility(property);
+
+			if (property.IsStatic)
+			{
+				TextBuilder.Append("static ");
+			}
+
+			WritePropertyModifiers(property);
+			ReturnType(property);
+			SimpleName(property);
+			return MethodBody(body);
+		}
+
+		public CodeBuilder Constant(ILocalSymbol local)
+		{
+			InitBuilder();
+
+			if(local.IsConst)
+			{
+				TextBuilder.Append("const ");
+			}
+		}
+
+		public CodeBuilder Constant(IFieldSymbol field)
+		{
+
+		}
+
+		/// <summary>
+		/// Begins declaration of a local variable.
+		/// </summary>
+		/// <param name="local"><see cref="ILabelSymbol"/> to begin the declaration of.</param>
+		/// <param name="format">Specifies how to format the <paramref name="local"/>.</param>
+		public CodeBuilder Local(ILocalSymbol local, LocalFormat format = default)
+		{
+			if(local.RefKind.GetText(false) is string refKind)
+			{
+				TextBuilder.Append(refKind);
+				TextBuilder.Append(' ');
+			}
+
+			if(format.HasFlag(LocalFormat.ImplicitType) && !local.IsRef)
+			{
+				TextBuilder.Append("var ");
+			}
+			else
+			{
+				Type(local.Type);
+			}
+
+			if(format.HasFlag(LocalFormat.SkipInitializer))
+			{
+				TextBuilder.Append(';');
+				NewLine();
+			}
+			else
+			{
+				TextBuilder.Append('=');
+				TextBuilder.Append(' ');
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a label statement.
+		/// </summary>
+		/// <param name="label"><see cref="ILabelSymbol"/> to write.</param>
+		public CodeBuilder Label(ILabelSymbol label)
+		{
+			SimpleName(label);
+			TextBuilder.Append(':');
+			return this;
+		}
+
 		/// <summary>
 		/// Writes accessibility modifier of the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to write the accessibility modifier of.</param>
-		/// <param name="skipDefault">Determines whether to skip the accessibility modifier if it's default in the current context (see <see cref="SymbolFacts.HasDefaultAccessibility(ISymbol)"/> for more details).</param>
-		public CodeBuilder Accessibility(ISymbol symbol, bool skipDefault = true)
+		public CodeBuilder Accessibility(ISymbol symbol)
+		{
+			Accessibility defaultAccessibility = symbol.GetDefaultAccessibility(false);
+
+			switch (defaultAccessibility)
+			{
+				case Microsoft.CodeAnalysis.Accessibility.Private:
+
+					if(_style.UseExplicitPrivate)
+					{
+						TextBuilder.Append("public ");
+					}
+
+					break;
+
+				case Microsoft.CodeAnalysis.Accessibility.Internal:
+
+					if(_style.UseExplicitInternal)
+					{
+						TextBuilder.Append("internal ");
+					}
+
+					break;
+
+				case Microsoft.CodeAnalysis.Accessibility.Public:
+
+					if(_style.InterfaceMemberStyle.HasFlag(InterfaceMemberStyle.ExplicitAccess))
+					{
+						TextBuilder.Append("public ");
+					}
+
+					break;
+
+				default:
+					goto case Microsoft.CodeAnalysis.Accessibility.Private;
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes accessibility modifier of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to write the accessibility modifier of.</param>
+		/// <param name="skipDefault">Determines whether to skip the default accessibility in the context of the current <paramref name="symbol"/>.</param>
+		public CodeBuilder Accessibility(ISymbol symbol, bool skipDefault)
 		{
 			InitBuilder();
 
-			if(skipDefault && symbol.HasDefaultAccessibility())
+			if(skipDefault && symbol.DeclaredAccessibility == symbol.GetDefaultAccessibility())
 			{
 				return this;
 			}
 
 			return Accessibility(symbol.DeclaredAccessibility);
-		}
-
-		/// <summary>
-		/// Writes an accessibility modifier.
-		/// </summary>
-		/// <param name="accessibility">Accessibility modifier to write.</param>
-		public CodeBuilder Accessibility(Accessibility accessibility)
-		{
-			InitBuilder();
-
-			if (accessibility.GetText() is string keyword)
-			{
-				TextBuilder.Append(keyword);
-				Space();
-			}
-
-			return this;
 		}
 
 		/// <summary>
@@ -189,9 +401,18 @@ namespace Durian.Analysis
 		/// Begins declaration of an anonymous function.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="functionBody">Determines what kind of anonymous function body to begin.</param>
+		public CodeBuilder AnonymousFunction(IMethodSymbol method)
+		{
+			return AnonymousFunction(method, _style.LambdaStyle, _style.UseLambdaReturnType);
+		}
+
+		/// <summary>
+		/// Begins declaration of an anonymous function.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines what kind of anonymous function body to begin.</param>
 		/// <param name="explicitType">Determines whether to apply explicit return type.</param>
-		public CodeBuilder BeginAnonymousFunction(IMethodSymbol method, AnonymousFunctionBody functionBody = AnonymousFunctionBody.Expression, bool explicitType = false)
+		public CodeBuilder AnonymousFunction(IMethodSymbol method, LambdaStyle body = LambdaStyle.Expression, bool explicitType = false)
 		{
 			InitBuilder();
 
@@ -205,7 +426,7 @@ namespace Durian.Analysis
 				TextBuilder.Append("async ");
 			}
 
-			if (functionBody == AnonymousFunctionBody.Method)
+			if (body == LambdaStyle.Method)
 			{
 				TextBuilder.Append("delegate");
 			}
@@ -242,25 +463,23 @@ namespace Durian.Analysis
 				}
 			}
 
-			switch (functionBody)
+			switch (body)
 			{
-				case AnonymousFunctionBody.Block:
+				case LambdaStyle.Block:
 					Space();
 					TextBuilder.Append('=');
 					TextBuilder.Append('>');
-					Space();
-					NewLine();
 					BeginBlock();
 					break;
 
-				case AnonymousFunctionBody.Expression:
+				case LambdaStyle.Expression:
 					Space();
 					TextBuilder.Append('=');
 					TextBuilder.Append('>');
 					Space();
 					break;
 
-				case AnonymousFunctionBody.Method:
+				case LambdaStyle.Method:
 					BeginBlock();
 					break;
 
@@ -276,7 +495,7 @@ namespace Durian.Analysis
 		/// Begins declaration of a class.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
-		public CodeBuilder BeginClass(INamedTypeSymbol type)
+		public CodeBuilder Class(INamedTypeSymbol type)
 		{
 			Accessibility(type);
 
@@ -293,15 +512,8 @@ namespace Durian.Analysis
 				TextBuilder.Append("sealed ");
 			}
 
-			if (type.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
-
-			if (type.IsPartial())
-			{
-				TextBuilder.Append("partial ");
-			}
+			TryUnsafe(type);
+			TryPartial(type);
 
 			TextBuilder.Append("class ");
 
@@ -318,7 +530,6 @@ namespace Durian.Analysis
 				BaseTypeList(type);
 			}
 
-			NewLine();
 			return BeginBlock();
 		}
 
@@ -326,20 +537,16 @@ namespace Durian.Analysis
 		/// Begins declaration of a constructor.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginConstructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Constructor(IMethodSymbol method, MethodStyle body = CodeGeneration.MethodStyle.Block)
 		{
 			Accessibility(method);
 
-			if (method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
-
+			TryUnsafe(method);
 			SimpleName(method.ContainingType);
 
 			ParameterList(method);
-			BeginMethodBody(methodBody);
+			MethodBody(body);
 
 			return this;
 		}
@@ -349,15 +556,11 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
 		/// <param name="initializer">Determines which constructor initializer to use.</param>
-		public CodeBuilder BeginConstructorWithInitializer(IMethodSymbol method, ConstructorInitializer initializer = ConstructorInitializer.None)
+		public CodeBuilder ConstructorWithInitializer(IMethodSymbol method, ConstructorInitializer initializer = default)
 		{
 			Accessibility(method);
 
-			if (method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
-
+			TryUnsafe(method);
 			SimpleName(method.ContainingType);
 
 			ParameterList(method);
@@ -380,17 +583,14 @@ namespace Durian.Analysis
 		/// Begins declaration of a conversion operator.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginConversionOperator(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder ConversionOperator(IMethodSymbol method, MethodStyle body = CodeGeneration.MethodStyle.Block)
 		{
 			Accessibility(method);
 
 			TextBuilder.Append("static ");
 
-			if (method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
+			TryUnsafe(method);
 
 			if (method.Name == WellKnownMemberNames.ImplicitConversionName)
 			{
@@ -406,7 +606,7 @@ namespace Durian.Analysis
 			Type(method.ReturnType);
 
 			ParameterList(method);
-			BeginMethodBody(methodBody);
+			MethodBody(body);
 
 			return this;
 		}
@@ -415,22 +615,26 @@ namespace Durian.Analysis
 		/// Begins declaration of a method of any valid kind.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		/// <exception cref="ArgumentException"><paramref name="method"/> is of kind does not support declarations.</exception>
-		public CodeBuilder BeginDeclaration(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		public CodeBuilder Declaration(IMethodSymbol method, MethodStyle body = CodeGeneration.MethodStyle.Block)
 		{
 			return method.MethodKind switch
 			{
-				MethodKind.Ordinary => BeginMethod(method, methodBody),
-				MethodKind.ReducedExtension => BeginMethod(method.ReducedFrom!, methodBody),
-				MethodKind.StaticConstructor => BeginStaticConstructor(method, methodBody),
-				MethodKind.LocalFunction => BeginLocalFunction(method, methodBody),
-				MethodKind.Conversion => BeginConversionOperator(method, methodBody),
-				MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator => BeginOperator(method, methodBody),
-				MethodKind.ExplicitInterfaceImplementation => BeginExplicitInterfaceImplementation(method, methodBody),
-				MethodKind.LambdaMethod => BeginAnonymousFunction(method, methodBody.AsAnonymousFunction()),
-				MethodKind.Destructor => BeginDestructor(method, methodBody),
-				MethodKind.Constructor => BeginConstructor(method, methodBody),
+				MethodKind.Ordinary => Method(method, body),
+				MethodKind.ReducedExtension => Method(method.ReducedFrom!, body),
+				MethodKind.StaticConstructor => StaticConstructor(method, body),
+				MethodKind.LocalFunction => LocalFunction(method, body),
+				MethodKind.Conversion => ConversionOperator(method, body),
+				MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator => Operator(method, body),
+				MethodKind.ExplicitInterfaceImplementation => ExplicitInterfaceImplementation(method, body),
+				MethodKind.LambdaMethod => AnonymousFunction(method, body.AsLambda()),
+				MethodKind.Destructor => Destructor(method, body),
+				MethodKind.Constructor => Constructor(method, body),
+				MethodKind.EventAdd => Accessor(method, CodeGeneration.Accessor.Add, body),
+				MethodKind.EventRemove => Accessor(method, CodeGeneration.Accessor.Remove, body),
+				MethodKind.PropertyGet => Accessor(method, CodeGeneration.Accessor.Get, body),
+				MethodKind.PropertySet => Accessor(method, method.IsInitOnly ? CodeGeneration.Accessor.Init : CodeGeneration.Accessor.Set, body),
 				_ => throw new ArgumentException($"Method '{method}' is of kind that does not support declarations", nameof(method))
 			};
 		}
@@ -440,20 +644,20 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
 		/// <exception cref="ArgumentException"><paramref name="type"/> is of kind does not support declarations.</exception>
-		public CodeBuilder BeginDeclaration(INamedTypeSymbol type)
+		public CodeBuilder Declaration(INamedTypeSymbol type)
 		{
 			if (type.IsRecord)
 			{
-				return BeginRecord(type);
+				return Record(type);
 			}
 
 			return type.TypeKind switch
 			{
-				TypeKind.Class => BeginClass(type),
-				TypeKind.Struct => BeginStruct(type),
-				TypeKind.Enum => BeginEnum(type),
+				TypeKind.Class => Class(type),
+				TypeKind.Struct => Struct(type),
+				TypeKind.Enum => Enum(type),
 				TypeKind.Delegate => Delegate(type),
-				TypeKind.Interface => BeginInterface(type),
+				TypeKind.Interface => Interface(type),
 				_ => throw new ArgumentException($"Type '{type}' is of kind that does not support declarations", nameof(type))
 			};
 		}
@@ -462,22 +666,19 @@ namespace Durian.Analysis
 		/// Begins declaration of a destructor.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginDestructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Destructor(IMethodSymbol method, MethodStyle body = CodeGeneration.MethodStyle.Block)
 		{
 			InitBuilder();
 
-			if (method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
+			TryUnsafe(method);
 
 			TextBuilder.Append('~');
 			SimpleName(method.ContainingType);
 			TextBuilder.Append('(');
 			TextBuilder.Append(')');
 
-			BeginMethodBody(methodBody);
+			MethodBody(body);
 
 			return this;
 		}
@@ -486,7 +687,7 @@ namespace Durian.Analysis
 		/// Begins declaration of an enum.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
-		public CodeBuilder BeginEnum(INamedTypeSymbol type)
+		public CodeBuilder Enum(INamedTypeSymbol type)
 		{
 			Accessibility(type);
 			TextBuilder.Append("enum ");
@@ -501,7 +702,6 @@ namespace Durian.Analysis
 				TextBuilder.Append(type.EnumUnderlyingType.SpecialType.GetKeyword()!);
 			}
 
-			NewLine();
 			BeginBlock();
 
 			return this;
@@ -511,8 +711,17 @@ namespace Durian.Analysis
 		/// Begins declaration of an explicit interface method implementation.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginExplicitInterfaceImplementation(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		public CodeBuilder ExplicitInterfaceImplementation(IMethodSymbol method)
+		{
+			return ExplicitInterfaceImplementation(method, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of an explicit interface method implementation.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder ExplicitInterfaceImplementation(IMethodSymbol method, MethodStyle body)
 		{
 			InitBuilder();
 
@@ -521,15 +730,8 @@ namespace Durian.Analysis
 				TextBuilder.Append("readonly ");
 			}
 
-			if (method.IsExtern)
-			{
-				TextBuilder.Append("extern ");
-			}
-
-			if (method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
+			TryExtern(method);
+			TryUnsafe(method);
 
 			if (method.IsAsync)
 			{
@@ -541,7 +743,7 @@ namespace Durian.Analysis
 				Type(method.ExplicitInterfaceImplementations[0].ContainingType);
 			}
 
-			WriteMethodHead(method, methodBody);
+			WriteMethodHead(method, body);
 			return this;
 		}
 
@@ -549,29 +751,35 @@ namespace Durian.Analysis
 		/// Begins an attribute list.
 		/// </summary>
 		/// <param name="type">Type of first attribute in the list.</param>
-		public CodeBuilder BeginAttributeList(INamedTypeSymbol type)
+		public CodeBuilder AttributeList(INamedTypeSymbol type)
 		{
+			InitBuilder();
+
 			TextBuilder.Append('[');
-			return Name(type);
+			return Name(type, SymbolName.Attribute);
+		}
+
+		/// <summary>
+		/// Begins an attribute list with an <see cref="AttributeTarget"/>.
+		/// </summary>
+		/// <param name="type">Type of first attribute in the list.</param>
+		/// <param name="target">Target of the attribute.</param>
+		public CodeBuilder AttributeList(INamedTypeSymbol type, AttributeTarget target)
+		{
+			AttributeList(target);
+			return Name(type, SymbolName.Attribute);
 		}
 
 		/// <summary>
 		/// Begins declaration of an interface.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
-		public CodeBuilder BeginInterface(INamedTypeSymbol type)
+		public CodeBuilder Interface(INamedTypeSymbol type)
 		{
 			Accessibility(type);
 
-			if(type.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
-
-			if(type.IsPartial())
-			{
-				TextBuilder.Append("partial ");
-			}
+			TryUnsafe(type);
+			TryPartial(type);
 
 			TextBuilder.Append("interface ");
 			SimpleName(type);
@@ -587,7 +795,6 @@ namespace Durian.Analysis
 				BaseTypeList(type.Interfaces);
 			}
 
-			NewLine();
 			return BeginBlock();
 		}
 
@@ -595,122 +802,208 @@ namespace Durian.Analysis
 		/// Begins declaration of a local function.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginLocalFunction(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		public CodeBuilder LocalFunction(IMethodSymbol method)
+		{
+			return LocalFunction(method, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a local function.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder LocalFunction(IMethodSymbol method, MethodStyle body)
 		{
 			InitBuilder();
 
-			if (method.IsStatic)
-			{
-				TextBuilder.Append("static ");
-			}
+			TryStatic(method);
+			TryExtern(method);
+			TryUnsafe(method);
+			TryAsync(method);
 
-			if (method.IsExtern)
-			{
-				TextBuilder.Append("extern ");
-			}
+			WriteMethodHead(method, body);
+			return this;
+		}
 
-			if (method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
-
+		private void TryAsync(IMethodSymbol method)
+		{
 			if (method.IsAsync)
 			{
 				TextBuilder.Append("async ");
 			}
+		}
 
-			WriteMethodHead(method, methodBody);
-			return this;
+		private void TryExtern(IMethodSymbol method)
+		{
+			if (method.IsExtern)
+			{
+				TextBuilder.Append("extern ");
+			}
+		}
+
+		/// <summary>
+		/// Begins declaration of a property or event accessor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		public CodeBuilder Accessor(IMethodSymbol method)
+		{
+			return Accessor(method, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a property or event accessor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Accessor(IMethodSymbol method, MethodStyle body)
+		{
+			return Accessor(method, method.MethodKind.AsAccessor(), body);
+		}
+
+		/// <summary>
+		/// Begins declaration of a property or event accessor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="accessor">Kind of accessor to begin declaration of.</param>
+		public CodeBuilder Accessor(IMethodSymbol method, Accessor accessor)
+		{
+			return Accessor(method, accessor, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a property or event accessor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="accessor">Kind of accessor to begin declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Accessor(IMethodSymbol method, Accessor accessor, MethodStyle body)
+		{
+			InitBuilder();
+
+			if(method.AssociatedSymbol is null)
+			{
+				return this;
+			}
+
+			if(method.DeclaredAccessibility < method.AssociatedSymbol.DeclaredAccessibility)
+			{
+				Accessibility(method.DeclaredAccessibility);
+			}
+
+			if (method.IsReadOnly)
+			{
+				switch (method.AssociatedSymbol)
+				{
+					case IPropertySymbol property:
+
+						if(!property.IsReadOnlyContext())
+						{
+							TextBuilder.Append("readonly ");
+						}
+
+						break;
+
+					case IEventSymbol @event:
+
+						if(!@event.IsReadOnlyContext())
+						{
+							TextBuilder.Append("readonly ");
+						}
+
+						break;
+				}
+			}
+
+			return Accessor(accessor, body);
 		}
 
 		/// <summary>
 		/// Begins declaration of a method.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginMethod(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		public CodeBuilder Method(IMethodSymbol method)
+		{
+			return Method(method, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a method.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Method(IMethodSymbol method, MethodStyle body)
 		{
 			Accessibility(method);
+			TryStatic(method);
 
-			if (method.IsStatic)
-			{
-				TextBuilder.Append("static ");
-			}
-
-			if (method.IsExtern)
-			{
-				TextBuilder.Append("extern ");
-			}
-
-			if (method.IsAbstract)
-			{
-				TextBuilder.Append("abstract ");
-			}
-			else if (method.IsSealed)
-			{
-				TextBuilder.Append("sealed ");
-			}
-			else if (method.IsVirtual)
-			{
-				TextBuilder.Append("virtual ");
-			}
-
-			if (method.IsOverride)
-			{
-				TextBuilder.Append("override ");
-			}
+			WriteExternAndVirtualityModifiers(method);
 
 			if (method.IsReadOnly)
 			{
 				TextBuilder.Append("readonly ");
 			}
 
-			if (method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
+			TryUnsafe(method);
 
 			if (method.IsAsync)
 			{
 				TextBuilder.Append("async ");
 			}
 
-			if (method.IsPartial(true))
-			{
-				TextBuilder.Append("partial ");
-			}
+			TryPartial(method);
 
-			WriteMethodHead(method, methodBody);
+			WriteMethodHead(method, body);
 			return this;
 		}
 
-		/// <summary>
-		/// Begins a method body.
-		/// </summary>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginMethodBody(MethodBody methodBody)
+		private void TryStatic(IMethodSymbol method)
 		{
-			InitBuilder();
-
-			switch (methodBody)
+			if (method.IsStatic)
 			{
-				case MethodBody.Block:
-					NewLine();
-					BeginBlock();
-					break;
+				TextBuilder.Append("static ");
+			}
+		}
 
-				case MethodBody.Expression:
-					TextBuilder.Append(" => ");
-					break;
-
-				default:
-					TextBuilder.Append(';');
-					NewLine();
-					break;
+		private bool CanUseAbstractOrVirtual(ISymbol symbol)
+		{
+			if(symbol.ContainingType is INamedTypeSymbol type && type.TypeKind == TypeKind.Interface)
+			{
+				return _style.InterfaceMemberStyle.HasFlag(InterfaceMemberStyle.ExplicitVirtual);
 			}
 
-			return this;
+			return true;
+		}
+
+		private void WriteExternAndVirtualityModifiers(ISymbol symbol)
+		{
+			if (symbol.IsExtern)
+			{
+				TextBuilder.Append("extern ");
+			}
+
+			if (symbol.IsAbstract)
+			{
+				if(CanUseAbstractOrVirtual(symbol))
+				{
+					TextBuilder.Append("abstract ");
+				}
+			}
+			else if (symbol.IsSealed)
+			{
+				TextBuilder.Append("sealed ");
+			}
+			else if (symbol.IsVirtual)
+			{
+				if (CanUseAbstractOrVirtual(symbol))
+				{
+					TextBuilder.Append("virtual ");
+				}
+			}
+
+			if (symbol.IsOverride)
+			{
+				TextBuilder.Append("override ");
+			}
 		}
 
 		/// <summary>
@@ -718,8 +1011,18 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="namespace"><see cref="INamespaceSymbol"/> to begin declaration of.</param>
 		/// <param name="includeParent">Determines whether to include parent namespaces in the declaration.</param>
+		public CodeBuilder Namesapce(INamespaceSymbol @namespace, bool includeParent = true)
+		{
+			return Namespace(@namespace, _style.NamespaceStyle, includeParent);
+		}
+
+		/// <summary>
+		/// Begins declaration of a <paramref name="namespace"/>.
+		/// </summary>
+		/// <param name="namespace"><see cref="INamespaceSymbol"/> to begin declaration of.</param>
 		/// <param name="type">Type of namespace declaration to write.</param>
-		public CodeBuilder BeginNamespace(INamespaceSymbol @namespace, bool includeParent = true, NamespaceScope type = NamespaceScope.Default)
+		/// <param name="includeParent">Determines whether to include parent namespaces in the declaration.</param>
+		public CodeBuilder Namespace(INamespaceSymbol @namespace, NamespaceStyle type, bool includeParent = true)
 		{
 			InitBuilder();
 
@@ -727,10 +1030,22 @@ namespace Durian.Analysis
 
 			if(includeParent && @namespace.ContainingNamespace is not null)
 			{
-				foreach (INamespaceSymbol parent in @namespace.ContainingNamespace.GetContainingNamespaces())
+				if(type == NamespaceStyle.Nested)
 				{
-					SimpleName(parent);
-					TextBuilder.Append('.');
+					foreach (INamespaceSymbol parent in @namespace.ContainingNamespace.GetContainingNamespaces())
+					{
+						SimpleName(parent);
+						BeginBlock();
+						Indent();
+					}
+				}
+				else
+				{
+					foreach (INamespaceSymbol parent in @namespace.ContainingNamespace.GetContainingNamespaces())
+					{
+						SimpleName(parent);
+						TextBuilder.Append('.');
+					}
 				}
 
 				SimpleName(@namespace.ContainingNamespace);
@@ -738,31 +1053,28 @@ namespace Durian.Analysis
 
 			switch (type)
 			{
-				case NamespaceScope.Default:
+				case NamespaceStyle.Default:
 					TextBuilder.Append('.');
 					SimpleName(@namespace);
-					NewLine();
 					BeginBlock();
 					break;
 
-				case NamespaceScope.File:
+				case NamespaceStyle.File:
 					TextBuilder.Append('.');
 					SimpleName(@namespace);
 					TextBuilder.Append(';');
 					NewLine();
 					break;
 
-				case NamespaceScope.Nested:
-					NewLine();
+				case NamespaceStyle.Nested:
 					BeginBlock();
 					Indent();
 					SimpleName(@namespace);
-					NewLine();
 					BeginBlock();
 					break;
 
 				default:
-					goto case NamespaceScope.Default;
+					goto case NamespaceStyle.Default;
 			}
 
 			return this;
@@ -772,17 +1084,25 @@ namespace Durian.Analysis
 		/// Begins declaration of an operator.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginOperator(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		public CodeBuilder Operator(IMethodSymbol method)
+		{
+			return Operator(method, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of an operator.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Operator(IMethodSymbol method, MethodStyle body)
 		{
 			Accessibility(method);
 
 			TextBuilder.Append("static ");
 
-			if (method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
+			WriteExternAndVirtualityModifiers(method);
+
+			TryUnsafe(method);
 
 			Type(method.ReturnType);
 
@@ -794,7 +1114,7 @@ namespace Durian.Analysis
 			}
 
 			ParameterList(method);
-			BeginMethodBody(methodBody);
+			MethodBody(body);
 
 			return this;
 		}
@@ -803,8 +1123,19 @@ namespace Durian.Analysis
 		/// Begins declaration of a record.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
-		/// <param name="explicitClass">Determines whether to write the <see langword="class"/> keyword if this <paramref name="type"/> is a reference type.</param>
-		public CodeBuilder BeginRecord(INamedTypeSymbol type, bool explicitClass = false)
+		/// <param name="body">Determines whether to begin a declaration body.</param>
+		public CodeBuilder Record(INamedTypeSymbol type, bool body = true)
+		{
+			return Record(type, _style.RecordStyle, body);
+		}
+
+		/// <summary>
+		/// Begins declaration of a record.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
+		/// <param name="style">Determines the record declaration is written.</param>
+		/// <param name="body">Determines whether to begin a declaration body.</param>
+		public CodeBuilder Record(INamedTypeSymbol type, RecordStyle style, bool body = true)
 		{
 			Accessibility(type);
 
@@ -813,15 +1144,13 @@ namespace Durian.Analysis
 				TextBuilder.Append("readonly ");
 			}
 
-			if (type.IsUnsafe())
+			if(type.IsAbstract)
 			{
-				TextBuilder.Append("unsafe ");
+				TextBuilder.Append("abstract ");
 			}
 
-			if (type.IsPartial())
-			{
-				TextBuilder.Append("partial ");
-			}
+			TryUnsafe(type);
+			TryPartial(type);
 
 			TextBuilder.Append("record ");
 
@@ -829,40 +1158,68 @@ namespace Durian.Analysis
 			{
 				TextBuilder.Append("struct ");
 			}
-			else if(explicitClass)
+			else if(style.HasFlag(RecordStyle.ExplicitClass))
 			{
 				TextBuilder.Append("class ");
 			}
 
 			SimpleName(type);
-			type.constructor
-			if(type.IsGenericType)
+
+			if (type.IsGenericType)
 			{
 				TypeParameterList(type.TypeParameters);
 			}
+
+			if (style.HasFlag(RecordStyle.PrimaryConstructor) && type.GetPrimaryConstructor() is IMethodSymbol ctor)
+			{
+				ParameterList(ctor);
+			}
+
+			if (type.IsGenericType)
+			{
+				ConstraintList(type.TypeParameters);
+			}
+
+			if (body)
+			{
+				BeginBlock();
+			}
+			else
+			{
+				TextBuilder.Append(';');
+				NewLine();
+			}
+
+			return this;
 		}
 
 		/// <summary>
 		/// Begins declaration of a static constructor.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder BeginStaticConstructor(IMethodSymbol method, MethodBody methodBody = MethodBody.Block)
+		public CodeBuilder StaticConstructor(IMethodSymbol method)
+		{
+			return StaticConstructor(method, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a static constructor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder StaticConstructor(IMethodSymbol method, MethodStyle body)
 		{
 			InitBuilder();
 
 			TextBuilder.Append("static ");
 
-			if (method.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
+			TryUnsafe(method);
 
 			SimpleName(method.ContainingType);
 			TextBuilder.Append('(');
 			TextBuilder.Append(')');
 
-			BeginMethodBody(methodBody);
+			MethodBody(body);
 
 			return this;
 		}
@@ -871,7 +1228,7 @@ namespace Durian.Analysis
 		/// Begins declaration of a struct.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
-		public CodeBuilder BeginStruct(INamedTypeSymbol type)
+		public CodeBuilder Struct(INamedTypeSymbol type)
 		{
 			Accessibility(type);
 
@@ -880,20 +1237,14 @@ namespace Durian.Analysis
 				TextBuilder.Append("readonly ");
 			}
 
-			if (type.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
+			TryUnsafe(type);
 
 			if (type.IsRefLikeType)
 			{
 				TextBuilder.Append("ref ");
 			}
 
-			if (type.IsPartial())
-			{
-				TextBuilder.Append("partial ");
-			}
+			TryPartial(type);
 
 			TextBuilder.Append("struct ");
 			SimpleName(type);
@@ -909,8 +1260,15 @@ namespace Durian.Analysis
 				BaseTypeList(type);
 			}
 
-			NewLine();
 			return BeginBlock();
+		}
+
+		private void TryPartial(ISymbol symbol)
+		{
+			if (symbol.IsPartial())
+			{
+				TextBuilder.Append("partial ");
+			}
 		}
 
 		/// <summary>
@@ -1040,17 +1398,14 @@ namespace Durian.Analysis
 		/// <exception cref="ArgumentException"><see cref="INamedTypeSymbol.DelegateInvokeMethod"/> cannot be <see langword="null"/>.</exception>
 		public CodeBuilder Delegate(INamedTypeSymbol type)
 		{
-			if(type.DelegateInvokeMethod is null)
+			if (type.DelegateInvokeMethod is null)
 			{
 				throw new ArgumentException("DelegateInvokeMethod cannot be null", nameof(type));
 			}
 
 			Accessibility(type);
 
-			if(type.IsUnsafe())
-			{
-				TextBuilder.Append("unsafe ");
-			}
+			TryUnsafe(type);
 
 			TextBuilder.Append("delegate ");
 
@@ -1075,6 +1430,14 @@ namespace Durian.Analysis
 			return this;
 		}
 
+		private void TryUnsafe(ISymbol symbol)
+		{
+			if (symbol.IsUnsafe())
+			{
+				TextBuilder.Append("unsafe ");
+			}
+		}
+
 		/// <summary>
 		/// Writes the <see langword="dynamic"/> type.
 		/// </summary>
@@ -1087,7 +1450,7 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Writes the <see langword="dynamic"/> type.
 		/// </summary>
-		/// <param name="annotation"><see cref="NullableAnnotation"/> that should be used.</param>>
+		/// <param name="annotation"><see cref="Microsoft.CodeAnalysis.NullableAnnotation"/> that should be used.</param>>
 		public CodeBuilder Dynamic(NullableAnnotation annotation = default)
 		{
 			InitBuilder();
@@ -1102,6 +1465,16 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="pointer"><see cref="IFunctionPointerTypeSymbol"/> to write.</param>
 		public CodeBuilder FunctionPointer(IFunctionPointerTypeSymbol pointer)
+		{
+			return FunctionPointer(pointer, _style.UseExplicitManaged);
+		}
+
+		/// <summary>
+		/// Writes the specified <paramref name="pointer"/>.
+		/// </summary>
+		/// <param name="pointer"><see cref="IFunctionPointerTypeSymbol"/> to write.</param>
+		/// <param name="explicitManaged">Determines whether to use explicit <see langword="managed"/> keyword in function pointers.</param>
+		public CodeBuilder FunctionPointer(IFunctionPointerTypeSymbol pointer, bool explicitManaged)
 		{
 			InitBuilder();
 
@@ -1126,6 +1499,10 @@ namespace Durian.Analysis
 					}
 				}
 			}
+			else if(explicitManaged && signature.CallingConvention == SignatureCallingConvention.Default)
+			{
+				TextBuilder.Append(" managed");
+			}
 
 			TextBuilder.Append('<');
 
@@ -1133,12 +1510,13 @@ namespace Durian.Analysis
 
 			if (parameters.Length > 0)
 			{
-				Parameter(parameters[0]);
+				WriteParameter(parameters[0]);
 
 				for (int i = 1; i < parameters.Length; i++)
 				{
-					TextBuilder.Append(", ");
-					Parameter(parameters[i]);
+					TextBuilder.Append(',');
+					Space();
+					WriteParameter(parameters[i]);
 				}
 			}
 
@@ -1147,6 +1525,16 @@ namespace Durian.Analysis
 			TextBuilder.Append('>');
 
 			return this;
+
+			void WriteParameter(IParameterSymbol parameter)
+			{
+				if (parameter.RefKind.GetText() is string value)
+				{
+					TextBuilder.Append(value);
+					Space();
+					Type(parameter.Type);
+				}
+			}
 		}
 
 		/// <summary>
@@ -1170,16 +1558,16 @@ namespace Durian.Analysis
 					break;
 
 				case SymbolName.Generic:
-					GenericName(symbol, false, false);
-					break;
+					return GenericName(symbol, false, false);
 
 				case SymbolName.VarianceGeneric:
-					GenericName(symbol, false, true);
-					break;
+					return GenericName(symbol, false, true);
 
 				case SymbolName.Substituted:
-					GenericName(symbol, true, false);
-					break;
+					return GenericName(symbol, true, false);
+
+				case SymbolName.Attribute:
+					return AttributeName(symbol);
 
 				default:
 					goto case SymbolName.Default;
@@ -1198,22 +1586,6 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Writes nullability marker if the <paramref name="annotation"/> is equal to <see cref="NullableAnnotation.Annotated"/>.
-		/// </summary>
-		/// <param name="annotation"><see cref="NullableAnnotation"/> to write.</param>
-		public CodeBuilder Nullability(NullableAnnotation annotation)
-		{
-			InitBuilder();
-
-			if (annotation == NullableAnnotation.Annotated)
-			{
-				TextBuilder.Append('?');
-			}
-
-			return this;
-		}
-
-		/// <summary>
 		/// Writes the specified <paramref name="parameter"/>.
 		/// </summary>
 		/// <param name="parameter"><see cref="IParameterSymbol"/> to write.</param>
@@ -1226,22 +1598,10 @@ namespace Durian.Analysis
 				TextBuilder.Append("this ");
 			}
 
-			if (parameter.RefKind != RefKind.None)
+			if (parameter.RefKind.GetText() is string refKind)
 			{
-				switch (parameter.RefKind)
-				{
-					case RefKind.In:
-						TextBuilder.Append("in ");
-						break;
-
-					case RefKind.Out:
-						TextBuilder.Append("out ");
-						break;
-
-					case RefKind.Ref:
-						TextBuilder.Append("ref ");
-						break;
-				}
+				TextBuilder.Append(refKind);
+				TextBuilder.Append(' ');
 			}
 
 			if (parameter.IsDiscard)
@@ -1344,19 +1704,35 @@ namespace Durian.Analysis
 			}
 			else
 			{
-				if (method.ReturnsByRefReadonly)
-				{
-					TextBuilder.Append("ref readonly ");
-				}
-				else if (method.ReturnsByRef)
-				{
-					TextBuilder.Append("ref ");
-				}
-
-				Type(method.ReturnType);
-				Space();
+				ReturnType(method.ReturnType, method.ReturnsByRef, method.ReturnsByRefReadonly);
 			}
 
+			return this;
+		}
+
+		private void ReturnType(ITypeSymbol type, bool isRef, bool isRefReadonly)
+		{
+			if (isRefReadonly)
+			{
+				TextBuilder.Append("ref readonly ");
+			}
+			else if (isRef)
+			{
+				TextBuilder.Append("ref ");
+			}
+
+			Type(type);
+			Space();
+		}
+
+		/// <summary>
+		/// Writes the return type of the specified <paramref name="property"/> (including the <see langword="ref"/> and <see langword="ref"/> <see langword="readonly"/> modifiers).
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to write the return type of.</param>
+		public CodeBuilder ReturnType(IPropertySymbol property)
+		{
+			InitBuilder();
+			ReturnType(property.Type, property.ReturnsByRef, property.ReturnsByRefReadonly);
 			return this;
 		}
 
@@ -1373,7 +1749,7 @@ namespace Durian.Analysis
 		/// Writes the specified <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="ITypeSymbol"/> to write.</param>
-		/// <param name="annotation"><see cref="NullableAnnotation"/> that should be used instead of the <paramref name="type"/>'s actual <see cref="NullableAnnotation"/>.</param>>
+		/// <param name="annotation"><see cref="Microsoft.CodeAnalysis.NullableAnnotation"/> that should be used instead of the <paramref name="type"/>'s actual <see cref="Microsoft.CodeAnalysis.NullableAnnotation"/>.</param>>
 		public CodeBuilder Type(ITypeSymbol type, NullableAnnotation annotation)
 		{
 			InitBuilder();
@@ -1418,7 +1794,7 @@ namespace Durian.Analysis
 		/// Writes the specified <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to write.</param>
-		/// <param name="annotation"><see cref="NullableAnnotation"/> that should be used instead of the <paramref name="type"/>'s actual <see cref="NullableAnnotation"/>.</param>>
+		/// <param name="annotation"><see cref="Microsoft.CodeAnalysis.NullableAnnotation"/> that should be used instead of the <paramref name="type"/>'s actual <see cref="Microsoft.CodeAnalysis.NullableAnnotation"/>.</param>>
 		public CodeBuilder Type(INamedTypeSymbol type, NullableAnnotation annotation)
 		{
 			if (type.IsNullableValueType())
@@ -1483,7 +1859,7 @@ namespace Durian.Analysis
 		/// Writes the specified <paramref name="typeParameter"/>.
 		/// </summary>
 		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to write.</param>
-		/// <param name="annotation"><see cref="NullableAnnotation"/> that should be used instead of the <paramref name="typeParameter"/>'s actual <see cref="NullableAnnotation"/>.</param>>
+		/// <param name="annotation"><see cref="Microsoft.CodeAnalysis.NullableAnnotation"/> that should be used instead of the <paramref name="typeParameter"/>'s actual <see cref="Microsoft.CodeAnalysis.NullableAnnotation"/>.</param>>
 		public CodeBuilder TypeParameter(ITypeParameterSymbol typeParameter, NullableAnnotation annotation)
 		{
 			InitBuilder();
@@ -1557,39 +1933,45 @@ namespace Durian.Analysis
 			return Variance(typeParameter.Variance);
 		}
 
-		/// <summary>
-		/// Writes the specified <paramref name="variance"/>.
-		/// </summary>
-		/// <param name="variance">Kind of variance to write.</param>
-		public CodeBuilder Variance(VarianceKind variance)
+		private CodeBuilder AttributeName(ISymbol symbol)
 		{
-			InitBuilder();
+			const string suffix = "Attribute";
 
-			if (variance.GetText() is string value)
+			string name = symbol.GetVerbatimName();
+
+			if (name.EndsWith(suffix) && name.Length > suffix.Length)
 			{
-				TextBuilder.Append(value);
+				TextBuilder.Append(name, 0, name.Length - suffix.Length);
+				return this;
+			}
+
+			TextBuilder.Append(name);
+
+			if(symbol is INamedTypeSymbol type && type.IsGenericType)
+			{
+				TypeArgumentList(type.TypeArguments);
 			}
 
 			return this;
 		}
 
-		private void GenericName(ISymbol symbol, bool parametersOrArguments, bool includeVariance)
+		private CodeBuilder GenericName(ISymbol symbol, bool parametersOrArguments, bool includeVariance)
 		{
 			if (symbol is INamedTypeSymbol t)
 			{
-				GenericName(t, parametersOrArguments, includeVariance);
+				return GenericName(t, parametersOrArguments, includeVariance);
 			}
-			else if (symbol is IMethodSymbol m)
+
+			if (symbol is IMethodSymbol m)
 			{
-				GenericName(m, includeVariance, includeVariance);
+				return GenericName(m, includeVariance, includeVariance);
 			}
-			else
-			{
-				TextBuilder.Append(symbol.GetVerbatimName());
-			}
+
+			TextBuilder.Append(symbol.GetVerbatimName());
+			return this;
 		}
 
-		private void GenericName(INamedTypeSymbol type, bool parametersOrArguments, bool includeVariance)
+		private CodeBuilder GenericName(INamedTypeSymbol type, bool parametersOrArguments, bool includeVariance)
 		{
 			SimpleName(type);
 
@@ -1601,9 +1983,11 @@ namespace Durian.Analysis
 			{
 				TypeArgumentList(type.TypeArguments);
 			}
+
+			return this;
 		}
 
-		private void GenericName(IMethodSymbol method, bool parametersOrArguments, bool includeVariance)
+		private CodeBuilder GenericName(IMethodSymbol method, bool parametersOrArguments, bool includeVariance)
 		{
 			SimpleName(method);
 
@@ -1615,6 +1999,8 @@ namespace Durian.Analysis
 			{
 				TypeArgumentList(method.TypeArguments);
 			}
+
+			return this;
 		}
 
 		private bool KeywordType(INamedTypeSymbol type, bool useSystemName)
@@ -1649,7 +2035,7 @@ namespace Durian.Analysis
 			TextBuilder.Append(symbol.GetVerbatimName());
 		}
 
-		private void WriteMethodHead(IMethodSymbol method, MethodBody methodBody)
+		private void WriteMethodHead(IMethodSymbol method, MethodStyle body)
 		{
 			ReturnType(method);
 			SimpleName(method);
@@ -1665,7 +2051,7 @@ namespace Durian.Analysis
 				ParameterList(method);
 			}
 
-			BeginMethodBody(methodBody);
+			MethodBody(body);
 		}
 	}
 }

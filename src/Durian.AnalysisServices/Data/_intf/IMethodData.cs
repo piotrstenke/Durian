@@ -21,7 +21,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Type of body of the method.
 		/// </summary>
-		MethodBody BodyType { get; }
+		MethodStyle BodyType { get; }
 
 		/// <summary>
 		/// <see cref="IMethodSymbol"/> associated with the <see cref="Declaration"/>.

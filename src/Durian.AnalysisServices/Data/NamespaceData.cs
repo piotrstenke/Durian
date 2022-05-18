@@ -30,16 +30,16 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Type of this namespace declaration.
 		/// </summary>
-		public NamespaceScope DeclarationType
+		public NamespaceStyle DeclarationType
 		{
 			get
 			{
 				if(Declaration is FileScopedNamespaceDeclarationSyntax)
 				{
-					return NamespaceScope.File;
+					return NamespaceStyle.File;
 				}
 
-				return NamespaceScope.Default;
+				return NamespaceStyle.Default;
 			}
 		}
 

@@ -302,30 +302,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="symbol"/> has default accessibility in the context it is located in:
-		/// <list type="bullet">
-		/// <item>For interface members, the default is <see cref="Accessibility.Public"/>.</item>
-		/// <item>For top-level members, the default is <see cref="Accessibility.Internal"/>.</item>
-		/// <item>For all other members, the default is <see cref="Accessibility.Private"/>.</item>
-		/// </list>
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to determine whether has the default accessibility.</param>
-		public static bool HasDefaultAccessibility(this ISymbol symbol)
-		{
-			if(symbol.IsTopLevel())
-			{
-				return symbol.DeclaredAccessibility == Accessibility.Internal;
-			}
-
-			if(symbol.ContainingSymbol is INamedTypeSymbol type && type.TypeKind == TypeKind.Interface)
-			{
-				return symbol.DeclaredAccessibility == Accessibility.Public;
-			}
-
-			return symbol.DeclaredAccessibility == Accessibility.Private;
-		}
-
-		/// <summary>
 		/// Determines whether the specified <paramref name="symbol"/> has a documentation.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check if has documentation.</param>
@@ -386,24 +362,6 @@ namespace Durian.Analysis.Extensions
 			};
 
 			return canHaveDocumentation && symbol.HasDocumentation();
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="property"/> is declared using the <see langword="readonly"/> keyword.
-		/// </summary>
-		/// <param name="property"><see cref="IPropertySymbol"/> to check whether is declared using the <see langword="readonly"/> keyword.</param>
-		public static bool HasReadOnlyModifier(this IPropertySymbol property)
-		{
-			return property.GetMethod?.IsReadOnly == true && property.SetMethod?.IsReadOnly == true;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="event"/> is declared using the <see langword="readonly"/> keyword.
-		/// </summary>
-		/// <param name="event"><see cref="IEventSymbol"/> to check whether is declared using the <see langword="readonly"/> keyword.</param>
-		public static bool HasReadOnlyModifier(this IEventSymbol @event)
-		{
-			return @event.AddMethod?.IsReadOnly == true && @event.RemoveMethod?.IsReadOnly == true;
 		}
 
 		/// <summary>
@@ -655,7 +613,7 @@ namespace Durian.Analysis.Extensions
 						return false;
 					}
 
-					if (!IsGetAwaiterRaw(method, out INamedTypeSymbol? returnType))
+					if (!method.IsGetAwaiterRaw(out INamedTypeSymbol? returnType))
 					{
 						return false;
 					}
@@ -1407,12 +1365,70 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="ctor"/> is a record primary constructor.
+		/// </summary>
+		/// <param name="ctor"><see cref="IMethodSymbol"/> to check whether is a primary constructor.</param>
+		public static bool IsPrimaryConstructor(this IMethodSymbol ctor)
+		{
+			if (ctor.MethodKind != MethodKind.Constructor || ctor.DeclaredAccessibility != Accessibility.Public || ctor.IsImplicitlyDeclared)
+			{
+				return false;
+			}
+
+#if ENABLE_REFLECTION
+			if (ctor.GetType().Name == "SynthesizedRecordConstructor")
+			{
+				return true;
+			}
+#endif
+			return ctor.DeclaringSyntaxReferences.Any(r => r.GetSyntax() is RecordDeclarationSyntax);
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="method"/> is a property accessor.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is a property accessor.</param>
 		public static bool IsPropertyAccessor(this IMethodSymbol method)
 		{
 			return method.AssociatedSymbol is IPropertySymbol;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> is declared using the <see langword="readonly"/> keyword.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to check whether is declared using the <see langword="readonly"/> keyword.</param>
+		public static bool IsReadOnlyContext(this IPropertySymbol property)
+		{
+			if (property.GetMethod?.IsReadOnly == false)
+			{
+				return false;
+			}
+
+			if (property.SetMethod is null)
+			{
+				return true;
+			}
+
+			return property.SetMethod.IsReadOnly;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> is declared using the <see langword="readonly"/> keyword.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to check whether is declared using the <see langword="readonly"/> keyword.</param>
+		public static bool IsReadOnlyContext(this IEventSymbol @event)
+		{
+			if (@event.AddMethod?.IsReadOnly == false)
+			{
+				return false;
+			}
+
+			if (@event.RemoveMethod is null)
+			{
+				return true;
+			}
+
+			return @event.RemoveMethod.IsReadOnly;
 		}
 
 		/// <summary>
@@ -1431,17 +1447,13 @@ namespace Durian.Analysis.Extensions
 		/// <param name="specialMember">King of special member.</param>
 		public static bool IsSpecialMember(this ISymbol symbol, SpecialMember specialMember)
 		{
-			if (symbol.DeclaredAccessibility != Accessibility.Public)
-			{
-				return false;
-			}
-
 			switch (specialMember)
 			{
 				case SpecialMember.Current:
 				{
 					return
 						symbol is IPropertySymbol property &&
+						property.DeclaredAccessibility == Accessibility.Public &&
 						property.Name == "Current" &&
 						property.GetMethod is not null;
 				}
@@ -1450,6 +1462,7 @@ namespace Durian.Analysis.Extensions
 				{
 					return
 						symbol is IMethodSymbol method &&
+						method.DeclaredAccessibility == Accessibility.Public &&
 						method.Arity == 0 &&
 						method.Name == "MoveNext" &&
 						method.ReturnType.SpecialType == SpecialType.System_Boolean &&
@@ -1460,6 +1473,7 @@ namespace Durian.Analysis.Extensions
 				{
 					return
 						symbol is IMethodSymbol method &&
+						method.DeclaredAccessibility == Accessibility.Public &&
 						method.Arity == 0 &&
 						method.Name == "MoveNextAsync" &&
 						method.IsParameterless() &&
@@ -1471,6 +1485,7 @@ namespace Durian.Analysis.Extensions
 				{
 					return
 						symbol is IMethodSymbol method &&
+						method.DeclaredAccessibility == Accessibility.Public &&
 						method.Arity == 0 &&
 						!method.ReturnsVoid &&
 						method.Name == "GetEnumerator" &&
@@ -1483,6 +1498,7 @@ namespace Durian.Analysis.Extensions
 				{
 					return
 						symbol is IMethodSymbol method &&
+						method.DeclaredAccessibility == Accessibility.Public &&
 						method.Arity == 0 &&
 						!method.ReturnsVoid &&
 						method.Name == "GetAsyncEnumerator" &&
@@ -1502,6 +1518,7 @@ namespace Durian.Analysis.Extensions
 				{
 					return
 						symbol is IMethodSymbol method &&
+						method.DeclaredAccessibility == Accessibility.Public &&
 						method.Arity == 0 &&
 						method.Name == "GetResult" &&
 						method.IsParameterless();
@@ -1511,6 +1528,7 @@ namespace Durian.Analysis.Extensions
 				{
 					return
 						symbol is IPropertySymbol property &&
+						property.DeclaredAccessibility == Accessibility.Public &&
 						property.Name == "IsCompleted" &&
 						property.Type.SpecialType == SpecialType.System_Boolean;
 				}
@@ -1527,11 +1545,62 @@ namespace Durian.Analysis.Extensions
 				{
 					return
 						symbol is IMethodSymbol method &&
+						method.DeclaredAccessibility == Accessibility.Public &&
 						method.Arity == 0 &&
 						method.Name == "Deconstruct" &&
 						method.ReturnsVoid &&
 						!method.IsParameterless() &&
 						method.Parameters.All(p => p.RefKind == RefKind.Out);
+				}
+
+				case SpecialMember.Length:
+				{
+					return
+						symbol is IPropertySymbol property &&
+						property.DeclaredAccessibility == Accessibility.Public &&
+						property.Type.SpecialType == SpecialType.System_Int32 &&
+						property.GetMethod is not null &&
+						property.Name == "Length";
+				}
+
+				case SpecialMember.Count:
+				{
+					return
+						symbol is IPropertySymbol property &&
+						property.DeclaredAccessibility == Accessibility.Public &&
+						property.Type.SpecialType == SpecialType.System_Int32 &&
+						property.GetMethod is not null &&
+						property.Name == "Count";
+				}
+
+				case SpecialMember.Slice:
+				{
+					return
+						symbol is IMethodSymbol method &&
+						method.DeclaredAccessibility == Accessibility.Public &&
+						method.Parameters.Length == 2 &&
+						method.Name == "Slice" &&
+						method.Parameters[0].Type.SpecialType == SpecialType.System_Int32 &&
+						method.Parameters[1].Type.SpecialType == SpecialType.System_Int32;
+				}
+
+				case SpecialMember.PrintMembers:
+				{
+					if (symbol is not IMethodSymbol method || !method.ContainingType.IsRecord || method.ReturnType.SpecialType != SpecialType.System_Boolean || method.Parameters.Length != 1)
+					{
+						return false;
+					}
+
+					if (!method.ContainingType.IsSealedKind() && !(method.IsVirtual || method.IsAbstract))
+					{
+						return false;
+					}
+
+					IParameterSymbol parameter = method.Parameters[0];
+
+					return
+						parameter.Type.MetadataName == "StringBuilder" &&
+						parameter.Type.IsWithinNamespace("System.Text");
 				}
 
 				default:
@@ -1744,40 +1813,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Determines whether any attribute target can be applied to the specified <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to determine whether any attribute target can be applied to.</param>
-		public static bool SupportsAttributeTargets(this ISymbol symbol)
-		{
-			if(symbol is IMethodSymbol method)
-			{
-				return method.SupportsAttributeTargets();
-			}
-
-			return symbol is
-				INamedTypeSymbol or
-				ITypeParameterSymbol or
-				IPropertySymbol or
-				IEventSymbol or
-				IFieldSymbol or
-				IAssemblySymbol or
-				IModuleSymbol or
-				IParameterSymbol;
-		}
-
-		/// <summary>
-		/// Determines whether any attribute target can be applied to the specified <paramref name="method"/>.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether any attribute target can be applied to.</param>
-		public static bool SupportsAttributeTargets(this IMethodSymbol method)
-		{
-			return method.MethodKind is
-				not MethodKind.BuiltinOperator and
-				not MethodKind.FunctionPointerSignature and
-				not MethodKind.EventRaise;
-		}
-
-		/// <summary>
 		/// Determines whether the specified <paramref name="symbol"/> supports more than one attribute target kind.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to determine whether supports more than one attribute target kind.</param>
@@ -1830,6 +1865,40 @@ namespace Durian.Analysis.Extensions
 		public static bool SupportsAlternativeAttributeTargets(this INamedTypeSymbol type)
 		{
 			return type.TypeKind == TypeKind.Delegate;
+		}
+
+		/// <summary>
+		/// Determines whether any attribute target can be applied to the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether any attribute target can be applied to.</param>
+		public static bool SupportsAttributeTargets(this ISymbol symbol)
+		{
+			if (symbol is IMethodSymbol method)
+			{
+				return method.SupportsAttributeTargets();
+			}
+
+			return symbol is
+				INamedTypeSymbol or
+				ITypeParameterSymbol or
+				IPropertySymbol or
+				IEventSymbol or
+				IFieldSymbol or
+				IAssemblySymbol or
+				IModuleSymbol or
+				IParameterSymbol;
+		}
+
+		/// <summary>
+		/// Determines whether any attribute target can be applied to the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether any attribute target can be applied to.</param>
+		public static bool SupportsAttributeTargets(this IMethodSymbol method)
+		{
+			return method.MethodKind is
+				not MethodKind.BuiltinOperator and
+				not MethodKind.FunctionPointerSignature and
+				not MethodKind.EventRaise;
 		}
 
 		/// <summary>
@@ -1899,7 +1968,7 @@ namespace Durian.Analysis.Extensions
 			return ParametersAreEquivalent(method.Parameters, other.Parameters);
 		}
 
-		internal static bool IsGetAwaiterRaw(IMethodSymbol method, [NotNullWhen(true)] out INamedTypeSymbol? returnType)
+		internal static bool IsGetAwaiterRaw(this IMethodSymbol method, [NotNullWhen(true)] out INamedTypeSymbol? returnType)
 		{
 			bool value =
 				method.Arity == 0 &&
@@ -1973,6 +2042,7 @@ namespace Durian.Analysis.Extensions
 		}
 
 #if ENABLE_REFLECTION
+
 		private static bool CheckReflectionBool(ISymbol symbol, string propertyName)
 		{
 			if (symbol.GetType().GetProperty(propertyName) is PropertyInfo property && property.GetValue(symbol) is bool value)
@@ -1982,6 +2052,7 @@ namespace Durian.Analysis.Extensions
 
 			return false;
 		}
+
 #endif
 
 		private static bool IsDurianGeneratedAttribute(AttributeData attr)
@@ -1994,7 +2065,7 @@ namespace Durian.Analysis.Extensions
 
 		private static bool IsGetAwaiter(IMethodSymbol method, ITypeSymbol? resultType)
 		{
-			if (!IsGetAwaiterRaw(method, out INamedTypeSymbol? returnType))
+			if (!method.IsGetAwaiterRaw(out INamedTypeSymbol? returnType))
 			{
 				return false;
 			}

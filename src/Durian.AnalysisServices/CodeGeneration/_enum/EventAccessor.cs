@@ -4,23 +4,23 @@
 namespace Durian.Analysis.CodeGeneration
 {
 	/// <summary>
-	/// Defines available kinds of a method body.
+	/// Defines all possible event accessor kinds.
 	/// </summary>
-	public enum MethodBody
+	public enum EventAccessor
 	{
 		/// <summary>
-		/// Method does not have a body.
+		/// Member is not an accessor.
 		/// </summary>
 		None = 0,
 
 		/// <summary>
-		/// The method uses a code block as a body.
+		/// Represents the <see langword="add"/> accessor.
 		/// </summary>
-		Block = 1,
+		Add = 1,
 
 		/// <summary>
-		/// The method uses an arrow expression '=>' as a body.
+		/// Represents the <see langword="remove"/> accessor.
 		/// </summary>
-		Expression = 2
+		Remove = 2
 	}
 }

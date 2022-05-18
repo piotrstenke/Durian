@@ -226,19 +226,19 @@ namespace Durian.Analysis.Extensions
 		/// Returns type of the body of the specified <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="BaseMethodDeclarationSyntax"/> to get the type of body of.</param>
-		public static MethodBody GetBodyType(this BaseMethodDeclarationSyntax method)
+		public static MethodStyle GetBodyType(this BaseMethodDeclarationSyntax method)
 		{
 			if (method.Body is not null)
 			{
-				return MethodBody.Block;
+				return MethodStyle.Block;
 			}
 
 			if (method.ExpressionBody is not null)
 			{
-				return MethodBody.Expression;
+				return MethodStyle.Expression;
 			}
 
-			return MethodBody.None;
+			return MethodStyle.None;
 		}
 
 		/// <summary>

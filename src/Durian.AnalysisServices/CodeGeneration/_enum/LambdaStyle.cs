@@ -6,7 +6,7 @@ namespace Durian.Analysis.CodeGeneration
 	/// <summary>
 	/// Defines available kinds of an anonymous function body.
 	/// </summary>
-	public enum AnonymousFunctionBody
+	public enum LambdaStyle
 	{
 		/// <summary>
 		/// The anonymous function does not have a body.
@@ -24,7 +24,7 @@ namespace Durian.Analysis.CodeGeneration
 		Expression = 2,
 
 		/// <summary>
-		/// The anonymous function uses a code block with the <see langword="delegate"/> keyword as a body. 
+		/// The anonymous function uses a code block with the <see langword="delegate"/> keyword as a body.
 		/// </summary>
 		Method = 3
 	}

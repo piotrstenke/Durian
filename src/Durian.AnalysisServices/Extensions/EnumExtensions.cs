@@ -13,12 +13,67 @@ namespace Durian.Analysis.Extensions
 	public static class EnumExtensions
 	{
 		/// <summary>
-		/// Converts the specified <paramref name="value"/> to an associated <see cref="AnonymousFunctionBody"/> value.
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="Accessor"/> value.
 		/// </summary>
-		/// <param name="value"><see cref="MethodBody"/> to convert.</param>
-		public static AnonymousFunctionBody AsAnonymousFunction(this MethodBody value)
+		/// <param name="value"><see cref="MethodKind"/> to convert.</param>
+		public static Accessor AsAccessor(this MethodKind value)
 		{
-			return (AnonymousFunctionBody)value;
+			return value switch
+			{
+				MethodKind.PropertyGet => Accessor.Get,
+				MethodKind.PropertySet => Accessor.Set,
+				MethodKind.EventAdd => Accessor.Add,
+				MethodKind.EventRemove => Accessor.Remove,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="Accessor"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="PropertyAccessor"/> to convert.</param>
+		public static Accessor AsAccessor(this PropertyAccessor value)
+		{
+			int n = (int)value;
+
+			if(n <= (int)Accessor.Init)
+			{
+				return (Accessor)value;
+			}
+
+			return default;
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="Accessor"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="EventAccessor"/> to convert.</param>
+		public static Accessor AsAccessor(this EventAccessor value)
+		{
+			const int min = (int)Accessor.Init;
+
+			if(value == default)
+			{
+				return default;
+			}
+
+			int n = (int)value + min;
+
+			if(n <= min)
+			{
+				return default;
+			}
+
+			return (Accessor)n;
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="LambdaStyle"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="MethodStyle"/> to convert.</param>
+		public static LambdaStyle AsLambda(this MethodStyle value)
+		{
+			return (LambdaStyle)value;
 		}
 
 		/// <summary>
@@ -38,17 +93,48 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <paramref name="value"/> to an associated <see cref="MethodBody"/> value.
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="EventAccessor"/> value.
 		/// </summary>
-		/// <param name="value"><see cref="AnonymousFunctionBody"/> to convert.</param>
-		public static MethodBody AsMethod(this AnonymousFunctionBody value)
+		/// <param name="value"><see cref="Accessor"/> to convert.</param>
+		public static EventAccessor AsEvent(this Accessor value)
 		{
-			if (value == AnonymousFunctionBody.Method)
+			if(value == default)
 			{
-				return MethodBody.Block;
+				return default;
 			}
 
-			return (MethodBody)value;
+			return (EventAccessor)(value - (int)Accessor.Init);
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="MethodStyle"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="LambdaStyle"/> to convert.</param>
+		public static MethodStyle AsMethod(this LambdaStyle value)
+		{
+			if (value == LambdaStyle.Method)
+			{
+				return MethodStyle.Block;
+			}
+
+			return (MethodStyle)value;
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="MethodKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="Accessor"/> to convert.</param>
+		public static MethodKind AsMethod(this Accessor value)
+		{
+			return value switch
+			{
+				Accessor.Get => MethodKind.PropertyGet,
+				Accessor.Set => MethodKind.PropertySet,
+				Accessor.Init => MethodKind.PropertySet,
+				Accessor.Add => MethodKind.EventAdd,
+				Accessor.Remove => MethodKind.EventRemove,
+				_ => default
+			};
 		}
 
 		/// <summary>
@@ -60,6 +146,15 @@ namespace Durian.Analysis.Extensions
 			return value == DecimalLiteralSuffix.None
 				? NumericLiteralSuffix.None
 				: (NumericLiteralSuffix)(value + (int)NumericLiteralSuffix.LongUpperUnsignedUpper);
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="PropertyAccessor"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="Accessor"/> to convert.</param>
+		public static PropertyAccessor AsProperty(this Accessor value)
+		{
+			return (PropertyAccessor)value;
 		}
 
 		/// <summary>
@@ -83,7 +178,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="value"><see cref="SymbolName"/> to convert.</param>
 		public static GenericSubstitution AsSubstitution(this SymbolName value)
 		{
-			if(value == SymbolName.Substituted)
+			if (value == SymbolName.Substituted)
 			{
 				return GenericSubstitution.TypeArguments;
 			}
@@ -103,6 +198,128 @@ namespace Durian.Analysis.Extensions
 				RefKind.Out => SyntaxKind.OutKeyword,
 				RefKind.In => SyntaxKind.InKeyword,
 				_ => SyntaxKind.None
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="ConstructorInitializer"/> to convert.</param>
+		public static SyntaxKind AsSyntax(this ConstructorInitializer value)
+		{
+			return value switch
+			{
+				ConstructorInitializer.Base => SyntaxKind.BaseConstructorInitializer,
+				ConstructorInitializer.This => SyntaxKind.ThisConstructorInitializer,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="AttributeTarget"/> to convert.</param>
+		public static SyntaxKind AsSyntax(this AttributeTarget value)
+		{
+			return value switch
+			{
+				AttributeTarget.Assembly => SyntaxKind.AssemblyKeyword,
+				AttributeTarget.Method => SyntaxKind.MethodKeyword,
+				AttributeTarget.Return => SyntaxKind.ReturnKeyword,
+				AttributeTarget.Property => SyntaxKind.PropertyKeyword,
+				AttributeTarget.Field => SyntaxKind.FieldKeyword,
+				AttributeTarget.Event => SyntaxKind.EventKeyword,
+				AttributeTarget.Type => SyntaxKind.TypeKeyword,
+				AttributeTarget.TypeVar => SyntaxKind.TypeVarKeyword,
+				AttributeTarget.Param => SyntaxKind.ParamKeyword,
+				AttributeTarget.Module => SyntaxKind.ModuleKeyword,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="OverloadableOperator"/> to convert.</param>
+		public static SyntaxKind AsSyntax(this OverloadableOperator value)
+		{
+			return value switch
+			{
+				OverloadableOperator.UnaryPlus => SyntaxKind.PlusToken,
+				OverloadableOperator.UnaryMinus => SyntaxKind.MinusGreaterThanToken,
+				OverloadableOperator.Negation => SyntaxKind.ExclamationToken,
+				OverloadableOperator.Complement => SyntaxKind.TildeToken,
+				OverloadableOperator.Increment => SyntaxKind.PlusPlusToken,
+				OverloadableOperator.Decrement => SyntaxKind.MinusMinusToken,
+				OverloadableOperator.True => SyntaxKind.TrueKeyword,
+				OverloadableOperator.False => SyntaxKind.FalseKeyword,
+				OverloadableOperator.Addition => SyntaxKind.PlusToken,
+				OverloadableOperator.Subtraction => SyntaxKind.MinusToken,
+				OverloadableOperator.Multiplication => SyntaxKind.AsteriskToken,
+				OverloadableOperator.Division => SyntaxKind.SlashToken,
+				OverloadableOperator.Remainder => SyntaxKind.PercentToken,
+				OverloadableOperator.LogicalAnd => SyntaxKind.AmpersandAmpersandToken,
+				OverloadableOperator.LogicalOr => SyntaxKind.BarBarToken,
+				OverloadableOperator.LogicalXor => SyntaxKind.CaretToken,
+				OverloadableOperator.LeftShift => SyntaxKind.LessThanLessThanToken,
+				OverloadableOperator.RightShift => SyntaxKind.GreaterThanGreaterThanToken,
+				OverloadableOperator.Equality => SyntaxKind.EqualsEqualsToken,
+				OverloadableOperator.Inequality => SyntaxKind.ExclamationEqualsToken,
+				OverloadableOperator.LessThan => SyntaxKind.LessThanToken,
+				OverloadableOperator.GreaterThan => SyntaxKind.GreaterThanToken,
+				OverloadableOperator.LestThanOrEqual => SyntaxKind.LessThanEqualsToken,
+				OverloadableOperator.GreaterThanOrEqual => SyntaxKind.GreaterThanEqualsToken,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="NamespaceStyle"/> to convert.</param>
+		public static SyntaxKind AsSyntax(this GenericConstraint value)
+		{
+			return value switch
+			{
+				GenericConstraint.Type => SyntaxKind.TypeConstraint,
+				GenericConstraint.New => SyntaxKind.ConstructorConstraint,
+				GenericConstraint.Class => SyntaxKind.ClassConstraint,
+				GenericConstraint.Struct => SyntaxKind.StructConstraint,
+				GenericConstraint.Unmanaged => SyntaxKind.UnmanagedKeyword,
+				GenericConstraint.NotNull => SyntaxKind.NotKeyword,
+				GenericConstraint.Default => SyntaxKind.DefaultConstraint,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="NamespaceStyle"/> to convert.</param>
+		public static SyntaxKind AsSyntax(this NamespaceStyle value)
+		{
+			return value switch
+			{
+				NamespaceStyle.Default or NamespaceStyle.Nested => SyntaxKind.NamespaceDeclaration,
+				NamespaceStyle.File => SyntaxKind.FileScopedNamespaceDeclaration,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="Accessor"/> to convert.</param>
+		public static SyntaxKind AsSyntax(this Accessor value)
+		{
+			return value switch
+			{
+				Accessor.Get => SyntaxKind.GetAccessorDeclaration,
+				Accessor.Set => SyntaxKind.SetAccessorDeclaration,
+				Accessor.Init => SyntaxKind.InitAccessorDeclaration,
+				Accessor.Add => SyntaxKind.AddAccessorDeclaration,
+				Accessor.Remove => SyntaxKind.RemoveAccessorDeclaration,
+				_ => default
 			};
 		}
 
@@ -349,6 +566,70 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Converts the specified <see cref="StringModifiers"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="StringModifiers"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this StringModifiers value)
+		{
+			return value switch
+			{
+				StringModifiers.Verbatim => "@",
+				StringModifiers.Interpolation => "$",
+				StringModifiers.Verbatim | StringModifiers.Interpolation => "$@",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="Exponential"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="Exponential"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this Exponential value)
+		{
+			return value switch
+			{
+				Exponential.Lowercase => "e",
+				Exponential.Uppercase => "E",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="Accessor"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="Accessor"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this Accessor value)
+		{
+			return value switch
+			{
+				Accessor.Get => "get",
+				Accessor.Set => "set",
+				Accessor.Init => "init",
+				Accessor.Add => "add",
+				Accessor.Remove => "remove",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="GenericConstraint"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="GenericConstraint"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this GenericConstraint value)
+		{
+			return value switch
+			{
+				GenericConstraint.New => "new()",
+				GenericConstraint.Class => "class",
+				GenericConstraint.Struct => "struct",
+				GenericConstraint.Unmanaged => "unmanaged",
+				GenericConstraint.NotNull => "notnull",
+				GenericConstraint.Default => "default",
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="kind"/> is a declaration kind.
 		/// </summary>
 		/// <param name="kind"><see cref="TypeKind"/> to determine whether is a declaration kind.</param>
@@ -363,22 +644,40 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="accessor"/> is an event accessor.
+		/// </summary>
+		/// <param name="accessor"><see cref="Accessor"/> to determine whether is an event accessor.</param>
+		public static bool IsEventAccessor(this Accessor accessor)
+		{
+			return accessor is Accessor.Add or Accessor.Remove;
+		}
+
+		/// <summary>
 		/// Determines whether the specified ?<paramref name="specialType"/> can be represented using a C# keyword.
 		/// </summary>
 		/// <param name="specialType"><see cref="SpecialType"/> to determine whether can be represented using a C# keyword.</param>
 		public static bool IsKeyword(this SpecialType specialType)
 		{
-			if(specialType == SpecialType.None)
+			if (specialType == SpecialType.None)
 			{
 				return false;
 			}
 
-			if(specialType == SpecialType.System_Object)
+			if (specialType == SpecialType.System_Object)
 			{
 				return true;
 			}
 
 			return specialType >= SpecialType.System_Void && specialType <= SpecialType.System_UIntPtr;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="accessor"/> is a property accessor.
+		/// </summary>
+		/// <param name="accessor"><see cref="Accessor"/> to determine whether is a property accessor.</param>
+		public static bool IsPropertyAccessor(this Accessor accessor)
+		{
+			return accessor is Accessor.Get or Accessor.Set or Accessor.Init;
 		}
 
 		/// <summary>

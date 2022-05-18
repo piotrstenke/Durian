@@ -5,6 +5,8 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using Durian.Analysis.CodeGeneration;
+using Durian.Analysis.Extensions;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis
@@ -16,6 +18,7 @@ namespace Durian.Analysis
 	public sealed partial class CodeBuilder
 	{
 		private readonly IDurianGenerator? _generator;
+		private readonly CodeBuilderStyleConfiguration _style;
 		private int _currentIndent;
 		private int _currentLength;
 
@@ -73,6 +76,11 @@ namespace Durian.Analysis
 		/// <see cref="StringBuilder"/> to write the generated code to.
 		/// </summary>
 		public StringBuilder TextBuilder { get; }
+
+		/// <summary>
+		/// Configuration of this code builder.
+		/// </summary>
+		public CodeBuilderConfiguration Configuration { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CodeBuilder"/> class.
@@ -157,10 +165,28 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Begins declaration of a property or event accessor.
+		/// </summary>
+		/// <param name="accessor">Kind of accessor to begin declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Accessor(Accessor accessor, MethodStyle body = CodeGeneration.MethodStyle.Block)
+		{
+			InitBuilder();
+
+			if(accessor.GetText() is string value)
+			{
+				TextBuilder.Append(value);
+			}
+
+			return MethodBody(body);
+		}
+
+		/// <summary>
 		/// Begins an attribute list.
 		/// </summary>
-		public CodeBuilder BeginAttributeList()
+		public CodeBuilder AttributeList()
 		{
+			InitBuilder();
 			TextBuilder.Append('[');
 			return this;
 		}
@@ -169,9 +195,21 @@ namespace Durian.Analysis
 		/// Begins an attribute list with an <see cref="AttributeTarget"/>.
 		/// </summary>
 		/// <param name="target">Target of the attribute.</param>
-		public CodeBuilder BeginAttributeList(AttributeTarget target)
+		public CodeBuilder AttributeList(AttributeTarget target)
 		{
-			target.gette
+			InitBuilder();
+
+			if (target.GetText() is not string text)
+			{
+				return AttributeList();
+			}
+
+			TextBuilder.Append('[');
+			TextBuilder.Append(text);
+			TextBuilder.Append(':');
+			TextBuilder.Append(' ');
+
+			return this;
 		}
 
 		/// <summary>
@@ -179,8 +217,12 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder BeginBlock()
 		{
+			InitBuilder();
+
+			NewLine();
 			Indent();
-			TextBuilder.AppendLine("{");
+			TextBuilder.Append('{');
+			NewLine();
 			CurrentIndent++;
 
 			return this;
@@ -190,9 +232,11 @@ namespace Durian.Analysis
 		/// Begins a member declaration using the specified raw text.
 		/// </summary>
 		/// <param name="member">Raw text to write.</param>
-		public CodeBuilder BeginDeclation(string member)
+		public CodeBuilder Declation(string member)
 		{
-			TextBuilder?.AppendLine(member);
+			InitBuilder();
+
+			TextBuilder.Append(member);
 			BeginBlock();
 
 			return this;
@@ -201,8 +245,10 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Begins a parameter list.
 		/// </summary>
-		public CodeBuilder BeginParameterList()
+		public CodeBuilder ParameterList()
 		{
+			InitBuilder();
+
 			TextBuilder.Append('(');
 			return this;
 		}
@@ -210,8 +256,10 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Begins a type parameter list.
 		/// </summary>
-		public CodeBuilder BeginTypeParameterList()
+		public CodeBuilder TypeParameterList()
 		{
+			InitBuilder();
+
 			TextBuilder.Append('<');
 			return this;
 		}
@@ -221,6 +269,8 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder Clear()
 		{
+			InitBuilder();
+
 			TextBuilder.Clear();
 			return this;
 		}
@@ -230,6 +280,8 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder DecrementIndent()
 		{
+			InitBuilder();
+
 			CurrentIndent--;
 			return this;
 		}
@@ -239,6 +291,8 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder EndAllBlocks()
 		{
+			InitBuilder();
+
 			int length = CurrentIndent;
 
 			for (int i = 0; i < length; i++)
@@ -256,6 +310,8 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder EndAttributeList()
 		{
+			InitBuilder();
+
 			TextBuilder.Append(']');
 			NewLine();
 			return this;
@@ -278,6 +334,8 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder EndParameterList()
 		{
+			InitBuilder();
+
 			TextBuilder.Append(')');
 			return this;
 		}
@@ -287,6 +345,8 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder EndTypeParameterList()
 		{
+			InitBuilder();
+
 			TextBuilder.Append('>');
 			return this;
 		}
@@ -296,6 +356,7 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder IncrementIndent()
 		{
+			InitBuilder();
 			CurrentIndent++;
 			return this;
 		}
@@ -315,6 +376,8 @@ namespace Durian.Analysis
 		/// <param name="value">Indentation level to apply.</param>
 		public CodeBuilder Indent(int value)
 		{
+			InitBuilder();
+
 			for (int i = 0; i < value; i++)
 			{
 				TextBuilder.Append('\t');
@@ -328,6 +391,7 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder NewLine()
 		{
+			InitBuilder();
 			TextBuilder.AppendLine();
 			return this;
 		}
@@ -338,6 +402,8 @@ namespace Durian.Analysis
 		/// <param name="number">Number of new lines to write.</param>
 		public CodeBuilder NewLine(int number)
 		{
+			InitBuilder();
+
 			for (int i = 0; i < number; i++)
 			{
 				TextBuilder.AppendLine();
@@ -371,6 +437,8 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder Space()
 		{
+			InitBuilder();
+
 			TextBuilder.Append(' ');
 			return this;
 		}
@@ -381,6 +449,8 @@ namespace Durian.Analysis
 		/// <param name="number">Number of spaces to write.</param>
 		public CodeBuilder Space(int number)
 		{
+			InitBuilder();
+
 			for (int i = 0; i < number; i++)
 			{
 				TextBuilder.Append(' ');
@@ -394,6 +464,8 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder Tab()
 		{
+			InitBuilder();
+
 			TextBuilder.Append('\t');
 			return this;
 		}
@@ -404,6 +476,8 @@ namespace Durian.Analysis
 		/// <param name="number">Number of tabs to write.</param>
 		public CodeBuilder Tab(int number)
 		{
+			InitBuilder();
+
 			for (int i = 0; i < number; i++)
 			{
 				TextBuilder.Append('\t');
@@ -424,6 +498,8 @@ namespace Durian.Analysis
 		/// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>
 		public CodeBuilder Write(string value)
 		{
+			InitBuilder();
+
 			TextBuilder.Append(value);
 			return this;
 		}
@@ -434,6 +510,8 @@ namespace Durian.Analysis
 		/// <remarks>If the <see cref="Generator"/> is <see langword="null"/>, calls the <see cref="AutoGenerated.GetHeader()"/> method instead.</remarks>
 		public CodeBuilder WriteHeader()
 		{
+			InitBuilder();
+
 			string text;
 			if (Generator is null)
 			{
@@ -454,7 +532,69 @@ namespace Durian.Analysis
 		/// <param name="generatorName">Name of generator that created the following code.</param>
 		public CodeBuilder WriteHeader(string? generatorName)
 		{
+			InitBuilder();
+
 			TextBuilder.Append(AutoGenerated.GetHeader(generatorName));
+			return this;
+		}
+
+		/// <summary>
+		/// Writes an accessibility modifier.
+		/// </summary>
+		/// <param name="accessibility">Accessibility modifier to write.</param>
+		public CodeBuilder Accessibility(Accessibility accessibility)
+		{
+			InitBuilder();
+
+			if (accessibility.GetText() is string keyword)
+			{
+				TextBuilder.Append(keyword);
+				Space();
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes nullability marker if the <paramref name="annotation"/> is equal to <see cref="Microsoft.CodeAnalysis.NullableAnnotation.Annotated"/>.
+		/// </summary>
+		/// <param name="annotation"><see cref="Microsoft.CodeAnalysis.NullableAnnotation"/> to write.</param>
+		public CodeBuilder Nullability(NullableAnnotation annotation)
+		{
+			InitBuilder();
+
+			if (annotation == NullableAnnotation.Annotated)
+			{
+				TextBuilder.Append('?');
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins a method body.
+		/// </summary>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder MethodBody(MethodStyle body)
+		{
+			InitBuilder();
+
+			switch (body)
+			{
+				case CodeGeneration.MethodStyle.Block:
+					BeginBlock();
+					break;
+
+				case CodeGeneration.MethodStyle.Expression:
+					TextBuilder.Append(" => ");
+					break;
+
+				default:
+					TextBuilder.Append(';');
+					NewLine();
+					break;
+			}
+
 			return this;
 		}
 
@@ -465,7 +605,25 @@ namespace Durian.Analysis
 		/// <param name="version">Version of the generator that created the following code.</param>
 		public CodeBuilder WriteHeader(string? generatorName, string? version)
 		{
+			InitBuilder();
+
 			TextBuilder.Append(AutoGenerated.GetHeader(generatorName, version));
+			return this;
+		}
+
+		/// <summary>
+		/// Writes the specified <paramref name="variance"/>.
+		/// </summary>
+		/// <param name="variance">Kind of variance to write.</param>
+		public CodeBuilder Variance(VarianceKind variance)
+		{
+			InitBuilder();
+
+			if (variance.GetText() is string value)
+			{
+				TextBuilder.Append(value);
+			}
+
 			return this;
 		}
 
@@ -474,6 +632,8 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder WriteLine()
 		{
+			InitBuilder();
+
 			TextBuilder.AppendLine();
 			return this;
 		}
@@ -484,6 +644,8 @@ namespace Durian.Analysis
 		/// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>v
 		public CodeBuilder WriteLine(string value)
 		{
+			InitBuilder();
+
 			TextBuilder.AppendLine(value);
 			return this;
 		}

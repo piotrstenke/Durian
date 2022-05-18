@@ -6,7 +6,7 @@ namespace Durian.Analysis.CodeGeneration
 	/// <summary>
 	/// Type of namespace declaration.
 	/// </summary>
-	public enum NamespaceScope
+	public enum NamespaceStyle
 	{
 		/// <summary>
 		/// Default namespace declaration (e.g. <c>namespace System.Collections { }</c>).

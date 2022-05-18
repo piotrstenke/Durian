@@ -19,7 +19,7 @@ namespace Durian.Analysis
 		/// <param name="method"><see cref="MethodDeclarationSyntax"/> to copy the method signature from.</param>
 		/// <param name="methodBody">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-		public void BeginMethodDeclaration(MethodDeclarationSyntax method, MethodBody methodBody = MethodBody.Block)
+		public void BeginMethodDeclaration(MethodDeclarationSyntax method, MethodStyle methodBody = MethodBody.Block)
 		{
 			if (method is null)
 			{
@@ -49,7 +49,6 @@ namespace Durian.Analysis
 			switch (methodBody)
 			{
 				case MethodBody.Block:
-					TextBuilder.AppendLine();
 					BeginBlock();
 					break;
 
