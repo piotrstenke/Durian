@@ -6,24 +6,24 @@ using System;
 namespace Durian.Analysis.CodeGeneration
 {
 	/// <summary>
-	/// Specifies how local variables are written.
+	/// Determines how enum declarations are written.
 	/// </summary>
 	[Flags]
-	public enum LocalFormat
+	public enum EnumStyle
 	{
 		/// <summary>
-		/// No format applied.
+		/// No special format applied.
 		/// </summary>
 		None = 0,
 
 		/// <summary>
-		/// Use the <see langword="var"/> keyword instead of an explicit type.
+		/// Writes explicit values of the enum's fields.
 		/// </summary>
-		ImplicitType = 1,
+		ExplicitValues = 1,
 
 		/// <summary>
-		/// Skips the initializer character ('=') of the variable.
+		/// Writes the default base type (<see cref="int"/>) of the enum.
 		/// </summary>
-		SkipInitializer = 2
+		ExplicitInt32 = 2
 	}
 }

@@ -2015,7 +2015,7 @@ namespace Durian.Analysis.Extensions
 				return "dynamic";
 			}
 
-			return type.SpecialType.GetKeyword();
+			return type.SpecialType.GetText();
 		}
 
 		/// <summary>

@@ -1004,6 +1004,24 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> is an enum with the <see cref="FlagsAttribute"/> applied.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether is a flags enum.</param>
+		public static bool IsFlagsEnum(this INamedTypeSymbol type)
+		{
+			if(type.TypeKind != TypeKind.Enum)
+			{
+				return false;
+			}
+
+			return type.GetAttributes().Any(attr =>
+				attr.AttributeClass is not null &&
+				attr.AttributeClass.MetadataName == "FlagsAttribute" &&
+				attr.AttributeClass.IsWithinNamespace("System", false)
+			);
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="symbol"/> is generic.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check if is generic.</param>

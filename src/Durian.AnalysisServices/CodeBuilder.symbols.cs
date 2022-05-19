@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
+using System.Numerics;
 using System.Reflection.Metadata;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Extensions;
@@ -14,27 +16,382 @@ namespace Durian.Analysis
 {
 	public partial class CodeBuilder
 	{
-		public CodeBuilder Field(IFieldSymbol field)
+		/// <summary>
+		/// Begins declaration of an enum field.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to begin the declaration of.</param>
+		public CodeBuilder EnumField(IFieldSymbol field)
 		{
+			return EnumField(field, _style.EnumStyle.HasFlag(EnumStyle.ExplicitValues));
 		}
 
+		/// <summary>
+		/// Begins declaration of an enum field.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to begin the declaration of.</param>
+		/// <param name="explicitValue">Determines whether to write explicit value of the field.</param>
+		public CodeBuilder EnumField(IFieldSymbol field, bool explicitValue)
+		{
+			Indent();
+
+			SimpleName_Internal(field);
+
+			if(explicitValue)
+			{
+				VariableInitializer();
+			}
+			else
+			{
+				TextBuilder.Append(',');
+				NewLine();
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a list of enum fields separated by commas.
+		/// </summary>
+		/// <param name="fields">Collection of <see cref="ILocalSymbol"/>s to write as constants.</param>
+		/// <param name="isFlags">Determines whether the specified fields are located in a flags enum.</param>
+		public CodeBuilder EnumFieldList(ImmutableArray<IFieldSymbol> fields, bool isFlags = false)
+		{
+			if (isFlags)
+			{
+				return EnumFieldList(fields, 0, isFlags);
+			}
+
+			InitBuilder();
+
+			if (fields.Length == 0)
+			{
+				return this;
+			}
+
+			Indent();
+			SimpleName_Internal(fields[0]);
+
+			for (int i = 1; i < fields.Length; i++)
+			{
+				TextBuilder.Append(',');
+				NewLine();
+				Indent();
+				SimpleName_Internal(fields[i]);
+			}
+
+			return NewLine();
+		}
+
+		/// <summary>
+		/// Writes a list of enum fields separated by commas.
+		/// </summary>
+		/// <param name="fields">Collection of <see cref="ILocalSymbol"/>s to write as constants.</param>
+		/// <param name="startValue">Value of the first field.</param>
+		/// <param name="isFlags">Determines whether the specified fields are located in a flags enum.</param>
+		public CodeBuilder EnumFieldList(ImmutableArray<IFieldSymbol> fields, int startValue, bool isFlags = false)
+		{
+			InitBuilder();
+
+			if (fields.Length == 0)
+			{
+				return this;
+			}
+
+			Indent();
+			SimpleName_Internal(fields[0]);
+			VariableInitializer();
+			TextBuilder.Append(startValue);
+
+			if(isFlags)
+			{
+				for (int i = 1; i < fields.Length; i++)
+				{
+					TextBuilder.Append(',');
+					NewLine();
+					Indent();
+					SimpleName_Internal(fields[i]);
+					VariableInitializer();
+					TextBuilder.Append(1 << (i - 1));
+				}
+			}
+			else
+			{
+				for (int i = 1; i < fields.Length; i++)
+				{
+					TextBuilder.Append(',');
+					NewLine();
+					Indent();
+					SimpleName_Internal(fields[i]);
+					VariableInitializer();
+					TextBuilder.Append(startValue + i);
+				}
+			}
+
+			return NewLine();
+		}
+
+
+		/// <summary>
+		/// Writes a list of enum fields separated by commas.
+		/// </summary>
+		/// <param name="fields">Collection of <see cref="IFieldSymbol"/>s to write as constants.</param>
+		/// <param name="source">Source of explicit values of the enum.</param>
+		/// <param name="isFlags">Determines whether the specified fields are located in a flags enum.</param>
+		public CodeBuilder EnumFieldList(ImmutableArray<IFieldSymbol> fields, EnumValueSource source, bool isFlags = false)
+		{
+			if(source == EnumValueSource.Constant)
+			{
+				return EnumFieldList(fields, 0, isFlags);
+			}
+
+			IFieldSymbol first = fields[0];
+
+			Indent();
+			SimpleName_Internal(first);
+
+			if(source == EnumValueSource.Symbol)
+			{
+				if(fields[0].ConstantValue is )
+				VariableInitializer();
+				TextBuilder.Append(startValue);
+			}
+		}
+
+		/// <summary>
+		/// Writes a list of enum fields separated by commas.
+		/// </summary>
+		/// <param name="fields">Collection of <see cref="ILocalSymbol"/>s to write as constants.</param>
+		/// <param name="isFlags">Determines whether the specified fields are located in a flags enum.</param>
+		public CodeBuilder EnumFieldList(IEnumerable<IFieldSymbol> fields, bool isFlags = false)
+		{
+			return EnumFieldList(fields.ToImmutableArray(), isFlags);
+		}
+
+		/// <summary>
+		/// Writes a list of enum fields separated by commas.
+		/// </summary>
+		/// <param name="fields">Collection of <see cref="ILocalSymbol"/>s to write as constants.</param>
+		/// <param name="startValue">Value of the first field.</param>
+		/// <param name="isFlags">Determines whether the specified fields are located in a flags enum.</param>
+		public CodeBuilder EnumFieldList(IEnumerable<IFieldSymbol> fields, int startValue, bool isFlags = false)
+		{
+			return EnumFieldList(fields.ToImmutableArray(), startValue, isFlags);
+		}
+
+		/// <summary>
+		/// Writes a list of enum fields separated by commas.
+		/// </summary>
+		/// <param name="fields">Collection of <see cref="IFieldSymbol"/>s to write as constants.</param>
+		/// <param name="source">Source of explicit values of the enum.</param>
+		/// <param name="isFlags">Determines whether the specified fields are located in a flags enum.</param>
+		public CodeBuilder EnumFieldList(IEnumerable<IFieldSymbol> fields, EnumValueSource source, bool isFlags = false)
+		{
+			return EnumFieldList(fields.ToImmutableArray(), source, isFlags);
+		}
+
+		/// <summary>
+		/// Begins declaration of a field.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to begin the declaration of.</param>
+		/// <param name="initializer">Determines whether to include field initializer.</param>
+		public CodeBuilder Field(IFieldSymbol field, bool initializer = false)
+		{
+			Indent();
+
+			Accessibility(field);
+
+			TryStatic(field);
+
+			if(field.IsReadOnly)
+			{
+				TextBuilder.Append("readonly ");
+			}
+			else if(field.IsConst)
+			{
+				TextBuilder.Append("const ");
+			}
+			else if(field.IsVolatile)
+			{
+				TextBuilder.Append("volatile ");
+			}
+			else if (field.IsFixedSizeBuffer)
+			{
+				TextBuilder.Append("fixed ");
+			}
+
+			TryUnsafe(field);
+
+			if(field.IsVolatile)
+			{
+				TextBuilder.Append("volatile ");
+			}
+
+			Type(field.Type);
+			Space();
+
+			SimpleName_Internal(field);
+
+			if(initializer)
+			{
+				VariableInitializer();
+			}
+			else
+			{
+				ColonNewLine();
+			}
+
+			return this;
+		}
+
+		private void VariableInitializer()
+		{
+			Space();
+			TextBuilder.Append('=');
+			Space();
+		}
+
+		/// <summary>
+		/// Begins declaration of an event.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to begin the declaration of.</param>
 		public CodeBuilder Event(IEventSymbol @event)
 		{
 		}
 
-		public CodeBuilder EventList()
+		public CodeBuilder ConstantList(ImmutableArray<IFieldSymbol> fields)
 		{
 
 		}
 
-		public CodeBuilder FieldList()
+		/// <summary>
+		/// Writes a list of constants separated by commas.
+		/// </summary>
+		/// <param name="locals">Collection of <see cref="ILocalSymbol"/>s to write as constants.</param>
+		public CodeBuilder ConstantList(ImmutableArray<ILocalSymbol> locals)
+		{
+			InitBuilder();
+
+			if(locals.Length == 0)
+			{
+				return this;
+			}
+
+			Indent();
+
+			ILocalSymbol first = locals[0];
+
+			TextBuilder.Append("const ");
+			Type(first.Type);
+			Space();
+			WriteConstant(first);
+
+			for (int i = 1; i < locals.Length; i++)
+			{
+				CommaSpace();
+				WriteConstant(locals[i]);
+			}
+
+			ColonNewLine();
+
+			return this;
+
+			void WriteConstant(ILocalSymbol local)
+			{
+				SimpleName_Internal(local);
+
+				VariableInitializer();
+
+				if (local.HasConstantValue)
+				{
+					WriteConstantValue(local.ConstantValue, local.Type);
+				}
+			}
+		}
+
+		private void ColonNewLine()
+		{
+			TextBuilder.Append(';');
+			TextBuilder.AppendLine();
+		}
+
+		/// <summary>
+		/// Writes a list of constants separated by commas.
+		/// </summary>
+		/// <param name="fields">Collection of <see cref="IFieldSymbol"/>s to write as constants.</param>
+		public CodeBuilder ConstantList(IEnumerable<IFieldSymbol> fields)
+		{
+			return ConstantList(fields.ToImmutableArray());
+		}
+
+		/// <summary>
+		/// Writes a list of constants separated by commas.
+		/// </summary>
+		/// <param name="locals">Collection of <see cref="ILocalSymbol"/>s to write as constants.</param>
+		public CodeBuilder ConstantList(IEnumerable<ILocalSymbol> locals)
+		{
+			return ConstantList(locals.ToImmutableArray());
+		}
+
+		/// <summary>
+		/// Writes a list of fields separated by commas.
+		/// </summary>
+		/// <param name="fields">Collection of <see cref="IFieldSymbol"/>s to write.</param>
+		public CodeBuilder FieldList(ImmutableArray<IFieldSymbol> fields)
+		{
+		}
+
+		/// <summary>
+		/// Writes a list of local variables separated by commas.
+		/// </summary>
+		/// <param name="locals">Collection of <see cref="ILocalSymbol"/>s to write.</param>
+		public CodeBuilder LocalList(ImmutableArray<ILocalSymbol> locals)
 		{
 
 		}
 
-		public CodeBuilder LocalList()
+		/// <summary>
+		/// Writes a list of fields separated by commas.
+		/// </summary>
+		/// <param name="fields">Collection of <see cref="IFieldSymbol"/>s to write.</param>
+		public CodeBuilder FieldList(IEnumerable<IFieldSymbol> fields)
+		{
+			return FieldList(fields.ToImmutableArray());
+		}
+
+		/// <summary>
+		/// Writes a list of local variables separated by commas.
+		/// </summary>
+		/// <param name="locals">Collection of <see cref="ILocalSymbol"/>s to write.</param>
+		public CodeBuilder LocalList(IEnumerable<ILocalSymbol> locals)
+		{
+			return LocalList(locals.ToImmutableArray());
+		}
+
+		/// <summary>
+		/// Writes a list of field-like events separated by commas.
+		/// </summary>
+		/// <param name="events">Collection of <see cref="IEventSymbol"/>s to write.</param>
+		public CodeBuilder EventList(ImmutableArray<IEventSymbol> events)
 		{
 
+		}
+
+		/// <summary>
+		/// Writes a list of field-like events separated by commas.
+		/// </summary>
+		/// <param name="events">Collection of <see cref="IEventSymbol"/>s to write.</param>
+		public CodeBuilder EventList(IEnumerable<IEventSymbol> events)
+		{
+			return EventList(events.ToImmutableArray());
+		}
+
+		/// <summary>
+		/// Begins declaration of an indexer.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to begin the declaration of.</param>
+		public CodeBuilder Indexer(IPropertySymbol property)
+		{
+			return Indexer(property, _style.MethodStyle);
 		}
 
 		/// <summary>
@@ -42,8 +399,10 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="property"><see cref="IPropertySymbol"/> to begin the declaration of.</param>
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder Indexer(IPropertySymbol property, MethodStyle body = CodeGeneration.MethodStyle.Block)
+		public CodeBuilder Indexer(IPropertySymbol property, MethodStyle body)
 		{
+			Indent();
+
 			Accessibility(property);
 			WritePropertyModifiers(property);
 			ReturnType(property);
@@ -77,31 +436,60 @@ namespace Durian.Analysis
 		{
 			Accessibility(property);
 
-			if (property.IsStatic)
-			{
-				TextBuilder.Append("static ");
-			}
-
+			TryStatic(property);
 			WritePropertyModifiers(property);
 			ReturnType(property);
-			SimpleName(property);
+			SimpleName_Internal(property);
 
 			switch (kind)
 			{
 				case AutoPropertyKind.GetOnly:
-					TextBuilder.Append(" { get; }");
+					BeginAccessor();
+					WriteAccessor(property.GetMethod, "get");
+					EndAccessor();
 					break;
 
 				case AutoPropertyKind.GetSet:
-					TextBuilder.Append(" { get; set; }");
+					BeginAccessor();
+					WriteAccessor(property.GetMethod, "get");
+					WriteAccessor(property.SetMethod, "set");
+					EndAccessor();
 					break;
 
 				case AutoPropertyKind.GetInit:
-					TextBuilder.Append(" { get; init; }");
+					BeginAccessor();
+					WriteAccessor(property.GetMethod, "get");
+					WriteAccessor(property.SetMethod, "init");
+					EndAccessor();
 					break;
 			}
 
 			return this;
+
+			void BeginAccessor()
+			{
+				Space();
+				TextBuilder.Append('{');
+				Space();
+			}
+
+			void EndAccessor()
+			{
+				TextBuilder.Append('}');
+				NewLine();
+			}
+
+			void WriteAccessor(IMethodSymbol? accessor, string name)
+			{
+				if (accessor is not null && accessor.DeclaredAccessibility != property.DeclaredAccessibility)
+				{
+					Accessibility(accessor);
+				}
+
+				TextBuilder.Append(name);
+				TextBuilder.Append(';');
+				Space();
+			}
 		}
 
 		private void WritePropertyModifiers(IPropertySymbol property)
@@ -120,51 +508,127 @@ namespace Durian.Analysis
 		/// Begins declaration of a property.
 		/// </summary>
 		/// <param name="property"><see cref="IPropertySymbol"/> to begin the declaration of.</param>
-		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder Property(IPropertySymbol property, MethodStyle body = CodeGeneration.MethodStyle.Block)
+		public CodeBuilder Property(IPropertySymbol property)
 		{
+			return Property(property, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a property.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Property(IPropertySymbol property, MethodStyle body)
+		{
+			Indent();
 			Accessibility(property);
-
-			if (property.IsStatic)
-			{
-				TextBuilder.Append("static ");
-			}
-
+			TryStatic(property);
 			WritePropertyModifiers(property);
 			ReturnType(property);
-			SimpleName(property);
+			SimpleName_Internal(property);
 			return MethodBody(body);
 		}
 
-		public CodeBuilder Constant(ILocalSymbol local)
+		/// <summary>
+		/// Begins declaration of a constant.
+		/// </summary>
+		/// <param name="local"><see cref="ILabelSymbol"/> to begin the declaration of.</param>
+		/// <param name="includeValue">Determines whether to include </param>
+		public CodeBuilder Constant(ILocalSymbol local, bool includeValue = true)
 		{
-			InitBuilder();
+			Indent();
 
-			if(local.IsConst)
+			WriteConstantHead(local, local.Type);
+
+			if (includeValue)
 			{
-				TextBuilder.Append("const ");
+				WriteConstantValue(local.ConstantValue, local.Type);
+				ColonNewLine();
 			}
+
+			return this;
 		}
 
-		public CodeBuilder Constant(IFieldSymbol field)
+		/// <summary>
+		/// Begins declaration of a constant.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to begin the declaration of.</param>
+		/// <param name="includeValue">Determines whether to write the value of the constant.</param>
+		public CodeBuilder Constant(IFieldSymbol field, bool includeValue = true)
 		{
+			Indent();
+			Accessibility(field);
 
+			WriteConstantHead(field, field.Type);
+
+			if(includeValue)
+			{
+				WriteConstantValue(field.ConstantValue, field.Type);
+				ColonNewLine();
+			}
+
+			return this;
+		}
+
+		private void WriteConstantHead(ISymbol symbol, ITypeSymbol type)
+		{
+			TextBuilder.Append("const ");
+
+			Type(type);
+			Space();
+			SimpleName_Internal(symbol);
+
+			VariableInitializer();
+		}
+
+		private void WriteConstantValue(object? constant, ITypeSymbol type)
+		{
+			if (constant is not null)
+			{
+				if(constant is IFormattable formattable)
+				{
+					TextBuilder.Append(formattable.ToString("N", CultureInfo.InvariantCulture));
+				}
+				else
+				{
+					TextBuilder.Append(constant.ToString());
+				}
+
+				return;
+			}
+
+			TextBuilder.Append("default(");
+			SimpleName(type);
+			TextBuilder.Append(')');
 		}
 
 		/// <summary>
 		/// Begins declaration of a local variable.
 		/// </summary>
 		/// <param name="local"><see cref="ILabelSymbol"/> to begin the declaration of.</param>
-		/// <param name="format">Specifies how to format the <paramref name="local"/>.</param>
-		public CodeBuilder Local(ILocalSymbol local, LocalFormat format = default)
+		/// <param name="skipInitializer">Determines whether to skip initializer of the local variable.</param>
+		public CodeBuilder Local(ILocalSymbol local, bool skipInitializer = false)
 		{
-			if(local.RefKind.GetText(false) is string refKind)
+			return Local(local, skipInitializer, _style.UseImplicitType);
+		}
+
+		/// <summary>
+		/// Begins declaration of a local variable.
+		/// </summary>
+		/// <param name="local"><see cref="ILabelSymbol"/> to begin the declaration of.</param>
+		/// <param name="skipInitializer">Determines whether to skip initializer of the local variable.</param>
+		/// <param name="implicitType">Determines whether to write the <see langword="var"/> instead of explicit type.</param>
+		public CodeBuilder Local(ILocalSymbol local, bool skipInitializer, bool implicitType)
+		{
+			Indent();
+
+			if (local.RefKind.GetText(false) is string refKind)
 			{
 				TextBuilder.Append(refKind);
 				TextBuilder.Append(' ');
 			}
 
-			if(format.HasFlag(LocalFormat.ImplicitType) && !local.IsRef)
+			if(implicitType && !local.IsRef)
 			{
 				TextBuilder.Append("var ");
 			}
@@ -173,10 +637,9 @@ namespace Durian.Analysis
 				Type(local.Type);
 			}
 
-			if(format.HasFlag(LocalFormat.SkipInitializer))
+			if(skipInitializer)
 			{
-				TextBuilder.Append(';');
-				NewLine();
+				ColonNewLine();
 			}
 			else
 			{
@@ -193,7 +656,8 @@ namespace Durian.Analysis
 		/// <param name="label"><see cref="ILabelSymbol"/> to write.</param>
 		public CodeBuilder Label(ILabelSymbol label)
 		{
-			SimpleName(label);
+			Indent();
+			SimpleName_Internal(label);
 			TextBuilder.Append(':');
 			return this;
 		}
@@ -446,17 +910,17 @@ namespace Durian.Analysis
 				}
 				else if (parameters.Length == 1)
 				{
-					SimpleName(method.Parameters[0]);
+					SimpleName_Internal(method.Parameters[0]);
 				}
 				else
 				{
 					TextBuilder.Append('(');
-					SimpleName(method.Parameters[0]);
+					SimpleName_Internal(method.Parameters[0]);
 
 					for (int i = 1; i < parameters.Length; i++)
 					{
 						CommaSpace();
-						SimpleName(method.Parameters[i]);
+						SimpleName_Internal(method.Parameters[i]);
 					}
 
 					TextBuilder.Append(')');
@@ -497,6 +961,7 @@ namespace Durian.Analysis
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
 		public CodeBuilder Class(INamedTypeSymbol type)
 		{
+			Indent();
 			Accessibility(type);
 
 			if (type.IsStatic)
@@ -517,7 +982,7 @@ namespace Durian.Analysis
 
 			TextBuilder.Append("class ");
 
-			SimpleName(type);
+			SimpleName_Internal(type);
 
 			if (type.IsGenericType)
 			{
@@ -537,13 +1002,23 @@ namespace Durian.Analysis
 		/// Begins declaration of a constructor.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder Constructor(IMethodSymbol method, MethodStyle body = CodeGeneration.MethodStyle.Block)
+		public CodeBuilder Constructor(IMethodSymbol method)
 		{
+			return Constructor(method, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a constructor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Constructor(IMethodSymbol method, MethodStyle body)
+		{
+			Indent();
 			Accessibility(method);
 
 			TryUnsafe(method);
-			SimpleName(method.ContainingType);
+			SimpleName_Internal(method.ContainingType);
 
 			ParameterList(method);
 			MethodBody(body);
@@ -556,12 +1031,13 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
 		/// <param name="initializer">Determines which constructor initializer to use.</param>
-		public CodeBuilder ConstructorWithInitializer(IMethodSymbol method, ConstructorInitializer initializer = default)
+		public CodeBuilder Constructor(IMethodSymbol method, ConstructorInitializer initializer)
 		{
+			Indent();
 			Accessibility(method);
 
 			TryUnsafe(method);
-			SimpleName(method.ContainingType);
+			SimpleName_Internal(method.ContainingType);
 
 			ParameterList(method);
 
@@ -583,9 +1059,19 @@ namespace Durian.Analysis
 		/// Begins declaration of a conversion operator.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder ConversionOperator(IMethodSymbol method, MethodStyle body = CodeGeneration.MethodStyle.Block)
+		public CodeBuilder ConversionOperator(IMethodSymbol method)
 		{
+			return ConversionOperator(method, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a conversion operator.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder ConversionOperator(IMethodSymbol method, MethodStyle body)
+		{
+			Indent();
 			Accessibility(method);
 
 			TextBuilder.Append("static ");
@@ -615,9 +1101,18 @@ namespace Durian.Analysis
 		/// Begins declaration of a method of any valid kind.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		public CodeBuilder Declaration(IMethodSymbol method)
+		{
+			return Declaration(method, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a method of any valid kind.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		/// <exception cref="ArgumentException"><paramref name="method"/> is of kind does not support declarations.</exception>
-		public CodeBuilder Declaration(IMethodSymbol method, MethodStyle body = CodeGeneration.MethodStyle.Block)
+		public CodeBuilder Declaration(IMethodSymbol method, MethodStyle body)
 		{
 			return method.MethodKind switch
 			{
@@ -666,15 +1161,24 @@ namespace Durian.Analysis
 		/// Begins declaration of a destructor.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
-		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder Destructor(IMethodSymbol method, MethodStyle body = CodeGeneration.MethodStyle.Block)
+		public CodeBuilder Destructor(IMethodSymbol method)
 		{
-			InitBuilder();
+			return Destructor(method, _style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a destructor.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Destructor(IMethodSymbol method, MethodStyle body)
+		{
+			Indent();
 
 			TryUnsafe(method);
 
 			TextBuilder.Append('~');
-			SimpleName(method.ContainingType);
+			SimpleName_Internal(method.ContainingType);
 			TextBuilder.Append('(');
 			TextBuilder.Append(')');
 
@@ -689,17 +1193,28 @@ namespace Durian.Analysis
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
 		public CodeBuilder Enum(INamedTypeSymbol type)
 		{
+			return Enum(type, _style.EnumStyle.HasFlag(EnumStyle.ExplicitInt32));
+		}
+
+		/// <summary>
+		/// Begins declaration of an enum.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
+		/// <param name="explicitInt32">Determines whether to write the base type <see cref="int"/> type.</param>
+		public CodeBuilder Enum(INamedTypeSymbol type, bool explicitInt32)
+		{
+			Indent();
 			Accessibility(type);
 			TextBuilder.Append("enum ");
-			SimpleName(type);
+			SimpleName_Internal(type);
 
-			if(type.EnumUnderlyingType is not null && type.EnumUnderlyingType.SpecialType == SpecialType.System_Int32)
+			if(type.EnumUnderlyingType is not null && (!explicitInt32 || type.EnumUnderlyingType.SpecialType != SpecialType.System_Int32))
 			{
 				Space();
 				TextBuilder.Append(':');
 				Space();
 
-				TextBuilder.Append(type.EnumUnderlyingType.SpecialType.GetKeyword()!);
+				TextBuilder.Append(type.EnumUnderlyingType.SpecialType.GetText()!);
 			}
 
 			BeginBlock();
@@ -723,7 +1238,7 @@ namespace Durian.Analysis
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder ExplicitInterfaceImplementation(IMethodSymbol method, MethodStyle body)
 		{
-			InitBuilder();
+			Indent();
 
 			if (method.IsReadOnly)
 			{
@@ -753,8 +1268,12 @@ namespace Durian.Analysis
 		/// <param name="type">Type of first attribute in the list.</param>
 		public CodeBuilder AttributeList(INamedTypeSymbol type)
 		{
-			InitBuilder();
+			if(_style.UseExplicitAttributeTargets)
+			{
+				return AttributeList(type, type.GetAttributeTargetKind());
+			}
 
+			Indent();
 			TextBuilder.Append('[');
 			return Name(type, SymbolName.Attribute);
 		}
@@ -776,13 +1295,14 @@ namespace Durian.Analysis
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
 		public CodeBuilder Interface(INamedTypeSymbol type)
 		{
+			Indent();
 			Accessibility(type);
 
 			TryUnsafe(type);
 			TryPartial(type);
 
 			TextBuilder.Append("interface ");
-			SimpleName(type);
+			SimpleName_Internal(type);
 
 			if (type.IsGenericType)
 			{
@@ -814,7 +1334,7 @@ namespace Durian.Analysis
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder LocalFunction(IMethodSymbol method, MethodStyle body)
 		{
-			InitBuilder();
+			Indent();
 
 			TryStatic(method);
 			TryExtern(method);
@@ -878,9 +1398,9 @@ namespace Durian.Analysis
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder Accessor(IMethodSymbol method, Accessor accessor, MethodStyle body)
 		{
-			InitBuilder();
+			Indent();
 
-			if(method.AssociatedSymbol is null)
+			if (method.AssociatedSymbol is null)
 			{
 				return this;
 			}
@@ -933,6 +1453,7 @@ namespace Durian.Analysis
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder Method(IMethodSymbol method, MethodStyle body)
 		{
+			Indent();
 			Accessibility(method);
 			TryStatic(method);
 
@@ -956,9 +1477,9 @@ namespace Durian.Analysis
 			return this;
 		}
 
-		private void TryStatic(IMethodSymbol method)
+		private void TryStatic(ISymbol symbol)
 		{
-			if (method.IsStatic)
+			if (symbol.IsStatic)
 			{
 				TextBuilder.Append("static ");
 			}
@@ -1024,7 +1545,7 @@ namespace Durian.Analysis
 		/// <param name="includeParent">Determines whether to include parent namespaces in the declaration.</param>
 		public CodeBuilder Namespace(INamespaceSymbol @namespace, NamespaceStyle type, bool includeParent = true)
 		{
-			InitBuilder();
+			Indent();
 
 			TextBuilder.Append("namespace ");
 
@@ -1034,7 +1555,7 @@ namespace Durian.Analysis
 				{
 					foreach (INamespaceSymbol parent in @namespace.ContainingNamespace.GetContainingNamespaces())
 					{
-						SimpleName(parent);
+						SimpleName_Internal(parent);
 						BeginBlock();
 						Indent();
 					}
@@ -1043,33 +1564,32 @@ namespace Durian.Analysis
 				{
 					foreach (INamespaceSymbol parent in @namespace.ContainingNamespace.GetContainingNamespaces())
 					{
-						SimpleName(parent);
+						SimpleName_Internal(parent);
 						TextBuilder.Append('.');
 					}
 				}
 
-				SimpleName(@namespace.ContainingNamespace);
+				SimpleName_Internal(@namespace.ContainingNamespace);
 			}
 
 			switch (type)
 			{
 				case NamespaceStyle.Default:
 					TextBuilder.Append('.');
-					SimpleName(@namespace);
+					SimpleName_Internal(@namespace);
 					BeginBlock();
 					break;
 
 				case NamespaceStyle.File:
 					TextBuilder.Append('.');
-					SimpleName(@namespace);
-					TextBuilder.Append(';');
-					NewLine();
+					SimpleName_Internal(@namespace);
+					ColonNewLine();
 					break;
 
 				case NamespaceStyle.Nested:
 					BeginBlock();
 					Indent();
-					SimpleName(@namespace);
+					SimpleName_Internal(@namespace);
 					BeginBlock();
 					break;
 
@@ -1096,6 +1616,7 @@ namespace Durian.Analysis
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder Operator(IMethodSymbol method, MethodStyle body)
 		{
+			Indent();
 			Accessibility(method);
 
 			TextBuilder.Append("static ");
@@ -1137,6 +1658,7 @@ namespace Durian.Analysis
 		/// <param name="body">Determines whether to begin a declaration body.</param>
 		public CodeBuilder Record(INamedTypeSymbol type, RecordStyle style, bool body = true)
 		{
+			Indent();
 			Accessibility(type);
 
 			if(type.IsReadOnly)
@@ -1163,7 +1685,7 @@ namespace Durian.Analysis
 				TextBuilder.Append("class ");
 			}
 
-			SimpleName(type);
+			SimpleName_Internal(type);
 
 			if (type.IsGenericType)
 			{
@@ -1186,8 +1708,7 @@ namespace Durian.Analysis
 			}
 			else
 			{
-				TextBuilder.Append(';');
-				NewLine();
+				ColonNewLine();
 			}
 
 			return this;
@@ -1209,13 +1730,13 @@ namespace Durian.Analysis
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder StaticConstructor(IMethodSymbol method, MethodStyle body)
 		{
-			InitBuilder();
+			Indent();
 
 			TextBuilder.Append("static ");
 
 			TryUnsafe(method);
 
-			SimpleName(method.ContainingType);
+			SimpleName_Internal(method.ContainingType);
 			TextBuilder.Append('(');
 			TextBuilder.Append(')');
 
@@ -1230,6 +1751,7 @@ namespace Durian.Analysis
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
 		public CodeBuilder Struct(INamedTypeSymbol type)
 		{
+			Indent();
 			Accessibility(type);
 
 			if (type.IsReadOnly)
@@ -1247,7 +1769,7 @@ namespace Durian.Analysis
 			TryPartial(type);
 
 			TextBuilder.Append("struct ");
-			SimpleName(type);
+			SimpleName_Internal(type);
 
 			if (type.IsGenericType)
 			{
@@ -1354,7 +1876,7 @@ namespace Durian.Analysis
 				if (typeParameter.HasConstraint())
 				{
 					TextBuilder.Append(" where ");
-					SimpleName(typeParameter);
+					SimpleName_Internal(typeParameter);
 					TextBuilder.Append(':');
 					Space();
 					Constraint(typeParameter);
@@ -1374,9 +1896,7 @@ namespace Durian.Analysis
 
 			if (parameter.HasExplicitDefaultValue)
 			{
-				Space();
-				TextBuilder.Append('=');
-				Space();
+				VariableInitializer();
 
 				if (parameter.ExplicitDefaultValue is null)
 				{
@@ -1403,6 +1923,7 @@ namespace Durian.Analysis
 				throw new ArgumentException("DelegateInvokeMethod cannot be null", nameof(type));
 			}
 
+			Indent();
 			Accessibility(type);
 
 			TryUnsafe(type);
@@ -1411,7 +1932,7 @@ namespace Durian.Analysis
 
 			ReturnType(type.DelegateInvokeMethod);
 
-			SimpleName(type);
+			SimpleName_Internal(type);
 
 			if (type.IsGenericType)
 			{
@@ -1424,8 +1945,7 @@ namespace Durian.Analysis
 				ParameterList(type.DelegateInvokeMethod);
 			}
 
-			TextBuilder.Append(';');
-			NewLine();
+			ColonNewLine();
 
 			return this;
 		}
@@ -1546,7 +2066,7 @@ namespace Durian.Analysis
 		{
 			InitBuilder();
 
-			if (symbol is INamedTypeSymbol type && KeywordType(type, format == SymbolName.SystemName))
+			if (symbol is INamedTypeSymbol type && KeywordType(type, format == SymbolName.SystemName || !_style.UseBuiltInAliases))
 			{
 				return this;
 			}
@@ -1554,7 +2074,7 @@ namespace Durian.Analysis
 			switch (format)
 			{
 				case SymbolName.Default:
-					SimpleName(symbol);
+					SimpleName_Internal(symbol);
 					break;
 
 				case SymbolName.Generic:
@@ -1616,7 +2136,7 @@ namespace Durian.Analysis
 			}
 
 			Type(parameter.Type);
-			SimpleName(parameter);
+			SimpleName_Internal(parameter);
 			DefaultValue(parameter);
 
 			return this;
@@ -1775,7 +2295,7 @@ namespace Durian.Analysis
 					return TypeParameter(typeParameter, annotation);
 
 				default:
-					SimpleName(type);
+					SimpleName_Internal(type);
 					Nullability(annotation);
 					return this;
 			}
@@ -1864,7 +2384,7 @@ namespace Durian.Analysis
 		{
 			InitBuilder();
 
-			SimpleName(typeParameter);
+			SimpleName_Internal(typeParameter);
 			Nullability(annotation);
 
 			return this;
@@ -1889,23 +2409,23 @@ namespace Durian.Analysis
 			if (includeVariance)
 			{
 				Variance(typeParameters[0]);
-				SimpleName(typeParameters[0]);
+				SimpleName_Internal(typeParameters[0]);
 
 				for (int i = 1; i < typeParameters.Length; i++)
 				{
 					CommaSpace();
 					Variance(typeParameters[i]);
-					SimpleName(typeParameters[i]);
+					SimpleName_Internal(typeParameters[i]);
 				}
 			}
 			else
 			{
-				SimpleName(typeParameters[0]);
+				SimpleName_Internal(typeParameters[0]);
 
 				for (int i = 1; i < typeParameters.Length; i++)
 				{
 					CommaSpace();
-					SimpleName(typeParameters[i]);
+					SimpleName_Internal(typeParameters[i]);
 				}
 			}
 
@@ -1973,7 +2493,7 @@ namespace Durian.Analysis
 
 		private CodeBuilder GenericName(INamedTypeSymbol type, bool parametersOrArguments, bool includeVariance)
 		{
-			SimpleName(type);
+			SimpleName_Internal(type);
 
 			if (parametersOrArguments)
 			{
@@ -1989,7 +2509,7 @@ namespace Durian.Analysis
 
 		private CodeBuilder GenericName(IMethodSymbol method, bool parametersOrArguments, bool includeVariance)
 		{
-			SimpleName(method);
+			SimpleName_Internal(method);
 
 			if (parametersOrArguments)
 			{
@@ -2003,34 +2523,60 @@ namespace Durian.Analysis
 			return this;
 		}
 
-		private bool KeywordType(INamedTypeSymbol type, bool useSystemName)
+		private bool KeywordType(INamedTypeSymbol type, bool useAliases)
 		{
-			if (useSystemName)
+			if (useAliases)
 			{
-				if (type is IDynamicTypeSymbol)
+				if (type.GetTypeKeyword() is string keyword)
 				{
-					TextBuilder.Append("Object");
-					return true;
-				}
-				else if (type.SpecialType.IsKeyword())
-				{
-					TextBuilder.Append(type.Name);
+					TextBuilder.Append(keyword);
 					return true;
 				}
 
 				return false;
 			}
 
-			if (type.GetTypeKeyword() is string keyword)
+			if (type is IDynamicTypeSymbol)
 			{
-				TextBuilder.Append(keyword);
+				TextBuilder.Append("dynamic");
+				return true;
+			}
+			else if (type.SpecialType.IsKeyword())
+			{
+				TextBuilder.Append(type.Name);
 				return true;
 			}
 
 			return false;
 		}
 
-		private void SimpleName(ISymbol symbol)
+		/// <summary>
+		/// Writes name of the <paramref name="symbol"/> without type parameters.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to write the name of.</param>
+		public CodeBuilder SimpleName(ISymbol symbol)
+		{
+			return SimpleName(symbol, _style.UseBuiltInAliases);
+		}
+
+		/// <summary>
+		/// Writes name of the <paramref name="symbol"/> without type parameters.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to write the name of.</param>
+		/// <param name="useAliases">Determines whether to use aliases of built-in types instead of concrete types (e.g. <see langword="int"/> instead of <c>Int32</c>.</param>
+		public CodeBuilder SimpleName(ISymbol symbol, bool useAliases)
+		{
+			InitBuilder();
+
+			if (symbol is not INamedTypeSymbol type || !KeywordType(type, !useAliases))
+			{
+				SimpleName_Internal(symbol);
+			}
+
+			return this;
+		}
+
+		private void SimpleName_Internal(ISymbol symbol)
 		{
 			TextBuilder.Append(symbol.GetVerbatimName());
 		}
@@ -2038,7 +2584,7 @@ namespace Durian.Analysis
 		private void WriteMethodHead(IMethodSymbol method, MethodStyle body)
 		{
 			ReturnType(method);
-			SimpleName(method);
+			SimpleName_Internal(method);
 
 			if (method.IsGenericMethod)
 			{

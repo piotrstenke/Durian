@@ -165,11 +165,45 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Begins declaration of auto-property accessors.
+		/// </summary>
+		public CodeBuilder Accessor(AutoPropertyKind kind)
+		{
+			InitBuilder();
+
+			switch (kind)
+			{
+				case AutoPropertyKind.GetOnly:
+					TextBuilder.Append(" { get; }");
+					break;
+
+				case AutoPropertyKind.GetSet:
+					TextBuilder.Append(" { get; set; }");
+					break;
+
+				case AutoPropertyKind.GetInit:
+					TextBuilder.Append(" { get; init; }");
+					break;
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins declaration of a property or event accessor.
+		/// </summary>
+		/// <param name="accessor">Kind of accessor to begin declaration of.</param>
+		public CodeBuilder Accessor(Accessor accessor)
+		{
+			return Accessor(accessor, _style.MethodStyle);
+		}
+
+		/// <summary>
 		/// Begins declaration of a property or event accessor.
 		/// </summary>
 		/// <param name="accessor">Kind of accessor to begin declaration of.</param>
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder Accessor(Accessor accessor, MethodStyle body = CodeGeneration.MethodStyle.Block)
+		public CodeBuilder Accessor(Accessor accessor, MethodStyle body)
 		{
 			InitBuilder();
 
@@ -186,7 +220,7 @@ namespace Durian.Analysis
 		/// </summary>
 		public CodeBuilder AttributeList()
 		{
-			InitBuilder();
+			Indent();
 			TextBuilder.Append('[');
 			return this;
 		}
@@ -197,7 +231,7 @@ namespace Durian.Analysis
 		/// <param name="target">Target of the attribute.</param>
 		public CodeBuilder AttributeList(AttributeTarget target)
 		{
-			InitBuilder();
+			Indent();
 
 			if (target.GetText() is not string text)
 			{

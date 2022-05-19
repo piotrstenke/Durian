@@ -59,6 +59,11 @@ namespace Durian.Analysis.CodeGeneration
 		public RecordStyle RecordStyle { get; set; }
 
 		/// <summary>
+		/// Determines how enum declarations are written.
+		/// </summary>
+		public EnumStyle EnumStyle { get; set; }
+
+		/// <summary>
 		/// Determines whether to use explicit <see langword="managed"/> keyword in function pointers.
 		/// </summary>
 		public bool UseExplicitManaged { get; set; }
