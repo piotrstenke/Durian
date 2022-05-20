@@ -154,24 +154,19 @@ namespace Durian.Analysis.Data
 		/// <inheritdoc/>
 		public virtual NamespaceContainer GetContainingNamespaces()
 		{
-			return _containingNamespaces ??= Symbol.GetContainingNamespaces(ParentCompilation);
+			return _containingNamespaces ??= Symbol.GetContainingNamespaces().ToContainer(ParentCompilation);
 		}
 
 		/// <inheritdoc/>
 		public virtual TypeContainer GetContainingTypes()
 		{
-			return GetContainingTypes(false);
+			return _containingTypes ??= Symbol.GetContainingTypes().ToContainer(ParentCompilation);
 		}
 
 		/// <inheritdoc/>
 		public virtual string[] GetModifiers()
 		{
 			return _modifiers ??= Symbol.GetModifiers();
-		}
-
-		private protected TypeContainer GetContainingTypes(bool includeSelf)
-		{
-			return _containingTypes ??= Symbol.GetContainingTypes(ParentCompilation, includeSelf);
 		}
 
 		private protected static InvalidOperationException Exc_NoSyntaxReference(ISymbol symbol)

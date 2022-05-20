@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -196,7 +197,7 @@ namespace Durian.Analysis.DefaultParam
 		public static IEnumerable<string> GetUsedNamespaces(IDefaultParamTarget target, in TypeParameterContainer parameters, CancellationToken cancellationToken = default)
 		{
 			int defaultParamCount = parameters.NumDefaultParam;
-			string currentNamespace = target.GetContainingNamespaces().JoinNamespaces();
+			string currentNamespace = target.GetContainingNamespaces().ToString();
 			List<string> namespaces = GetUsedNamespacesList(target, defaultParamCount, cancellationToken);
 
 			if (!string.IsNullOrWhiteSpace(currentNamespace) && target.TargetNamespace != currentNamespace && !namespaces.Contains(currentNamespace))
@@ -213,7 +214,7 @@ namespace Durian.Analysis.DefaultParam
 					continue;
 				}
 
-				string n = data.TargetType.JoinNamespaces();
+				string n = data.TargetType.GetContainingNamespaces().ToContainer().ToString();
 
 				if (!string.IsNullOrWhiteSpace(n) && !namespaces.Contains(n))
 				{
@@ -444,7 +445,7 @@ namespace Durian.Analysis.DefaultParam
 
 			for (int i = 0; i < length; i++)
 			{
-				symbols[i] = types[i].Symbol;
+				symbols[i] = (types[i].Symbol as INamedTypeSymbol)!;
 			}
 
 			return symbols;

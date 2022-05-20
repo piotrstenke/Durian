@@ -47,7 +47,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 			}
 
 			if (AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
-				AnalyzeContainingTypes(symbol, compilation, out INamedTypeSymbol[]? containingTypes, cancellationToken) &&
+				AnalyzeContainingTypes(symbol, compilation, out INamedTypeSymbol[]? containingTypes) &&
 				AnalyzeTypeParameters(symbol, in typeParameters))
 			{
 				string targetNamespace = GetTargetNamespace(symbol, compilation, attributes, containingTypes);
@@ -83,7 +83,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 			}
 
 			bool isValid = AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes, diagnosticReceiver);
-			isValid &= AnalyzeContainingTypes(symbol, compilation, out INamedTypeSymbol[]? containingTypes, diagnosticReceiver, cancellationToken);
+			isValid &= AnalyzeContainingTypes(symbol, compilation, out INamedTypeSymbol[]? containingTypes, diagnosticReceiver);
 			isValid &= AnalyzeTypeParameters(symbol, in typeParameters, diagnosticReceiver);
 
 			if (isValid)

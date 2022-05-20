@@ -48,7 +48,7 @@ namespace Durian.Analysis.SymbolContainers
 				throw new ArgumentNullException(nameof(collection));
 			}
 
-			_collection = AnalysisUtilities.ByOrder(collection, order);
+			_collection = collection;
 			Order = order;
 		}
 
@@ -89,7 +89,7 @@ namespace Durian.Analysis.SymbolContainers
 			}
 
 			ISymbol[] symbols = (_array as ISymbol[])!;
-			members = new IMemberData[symbols.Length];
+			members = CreateMemberArray(_array.Length);
 
 			ImmutableArray<IMemberData>.Builder builder = ImmutableArray.CreateBuilder<IMemberData>(symbols.Length);
 
@@ -159,6 +159,34 @@ namespace Durian.Analysis.SymbolContainers
 			return builder.ToImmutable();
 		}
 
+		/// <summary>
+		/// Converts the current array into an array of <see cref="ISymbol"/>s.
+		/// </summary>
+		public ISymbol[] ToArray()
+		{
+			if (!TryGetArray(out object[]? array))
+			{
+				return Array.Empty<ISymbol>();
+			}
+
+			ISymbol[] newArray = CreateSymbolArray(array.Length);
+
+			if (array is ISymbol[] symbols)
+			{
+				symbols.CopyTo(newArray, 0);
+				return newArray;
+			}
+
+			IMemberData[] members = (array as IMemberData[])!;
+
+			for (int i = 0; i < members.Length; i++)
+			{
+				newArray[i] = members[i].Symbol;
+			}
+
+			return newArray;
+		}
+
 		/// <inheritdoc/>
 		public override string ToString()
 		{
@@ -173,6 +201,26 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="symbol"><see cref="ISymbol"/>s to create the <see cref="IMemberData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> the given <see cref="ISymbol"/> is part of.</param>
 		protected abstract IMemberData GetData(ISymbol symbol, ICompilationData compilation);
+
+		private protected virtual ISymbol[] CreateSymbolArray(int length)
+		{
+			return new ISymbol[length];
+		}
+
+		private protected virtual ISymbol[] CreateSymbolArray(IEnumerable<ISymbol> collection)
+		{
+			return collection.ToArray();
+		}
+
+		private protected virtual IMemberData[] CreateMemberArray(int length)
+		{
+			return new IMemberData[length];
+		}
+
+		private protected virtual IMemberData[] CreateMemberArray(IEnumerable<IMemberData> collection)
+		{
+			return collection.ToArray();
+		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
@@ -211,11 +259,11 @@ namespace Durian.Analysis.SymbolContainers
 
 			if(_collection is IEnumerable<ISymbol> symbols)
 			{
-				_array = symbols.ToArray();
+				_array = CreateSymbolArray(symbols.ToArray());
 			}
 			else
 			{
-				_array = (_collection as IEnumerable<IMemberData>)!.ToArray();
+				_array = CreateMemberArray((_collection as IEnumerable<IMemberData>)!);
 			}
 
 			_collection = default;

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Durian.Analysis.Extensions;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -327,7 +328,7 @@ namespace Durian.Analysis.DefaultParam.Types
 					ref readonly ParameterGeneration gen = ref parameters[i];
 					ref readonly ParameterGeneration other = ref inc[i];
 
-					if (!SymbolEqualityComparer.Default.Equals(gen.Type, other.Type) || AnalysisUtilities.IsValidRefKindForOverload(gen.RefKind, other.RefKind))
+					if (!SymbolEqualityComparer.Default.Equals(gen.Type, other.Type) || gen.RefKind.IsValidForOverload(other.RefKind))
 					{
 						return true;
 					}

@@ -73,18 +73,6 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Returns a <see cref="string"/> representing a dot-separated name.
-		/// </summary>
-		/// <param name="parts">Parts of the name. Each part will be separated by a dot.</param>
-		/// <returns>A <see cref="string"/> representing a dot-separated name. -or- <see cref="string.Empty"/> if the <paramref name="parts"/> were null or empty or white-space only.</returns>
-		public static string CreateName(params string[]? parts)
-		{
-			StringBuilder builder = new();
-			builder.WriteName(parts);
-			return builder.ToString();
-		}
-
-		/// <summary>
 		/// Returns a <see cref="string"/> containing generic identifier combined of the specified <paramref name="name"/> and the collection of <paramref name="typeParameters"/>.
 		/// </summary>
 		/// <param name="typeParameters">Type parameters.</param>
@@ -93,7 +81,15 @@ namespace Durian.Analysis
 		public static string GetGenericName(IEnumerable<string> typeParameters, string? name)
 		{
 			StringBuilder builder = new();
-			builder.WriteGenericName(typeParameters, name);
+
+			if(!string.IsNullOrWhiteSpace(name))
+			{
+				builder.Append(name!);
+			}
+
+			builder.Append('<');
+			builder.Append(string.Join(", ", typeParameters));
+			builder.Append('>');
 			return builder.ToString();
 		}
 
@@ -104,7 +100,9 @@ namespace Durian.Analysis
 		public static string GetGenericName(IEnumerable<string> typeParameters)
 		{
 			StringBuilder builder = new();
-			builder.WriteGenericName(typeParameters);
+			builder.Append('<');
+			builder.Append(string.Join(", ", typeParameters));
+			builder.Append('>');
 			return builder.ToString();
 		}
 

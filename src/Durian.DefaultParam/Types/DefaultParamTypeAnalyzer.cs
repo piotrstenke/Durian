@@ -48,7 +48,7 @@ namespace Durian.Analysis.DefaultParam.Types
 			INamedTypeSymbol[] containingTypes = symbol.GetContainingTypes().ToArray();
 
 			bool isValid = AnalyzeAgainstProhibitedAttributes(symbol, compilation, diagnosticReceiver, attributes);
-			isValid &= AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver, containingTypes, cancellationToken);
+			isValid &= AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver, containingTypes);
 			isValid &= AnalyzeAgainstPartial(symbol, diagnosticReceiver, cancellationToken);
 			isValid &= AnalyzeTypeParameters(symbol, in typeParameters, diagnosticReceiver);
 

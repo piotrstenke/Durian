@@ -16,6 +16,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 	/// </summary>
 	public class DefaultParamDelegateData : DelegateData, IDefaultParamTarget
 	{
+		private string? _targetNamespace;
 		private readonly TypeParameterContainer _typeParameters;
 
 		/// <inheritdoc cref="Methods.DefaultParamMethodData.NewModifierIndexes"/>
@@ -27,7 +28,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
 
 		/// <inheritdoc cref="Types.DefaultParamTypeData.TargetNamespace"/>
-		public string TargetNamespace { get; }
+		public string TargetNamespace => _targetNamespace ??= GetContainingNamespaces().ToString();
 
 		/// <inheritdoc/>
 		public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
@@ -44,7 +45,6 @@ namespace Durian.Analysis.DefaultParam.Delegates
 		public DefaultParamDelegateData(DelegateDeclarationSyntax declaration, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters) : base(declaration, compilation)
 		{
 			_typeParameters = typeParameters;
-			TargetNamespace = GetContainingNamespaces().JoinNamespaces();
 		}
 
 		/// <summary>
@@ -57,6 +57,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
 		/// <param name="targetNamespace">Specifies the namespace where the target member should be generated in.</param>
 		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
+		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
@@ -68,6 +69,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 			in TypeParameterContainer typeParameters,
 			string targetNamespace,
 			HashSet<int>? newModifierIndexes = null,
+			string[]? modifiers = null,
 			IEnumerable<ITypeData>? containingTypes = null,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
 			IEnumerable<AttributeData>? attributes = null
@@ -76,6 +78,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 			compilation,
 			symbol,
 			semanticModel,
+			modifiers,
 			containingTypes,
 			containingNamespaces,
 			attributes
@@ -83,7 +86,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 		{
 			_typeParameters = typeParameters;
 			NewModifierIndexes = newModifierIndexes;
-			TargetNamespace = targetNamespace;
+			_targetNamespace = targetNamespace;
 		}
 
 		/// <summary>

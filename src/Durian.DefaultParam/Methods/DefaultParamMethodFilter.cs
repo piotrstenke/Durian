@@ -62,6 +62,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 							call,
 							targetNamespace,
 							newModifiers,
+							null,
 							containingTypes,
 							null,
 							attributes
@@ -106,6 +107,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 							call,
 							targetNamespace,
 							newModifiers,
+							null,
 							containingTypes,
 							null,
 							attributes

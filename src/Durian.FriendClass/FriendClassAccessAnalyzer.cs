@@ -149,7 +149,7 @@ namespace Durian.Analysis.FriendClass
 				{
 					if (ctor.Initializer is null)
 					{
-						if (currentType.BaseType?.GetParameterlessConstructor() is IMethodSymbol baseCtor)
+						if (currentType.BaseType?.GetSpecialConstructor(SpecialConstructor.Parameterless) is IMethodSymbol baseCtor)
 						{
 							return baseCtor;
 						}
@@ -203,7 +203,7 @@ namespace Durian.Analysis.FriendClass
 				if (type is not null &&
 					type.TypeKind == TypeKind.Class &&
 					type.InstanceConstructors.Length == 1 &&
-					type.BaseType?.GetParameterlessConstructor() is IMethodSymbol baseCtor
+					type.BaseType?.GetSpecialConstructor(SpecialConstructor.Parameterless) is IMethodSymbol baseCtor
 				)
 				{
 					return baseCtor;

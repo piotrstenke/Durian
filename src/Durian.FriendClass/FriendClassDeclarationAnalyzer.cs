@@ -83,7 +83,7 @@ namespace Durian.Analysis.FriendClass
 
 			List<Diagnostic> diagnostics = new(attributes.Length * 2);
 
-			ValidateConfiguration(symbol, config, compilation, diagnostics);
+			ValidateConfiguration(symbol, config, diagnostics);
 			AnalyzeAttributes(attributes, symbol, config, compilation, diagnostics);
 
 			foreach (Diagnostic d in diagnostics)
@@ -353,7 +353,6 @@ namespace Durian.Analysis.FriendClass
 		private static void ValidateConfiguration(
 			INamedTypeSymbol symbol,
 			FriendClassConfiguration configuration,
-			FriendClassCompilationData compilation,
 			List<Diagnostic> diagnostics
 		)
 		{
@@ -379,7 +378,7 @@ namespace Durian.Analysis.FriendClass
 
 			if (configuration.IncludeInherited)
 			{
-				if (symbol.HasExplicitBaseType(compilation.Compilation))
+				if (symbol.HasExplicitBaseType())
 				{
 					if (!symbol.BaseType!.GetAllMembers().Any(IsValidInternalParentMember))
 					{

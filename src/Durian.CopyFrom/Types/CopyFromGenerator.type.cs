@@ -10,6 +10,7 @@ using System.Linq;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.CopyFrom.Types;
 using Durian.Analysis.Extensions;
+using Durian.Analysis.SymbolContainers;
 using Durian.Analysis.SyntaxVisitors;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -88,7 +89,7 @@ namespace Durian.Analysis.CopyFrom
 
 					if (parameter.Name != argument.Name && !SymbolEqualityComparer.Default.Equals(parameter, argument))
 					{
-						list.Add((parameter.Name, argument.GetGenericName(GenericSubstitution.TypeArguments)));
+						list.Add((parameter.Name, argument.GetGenericName(true)));
 					}
 				}
 			}
@@ -339,7 +340,7 @@ namespace Durian.Analysis.CopyFrom
 			if (hasLead)
 			{
 				context.CodeBuilder.Indent();
-				context.CodeBuilder.BeginDeclation($"partial {keyword} {name}");
+				context.CodeBuilder.Declation($"partial {keyword} {name}");
 			}
 
 			return hasLead;
@@ -351,7 +352,7 @@ namespace Durian.Analysis.CopyFrom
 				{
 					name = type.Symbol.GetGenericName();
 					semanticModel ??= GetCurrentSemanticModel(type, declaration, ref semanticModelCache);
-					context.CodeBuilder.WriteDeclarationLead(type, target.Usings, GeneratorName, GeneratorVersion);
+					WriteDeclarationLead(context.CodeBuilder, type, target.Usings);
 					hasLead = true;
 				}
 			}
@@ -452,9 +453,9 @@ namespace Durian.Analysis.CopyFrom
 				}
 				else if (members.Any())
 				{
-					context.CodeBuilder.WriteDeclarationLead(type, target.Usings, GeneratorName, GeneratorVersion);
+					WriteDeclarationLead(context.CodeBuilder, type, target.Usings);
 					context.CodeBuilder.Indent();
-					context.CodeBuilder.BeginDeclation($"partial {keyword} {type.Symbol.GetGenericName()}");
+					context.CodeBuilder.Declation($"partial {keyword} {type.Symbol.GetGenericName()}");
 					semanticModel = GetCurrentSemanticModel(type, partial, ref semanticModelCache);
 					GenerateMembers(target, context, generateAction, members, semanticModel);
 				}
@@ -514,7 +515,7 @@ namespace Durian.Analysis.CopyFrom
 			SortByOrder(targets);
 
 			bool generated = false;
-			string keyword = type.Declaration.GetKeyword();
+			string keyword = type.Declaration.GetKeyword()!;
 
 			string currentName = hintName;
 

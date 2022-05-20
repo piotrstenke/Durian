@@ -63,7 +63,7 @@ namespace Durian.Analysis
 			{
 				// Every type in the 'Durian.Generator' namespace is located in the Core module.
 
-				if (Array.IndexOf(modules, DurianModule.Core) > -1 && type.GetContainingNamespaces().JoinNamespaces() == "Durian.Generator")
+				if (Array.IndexOf(modules, DurianModule.Core) > -1 && string.Join(".", type.GetContainingNamespaces().Select(n => n.Name)) == "Durian.Generator")
 				{
 					context.ReportDiagnostic(Diagnostic.Create(DUR0003_DoNotUseTypeFromDurianGeneratorNamespace, context.Node.GetLocation()));
 				}

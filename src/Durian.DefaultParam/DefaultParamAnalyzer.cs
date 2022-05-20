@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
+using Durian.Analysis.SymbolContainers;
 using Durian.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -193,18 +194,16 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="containingTypes">An array of the <paramref name="symbol"/>'s containing types' <see cref="INamedTypeSymbol"/>s. Returned if the method itself returns <see langword="true"/>.</param>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the containing types of the <paramref name="symbol"/> are valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeContainingTypes(
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
 			[NotNullWhen(true)] out INamedTypeSymbol[]? containingTypes,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken = default
+			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
 			INamedTypeSymbol[] types = symbol.GetContainingTypes().ToArray();
-			bool isValid = AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver, types, cancellationToken);
+			bool isValid = AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver, types);
 			containingTypes = isValid ? types : null;
 			return isValid;
 		}
@@ -216,14 +215,12 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 		/// <param name="containingTypes">An array of the <paramref name="symbol"/>'s containing types' <see cref="INamedTypeSymbol"/>s. Returned if the method itself returns <see langword="true"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the containing types of the <paramref name="symbol"/> are valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeContainingTypes(
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
 			IDiagnosticReceiver diagnosticReceiver,
-			INamedTypeSymbol[]? containingTypes = null,
-			CancellationToken cancellationToken = default
+			INamedTypeSymbol[]? containingTypes = null
 		)
 		{
 			InitializeContainingTypes(ref containingTypes, symbol);
@@ -234,15 +231,13 @@ namespace Durian.Analysis.DefaultParam
 			{
 				foreach (INamedTypeSymbol parent in containingTypes)
 				{
-					if (!HasPartialKeyword(parent, cancellationToken))
+					if (!parent.IsPartial())
 					{
 						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial, parent);
 						isValid = false;
 					}
 
-					ImmutableArray<ITypeParameterSymbol> typeParameters = parent.TypeParameters;
-
-					if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DefaultParamAttribute)))
+					if (!HasDefaultParamAttribute(parent, compilation))
 					{
 						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested, symbol);
 						isValid = false;
@@ -268,20 +263,20 @@ namespace Durian.Analysis.DefaultParam
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
+			ImmutableArray<ITypeData> types = symbol.GetContainingTypes().ToContainer(compilation).GetData();
 			bool isValid = true;
 
 			if (types.Length > 0)
 			{
 				foreach (ITypeData parent in types)
 				{
-					if (!parent.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+					if (!parent.IsPartial)
 					{
 						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial, parent.Symbol);
 						isValid = false;
 					}
 
-					ImmutableArray<ITypeParameterSymbol> typeParameters = parent.Symbol.TypeParameters;
+					ImmutableArray<ITypeParameterSymbol> typeParameters = (parent.Symbol as INamedTypeSymbol)!.TypeParameters;
 
 					if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DefaultParamAttribute)))
 					{
@@ -291,7 +286,7 @@ namespace Durian.Analysis.DefaultParam
 				}
 			}
 
-			containingTypes = isValid ? types : null;
+			containingTypes = isValid ? types.ToArray() : null;
 
 			return isValid;
 		}
@@ -302,17 +297,15 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="containingTypes">An array of the <paramref name="symbol"/>'s containing types' <see cref="INamedTypeSymbol"/>s. Returned if the method itself returns <see langword="true"/>.</param>
-		/// <param name="cancellationToken"></param>
 		/// <returns><see langword="true"/> if the containing types of the <paramref name="symbol"/> are valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeContainingTypes(
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
-			[NotNullWhen(true)] out INamedTypeSymbol[]? containingTypes,
-			CancellationToken cancellationToken = default
+			[NotNullWhen(true)] out INamedTypeSymbol[]? containingTypes
 		)
 		{
 			INamedTypeSymbol[] containing = symbol.GetContainingTypes().ToArray();
-			bool isValid = AnalyzeContainingTypes(containing, compilation, cancellationToken);
+			bool isValid = AnalyzeContainingTypes(containing, compilation);
 			containingTypes = isValid ? containing : null;
 			return isValid;
 		}
@@ -322,26 +315,19 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the <paramref name="containingTypes"/> of the target <see cref="ISymbol"/> are valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeContainingTypes(
-			INamedTypeSymbol[] containingTypes,
-			DefaultParamCompilationData compilation,
-			CancellationToken cancellationToken = default
-		)
+		public static bool AnalyzeContainingTypes(INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
 		{
 			if (containingTypes.Length > 0)
 			{
 				foreach (INamedTypeSymbol parent in containingTypes)
 				{
-					if (!HasPartialKeyword(parent, cancellationToken))
+					if (!parent.IsPartial())
 					{
 						return false;
 					}
 
-					ImmutableArray<ITypeParameterSymbol> typeParameters = parent.TypeParameters;
-
-					if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DefaultParamAttribute)))
+					if (!HasDefaultParamAttribute(parent, compilation))
 					{
 						return false;
 					}
@@ -356,17 +342,12 @@ namespace Durian.Analysis.DefaultParam
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the containing types of the <paramref name="symbol"/> are valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeContainingTypes(
-			ISymbol symbol,
-			DefaultParamCompilationData compilation,
-			CancellationToken cancellationToken = default
-		)
+		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation)
 		{
 			INamedTypeSymbol[] types = symbol.GetContainingTypes().ToArray();
 
-			return AnalyzeContainingTypes(types, compilation, cancellationToken);
+			return AnalyzeContainingTypes(types, compilation);
 		}
 
 		/// <summary>
@@ -382,29 +363,32 @@ namespace Durian.Analysis.DefaultParam
 			[NotNullWhen(true)] out ITypeData[]? containingTypes
 		)
 		{
-			ITypeData[] types = symbol.GetContainingTypes(compilation).ToArray();
+			INamedTypeSymbol[] types = symbol.GetContainingTypes().ToArray();
 
-			if (types.Length > 0)
+			if (types.Length == 0)
 			{
-				foreach (ITypeData parent in types)
+				containingTypes = null;
+				return false;
+			}
+
+			ImmutableArray<ITypeData> arr = types.ToContainer(compilation).GetData();
+
+			foreach (ITypeData parent in arr)
+			{
+				if (!parent.IsPartial)
 				{
-					if (!HasPartialKeyword(parent))
-					{
-						containingTypes = null;
-						return false;
-					}
+					containingTypes = null;
+					return false;
+				}
 
-					ImmutableArray<ITypeParameterSymbol> typeParameters = parent.Symbol.TypeParameters;
-
-					if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DefaultParamAttribute)))
-					{
-						containingTypes = null;
-						return false;
-					}
+				if (!HasDefaultParamAttribute((parent.Symbol as INamedTypeSymbol)!, compilation))
+				{
+					containingTypes = null;
+					return false;
 				}
 			}
 
-			containingTypes = types;
+			containingTypes = arr.ToArray();
 			return true;
 		}
 
@@ -422,7 +406,7 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			return AnalyzeDefault(symbol, compilation, in typeParameters, cancellationToken);
+			return AnalyzeDefault(symbol, compilation, in typeParameters);
 		}
 
 		/// <summary>
@@ -431,13 +415,11 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="symbol"><see cref="ISymbol"/> to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="symbol"/>'s type parameters.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeDefault(
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
-			in TypeParameterContainer typeParameters,
-			CancellationToken cancellationToken = default
+			in TypeParameterContainer typeParameters
 		)
 		{
 			if (!typeParameters.HasDefaultParams)
@@ -447,7 +429,7 @@ namespace Durian.Analysis.DefaultParam
 
 			return
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation) &&
-				AnalyzeContainingTypes(symbol, compilation, cancellationToken) &&
+				AnalyzeContainingTypes(symbol, compilation) &&
 				AnalyzeTypeParameters(symbol, in typeParameters);
 		}
 
@@ -471,7 +453,7 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			return AnalyzeDefault(symbol, compilation, in typeParameters, diagnosticReceiver, cancellationToken);
+			return AnalyzeDefault(symbol, compilation, in typeParameters, diagnosticReceiver);
 		}
 
 		/// <summary>
@@ -481,14 +463,12 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains the <paramref name="symbol"/>'s type parameters.</param>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <returns><see langword="true"/> if the <paramref name="symbol"/> is valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeDefault(
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
 			in TypeParameterContainer typeParameters,
-			IDiagnosticReceiver diagnosticReceiver,
-			CancellationToken cancellationToken = default
+			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
 			if (!typeParameters.HasDefaultParams)
@@ -497,7 +477,7 @@ namespace Durian.Analysis.DefaultParam
 			}
 
 			bool isValid = AnalyzeAgainstProhibitedAttributes(symbol, compilation, diagnosticReceiver);
-			isValid &= AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver, cancellationToken: cancellationToken);
+			isValid &= AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver);
 			isValid &= AnalyzeTypeParameters(symbol, in typeParameters, diagnosticReceiver);
 
 			return isValid;
@@ -679,7 +659,7 @@ namespace Durian.Analysis.DefaultParam
 			{
 				if (symbol.ContainingType is not null || value == "Durian.Generator" || !AnalysisUtilities.IsValidNamespaceIdentifier(value!))
 				{
-					string n = symbol.JoinNamespaces();
+					string n = string.Join(".", symbol.GetContainingNamespaces().Select(n => n.Name));
 
 					return string.IsNullOrWhiteSpace(n) ? "global" : n;
 				}
@@ -1013,14 +993,13 @@ namespace Durian.Analysis.DefaultParam
 			return symbols.Where(s => !IsGeneratedFrom(s, fullName, generatedFrom));
 		}
 
-		private static bool HasPartialKeyword(ITypeData data)
+		private static bool HasDefaultParamAttribute(INamedTypeSymbol type, DefaultParamCompilationData compilation)
 		{
-			return data.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
-		}
+			ImmutableArray<ITypeParameterSymbol> typeParameters = type.TypeParameters;
 
-		private static bool HasPartialKeyword(INamedTypeSymbol symbol, CancellationToken cancellationToken)
-		{
-			return symbol.GetModifiers(cancellationToken).Any(m => m == "partial");
+			return
+				typeParameters.Length > 0 &&
+				typeParameters.Any(t => t.HasAttribute(compilation.DefaultParamAttribute!));
 		}
 
 		private static bool HasTypeParameterAsConstraint(ITypeParameterSymbol currentTypeParameter, in TypeParameterContainer typeParameters)
@@ -1078,7 +1057,7 @@ namespace Durian.Analysis.DefaultParam
 
 			bool IsInvalidMethod(IMethodSymbol? method)
 			{
-				return method is null || method.ReturnType.IsOrUsesTypeParameter(currentTypeParameter) || method.Parameters.Any(p => p.Type.IsOrUsesTypeParameter(currentTypeParameter));
+				return method is null || method.ReturnType.HandlesTypeParameter(currentTypeParameter) || method.Parameters.Any(p => p.Type.HandlesTypeParameter(currentTypeParameter));
 			}
 		}
 
@@ -1169,13 +1148,13 @@ namespace Durian.Analysis.DefaultParam
 				{
 					int typeParameterIndex = GetIndexOfTypeParameterInCollidingMethod(typeParameters, parameter);
 
-					if (targetGeneration.GenericParameterIndex == typeParameterIndex && !AnalysisUtilities.IsValidRefKindForOverload(parameter.RefKind, targetGeneration.RefKind))
+					if (targetGeneration.GenericParameterIndex == typeParameterIndex && !parameter.RefKind.IsValidForOverload(targetGeneration.RefKind))
 					{
 						return false;
 					}
 				}
 			}
-			else if (SymbolEqualityComparer.Default.Equals(parameter.Type, targetGeneration.Type) && !AnalysisUtilities.IsValidRefKindForOverload(parameter.RefKind, targetGeneration.RefKind))
+			else if (SymbolEqualityComparer.Default.Equals(parameter.Type, targetGeneration.Type) && !parameter.RefKind.IsValidForOverload(targetGeneration.RefKind))
 			{
 				return false;
 			}

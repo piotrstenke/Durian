@@ -389,7 +389,7 @@ namespace Durian.Analysis.Data
 
 		private static bool ValidateSymbol(INamedTypeSymbol symbol)
 		{
-			return symbol.ContainingNamespace is not null && symbol.JoinNamespaces().StartsWith("Durian");
+			return symbol.ContainingNamespace is not null && symbol.GetContainingNamespaces().FirstOrDefault()?.Name == "Durian";
 		}
 
 		private void FillWithEntries()

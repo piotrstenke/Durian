@@ -184,6 +184,52 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> is the <paramref name="typeParameter"/> or if it uses it as its element type (for <see cref="IArrayTypeSymbol"/>) or pointed at type (for <see cref="IPointerTypeSymbol"/>).
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to check.</param>
+		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to check if is used by the target <paramref name="type"/>.</param>
+		public static bool HandlesTypeParameter(this ITypeSymbol type, ITypeParameterSymbol typeParameter)
+		{
+			if (SymbolEqualityComparer.Default.Equals(type, typeParameter))
+			{
+				return true;
+			}
+
+			ITypeSymbol symbol;
+
+			if (type is IArrayTypeSymbol array)
+			{
+				symbol = array.GetEffectiveElementType();
+			}
+			else if (type is IPointerTypeSymbol pointer)
+			{
+				symbol = pointer.GetEffectivePointerAtType();
+			}
+			else
+			{
+				return false;
+			}
+
+			if (SymbolEqualityComparer.Default.Equals(symbol, typeParameter))
+			{
+				return true;
+			}
+
+			if (symbol is INamedTypeSymbol t && t.Arity > 0)
+			{
+				foreach (ITypeSymbol s in t.TypeArguments)
+				{
+					if (HandlesTypeParameter(s, typeParameter))
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
 		/// Checks if an attribute of type <paramref name="attrSymbol"/> is defined on the target <paramref name="symbol"/>
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check if contains the specified attribute.</param>
@@ -1009,7 +1055,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether is a flags enum.</param>
 		public static bool IsFlagsEnum(this INamedTypeSymbol type)
 		{
-			if(type.TypeKind != TypeKind.Enum)
+			if (type.TypeKind != TypeKind.Enum)
 			{
 				return false;
 			}
@@ -1193,52 +1239,6 @@ namespace Durian.Analysis.Extensions
 		public static bool IsOperator(this IMethodSymbol method)
 		{
 			return method.MethodKind is MethodKind.Conversion or MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator;
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="type"/> is the <paramref name="typeParameter"/> or if it uses it as its element type (for <see cref="IArrayTypeSymbol"/>) or pointed at type (for <see cref="IPointerTypeSymbol"/>).
-		/// </summary>
-		/// <param name="type"><see cref="ITypeSymbol"/> to check.</param>
-		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to check if is used by the target <paramref name="type"/>.</param>
-		public static bool IsOrUsesTypeParameter(this ITypeSymbol type, ITypeParameterSymbol typeParameter)
-		{
-			if (SymbolEqualityComparer.Default.Equals(type, typeParameter))
-			{
-				return true;
-			}
-
-			ITypeSymbol symbol;
-
-			if (type is IArrayTypeSymbol array)
-			{
-				symbol = array.GetEffectiveElementType();
-			}
-			else if (type is IPointerTypeSymbol pointer)
-			{
-				symbol = pointer.GetEffectivePointerAtType();
-			}
-			else
-			{
-				return false;
-			}
-
-			if (SymbolEqualityComparer.Default.Equals(symbol, typeParameter))
-			{
-				return true;
-			}
-
-			if (symbol is INamedTypeSymbol t && t.Arity > 0)
-			{
-				foreach (ITypeSymbol s in t.TypeArguments)
-				{
-					if (IsOrUsesTypeParameter(s, typeParameter))
-					{
-						return true;
-					}
-				}
-			}
-
-			return false;
 		}
 
 		/// <summary>

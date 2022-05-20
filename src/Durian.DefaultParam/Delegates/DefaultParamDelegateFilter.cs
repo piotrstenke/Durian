@@ -45,6 +45,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 						context.GetTypeParameters(),
 						targetNamespace,
 						newModifiers,
+						null,
 						containingTypes,
 						null,
 						attributes
@@ -80,6 +81,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 						context.GetTypeParameters(),
 						targetNamespace,
 						applyNewModifiers,
+						null,
 						containingTypes,
 						null,
 						attributes

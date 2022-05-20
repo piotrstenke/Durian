@@ -39,6 +39,16 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Removes the 'Attribute' suffix from the name.
 		/// </summary>
-		Attribute = 5
+		Attribute = 5,
+
+		/// <summary>
+		/// A fully-qualified name, along with all parent namespaces and types (including type arguments).
+		/// </summary>
+		Qualified = 6,
+
+		/// <summary>
+		/// A fully-qualified name, along with all parent namespaces and types (including type arguments) and the <see langword="global"/> alias.
+		/// </summary>
+		GlobalQualified = 7,
 	}
 }

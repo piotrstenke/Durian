@@ -15,7 +15,7 @@ namespace Durian.Analysis.SymbolContainers
 	/// <summary>
 	/// <see cref="ISymbolContainer"/> that handles <see cref="INamespaceOrTypeSymbol"/>s.
 	/// </summary>
-	public sealed class NamespacesAndTypesContainer : SymbolContainer, IEnumerable<INamespaceOrTypeSymbol>
+	public sealed class NamespacesAndTypesContainer : SymbolContainer
 	{
 		/// <inheritdoc cref="TypeContainer.UseArguments"/>
 		public bool UseArguments { get; set; }
@@ -51,15 +51,13 @@ namespace Durian.Analysis.SymbolContainers
 				return ImmutableArray<string>.Empty;
 			}
 
-			GenericSubstitution substituion = UseArguments ? GenericSubstitution.TypeArguments : default;
-
 			ImmutableArray<string>.Builder builder = ImmutableArray.CreateBuilder<string>(array.Length);
 
 			if (array is IMemberData[] members)
 			{
 				for (int i = 0; i < array.Length; i++)
 				{
-					builder.Add(members[i].Symbol.GetGenericName(substituion));
+					builder.Add(members[i].Symbol.GetGenericName(UseArguments));
 				}
 			}
 			else
@@ -68,7 +66,7 @@ namespace Durian.Analysis.SymbolContainers
 
 				for (int i = 0; i < array.Length; i++)
 				{
-					builder.Add(symbols[i].GetGenericName(substituion));
+					builder.Add(symbols[i].GetGenericName(UseArguments));
 				}
 			}
 
@@ -168,17 +166,62 @@ namespace Durian.Analysis.SymbolContainers
 			return base.GetSymbols().CastArray<INamespaceOrTypeSymbol>();
 		}
 
+		/// <summary>
+		/// Converts the current array into an array of <see cref="INamespaceOrTypeSymbol"/>s.
+		/// </summary>
+		public new INamespaceOrTypeSymbol[] ToArray()
+		{
+			if (!TryGetArray(out object[]? array))
+			{
+				return Array.Empty<INamespaceOrTypeSymbol>();
+			}
+
+			INamespaceOrTypeSymbol[] newArray = new INamespaceOrTypeSymbol[array.Length];
+
+			if (array is ISymbol[] symbols)
+			{
+				for (int i = 0; i < array.Length; i++)
+				{
+					newArray[i] = (symbols[i] as INamespaceOrTypeSymbol)!;
+				}
+			}
+			else
+			{
+				IMemberData[] members = (array as IMemberData[])!;
+
+				for (int i = 0; i < members.Length; i++)
+				{
+					newArray[i] = (members[i].Symbol as INamespaceOrTypeSymbol)!;
+				}
+			}
+
+			return newArray;
+		}
+
 		/// <inheritdoc/>
 		protected override IMemberData GetData(ISymbol symbol, ICompilationData compilation)
 		{
 			return new NamespaceOrTypeData((symbol as INamespaceOrTypeSymbol)!, compilation);
 		}
 
-		/// <inheritdoc/>
-		public IEnumerator<INamespaceOrTypeSymbol> GetEnumerator()
+		private protected override IMemberData[] CreateMemberArray(IEnumerable<IMemberData> collection)
 		{
-			IEnumerable<INamespaceOrTypeSymbol> symbols = GetSymbols();
-			return symbols.GetEnumerator();
+			return collection.Cast<NamespaceOrTypeData>().ToArray();
+		}
+
+		private protected override IMemberData[] CreateMemberArray(int length)
+		{
+			return new NamespaceOrTypeData[length];
+		}
+
+		private protected override ISymbol[] CreateSymbolArray(IEnumerable<ISymbol> collection)
+		{
+			return collection.Cast<INamespaceOrTypeSymbol>().ToArray();
+		}
+
+		private protected override ISymbol[] CreateSymbolArray(int length)
+		{
+			return new INamespaceOrTypeSymbol[length];
 		}
 	}
 

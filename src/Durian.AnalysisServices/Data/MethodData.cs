@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
 {
-
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="MethodDeclarationSyntax"/>.
 	/// </summary>

@@ -186,7 +186,7 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			return context.Symbol.IsPartialContext(context.Node);
+			return context.Symbol.IsPartialContext(context.Node!);
 		}
 
 		private static bool EnsureIsInPartialContext(ref CopyFromMethodContext context, IDiagnosticReceiver diagnosticReceiver)
@@ -215,7 +215,7 @@ namespace Durian.Analysis.CopyFrom
 						return false;
 					}
 
-					if (!context.Symbol.IsPartial(context.Node))
+					if (!context.Symbol.IsPartial(context.Node!))
 					{
 						diagnosticReceiver.ReportDiagnostic(DUR0202_MemberMustBePartial, context.Symbol);
 					}
@@ -663,7 +663,7 @@ namespace Durian.Analysis.CopyFrom
 
 			if (!isValid)
 			{
-				diagnosticReceiver.ReportDiagnostic(diagnostic!, context.Symbol);
+				diagnosticReceiver.ReportDiagnostic(diagnostic, context.Symbol);
 
 				if (context.Symbol.MethodKind != MethodKind.Ordinary)
 				{

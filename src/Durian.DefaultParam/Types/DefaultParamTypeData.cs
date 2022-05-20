@@ -16,6 +16,7 @@ namespace Durian.Analysis.DefaultParam.Types
 	/// </summary>
 	public class DefaultParamTypeData : TypeData<TypeDeclarationSyntax>, IDefaultParamTarget
 	{
+		private string? _targetNamespace;
 		private readonly TypeParameterContainer _typeParameters;
 
 		/// <summary>
@@ -34,7 +35,7 @@ namespace Durian.Analysis.DefaultParam.Types
 		/// <summary>
 		/// Specifies the namespace where the target member should be generated in.
 		/// </summary>
-		public string TargetNamespace { get; }
+		public string TargetNamespace => _targetNamespace ??= GetContainingNamespaces().ToString();
 
 		/// <inheritdoc/>
 		public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
@@ -51,7 +52,6 @@ namespace Durian.Analysis.DefaultParam.Types
 		public DefaultParamTypeData(TypeDeclarationSyntax declaration, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters) : base(declaration, compilation)
 		{
 			_typeParameters = typeParameters;
-			TargetNamespace = GetContainingNamespaces().JoinNamespaces();
 		}
 
 		/// <summary>
@@ -65,8 +65,8 @@ namespace Durian.Analysis.DefaultParam.Types
 		/// <param name="inherit">Determines whether the generated members should inherit the original type.</param>
 		/// <param name="targetNamespace">Specifies the namespace where the target member should be generated in.</param>
 		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
-		/// <param name="partialDeclarations">A collection of <see cref="TypeDeclarationSyntax"/> that represent the partial declarations of the target <paramref name="symbol"/>.</param>
 		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
+		/// <param name="partialDeclarations">A collection of <see cref="TypeDeclarationSyntax"/> that represent the partial declarations of the target <paramref name="symbol"/>.</param>
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
@@ -79,8 +79,8 @@ namespace Durian.Analysis.DefaultParam.Types
 			bool inherit,
 			string targetNamespace,
 			HashSet<int>? newModifierIndexes = null,
+			string[]? modifiers = null,
 			IEnumerable<TypeDeclarationSyntax>? partialDeclarations = null,
-			IEnumerable<SyntaxToken>? modifiers = null,
 			IEnumerable<ITypeData>? containingTypes = null,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
 			IEnumerable<AttributeData>? attributes = null
@@ -89,8 +89,8 @@ namespace Durian.Analysis.DefaultParam.Types
 			compilation,
 			symbol,
 			semanticModel,
-			partialDeclarations,
 			modifiers,
+			partialDeclarations,
 			containingTypes,
 			containingNamespaces,
 			attributes
@@ -99,7 +99,7 @@ namespace Durian.Analysis.DefaultParam.Types
 			_typeParameters = typeParameters;
 			NewModifierIndexes = newModifierIndexes;
 			Inherit = inherit;
-			TargetNamespace = targetNamespace;
+			_targetNamespace = targetNamespace;
 		}
 
 		/// <summary>

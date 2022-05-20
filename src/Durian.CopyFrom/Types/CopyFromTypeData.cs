@@ -68,8 +68,8 @@ namespace Durian.Analysis.CopyFrom.Types
 		/// <param name="targets">A collection of target types.</param>
 		/// <param name="dependencies"><see cref="INamedTypeSymbol"/>s generation of this type depends on.</param>
 		/// <param name="patterns">A collection of patterns applied to the type using <c>Durian.PatternAttribute</c>.</param>
-		/// <param name="partialDeclarations">A collection of <see cref="TypeDeclarationSyntax"/> that represent the partial declarations of the target <paramref name="symbol"/>.</param>
 		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
+		/// <param name="partialDeclarations">A collection of <see cref="TypeDeclarationSyntax"/> that represent the partial declarations of the target <paramref name="symbol"/>.</param>
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
@@ -81,8 +81,8 @@ namespace Durian.Analysis.CopyFrom.Types
 			TargetTypeData[] targets,
 			INamedTypeSymbol[]? dependencies = default,
 			PatternData[]? patterns = default,
+			string[]? modifiers = null,
 			IEnumerable<TypeDeclarationSyntax>? partialDeclarations = null,
-			IEnumerable<SyntaxToken>? modifiers = null,
 			IEnumerable<ITypeData>? containingTypes = null,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
 			IEnumerable<AttributeData>? attributes = null
@@ -91,8 +91,8 @@ namespace Durian.Analysis.CopyFrom.Types
 			compilation,
 			symbol,
 			semanticModel,
-			partialDeclarations,
 			modifiers,
+			partialDeclarations,
 			containingTypes,
 			containingNamespaces,
 			attributes

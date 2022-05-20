@@ -68,6 +68,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// <param name="target">Target method.</param>
 		/// <param name="dependencies"><see cref="IMethodSymbol"/>s generation of this type depends on.</param>
 		/// <param name="patterns">A collection of patterns applied to the method using <c>Durian.PatternAttribute</c>.</param>
+		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
 		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
@@ -79,6 +80,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 			TargetMethodData target,
 			IMethodSymbol[]? dependencies,
 			PatternData[]? patterns = default,
+			string[]? modifiers = default,
 			IEnumerable<ITypeData>? containingTypes = default,
 			IEnumerable<INamespaceSymbol>? containingNamespaces = default,
 			IEnumerable<AttributeData>? attributes = default
@@ -87,6 +89,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 			compilation,
 			symbol,
 			semanticModel,
+			modifiers,
 			containingTypes,
 			containingNamespaces,
 			attributes

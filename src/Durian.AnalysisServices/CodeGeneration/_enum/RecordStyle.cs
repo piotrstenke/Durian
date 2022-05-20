@@ -22,7 +22,7 @@ namespace Durian.Analysis.CodeGeneration
 		ExplicitClass = 1,
 
 		/// <summary>
-		/// Writes an empty parameter list if the primary constructor is parameterless.
+		/// Writes a primary constructor.
 		/// </summary>
 		PrimaryConstructor = 2
 	}

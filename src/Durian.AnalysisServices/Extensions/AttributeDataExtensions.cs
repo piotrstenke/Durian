@@ -221,37 +221,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns target <see cref="ISymbol"/> of the specified <paramref name="attribute"/>.
-		/// </summary>
-		/// <param name="attribute"><see cref="AttributeData"/> to get the target <see cref="ISymbol"/> of.</param>
-		/// <param name="symbol"><see cref="ISymbol"/> this attribute is applied to.</param>
-		public static ISymbol? GetTargetSymbol(this AttributeData attribute, ISymbol symbol)
-		{
-			if (attribute.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax node || node.Parent is not AttributeListSyntax list || list.Target is not AttributeTargetSpecifierSyntax target)
-			{
-				return default;
-			}
-
-
-
-
-			return target.Identifier.ValueText switch
-			{
-				"assembly" => semanticModel.Compilation.Assembly,
-				"return" => AttributeTarget.Return,
-				"field" => AttributeTarget.Field,
-				"event" => AttributeTarget.Event,
-				"method" => AttributeTarget.Method,
-				"type" => AttributeTarget.Type,
-				"property" => AttributeTarget.Property,
-				"param" => AttributeTarget.Param,
-				"module" => semanticModel.Compilation.mod,
-				"typevar" => AttributeTarget.TypeVar,
-				_ => AttributeTarget.None
-			};
-		}
-
-		/// <summary>
 		/// Checks if the target <paramref name="attribute"/> has a constructor argument at the specified <paramref name="position"/>. If so, also returns a <see cref="TypedConstant"/> that represents that argument.
 		/// </summary>
 		/// <param name="attribute"><see cref="AttributeData"/> to get the <see cref="TypedConstant"/> from.</param>

@@ -836,24 +836,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns all <see cref="INamespaceSymbol"/>s that contain the target <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the parent namespaces of.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static NamespaceContainer GetContainingNamespaces(this ISymbol symbol, ICompilationData compilation, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
-		{
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			return GetContainingNamespaces_Internal(symbol, includeGlobal).ToContainer(compilation, order);
-		}
-
-		/// <summary>
 		/// Returns all <see cref="INamespaceOrTypeSymbol"/>s contain the target <paramref name="symbol"/> in namespace-first order.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types and namespaces of.</param>
@@ -879,27 +861,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns all <see cref="INamespaceOrTypeSymbol"/>s contain the target <paramref name="symbol"/> in namespace-first order.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types and namespaces of.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		/// <param name="includeGlobal">Determines whether to return the global namespace as well</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static NamespacesAndTypesContainer GetContainingNamespacesAndTypes(this ISymbol symbol, ICompilationData compilation, bool includeGlobal, ReturnOrder order = ReturnOrder.Root)
-		{
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			IEnumerable<INamespaceOrTypeSymbol> namespaces = symbol.GetContainingNamespaces(includeGlobal, ReturnOrder.Root);
-			IEnumerable<INamespaceOrTypeSymbol> types = symbol.GetContainingTypes(includeGlobal, ReturnOrder.Root);
-
-			return namespaces.Concat(types).ToContainer(compilation, false, order);
-		}
-
-		/// <summary>
 		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
@@ -908,24 +869,6 @@ namespace Durian.Analysis.Extensions
 		public static IEnumerable<INamedTypeSymbol> GetContainingTypes(this ISymbol symbol, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
 		{
 			return AnalysisUtilities.ByOrder(GetContainingTypes_Internal(symbol, includeSelf), order);
-		}
-
-		/// <summary>
-		/// Returns all <see cref="INamedTypeSymbol"/>s that contain the target <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the parent types of.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		/// <param name="includeSelf">Determines whether to include the <paramref name="symbol"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static TypeContainer GetContainingTypes(this ISymbol symbol, ICompilationData compilation, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
-		{
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			return GetContainingTypes_Internal(symbol, includeSelf).ToContainer(compilation, false, order);
 		}
 
 		/// <summary>
@@ -1092,28 +1035,35 @@ namespace Durian.Analysis.Extensions
 		/// Returns fully qualified name of the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the fully qualified name of.</param>
-		/// <param name="metadata">Determines whether the format the created fully qualified name to using metadata naming conventions.</param>
-		public static string GetFullyQualifiedName(this ISymbol symbol, bool metadata = false)
+		/// <param name="format">Determines format of the returned qualified name.</param>
+		public static string GetFullyQualifiedName(this ISymbol symbol, QualifiedName format = default)
 		{
-			if (metadata)
+			if (format == QualifiedName.Metadata)
 			{
 				return symbol.ToString();
 			}
 
-			StringBuilder builder = new();
-			builder.WriteFullyQualifiedName(symbol);
-			return builder.ToString();
+			CodeBuilder builder = new(false);
+			builder.QualifiedName(symbol);
+			string value = builder.ToString();
+
+			if(format == QualifiedName.Xml)
+			{
+				return AnalysisUtilities.ToXmlCompatible(value);
+			}
+
+			return value;
 		}
 
 		/// <summary>
 		/// Returns a <see cref="string"/> containing generic identifier of the specified <paramref name="symbol"/> or name of the <paramref name="symbol"/> if it is not an <see cref="IMethodSymbol"/> or <see cref="INamedTypeSymbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the generic name of.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		public static string GetGenericName(this ISymbol symbol, GenericSubstitution substitution = default)
+		/// <param name="substituted">Determines whether to use type arguments instead of type parameters.</param>
+		public static string GetGenericName(this ISymbol symbol, bool substituted = false)
 		{
-			StringBuilder builder = new();
-			builder.WriteGenericName(symbol, substitution);
+			CodeBuilder builder = new(false);
+			builder.Name(symbol, substituted ? SymbolName.Substituted : SymbolName.Generic);
 			return builder.ToString();
 		}
 
@@ -1121,11 +1071,11 @@ namespace Durian.Analysis.Extensions
 		/// Returns a <see cref="string"/> containing generic identifier of the specified <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the generic name of.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		public static string GetGenericName(this IMethodSymbol method, GenericSubstitution substitution = default)
+		/// <param name="substituted">Determines whether to use type arguments instead of type parameters.</param>
+		public static string GetGenericName(this IMethodSymbol method, bool substituted = false)
 		{
-			StringBuilder builder = new();
-			builder.WriteGenericName(method, substitution);
+			CodeBuilder builder = new(false);
+			builder.Name(method, substituted ? SymbolName.Substituted : SymbolName.Generic);
 			return builder.ToString();
 		}
 
@@ -1133,11 +1083,11 @@ namespace Durian.Analysis.Extensions
 		/// Returns a <see cref="string"/> containing generic identifier of the specified <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the generic name of.</param>
-		/// <param name="substitution">Configures how generic type parameters are substituted.</param>
-		public static string GetGenericName(this INamedTypeSymbol type, GenericSubstitution substitution = default)
+		/// <param name="substituted">Determines whether to use type arguments instead of type parameters.</param>
+		public static string GetGenericName(this INamedTypeSymbol type, bool substituted = false)
 		{
-			StringBuilder builder = new();
-			builder.WriteGenericName(type, substitution);
+			CodeBuilder builder = new(false);
+			builder.Name(type, substituted ? SymbolName.Substituted : SymbolName.Generic);
 			return builder.ToString();
 		}
 
@@ -1181,11 +1131,10 @@ namespace Durian.Analysis.Extensions
 		/// Returns a <see cref="string"/> containing the generic part of an identifier created from the collection of <paramref name="typeArguments"/>.
 		/// </summary>
 		/// <param name="typeArguments">Type arguments.</param>
-		/// <exception cref="InvalidOperationException">Pointers can't be used as generic arguments.</exception>
 		public static string GetGenericName(this IEnumerable<ITypeSymbol> typeArguments)
 		{
-			StringBuilder builder = new();
-			builder.WriteGenericName(typeArguments);
+			CodeBuilder builder = new(false);
+			builder.TypeArgumentList(typeArguments);
 			return builder.ToString();
 		}
 
@@ -1196,8 +1145,14 @@ namespace Durian.Analysis.Extensions
 		/// <param name="name">Actual member identifier.</param>
 		public static string GetGenericName(this IEnumerable<ITypeSymbol> typeArguments, string? name)
 		{
-			StringBuilder builder = new();
-			builder.WriteGenericName(typeArguments, name);
+			CodeBuilder builder = new(false);
+
+			if(!string.IsNullOrWhiteSpace(name))
+			{
+				builder.Write(name!);
+			}
+
+			builder.TypeArgumentList(typeArguments);
 			return builder.ToString();
 		}
 
@@ -1358,9 +1313,8 @@ namespace Durian.Analysis.Extensions
 				return default;
 			}
 
-			StringBuilder builder = new();
-			builder.WriteContainingTypes(symbol, true, true);
-			return AutoGenerated.GetInheritdoc(AnalysisUtilities.ToXmlCompatible(builder.ToString()));
+			string parentTypes = symbol.GetContainingTypes().ToContainer().ToString();
+			return AutoGenerated.GetInheritdoc(AnalysisUtilities.ToXmlCompatible(parentTypes));
 		}
 
 		/// <summary>
@@ -2026,7 +1980,7 @@ namespace Durian.Analysis.Extensions
 		{
 			NameSyntax name;
 
-			if (@namespace.GetContainingNamespaces().JoinIntoQualifiedName() is QualifiedNameSyntax q)
+			if (@namespace.GetContainingNamespaces().ToQualifiedName() is QualifiedNameSyntax q)
 			{
 				name = q;
 			}
@@ -2047,7 +2001,7 @@ namespace Durian.Analysis.Extensions
 		{
 			NameSyntax name;
 
-			if (namespaces.JoinIntoQualifiedName() is QualifiedNameSyntax q)
+			if (namespaces.ToQualifiedName() is QualifiedNameSyntax q)
 			{
 				name = q;
 			}
@@ -2075,7 +2029,7 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns name of the specified <paramref name="symbol"/> compatible with 'inheritdoc' tags.
+		/// Returns name of the specified <paramref name="symbol"/> compatible with XMl documentation.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the compatible name of.</param>
 		/// <param name="includeParameters">If the value of <paramref name="symbol"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
@@ -2085,12 +2039,12 @@ namespace Durian.Analysis.Extensions
 			{
 				IPropertySymbol property => property.GetXmlCompatibleName(),
 				IMethodSymbol method => method.GetXmlCompatibleName(includeParameters),
-				_ => AnalysisUtilities.ToXmlCompatible(symbol.GetGenericName(includeParameters ? GenericSubstitution.ParameterList : GenericSubstitution.None)),
+				_ => AnalysisUtilities.ToXmlCompatible(symbol.GetGenericName()),
 			};
 		}
 
 		/// <summary>
-		/// Returns name of the specified <paramref name="property"/> compatible with 'inheritdoc' tags.
+		/// Returns name of the specified <paramref name="property"/> compatible with XMl documentation.
 		/// </summary>
 		public static string GetXmlCompatibleName(this IPropertySymbol property)
 		{
@@ -2103,23 +2057,30 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns name of the specified <paramref name="method"/> compatible with 'inheritdoc' tags.
+		/// Returns name of the specified <paramref name="method"/> compatible with XMl documentation.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the compatible name of.</param>
 		/// <param name="includeParameters">If the value of <paramref name="method"/> is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
 		public static string GetXmlCompatibleName(this IMethodSymbol method, bool includeParameters = false)
 		{
-			StringBuilder builder = new();
+			CodeBuilder builder = new(false);
 
 			switch (method.MethodKind)
 			{
 				case MethodKind.Constructor:
-					builder.Append(method.ContainingType.Name);
+					builder.Write(method.ContainingType.Name);
 					break;
 
 				case MethodKind.UserDefinedOperator:
-					builder.Append("operator ");
-					builder.Append(method.GetOperatorToken());
+
+					if(method.GetOperatorToken() is not string op)
+					{
+						goto default;
+					}
+
+					builder.Write("operator ");
+					builder.Write(op);
+
 					break;
 
 				case MethodKind.Conversion:
@@ -2139,21 +2100,21 @@ namespace Durian.Analysis.Extensions
 						goto default;
 					}
 
-					builder.Append("implicit ");
-					builder.Append(keyword);
-					builder.Append(' ');
-					builder.WriteFullyQualifiedName(method.ReturnType);
+					builder.Write("implicit ");
+					builder.Write(keyword);
+					builder.Space();
+					builder.QualifiedName(method.ReturnType);
 
 					break;
 
 				default:
-					builder.WriteGenericName(method);
+					builder.Name(method, SymbolName.Generic);
 					break;
 			}
 
 			if (includeParameters)
 			{
-				builder.WriteParameterList(method);
+				builder.ParameterList(method);
 			}
 
 			return AnalysisUtilities.ToXmlCompatible(builder.ToString());
@@ -2164,44 +2125,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to create the <see cref="QualifiedNameSyntax"/> from.</param>
 		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="namespaces"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="namespaces"/> provided.</returns>
-		public static QualifiedNameSyntax? JoinIntoQualifiedName(this IEnumerable<INamespaceSymbol> namespaces)
+		public static QualifiedNameSyntax? ToQualifiedName(this IEnumerable<INamespaceSymbol> namespaces)
 		{
 			return AnalysisUtilities.GetQualifiedName(namespaces.Select(n => n.GetVerbatimName()));
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> that is created by joining the names of the namespaces the provided <paramref name="symbol"/> is contained in.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the containing namespaces of.</param>
-		/// <param name="includeSelf">Determines whether to include name of the <paramref name="symbol"/> if its a <see cref="INamespaceSymbol"/>.</param>
-		public static string JoinNamespaces(this ISymbol symbol, bool includeSelf = true)
-		{
-			StringBuilder builder = new();
-			builder.WriteNamespacesOf(symbol, includeSelf);
-			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> that is created by joining the names of parent namespaces of the provided <paramref name="namespace"/>.
-		/// </summary>
-		/// <param name="namespace">A collection of <see cref="INamespaceSymbol"/>s create the <see cref="string"/> from.</param>
-		/// <param name="includeSelf">Determines whether to include name of the <paramref name="namespace"/>.</param>
-		public static string JoinNamespaces(this INamespaceSymbol @namespace, bool includeSelf = true)
-		{
-			StringBuilder builder = new();
-			builder.WriteNamespace(@namespace, includeSelf);
-			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Returns a <see cref="string"/> that is created by joining the names of the provided <paramref name="namespaces"/>.
-		/// </summary>
-		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s create the <see cref="string"/> from.</param>
-		public static string JoinNamespaces(this IEnumerable<INamespaceSymbol> namespaces)
-		{
-			StringBuilder builder = new();
-			builder.WriteNamespaces(namespaces);
-			return builder.ToString();
 		}
 
 		/// <summary>

@@ -156,17 +156,6 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc/>
-		public new TypeContainer GetContainingTypes(bool includeSelf)
-		{
-			if (Symbol.IsNamespace)
-			{
-				return GetContainingTypes();
-			}
-
-			return base.GetContainingTypes(includeSelf);
-		}
-
-		/// <inheritdoc/>
 		public ImmutableArray<BaseTypeDeclarationSyntax> GetPartialDeclarations()
 		{
 			if(Symbol.IsNamespace)

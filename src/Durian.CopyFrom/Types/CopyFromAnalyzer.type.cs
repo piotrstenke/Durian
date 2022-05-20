@@ -410,7 +410,7 @@ namespace Durian.Analysis.CopyFrom
 			return symbol.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Interface;
 		}
 
-		private static AdditionalNodes RetrieveNonStandardTypeConfig(AttributeData attribute, INamedTypeSymbol symbol, CopyFromCompilationData compilation)
+		private static AdditionalNodes RetrieveNonStandardTypeConfig(AttributeData attribute, INamedTypeSymbol symbol)
 		{
 			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
 
@@ -419,10 +419,10 @@ namespace Durian.Analysis.CopyFrom
 				return additionalNodes;
 			}
 
-			return RemoveInvalidFlags(additionalNodes, symbol, compilation);
+			return RemoveInvalidFlags(additionalNodes, symbol);
 		}
 
-		private static AdditionalNodes RemoveInvalidFlags(AdditionalNodes additionalNodes, INamedTypeSymbol symbol, CopyFromCompilationData compilation)
+		private static AdditionalNodes RemoveInvalidFlags(AdditionalNodes additionalNodes, INamedTypeSymbol symbol)
 		{
 			if (additionalNodes.HasFlag(AdditionalNodes.Constraints) && (!symbol.IsGenericType || symbol.HasConstraint()))
 			{
@@ -445,7 +445,6 @@ namespace Durian.Analysis.CopyFrom
 		private static AdditionalNodes RetrieveNonStandardTypeConfig(
 			AttributeData attribute,
 			INamedTypeSymbol symbol,
-			CopyFromCompilationData compilation,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
@@ -458,7 +457,7 @@ namespace Durian.Analysis.CopyFrom
 
 			if(additionalNodes == AdditionalNodes.All)
 			{
-				return RemoveInvalidFlags(additionalNodes, symbol, compilation);
+				return RemoveInvalidFlags(additionalNodes, symbol);
 			}
 
 			Location? location = default;
@@ -556,7 +555,7 @@ namespace Durian.Analysis.CopyFrom
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			AdditionalNodes additionalNodes = RetrieveNonStandardTypeConfig(attribute, context.Symbol, context.Compilation, diagnosticReceiver);
+			AdditionalNodes additionalNodes = RetrieveNonStandardTypeConfig(attribute, context.Symbol, diagnosticReceiver);
 			string[]? usings = RetrieveUsings(attribute, context.Node!, additionalNodes, context.Symbol, diagnosticReceiver);
 
 			if (TryGetPartialPartName(attribute, out string? partialPartName))
@@ -607,7 +606,7 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			AdditionalNodes additionalNodes = RetrieveNonStandardTypeConfig(attribute, context.Symbol, context.Compilation);
+			AdditionalNodes additionalNodes = RetrieveNonStandardTypeConfig(attribute, context.Symbol);
 			string[]? usings = RetrieveUsings(attribute, context.Node!, additionalNodes);
 
 			if (TryGetPartialPartName(attribute, out string? partialPartName))

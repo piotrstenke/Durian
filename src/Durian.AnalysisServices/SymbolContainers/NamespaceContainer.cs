@@ -14,7 +14,7 @@ namespace Durian.Analysis.SymbolContainers
 	/// <summary>
 	/// <see cref="ISymbolContainer"/> that handles <see cref="INamespaceSymbol"/>s.
 	/// </summary>
-	public sealed class NamespaceContainer : SymbolContainer, IEnumerable<INamespaceSymbol>
+	public sealed class NamespaceContainer : SymbolContainer
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="NamespaceContainer"/> class.
@@ -54,17 +54,62 @@ namespace Durian.Analysis.SymbolContainers
 			return base.GetSymbols().CastArray<INamespaceSymbol>();
 		}
 
+		/// <summary>
+		/// Converts the current array into an array of <see cref="INamespaceSymbol"/>s.
+		/// </summary>
+		public new INamespaceSymbol[] ToArray()
+		{
+			if (!TryGetArray(out object[]? array))
+			{
+				return Array.Empty<INamespaceSymbol>();
+			}
+
+			INamespaceSymbol[] newArray = new INamespaceSymbol[array.Length];
+
+			if (array is ISymbol[] symbols)
+			{
+				for (int i = 0; i < array.Length; i++)
+				{
+					newArray[i] = (symbols[i] as INamespaceSymbol)!;
+				}
+			}
+			else
+			{
+				IMemberData[] members = (array as IMemberData[])!;
+
+				for (int i = 0; i < members.Length; i++)
+				{
+					newArray[i] = (members[i].Symbol as INamespaceSymbol)!;
+				}
+			}
+
+			return newArray;
+		}
+
 		/// <inheritdoc/>
 		protected override IMemberData GetData(ISymbol symbol, ICompilationData compilation)
 		{
 			return new NamespaceData((symbol as INamespaceSymbol)!, compilation);
 		}
 
-		/// <inheritdoc/>
-		public IEnumerator<INamespaceSymbol> GetEnumerator()
+		private protected override IMemberData[] CreateMemberArray(IEnumerable<IMemberData> collection)
 		{
-			IEnumerable<INamespaceSymbol> symbols = GetSymbols();
-			return symbols.GetEnumerator();
+			return collection.Cast<NamespaceData>().ToArray();
+		}
+
+		private protected override IMemberData[] CreateMemberArray(int length)
+		{
+			return new NamespaceData[length];
+		}
+
+		private protected override ISymbol[] CreateSymbolArray(IEnumerable<ISymbol> collection)
+		{
+			return collection.Cast<INamespaceSymbol>().ToArray();
+		}
+
+		private protected override ISymbol[] CreateSymbolArray(int length)
+		{
+			return new INamespaceSymbol[length];
 		}
 	}
 

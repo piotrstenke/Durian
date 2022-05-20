@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+
 namespace Durian.Analysis.CodeGeneration
 {
 	/// <summary>
@@ -8,6 +10,11 @@ namespace Durian.Analysis.CodeGeneration
 	/// </summary>
 	public sealed record CodeBuilderStyleConfiguration
 	{
+		/// <summary>
+		/// Function that overrides the result of the <see cref="Default()"/> method.
+		/// </summary>
+		public static Func<CodeBuilderStyleConfiguration>? CustomProvider { get; set; }
+
 		/// <summary>
 		/// Determines how interface members are written.
 		/// </summary>
@@ -37,11 +44,6 @@ namespace Durian.Analysis.CodeGeneration
 		/// Determines whether to write return type of an lambda expression if possible.
 		/// </summary>
 		public bool UseLambdaReturnType { get; set; }
-
-		/// <summary>
-		/// Determines whether to use the '?' syntax instead of <see cref="System.Nullable{T}"/>.
-		/// </summary>
-		public bool UseNullableSyntax { get; set; }
 
 		/// <summary>
 		/// Determines how lambda expressions are written.
@@ -74,11 +76,6 @@ namespace Durian.Analysis.CodeGeneration
 		public bool UseExplicitAttributeTargets { get; set; }
 
 		/// <summary>
-		/// Maximum number of parameters that can be written on a single line. If a method has more parameters than that number allows, every parameter is written on a separate line.
-		/// </summary>
-		public int ParameterSingleLineLimit { get; set; }
-
-		/// <summary>
 		/// Determines whether to use aliases of built-in types instead of concrete types (e.g. <see langword="int"/> instead of <c>Int32</c>.
 		/// </summary>
 		public bool UseBuiltInAliases { get; set; }
@@ -88,6 +85,27 @@ namespace Durian.Analysis.CodeGeneration
 		/// </summary>
 		public CodeBuilderStyleConfiguration()
 		{
+		}
+
+		/// <summary>
+		/// Returns the default <see cref="CodeBuilderStyleConfiguration"/>.
+		/// </summary>
+		public static CodeBuilderStyleConfiguration Default()
+		{
+			if(CustomProvider is not null)
+			{
+				return CustomProvider();
+			}
+
+			return new CodeBuilderStyleConfiguration()
+			{
+				UseBuiltInAliases = true,
+				LambdaStyle = LambdaStyle.Expression,
+				MethodStyle = MethodStyle.Block,
+				RecordStyle = RecordStyle.PrimaryConstructor,
+				UseExplicitInternal = true,
+				UseExplicitPrivate = true,
+			};
 		}
 	}
 }

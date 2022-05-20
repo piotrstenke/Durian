@@ -41,7 +41,7 @@ namespace Durian.Analysis
 			CancellationToken cancellationToken = default
 		) : base(originalContext, generator, targetCompilation, syntaxReceiver, parseOptions, fileNameProvider, services, cancellationToken)
 		{
-			CodeBuilder = new(this);
+			CodeBuilder = new();
 		}
 
 		/// <summary>
@@ -51,7 +51,7 @@ namespace Durian.Analysis
 		/// <param name="parseOptions"><see cref="CSharpParseOptions"/> that will be used to parse any added sources.</param>
 		protected internal GeneratorPassBuilderContext(IHintNameProvider? fileNameProvider = default, CSharpParseOptions? parseOptions = default) : base(fileNameProvider, parseOptions)
 		{
-			CodeBuilder = new(this);
+			CodeBuilder = new();
 		}
 	}
 }

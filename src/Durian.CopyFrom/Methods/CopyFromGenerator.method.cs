@@ -9,7 +9,7 @@ namespace Durian.Analysis.CopyFrom
 	{
 		private bool GenerateMethod(CopyFromMethodData method, string hintName, CopyFromPassContext context)
 		{
-			context.CodeBuilder.WriteDeclarationLead(method, method.Target.Usings);
+			WriteDeclarationLead(context.CodeBuilder, method, method.Target.Usings);
 
 			context.CodeBuilder.Indent();
 			//context.CodeBuilder.BeginMethodDeclaration(method, MethodBody.Block);

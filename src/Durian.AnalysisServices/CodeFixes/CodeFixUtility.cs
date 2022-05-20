@@ -35,7 +35,7 @@ namespace Durian.Analysis.CodeFixes
 				targetType.ContainingNamespace.IsGlobalNamespace
 			)
 			{
-				return SyntaxFactory.ParseName(targetType.GetGenericName(GenericSubstitution.TypeArguments));
+				return SyntaxFactory.ParseName(targetType.GetGenericName(true));
 			}
 
 			if (targetType.IsKeyword())
@@ -48,7 +48,7 @@ namespace Durian.Analysis.CodeFixes
 
 			if (@namespace.StartsWith(targetNamespace))
 			{
-				return SyntaxFactory.ParseName(targetType.GetGenericName(GenericSubstitution.TypeArguments));
+				return SyntaxFactory.ParseName(targetType.GetGenericName(true));
 			}
 
 			foreach (UsingDirectiveSyntax u in usings)
@@ -62,7 +62,7 @@ namespace Durian.Analysis.CodeFixes
 
 				if (n.ToString() == targetNamespace)
 				{
-					return SyntaxFactory.ParseName(targetType.GetGenericName(GenericSubstitution.TypeArguments));
+					return SyntaxFactory.ParseName(targetType.GetGenericName(true));
 				}
 			}
 

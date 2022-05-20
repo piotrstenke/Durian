@@ -82,12 +82,6 @@ namespace Durian.Analysis.Data
 			_partialDeclarations = partialDeclarations?.OfType<TDeclaration>().ToArray();
 		}
 
-		/// <inheritdoc/>
-		public new virtual TypeContainer GetContainingTypes(bool includeSelf)
-		{
-			return base.GetContainingTypes(includeSelf);
-		}
-
 		/// <summary>
 		/// If the type is partial, returns all declarations of the type (including <see cref="Declaration"/>), otherwise returns only <see cref="Declaration"/>.
 		/// </summary>

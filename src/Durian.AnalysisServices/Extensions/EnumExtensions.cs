@@ -367,20 +367,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <paramref name="value"/> to an associated <see cref="GenericSubstitution"/> value.
-		/// </summary>
-		/// <param name="value"><see cref="SymbolName"/> to convert.</param>
-		public static GenericSubstitution AsSubstitution(this SymbolName value)
-		{
-			if (value == SymbolName.Substituted)
-			{
-				return GenericSubstitution.TypeArguments;
-			}
-
-			return GenericSubstitution.None;
-		}
-
-		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="NumericLiteralSuffix"/> value.
 		/// </summary>
 		/// <remarks>The returned value is considered unsigned-first uppercase (see <see cref="IsUpper(NumericLiteralPrefix)"/> and <see cref="UnsignedFirst(NumericLiteralSuffix)"/>for more details).</remarks>
