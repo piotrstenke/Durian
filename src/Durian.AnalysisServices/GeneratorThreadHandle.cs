@@ -91,11 +91,6 @@ namespace Durian.Analysis
 				other.SourceThreadId == SourceThreadId;
 		}
 
-		bool IEquatable<GeneratorThreadHandle>.Equals(GeneratorThreadHandle other)
-		{
-			return Equals(in other);
-		}
-
 		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
@@ -110,6 +105,11 @@ namespace Durian.Analysis
 		public override string ToString()
 		{
 			return $"{GeneratorId}, {ThreadId}-{SourceThreadId}";
+		}
+
+		bool IEquatable<GeneratorThreadHandle>.Equals(GeneratorThreadHandle other)
+		{
+			return Equals(in other);
 		}
 	}
 }

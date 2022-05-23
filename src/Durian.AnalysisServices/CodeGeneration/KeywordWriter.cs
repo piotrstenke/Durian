@@ -123,6 +123,7 @@ namespace Durian.Analysis.CodeGeneration
 		/// Writes the <see langword="async"/> keyword.
 		/// </summary>
 #pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'.
+
 		public KeywordWriter Async()
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
 		{

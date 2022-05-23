@@ -1,7 +1,6 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
@@ -71,13 +70,13 @@ namespace Durian.Analysis.Data
 		NamespaceContainer GetContainingNamespaces();
 
 		/// <summary>
-		/// Returns all modifiers of the current symbol.
-		/// </summary>
-		string[] GetModifiers();
-
-		/// <summary>
 		/// Returns all <see cref="ITypeData"/>s that contain the <see cref="Symbol"/>.
 		/// </summary>
 		TypeContainer GetContainingTypes();
+
+		/// <summary>
+		/// Returns all modifiers of the current symbol.
+		/// </summary>
+		string[] GetModifiers();
 	}
 }

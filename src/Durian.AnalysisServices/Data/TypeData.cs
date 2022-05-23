@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Durian.Analysis.Extensions;
-using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -23,12 +21,12 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new TDeclaration Declaration => (base.Declaration as TDeclaration)!;
 
-		BaseTypeDeclarationSyntax ITypeData.Declaration => Declaration;
-
 		/// <summary>
 		/// <see cref="ITypeSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		public new ITypeSymbol Symbol => (base.Symbol as ITypeSymbol)!;
+
+		BaseTypeDeclarationSyntax ITypeData.Declaration => Declaration;
 
 		internal TypeData(ITypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{

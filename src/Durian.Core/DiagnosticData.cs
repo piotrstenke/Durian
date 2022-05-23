@@ -124,11 +124,6 @@ namespace Durian.Info
 			return new DiagnosticData(Title, Id, _docsPath!, IsFatal, HasLocation, _originalModule!, _module!, IsExtern);
 		}
 
-		object ICloneable.Clone()
-		{
-			return Clone();
-		}
-
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
@@ -173,6 +168,11 @@ namespace Durian.Info
 		public override string ToString()
 		{
 			return GetFullId();
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 
 		internal void SetModule(ModuleIdentity module)

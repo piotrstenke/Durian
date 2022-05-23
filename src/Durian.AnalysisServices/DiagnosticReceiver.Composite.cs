@@ -182,11 +182,6 @@ namespace Durian.Analysis
 				}
 			}
 
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
 			/// <inheritdoc/>
 			public IEnumerable<IDiagnosticReceiver> GetReceivers()
 			{
@@ -423,6 +418,11 @@ namespace Durian.Analysis
 				}
 
 				throw new ArgumentException("Target is not present in the current receiver", nameof(diagnosticReceiver));
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
 			}
 		}
 	}

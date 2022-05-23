@@ -56,25 +56,25 @@ namespace Durian.Analysis
 
 		#endregion Diagnostics copied from Durian.Core.Analyzer
 
-		/// <summary>
-		/// Unique identifier of the current instance.
-		/// </summary>
-		public Guid InstanceId { get; }
-
-		/// <inheritdoc/>
-		public IGeneratorLogHandler LogHandler { get; }
-
-		/// <inheritdoc cref="IGeneratorLogHandler.LoggingConfiguration"/>
-		public LoggingConfiguration LoggingConfiguration => LogHandler.LoggingConfiguration;
-
-		/// <inheritdoc/>
-		public virtual int NumStaticTrees => GetInitialSources().Count();
-
 		/// <inheritdoc/>
 		public abstract string GeneratorName { get; }
 
 		/// <inheritdoc/>
 		public abstract string GeneratorVersion { get; }
+
+		/// <summary>
+		/// Unique identifier of the current instance.
+		/// </summary>
+		public Guid InstanceId { get; }
+
+		/// <inheritdoc cref="IGeneratorLogHandler.LoggingConfiguration"/>
+		public LoggingConfiguration LoggingConfiguration => LogHandler.LoggingConfiguration;
+
+		/// <inheritdoc/>
+		public IGeneratorLogHandler LogHandler { get; }
+
+		/// <inheritdoc/>
+		public virtual int NumStaticTrees => GetInitialSources().Count();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGeneratorBase"/> class.
@@ -171,6 +171,26 @@ namespace Durian.Analysis
 			return $"{GeneratorName} (v. {GeneratorVersion})";
 		}
 
+		void ISourceGenerator.Execute(GeneratorExecutionContext context)
+		{
+			Execute(in context);
+		}
+
+		IGeneratorPassContext? IDurianGenerator.GetCurrentPassContext()
+		{
+			return GetCurrentPassContextCore();
+		}
+
+		/// <summary>
+		/// Validates the specified <paramref name="compilation"/>.
+		/// </summary>
+		/// <param name="compilation"><see cref="CSharpCompilation"/> to validate.</param>
+		/// <param name="context"><see cref="GeneratorExecutionContext"/> to report <see cref="Diagnostic"/>s to.</param>
+		protected internal virtual bool ValidateCompilation(CSharpCompilation compilation, in GeneratorExecutionContext context)
+		{
+			return true;
+		}
+
 		/// <summary>
 		/// Adds the specified <paramref name="source"/> to the <paramref name="context"/>.
 		/// </summary>
@@ -253,26 +273,6 @@ namespace Durian.Analysis
 
 			compilation = default;
 			return false;
-		}
-
-		/// <summary>
-		/// Validates the specified <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="compilation"><see cref="CSharpCompilation"/> to validate.</param>
-		/// <param name="context"><see cref="GeneratorExecutionContext"/> to report <see cref="Diagnostic"/>s to.</param>
-		protected internal virtual bool ValidateCompilation(CSharpCompilation compilation, in GeneratorExecutionContext context)
-		{
-			return true;
-		}
-
-		void ISourceGenerator.Execute(GeneratorExecutionContext context)
-		{
-			Execute(in context);
-		}
-
-		IGeneratorPassContext? IDurianGenerator.GetCurrentPassContext()
-		{
-			return GetCurrentPassContextCore();
 		}
 
 		private static void EnableModules(ref CSharpCompilation compilation, in GeneratorExecutionContext context, DurianModule[] modules)
@@ -360,6 +360,34 @@ namespace Durian.Analysis
 			return currentValue;
 		}
 
+		private static bool IsValidCSharpCompilation(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
+		{
+			bool isValid = true;
+
+			if (!HasValidReferences(context.Compilation, out bool hasCoreAnalyzer))
+			{
+				if (!hasCoreAnalyzer)
+				{
+					context.ReportDiagnostic(Diagnostic.Create(DUR0001_ProjectMustReferenceDurianCore, Location.None));
+				}
+
+				isValid = false;
+			}
+
+			if (context.Compilation is CSharpCompilation c)
+			{
+				compilation = c;
+				return isValid;
+			}
+			else if (!hasCoreAnalyzer)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(DUR0004_DurianModulesAreValidOnlyInCSharp, Location.None));
+			}
+
+			compilation = default;
+			return false;
+		}
+
 		private void InitializeStaticTrees(GeneratorPostInitializationContext context)
 		{
 			IEnumerable<ISourceTextProvider>? syntaxTreeProviders = GetInitialSources();
@@ -388,34 +416,6 @@ namespace Durian.Analysis
 				context.AddSource(hintName, text);
 				LogSource(hintName, syntaxTree, context.CancellationToken);
 			}
-		}
-
-		private static bool IsValidCSharpCompilation(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
-		{
-			bool isValid = true;
-
-			if (!HasValidReferences(context.Compilation, out bool hasCoreAnalyzer))
-			{
-				if (!hasCoreAnalyzer)
-				{
-					context.ReportDiagnostic(Diagnostic.Create(DUR0001_ProjectMustReferenceDurianCore, Location.None));
-				}
-
-				isValid = false;
-			}
-
-			if (context.Compilation is CSharpCompilation c)
-			{
-				compilation = c;
-				return isValid;
-			}
-			else if (!hasCoreAnalyzer)
-			{
-				context.ReportDiagnostic(Diagnostic.Create(DUR0004_DurianModulesAreValidOnlyInCSharp, Location.None));
-			}
-
-			compilation = default;
-			return false;
 		}
 
 		private void LogSource(string hintName, SyntaxTree syntaxTree, CancellationToken cancellationToken)

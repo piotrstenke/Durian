@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
@@ -23,18 +22,13 @@ namespace Durian.Analysis.Data
 		public new BaseNamespaceDeclarationSyntax Declaration => (base.Declaration as BaseNamespaceDeclarationSyntax)!;
 
 		/// <summary>
-		/// <see cref="IPropertySymbol"/> associated with the <see cref="Declaration"/>.
-		/// </summary>
-		public new INamespaceSymbol Symbol => (base.Symbol as INamespaceSymbol)!;
-
-		/// <summary>
 		/// Type of this namespace declaration.
 		/// </summary>
 		public NamespaceStyle DeclarationType
 		{
 			get
 			{
-				if(Declaration is FileScopedNamespaceDeclarationSyntax)
+				if (Declaration is FileScopedNamespaceDeclarationSyntax)
 				{
 					return NamespaceStyle.File;
 				}
@@ -42,6 +36,11 @@ namespace Durian.Analysis.Data
 				return NamespaceStyle.Default;
 			}
 		}
+
+		/// <summary>
+		/// <see cref="IPropertySymbol"/> associated with the <see cref="Declaration"/>.
+		/// </summary>
+		public new INamespaceSymbol Symbol => (base.Symbol as INamespaceSymbol)!;
 
 		internal CSharpSyntaxNode BaseDeclaration => base.Declaration;
 		internal ISymbol BaseSymbol => base.Symbol;

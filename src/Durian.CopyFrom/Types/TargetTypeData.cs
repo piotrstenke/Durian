@@ -109,11 +109,6 @@ namespace Durian.Analysis.CopyFrom.Types
 			return WithSymbol(Symbol);
 		}
 
-		object ICloneable.Clone()
-		{
-			return Clone();
-		}
-
 		/// <inheritdoc/>
 		public override bool Equals(object? obj)
 		{
@@ -165,6 +160,11 @@ namespace Durian.Analysis.CopyFrom.Types
 		public TargetTypeData WithSymbol(INamedTypeSymbol symbol)
 		{
 			return new(symbol, Order, AdditionalNodes, Usings, PartialPart, PartialPartName, HandleSpecialMembers);
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 	}
 }

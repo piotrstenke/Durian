@@ -23,19 +23,17 @@ namespace Durian.Analysis.DefaultParam.Types
 		/// <inheritdoc cref="ISyntaxValidationContext.Node"/>
 		public TypeDeclarationSyntax Node { get; }
 
-		CSharpSyntaxNode ISyntaxValidationContext.Node => Node!;
-
 		/// <inheritdoc/>
 		public SemanticModel SemanticModel { get; }
 
 		/// <inheritdoc cref="ISyntaxValidationContext.Symbol"/>
 		public INamedTypeSymbol Symbol { get; }
 
-		ISymbol ISyntaxValidationContext.Symbol => Symbol;
-
 		/// <inheritdoc cref="ISyntaxValidationContext.TargetCompilation"/>
 		public DefaultParamCompilationData TargetCompilation { get; }
 
+		CSharpSyntaxNode ISyntaxValidationContext.Node => Node!;
+		ISymbol ISyntaxValidationContext.Symbol => Symbol;
 		ICompilationData ISyntaxValidationContext.TargetCompilation => TargetCompilation;
 
 		/// <summary>

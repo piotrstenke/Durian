@@ -410,18 +410,6 @@ namespace Durian.Analysis.CopyFrom
 			return symbol.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Interface;
 		}
 
-		private static AdditionalNodes RetrieveNonStandardTypeConfig(AttributeData attribute, INamedTypeSymbol symbol)
-		{
-			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
-
-			if (additionalNodes == AdditionalNodes.None)
-			{
-				return additionalNodes;
-			}
-
-			return RemoveInvalidFlags(additionalNodes, symbol);
-		}
-
 		private static AdditionalNodes RemoveInvalidFlags(AdditionalNodes additionalNodes, INamedTypeSymbol symbol)
 		{
 			if (additionalNodes.HasFlag(AdditionalNodes.Constraints) && (!symbol.IsGenericType || symbol.HasConstraint()))
@@ -442,6 +430,18 @@ namespace Durian.Analysis.CopyFrom
 			return additionalNodes;
 		}
 
+		private static AdditionalNodes RetrieveNonStandardTypeConfig(AttributeData attribute, INamedTypeSymbol symbol)
+		{
+			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
+
+			if (additionalNodes == AdditionalNodes.None)
+			{
+				return additionalNodes;
+			}
+
+			return RemoveInvalidFlags(additionalNodes, symbol);
+		}
+
 		private static AdditionalNodes RetrieveNonStandardTypeConfig(
 			AttributeData attribute,
 			INamedTypeSymbol symbol,
@@ -455,7 +455,7 @@ namespace Durian.Analysis.CopyFrom
 				return additionalNodes;
 			}
 
-			if(additionalNodes == AdditionalNodes.All)
+			if (additionalNodes == AdditionalNodes.All)
 			{
 				return RemoveInvalidFlags(additionalNodes, symbol);
 			}

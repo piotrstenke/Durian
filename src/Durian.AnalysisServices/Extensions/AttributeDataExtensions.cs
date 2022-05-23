@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Durian.Analysis.CodeGeneration;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Extensions
@@ -199,7 +198,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="attribute"><see cref="AttributeData"/> to get the target of.</param>
 		public static AttributeTarget GetTarget(this AttributeData attribute)
 		{
-			if(attribute.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax node || node.Parent is not AttributeListSyntax list || list.Target is not AttributeTargetSpecifierSyntax target)
+			if (attribute.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax node || node.Parent is not AttributeListSyntax list || list.Target is not AttributeTargetSpecifierSyntax target)
 			{
 				return AttributeTarget.None;
 			}

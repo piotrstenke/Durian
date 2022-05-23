@@ -242,6 +242,35 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns parent namespaces of the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="SyntaxNode"/> to get the parent namespaces of.</param>
+		/// <param name="order">Specifies ordering of the returned values.</param>
+		public static IEnumerable<string> GetContainingNamespaces(this SyntaxNode node, ReturnOrder order = ReturnOrder.Parent)
+		{
+			return AnalysisUtilities.ByOrder(Yield(), order);
+
+			IEnumerable<string> Yield()
+			{
+				SyntaxNode? current = node;
+
+				while ((current = current!.Parent) is not null)
+				{
+					if (current is NamespaceDeclarationSyntax decl)
+					{
+						string[] split = decl.Name.ToString().Split('.');
+						int length = split.Length;
+
+						for (int i = length - 1; i > -1; i--)
+						{
+							yield return split[i];
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		/// Returns the keyword that is used to declare the given <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="BaseTypeDeclarationSyntax"/> to get the keyword of.</param>
@@ -353,35 +382,6 @@ namespace Durian.Analysis.Extensions
 		public static string GetName(this NameColonSyntax syntax)
 		{
 			return syntax.Name.Identifier.ValueText;
-		}
-
-		/// <summary>
-		/// Returns parent namespaces of the specified <paramref name="node"/>.
-		/// </summary>
-		/// <param name="node"><see cref="SyntaxNode"/> to get the parent namespaces of.</param>
-		/// <param name="order">Specifies ordering of the returned values.</param>
-		public static IEnumerable<string> GetContainingNamespaces(this SyntaxNode node, ReturnOrder order = ReturnOrder.Parent)
-		{
-			return AnalysisUtilities.ByOrder(Yield(), order);
-
-			IEnumerable<string> Yield()
-			{
-				SyntaxNode? current = node;
-
-				while ((current = current!.Parent) is not null)
-				{
-					if (current is NamespaceDeclarationSyntax decl)
-					{
-						string[] split = decl.Name.ToString().Split('.');
-						int length = split.Length;
-
-						for (int i = length - 1; i > -1; i--)
-						{
-							yield return split[i];
-						}
-					}
-				}
-			}
 		}
 
 		/// <summary>

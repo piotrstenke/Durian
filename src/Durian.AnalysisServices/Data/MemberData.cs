@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
@@ -23,11 +21,11 @@ namespace Durian.Analysis.Data
 		private ImmutableArray<AttributeData> _attributes;
 		private NamespaceContainer? _containingNamespaces;
 		private TypeContainer? _containingTypes;
-		private string[]? _modifiers;
-		private Location? _location;
-		private bool? _isUnsafe;
 		private bool? _isNew;
 		private bool? _isPartial;
+		private bool? _isUnsafe;
+		private Location? _location;
+		private string[]? _modifiers;
 
 		/// <inheritdoc/>
 		public CSharpSyntaxNode Declaration { get; }
@@ -67,12 +65,12 @@ namespace Durian.Analysis.Data
 		/// <exception cref="ArgumentException">Specified <paramref name="declaration"/> doesn't represent any symbols. </exception>
 		public MemberData(CSharpSyntaxNode declaration, ICompilationData compilation)
 		{
-			if(declaration is null)
+			if (declaration is null)
 			{
 				throw new ArgumentNullException(nameof(declaration));
 			}
 
-			if(compilation is null)
+			if (compilation is null)
 			{
 				throw new ArgumentNullException(nameof(compilation));
 			}
@@ -127,12 +125,12 @@ namespace Durian.Analysis.Data
 
 			_modifiers = modifiers;
 
-			if(containingTypes is not null)
+			if (containingTypes is not null)
 			{
 				_containingTypes = containingTypes.ToContainer(true, ReturnOrder.Root);
 			}
 
-			if(containingNamespaces is not null)
+			if (containingNamespaces is not null)
 			{
 				_containingNamespaces = containingNamespaces.ToContainer(compilation, ReturnOrder.Root);
 			}

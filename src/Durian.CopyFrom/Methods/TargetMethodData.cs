@@ -75,11 +75,6 @@ namespace Durian.Analysis.CopyFrom.Methods
 			return WithSymbol(Symbol);
 		}
 
-		object ICloneable.Clone()
-		{
-			return Clone();
-		}
-
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
@@ -115,6 +110,11 @@ namespace Durian.Analysis.CopyFrom.Methods
 		public TargetMethodData WithSymbol(IMethodSymbol symbol)
 		{
 			return new(symbol, AdditionalNodes, Usings);
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 	}
 }

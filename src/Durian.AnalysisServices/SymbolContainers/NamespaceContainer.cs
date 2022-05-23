@@ -4,13 +4,36 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.SymbolContainers
 {
+	public static partial class SymbolContainerFactory
+	{
+		/// <summary>
+		/// Creates a new <see cref="NamespaceContainer"/>.
+		/// </summary>
+		/// <param name="namespaces">Collection of <see cref="NamespaceData"/>s to add to the container.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static NamespaceContainer ToContainer(this IEnumerable<NamespaceData> namespaces, ReturnOrder order = ReturnOrder.Root)
+		{
+			return new(namespaces, order);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="NamespaceContainer"/>.
+		/// </summary>
+		/// <param name="symbols">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static NamespaceContainer ToContainer(this IEnumerable<INamespaceSymbol> symbols, ICompilationData? compilation = default, ReturnOrder order = ReturnOrder.Root)
+		{
+			return new(symbols, compilation, order);
+		}
+	}
+
 	/// <summary>
 	/// <see cref="ISymbolContainer"/> that handles <see cref="INamespaceSymbol"/>s.
 	/// </summary>
@@ -92,48 +115,9 @@ namespace Durian.Analysis.SymbolContainers
 			return new NamespaceData((symbol as INamespaceSymbol)!, compilation);
 		}
 
-		private protected override IMemberData[] CreateMemberArray(IEnumerable<IMemberData> collection)
+		private protected override IArrayHandler GetArrayHandler()
 		{
-			return collection.Cast<NamespaceData>().ToArray();
-		}
-
-		private protected override IMemberData[] CreateMemberArray(int length)
-		{
-			return new NamespaceData[length];
-		}
-
-		private protected override ISymbol[] CreateSymbolArray(IEnumerable<ISymbol> collection)
-		{
-			return collection.Cast<INamespaceSymbol>().ToArray();
-		}
-
-		private protected override ISymbol[] CreateSymbolArray(int length)
-		{
-			return new INamespaceSymbol[length];
-		}
-	}
-
-	public static partial class SymbolContainerFactory
-	{
-		/// <summary>
-		/// Creates a new <see cref="NamespaceContainer"/>.
-		/// </summary>
-		/// <param name="namespaces">Collection of <see cref="NamespaceData"/>s to add to the container.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static NamespaceContainer ToContainer(this IEnumerable<NamespaceData> namespaces, ReturnOrder order = ReturnOrder.Root)
-		{
-			return new(namespaces, order);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="NamespaceContainer"/>.
-		/// </summary>
-		/// <param name="symbols">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static NamespaceContainer ToContainer(this IEnumerable<INamespaceSymbol> symbols, ICompilationData? compilation = default, ReturnOrder order = ReturnOrder.Root)
-		{
-			return new(symbols, compilation, order);
+			return new ArrayHandler<INamespaceSymbol, NamespaceData>();
 		}
 	}
 }

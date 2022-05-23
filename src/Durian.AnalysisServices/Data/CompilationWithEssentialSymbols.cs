@@ -25,17 +25,11 @@ namespace Durian.Analysis.Data
 		/// <inheritdoc/>
 		public INamedTypeSymbol? DurianGeneratedAttribute => IncludeType(GetDurianGeneratedAttributeName(), ref _durianGeneratedAttribute);
 
-		INamedTypeSymbol ICompilationDataWithSymbols.DurianGeneratedAttribute => DurianGeneratedAttribute!;
-
 		/// <inheritdoc/>
 		public INamedTypeSymbol? EnableModuleAttribute => IncludeType(GetEnableModuleAttributeName(), ref _enableModuleAttribute);
 
-		INamedTypeSymbol ICompilationDataWithSymbols.EnableModuleAttribute => EnableModuleAttribute!;
-
 		/// <inheritdoc/>
 		public INamedTypeSymbol? GeneratedCodeAttribute => IncludeType(GetGeneratedCodeAttributeName(), ref _generatedCodeAttribute);
-
-		INamedTypeSymbol ICompilationDataWithSymbols.GeneratedCodeAttribute => GeneratedCodeAttribute!;
 
 		/// <inheritdoc/>
 		[MemberNotNullWhen(false, nameof(GeneratedCodeAttribute), nameof(DurianGeneratedAttribute), nameof(EnableModuleAttribute))]
@@ -44,6 +38,10 @@ namespace Durian.Analysis.Data
 			get => base.HasErrors;
 			protected set => base.HasErrors = value;
 		}
+
+		INamedTypeSymbol ICompilationDataWithSymbols.DurianGeneratedAttribute => DurianGeneratedAttribute!;
+		INamedTypeSymbol ICompilationDataWithSymbols.EnableModuleAttribute => EnableModuleAttribute!;
+		INamedTypeSymbol ICompilationDataWithSymbols.GeneratedCodeAttribute => GeneratedCodeAttribute!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CompilationWithEssentialSymbols"/> class.

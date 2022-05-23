@@ -2,17 +2,12 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using Durian.Analysis.CodeGeneration;
-using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -63,7 +58,7 @@ namespace Durian.Analysis
 		/// <param name="value">Value to apply the verbatim identifier '@' token to.</param>
 		public static bool ApplyVerbatimIfNecessary(ref string value)
 		{
-			if(IsKeyword(value))
+			if (IsKeyword(value))
 			{
 				value = '@' + value;
 				return true;
@@ -82,7 +77,7 @@ namespace Durian.Analysis
 		{
 			StringBuilder builder = new();
 
-			if(!string.IsNullOrWhiteSpace(name))
+			if (!string.IsNullOrWhiteSpace(name))
 			{
 				builder.Append(name!);
 			}

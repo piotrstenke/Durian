@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -16,8 +15,8 @@ namespace Durian.Analysis.DefaultParam.Delegates
 	/// </summary>
 	public class DefaultParamDelegateData : DelegateData, IDefaultParamTarget
 	{
-		private string? _targetNamespace;
 		private readonly TypeParameterContainer _typeParameters;
+		private string? _targetNamespace;
 
 		/// <inheritdoc cref="Methods.DefaultParamMethodData.NewModifierIndexes"/>
 		public HashSet<int>? NewModifierIndexes { get; }
@@ -98,15 +97,15 @@ namespace Durian.Analysis.DefaultParam.Delegates
 			return new DelegateDeclarationBuilder(this, cancellationToken);
 		}
 
-		IDefaultParamDeclarationBuilder IDefaultParamTarget.GetDeclarationBuilder(CancellationToken cancellationToken)
-		{
-			return GetDeclarationBuilder(cancellationToken);
-		}
-
 		/// <inheritdoc/>
 		public IEnumerable<string> GetUsedNamespaces(CancellationToken cancellationToken = default)
 		{
 			return DefaultParamUtilities.GetUsedNamespaces(this, in _typeParameters, cancellationToken);
+		}
+
+		IDefaultParamDeclarationBuilder IDefaultParamTarget.GetDeclarationBuilder(CancellationToken cancellationToken)
+		{
+			return GetDeclarationBuilder(cancellationToken);
 		}
 
 		IEnumerable<string> IDefaultParamTarget.GetUsedNamespaces()

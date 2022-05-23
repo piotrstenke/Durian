@@ -33,11 +33,6 @@ namespace Durian.Analysis.CopyFrom
 			CandidateTypes = new();
 		}
 
-		IEnumerable<CSharpSyntaxNode> INodeProvider.GetNodes()
-		{
-			return CandidateMethods.Cast<CSharpSyntaxNode>().Concat(CandidateTypes);
-		}
-
 		/// <inheritdoc/>
 		public bool IsEmpty()
 		{
@@ -61,6 +56,11 @@ namespace Durian.Analysis.CopyFrom
 					CandidateTypes.Add(type);
 				}
 			}
+		}
+
+		IEnumerable<CSharpSyntaxNode> INodeProvider.GetNodes()
+		{
+			return CandidateMethods.Cast<CSharpSyntaxNode>().Concat(CandidateTypes);
 		}
 	}
 }

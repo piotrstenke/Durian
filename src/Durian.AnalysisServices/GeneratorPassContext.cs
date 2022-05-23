@@ -19,9 +19,6 @@ namespace Durian.Analysis
 		internal GeneratorExecutionContext _originalContext;
 
 		/// <inheritdoc/>
-		public ref readonly GeneratorExecutionContext OriginalContext => ref _originalContext;
-
-		/// <inheritdoc/>
 		public CancellationToken CancellationToken { get; internal set; }
 
 		/// <inheritdoc/>
@@ -31,10 +28,7 @@ namespace Durian.Analysis
 		public IDurianGenerator Generator { get; internal set; }
 
 		/// <inheritdoc/>
-		public IDurianSyntaxReceiver SyntaxReceiver { get; internal set; }
-
-		/// <inheritdoc/>
-		public ICompilationData TargetCompilation { get; internal set; }
+		public ref readonly GeneratorExecutionContext OriginalContext => ref _originalContext;
 
 		/// <inheritdoc/>
 		public CSharpParseOptions ParseOptions { get; internal set; }
@@ -45,22 +39,14 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		public GeneratorState State { get; internal set; }
 
+		/// <inheritdoc/>
+		public IDurianSyntaxReceiver SyntaxReceiver { get; internal set; }
+
+		/// <inheritdoc/>
+		public ICompilationData TargetCompilation { get; internal set; }
+
 		internal List<CSharpSyntaxTree> GenerationQueue { get; } = new();
 		internal bool IsFilterWithGeneratedSymbols { get; set; }
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GeneratorPassContext"/> class.
-		/// </summary>
-		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		/// <param name="parseOptions"><see cref="CSharpParseOptions"/> that will be used to parse any added sources.</param>
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
-		protected internal GeneratorPassContext(IHintNameProvider? fileNameProvider = default, CSharpParseOptions? parseOptions = default)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-		{
-			FileNameProvider = fileNameProvider!;
-			ParseOptions = parseOptions!;
-		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorPassContext"/> class.
@@ -92,6 +78,19 @@ namespace Durian.Analysis
 			FileNameProvider = fileNameProvider;
 			Services = services;
 			CancellationToken = cancellationToken;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GeneratorPassContext"/> class.
+		/// </summary>
+		/// <param name="fileNameProvider">Creates names for generated files.</param>
+		/// <param name="parseOptions"><see cref="CSharpParseOptions"/> that will be used to parse any added sources.</param>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+		protected internal GeneratorPassContext(IHintNameProvider? fileNameProvider = default, CSharpParseOptions? parseOptions = default)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+		{
+			FileNameProvider = fileNameProvider!;
+			ParseOptions = parseOptions!;
 		}
 
 		/// <summary>

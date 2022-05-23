@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.CopyFrom.Types;
@@ -21,6 +20,41 @@ namespace Durian.Analysis.CopyFrom
 {
 	public sealed partial class CopyFromGenerator
 	{
+		private static void GenerateMembers(
+			TargetTypeData target,
+			CopyFromPassContext context,
+			GenerateAction generateAction,
+			SyntaxList<MemberDeclarationSyntax> members,
+			SemanticModel semanticModel
+		)
+		{
+			for (int j = 0; j < members.Count; j++)
+			{
+				MemberDeclarationSyntax member = members[j];
+
+				if (TryGetMutlipleMembers(
+					member,
+					semanticModel,
+					context,
+					out ISymbol? symbol,
+					out List<(ISymbol original, MemberDeclarationSyntax generated)>? fields)
+				)
+				{
+					GenerateDocumentation inheridoc = target.Symbol.HasInheritableDocumentation() ? GenerateDocumentation.Always : GenerateDocumentation.Never;
+
+					foreach ((ISymbol original, MemberDeclarationSyntax generated) in fields)
+					{
+						generateAction(generated, original, context, inheridoc);
+					}
+				}
+				else if (symbol is not null)
+				{
+					member = SkipGeneratorAttributes(member, semanticModel, context);
+					generateAction(member, symbol, context, GenerateDocumentation.WhenPossible);
+				}
+			}
+		}
+
 		private static SemanticModel GetCurrentSemanticModel(
 			CopyFromTypeData type,
 			TypeDeclarationSyntax currentDeclaration,
@@ -89,7 +123,7 @@ namespace Durian.Analysis.CopyFrom
 
 					if (parameter.Name != argument.Name && !SymbolEqualityComparer.Default.Equals(parameter, argument))
 					{
-						list.Add((parameter.Name, argument.GetGenericName(true)));
+						list.Add((parameter.Name, argument.GetTypeKeyword() ?? argument.GetGenericName(true)));
 					}
 				}
 			}
@@ -268,8 +302,153 @@ namespace Durian.Analysis.CopyFrom
 			return true;
 		}
 
-		private bool IncludeAdditionalNodes(
+		private bool GenerateDeclarations(
 			CopyFromTypeData type,
+			TargetTypeData target,
+			TypeDeclarationSyntax[] partialDeclarations,
+			string currentName,
+			string keyword,
+			TypeParameterReplacer replacer,
+			CopyFromPassContext context
+		)
+		{
+			bool isGenerated = false;
+			string partialName = currentName;
+
+			GenerateAction generateAction = GetGenerationMethod(type, target, replacer);
+
+			Dictionary<SyntaxTree, SemanticModel>? semanticModelCache = default;
+
+			bool hasDocumentation = false;
+
+			for (int i = 0; i < partialDeclarations.Length; i++)
+			{
+				TypeDeclarationSyntax partial = partialDeclarations[i];
+
+				SyntaxList<MemberDeclarationSyntax> members = partial.Members;
+
+				if (IncludeAdditionalNodes(
+					type,
+					target,
+					partial,
+					context,
+					keyword,
+					ref hasDocumentation,
+					semanticModelCache,
+					out SemanticModel? semanticModel
+				))
+				{
+					if (members.Any())
+					{
+						GenerateMembers(target, context, generateAction, members, semanticModel);
+					}
+				}
+				else if (members.Any())
+				{
+					WriteDeclarationLead(context.CodeBuilder, type, target.Usings);
+					context.CodeBuilder.Indent();
+					context.CodeBuilder.Declation($"partial {keyword} {type.Symbol.GetGenericName()}");
+					semanticModel = GetCurrentSemanticModel(type, partial, ref semanticModelCache);
+					GenerateMembers(target, context, generateAction, members, semanticModel);
+				}
+				else
+				{
+					continue;
+				}
+
+				context.CodeBuilder.EndAllBlocks();
+
+				AddSourceWithOriginal(type.Declaration, partialName, context);
+				isGenerated = true;
+				partialName = currentName + $"_{i + 1}";
+			}
+
+			return isGenerated;
+		}
+
+		private bool GenerateType(CopyFromTypeData type, string hintName, CopyFromPassContext context)
+		{
+			TargetTypeData[] targets = type.Targets;
+			SortByOrder(targets);
+
+			bool generated = false;
+			string keyword = type.Declaration.GetKeyword()!;
+
+			string currentName = hintName;
+
+			TypeParameterReplacer replacer = new();
+
+			for (int i = 0; i < targets.Length; i++)
+			{
+				TargetTypeData target = targets[i];
+
+				TypeDeclarationSyntax[] partialDeclarations = GetPartialDeclarations(target);
+
+				if (partialDeclarations.Length == 0)
+				{
+					continue;
+				}
+
+				currentName = partialDeclarations.Length > 1 ? currentName + "_partial" : currentName;
+
+				if (GenerateDeclarations(type, target, partialDeclarations, currentName, keyword, replacer, context))
+				{
+					generated = true;
+				}
+
+				currentName = hintName + $"_{i + 1}";
+			}
+
+			return generated;
+		}
+
+		private GenerateAction GetGenerationMethod(CopyFromTypeData type, TargetTypeData target, TypeParameterReplacer replacer)
+		{
+			if (target.Symbol.IsGenericType)
+			{
+				List<(string identifier, string replacement)> replacements = GetTypeParameterReplacements(target.Symbol);
+
+				if (target.HandleSpecialMembers)
+				{
+					return (member, symbol, context, applyInheritdoc) =>
+					{
+						HandleSpecialMemberTypes(ref member, type, target.Symbol);
+						ReplaceAndGenerate(member, symbol, context, applyInheritdoc);
+					};
+				}
+				else
+				{
+					return ReplaceAndGenerate;
+				}
+
+				void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol, CopyFromPassContext context, GenerateDocumentation applyInheritdoc)
+				{
+					foreach ((string identifier, string replacement) in replacements)
+					{
+						replacer.Identifier = identifier;
+						replacer.Replacement = replacement;
+
+						replaced = (CSharpSyntaxNode)replacer.Visit(replaced);
+					}
+
+					WriteGeneratedMember(type, replaced, symbol, context, applyInheritdoc);
+				}
+			}
+
+			if (target.HandleSpecialMembers)
+			{
+				return (member, symbol, context, applyInheritdoc) =>
+				{
+					HandleSpecialMemberTypes(ref member, type, target.Symbol);
+					WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
+				};
+			}
+
+			return (member, symbol, context, applyInheritdoc) => WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
+		}
+
+		private bool IncludeAdditionalNodes(
+									CopyFromTypeData type,
 			TargetTypeData target,
 			TypeDeclarationSyntax declaration,
 			CopyFromPassContext context,
@@ -302,12 +481,12 @@ namespace Durian.Analysis.CopyFrom
 				context.CodeBuilder.Write(HandleAttributeText(type, SkipGeneratorAttributes(declaration, semanticModel, context), context));
 			}
 
-			if(declaration.BaseList is not null && declaration.BaseList.Types.Any())
+			if (declaration.BaseList is not null && declaration.BaseList.Types.Any())
 			{
 				bool? hasBaseType = null;
 				SemanticModel? currentModel = default;
 
-				if(target.AdditionalNodes.HasFlag(AdditionalNodes.BaseType))
+				if (target.AdditionalNodes.HasFlag(AdditionalNodes.BaseType))
 				{
 					currentModel = GetCurrentSemanticModel(type, declaration, ref semanticModelCache);
 
@@ -408,186 +587,6 @@ namespace Durian.Analysis.CopyFrom
 
 				return true;
 			}
-		}
-
-		private bool GenerateDeclarations(
-			CopyFromTypeData type,
-			TargetTypeData target,
-			TypeDeclarationSyntax[] partialDeclarations,
-			string currentName,
-			string keyword,
-			TypeParameterReplacer replacer,
-			CopyFromPassContext context
-		)
-		{
-			bool isGenerated = false;
-			string partialName = currentName;
-
-			GenerateAction generateAction = GetGenerationMethod(type, target, replacer);
-
-			Dictionary<SyntaxTree, SemanticModel>? semanticModelCache = default;
-
-			bool hasDocumentation = false;
-
-			for (int i = 0; i < partialDeclarations.Length; i++)
-			{
-				TypeDeclarationSyntax partial = partialDeclarations[i];
-
-				SyntaxList<MemberDeclarationSyntax> members = partial.Members;
-
-				if (IncludeAdditionalNodes(
-					type,
-					target,
-					partial,
-					context,
-					keyword,
-					ref hasDocumentation,
-					semanticModelCache,
-					out SemanticModel? semanticModel
-				))
-				{
-					if (members.Any())
-					{
-						GenerateMembers(target, context, generateAction, members, semanticModel);
-					}
-				}
-				else if (members.Any())
-				{
-					WriteDeclarationLead(context.CodeBuilder, type, target.Usings);
-					context.CodeBuilder.Indent();
-					context.CodeBuilder.Declation($"partial {keyword} {type.Symbol.GetGenericName()}");
-					semanticModel = GetCurrentSemanticModel(type, partial, ref semanticModelCache);
-					GenerateMembers(target, context, generateAction, members, semanticModel);
-				}
-				else
-				{
-					continue;
-				}
-
-				context.CodeBuilder.EndAllBlocks();
-
-				AddSourceWithOriginal(type.Declaration, partialName, context);
-				isGenerated = true;
-				partialName = currentName + $"_{i + 1}";
-			}
-
-			return isGenerated;
-		}
-
-		private static void GenerateMembers(
-			TargetTypeData target,
-			CopyFromPassContext context,
-			GenerateAction generateAction,
-			SyntaxList<MemberDeclarationSyntax> members,
-			SemanticModel semanticModel
-		)
-		{
-			for (int j = 0; j < members.Count; j++)
-			{
-				MemberDeclarationSyntax member = members[j];
-
-				if (TryGetMutlipleMembers(
-					member,
-					semanticModel,
-					context,
-					out ISymbol? symbol,
-					out List<(ISymbol original, MemberDeclarationSyntax generated)>? fields)
-				)
-				{
-					GenerateDocumentation inheridoc = target.Symbol.HasInheritableDocumentation() ? GenerateDocumentation.Always : GenerateDocumentation.Never;
-
-					foreach ((ISymbol original, MemberDeclarationSyntax generated) in fields)
-					{
-						generateAction(generated, original, context, inheridoc);
-					}
-				}
-				else if (symbol is not null)
-				{
-					member = SkipGeneratorAttributes(member, semanticModel, context);
-					generateAction(member, symbol, context, GenerateDocumentation.WhenPossible);
-				}
-			}
-		}
-
-		private bool GenerateType(CopyFromTypeData type, string hintName, CopyFromPassContext context)
-		{
-			TargetTypeData[] targets = type.Targets;
-			SortByOrder(targets);
-
-			bool generated = false;
-			string keyword = type.Declaration.GetKeyword()!;
-
-			string currentName = hintName;
-
-			TypeParameterReplacer replacer = new();
-
-			for (int i = 0; i < targets.Length; i++)
-			{
-				TargetTypeData target = targets[i];
-
-				TypeDeclarationSyntax[] partialDeclarations = GetPartialDeclarations(target);
-
-				if (partialDeclarations.Length == 0)
-				{
-					continue;
-				}
-
-				currentName = partialDeclarations.Length > 1 ? currentName + "_partial" : currentName;
-
-				if (GenerateDeclarations(type, target, partialDeclarations, currentName, keyword, replacer, context))
-				{
-					generated = true;
-				}
-
-				currentName = hintName + $"_{i + 1}";
-			}
-
-			return generated;
-		}
-
-		private GenerateAction GetGenerationMethod(CopyFromTypeData type, TargetTypeData target, TypeParameterReplacer replacer)
-		{
-			if (target.Symbol.IsGenericType)
-			{
-				List<(string identifier, string replacement)> replacements = GetTypeParameterReplacements(target.Symbol);
-
-				if (target.HandleSpecialMembers)
-				{
-					return (member, symbol, context, applyInheritdoc) =>
-					{
-						HandleSpecialMemberTypes(ref member, type, target.Symbol);
-						ReplaceAndGenerate(member, symbol, context, applyInheritdoc);
-					};
-				}
-				else
-				{
-					return ReplaceAndGenerate;
-				}
-
-				void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol, CopyFromPassContext context, GenerateDocumentation applyInheritdoc)
-				{
-					foreach ((string identifier, string replacement) in replacements)
-					{
-						replacer.Identifier = identifier;
-						replacer.Replacement = replacement;
-
-						replaced = (CSharpSyntaxNode)replacer.Visit(replaced);
-					}
-
-					WriteGeneratedMember(type, replaced, symbol, context, applyInheritdoc);
-				}
-			}
-
-			if (target.HandleSpecialMembers)
-			{
-				return (member, symbol, context, applyInheritdoc) =>
-				{
-					HandleSpecialMemberTypes(ref member, type, target.Symbol);
-					WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
-				};
-			}
-
-			return (member, symbol, context, applyInheritdoc) => WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
 		}
 	}
 }

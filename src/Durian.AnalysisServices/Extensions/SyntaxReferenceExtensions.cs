@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using System;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Extensions

@@ -19,8 +19,71 @@ namespace Durian.Analysis.SymbolContainers
 	/// </summary>
 	public abstract class SymbolContainer : ISymbolContainer, IEnumerable
 	{
-		private IEnumerable<object>? _collection;
+		private protected class ArrayHandler<TSymbol, TData> : IArrayHandler
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData
+		{
+			ISymbol[] IArrayHandler.CreateArray(int length)
+			{
+				return new TSymbol[length];
+			}
+
+			ISymbol[] IArrayHandler.CreateArray(IEnumerable<ISymbol> collection)
+			{
+				return collection.Cast<TSymbol>().ToArray();
+			}
+
+			IMemberData[] IArrayHandler.CreateArray(IEnumerable<IMemberData> collection)
+			{
+				return collection.Cast<TData>().ToArray();
+			}
+
+			ImmutableArray<IMemberData> IArrayHandler.ToImmutableData()
+			{
+				return ImmutableArray.Create<TData>().CastArray<IMemberData>();
+			}
+
+			ImmutableArray<IMemberData> IArrayHandler.ToImmutableData(IEnumerable<IMemberData> collection)
+			{
+				return ImmutableArray.CreateRange(collection.Cast<TData>()).CastArray<IMemberData>();
+			}
+
+			ImmutableArray<ISymbol> IArrayHandler.ToImmutableSymbol()
+			{
+				return ImmutableArray.Create<TSymbol>().CastArray<ISymbol>();
+			}
+
+			ImmutableArray<ISymbol> IArrayHandler.ToImmutableSymbol(IEnumerable<ISymbol> collection)
+			{
+				return ImmutableArray.CreateRange(collection.Cast<TSymbol>()).CastArray<ISymbol>();
+			}
+		}
+
+		private protected interface IArrayHandler
+		{
+			ISymbol[] CreateArray(int length);
+
+			ISymbol[] CreateArray(IEnumerable<ISymbol> collection);
+
+			IMemberData[] CreateArray(IEnumerable<IMemberData> collection);
+
+			ImmutableArray<IMemberData> ToImmutableData();
+
+			ImmutableArray<IMemberData> ToImmutableData(IEnumerable<IMemberData> collection);
+
+			ImmutableArray<ISymbol> ToImmutableSymbol();
+
+			ImmutableArray<ISymbol> ToImmutableSymbol(IEnumerable<ISymbol> collection);
+		}
+
+		private readonly IArrayHandler _arrayHandler;
 		private object[]? _array;
+		private IEnumerable<object>? _collection;
+
+		/// <summary>
+		/// Determines whether the <see cref="GetData()"/> method is safe to call.
+		/// </summary>
+		public bool CanRetrieveData { get; }
 
 		/// <inheritdoc/>
 		public ReturnOrder Order { get; }
@@ -30,31 +93,16 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public ICompilationData? TargetCompilation { get; }
 
-		/// <summary>
-		/// Determines whether the <see cref="GetData()"/> method is safe to call.
-		/// </summary>
-		public bool CanRetrieveData { get; }
-
 		private protected SymbolContainer(ReturnOrder order = default)
 		{
 			_collection = default!;
-			Order = order;
-		}
-
-		private SymbolContainer(IEnumerable<object> collection, ReturnOrder order)
-		{
-			if (collection is null)
-			{
-				throw new ArgumentNullException(nameof(collection));
-			}
-
-			_collection = collection;
+			_arrayHandler = GetArrayHandler();
 			Order = order;
 		}
 
 		private protected SymbolContainer(IEnumerable<ISymbol> collection, ICompilationData? compilation, ReturnOrder order) : this(collection, order)
 		{
-			if(compilation is not null)
+			if (compilation is not null)
 			{
 				TargetCompilation = compilation;
 				CanRetrieveData = true;
@@ -66,6 +114,18 @@ namespace Durian.Analysis.SymbolContainers
 			CanRetrieveData = true;
 		}
 
+		private SymbolContainer(IEnumerable<object> collection, ReturnOrder order)
+		{
+			if (collection is null)
+			{
+				throw new ArgumentNullException(nameof(collection));
+			}
+
+			_collection = collection;
+			_arrayHandler = GetArrayHandler();
+			Order = order;
+		}
+
 		/// <inheritdoc/>
 		public abstract void Build(StringBuilder builder);
 
@@ -75,12 +135,12 @@ namespace Durian.Analysis.SymbolContainers
 		{
 			if (!InitArray())
 			{
-				return ImmutableArray<IMemberData>.Empty;
+				return _arrayHandler.ToImmutableData();
 			}
 
 			if (_array is IMemberData[] members)
 			{
-				return ImmutableArray.Create(members);
+				return _arrayHandler.ToImmutableData(members);
 			}
 
 			if (TargetCompilation is null)
@@ -89,19 +149,9 @@ namespace Durian.Analysis.SymbolContainers
 			}
 
 			ISymbol[] symbols = (_array as ISymbol[])!;
-			members = CreateMemberArray(_array.Length);
+			members = symbols.Select(s => GetData(s, TargetCompilation!)).ToArray();
 
-			ImmutableArray<IMemberData>.Builder builder = ImmutableArray.CreateBuilder<IMemberData>(symbols.Length);
-
-			for (int i = 0; i < symbols.Length; i++)
-			{
-				IMemberData member = GetData(symbols[i], TargetCompilation!);
-				builder.Add(member);
-				members[i] = member;
-			}
-
-			_array = members;
-			return builder.ToImmutable();
+			return _arrayHandler.ToImmutableData(members);
 		}
 
 		/// <inheritdoc/>
@@ -137,26 +187,19 @@ namespace Durian.Analysis.SymbolContainers
 		/// <inheritdoc/>
 		public ImmutableArray<ISymbol> GetSymbols()
 		{
-			if(!InitArray())
+			if (!InitArray())
 			{
-				return ImmutableArray<ISymbol>.Empty;
+				return _arrayHandler.ToImmutableSymbol();
 			}
 
-			if(_array is ISymbol[] symbols)
+			if (_array is ISymbol[] symbols)
 			{
-				return ImmutableArray.Create(symbols);
+				return _arrayHandler.ToImmutableSymbol(symbols);
 			}
 
 			IMemberData[] members = (_array as IMemberData[])!;
 
-			ImmutableArray<ISymbol>.Builder builder = ImmutableArray.CreateBuilder<ISymbol>(members.Length);
-
-			for (int i = 0; i < members.Length; i++)
-			{
-				builder.Add(members[i].Symbol);
-			}
-
-			return builder.ToImmutable();
+			return _arrayHandler.ToImmutableSymbol(members.Select(m => m.Symbol));
 		}
 
 		/// <summary>
@@ -169,7 +212,7 @@ namespace Durian.Analysis.SymbolContainers
 				return Array.Empty<ISymbol>();
 			}
 
-			ISymbol[] newArray = CreateSymbolArray(array.Length);
+			ISymbol[] newArray = _arrayHandler.CreateArray(array.Length);
 
 			if (array is ISymbol[] symbols)
 			{
@@ -202,29 +245,9 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="compilation"><see cref="ICompilationData"/> the given <see cref="ISymbol"/> is part of.</param>
 		protected abstract IMemberData GetData(ISymbol symbol, ICompilationData compilation);
 
-		private protected virtual ISymbol[] CreateSymbolArray(int length)
-		{
-			return new ISymbol[length];
-		}
-
-		private protected virtual ISymbol[] CreateSymbolArray(IEnumerable<ISymbol> collection)
-		{
-			return collection.ToArray();
-		}
-
-		private protected virtual IMemberData[] CreateMemberArray(int length)
-		{
-			return new IMemberData[length];
-		}
-
-		private protected virtual IMemberData[] CreateMemberArray(IEnumerable<IMemberData> collection)
-		{
-			return collection.ToArray();
-		}
-
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			if(InitArray())
+			if (InitArray())
 			{
 				return _array.GetEnumerator();
 			}
@@ -232,9 +255,27 @@ namespace Durian.Analysis.SymbolContainers
 			return Array.Empty<object>().GetEnumerator();
 		}
 
-		private protected bool TryGetArray([NotNullWhen(true)]out object[]? array)
+		internal static void DefaultBuild(StringBuilder builder, ImmutableArray<string> names)
 		{
-			if(InitArray())
+			if (names.Length == 0)
+			{
+				return;
+			}
+
+			builder.Append(names[0]);
+
+			for (int i = 1; i < names.Length; i++)
+			{
+				builder.Append('.');
+				builder.Append(names[i]);
+			}
+		}
+
+		private protected abstract IArrayHandler GetArrayHandler();
+
+		private protected bool TryGetArray([NotNullWhen(true)] out object[]? array)
+		{
+			if (InitArray())
 			{
 				array = _array;
 				return true;
@@ -247,43 +288,27 @@ namespace Durian.Analysis.SymbolContainers
 		[MemberNotNullWhen(true, nameof(_array))]
 		private bool InitArray()
 		{
-			if(_array is not null)
+			if (_array is not null)
 			{
 				return true;
 			}
 
-			if(_collection is null)
+			if (_collection is null)
 			{
 				return false;
 			}
 
-			if(_collection is IEnumerable<ISymbol> symbols)
+			if (_collection is IEnumerable<ISymbol> symbols)
 			{
-				_array = CreateSymbolArray(symbols.ToArray());
+				_array = _arrayHandler.CreateArray(symbols);
 			}
 			else
 			{
-				_array = CreateMemberArray((_collection as IEnumerable<IMemberData>)!);
+				_array = _arrayHandler.CreateArray((_collection as IEnumerable<IMemberData>)!);
 			}
 
 			_collection = default;
 			return true;
-		}
-
-		internal static void DefaultBuild(StringBuilder builder, ImmutableArray<string> names)
-		{
-			if (names.Length == 0)
-			{
-				return;
-			}
-
-			builder.Append(names[1]);
-
-			for (int i = 1; i < names.Length; i++)
-			{
-				builder.Append('.');
-				builder.Append(names[i]);
-			}
 		}
 	}
 }

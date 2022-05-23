@@ -108,16 +108,6 @@ namespace Durian.Info
 			return new TypeIdentity(Name, Namespace, Modules);
 		}
 
-		object ICloneable.Clone()
-		{
-			return Clone();
-		}
-
-		IDurianIdentity IDurianIdentity.Clone()
-		{
-			return Clone();
-		}
-
 		/// <inheritdoc/>
 		public void Dispose()
 		{
@@ -160,6 +150,16 @@ namespace Durian.Info
 		public override string ToString()
 		{
 			return FullyQualifiedName;
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
+		}
+
+		IDurianIdentity IDurianIdentity.Clone()
+		{
+			return Clone();
 		}
 
 		internal void SetModule(ModuleIdentity module)

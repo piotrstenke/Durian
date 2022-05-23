@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
@@ -12,6 +11,32 @@ using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.SymbolContainers
 {
+	public static partial class SymbolContainerFactory
+	{
+		/// <summary>
+		/// Creates a new <see cref="TypeContainer"/>.
+		/// </summary>
+		/// <param name="types">Collection of <see cref="ITypeData"/>s to add to the container.</param>
+		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static TypeContainer ToContainer(this IEnumerable<ITypeData> types, bool useArguments = false, ReturnOrder order = ReturnOrder.Root)
+		{
+			return new(types, useArguments, order);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="TypeContainer"/>.
+		/// </summary>
+		/// <param name="symbols">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static TypeContainer ToContainer(this IEnumerable<INamedTypeSymbol> symbols, ICompilationData? compilation = default, bool useArguments = false, ReturnOrder order = ReturnOrder.Root)
+		{
+			return new(symbols, compilation, useArguments, order);
+		}
+	}
+
 	/// <summary>
 	/// <see cref="ISymbolContainer"/> that handles <see cref="INamedTypeSymbol"/>s.
 	/// </summary>
@@ -57,7 +82,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <inheritdoc/>
 		public override ImmutableArray<string> GetNames()
 		{
-			if(!TryGetArray(out object[]? array))
+			if (!TryGetArray(out object[]? array))
 			{
 				return ImmutableArray<string>.Empty;
 			}
@@ -130,50 +155,9 @@ namespace Durian.Analysis.SymbolContainers
 			return (symbol as INamedTypeSymbol)!.ToData(compilation);
 		}
 
-		private protected override IMemberData[] CreateMemberArray(IEnumerable<IMemberData> collection)
+		private protected override IArrayHandler GetArrayHandler()
 		{
-			return collection.Cast<ITypeData>().ToArray();
-		}
-
-		private protected override IMemberData[] CreateMemberArray(int length)
-		{
-			return new ITypeData[length];
-		}
-
-		private protected override ISymbol[] CreateSymbolArray(IEnumerable<ISymbol> collection)
-		{
-			return collection.Cast<INamedTypeSymbol>().ToArray();
-		}
-
-		private protected override ISymbol[] CreateSymbolArray(int length)
-		{
-			return new INamedTypeSymbol[length];
-		}
-	}
-
-	public static partial class SymbolContainerFactory
-	{
-		/// <summary>
-		/// Creates a new <see cref="TypeContainer"/>.
-		/// </summary>
-		/// <param name="types">Collection of <see cref="ITypeData"/>s to add to the container.</param>
-		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static TypeContainer ToContainer(this IEnumerable<ITypeData> types, bool useArguments = false, ReturnOrder order = ReturnOrder.Root)
-		{
-			return new(types, useArguments, order);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="TypeContainer"/>.
-		/// </summary>
-		/// <param name="symbols">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static TypeContainer ToContainer(this IEnumerable<INamedTypeSymbol> symbols, ICompilationData? compilation = default, bool useArguments = false, ReturnOrder order = ReturnOrder.Root)
-		{
-			return new(symbols, compilation, useArguments, order);
+			return new ArrayHandler<INamedTypeSymbol, ITypeData>();
 		}
 	}
 }

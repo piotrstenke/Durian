@@ -7,7 +7,6 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Reflection.Metadata;
 using Durian.Analysis.CodeGeneration;
-using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -1705,7 +1704,7 @@ namespace Durian.Analysis
 		{
 			InitBuilder();
 
-			if (symbol is INamedTypeSymbol type && KeywordType(type, format == SymbolName.SystemName || !Style.UseBuiltInAliases))
+			if (symbol is INamedTypeSymbol type && KeywordType(type, format != SymbolName.SystemName && Style.UseBuiltInAliases))
 			{
 				return this;
 			}
@@ -1729,10 +1728,10 @@ namespace Durian.Analysis
 					return AttributeName(symbol);
 
 				case SymbolName.Qualified:
-					return QualifiedName(symbol);
+					return QualifiedName(symbol, true);
 
 				case SymbolName.GlobalQualified:
-					return QualifiedName(symbol, true);
+					return QualifiedName(symbol, true, true);
 
 				default:
 					goto case SymbolName.Default;
@@ -2047,7 +2046,8 @@ namespace Durian.Analysis
 		/// Writes fully qualified name of the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to write the qualified name of.</param>
-		public CodeBuilder QualifiedName(ISymbol symbol)
+		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters.</param>
+		public CodeBuilder QualifiedName(ISymbol symbol, bool useArguments = false)
 		{
 			InitBuilder();
 
@@ -2059,10 +2059,23 @@ namespace Durian.Analysis
 
 			if (symbol.ContainingType is not null)
 			{
-				foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
+				if (useArguments)
 				{
-					GenericName(type, true, false);
-					TextBuilder.Append('.');
+					foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
+					{
+						SimpleName_Internal(type);
+						TypeArgumentList(type.TypeArguments);
+						TextBuilder.Append('.');
+					}
+				}
+				else
+				{
+					foreach (INamedTypeSymbol type in symbol.GetContainingTypes())
+					{
+						SimpleName_Internal(type);
+						TypeParameterList(type.TypeParameters);
+						TextBuilder.Append('.');
+					}
 				}
 			}
 
@@ -2073,15 +2086,16 @@ namespace Durian.Analysis
 		/// Writes fully qualified name of the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to write the qualified name of.</param>
+		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters.</param>
 		/// <param name="globalAlias">Determines whether to include the global alias.</param>
-		public CodeBuilder QualifiedName(ISymbol symbol, bool globalAlias)
+		public CodeBuilder QualifiedName(ISymbol symbol, bool useArguments, bool globalAlias)
 		{
 			if (globalAlias)
 			{
 				return QualifiedName(symbol, "global");
 			}
 
-			return QualifiedName(symbol);
+			return QualifiedName(symbol, useArguments);
 		}
 
 		/// <summary>
@@ -2584,6 +2598,167 @@ namespace Durian.Analysis
 			return Variance(typeParameter.Variance);
 		}
 
+		/// <summary>
+		/// Writes an XML-compatible name of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to write the XML compatible name of.</param>
+		public CodeBuilder XmlName(ISymbol symbol)
+		{
+			switch (symbol)
+			{
+				case IMethodSymbol method:
+					return XmlName(method);
+
+				case INamedTypeSymbol type:
+					return XmlName(type);
+
+				case IPropertySymbol property:
+					return XmlName(property);
+
+				default:
+					SimpleName_Internal(symbol);
+					return this;
+			}
+		}
+
+		/// <summary>
+		/// Writes an XML-compatible name of the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to write the XML compatible name of.</param>
+		public CodeBuilder XmlName(INamedTypeSymbol type)
+		{
+			InitBuilder();
+
+			SimpleName_Internal(type);
+
+			if (!type.IsGenericType || type.TypeParameters.Length == 0)
+			{
+				return this;
+			}
+
+			return XmlTypeParameterList(type.TypeParameters);
+		}
+
+		/// <summary>
+		/// Writes an XML-compatible name of the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to write the XML compatible name of.</param>
+		public CodeBuilder XmlName(IMethodSymbol method)
+		{
+			InitBuilder();
+
+			switch (method.MethodKind)
+			{
+				case MethodKind.Constructor:
+					SimpleName_Internal(method.ContainingType);
+					break;
+
+				case MethodKind.UserDefinedOperator:
+
+					if (method.GetOperatorToken() is not string op)
+					{
+						goto default;
+					}
+
+					Write("operator ");
+					Write(op);
+
+					break;
+
+				case MethodKind.Conversion:
+
+					string keyword;
+
+					if (method.IsImplicitOperator())
+					{
+						keyword = "implicit";
+					}
+					else if (method.IsExplicitOperator())
+					{
+						keyword = "explicit";
+					}
+					else
+					{
+						goto default;
+					}
+
+					Write(keyword);
+					Space();
+					XmlType(method.ReturnType);
+
+					break;
+
+				default:
+					SimpleName_Internal(method);
+
+					if (method.IsGenericMethod && method.TypeParameters.Length > 0)
+					{
+						XmlTypeParameterList(method.TypeParameters);
+					}
+
+					break;
+			}
+
+			TextBuilder.Append('(');
+			WriteParameterTypeList(method.Parameters);
+			TextBuilder.Append(')');
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes an XML-compatible name of the specified <paramref name="property"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to write the XML compatible name of.</param>
+		public CodeBuilder XmlName(IPropertySymbol property)
+		{
+			InitBuilder();
+
+			if (!property.IsIndexer)
+			{
+				SimpleName_Internal(property);
+				return this;
+			}
+
+			TextBuilder.Append("this[");
+			WriteParameterTypeList(property.Parameters);
+			TextBuilder.Append(']');
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes an XML-compatible list of specified <paramref name="typeParameters"/>.
+		/// </summary>
+		/// <param name="typeParameters">Collection of <see cref="ITypeParameterSymbol"/> to write.</param>
+		public CodeBuilder XmlTypeParameterList(ImmutableArray<ITypeParameterSymbol> typeParameters)
+		{
+			InitBuilder();
+
+			TextBuilder.Append('{');
+
+			SimpleName_Internal(typeParameters[0]);
+
+			for (int i = 1; i < typeParameters.Length; i++)
+			{
+				CommaSpace();
+				SimpleName_Internal(typeParameters[i]);
+			}
+
+			TextBuilder.Append('}');
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes an XML-compatible list of specified <paramref name="typeParameters"/>.
+		/// </summary>
+		/// <param name="typeParameters">Collection of <see cref="ITypeParameterSymbol"/> to write.</param>
+		public CodeBuilder XmlTypeParameterList(IEnumerable<ITypeParameterSymbol> typeParameters)
+		{
+			return XmlTypeParameterList(typeParameters.ToImmutableArray());
+		}
+
 		private CodeBuilder AttributeName(ISymbol symbol)
 		{
 			const string suffix = "Attribute";
@@ -2634,7 +2809,7 @@ namespace Durian.Analysis
 				return GenericName(m, includeVariance, includeVariance);
 			}
 
-			TextBuilder.Append(symbol.GetVerbatimName());
+			SimpleName_Internal(symbol);
 			return this;
 		}
 
@@ -2923,6 +3098,31 @@ namespace Durian.Analysis
 			MethodBody(body);
 		}
 
+		private void WriteParameterType(IParameterSymbol parameter)
+		{
+			if (parameter.RefKind.GetText() is string refKind)
+			{
+				TextBuilder.Append(refKind);
+				TextBuilder.Append(' ');
+			}
+
+			XmlType(parameter.Type);
+		}
+
+		private void WriteParameterTypeList(ImmutableArray<IParameterSymbol> parameters)
+		{
+			if (parameters.Length > 0)
+			{
+				WriteParameterType(parameters[0]);
+
+				for (int i = 1; i < parameters.Length; i++)
+				{
+					CommaSpace();
+					WriteParameterType(parameters[i]);
+				}
+			}
+		}
+
 		private void WritePropertyModifiers(IPropertySymbol property)
 		{
 			WriteExternAndVirtualityModifiers(property);
@@ -2943,6 +3143,21 @@ namespace Durian.Analysis
 			}
 
 			TextBuilder.Append("using ");
+		}
+
+		private void XmlType(ITypeSymbol type)
+		{
+			int start = TextBuilder.Length;
+
+			Type(type);
+
+			int end = TextBuilder.Length;
+
+			if (start < end)
+			{
+				TextBuilder.Replace('<', '{', start, end - start);
+				TextBuilder.Replace('>', '}', start, end - start);
+			}
 		}
 	}
 }

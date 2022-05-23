@@ -115,6 +115,7 @@ namespace Durian.Analysis.Cache
 		}
 
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+
 		/// <inheritdoc/>
 		[Obsolete("This method has no effect.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]

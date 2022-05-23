@@ -377,114 +377,6 @@ namespace Durian.Analysis.CopyFrom
 			return null;
 		}
 
-		private static AdditionalNodes RemoveInvalidFlags(AdditionalNodes additionalNodes, IMethodSymbol symbol)
-		{
-			if (additionalNodes.HasFlag(AdditionalNodes.Constraints))
-			{
-				RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
-			}
-
-			if (additionalNodes.HasFlag(AdditionalNodes.Documentation) && symbol.HasDocumentation())
-			{
-				RemoveFlag(ref additionalNodes, AdditionalNodes.Documentation);
-			}
-
-			if (additionalNodes.HasFlag(AdditionalNodes.BaseType))
-			{
-				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseType);
-			}
-
-			if (additionalNodes.HasFlag(AdditionalNodes.BaseInterfaces))
-			{
-				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseInterfaces);
-			}
-
-			return additionalNodes;
-		}
-
-		private static AdditionalNodes RetrieveNonStandardMethodConfig(AttributeData attribute, IMethodSymbol symbol)
-		{
-			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
-
-			if (additionalNodes == AdditionalNodes.None)
-			{
-				return additionalNodes;
-			}
-
-			return RemoveInvalidFlags(additionalNodes, symbol);
-		}
-
-		private static AdditionalNodes RetrieveNonStandardMethodConfig(AttributeData attribute, IMethodSymbol symbol, IDiagnosticReceiver diagnosticReceiver)
-		{
-			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
-
-			if (additionalNodes == AdditionalNodes.None)
-			{
-				return additionalNodes;
-			}
-
-			if(additionalNodes == AdditionalNodes.All)
-			{
-				return RemoveInvalidFlags(additionalNodes, symbol);
-			}
-
-			bool hasBaseTypeDiagnostics = false;
-			Location? location = default;
-
-			if (additionalNodes.HasFlag(AdditionalNodes.Constraints))
-			{
-				location ??= attribute.GetNamedArgumentLocation(CopyFromMethodAttributeProvider.AdditionalNodes);
-				diagnosticReceiver.ReportDiagnostic(DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember, location, symbol);
-				RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
-			}
-
-			if (additionalNodes.HasFlag(AdditionalNodes.Documentation) && symbol.HasDocumentation())
-			{
-				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
-				diagnosticReceiver.ReportDiagnostic(DUR0222_MemberAlreadyHasDocumentation, location, symbol);
-				RemoveFlag(ref additionalNodes, AdditionalNodes.Documentation);
-			}
-
-			if (additionalNodes.HasFlag(AdditionalNodes.BaseType))
-			{
-				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
-				diagnosticReceiver.ReportDiagnostic(DUR0226_CannotApplyBaseType, location, symbol);
-				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseType);
-				hasBaseTypeDiagnostics = true;
-			}
-
-			if (additionalNodes.HasFlag(AdditionalNodes.BaseInterfaces))
-			{
-				if(!hasBaseTypeDiagnostics)
-				{
-					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
-					diagnosticReceiver.ReportDiagnostic(DUR0226_CannotApplyBaseType, location, symbol);
-				}
-
-				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseInterfaces);
-			}
-
-			return additionalNodes;
-		}
-
-		private static bool IsCircularDependency(in CopyFromMethodContext context, IMethodSymbol target, List<IMethodSymbol> dependencies)
-		{
-			AttributeData? attribute = target.GetAttribute(context.Compilation.CopyFromMethodAttribute!);
-
-			if (attribute is null || GetTargetMethod(in context, attribute, out _, out _) is not IMethodSymbol method)
-			{
-				return false;
-			}
-
-			if (SymbolEqualityComparer.Default.Equals(context.Symbol, method) || IsCircularDependency(in context, method, dependencies))
-			{
-				return true;
-			}
-
-			dependencies.Add(method);
-			return false;
-		}
-
 		private static AttributeData? GetAttribute(IMethodSymbol method, CopyFromCompilationData compilation, out ImmutableArray<AttributeData> allAttributes)
 		{
 			allAttributes = method.GetAttributes();
@@ -626,6 +518,24 @@ namespace Durian.Analysis.CopyFrom
 			return HasValidTypeArguments(method.TypeParameters, method.TypeArguments, out invalidArguments);
 		}
 
+		private static bool IsCircularDependency(in CopyFromMethodContext context, IMethodSymbol target, List<IMethodSymbol> dependencies)
+		{
+			AttributeData? attribute = target.GetAttribute(context.Compilation.CopyFromMethodAttribute!);
+
+			if (attribute is null || GetTargetMethod(in context, attribute, out _, out _) is not IMethodSymbol method)
+			{
+				return false;
+			}
+
+			if (SymbolEqualityComparer.Default.Equals(context.Symbol, method) || IsCircularDependency(in context, method, dependencies))
+			{
+				return true;
+			}
+
+			dependencies.Add(method);
+			return false;
+		}
+
 		private static bool IsInDifferentAssembly(IMethodSymbol target, CopyFromCompilationData compilation)
 		{
 			return compilation.Compilation.Assembly.GetTypeByMetadataName(target.ContainingType.ToString()) is null;
@@ -643,6 +553,96 @@ namespace Durian.Analysis.CopyFrom
 				MethodKind.Constructor or
 				MethodKind.UserDefinedOperator or
 				MethodKind.Conversion;
+		}
+
+		private static AdditionalNodes RemoveInvalidFlags(AdditionalNodes additionalNodes, IMethodSymbol symbol)
+		{
+			if (additionalNodes.HasFlag(AdditionalNodes.Constraints))
+			{
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Documentation) && symbol.HasDocumentation())
+			{
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Documentation);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.BaseType))
+			{
+				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseType);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.BaseInterfaces))
+			{
+				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseInterfaces);
+			}
+
+			return additionalNodes;
+		}
+
+		private static AdditionalNodes RetrieveNonStandardMethodConfig(AttributeData attribute, IMethodSymbol symbol)
+		{
+			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
+
+			if (additionalNodes == AdditionalNodes.None)
+			{
+				return additionalNodes;
+			}
+
+			return RemoveInvalidFlags(additionalNodes, symbol);
+		}
+
+		private static AdditionalNodes RetrieveNonStandardMethodConfig(AttributeData attribute, IMethodSymbol symbol, IDiagnosticReceiver diagnosticReceiver)
+		{
+			AdditionalNodes additionalNodes = GetAdditionalNodesConfig(attribute);
+
+			if (additionalNodes == AdditionalNodes.None)
+			{
+				return additionalNodes;
+			}
+
+			if (additionalNodes == AdditionalNodes.All)
+			{
+				return RemoveInvalidFlags(additionalNodes, symbol);
+			}
+
+			bool hasBaseTypeDiagnostics = false;
+			Location? location = default;
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Constraints))
+			{
+				location ??= attribute.GetNamedArgumentLocation(CopyFromMethodAttributeProvider.AdditionalNodes);
+				diagnosticReceiver.ReportDiagnostic(DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember, location, symbol);
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.Documentation) && symbol.HasDocumentation())
+			{
+				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+				diagnosticReceiver.ReportDiagnostic(DUR0222_MemberAlreadyHasDocumentation, location, symbol);
+				RemoveFlag(ref additionalNodes, AdditionalNodes.Documentation);
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.BaseType))
+			{
+				location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+				diagnosticReceiver.ReportDiagnostic(DUR0226_CannotApplyBaseType, location, symbol);
+				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseType);
+				hasBaseTypeDiagnostics = true;
+			}
+
+			if (additionalNodes.HasFlag(AdditionalNodes.BaseInterfaces))
+			{
+				if (!hasBaseTypeDiagnostics)
+				{
+					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
+					diagnosticReceiver.ReportDiagnostic(DUR0226_CannotApplyBaseType, location, symbol);
+				}
+
+				RemoveFlag(ref additionalNodes, AdditionalNodes.BaseInterfaces);
+			}
+
+			return additionalNodes;
 		}
 
 		private static bool TryParseName(string text, [NotNullWhen(true)] out CSharpSyntaxNode? name)

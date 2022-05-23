@@ -9,12 +9,6 @@
 
 using System.ComponentModel;
 
-namespace System.Runtime.CompilerServices
-{
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	internal static class IsExternalInit { }
-}
-
 namespace System.Diagnostics.CodeAnalysis
 {
 	/// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
@@ -173,6 +167,13 @@ namespace System.Diagnostics.CodeAnalysis
 			ReturnValue = returnValue;
 		}
 	}
+}
+
+namespace System.Runtime.CompilerServices
+{
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	internal static class IsExternalInit
+	{ }
 }
 
 #endif

@@ -30,8 +30,6 @@ namespace Durian.Analysis.Filters
 		[MemberNotNullWhen(true, nameof(Name))]
 		public bool HasName => Name is not null;
 
-		bool ICollection<TFilter>.IsReadOnly => IsSealed;
-
 		/// <inheritdoc/>
 		public bool IsSealed { get; private set; }
 
@@ -59,6 +57,8 @@ namespace Durian.Analysis.Filters
 				_name = value;
 			}
 		}
+
+		bool ICollection<TFilter>.IsReadOnly => IsSealed;
 
 		/// <inheritdoc cref="GetFilter(int)"/>
 		public TFilter this[int index] => GetFilter(index);
@@ -112,11 +112,6 @@ namespace Durian.Analysis.Filters
 			Name = name;
 		}
 
-		void ICollection<TFilter>.Add(TFilter item)
-		{
-			AddFilter(item);
-		}
-
 		/// <inheritdoc/>
 		public void AddFilter(TFilter filter)
 		{
@@ -150,31 +145,16 @@ namespace Durian.Analysis.Filters
 			_filters.Clear();
 		}
 
-		bool ICollection<TFilter>.Contains(TFilter item)
-		{
-			return ContainsFilter(item);
-		}
-
 		/// <inheritdoc/>
 		public bool ContainsFilter(TFilter filter)
 		{
 			return _filters.Contains(filter);
 		}
 
-		void ICollection<TFilter>.CopyTo(TFilter[] array, int arrayIndex)
-		{
-			_filters.CopyTo(array, arrayIndex);
-		}
-
 		/// <inheritdoc/>
 		public IEnumerator<TFilter> GetEnumerator()
 		{
 			return _filters.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
 		}
 
 		/// <inheritdoc/>
@@ -187,11 +167,6 @@ namespace Durian.Analysis.Filters
 		public TFilter[] GetFilters(int index, int count)
 		{
 			return _filters.GetRange(index, count).ToArray();
-		}
-
-		bool ICollection<TFilter>.Remove(TFilter item)
-		{
-			return RemoveFilter(item);
 		}
 
 		/// <inheritdoc/>
@@ -231,6 +206,31 @@ namespace Durian.Analysis.Filters
 		public void Unseal()
 		{
 			IsSealed = false;
+		}
+
+		void ICollection<TFilter>.Add(TFilter item)
+		{
+			AddFilter(item);
+		}
+
+		bool ICollection<TFilter>.Contains(TFilter item)
+		{
+			return ContainsFilter(item);
+		}
+
+		void ICollection<TFilter>.CopyTo(TFilter[] array, int arrayIndex)
+		{
+			_filters.CopyTo(array, arrayIndex);
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		bool ICollection<TFilter>.Remove(TFilter item)
+		{
+			return RemoveFilter(item);
 		}
 
 		private void ThrowIfSealed()

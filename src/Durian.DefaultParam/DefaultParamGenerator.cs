@@ -232,7 +232,7 @@ namespace Durian.Analysis.DefaultParam
 				context.CodeBuilder.Using(@namespace);
 			}
 
-			if(context.CodeBuilder.Changed)
+			if (context.CodeBuilder.Changed)
 			{
 				context.CodeBuilder.NewLine();
 			}

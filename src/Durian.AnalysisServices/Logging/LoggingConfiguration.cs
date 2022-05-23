@@ -185,11 +185,6 @@ namespace Durian.Analysis.Logging
 			};
 		}
 
-		object ICloneable.Clone()
-		{
-			return Clone();
-		}
-
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
@@ -219,6 +214,11 @@ namespace Durian.Analysis.Logging
 			hashCode = (hashCode * -1521134295) + EnableExceptions.GetHashCode();
 			hashCode = (hashCode * -1521134295) + DefaultNodeOutput.GetHashCode();
 			return hashCode;
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 	}
 }

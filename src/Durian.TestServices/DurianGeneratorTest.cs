@@ -36,6 +36,13 @@ namespace Durian.TestServices
 			UnderlayingGenerator = CreateUnderlayingGenerator(_configuration);
 		}
 
+		/// <inheritdoc/>
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
 		/// <summary>
 		/// Provides text of the <see cref="Generator.DurianGeneratedAttribute"/> and <see cref="System.CodeDom.Compiler.GeneratedCodeAttribute"/>,
 		/// </summary>
@@ -59,18 +66,6 @@ namespace Durian.TestServices
 		}
 
 		/// <inheritdoc/>
-		public override MultipleGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, [CallerMemberName] string testName = "")
-		{
-			return base.RunGeneratorWithMultipleOutputs(input, UnderlayingGenerator.NumStaticTrees, testName);
-		}
-
-		/// <inheritdoc/>
-		public override MultipleGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, int startIndex, [CallerMemberName] string testName = "")
-		{
-			return base.RunGeneratorWithMultipleOutputs(input, UnderlayingGenerator.NumStaticTrees + startIndex, testName);
-		}
-
-		/// <inheritdoc/>
 		public sealed override SingleGeneratorTestResult RunGeneratorWithDependency(string? input, string external, int index, [CallerMemberName] string testName = "")
 		{
 			return base.RunGeneratorWithDependency(input, external, UnderlayingGenerator.NumStaticTrees + index, testName);
@@ -80,6 +75,18 @@ namespace Durian.TestServices
 		public sealed override SingleGeneratorTestResult RunGeneratorWithDependency(string? input, string external, [CallerMemberName] string testName = "")
 		{
 			return base.RunGeneratorWithDependency(input, external, UnderlayingGenerator.NumStaticTrees, testName);
+		}
+
+		/// <inheritdoc/>
+		public override MultipleGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, [CallerMemberName] string testName = "")
+		{
+			return base.RunGeneratorWithMultipleOutputs(input, UnderlayingGenerator.NumStaticTrees, testName);
+		}
+
+		/// <inheritdoc/>
+		public override MultipleGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, int startIndex, [CallerMemberName] string testName = "")
+		{
+			return base.RunGeneratorWithMultipleOutputs(input, UnderlayingGenerator.NumStaticTrees + startIndex, testName);
 		}
 
 		/// <inheritdoc/>
@@ -100,13 +107,16 @@ namespace Durian.TestServices
 		/// <param name="configuration">Configuration for the <see cref="IDurianGenerator"/>.</param>
 		protected abstract T CreateUnderlayingGenerator(LoggingConfiguration configuration);
 
-		/// <inheritdoc/>
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-
-		public void Dispose()
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+		/// <summary>
+		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+		/// </summary>
+		/// <param name="disposing">Determines whether this method was called from the <see cref="IDisposable.Dispose"/> method or object's finalizer.</param>
+		protected virtual void Dispose(bool disposing)
 		{
-			UnderlayingGenerator.Dispose();
+			if(disposing)
+			{
+				UnderlayingGenerator.Dispose();
+			}
 		}
 	}
 }

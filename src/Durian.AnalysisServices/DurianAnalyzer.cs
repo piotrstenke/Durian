@@ -36,11 +36,6 @@ namespace Durian.Analysis
 			context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		}
 
-		IEnumerable<DiagnosticDescriptor> IDurianAnalyzer.GetSupportedDiagnostics()
-		{
-			return SupportedDiagnostics;
-		}
-
 		/// <inheritdoc/>
 		public override void Initialize(AnalysisContext context)
 		{
@@ -56,6 +51,11 @@ namespace Durian.Analysis
 
 		/// <inheritdoc cref="IDurianAnalyzer.Register(IDurianAnalysisContext, CSharpCompilation)"/>
 		public abstract void Register(IDurianAnalysisContext context);
+
+		IEnumerable<DiagnosticDescriptor> IDurianAnalyzer.GetSupportedDiagnostics()
+		{
+			return SupportedDiagnostics;
+		}
 
 		void IDurianAnalyzer.Register(IDurianAnalysisContext context, CSharpCompilation compilation)
 		{

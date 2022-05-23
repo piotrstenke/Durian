@@ -52,6 +52,12 @@ namespace Durian.Analysis.DefaultParam
 		public abstract override bool ValidateAndCreate(in TContext context, out IMemberData? data, IDiagnosticReceiver diagnosticReceiver);
 
 		/// <summary>
+		/// Returns a <see cref="TypeParameterListSyntax"/> associated with the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="CSharpSyntaxNode"/> to get the <see cref="TypeParameterListSyntax"/> associated with.</param>
+		protected abstract TypeParameterListSyntax? GetTypeParameterList(CSharpSyntaxNode node);
+
+		/// <summary>
 		/// Attempts to create a new <typeparamref name="TContext"/> from the specified <paramref name="validationContext"/>.
 		/// </summary>
 		/// <param name="validationContext"><see cref="SyntaxValidationContext"/> that contains all data necessary to retrieve the required data.</param>
@@ -64,6 +70,7 @@ namespace Durian.Analysis.DefaultParam
 		);
 
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+
 		/// <inheritdoc/>
 		[Obsolete("Use TryCreateContext with TypeParameterContainer instead.")]
 		protected sealed override bool TryCreateContext(
@@ -89,12 +96,6 @@ namespace Durian.Analysis.DefaultParam
 			context = default;
 			return false;
 		}
-
-		/// <summary>
-		/// Returns a <see cref="TypeParameterListSyntax"/> associated with the specified <paramref name="node"/>.
-		/// </summary>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to get the <see cref="TypeParameterListSyntax"/> associated with.</param>
-		protected abstract TypeParameterListSyntax? GetTypeParameterList(CSharpSyntaxNode node);
 
 		/// <summary>
 		/// Determines whether the collected <see cref="TypeParameterContainer"/> is valid for analysis.

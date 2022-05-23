@@ -25,14 +25,13 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// <inheritdoc cref="ISyntaxValidationContext.Node"/>
 		public MethodDeclarationSyntax? Node { get; }
 
-		CSharpSyntaxNode ISyntaxValidationContext.Node => Node!;
-
 		/// <inheritdoc/>
 		public SemanticModel SemanticModel { get; }
 
 		/// <inheritdoc cref="ISyntaxValidationContext.Symbol"/>
 		public IMethodSymbol Symbol { get; }
 
+		CSharpSyntaxNode ISyntaxValidationContext.Node => Node!;
 		ISymbol ISyntaxValidationContext.Symbol => Symbol;
 		ICompilationData ISyntaxValidationContext.TargetCompilation => Compilation;
 

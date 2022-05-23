@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -83,6 +82,7 @@ namespace Durian.Analysis
 		}
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 		internal CodeBuilder(bool requireChildBuilder, StringBuilder? builder = default, CodeBuilderStyleConfiguration? style = default)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
@@ -487,6 +487,62 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
+		/// Writes a <see langword="using"/> directive.
+		/// </summary>
+		/// <param name="namespace">Name of namespace to include using the <see langword="using"/> directive.</param>
+		/// <param name="isGlobal">Determines whether the <see langword="using"/> directive is <see langword="global"/>.</param>
+		public CodeBuilder Using(string @namespace, bool isGlobal = false)
+		{
+			Indent();
+
+			WriteUsing(isGlobal);
+			TextBuilder.Append(@namespace);
+
+			ColonNewLine();
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <see langword="using"/> directive with an alias.
+		/// </summary>
+		/// <param name="target">name of type or namespace to include using the <see langword="using"/> directive.</param>
+		/// <param name="alias">Alias to write.</param>
+		/// <param name="isGlobal">Determines whether the <see langword="using"/> directive is <see langword="global"/>.</param>
+		public CodeBuilder UsingAlias(string target, string alias, bool isGlobal = false)
+		{
+			Indent();
+
+			WriteUsing(isGlobal);
+
+			TextBuilder.Append(alias);
+			TextBuilder.Append(' ');
+			TextBuilder.Append('=');
+			TextBuilder.Append(' ');
+			TextBuilder.Append(target);
+
+			ColonNewLine();
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <see langword="using"/> <see langword="static"/> directive.
+		/// </summary>
+		/// <param name="target">Name of type or namespace to include using the <see langword="using"/> <see langword="static"/> directive.</param>
+		/// <param name="isGlobal">Determines whether the <see langword="using"/> directive is <see langword="global"/>.</param>
+		public CodeBuilder UsingStatic(string target, bool isGlobal = false)
+		{
+			Indent();
+
+			WriteUsing(isGlobal);
+			TextBuilder.Append("static ");
+			TextBuilder.Append(target);
+
+			ColonNewLine();
+
+			return this;
+		}
+
+		/// <summary>
 		/// Writes the specified <paramref name="variance"/>.
 		/// </summary>
 		/// <param name="variance">Kind of variance to write.</param>
@@ -548,62 +604,6 @@ namespace Durian.Analysis
 			InitBuilder();
 
 			TextBuilder.AppendLine(value);
-			return this;
-		}
-
-		/// <summary>
-		/// Writes a <see langword="using"/> directive.
-		/// </summary>
-		/// <param name="namespace">Name of namespace to include using the <see langword="using"/> directive.</param>
-		/// <param name="isGlobal">Determines whether the <see langword="using"/> directive is <see langword="global"/>.</param>
-		public CodeBuilder Using(string @namespace, bool isGlobal = false)
-		{
-			Indent();
-
-			WriteUsing(isGlobal);
-			TextBuilder.Append(@namespace);
-
-			ColonNewLine();
-			return this;
-		}
-
-		/// <summary>
-		/// Writes a <see langword="using"/> directive with an alias.
-		/// </summary>
-		/// <param name="target">name of type or namespace to include using the <see langword="using"/> directive.</param>
-		/// <param name="alias">Alias to write.</param>
-		/// <param name="isGlobal">Determines whether the <see langword="using"/> directive is <see langword="global"/>.</param>
-		public CodeBuilder UsingAlias(string target, string alias,  bool isGlobal = false)
-		{
-			Indent();
-
-			WriteUsing(isGlobal);
-
-			TextBuilder.Append(alias);
-			TextBuilder.Append(' ');
-			TextBuilder.Append('=');
-			TextBuilder.Append(' ');
-			TextBuilder.Append(target);
-
-			ColonNewLine();
-			return this;
-		}
-
-		/// <summary>
-		/// Writes a <see langword="using"/> <see langword="static"/> directive.
-		/// </summary>
-		/// <param name="target">Name of type or namespace to include using the <see langword="using"/> <see langword="static"/> directive.</param>
-		/// <param name="isGlobal">Determines whether the <see langword="using"/> directive is <see langword="global"/>.</param>
-		public CodeBuilder UsingStatic(string target, bool isGlobal = false)
-		{
-			Indent();
-
-			WriteUsing(isGlobal);
-			TextBuilder.Append("static ");
-			TextBuilder.Append(target);
-
-			ColonNewLine();
-
 			return this;
 		}
 

@@ -15,6 +15,68 @@ namespace Durian.Analysis.Cache
 	public static class CacheExtensions
 	{
 		/// <summary>
+		/// Returns a reference to the internal <see cref="CachedData{T}"/> of the given <paramref name="context"/>.
+		/// </summary>
+		/// <typeparam name="T">Type of values the <paramref name="context"/> can cache.</typeparam>
+		/// <param name="context"><see cref="CachedGeneratorExecutionContext{T}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
+		public static ref readonly CachedData<T> GetCachedData<T>(this in CachedGeneratorExecutionContext<T> context)
+		{
+			return ref context._data;
+		}
+
+		/// <summary>
+		/// Returns a reference to the internal <see cref="CachedData{T}"/> of the given <paramref name="enumerator"/>.
+		/// </summary>
+		/// <typeparam name="TData">Type of cached data.</typeparam>
+		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
+		/// <param name="enumerator"><see cref="CachedFilterEnumerator{TData, TContext}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
+		[SuppressMessage("Roslynator", "RCS1242:Do not pass non-read-only struct by read-only reference.")]
+		public static ref readonly CachedData<TData> GetCachedData<TData, TContext>(this in CachedFilterEnumerator<TData, TContext> enumerator)
+			where TData : class, IMemberData
+			where TContext : ISyntaxValidationContext
+		{
+			return ref enumerator._cache;
+		}
+
+		/// <summary>
+		/// Returns a reference to the internal <see cref="CachedData{T}"/> of the given <paramref name="enumerator"/>.
+		/// </summary>
+		/// <typeparam name="TData">Type of cached data.</typeparam>
+		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
+		/// <param name="enumerator"><see cref="CachedFilterEnumeratorWithDiagnostics{TData, TContext}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
+		[SuppressMessage("Roslynator", "RCS1242:Do not pass non-read-only struct by read-only reference.")]
+		public static ref readonly CachedData<TData> GetCachedData<TData, TContext>(this in CachedFilterEnumeratorWithDiagnostics<TData, TContext> enumerator)
+			where TData : class, IMemberData
+			where TContext : ISyntaxValidationContext
+		{
+			return ref enumerator._cache;
+		}
+
+		/// <summary>
+		/// Returns a reference to the internal <see cref="CachedData{T}"/> of the given <paramref name="enumerator"/>.
+		/// </summary>
+		/// <typeparam name="TData">Type of cached data.</typeparam>
+		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
+		/// <param name="enumerator"><see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
+		[SuppressMessage("Roslynator", "RCS1242:Do not pass non-read-only struct by read-only reference.")]
+		public static ref readonly CachedData<TData> GetCachedData<TData, TContext>(this in CachedLoggableFilterEnumerator<TData, TContext> enumerator)
+			where TData : class, IMemberData
+			where TContext : ISyntaxValidationContext
+		{
+			return ref enumerator._cache;
+		}
+
+		/// <summary>
+		/// Returns a reference to the internal <see cref="GeneratorExecutionContext"/> of the given <paramref name="context"/>.
+		/// </summary>
+		/// <typeparam name="T">Type of values the <paramref name="context"/> can cache.</typeparam>
+		/// <param name="context"><see cref="CachedGeneratorExecutionContext{T}"/> to get the internal <see cref="GeneratorExecutionContext"/> of.</param>
+		public static ref readonly GeneratorExecutionContext GetContext<T>(this in CachedGeneratorExecutionContext<T> context)
+		{
+			return ref context._context;
+		}
+
+		/// <summary>
 		/// Checks if value associated with a <see cref="FileLinePositionSpan"/> retrieved from the specified <paramref name="location"/> is cached in the <paramref name="context"/>.
 		/// </summary>
 		/// <param name="context">Target <see cref="CachedGeneratorExecutionContext{T}"/>.</param>
@@ -76,69 +138,6 @@ namespace Durian.Analysis.Cache
 			}
 
 			return cache.IsCached(node.GetLocation().GetLineSpan());
-		}
-
-		/// <summary>
-		/// Returns a reference to the internal <see cref="CachedData{T}"/> of the given <paramref name="context"/>.
-		/// </summary>
-		/// <typeparam name="T">Type of values the <paramref name="context"/> can cache.</typeparam>
-		/// <param name="context"><see cref="CachedGeneratorExecutionContext{T}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
-		public static ref readonly CachedData<T> GetCachedData<T>(this in CachedGeneratorExecutionContext<T> context)
-		{
-			return ref context._data;
-		}
-
-#pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
-
-		/// <summary>
-		/// Returns a reference to the internal <see cref="CachedData{T}"/> of the given <paramref name="enumerator"/>.
-		/// </summary>
-		/// <typeparam name="TData">Type of cached data.</typeparam>
-		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
-		/// <param name="enumerator"><see cref="CachedFilterEnumerator{TData, TContext}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
-		public static ref readonly CachedData<TData> GetCachedData<TData, TContext>(this in CachedFilterEnumerator<TData, TContext> enumerator)
-			where TData : class, IMemberData
-			where TContext : ISyntaxValidationContext
-		{
-			return ref enumerator._cache;
-		}
-
-		/// <summary>
-		/// Returns a reference to the internal <see cref="CachedData{T}"/> of the given <paramref name="enumerator"/>.
-		/// </summary>
-		/// <typeparam name="TData">Type of cached data.</typeparam>
-		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
-		/// <param name="enumerator"><see cref="CachedFilterEnumeratorWithDiagnostics{TData, TContext}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
-		public static ref readonly CachedData<TData> GetCachedData<TData, TContext>(this in CachedFilterEnumeratorWithDiagnostics<TData, TContext> enumerator)
-			where TData : class, IMemberData
-			where TContext : ISyntaxValidationContext
-		{
-			return ref enumerator._cache;
-		}
-
-		/// <summary>
-		/// Returns a reference to the internal <see cref="CachedData{T}"/> of the given <paramref name="enumerator"/>.
-		/// </summary>
-		/// <typeparam name="TData">Type of cached data.</typeparam>
-		/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
-		/// <param name="enumerator"><see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> to get the internal <see cref="CachedData{T}"/> of.</param>
-		public static ref readonly CachedData<TData> GetCachedData<TData, TContext>(this in CachedLoggableFilterEnumerator<TData, TContext> enumerator)
-			where TData : class, IMemberData
-			where TContext : ISyntaxValidationContext
-		{
-			return ref enumerator._cache;
-		}
-
-#pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
-
-		/// <summary>
-		/// Returns a reference to the internal <see cref="GeneratorExecutionContext"/> of the given <paramref name="context"/>.
-		/// </summary>
-		/// <typeparam name="T">Type of values the <paramref name="context"/> can cache.</typeparam>
-		/// <param name="context"><see cref="CachedGeneratorExecutionContext{T}"/> to get the internal <see cref="GeneratorExecutionContext"/> of.</param>
-		public static ref readonly GeneratorExecutionContext GetContext<T>(this in CachedGeneratorExecutionContext<T> context)
-		{
-			return ref context._context;
 		}
 
 		/// <summary>

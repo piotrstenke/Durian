@@ -20,11 +20,6 @@ namespace Durian.Analysis.Data
 		/// <inheritdoc/>
 		public virtual CSharpSyntaxNode? Body => BodyRaw ??= (Declaration as BaseMethodDeclarationSyntax)!.GetBody();
 
-		/// <summary>
-		/// Returns the cached body of the method or <see langword="null"/> if there is no currently cached value.
-		/// </summary>
-		protected CSharpSyntaxNode? BodyRaw { get; set; }
-
 		/// <inheritdoc/>
 		public MethodStyle BodyType
 		{
@@ -48,6 +43,11 @@ namespace Durian.Analysis.Data
 		/// <see cref="IMethodSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		public new IMethodSymbol Symbol => (base.Symbol as IMethodSymbol)!;
+
+		/// <summary>
+		/// Returns the cached body of the method or <see langword="null"/> if there is no currently cached value.
+		/// </summary>
+		protected CSharpSyntaxNode? BodyRaw { get; set; }
 
 		internal MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{

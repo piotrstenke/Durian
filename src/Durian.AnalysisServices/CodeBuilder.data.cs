@@ -10,6 +10,51 @@ namespace Durian.Analysis
 	public partial class CodeBuilder
 	{
 		/// <summary>
+		/// Writes name of the specified <paramref name="member"/>.
+		/// </summary>
+		/// <param name="member"><see cref="IMemberData"/> to write the name of.</param>
+		/// <param name="format">Format of the name.</param>
+		public CodeBuilder Name(IMemberData member, SymbolName format = default)
+		{
+			InitBuilder();
+
+			if (member is INamedTypeSymbol type && KeywordType(type, format != SymbolName.SystemName && Style.UseBuiltInAliases))
+			{
+				return this;
+			}
+
+			switch (format)
+			{
+				case SymbolName.Default:
+					SimpleName_Internal(member.Symbol);
+					break;
+
+				case SymbolName.Generic:
+					return GenericName(member.Symbol, false, false);
+
+				case SymbolName.VarianceGeneric:
+					return GenericName(member.Symbol, false, true);
+
+				case SymbolName.Substituted:
+					return GenericName(member.Symbol, true, false);
+
+				case SymbolName.Attribute:
+					return AttributeName(member.Symbol);
+
+				case SymbolName.Qualified:
+					return QualifiedName(member, true);
+
+				case SymbolName.GlobalQualified:
+					return QualifiedName(member, true, true);
+
+				default:
+					goto case SymbolName.Default;
+			}
+
+			return this;
+		}
+
+		/// <summary>
 		/// Begins declaration of a <paramref name="namespace"/>.
 		/// </summary>
 		/// <param name="namespace"><see cref="IMemberData"/> to begin declaration of.</param>
@@ -71,7 +116,8 @@ namespace Durian.Analysis
 		/// Writes fully qualified name of the specified <paramref name="member"/>.
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to write the qualified name of.</param>
-		public CodeBuilder QualifiedName(IMemberData member)
+		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters.</param>
+		public CodeBuilder QualifiedName(IMemberData member, bool useArguments = false)
 		{
 			InitBuilder();
 
@@ -83,10 +129,23 @@ namespace Durian.Analysis
 
 			if (member.Symbol.ContainingType is not null)
 			{
-				foreach (INamedTypeSymbol type in member.GetContainingTypes())
+				if (useArguments)
 				{
-					GenericName(type, true, false);
-					TextBuilder.Append('.');
+					foreach (INamedTypeSymbol type in member.GetContainingTypes())
+					{
+						SimpleName_Internal(type);
+						TypeArgumentList(type.TypeArguments);
+						TextBuilder.Append('.');
+					}
+				}
+				else
+				{
+					foreach (INamedTypeSymbol type in member.GetContainingTypes())
+					{
+						SimpleName_Internal(type);
+						TypeParameterList(type.TypeParameters);
+						TextBuilder.Append('.');
+					}
 				}
 			}
 
@@ -97,15 +156,16 @@ namespace Durian.Analysis
 		/// Writes fully qualified name of the specified <paramref name="member"/>.
 		/// </summary>
 		/// <param name="member"><see cref="IMemberData"/> to write the qualified name of.</param>
+		///  <param name="useArguments">Determines whether to use type arguments instead of type parameters.</param>
 		/// <param name="globalAlias">Determines whether to include the global alias.</param>
-		public CodeBuilder QualifiedName(IMemberData member, bool globalAlias)
+		public CodeBuilder QualifiedName(IMemberData member, bool useArguments, bool globalAlias)
 		{
 			if (globalAlias)
 			{
 				return QualifiedName(member, "global");
 			}
 
-			return QualifiedName(member);
+			return QualifiedName(member, useArguments);
 		}
 
 		/// <summary>

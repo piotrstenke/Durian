@@ -172,8 +172,33 @@ namespace Durian.Analysis.Data
 			}
 		}
 
+		internal static SemanticModel GetSemanticModel(ICompilationData compilation, CSharpSyntaxNode declaration)
+		{
+			if (declaration is null)
+			{
+				throw new ArgumentNullException(nameof(declaration));
+			}
+
+			if (compilation is null)
+			{
+				throw new ArgumentNullException(nameof(compilation));
+			}
+
+			return compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
+		}
+
+		internal static VariableDeclaratorSyntax GetVariable(VariableDeclarationSyntax declaration, int index)
+		{
+			if (index < 0 || index >= declaration.Variables.Count)
+			{
+				throw new IndexOutOfRangeException(nameof(index));
+			}
+
+			return declaration.Variables[index];
+		}
+
 		private static FieldDeclarationSyntax GetFieldDeclarationFromSymbol(
-			IFieldSymbol symbol,
+							IFieldSymbol symbol,
 			ICompilationData compilation,
 			out SemanticModel semanticModel,
 			out VariableDeclaratorSyntax variable,
@@ -200,31 +225,6 @@ namespace Durian.Analysis.Data
 			}
 
 			throw Exc_NoSyntaxReference(symbol);
-		}
-
-		internal static SemanticModel GetSemanticModel(ICompilationData compilation, CSharpSyntaxNode declaration)
-		{
-			if (declaration is null)
-			{
-				throw new ArgumentNullException(nameof(declaration));
-			}
-
-			if (compilation is null)
-			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
-
-			return compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
-		}
-
-		internal static VariableDeclaratorSyntax GetVariable(VariableDeclarationSyntax declaration, int index)
-		{
-			if (index < 0 || index >= declaration.Variables.Count)
-			{
-				throw new IndexOutOfRangeException(nameof(index));
-			}
-
-			return declaration.Variables[index];
 		}
 	}
 }

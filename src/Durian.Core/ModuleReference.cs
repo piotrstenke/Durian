@@ -129,16 +129,6 @@ namespace Durian.Info
 			return new(_module);
 		}
 
-		object ICloneable.Clone()
-		{
-			return Clone();
-		}
-
-		IDurianReference IDurianReference.Clone()
-		{
-			return Clone();
-		}
-
 		/// <summary>
 		/// Removes from memory the <see cref="ModuleIdentity"/> this <see cref="ModuleReference"/> references.
 		/// </summary>
@@ -162,11 +152,6 @@ namespace Durian.Info
 		public bool Equals(ModuleReference? other)
 		{
 			return other == this;
-		}
-
-		object? IDurianReference.GetAllocatedValue()
-		{
-			return GetModule();
 		}
 
 		/// <inheritdoc/>
@@ -202,6 +187,21 @@ namespace Durian.Info
 		public override string ToString()
 		{
 			return EnumValue.ToString();
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
+		}
+
+		IDurianReference IDurianReference.Clone()
+		{
+			return Clone();
+		}
+
+		object? IDurianReference.GetAllocatedValue()
+		{
+			return GetModule();
 		}
 	}
 }

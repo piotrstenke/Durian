@@ -119,16 +119,6 @@ namespace Durian.Info
 			return new PackageIdentity(EnumValue, Name, Version, Type, Modules);
 		}
 
-		object ICloneable.Clone()
-		{
-			return Clone();
-		}
-
-		IDurianIdentity IDurianIdentity.Clone()
-		{
-			return Clone();
-		}
-
 		/// <inheritdoc/>
 		public void Dispose()
 		{
@@ -181,6 +171,16 @@ namespace Durian.Info
 		public override string ToString()
 		{
 			return $"{Name}, {Version}";
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
+		}
+
+		IDurianIdentity IDurianIdentity.Clone()
+		{
+			return Clone();
 		}
 
 		internal void SetModule(ModuleIdentity module)

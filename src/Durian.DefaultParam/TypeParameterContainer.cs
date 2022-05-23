@@ -245,11 +245,6 @@ namespace Durian.Analysis.DefaultParam
 			return false;
 		}
 
-		readonly bool IEquatable<TypeParameterContainer>.Equals(TypeParameterContainer other)
-		{
-			return IsEquivalentTo(in other);
-		}
-
 		/// <summary>
 		/// Returns a <see cref="TypeParameterData"/> at the specified <paramref name="index"/> relative to the <see cref="FirstDefaultParamIndex"/>.
 		/// </summary>
@@ -263,11 +258,6 @@ namespace Durian.Analysis.DefaultParam
 		public readonly IEnumerator<TypeParameterData> GetEnumerator()
 		{
 			return ((IEnumerable<TypeParameterData>)_parameters).GetEnumerator();
-		}
-
-		readonly IEnumerator IEnumerable.GetEnumerator()
-		{
-			return _parameters.GetEnumerator();
 		}
 
 		/// <inheritdoc/>
@@ -320,6 +310,16 @@ namespace Durian.Analysis.DefaultParam
 			}
 
 			return true;
+		}
+
+		readonly bool IEquatable<TypeParameterContainer>.Equals(TypeParameterContainer other)
+		{
+			return IsEquivalentTo(in other);
+		}
+
+		readonly IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _parameters.GetEnumerator();
 		}
 
 		private static int FindFirstDefaultParamIndex(TypeParameterData[] parameters)

@@ -92,7 +92,7 @@ namespace Durian.Analysis.CodeGeneration
 		/// </summary>
 		public static CodeBuilderStyleConfiguration Default()
 		{
-			if(CustomProvider is not null)
+			if (CustomProvider is not null)
 			{
 				return CustomProvider();
 			}

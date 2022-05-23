@@ -79,36 +79,6 @@ namespace Durian.TestServices
 			return new AttributeTargetGeneratorTestResult(generatorDriver, inputCompilation, outputCompilation);
 		}
 
-		bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result, bool includeStructuredTrivia)
-		{
-			if (result.GeneratedTrees.Length < 2)
-			{
-				return false;
-			}
-
-			if (!includeStructuredTrivia)
-			{
-				return
-					result.GeneratedTrees[0].IsEquivalentTo(Attribute.SyntaxTree) &&
-					result.GeneratedTrees[1].IsEquivalentTo(Source.SyntaxTree);
-			}
-
-			StructuredTriviaPreserver preserver = new();
-
-			SyntaxNode node = preserver.Visit(Attribute.SyntaxTree.GetRoot());
-			SyntaxNode other = preserver.Visit(result.GeneratedTrees[0].GetRoot());
-
-			if (!node.IsEquivalentTo(other))
-			{
-				return false;
-			}
-
-			node = preserver.Visit(Source.SyntaxTree.GetRoot());
-			other = preserver.Visit(result.GeneratedTrees[1].GetRoot());
-
-			return node.IsEquivalentTo(other);
-		}
-
 		/// <summary>
 		/// Checks if the <paramref name="expected"/> <see cref="CSharpSyntaxTree"/> is equivalent to the <see cref="CSharpSyntaxTree"/> of the <see cref="Attribute"/> created by the <see cref="ISourceGenerator"/>.
 		/// </summary>
@@ -147,6 +117,36 @@ namespace Durian.TestServices
 		public bool CompareSource(string? expected, bool includeStructuredTrivia = false)
 		{
 			return Compare((CSharpSyntaxTree)Source.SyntaxTree, expected, includeStructuredTrivia);
+		}
+
+		bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result, bool includeStructuredTrivia)
+		{
+			if (result.GeneratedTrees.Length < 2)
+			{
+				return false;
+			}
+
+			if (!includeStructuredTrivia)
+			{
+				return
+					result.GeneratedTrees[0].IsEquivalentTo(Attribute.SyntaxTree) &&
+					result.GeneratedTrees[1].IsEquivalentTo(Source.SyntaxTree);
+			}
+
+			StructuredTriviaPreserver preserver = new();
+
+			SyntaxNode node = preserver.Visit(Attribute.SyntaxTree.GetRoot());
+			SyntaxNode other = preserver.Visit(result.GeneratedTrees[0].GetRoot());
+
+			if (!node.IsEquivalentTo(other))
+			{
+				return false;
+			}
+
+			node = preserver.Visit(Source.SyntaxTree.GetRoot());
+			other = preserver.Visit(result.GeneratedTrees[1].GetRoot());
+
+			return node.IsEquivalentTo(other);
 		}
 
 		private static bool Compare(CSharpSyntaxTree first, string? second, bool includeStructuredTrivia)

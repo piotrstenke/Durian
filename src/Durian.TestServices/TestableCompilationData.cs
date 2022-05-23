@@ -23,8 +23,6 @@ namespace Durian.TestServices
 
 		private CSharpCompilation? _originalCompilation;
 
-		CSharpCompilation ICompilationData.Compilation => _currentCompilation!;
-
 		/// <summary>
 		/// A <see cref="CSharpCompilation"/> that is affected by the <see cref="UpdateCompilation(CSharpSyntaxTree)"/> method or its overloads.
 		/// </summary>
@@ -54,6 +52,8 @@ namespace Durian.TestServices
 				}
 			}
 		}
+
+		CSharpCompilation ICompilationData.Compilation => _currentCompilation!;
 
 		private TestableCompilationData(CSharpCompilation? compilation)
 		{

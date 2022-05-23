@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -16,8 +15,8 @@ namespace Durian.Analysis.DefaultParam.Types
 	/// </summary>
 	public class DefaultParamTypeData : TypeData<TypeDeclarationSyntax>, IDefaultParamTarget
 	{
-		private string? _targetNamespace;
 		private readonly TypeParameterContainer _typeParameters;
+		private string? _targetNamespace;
 
 		/// <summary>
 		/// Determines whether the generated members should inherit the original type.
@@ -111,15 +110,15 @@ namespace Durian.Analysis.DefaultParam.Types
 			return new TypeDeclarationBuilder(this, cancellationToken);
 		}
 
-		IDefaultParamDeclarationBuilder IDefaultParamTarget.GetDeclarationBuilder(CancellationToken cancellationToken)
-		{
-			return GetDeclarationBuilder(cancellationToken);
-		}
-
 		/// <inheritdoc/>
 		public IEnumerable<string> GetUsedNamespaces(CancellationToken cancellationToken = default)
 		{
 			return DefaultParamUtilities.GetUsedNamespaces(this, in _typeParameters, cancellationToken);
+		}
+
+		IDefaultParamDeclarationBuilder IDefaultParamTarget.GetDeclarationBuilder(CancellationToken cancellationToken)
+		{
+			return GetDeclarationBuilder(cancellationToken);
 		}
 
 		IEnumerable<string> IDefaultParamTarget.GetUsedNamespaces()

@@ -362,8 +362,18 @@ namespace Durian.Analysis.CopyFrom
 			return node;
 		}
 
+		private static string TryApplyPattern(ICopyFromMember member, CopyFromPassContext context, string input)
+		{
+			if (member.Patterns is not null)
+			{
+				return ApplyPattern(member, context, input);
+			}
+
+			return input;
+		}
+
 		private bool Generate(
-			IMemberData data,
+					IMemberData data,
 			string hintName,
 			CopyFromPassContext context,
 			Queue<(SyntaxReference, string)> dependencies,
@@ -410,7 +420,7 @@ namespace Durian.Analysis.CopyFrom
 				return GenerateType(type, hintName, context);
 			}
 
-			if(data is Methods.CopyFromMethodData method)
+			if (data is Methods.CopyFromMethodData method)
 			{
 				return GenerateMethod(method, hintName, context);
 			}
@@ -548,16 +558,6 @@ namespace Durian.Analysis.CopyFrom
 					context.FileNameProvider.Success();
 				}
 			}
-		}
-
-		private static string TryApplyPattern(ICopyFromMember member, CopyFromPassContext context, string input)
-		{
-			if (member.Patterns is not null)
-			{
-				return ApplyPattern(member, context, input);
-			}
-
-			return input;
 		}
 
 		private void WriteGeneratedMember(

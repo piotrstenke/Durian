@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -42,7 +41,7 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-				if(!Symbol.IsType)
+				if (!Symbol.IsType)
 				{
 					throw new InvalidOperationException("Current NamespaceOrTypeData does not represent a type");
 				}
@@ -55,7 +54,7 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-				if(!Symbol.IsType)
+				if (!Symbol.IsType)
 				{
 					throw new InvalidOperationException("Current NamespaceOrTypeData does not represent a type");
 				}
@@ -158,7 +157,7 @@ namespace Durian.Analysis.Data
 		/// <inheritdoc/>
 		public ImmutableArray<BaseTypeDeclarationSyntax> GetPartialDeclarations()
 		{
-			if(Symbol.IsNamespace)
+			if (Symbol.IsNamespace)
 			{
 				return ImmutableArray<BaseTypeDeclarationSyntax>.Empty;
 			}

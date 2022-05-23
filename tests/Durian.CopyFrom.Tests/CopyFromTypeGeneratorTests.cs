@@ -3500,7 +3500,7 @@ partial class Test
 		string b = string.Empty;
 	}}
 
-	{GetCodeGenerationAttributes("(IDisposable)Target.Dispose()")}
+	{GetCodeGenerationAttributes("(System.IDisposable)Target.Dispose()")}
 	void System.IDisposable.Dispose()
 	{{
 	}}

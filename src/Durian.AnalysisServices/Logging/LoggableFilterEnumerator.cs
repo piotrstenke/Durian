@@ -29,10 +29,6 @@ namespace Durian.Analysis.Logging
 		/// <inheritdoc/>
 		public IMemberData? Current { readonly get; private set; }
 
-		readonly IMemberData IEnumerator<IMemberData>.Current => Current!;
-
-		readonly object IEnumerator.Current => Current!;
-
 		/// <summary>
 		/// <see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s.
 		/// </summary>
@@ -46,6 +42,9 @@ namespace Durian.Analysis.Logging
 		/// <inheritdoc cref="IFilterEnumerator{T}.Validator"/>
 		public readonly ISyntaxValidatorWithDiagnostics<T> Validator { get; }
 
+		readonly IMemberData IEnumerator<IMemberData>.Current => Current!;
+
+		readonly object IEnumerator.Current => Current!;
 		readonly ISyntaxValidator<T> IFilterEnumerator<T>.Validator => Validator;
 
 		/// <summary>
@@ -108,11 +107,6 @@ namespace Durian.Analysis.Logging
 			Current = default;
 		}
 
-		readonly void IDisposable.Dispose()
-		{
-			// Do nothing.
-		}
-
 		/// <inheritdoc/>
 		[MemberNotNullWhen(true, nameof(Current))]
 		public bool MoveNext(CancellationToken cancellationToken = default)
@@ -152,11 +146,6 @@ namespace Durian.Analysis.Logging
 			return false;
 		}
 
-		bool IEnumerator.MoveNext()
-		{
-			return MoveNext();
-		}
-
 		/// <inheritdoc cref="FilterEnumerator{T}.Reset"/>
 		public void Reset()
 		{
@@ -170,6 +159,16 @@ namespace Durian.Analysis.Logging
 		public readonly FilterEnumerator<T> ToBasicEnumerator()
 		{
 			return new FilterEnumerator<T>(Compilation, _nodes, Validator);
+		}
+
+		readonly void IDisposable.Dispose()
+		{
+			// Do nothing.
+		}
+
+		bool IEnumerator.MoveNext()
+		{
+			return MoveNext();
 		}
 	}
 }

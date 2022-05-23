@@ -53,6 +53,7 @@ namespace Durian.Analysis
 		}
 
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+
 		/// <inheritdoc/>
 		[Obsolete("Implementation of this method was removed - use Register(IDurianAnalysisContext, TCompilation) instead.")]
 		public sealed override void Register(IDurianAnalysisContext context)
