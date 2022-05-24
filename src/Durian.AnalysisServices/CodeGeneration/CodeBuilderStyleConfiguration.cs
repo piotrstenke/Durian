@@ -66,6 +66,11 @@ namespace Durian.Analysis.CodeGeneration
 		public EnumStyle EnumStyle { get; set; }
 
 		/// <summary>
+		/// Determines whether to apply an accessibility modifier even if it is default in the current context.
+		/// </summary>
+		public bool UseExplicitDefaultAccessibility { get; set; }
+
+		/// <summary>
 		/// Determines whether to use explicit <see langword="managed"/> keyword in function pointers.
 		/// </summary>
 		public bool UseExplicitManaged { get; set; }
@@ -105,6 +110,7 @@ namespace Durian.Analysis.CodeGeneration
 				RecordStyle = RecordStyle.PrimaryConstructor,
 				UseExplicitInternal = true,
 				UseExplicitPrivate = true,
+				UseExplicitDefaultAccessibility = true,
 			};
 		}
 	}

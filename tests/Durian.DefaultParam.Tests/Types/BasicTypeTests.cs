@@ -23,7 +23,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U, V>")}
 	class Test<T, U> where T : unmanaged where U : class
@@ -72,9 +72,11 @@ class Test<T> : Test<T, string>
 class Parent
 {{
 	class Test
+	{{
+	}}
 }}
 
-partial class Parent : Parent
+partial class Child : Parent
 {{
 	class Test<T, [{DefaultParamAttributeProvider.TypeName}(typeof(string)]U>
 	{{
@@ -83,9 +85,9 @@ partial class Parent : Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Child : Parent
 {{
-	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
+	{GetCodeGenerationAttributes("Child.Test<T, U>")}
 	class Test<T> : Test<T, string>
 	{{
 	}}
@@ -113,7 +115,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	class Test<T> : Test<T, string>
@@ -139,7 +141,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	class Test<T> : Test<T, string>
@@ -170,7 +172,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	class Test<T> : Test<T, string>
@@ -196,7 +198,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -223,7 +225,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	public class Test : Test<string>
@@ -254,7 +256,7 @@ partial class Parent
 			string expected =
 @$"using System;
 
-partial class Parent
+internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	[CLSCompliant(true)]
@@ -311,7 +313,7 @@ partial interface ITest<in TType, out TName>
 }}
 ";
 			string expected =
-$@"partial interface ITest<in TType, out TName>
+$@"internal partial interface ITest<in TType, out TName>
 {{
 	{GetCodeGenerationAttributes("ITest<TType, TName>.Test<T>")}
 	class Test : Test<string>
@@ -341,7 +343,7 @@ partial class Parent<TNumber> where TNumber : class
 ";
 
 			string expected =
-@$"partial class Parent<TNumber>
+@$"internal partial class Parent<TNumber> where TNumber : class
 {{
 	{GetCodeGenerationAttributes("Parent<TNumber>.Test<T>")}
 	class Test
@@ -371,7 +373,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U, V>")}
 	class Test<T, U> where T : unmanaged where U : class
@@ -407,7 +409,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -450,7 +452,7 @@ partial class Parent
 using System.Collections;
 using System.Collections.Generic;
 
-partial class Parent
+internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	class Test<T> where T : IEnumerable<IEnumerable>
@@ -485,7 +487,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -529,7 +531,7 @@ partial class Parent
 			string expected =
 @$"using System.Collections.Generic;
 
-partial class Parent
+internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	public class Test
@@ -562,7 +564,7 @@ partial class Parent
 			string expected =
 @$"using System.Collections;
 
-partial class Parent
+internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	class Test<T> where T : IEnumerable
@@ -598,7 +600,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	public class Test
@@ -632,7 +634,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	public class Test
@@ -662,7 +664,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	public class Test
@@ -694,7 +696,7 @@ partial class Parent
 			string expected =
 @$"using System;
 
-partial class Parent
+internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	public class Test
@@ -726,7 +728,7 @@ partial class Parent
 			string expected =
 @$"using System;
 
-partial class Parent
+internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	public class Test
@@ -756,7 +758,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	public class Test
@@ -797,7 +799,7 @@ partial class Parent
 {{
 	public partial interface Parent
 	{{
-		public partial struct Child
+		partial struct Child
 		{{
 			public partial class Parent
 			{{
@@ -840,7 +842,7 @@ partial class Parent
 using System.Collections.Generic;
 using System.Numerics;
 
-partial class Parent
+internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test
@@ -890,7 +892,7 @@ partial class Parent<TNumber>
 ";
 
 			string expected =
-@$"partial class Parent<TNumber>
+@$"internal partial class Parent<TNumber>
 {{
 	{GetCodeGenerationAttributes("Parent<TNumber>.Test<T>")}
 	class Test : Test<string>
@@ -916,7 +918,7 @@ partial class Parent<TNumber> where TNumber : class
 ";
 
 			string expected =
-@$"partial class Parent<TNumber>
+@$"internal partial class Parent<TNumber> where TNumber : class
 {{
 	{GetCodeGenerationAttributes("Parent<TNumber>.Test<T>")}
 	class Test : Test<string>

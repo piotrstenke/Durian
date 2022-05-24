@@ -131,7 +131,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc/>
 		protected internal override void BeforeExecution(DefaultParamPassContext context)
 		{
-			context.Rewriter.ParentCompilation = (DefaultParamCompilationData)context.TargetCompilation;
+			context.Rewriter.ParentCompilation = context.TargetCompilation;
 			base.BeforeExecution(context);
 		}
 

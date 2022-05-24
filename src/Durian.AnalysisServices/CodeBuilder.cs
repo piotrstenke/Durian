@@ -553,6 +553,7 @@ namespace Durian.Analysis
 			if (variance.GetText() is string value)
 			{
 				TextBuilder.Append(value);
+				TextBuilder.Append(' ');
 			}
 
 			return this;

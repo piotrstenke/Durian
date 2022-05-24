@@ -31,7 +31,7 @@ partial class Parent : Inner
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	new class Test<T> : Test<T, int>
@@ -62,7 +62,7 @@ partial class Parent : Inner
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new class Test : Test<int>
@@ -97,7 +97,7 @@ partial class Parent : Inner
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new class Test : Test<int>
@@ -132,7 +132,7 @@ partial class Parent : Inner
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new class Test : Test<int>
@@ -171,7 +171,7 @@ partial class Parent : Inner
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U, V>")}
 	new class Test<T, U> : Test<T, U, int>
@@ -206,7 +206,7 @@ partial class Parent : Inner
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	new class Test<T> : Test<T, int>
@@ -241,7 +241,7 @@ partial class Parent : Inner
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new class Test : Test<int>
@@ -275,7 +275,7 @@ partial interface IChild : IParent
 }}
 ";
 			string expected =
-$@"partial interface IChild
+$@"internal partial interface IChild : IParent
 {{
 	{GetCodeGenerationAttributes("IChild.Test<T>")}
 	new class Test : Test<string>
@@ -310,7 +310,7 @@ partial class Parent : Inner
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new ref struct Test
@@ -560,7 +560,7 @@ partial class Parent : Inner
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>

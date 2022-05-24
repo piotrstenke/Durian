@@ -19,7 +19,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U, V>")}
 	delegate void Del<T, U>() where T : unmanaged where U : class;
@@ -67,7 +67,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U>")}
 	delegate void Del<T>(string value);
@@ -91,7 +91,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U>")}
 	delegate void Del<T>(string value);
@@ -113,7 +113,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U>")}
 	delegate void Del<T>(T value);
@@ -138,7 +138,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U>")}
 	delegate void Del<T>(T value);
@@ -160,7 +160,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	delegate void Del(int value);
@@ -182,7 +182,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	public delegate void Del(string value);
@@ -209,7 +209,7 @@ partial class Test
 			string expected =
 @$"using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	[CLSCompliant(true)]
@@ -254,7 +254,7 @@ partial interface ITest<in TType, out TName>
 }}
 ";
 			string expected =
-$@"partial interface ITest<in TType, out TName>
+$@"internal partial interface ITest<in TType, out TName>
 {{
 	{GetCodeGenerationAttributes("ITest<TType, TName>.Del<T>")}
 	delegate void Del();
@@ -276,7 +276,7 @@ partial class Test<TNumber> where TNumber : class
 ";
 
 			string expected =
-@$"partial class Test<TNumber>
+@$"internal partial class Test<TNumber> where TNumber : class
 {{
 	{GetCodeGenerationAttributes("Test<TNumber>.Del<T>")}
 	delegate TNumber Del(int value, TNumber number);
@@ -298,7 +298,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U, V>")}
 	delegate void Del<T, U>() where T : unmanaged where U : class;
@@ -326,7 +326,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	delegate void Del();
@@ -354,7 +354,7 @@ partial class Test
 @$"using System.Collections;
 using System.Collections.Generic;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U>")}
 	delegate void Del<T>(IEnumerable value) where T : IEnumerable<IEnumerable>;
@@ -378,7 +378,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	delegate void Del(int value);
@@ -417,7 +417,7 @@ partial class Test
 			string expected =
 @$"using System.Collections;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U>")}
 	delegate IEnumerable Del<T>(T value) where T : IEnumerable;
@@ -442,7 +442,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	public delegate void Del(string[] value);
@@ -466,7 +466,7 @@ partial class Test
 			string expected =
 @$"using System.Collections.Generic;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	public delegate void Del(List<int> value);
@@ -488,7 +488,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	public delegate void Del(object value);
@@ -512,7 +512,7 @@ partial class Test
 			string expected =
 @$"using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	public delegate void Del(Array value);
@@ -536,7 +536,7 @@ partial class Test
 			string expected =
 @$"using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	public delegate void Del(ValueType value);
@@ -558,7 +558,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	public delegate void Del(int value);
@@ -594,7 +594,7 @@ partial class Test
 {{
 	public partial interface Parent
 	{{
-		public partial struct Child
+		partial struct Child
 		{{
 			public partial class Test
 			{{
@@ -639,7 +639,7 @@ partial class Test<TNumber>
 ";
 
 			string expected =
-@$"partial class Test<TNumber>
+@$"internal partial class Test<TNumber>
 {{
 	{GetCodeGenerationAttributes("Test<TNumber>.Del<T>")}
 	delegate void Del(string value);
@@ -661,7 +661,7 @@ partial class Test<TNumber> where TNumber : class
 ";
 
 			string expected =
-@$"partial class Test<TNumber>
+@$"internal partial class Test<TNumber> where TNumber : class
 {{
 	{GetCodeGenerationAttributes("Test<TNumber>.Del<T>")}
 	delegate void Del(string value);
@@ -708,7 +708,7 @@ partial class Test
 			string expected =
 @$"using System.Numerics;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	delegate void Del(BigInteger integer);

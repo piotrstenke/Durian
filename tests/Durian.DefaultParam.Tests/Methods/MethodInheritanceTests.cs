@@ -124,7 +124,7 @@ partial abstract class Test : Parent
 ";
 
 			string expected =
-$@"partial abstract class Test
+$@"internal abstract partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	public abstract override void Method();
@@ -155,7 +155,7 @@ partial class Child : Parent
 ";
 
 			string expected =
-@$"partial class Child
+@$"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method<T>(T value)
@@ -195,7 +195,7 @@ partial class Child : Parent
 ";
 
 			string expected =
-@$"partial class Child
+@$"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method<T>(T value)
@@ -234,7 +234,7 @@ partial class Child : Parent
 }}
 ";
 			string expected =
-@$"partial class Child
+@$"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
 	public new void Method(int value)
@@ -268,7 +268,7 @@ partial class Test : Parent
 }}";
 
 			string expected =
-$@"partial class Test
+$@"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	public void Method()
@@ -301,7 +301,7 @@ partial class Child : Parent
 }}
 ";
 			string expected =
-$@"partial class Child
+$@"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
 	public override void Method(int value)
@@ -345,7 +345,7 @@ partial class Child : Parent
 ";
 
 			string expected =
-$@"partial class Child
+$@"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
 	public override void Method(int value)
@@ -383,7 +383,7 @@ partial class Child : Parent
 ";
 
 			string expected =
-$@"partial class Child
+$@"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
 	public override void Method<T>(T value)

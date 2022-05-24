@@ -21,7 +21,31 @@ namespace Durian.Analysis
 		/// <param name="symbol"><see cref="ISymbol"/> to write the accessibility modifier of.</param>
 		public CodeBuilder Accessibility(ISymbol symbol)
 		{
+			return Accessibility(symbol, Style.UseExplicitDefaultAccessibility);
+		}
+
+		/// <summary>
+		/// Writes accessibility modifier of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to write the accessibility modifier of.</param>
+		/// <param name="explicitDefaultAccessibility">Determines whether to apply an accessibility modifier even if it is default in the current context.</param>
+		public CodeBuilder Accessibility(ISymbol symbol, bool explicitDefaultAccessibility)
+		{
+			InitBuilder();
+
 			Accessibility defaultAccessibility = symbol.GetDefaultAccessibility(false);
+
+			if(symbol.DeclaredAccessibility != defaultAccessibility && symbol.DeclaredAccessibility.GetText() is string keyword)
+			{
+				TextBuilder.Append(keyword);
+				TextBuilder.Append(' ');
+				return this;
+			}
+
+			if(!explicitDefaultAccessibility)
+			{
+				return this;
+			}
 
 			switch (defaultAccessibility)
 			{
@@ -29,7 +53,7 @@ namespace Durian.Analysis
 
 					if (Style.UseExplicitPrivate)
 					{
-						TextBuilder.Append("public ");
+						TextBuilder.Append("private ");
 					}
 
 					break;
@@ -57,23 +81,6 @@ namespace Durian.Analysis
 			}
 
 			return this;
-		}
-
-		/// <summary>
-		/// Writes accessibility modifier of the specified <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to write the accessibility modifier of.</param>
-		/// <param name="skipDefault">Determines whether to skip the default accessibility in the context of the current <paramref name="symbol"/>.</param>
-		public CodeBuilder Accessibility(ISymbol symbol, bool skipDefault)
-		{
-			InitBuilder();
-
-			if (skipDefault && symbol.DeclaredAccessibility == symbol.GetDefaultAccessibility())
-			{
-				return this;
-			}
-
-			return Accessibility(symbol.DeclaredAccessibility);
 		}
 
 		/// <summary>
@@ -2429,7 +2436,7 @@ namespace Durian.Analysis
 			for (int i = 1; i < typeArguments.Length; i++)
 			{
 				CommaSpace();
-				Type(typeArguments[0]);
+				Type(typeArguments[i]);
 			}
 
 			TextBuilder.Append('>');
@@ -2806,7 +2813,7 @@ namespace Durian.Analysis
 
 			if (symbol is IMethodSymbol m)
 			{
-				return GenericName(m, includeVariance, includeVariance);
+				return GenericName(m, parametersOrArguments, includeVariance);
 			}
 
 			SimpleName_Internal(symbol);
@@ -2819,11 +2826,11 @@ namespace Durian.Analysis
 
 			if (parametersOrArguments)
 			{
-				TypeParameterList(type.TypeParameters, includeVariance);
+				TypeArgumentList(type.TypeArguments);
 			}
 			else
 			{
-				TypeArgumentList(type.TypeArguments);
+				TypeParameterList(type.TypeParameters, includeVariance);
 			}
 
 			return this;
@@ -2835,11 +2842,11 @@ namespace Durian.Analysis
 
 			if (parametersOrArguments)
 			{
-				TypeParameterList(method.TypeParameters, includeVariance);
+				TypeArgumentList(method.TypeArguments);
 			}
 			else
 			{
-				TypeArgumentList(method.TypeArguments);
+				TypeParameterList(method.TypeParameters, includeVariance);
 			}
 
 			return this;

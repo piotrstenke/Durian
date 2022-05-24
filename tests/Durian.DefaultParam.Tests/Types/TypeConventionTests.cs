@@ -26,7 +26,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test
@@ -56,7 +56,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test
@@ -95,7 +95,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -134,7 +134,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -162,7 +162,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -191,7 +191,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -220,7 +220,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -249,7 +249,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -281,7 +281,7 @@ partial class Parent
 			string expected =
 @$"using System;
 
-partial class Parent
+internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	[Serializable]
@@ -310,7 +310,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	class Test<T> : Test<T, string> where T : struct
@@ -344,7 +344,7 @@ partial class Parent
 ";
 
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U, V>")}
 	class Test<T, U> : Test<T, U, string>
@@ -385,7 +385,7 @@ partial class Parent
 			string expected =
 @$"using System;
 
-partial class Parent
+internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -416,7 +416,7 @@ partial class Parent
 			string expected =
 @$"using System;
 
-partial class Parent
+internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	class Test<T> : Test<T, string> where T : struct
@@ -455,7 +455,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -492,7 +492,7 @@ partial class Parent
 }}
 ";
 			string expected =
-@$"partial class Parent
+@$"internal partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>

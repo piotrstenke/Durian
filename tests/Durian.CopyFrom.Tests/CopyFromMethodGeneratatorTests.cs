@@ -316,12 +316,10 @@ partial class Test
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
-
 partial class Test
 {{
 	[{CopyFromMethodAttributeProvider.TypeName}(""B"")]
 	partial void A();
-
 	[{CopyFromMethodAttributeProvider.TypeName}(""A"")]
 	partial void B();
 }}
@@ -334,15 +332,12 @@ partial class Test
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
-
 partial class Test
 {{
 	[{CopyFromMethodAttributeProvider.TypeName}(""B"")]
 	partial void A();
-
 	[{CopyFromMethodAttributeProvider.TypeName}(""C"")]
 	partial void B();
-
 	[{CopyFromMethodAttributeProvider.TypeName}(""A"")]
 	partial void C();
 }}

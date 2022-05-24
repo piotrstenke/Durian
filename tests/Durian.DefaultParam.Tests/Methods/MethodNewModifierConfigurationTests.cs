@@ -30,7 +30,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	new void Method()
@@ -66,7 +66,7 @@ partial class Test : Parent
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
@@ -102,7 +102,7 @@ partial class Test : Parent
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
@@ -142,7 +142,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>(V)")}
 	new void Method<T, U>(int value)
@@ -178,7 +178,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U>(U)")}
 	new void Method<T>(int value)
@@ -214,7 +214,7 @@ partial class Test : Parent
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
@@ -248,7 +248,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	new void Method()
@@ -284,7 +284,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
@@ -324,7 +324,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>(V)")}
 	new void Method<T, U>(int value)
@@ -366,7 +366,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>(U)")}
 	void Method<T, U>(U value)
@@ -580,7 +580,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()

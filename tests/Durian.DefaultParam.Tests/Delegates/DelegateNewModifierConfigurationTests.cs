@@ -29,7 +29,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U>")}
 	new delegate void Del<T>(int value);
@@ -56,7 +56,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	new delegate void Del(int value);
@@ -85,7 +85,7 @@ partial class Test : Parent
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	new delegate void Del(int value);
@@ -114,7 +114,7 @@ partial class Test : Parent
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	new delegate void Del(int value);
@@ -145,7 +145,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U, V>")}
 	new delegate void Del<T, U>(int value);
@@ -174,7 +174,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Del<T, U>")}
 	new delegate void Del<T>(int value);
@@ -203,7 +203,7 @@ partial class Test : Parent
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	new delegate void Del(int value);
@@ -231,7 +231,7 @@ partial interface IChild : IParent
 }}
 ";
 			string expected =
-$@"partial interface IChild
+$@"internal partial interface IChild : IParent
 {{
 	{GetCodeGenerationAttributes("IChild.Del<T>")}
 	new delegate void Del();
@@ -449,7 +449,7 @@ partial class Test : Parent
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Del<T>")}
 	delegate void Del();

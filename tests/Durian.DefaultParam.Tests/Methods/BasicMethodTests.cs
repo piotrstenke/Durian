@@ -23,7 +23,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>()")}
 	void Method<T, U>() where T : unmanaged where U : class
@@ -52,7 +52,7 @@ partial abstract class Test
 }}
 ";
 			string expected =
-@$"partial abstract class Test
+@$"internal abstract partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	abstract void Method();
@@ -79,7 +79,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U>(T)")}
 	void Method<T>(T value)
@@ -115,7 +115,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U>(T)")}
 	void Method<T>(T value)
@@ -142,7 +142,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	void Method(int value)
@@ -169,7 +169,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(string value)
@@ -201,7 +201,7 @@ partial class Test
 			string expected =
 @$"using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	[CLSCompliant(true)]
@@ -233,7 +233,7 @@ partial class Test<TNumber> where TNumber : class
 ";
 
 			string expected =
-@$"partial class Test<TNumber>
+@$"internal partial class Test<TNumber> where TNumber : class
 {{
 	{GetCodeGenerationAttributes("Test<TNumber>.Method<T>(T, TNumber)")}
 	TNumber Method(int value, TNumber number)
@@ -262,7 +262,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>()")}
 	void Method<T, U>() where T : unmanaged where U : class
@@ -298,7 +298,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -339,7 +339,7 @@ partial class Test
 using System.Collections;
 using System.Collections.Generic;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U>(U)")}
 	void Method<T>(IEnumerable value) where T : IEnumerable<IEnumerable>
@@ -371,7 +371,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	void Method(int value)
@@ -419,7 +419,7 @@ partial class Test
 			string expected =
 @$"using System.Collections;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U>(T)")}
 	void Method<T>(T value) where T : IEnumerable
@@ -453,7 +453,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(string[] value)
@@ -481,7 +481,7 @@ partial static class Test
 ";
 
 			string expected =
-@$"partial static class Test
+@$"internal static partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(this int value)
@@ -513,7 +513,7 @@ partial class Test
 			string expected =
 @$"using System.Collections.Generic;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	public static void Method()
@@ -545,7 +545,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	public static void Method()
@@ -573,7 +573,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(object value)
@@ -603,7 +603,7 @@ partial class Test
 			string expected =
 @$"using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(Array value)
@@ -633,7 +633,7 @@ partial class Test
 			string expected =
 @$"using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(ValueType value)
@@ -661,7 +661,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(int value)
@@ -702,7 +702,7 @@ partial class Test
 {{
 	public partial interface Parent
 	{{
-		public partial struct Child
+		partial struct Child
 		{{
 			public partial class Test
 			{{
@@ -734,7 +734,7 @@ partial class Test<TNumber>
 ";
 
 			string expected =
-@$"partial class Test<TNumber>
+@$"internal partial class Test<TNumber>
 {{
 	{GetCodeGenerationAttributes("Test<TNumber>.Method<T>(T)")}
 	void Method(string value)
@@ -761,7 +761,7 @@ partial class Test<TNumber> where TNumber : class
 ";
 
 			string expected =
-@$"partial class Test<TNumber>
+@$"internal partial class Test<TNumber> where TNumber : class
 {{
 	{GetCodeGenerationAttributes("Test<TNumber>.Method<T>(T)")}
 	void Method(string value)
@@ -800,7 +800,7 @@ partial class Test
 using System.Collections;
 using System.Numerics;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()

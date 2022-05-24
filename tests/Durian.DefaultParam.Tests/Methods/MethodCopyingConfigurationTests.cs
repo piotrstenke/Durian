@@ -25,7 +25,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	int Method()
@@ -56,7 +56,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(int, float, T)")}
 	int Method(int a, float b, int value)
@@ -85,7 +85,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -114,7 +114,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -144,7 +144,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -174,7 +174,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -204,7 +204,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -234,7 +234,7 @@ partial static class Test
 ";
 
 			string expected =
-@$"partial static class Test
+@$"internal static partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	public static void Method(this int value)
@@ -264,7 +264,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -294,7 +294,7 @@ partial class Test
 }}
 ";
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -320,7 +320,7 @@ abstract partial class Test
 }}
 ";
 			string expected =
-$@"abstract partial class Test
+$@"internal abstract partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	public abstract void Method();
@@ -347,7 +347,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(int, float, T)")}
 	void Method(int a, float b, int value)
@@ -376,7 +376,7 @@ partial class Test
 ";
 
 			string expected =
-@$"partial class Test
+@$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U>(T, U)")}
 	void Method<T>(T obj1, string obj2)
