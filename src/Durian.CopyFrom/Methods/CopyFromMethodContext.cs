@@ -22,8 +22,13 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// <inheritdoc cref="ISyntaxValidationContext.TargetCompilation"/>
 		public CopyFromCompilationData Compilation { get; }
 
+		/// <summary>
+		/// <see cref="Node"/> as a <see cref="BaseMethodDeclarationSyntax"/>.
+		/// </summary>
+		public BaseMethodDeclarationSyntax? AsMethod => Node as BaseMethodDeclarationSyntax;
+
 		/// <inheritdoc cref="ISyntaxValidationContext.Node"/>
-		public MethodDeclarationSyntax? Node { get; }
+		public CSharpSyntaxNode? Node { get; }
 
 		/// <inheritdoc/>
 		public SemanticModel SemanticModel { get; }
@@ -41,13 +46,13 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// <param name="compilation">Parent <see cref="CopyFromCompilationData"/> of the target <paramref name="node"/>.</param>
 		/// <param name="semanticModel"><see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <paramref name="node"/>.</param>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> that is represented by the <paramref name="node"/>.</param>
-		/// <param name="node"><see cref="MethodDeclarationSyntax"/> to validate.</param>
+		/// <param name="node"><see cref="CSharpSyntaxNode"/> to validate.</param>
 		/// <param name="cancellationToken"><see cref="System.Threading.CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public CopyFromMethodContext(
 			CopyFromCompilationData compilation,
 			SemanticModel semanticModel,
 			IMethodSymbol symbol,
-			MethodDeclarationSyntax? node = default,
+			CSharpSyntaxNode? node = default,
 			CancellationToken cancellationToken = default
 		)
 		{
@@ -70,7 +75,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 				return true;
 			}
 
-			if (Symbol.TryGetSyntax(out MethodDeclarationSyntax? node, CancellationToken))
+			if (Symbol.TryGetSyntax(out CSharpSyntaxNode? node, CancellationToken))
 			{
 				context = new(Compilation, SemanticModel, Symbol, node, CancellationToken);
 				return true;

@@ -63,6 +63,7 @@ namespace Durian.Analysis.CopyFrom
 			return
 @$"using System;
 using System.Diagnostics;
+using Durian.Configuration;
 
 #nullable enable
 

@@ -27,6 +27,31 @@ namespace Durian.Analysis.CopyFrom.Methods
 		}
 
 		/// <inheritdoc/>
+		public override bool TryGetContext(in ValidationDataContext validationContext, [NotNullWhen(true)] out CopyFromMethodContext context)
+		{
+			SemanticModel semanticModel = validationContext.TargetCompilation.Compilation.GetSemanticModel(validationContext.Node.SyntaxTree);
+
+			ISymbol? symbol;
+
+			if(validationContext.Node is LambdaExpressionSyntax lambda)
+			{
+				symbol = semanticModel.GetSymbolInfo(lambda, validationContext.CancellationToken).Symbol;
+			}
+			else
+			{
+				symbol = semanticModel.GetDeclaredSymbol(validationContext.Node, validationContext.CancellationToken);
+			}
+
+			if(symbol is null)
+			{
+				context = default;
+				return false;
+			}
+
+			return TryCreateContext(validationContext.ToSyntaxContext(semanticModel, symbol), out context);
+		}
+
+		/// <inheritdoc/>
 		public override bool ValidateAndCreate(in CopyFromMethodContext context, out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
 		{
 			CopyFromMethodContext newContext = context;
@@ -62,7 +87,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 			}
 
 			data = new CopyFromMethodData(
-				newContext.Node!,
+				newContext.AsMethod!,
 				newContext.Compilation,
 				newContext.Symbol,
 				newContext.SemanticModel,
@@ -115,7 +140,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 			}
 
 			data = new CopyFromMethodData(
-				newContext.Node!,
+				newContext.AsMethod!,
 				newContext.Compilation,
 				newContext.Symbol,
 				newContext.SemanticModel,
@@ -148,14 +173,14 @@ namespace Durian.Analysis.CopyFrom.Methods
 		protected override bool TryCreateContext(in SyntaxValidationContext validationContext, [NotNullWhen(true)] out CopyFromMethodContext context)
 		{
 			if (validationContext.TargetCompilation is not CopyFromCompilationData compilation ||
-				validationContext.Symbol is not IMethodSymbol symbol ||
-				validationContext.Node is not MethodDeclarationSyntax node)
+				validationContext.Symbol is not IMethodSymbol symbol
+			)
 			{
 				context = default;
 				return false;
 			}
 
-			context = new(compilation, validationContext.SemanticModel, symbol, node, validationContext.CancellationToken);
+			context = new(compilation, validationContext.SemanticModel, symbol, validationContext.Node, validationContext.CancellationToken);
 			return true;
 		}
 	}

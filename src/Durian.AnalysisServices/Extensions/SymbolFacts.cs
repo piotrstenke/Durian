@@ -1334,7 +1334,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
 		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
-		public static bool IsPartial(this IMethodSymbol method, MethodDeclarationSyntax declaration)
+		public static bool IsPartial(this IMethodSymbol method, BaseMethodDeclarationSyntax declaration)
 		{
 			return IsPartial_Internal(method, () => declaration);
 		}
@@ -1377,7 +1377,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
 		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
-		public static bool IsPartialContext(this IMethodSymbol method, MethodDeclarationSyntax declaration)
+		public static bool IsPartialContext(this IMethodSymbol method, BaseMethodDeclarationSyntax declaration)
 		{
 			return method.IsPartial(declaration) && method.GetContainingTypes().All(t => t.IsPartial());
 		}
@@ -2147,7 +2147,7 @@ namespace Durian.Analysis.Extensions
 				.Any(n => n is YieldStatementSyntax);
 		}
 
-		private static bool IsPartial_Internal(IMethodSymbol method, Func<MethodDeclarationSyntax?>? declarationRetriever)
+		private static bool IsPartial_Internal(IMethodSymbol method, Func<BaseMethodDeclarationSyntax?>? declarationRetriever)
 		{
 			if (method.MethodKind != MethodKind.Ordinary)
 			{
@@ -2177,7 +2177,7 @@ namespace Durian.Analysis.Extensions
 				return false;
 			}
 
-			if (declarationRetriever is not null && declarationRetriever() is MethodDeclarationSyntax declaration)
+			if (declarationRetriever is not null && declarationRetriever() is BaseMethodDeclarationSyntax declaration)
 			{
 				return declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
 			}

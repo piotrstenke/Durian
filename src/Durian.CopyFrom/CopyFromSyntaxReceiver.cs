@@ -15,9 +15,9 @@ namespace Durian.Analysis.CopyFrom
 	public sealed class CopyFromSyntaxReceiver : IDurianSyntaxReceiver
 	{
 		/// <summary>
-		/// <see cref="MethodDeclarationSyntax"/>es that potentially have the <c>Durian.CopyFromAttribute</c> applied.
+		/// <see cref="BaseMethodDeclarationSyntax"/>es that potentially have the <c>Durian.CopyFromAttribute</c> applied.
 		/// </summary>
-		public List<MethodDeclarationSyntax> CandidateMethods { get; }
+		public List<CSharpSyntaxNode> CandidateMethods { get; }
 
 		/// <summary>
 		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <c>Durian.CopyFromAttribute</c> applied.
@@ -42,19 +42,62 @@ namespace Durian.Analysis.CopyFrom
 		/// <inheritdoc/>
 		public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
 		{
-			if (syntaxNode is MethodDeclarationSyntax method)
+			switch (syntaxNode)
 			{
-				if (method.AttributeLists.Any())
-				{
-					CandidateMethods.Add(method);
-				}
+				case BaseMethodDeclarationSyntax method:
+
+					if(method is ConstructorDeclarationSyntax)
+					{
+						return;
+					}
+
+					if (HasValidAttributeList(method.AttributeLists, SyntaxKind.MethodKeyword))
+					{
+						CandidateMethods.Add(method);
+					}
+
+					break;
+
+				case AccessorDeclarationSyntax accessor:
+
+					if(HasValidAttributeList(accessor.AttributeLists, SyntaxKind.MethodKeyword))
+					{
+						CandidateMethods.Add(accessor);
+					}
+
+					break;
+
+				case LocalFunctionStatementSyntax localFunction:
+
+					if (HasValidAttributeList(localFunction.AttributeLists, SyntaxKind.MethodKeyword))
+					{
+						CandidateMethods.Add(localFunction);
+					}
+
+					break;
+
+				case LambdaExpressionSyntax lambda:
+
+					if (HasValidAttributeList(lambda.AttributeLists, SyntaxKind.MethodKeyword))
+					{
+						CandidateMethods.Add(lambda);
+					}
+
+					break;
+
+				case TypeDeclarationSyntax type:
+
+					if (HasValidAttributeList(type.AttributeLists, SyntaxKind.TypeKeyword))
+					{
+						CandidateTypes.Add(type);
+					}
+
+					break;
 			}
-			else if (syntaxNode is TypeDeclarationSyntax type)
+
+			static bool HasValidAttributeList(SyntaxList<AttributeListSyntax> list, SyntaxKind keyword)
 			{
-				if (type.AttributeLists.Any())
-				{
-					CandidateTypes.Add(type);
-				}
+				return list.IndexOf(attr => attr.Target is null || attr.Target.Identifier.IsKind(keyword)) != -1;
 			}
 		}
 

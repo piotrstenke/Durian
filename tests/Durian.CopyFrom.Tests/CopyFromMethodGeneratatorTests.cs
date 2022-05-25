@@ -1222,7 +1222,7 @@ $@"using {DurianStrings.MainNamespace};
 partial record Test
 {{
 	[{CopyFromMethodAttributeProvider.TypeName}(""Equals(Test)"")]
-	partial void Method();
+	public partial bool Method();
 }}
 ";
 			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
@@ -1395,10 +1395,10 @@ $@"using {DurianStrings.MainNamespace};
 using static System.Int32;
 using Ta = Target;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -1436,10 +1436,10 @@ class Target
 $@"using {DurianStrings.MainNamespace};
 using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -1470,10 +1470,10 @@ partial class Test
 $@"using {DurianStrings.MainNamespace};
 using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -1503,11 +1503,11 @@ partial class Test
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	/// <inheritdoc cref=""Target""/>
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -1538,13 +1538,13 @@ partial class Test
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	/// <summary>
 	/// Hello there
 	/// </summary>
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -1573,11 +1573,11 @@ partial class Test
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
 	[System.Diagnostics.Conditional(""RELEASE"")]
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -1605,11 +1605,11 @@ partial class Test
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
 	[System.Diagnostics.Conditional(""DEBUG"")]
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -1643,10 +1643,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -1678,10 +1678,10 @@ class Other
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Other.Method()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -1708,10 +1708,10 @@ partial class Test
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -1740,10 +1740,10 @@ partial class Test
 			string expected =
 $@"using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -1776,7 +1776,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method()
@@ -1816,10 +1816,10 @@ partial class Test
 			string expected1 =
 $@"using {DurianStrings.MainNamespace}
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target1()")}
-	partial void Method1()
+	private partial void Method1()
 	{{
 		string a = string.Empty;
 	}}
@@ -1828,10 +1828,10 @@ partial class Test
 			string expected2 =
 $@"using {DurianStrings.MainNamespace}
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target2()")}
-	partial void Method2()
+	private partial void Method2()
 	{{
 		string b = string.Empty;
 	}}
@@ -1864,10 +1864,10 @@ partial class Test
 			string expected1 =
 $@"using {DurianStrings.MainNamespace}
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method1()
+	private partial void Method1()
 	{{
 		string a = string.Empty;
 	}}
@@ -1876,10 +1876,10 @@ partial class Test
 			string expected2 =
 $@"using {DurianStrings.MainNamespace}
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method2()
+	private partial void Method2()
 	{{
 		string a = string.Empty;
 	}}
@@ -1910,7 +1910,7 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target(in string, ref string, out string)")}
 	private partial void Method(out string c)
@@ -1942,7 +1942,7 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial string Method()
@@ -1972,13 +1972,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Property")}
-	private partial string Method()
-	{{
-		return _property;
-	}}
+	private partial string Method() => _property;
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
@@ -2006,13 +2003,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Property")}
-	private partial string Method()
-	{{
-		return _property;
-	}}
+	private partial string Method() => _property;
 }}
 ";
 
@@ -2041,13 +2035,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Property")}
-	private partial string Method()
-	{{
-		return _property;
-	}}
+	private partial string Method() => _property;
 }}
 ";
 
@@ -2075,13 +2066,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.this[int]")}
-	private partial string Method()
-	{{
-		return _property;
-	}}
+	private partial string Method() => _property;
 }}
 ";
 
@@ -2110,13 +2098,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.this[int]")}
-	private partial string Method()
-	{{
-		return _property;
-	}}
+	private partial string Method() => _property;
 }}
 ";
 
@@ -2145,13 +2130,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.this[int]")}
-	private partial string Method()
-	{{
-		return _property;
-	}}
+	private partial string Method() => _property;
 }}
 ";
 
@@ -2176,10 +2158,10 @@ partial class Test
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target<T>()")}
-	partial void Method<T>()
+	private partial void Method<T>()
 	{{
 		string a = string.Empty;
 	}}
@@ -2215,10 +2197,10 @@ partial class Test
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -2247,7 +2229,7 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Property")}
 	private partial void Method<T>()
@@ -2284,7 +2266,7 @@ class T
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method<T>() where T : struct, System.IDisposable
@@ -2319,13 +2301,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Property")}
-	partial void Method()
-	{{
-		_property = value;
-	}}
+	private partial void Method() => _property = value;
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
@@ -2352,13 +2331,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.this[int]")}
-	partial void Method()
-	{{
-		_property = value;
-	}}
+	private partial void Method() => _property = value;
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
@@ -2385,13 +2361,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.this[int]")}
-	partial void Method()
-	{{
-		_property = value;
-	}}
+	private partial void Method() => _property = value;
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
@@ -2419,13 +2392,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.this[int]")}
-	partial void Method()
-	{{
-		_property = value;
-	}}
+	private partial void Method() => _property = value;
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
@@ -2452,13 +2422,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Property")}
-	partial void Method()
-	{{
-		_property = value;
-	}}
+	private partial void Method() => _property = value;
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
@@ -2485,13 +2452,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Property")}
-	partial void Method()
-	{{
-		_property = value;
-	}}
+	private partial void Method() => _property = value;
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected));
@@ -2517,10 +2481,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -2551,10 +2515,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -2580,10 +2544,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	private partial string Method()
+	private private partial string Method()
 	{{
 		return string.Empty;
 	}}
@@ -2612,10 +2576,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Test()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -2644,10 +2608,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Test(string)")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string b = string.Empty;
 	}}
@@ -2676,10 +2640,10 @@ partial interface ITest
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("ITest.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string b = string.Empty;
 	}}
@@ -2709,10 +2673,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Event")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string b = string.Empty;
 	}}
@@ -2742,10 +2706,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Event")}
-	partial void Method()
+	private partial void Method()
 	{{
 		int a = default;
 	}}
@@ -2774,7 +2738,7 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.explicit operator int(Test t)")}
 	private partial int Method()
@@ -2806,10 +2770,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target<T>()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		int t = default;
 	}}
@@ -2839,10 +2803,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target<T, U>()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		T t = default;
 		U u = default;
@@ -2873,10 +2837,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target<T, U>()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		int t = default;
 		U u = default;
@@ -2907,10 +2871,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target<T, U>(T, U)")}
-	partial void Method()
+	private partial void Method()
 	{{
 		int t = default;
 		U u = default;
@@ -2941,10 +2905,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target<T, U>(T, U)")}
-	partial void Method()
+	private partial void Method()
 	{{
 		int t = default;
 		U u = default;
@@ -2976,10 +2940,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target<T>(out T)")}
-	partial void Method()
+	private partial void Method()
 	{{
 		a = default;
 	}}
@@ -3008,7 +2972,7 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target<T>(out T)")}
 	private partial void Method(out int a)
@@ -3040,7 +3004,7 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.implicit operator int(Test)")}
 	private partial int Method()
@@ -3085,10 +3049,10 @@ using A = N2.Other;
 
 namespace N1
 {{
-	partial class Test
+	internal partial class Test
 	{{
 		{GetCodeGenerationAttributes("N2.Other.Method", 2)}
-		partial void Method()
+		private partial void Method()
 		{{
 			string a = string.Empty;
 		}}
@@ -3129,10 +3093,10 @@ $@"using {DurianStrings.MainNamespace};
 
 namespace N1
 {{
-	partial class Test
+	internal partial class Test
 	{{
 		{GetCodeGenerationAttributes("N2.Other.Method", 2)}
-		partial void Method()
+		private partial void Method()
 		{{
 			string a = string.Empty;
 		}}
@@ -3165,10 +3129,10 @@ class Parent
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Parent.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -3197,7 +3161,7 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.int operator +(Test, Test)")}
 	private partial int Method()
@@ -3234,10 +3198,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target(int)")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -3271,10 +3235,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target(int, string)")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string c = string.Empty;
 	}}
@@ -3303,10 +3267,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -3340,10 +3304,10 @@ class Parent
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -3353,7 +3317,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void Sucess_When_HasArglist()
+		public void Success_When_HasArglist()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -3372,7 +3336,7 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target(__arglist)")}
 	private partial void Method(__arglist)
@@ -3404,7 +3368,7 @@ static partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target(__arglist)")}
 	private partial void Method(__arglist)
@@ -3437,10 +3401,10 @@ partial class Test
 $@"using {DurianStrings.MainNamespace};
 using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	void Method()
+	private void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -3472,10 +3436,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -3507,10 +3471,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -3540,10 +3504,10 @@ partial class Test
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target<T>()")}
-	partial void Method<T>()
+	private partial void Method<T>()
 	{{
 		string a = string.Empty;
 	}}
@@ -3579,10 +3543,10 @@ partial class Test
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -3614,10 +3578,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}
@@ -3649,10 +3613,10 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
-	partial void Method()
+	private partial void Method()
 	{{
 		string a = string.Empty;
 	}}

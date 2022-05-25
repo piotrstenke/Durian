@@ -95,7 +95,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			AttributeData? copyFrom = GetAttribute(context.Symbol, context.Compilation, out attributes);
 
-			if (copyFrom is null)
+			if (copyFrom is null || !EnsureIsValidMethodType(ref context, diagnosticReceiver))
 			{
 				targetMethod = default;
 				dependencies = default;
@@ -104,7 +104,7 @@ namespace Durian.Analysis.CopyFrom
 
 			List<IMethodSymbol> deps = new();
 
-			bool isValid = ValidateMarkedMethod(ref context, diagnosticReceiver);
+			bool isValid = EnsureIsInPartialContext(ref context, diagnosticReceiver);
 			isValid &= ValidateTargetMethod(in context, copyFrom, deps, out targetMethod, diagnosticReceiver);
 
 			dependencies = isValid ? deps : default;
@@ -186,7 +186,7 @@ namespace Durian.Analysis.CopyFrom
 				return false;
 			}
 
-			return context.Symbol.IsPartialContext(context.Node!);
+			return context.Symbol.IsPartialContext(context.AsMethod!);
 		}
 
 		private static bool EnsureIsInPartialContext(ref CopyFromMethodContext context, IDiagnosticReceiver diagnosticReceiver)
@@ -215,7 +215,7 @@ namespace Durian.Analysis.CopyFrom
 						return false;
 					}
 
-					if (!context.Symbol.IsPartial(context.Node!))
+					if (!context.Symbol.IsPartial(context.AsMethod!))
 					{
 						diagnosticReceiver.ReportDiagnostic(DUR0202_MemberMustBePartial, context.Symbol);
 					}
@@ -244,15 +244,14 @@ namespace Durian.Analysis.CopyFrom
 			return success;
 		}
 
-		private static bool EnsureIsValidMethodType(IMethodSymbol method, [NotNullWhen(false)] out DiagnosticDescriptor? diagnostic)
+		private static bool EnsureIsValidMethodType(ref CopyFromMethodContext context, IDiagnosticReceiver diagnosticReceiver)
 		{
-			if (!IsValidMethodType(method))
+			if (!IsValidMethodType(context.Symbol))
 			{
-				diagnostic = DUR0210_InvalidMethodKind;
+				diagnosticReceiver.ReportDiagnostic(DUR0210_InvalidMethodKind, context.Symbol);
 				return false;
 			}
 
-			diagnostic = null;
 			return true;
 		}
 
@@ -273,7 +272,7 @@ namespace Durian.Analysis.CopyFrom
 						return null;
 					}
 
-					if (IsValidTarget(method) && !method.HasImplementation())
+					if (!IsValidTarget(method))
 					{
 						diagnostic = DUR0209_CannotCopyFromMethodWithoutImplementation;
 						return null;
@@ -522,14 +521,24 @@ namespace Durian.Analysis.CopyFrom
 		{
 			AttributeData? attribute = target.GetAttribute(context.Compilation.CopyFromMethodAttribute!);
 
-			if (attribute is null || GetTargetMethod(in context, attribute, out _, out _) is not IMethodSymbol method)
+			if(attribute is null)
 			{
 				return false;
+			}
+
+			if (GetTargetMethod(in context, attribute, out DiagnosticDescriptor? diagnostic, out _) is not IMethodSymbol method)
+			{
+				return diagnostic == DUR0207_MemberCannotCopyFromItselfOrItsParent;
 			}
 
 			if (SymbolEqualityComparer.Default.Equals(context.Symbol, method) || IsCircularDependency(in context, method, dependencies))
 			{
 				return true;
+			}
+
+			if (!method.HasImplementation())
+			{
+				return false;
 			}
 
 			dependencies.Add(method);
@@ -657,25 +666,6 @@ namespace Durian.Analysis.CopyFrom
 			return false;
 		}
 
-		private static bool ValidateMarkedMethod(ref CopyFromMethodContext context, IDiagnosticReceiver diagnosticReceiver)
-		{
-			bool isValid = EnsureIsValidMethodType(context.Symbol, out DiagnosticDescriptor? diagnostic);
-
-			if (!isValid)
-			{
-				diagnosticReceiver.ReportDiagnostic(diagnostic, context.Symbol);
-
-				if (context.Symbol.MethodKind != MethodKind.Ordinary)
-				{
-					return false;
-				}
-			}
-
-			isValid &= EnsureIsInPartialContext(ref context, diagnosticReceiver);
-
-			return isValid;
-		}
-
 		private static bool ValidateMarkedMethod(ref CopyFromMethodContext context)
 		{
 			if (!IsValidMethodType(context.Symbol))
@@ -706,7 +696,7 @@ namespace Durian.Analysis.CopyFrom
 			)
 			{
 				AdditionalNodes additionalNodes = RetrieveNonStandardMethodConfig(attribute, context.Symbol);
-				string[]? usings = RetrieveUsings(attribute, context.Node!, additionalNodes);
+				string[]? usings = RetrieveUsings(attribute, context.AsMethod!, additionalNodes);
 
 				targetMethod = new(target, additionalNodes, usings);
 				return true;
@@ -757,6 +747,14 @@ namespace Durian.Analysis.CopyFrom
 				diagnosticReceiver.ReportDiagnostic(DUR0221_CircularDependency, location, context.Symbol);
 			}
 
+			if(dependencies.Count == 0 && !target.HasImplementation())
+			{
+				location ??= attribute.GetLocation();
+				diagnosticReceiver.ReportDiagnostic(DUR0209_CannotCopyFromMethodWithoutImplementation, location, context.Symbol, value);
+				targetMethod = default;
+				return false;
+			}
+
 			if (!HasValidTypeArguments(target, out List<ITypeSymbol>? invalidArguments))
 			{
 				isValid = false;
@@ -773,7 +771,7 @@ namespace Durian.Analysis.CopyFrom
 			}
 
 			AdditionalNodes additionalNodes = RetrieveNonStandardMethodConfig(attribute, context.Symbol, diagnosticReceiver);
-			string[]? usings = RetrieveUsings(attribute, context.Node!, additionalNodes, context.Symbol, diagnosticReceiver);
+			string[]? usings = RetrieveUsings(attribute, context.AsMethod!, additionalNodes, context.Symbol, diagnosticReceiver);
 
 			targetMethod = isValid ? new TargetMethodData(target, additionalNodes, usings) : default;
 			return isValid;

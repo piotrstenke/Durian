@@ -238,7 +238,8 @@ namespace Durian.Analysis.CopyFrom
 			SemanticModel semanticModel,
 			CopyFromPassContext context,
 			out ISymbol? symbol,
-			[NotNullWhen(true)] out List<(ISymbol original, MemberDeclarationSyntax generated)>? members)
+			[NotNullWhen(true)] out List<(ISymbol original, MemberDeclarationSyntax generated)>? members
+		)
 		{
 			if (member is not BaseFieldDeclarationSyntax field)
 			{
@@ -347,7 +348,7 @@ namespace Durian.Analysis.CopyFrom
 				{
 					WriteDeclarationLead(context.CodeBuilder, type, target.Usings);
 					context.CodeBuilder.Indent();
-					context.CodeBuilder.Declation($"partial {keyword} {type.Symbol.GetGenericName()}");
+					context.CodeBuilder.Declaration(type.Symbol);
 					semanticModel = GetCurrentSemanticModel(type, partial, ref semanticModelCache);
 					GenerateMembers(target, context, generateAction, members, semanticModel);
 				}
@@ -448,7 +449,7 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		private bool IncludeAdditionalNodes(
-									CopyFromTypeData type,
+			CopyFromTypeData type,
 			TargetTypeData target,
 			TypeDeclarationSyntax declaration,
 			CopyFromPassContext context,
@@ -519,7 +520,7 @@ namespace Durian.Analysis.CopyFrom
 			if (hasLead)
 			{
 				context.CodeBuilder.Indent();
-				context.CodeBuilder.Declation($"partial {keyword} {name}");
+				context.CodeBuilder.Declaration($"partial {keyword} {name}");
 			}
 
 			return hasLead;

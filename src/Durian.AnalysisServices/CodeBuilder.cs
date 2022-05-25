@@ -82,7 +82,6 @@ namespace Durian.Analysis
 		}
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
 		internal CodeBuilder(bool requireChildBuilder, StringBuilder? builder = default, CodeBuilderStyleConfiguration? style = default)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
@@ -226,7 +225,7 @@ namespace Durian.Analysis
 		/// Begins a member declaration using the specified raw text.
 		/// </summary>
 		/// <param name="member">Raw text to write.</param>
-		public CodeBuilder Declation(string member)
+		public CodeBuilder Declaration(string member)
 		{
 			InitBuilder();
 

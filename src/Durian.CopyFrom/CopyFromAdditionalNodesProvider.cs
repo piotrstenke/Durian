@@ -51,7 +51,7 @@ namespace Durian.Analysis.CopyFrom
 		/// <summary>
 		/// Namespace the provided type is located in.
 		/// </summary>
-		public const string Namespace = DurianStrings.MainNamespace;
+		public const string Namespace = DurianStrings.ConfigurationNamespace;
 
 		/// <summary>
 		/// Name of the 'None' field.

@@ -12,7 +12,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 	/// <summary>
 	/// <see cref="MethodData"/> that contains additional information needed by the <see cref="CopyFromGenerator"/>.
 	/// </summary>
-	public sealed class CopyFromMethodData : MethodData, ICopyFromMember
+	public sealed class CopyFromMethodData : MethodData<BaseMethodDeclarationSyntax>, ICopyFromMember
 	{
 		/// <summary>
 		/// <see cref="IMethodSymbol"/>s generation of this type depends on.
@@ -37,7 +37,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromMethodData"/> class.
 		/// </summary>
-		/// <param name="declaration"><see cref="MethodDeclarationSyntax"/> this <see cref="CopyFromMethodData"/> represents.</param>
+		/// <param name="declaration"><see cref="BaseMethodDeclarationSyntax"/> this <see cref="CopyFromMethodData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="CopyFromCompilationData"/> of this <see cref="CopyFromMethodData"/>.</param>
 		/// <param name="target">Target method.</param>
 		/// <param name="dependencies"><see cref="IMethodSymbol"/>s generation of this type depends on.</param>
@@ -46,7 +46,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
 		public CopyFromMethodData(
-			MethodDeclarationSyntax declaration,
+			BaseMethodDeclarationSyntax declaration,
 			CopyFromCompilationData compilation,
 			TargetMethodData target,
 			IMethodSymbol[]? dependencies,
@@ -61,7 +61,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CopyFromMethodData"/> class.
 		/// </summary>
-		/// <param name="declaration"><see cref="MethodDeclarationSyntax"/> this <see cref="CopyFromMethodData"/> represents.</param>
+		/// <param name="declaration"><see cref="BaseMethodDeclarationSyntax"/> this <see cref="CopyFromMethodData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="CopyFromCompilationData"/> of this <see cref="CopyFromMethodData"/>.</param>
 		/// <param name="symbol"><see cref="IMethodSymbol"/> this <see cref="CopyFromMethodData"/> represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
@@ -73,7 +73,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
 		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
 		public CopyFromMethodData(
-			MethodDeclarationSyntax declaration,
+			BaseMethodDeclarationSyntax declaration,
 			CopyFromCompilationData compilation,
 			IMethodSymbol symbol,
 			SemanticModel semanticModel,

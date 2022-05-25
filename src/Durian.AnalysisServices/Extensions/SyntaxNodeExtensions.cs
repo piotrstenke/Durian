@@ -185,6 +185,60 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns attribute declaration list of the specified <paramref name="node"/> or an empty list if the <paramref name="node"/> has no attributes.
+		/// </summary>
+		/// <param name="node"><see cref="SyntaxNode"/> to get attribute lists of.</param>
+		public static SyntaxList<AttributeListSyntax> GetAttributeLists(this SyntaxNode node)
+		{
+			return node switch
+			{
+				MemberDeclarationSyntax member => member.AttributeLists,
+				StatementSyntax statement => statement.AttributeLists,
+				LambdaExpressionSyntax lambda => lambda.AttributeLists,
+				AccessorDeclarationSyntax accessor => accessor.AttributeLists,
+				CompilationUnitSyntax unit => unit.AttributeLists,
+				TypeParameterSyntax typeParameter => typeParameter.AttributeLists,
+				BaseParameterSyntax parameter => parameter.AttributeLists,
+				_ => SyntaxFactory.List<AttributeListSyntax>()
+			};
+		}
+
+		/// <summary>
+		/// Returns the block body of the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="CSharpSyntaxNode"/> to get the block body of.</param>
+		public static BlockSyntax? GetBlock(this CSharpSyntaxNode node)
+		{
+			return node switch
+			{
+				BaseMethodDeclarationSyntax method => method.Body,
+				AccessorDeclarationSyntax accessor => accessor.Body,
+				AnonymousFunctionExpressionSyntax lambda => lambda.Block,
+				StatementSyntax statement => statement.GetBlock(),
+				CatchClauseSyntax @catch => @catch.Block,
+				FinallyClauseSyntax @finally => @finally.Block,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns the block body of the specified <paramref name="statement"/>.
+		/// </summary>
+		/// <param name="statement"><see cref="StatementSyntax"/> to get the block body of.</param>
+		public static BlockSyntax? GetBlock(this StatementSyntax statement)
+		{
+			return statement switch
+			{
+				LocalFunctionStatementSyntax local => local.Body,
+				CheckedStatementSyntax @checked => @checked.Block,
+				UnsafeStatementSyntax @unsafe => @unsafe.Block,
+				TryStatementSyntax @try => @try.Block,
+				BlockSyntax block => block,
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Returns the body of the specified <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="BaseMethodDeclarationSyntax"/> to get the body of.</param>
@@ -217,6 +271,25 @@ namespace Durian.Analysis.Extensions
 			if (method.ExpressionBody is not null)
 			{
 				return method.ExpressionBody;
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Returns the body of the specified <paramref name="accessor"/>.
+		/// </summary>
+		/// <param name="accessor"><see cref="AccessorDeclarationSyntax"/> to get the body of.</param>
+		public static CSharpSyntaxNode? GetBody(this AccessorDeclarationSyntax accessor)
+		{
+			if (accessor.Body is not null)
+			{
+				return accessor.Body;
+			}
+
+			if (accessor.ExpressionBody is not null)
+			{
+				return accessor.ExpressionBody;
 			}
 
 			return null;
@@ -271,6 +344,24 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the expression body of the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="CSharpSyntaxNode"/> to get the expression body of.</param>
+		public static ArrowExpressionClauseSyntax? GetExpressionBody(this CSharpSyntaxNode node)
+		{
+			return node switch
+			{
+				BaseMethodDeclarationSyntax method => method.ExpressionBody,
+				PropertyDeclarationSyntax property => property.ExpressionBody,
+				AccessorDeclarationSyntax accessor => accessor.ExpressionBody,
+				IndexerDeclarationSyntax indexer => indexer.ExpressionBody,
+				LocalFunctionStatementSyntax local => local.ExpressionBody,
+				ArrowExpressionClauseSyntax arrow => arrow,
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Returns the keyword that is used to declare the given <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="BaseTypeDeclarationSyntax"/> to get the keyword of.</param>
@@ -317,6 +408,24 @@ namespace Durian.Analysis.Extensions
 				LocalDeclarationStatementSyntax => new LocalData((LocalDeclarationStatementSyntax)member, compilation),
 
 				_ => new MemberData(member, compilation),
+			};
+		}
+
+		/// <summary>
+		/// Return list of modifiers of the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="SyntaxNode"/> to get the modifiers of.</param>
+		public static SyntaxTokenList GetModifiers(this SyntaxNode node)
+		{
+			return node switch
+			{
+				MemberDeclarationSyntax member => member.Modifiers,
+				BaseParameterSyntax parameter => parameter.Modifiers,
+				LocalFunctionStatementSyntax localFunction => localFunction.Modifiers,
+				LocalDeclarationStatementSyntax local => local.Modifiers,
+				AccessorDeclarationSyntax accessor => accessor.Modifiers,
+				AnonymousFunctionExpressionSyntax lambda => lambda.Modifiers,
+				_ => SyntaxFactory.TokenList()
 			};
 		}
 

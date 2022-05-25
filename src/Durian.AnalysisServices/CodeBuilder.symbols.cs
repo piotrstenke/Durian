@@ -1885,6 +1885,7 @@ namespace Durian.Analysis
 			}
 
 			Type(parameter.Type);
+			Space();
 			SimpleName_Internal(parameter);
 			DefaultValue(parameter);
 
