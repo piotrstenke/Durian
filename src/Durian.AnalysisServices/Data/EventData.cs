@@ -168,16 +168,16 @@ namespace Durian.Analysis.Data
 		}
 
 		private EventData(
-					EventFieldDeclarationSyntax declaration,
-					ICompilationData compilation,
-					SemanticModel semanticModel,
-					VariableDeclaratorSyntax variable
-				) : base(
-					declaration,
-					compilation,
-					(semanticModel.GetDeclaredSymbol(variable) as IEventSymbol)!,
-					semanticModel
-				)
+			EventFieldDeclarationSyntax declaration,
+			ICompilationData compilation,
+			SemanticModel semanticModel,
+			VariableDeclaratorSyntax variable
+		) : base(
+			declaration,
+			compilation,
+			(semanticModel.GetDeclaredSymbol(variable) as IEventSymbol)!,
+			semanticModel
+		)
 		{
 			Variable = variable;
 		}

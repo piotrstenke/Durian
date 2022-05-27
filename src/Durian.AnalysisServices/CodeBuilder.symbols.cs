@@ -10,6 +10,7 @@ using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis
 {
@@ -99,7 +100,7 @@ namespace Durian.Analysis
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder Accessor(IMethodSymbol method, MethodStyle body)
 		{
-			return Accessor(method, method.MethodKind.AsAccessor(), body);
+			return Accessor(method, method.MethodKind.GetAccessor(), body);
 		}
 
 		/// <summary>
@@ -848,7 +849,7 @@ namespace Durian.Analysis
 				MethodKind.Conversion => ConversionOperator(method, body),
 				MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator => Operator(method, body),
 				MethodKind.ExplicitInterfaceImplementation => ExplicitInterfaceImplementation(method, body),
-				MethodKind.LambdaMethod => AnonymousFunction(method, body.AsLambda()),
+				MethodKind.LambdaMethod => AnonymousFunction(method, body.GetLambdaStyle()),
 				MethodKind.Destructor => Destructor(method, body),
 				MethodKind.Constructor => Constructor(method, body),
 				MethodKind.EventAdd => Accessor(method, CodeGeneration.Accessor.Add, body),
@@ -1679,7 +1680,14 @@ namespace Durian.Analysis
 		public CodeBuilder Method(IMethodSymbol method, MethodStyle body)
 		{
 			Indent();
-			Accessibility(method);
+
+			bool isPartial = method.IsPartial(out MethodDeclarationSyntax? decl);
+
+			if(!isPartial || (decl is not null && decl.GetAccessibility() != default))
+			{
+				Accessibility(method);
+			}
+
 			TryStatic(method);
 
 			WriteExternAndVirtualityModifiers(method);
@@ -1696,7 +1704,10 @@ namespace Durian.Analysis
 				TextBuilder.Append("async ");
 			}
 
-			TryPartial(method);
+			if(isPartial)
+			{
+				TextBuilder.Append("partial ");
+			}
 
 			WriteMethodHead(method, body);
 			return this;
@@ -1946,6 +1957,72 @@ namespace Durian.Analysis
 		public CodeBuilder ParameterList(IEnumerable<IParameterSymbol> parameters, bool isArgList = false)
 		{
 			return ParameterList(parameters.ToImmutableArray(), isArgList);
+		}
+
+		/// <summary>
+		/// Writes the type of the specified <paramref name="parameter"/> (including the <see langword="ref"/>, <see langword="in"/> and <see langword="out"/> modifiers).
+		/// </summary>
+		/// <param name="parameter"><see cref="IParameterSymbol"/> to write the type of.</param>
+		public CodeBuilder ParameterType(IParameterSymbol parameter)
+		{
+			InitBuilder();
+
+			if (parameter.RefKind.GetText() is string refKind)
+			{
+				TextBuilder.Append(refKind);
+				TextBuilder.Append(' ');
+			}
+
+			return Type(parameter.Type);
+		}
+
+		/// <summary>
+		/// Writes a list of types of parameters of the specified <paramref name="method"/> (including the <see langword="ref"/>, <see langword="in"/> and <see langword="out"/> modifiers).
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to write the parameter type list of.</param>
+		public CodeBuilder ParameterTypeList(IMethodSymbol method)
+		{
+			return ParameterTypeList(method.Parameters, method.IsVararg);
+		}
+
+		/// <summary>
+		/// Writes a list of types of the specified <paramref name="parameters"/> (including the <see langword="ref"/>, <see langword="in"/> and <see langword="out"/> modifiers).
+		/// </summary>
+		/// <param name="parameters">Collection of <see cref="IParameterSymbol"/>s to write.</param>
+		/// <param name="isArgList">Determines whether the <see langword="__arglist"/> should be written in the parameter list.</param>
+		public CodeBuilder ParameterTypeList(ImmutableArray<IParameterSymbol> parameters, bool isArgList = false)
+		{
+			if (parameters.Length > 0)
+			{
+				ParameterType(parameters[0]);
+
+				for (int i = 1; i < parameters.Length; i++)
+				{
+					CommaSpace();
+					ParameterType(parameters[i]);
+				}
+
+				if(isArgList)
+				{
+					CommaSpace();
+					TextBuilder.Append("__arglist");
+				}
+			}
+			else if(isArgList)
+			{
+				TextBuilder.Append("__arglist");
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a list of types of the specified <paramref name="parameters"/> (including the <see langword="ref"/>, <see langword="in"/> and <see langword="out"/> modifiers).
+		/// </summary>
+		/// <param name="parameters">Collection of <see cref="IParameterSymbol"/>s to write.</param>
+		public CodeBuilder ParameterTypeList(IEnumerable<IParameterSymbol> parameters)
+		{
+			return ParameterTypeList(parameters.ToImmutableArray());
 		}
 
 		/// <summary>
@@ -2692,7 +2769,20 @@ namespace Durian.Analysis
 
 					Write(keyword);
 					Space();
-					XmlType(method.ReturnType);
+
+					Write("operator ");
+
+					int start = TextBuilder.Length;
+
+					Type(method.ReturnType);
+
+					int end = TextBuilder.Length;
+
+					if(start < end)
+					{
+						TextBuilder.Replace('<', '{', start, end - start);
+						TextBuilder.Replace('>', '}', start, end - start);
+					}
 
 					break;
 
@@ -2708,7 +2798,7 @@ namespace Durian.Analysis
 			}
 
 			TextBuilder.Append('(');
-			WriteParameterTypeList(method.Parameters);
+			ParameterTypeList(method.Parameters);
 			TextBuilder.Append(')');
 
 			return this;
@@ -2729,7 +2819,7 @@ namespace Durian.Analysis
 			}
 
 			TextBuilder.Append("this[");
-			WriteParameterTypeList(property.Parameters);
+			ParameterTypeList(property.Parameters);
 			TextBuilder.Append(']');
 
 			return this;
@@ -3106,31 +3196,6 @@ namespace Durian.Analysis
 			MethodBody(body);
 		}
 
-		private void WriteParameterType(IParameterSymbol parameter)
-		{
-			if (parameter.RefKind.GetText() is string refKind)
-			{
-				TextBuilder.Append(refKind);
-				TextBuilder.Append(' ');
-			}
-
-			XmlType(parameter.Type);
-		}
-
-		private void WriteParameterTypeList(ImmutableArray<IParameterSymbol> parameters)
-		{
-			if (parameters.Length > 0)
-			{
-				WriteParameterType(parameters[0]);
-
-				for (int i = 1; i < parameters.Length; i++)
-				{
-					CommaSpace();
-					WriteParameterType(parameters[i]);
-				}
-			}
-		}
-
 		private void WritePropertyModifiers(IPropertySymbol property)
 		{
 			WriteExternAndVirtualityModifiers(property);
@@ -3151,21 +3216,6 @@ namespace Durian.Analysis
 			}
 
 			TextBuilder.Append("using ");
-		}
-
-		private void XmlType(ITypeSymbol type)
-		{
-			int start = TextBuilder.Length;
-
-			Type(type);
-
-			int end = TextBuilder.Length;
-
-			if (start < end)
-			{
-				TextBuilder.Replace('<', '{', start, end - start);
-				TextBuilder.Replace('>', '}', start, end - start);
-			}
 		}
 	}
 }

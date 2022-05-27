@@ -516,5 +516,672 @@ namespace Durian.Analysis.Extensions
 		{
 			return method.GetBody() is not null;
 		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="abstract"/> token.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="abstract"/> token.</param>
+		public static bool IsAbstract(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsAbstract();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="new"/> token.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="new"/> token.</param>
+		public static bool IsNew(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsNew();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="virtual"/> token.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="virtual"/> token.</param>
+		public static bool IsVirtual(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsVirtual();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="partial"/> token.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="parital"/> token.</param>
+		public static bool IsPartial(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsPartial();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="async"/> token.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="async"/> token.</param>
+		public static bool IsAsync(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsAsync();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="readonly"/> or <see langword="in"/> modifier (<see langword="ref"/> <see langword="readonly"/> does not count).
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="readonly"/> or <see langword="in"/>  modifier.</param>
+		public static bool IsReadOnly(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsReadOnly();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="unsafe"/> modifier.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="unsafe"/> modifier.</param>
+		public static bool IsUnsafe(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsUnsafe();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="static"/> modifier.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="static"/> modifier.</param>
+		public static bool IsStatic(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsStatic();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="ref"/> modifier.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="ref"/> modifier.</param>
+		public static bool IsRef(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsRef();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="ref"/> and <see langword="readonly"/> modifier.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="ref"/> and <see langword="readonly"/> modifier.</param>
+		public static bool IsRefReadOnly(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsRefReadOnly();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="override"/> modifier.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="override"/> modifier.</param>
+		public static bool IsOverride(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsOverride();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="sealed"/> modifier.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="sealed"/> modifier.</param>
+		public static bool IsSealed(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsSealed();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="fixed"/> modifier.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="fixed"/> modifier.</param>
+		public static bool IsFixed(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsFixed();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="volatile"/> modifier.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="volatile"/> modifier.</param>
+		public static bool IsVolatile(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsVolatile();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="extern"/> modifier.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="extern"/> modifier.</param>
+		public static bool IsExtern(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsExtern();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="params"/> modifier.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="params"/> modifier.</param>
+		public static bool IsParams(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsParams();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> contains the <see langword="this"/> modifier.
+		/// </summary>
+		/// <param name="node">Determines whether the specified <paramref name="node"/> contains the <see langword="this"/> modifier.</param>
+		public static bool IsThis(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().IsThis();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="Accessibility"/> of the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="CSharpSyntaxNode"/> to get the accessibility of.</param>
+		public static Accessibility GetAccessibility(this CSharpSyntaxNode node)
+		{
+			return node.GetModifiers().GetAccessibility();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> defines an <paramref name="accessor"/> of a given kind.
+		/// </summary>
+		/// <param name="node"><see cref="PropertyDeclarationSyntax"/> to determines whether has an <paramref name="accessor"/> of a given kind.</param>
+		/// <param name="accessor">Kind of accessor to check for.</param>
+		public static bool HasAccessor(this PropertyDeclarationSyntax node, PropertyAccessor accessor)
+		{
+			if(node.ExpressionBody is not null)
+			{
+				return accessor == PropertyAccessor.Get;
+			}
+
+			return node.AccessorList?.HasAccessor(accessor.GetAccessor()) ?? false;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> defines an <paramref name="accessor"/> of a given kind.
+		/// </summary>
+		/// <param name="node"><see cref="IndexerDeclarationSyntax"/> to determines whether has an <paramref name="accessor"/> of a given kind.</param>
+		/// <param name="accessor">Kind of accessor to check for.</param>
+		public static bool HasAccessor(this IndexerDeclarationSyntax node, PropertyAccessor accessor)
+		{
+			if(node.ExpressionBody is not null)
+			{
+				return accessor == PropertyAccessor.Get;
+			}
+
+			return node.AccessorList?.HasAccessor(accessor.GetAccessor()) ?? false;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> defines an <paramref name="accessor"/> of a given kind.
+		/// </summary>
+		/// <param name="node"><see cref="EventDeclarationSyntax"/> to determines whether has an <paramref name="accessor"/> of a given kind.</param>
+		/// <param name="accessor">Kind of accessor to check for.</param>
+		public static bool HasAccessor(this EventDeclarationSyntax node, EventAccessor accessor)
+		{
+			return node.AccessorList?.HasAccessor(accessor.GetAccessor()) ?? false;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> defines an <paramref name="accessor"/> of a given kind.
+		/// </summary>
+		/// <param name="node"><see cref="BasePropertyDeclarationSyntax"/> to determines whether has an <paramref name="accessor"/> of a given kind.</param>
+		/// <param name="accessor">Kind of accessor to check for.</param>
+		public static bool HasAccessor(this BasePropertyDeclarationSyntax node, Accessor accessor)
+		{
+			return node.AccessorList?.HasAccessor(accessor) ?? false;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="node"/> defines an <paramref name="accessor"/> of a given kind.
+		/// </summary>
+		/// <param name="node"><see cref="AccessorListSyntax"/> to determines whether has an <paramref name="accessor"/> of a given kind.</param>
+		/// <param name="accessor">Kind of accessor to check for.</param>
+		public static bool HasAccessor(this AccessorListSyntax node, Accessor accessor)
+		{
+			return node.Accessors.Any(acc => acc.GetAccessorKind() == accessor);
+		}
+
+		/// <summary>
+		/// Returns the kind of <see cref="Accessor"/> the specified <paramref name="node"/> represents.
+		/// </summary>
+		/// <param name="node"><see cref="AccessorDeclarationSyntax"/> to get the <see cref="Accessor"/> kind represented by.</param>
+		public static Accessor GetAccessorKind(this AccessorDeclarationSyntax node)
+		{
+			return node.Keyword.GetAccessor();
+		}
+
+		/// <summary>
+		/// Returns the kind of <see cref="PropertyAccessor"/> the specified <paramref name="node"/> represents.
+		/// </summary>
+		/// <param name="node"><see cref="AccessorDeclarationSyntax"/> to get the <see cref="Accessor"/> kind represented by.</param>
+		public static PropertyAccessor GetPropertyAccessorKind(this AccessorDeclarationSyntax node)
+		{
+			return node.GetAccessorKind().GetPropertyAccessor();
+		}
+
+		/// <summary>
+		/// Returns the kind of <see cref="EventAccessor"/> the specified <paramref name="node"/> represents.
+		/// </summary>
+		/// <param name="node"><see cref="AccessorDeclarationSyntax"/> to get the <see cref="Accessor"/> kind represented by.</param>
+		public static EventAccessor GetEventAccessorKind(this AccessorDeclarationSyntax node)
+		{
+			return node.GetAccessorKind().GetEventAccessor();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="AttributeTarget"/> associated with the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="AttributeTargetSpecifierSyntax"/> to get the <see cref="AttributeTarget"/> associated with.</param>
+		public static AttributeTarget GetAttributeTarget(this AttributeTargetSpecifierSyntax node)
+		{
+			return node.Identifier.GetAttributeTarget();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="AttributeTarget"/> associated with the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="AttributeListSyntax"/> to get the <see cref="AttributeTarget"/> associated with.</param>
+		public static AttributeTarget GetAttributeTarget(this AttributeListSyntax node)
+		{
+			return node.Target is AttributeTargetSpecifierSyntax target ? target.GetAttributeTarget() : default;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="AttributeTarget"/> associated with the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="AttributeSyntax"/> to get the <see cref="AttributeTarget"/> associated with.</param>
+		public static AttributeTarget GetAttributeTarget(this AttributeSyntax node)
+		{
+			return node.Parent is AttributeListSyntax attrList ? attrList.GetAttributeTarget() : default;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="GenericConstraint"/> associated with the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="TypeParameterConstraintSyntax"/> to get the <see cref="GenericConstraint"/> associated with.</param>
+		public static GenericConstraint GetConstraint(this TypeParameterConstraintSyntax node)
+		{
+			switch (node)
+			{
+				case ClassOrStructConstraintSyntax classOrStruct:
+
+					if(classOrStruct.IsKind(SyntaxKind.ClassConstraint))
+					{
+						return GenericConstraint.Class;
+					}
+
+					if(classOrStruct.IsKind(SyntaxKind.StructConstraint))
+					{
+						return GenericConstraint.Struct;
+					}
+
+					return default;
+
+				case TypeConstraintSyntax type:
+
+					if(type.Type.IsNotNull)
+					{
+						return GenericConstraint.NotNull;
+					}
+
+					if(type.Type.IsUnmanaged)
+					{
+						return GenericConstraint.Unmanaged;
+					}
+
+					return GenericConstraint.Type;
+
+				case ConstructorConstraintSyntax:
+					return GenericConstraint.New;
+
+				case DefaultConstraintSyntax:
+					return GenericConstraint.Default;
+
+				default:
+					return default;
+			}
+		}
+
+		/// <summary>
+		/// Returns the <see cref="GenericConstraint"/> associated with the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="TypeParameterConstraintClauseSyntax"/> to get the <see cref="GenericConstraint"/> associated with.</param>
+		public static GenericConstraint GetConstraints(this TypeParameterConstraintClauseSyntax node)
+		{
+			GenericConstraint constraint = default;
+
+			foreach (TypeParameterConstraintSyntax syntax in node.Constraints)
+			{
+				constraint |= syntax.GetConstraint();
+			}
+
+			return constraint;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="GenericConstraint"/> associated with the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="TypeParameterSyntax"/> to get the <see cref="GenericConstraint"/> associated with.</param>
+		public static GenericConstraint GetConstraints(this TypeParameterSyntax node)
+		{
+			MemberDeclarationSyntax? member = node.Parent?.Parent as MemberDeclarationSyntax;
+
+			return member switch
+			{
+				TypeDeclarationSyntax type => GetConstraints(type.ConstraintClauses),
+				MethodDeclarationSyntax method => GetConstraints(method.ConstraintClauses),
+				DelegateDeclarationSyntax @delegate => GetConstraints(@delegate.ConstraintClauses),
+				_ => default
+			};
+
+			GenericConstraint GetConstraints(SyntaxList<TypeParameterConstraintClauseSyntax> clauses)
+			{
+				return clauses.FirstOrDefault(c => c.Name.Identifier.Value == node.Identifier.Value).GetConstraints();
+			}
+		}
+
+		/// <summary>
+		/// Returns the <see cref="GenericConstraint"/> associated with the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="TypeDeclarationSyntax"/> to get the <see cref="GenericConstraint"/> associated with.</param>
+		public static GenericConstraint[] GetConstraints(this TypeDeclarationSyntax node)
+		{
+			return node.ConstraintClauses.Select(c => c.GetConstraints()).ToArray();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="GenericConstraint"/> associated with the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="DelegateDeclarationSyntax"/> to get the <see cref="GenericConstraint"/> associated with.</param>
+		public static GenericConstraint[] GetConstraints(this DelegateDeclarationSyntax node)
+		{
+			return node.ConstraintClauses.Select(c => c.GetConstraints()).ToArray();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="GenericConstraint"/> associated with the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="MethodDeclarationSyntax"/> to get the <see cref="GenericConstraint"/> associated with.</param>
+		public static GenericConstraint[] GetConstraints(this MethodDeclarationSyntax node)
+		{
+			return node.ConstraintClauses.Select(c => c.GetConstraints()).ToArray();
+		}
+
+		/// <summary>
+		/// Returns the kind of <see cref="ConstructorInitializer"/> the specified <paramref name="node"/> represents.
+		/// </summary>
+		/// <param name="node"><see cref="ConstructorInitializerSyntax"/> to get the <see cref="ConstructorInitializer"/> kind represented by.</param>
+		public static ConstructorInitializer GetConstructorInitializer(this ConstructorInitializerSyntax node)
+		{
+			return ((SyntaxKind)node.RawKind).GetConstructorInitializer();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="ConstructorInitializer"/> associated with the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="ConstructorDeclarationSyntax"/> to get the <see cref="ConstructorInitializer"/> associated with.</param>
+		public static ConstructorInitializer GetConstructorInitializer(this ConstructorDeclarationSyntax node)
+		{
+			return node.Initializer?.GetConstructorInitializer() ?? default;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="DecimalLiteralSuffix"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="LiteralExpressionSyntax"/> to get the <see cref="DecimalLiteralSuffix"/> applied to.</param>
+		public static DecimalLiteralSuffix GetDecimalSuffix(this LiteralExpressionSyntax node)
+		{
+			return node.Token.GetDecimalSuffix();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="NumericLiteralPrefix"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="LiteralExpressionSyntax"/> to get the <see cref="NumericLiteralPrefix"/> applied to.</param>
+		public static NumericLiteralPrefix GetNumericPrefix(this LiteralExpressionSyntax node)
+		{
+			return node.Token.GetNumericPrefix();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="NumericLiteralSuffix"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="LiteralExpressionSyntax"/> to get the <see cref="NumericLiteralSuffix"/> applied to.</param>
+		public static NumericLiteralSuffix GetNumerixSuffix(this LiteralExpressionSyntax node)
+		{
+			return node.Token.GetNumericSuffix();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="DecimalValueType"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="LiteralExpressionSyntax"/> to get the <see cref="DecimalValueType"/> represented by.</param>
+		public static DecimalValueType GetDecimalType(this LiteralExpressionSyntax node)
+		{
+			return node.Token.GetDecimalType();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="DecimalValueType"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="PredefinedTypeSyntax"/> to get the <see cref="DecimalValueType"/> represented by.</param>
+		public static DecimalValueType GetDecimalType(this PredefinedTypeSyntax node)
+		{
+			return node.Keyword.GetDecimalType();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="DecimalValueType"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="TypeSyntax"/> to get the <see cref="DecimalValueType"/> represented by.</param>
+		public static DecimalValueType GetDecimalType(this TypeSyntax node)
+		{
+			return (node as PredefinedTypeSyntax)?.GetDecimalType() ?? default;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="DecimalLiteralSuffix"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="LiteralExpressionSyntax"/> to get the <see cref="DecimalLiteralSuffix"/> applied to.</param>
+		public static ExponentialStyle GetExponentialStyle(this LiteralExpressionSyntax node)
+		{
+			return node.Token.GetExponentialStyle();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="IntegerValueType"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="LiteralExpressionSyntax"/> to get the <see cref="IntegerValueType"/> represented by.</param>
+		public static IntegerValueType GetIntegerType(this LiteralExpressionSyntax node)
+		{
+			return node.Token.GetIntegerType();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="IntegerValueType"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="PredefinedTypeSyntax"/> to get the <see cref="IntegerValueType"/> represented by.</param>
+		public static IntegerValueType GetIntegerType(this PredefinedTypeSyntax node)
+		{
+			return node.Keyword.GetIntegerType();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="IntegerValueType"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="TypeSyntax"/> to get the <see cref="IntegerValueType"/> represented by.</param>
+		public static IntegerValueType GetIntegerType(this TypeSyntax node)
+		{
+			return (node as PredefinedTypeSyntax)?.GetIntegerType() ?? default;
+		}
+
+		/// <summary>
+		/// Returns the literal value of type <typeparamref name="T"/> the <paramref name="node"/> represents.
+		/// </summary>
+		/// <typeparam name="T">Type of literal value this <paramref name="node"/> represents.</typeparam>
+		/// <param name="node"><see cref="LiteralExpressionSyntax"/> to get the literal value of.</param>
+		public static T GetLiteralValue<T>(this LiteralExpressionSyntax node) where T : unmanaged
+		{
+			return node.Token.GetLiteralValue<T>();
+		}
+
+		/// <summary>
+		/// Returns the literal value of type <typeparamref name="T"/> the <paramref name="node"/> represents.
+		/// </summary>
+		/// <typeparam name="T">Type of literal value this <paramref name="node"/> represents.</typeparam>
+		/// <param name="node"><see cref="ExpressionSyntax"/> to get the literal value of.</param>
+		public static T GetLiteralValue<T>(this ExpressionSyntax node) where T : unmanaged
+		{
+			return (node as LiteralExpressionSyntax)?.Token.GetLiteralValue<T>() ?? default;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="NamespaceStyle"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="BaseNamespaceDeclarationSyntax"/> to get the <see cref="NamespaceStyle"/> applied to.</param>
+		public static NamespaceStyle GetNamespaceStyle(this BaseNamespaceDeclarationSyntax node)
+		{
+			if(node is FileScopedNamespaceDeclarationSyntax)
+			{
+				return NamespaceStyle.File;
+			}
+
+			if(node.Parent is NamespaceDeclarationSyntax)
+			{
+				return NamespaceStyle.Nested;
+			}
+
+			return NamespaceStyle.Default;
+		}
+
+		public static OverloadableOperator GetOperator(this OperatorDeclarationSyntax node)
+		{
+		}
+
+		public static OverloadableOperator GetOperator(this BinaryExpressionSyntax node)
+		{
+
+		}
+
+		public static OverloadableOperator GetOperator(this PostfixUnaryExpressionSyntax node)
+		{
+
+		}
+
+		public static OverloadableOperator GetOperator(this PrefixUnaryExpressionSyntax node)
+		{
+
+		}
+
+		/// <summary>
+		/// Returns the <see cref="RefKind"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="PropertyDeclarationSyntax"/> to get the <see cref="RefKind"/> applied to.</param>
+		public static RefKind GetRefKind(this PropertyDeclarationSyntax node)
+		{
+			return node.Type.GetRefKind();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="RefKind"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="IndexerDeclarationSyntax"/> to get the <see cref="RefKind"/> applied to.</param>
+		public static RefKind GetRefKind(this IndexerDeclarationSyntax node)
+		{
+			return node.Type.GetRefKind();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="RefKind"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="MethodDeclarationSyntax"/> to get the <see cref="RefKind"/> applied to.</param>
+		public static RefKind GetRefKind(this MethodDeclarationSyntax node)
+		{
+			return node.ReturnType.GetRefKind();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="RefKind"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="DelegateDeclarationSyntax"/> to get the <see cref="RefKind"/> applied to.</param>
+		public static RefKind GetRefKind(this DelegateDeclarationSyntax node)
+		{
+			return node.ReturnType.GetRefKind();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="RefKind"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="ParenthesizedLambdaExpressionSyntax"/> to get the <see cref="RefKind"/> applied to.</param>
+		public static RefKind GetRefKind(this ParenthesizedLambdaExpressionSyntax node)
+		{
+			return node.ReturnType?.GetRefKind() ?? default;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="RefKind"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="AnonymousFunctionExpressionSyntax"/> to get the <see cref="RefKind"/> applied to.</param>
+		public static RefKind GetRefKind(this AnonymousFunctionExpressionSyntax node)
+		{
+			return (node as ParenthesizedLambdaExpressionSyntax)?.GetRefKind() ?? default;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="RefKind"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="LocalFunctionStatementSyntax"/> to get the <see cref="RefKind"/> applied to.</param>
+		public static RefKind GetRefKind(this LocalFunctionStatementSyntax node)
+		{
+			return node.ReturnType.GetRefKind();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="RefKind"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="TypeSyntax"/> to get the <see cref="RefKind"/> applied to.</param>
+		public static RefKind GetRefKind(this TypeSyntax node)
+		{
+			return (node as RefTypeSyntax)?.GetRefKind() ?? default;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="RefKind"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="RefTypeSyntax"/> to get the <see cref="RefKind"/> applied to.</param>
+		public static RefKind GetRefKind(this RefTypeSyntax node)
+		{
+			if(node.ReadOnlyKeyword != default)
+			{
+				return RefKind.RefReadOnly;
+			}
+
+			return RefKind.Ref;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="RefKind"/> applied to the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="PropertyDeclarationSyntax"/> to get the <see cref="RefKind"/> applied to.</param>
+		public static RefKind GetRefKind(this BaseParameterSyntax node)
+		{
+			return node.Type?.GetRefKind() ?? default;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="TypeKeyword"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="PredefinedTypeSyntax"/> to get the <see cref="TypeKeyword"/> represented by.</param>
+		public static TypeKeyword GetTypeKeyword(this PredefinedTypeSyntax node)
+		{
+			return node.Keyword.GetTypeKeyword();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="TypeKeyword"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="TypeSyntax"/> to get the <see cref="TypeKeyword"/> represented by.</param>
+		public static TypeKeyword GetTypeKeyword(this TypeSyntax node)
+		{
+			return (node as PredefinedTypeSyntax)?.GetTypeKeyword() ?? default;
+		}
 	}
 }

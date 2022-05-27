@@ -373,7 +373,7 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		private static string[]? RetrieveUsings(
-											AttributeData attribute,
+			AttributeData attribute,
 			MemberDeclarationSyntax declaration,
 			AdditionalNodes additionalNodes
 		)

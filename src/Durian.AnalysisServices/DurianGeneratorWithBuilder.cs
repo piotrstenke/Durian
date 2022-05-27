@@ -77,60 +77,160 @@ namespace Durian.Analysis
 		/// <param name="symbol"><see cref="ISymbol"/> to convert.</param>
 		protected virtual string SymbolToString(ISymbol symbol)
 		{
+			CodeBuilder builder = new(false);
+
 			switch (symbol)
 			{
-				case IMethodSymbol method:
+				case IMethodSymbol method when method.MethodKind == MethodKind.Ordinary:
+					WriteMethod(builder, method);
+					return builder.ToString();
 
-					if (method.MethodKind == MethodKind.StaticConstructor)
+				case IMethodSymbol method when method.MethodKind == MethodKind.StaticConstructor:
+					WriteParentTypesAndNamespaces(builder, method);
+					return builder.ToString() + "static " + method.ContainingType.Name + "()";
+
+				case IMethodSymbol method when method.MethodKind == MethodKind.ExplicitInterfaceImplementation:
+
+					if (method.ExplicitInterfaceImplementations.Length == 0)
 					{
-						CodeBuilder builder = new(false);
-
-						WriteParentTypesAndNamespaces(builder, method);
-
-						return builder.ToString() + "static " + method.ContainingType.Name + "()";
-					}
-
-					if (method.MethodKind == MethodKind.ExplicitInterfaceImplementation && method.ExplicitInterfaceImplementations.Length > 0)
-					{
-						IMethodSymbol interfaceMethod = method.ExplicitInterfaceImplementations[0];
-
-						CodeBuilder builder = new(false);
-
-						builder.Write('(');
-						WriteParentTypesAndNamespaces(builder, interfaceMethod.ContainingType);
-						builder.Name(interfaceMethod.ContainingType, SymbolName.Generic);
-						builder.Write(')');
-
-						WriteParentTypesAndNamespaces(builder, method);
-
-						builder.Name(interfaceMethod, SymbolName.Generic);
-						builder.ParameterList(method);
-
+						WriteMethod(builder, method);
 						return builder.ToString();
 					}
 
-					if(method.IsAccessor())
-					{
-						CodeBuilder builder = new(false);
+					IMethodSymbol interfaceMethod = method.ExplicitInterfaceImplementations[0];
 
-						WriteParentTypesAndNamespaces(builder, method);
+					builder.Write('(');
+					WriteParentTypesAndNamespaces(builder, interfaceMethod.ContainingType);
+					builder.Name(interfaceMethod.ContainingType, SymbolName.Generic);
+					builder.Write(')');
 
-						return builder.ToString() + method.AssociatedSymbol!.Name;
-					}
+					WriteParentTypesAndNamespaces(builder, method);
 
-					break;
-
-				case INamedTypeSymbol type:
-				{
-					CodeBuilder builder = new(false);
-					WriteParentTypesAndNamespaces(builder, type);
-					builder.Name(type, SymbolName.Generic);
+					builder.Name(interfaceMethod, SymbolName.Generic);
+					builder.ParameterList(method);
 
 					return builder.ToString();
+
+				case IMethodSymbol method when method.MethodKind == MethodKind.Constructor:
+					WriteParentTypesAndNamespaces(builder, method);
+
+					builder.Write(method.ContainingType.Name);
+					builder.Write('(');
+					builder.ParameterTypeList(method);
+					builder.Write(')');
+
+					return builder.ToString();
+
+				case IMethodSymbol method when method.IsAccessor():
+
+					if (method.AssociatedSymbol is IPropertySymbol prop && prop.IsIndexer)
+					{
+						WriteIndexer(builder, prop);
+					}
+					else
+					{
+						WriteParentTypesAndNamespaces(builder, method);
+						builder.Write(method.AssociatedSymbol!.Name);
+					}
+
+					return builder.ToString();
+
+				case IMethodSymbol method when method.MethodKind == MethodKind.Destructor:
+					WriteParentTypesAndNamespaces(builder, method);
+					return builder.ToString() + '~' + method.ContainingType.Name + "()";
+
+				case IMethodSymbol method when method.MethodKind == MethodKind.Conversion:
+					string keyword;
+
+					if (method.IsImplicitOperator())
+					{
+						keyword = "implicit";
+					}
+					else if (method.IsExplicitOperator())
+					{
+						keyword = "explicit";
+					}
+					else
+					{
+						goto default;
+					}
+
+					WriteParentTypesAndNamespaces(builder, method);
+
+					builder.Write(keyword);
+					builder.Space();
+
+					builder.Write("operator ");
+
+					builder.Type(method.ReturnType);
+					builder.Write('(');
+					builder.ParameterTypeList(method);
+					builder.Write(')');
+
+					return builder.ToString();
+
+				case IMethodSymbol method when method.MethodKind is MethodKind.UserDefinedOperator or MethodKind.BuiltinOperator:
+					if (method.GetOperatorToken() is not string op)
+					{
+						goto default;
+					}
+
+					WriteParentTypesAndNamespaces(builder, method);
+
+					builder.Write("operator ");
+					builder.Write(op);
+
+					builder.Write('(');
+					builder.ParameterTypeList(method);
+					builder.Write(')');
+
+					return builder.ToString();
+
+				case IMethodSymbol method:
+					WriteMethod(builder, method);
+					return builder.ToString();
+
+				case INamedTypeSymbol type:
+					WriteParentTypesAndNamespaces(builder, type);
+					builder.Name(type, SymbolName.Generic);
+					return builder.ToString();
+
+				case IPropertySymbol property when property.IsIndexer:
+					WriteIndexer(builder, property);
+					return builder.ToString();
+
+				default:
+					WriteParentTypesAndNamespaces(builder, symbol);
+					builder.Name(symbol, SymbolName.Generic);
+					return builder.ToString();
+			}
+
+			static void WriteParentTypesAndNamespaces(CodeBuilder builder, ISymbol symbol)
+			{
+				foreach (INamespaceOrTypeSymbol s in symbol.GetContainingNamespacesAndTypes())
+				{
+					builder.Name(s, SymbolName.Generic);
+					builder.Write('.');
 				}
 			}
 
-			return symbol.ToString();
+			static void WriteIndexer(CodeBuilder builder, IPropertySymbol property)
+			{
+				WriteParentTypesAndNamespaces(builder, property);
+				builder.Write("this[");
+				builder.ParameterTypeList(property.Parameters);
+				builder.Write(']');
+			}
+
+			static string WriteMethod(CodeBuilder builder, IMethodSymbol method)
+			{
+				WriteParentTypesAndNamespaces(builder, method);
+				builder.Name(method, SymbolName.Generic);
+				builder.Write('(');
+				builder.ParameterTypeList(method);
+				builder.Write(')');
+				return builder.ToString();
+			}
 		}
 
 		/// <summary>
@@ -520,15 +620,6 @@ namespace Durian.Analysis
 		private static CSharpSyntaxTree ParseSyntaxTree(TContext context)
 		{
 			return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(context.CodeBuilder.ToString(), context.ParseOptions, encoding: Encoding.UTF8);
-		}
-
-		private static void WriteParentTypesAndNamespaces(CodeBuilder builder, ISymbol symbol)
-		{
-			foreach (INamespaceOrTypeSymbol s in symbol.GetContainingNamespacesAndTypes())
-			{
-				builder.Name(s, SymbolName.Generic);
-				builder.Write('.');
-			}
 		}
 	}
 

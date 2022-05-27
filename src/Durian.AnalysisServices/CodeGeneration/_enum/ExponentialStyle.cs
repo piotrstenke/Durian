@@ -6,7 +6,7 @@ namespace Durian.Analysis.CodeGeneration
 	/// <summary>
 	/// Specifies type of exponential used to write a decimal value.
 	/// </summary>
-	public enum Exponential
+	public enum ExponentialStyle
 	{
 		/// <summary>
 		/// No exponential specified.

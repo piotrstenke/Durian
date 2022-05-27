@@ -23,9 +23,9 @@ namespace Durian.Analysis.CopyFrom.Methods
 		public CopyFromCompilationData Compilation { get; }
 
 		/// <summary>
-		/// <see cref="Node"/> as a <see cref="BaseMethodDeclarationSyntax"/>.
+		/// <see cref="Node"/> as a <see cref="MethodDeclarationSyntax"/>.
 		/// </summary>
-		public BaseMethodDeclarationSyntax? AsMethod => Node as BaseMethodDeclarationSyntax;
+		public MethodDeclarationSyntax? AsMethod => Node as MethodDeclarationSyntax;
 
 		/// <inheritdoc cref="ISyntaxValidationContext.Node"/>
 		public CSharpSyntaxNode? Node { get; }

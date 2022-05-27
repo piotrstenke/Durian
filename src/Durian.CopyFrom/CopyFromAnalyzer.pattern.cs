@@ -70,7 +70,7 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		internal static bool HasValidRegexPattern(
-					AttributeData attribute,
+			AttributeData attribute,
 			[NotNullWhen(true)] out string? pattern,
 			[NotNullWhen(true)] out string? replacement,
 			out int order

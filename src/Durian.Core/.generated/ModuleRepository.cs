@@ -29,8 +29,8 @@ namespace Durian.Info
 						packages: new DurianPackage[]
 						{
 							DurianPackage.Main,
-							DurianPackage.CoreAnalyzer,
 							DurianPackage.Core,
+							DurianPackage.CoreAnalyzer,
 						},
 						docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/Core",
 						diagnostics: new DiagnosticData[]
@@ -790,11 +790,76 @@ namespace Durian.Info
 								fatal: true,
 								hasLocation: true
 							),
+
+							new DiagnosticData(
+								title: "PatternAttribute should be applied on the same partial declaration as a CopyFromTypeAttribute",
+								id: 19,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0219.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Namespace already specified for the AddUsings property",
+								id: 20,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0220.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Circular dependency between target members",
+								id: 21,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0221.md",
+								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Member already has documentation",
+								id: 22,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0222.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Member already has generic constraints",
+								id: 23,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0223.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Cannot copy constraints for a method or a non-generic member",
+								id: 24,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0224.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Type already has a base type",
+								id: 25,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0225.md",
+								fatal: false,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Base type cannot be applied to this kind of member",
+								id: 26,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0226.md",
+								fatal: false,
+								hasLocation: true
+							),
 						},
 						types: new TypeIdentity[]
 						{
 							TypeRepository.CopyFromTypeAttribute,
 							TypeRepository.CopyFromMethodAttribute,
+							TypeRepository.CopyFromAdditionalNodes,
 							TypeRepository.PatternAttribute,
 							TypeRepository.PartialNameAttribute,
 						}

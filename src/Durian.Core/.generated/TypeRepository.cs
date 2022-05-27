@@ -363,6 +363,29 @@ namespace Durian.Info
 		}
 
 		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.CopyFromAdditionalNodes</c> type.
+		/// </summary>
+		public static TypeIdentity CopyFromAdditionalNodes
+		{
+			get
+			{
+				if(!IdentityPool.Types.TryGetValue("CopyFromAdditionalNodes", out TypeIdentity type))
+				{
+					type = new(
+						name: "CopyFromAdditionalNodes",
+						@namespace: "Durian.Configuration",
+						modules: new DurianModule[]
+						{
+							DurianModule.CopyFrom,
+						}
+					);
+				}
+
+				return type;
+			}
+		}
+
+		/// <summary>
 		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.PatternAttribute</c> type.
 		/// </summary>
 		public static TypeIdentity PatternAttribute

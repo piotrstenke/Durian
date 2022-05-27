@@ -150,7 +150,7 @@ namespace Durian.Analysis.CodeGeneration
 		/// <param name="value">Value to write.</param>
 		/// <param name="suffix">Suffix of the numeric value.</param>
 		/// <param name="exponential">Determines whether or how to write the value using an exponential.</param>
-		public LiteralWriter Decimal(float value, DecimalLiteralSuffix suffix = default, Exponential exponential = default)
+		public LiteralWriter Decimal(float value, DecimalLiteralSuffix suffix = default, ExponentialStyle exponential = default)
 		{
 			FormatDecimal(value, exponential);
 			return NumericSuffix(suffix);
@@ -162,7 +162,7 @@ namespace Durian.Analysis.CodeGeneration
 		/// <param name="value">Value to write.</param>
 		/// <param name="suffix">Suffix of the numeric value.</param>
 		/// <param name="exponential">Determines whether or how to write the value using an exponential.</param>
-		public LiteralWriter Decimal(double value, DecimalLiteralSuffix suffix = default, Exponential exponential = default)
+		public LiteralWriter Decimal(double value, DecimalLiteralSuffix suffix = default, ExponentialStyle exponential = default)
 		{
 			FormatDecimal(value, exponential);
 			return NumericSuffix(suffix);
@@ -174,7 +174,7 @@ namespace Durian.Analysis.CodeGeneration
 		/// <param name="value">Value to write.</param>
 		/// <param name="suffix">Suffix of the numeric value.</param>
 		/// <param name="exponential">Determines whether or how to write the value using an exponential.</param>
-		public LiteralWriter Decimal(decimal value, DecimalLiteralSuffix suffix = default, Exponential exponential = default)
+		public LiteralWriter Decimal(decimal value, DecimalLiteralSuffix suffix = default, ExponentialStyle exponential = default)
 		{
 			FormatDecimal(value, exponential);
 			return NumericSuffix(suffix);
@@ -533,15 +533,15 @@ namespace Durian.Analysis.CodeGeneration
 			return (ulong)value;
 		}
 
-		private void FormatDecimal<T>(T value, Exponential exponential) where T : unmanaged, IFormattable
+		private void FormatDecimal<T>(T value, ExponentialStyle exponential) where T : unmanaged, IFormattable
 		{
 			switch (exponential)
 			{
-				case Exponential.Lowercase:
+				case ExponentialStyle.Lowercase:
 					TextBuilder.Append(value.ToString("e", CultureInfo.InvariantCulture));
 					break;
 
-				case Exponential.Uppercase:
+				case ExponentialStyle.Uppercase:
 					TextBuilder.Append(value.ToString("E", CultureInfo.InvariantCulture));
 					break;
 

@@ -143,7 +143,7 @@ namespace Durian.Analysis.Extensions
 						return SyntaxFactory.FunctionPointerParameter(default, SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.RefKeyword), SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword)), parameterType);
 
 					default:
-						SyntaxKind kind = refKind.AsSyntax();
+						SyntaxKind kind = refKind.GetSyntaxKind();
 						return SyntaxFactory.FunctionPointerParameter(default, SyntaxFactory.TokenList(SyntaxFactory.Token(kind)), parameterType);
 				}
 			}
@@ -242,7 +242,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the accessor kind of.</param>
 		public static Accessor GetAccessorKind(this IMethodSymbol method)
 		{
-			return method.MethodKind.AsAccessor();
+			return method.MethodKind.GetAccessor();
 		}
 
 		/// <inheritdoc cref="GetAllMembers(INamedTypeSymbol, string, ReturnOrder)"/>
@@ -906,8 +906,8 @@ namespace Durian.Analysis.Extensions
 		/// Returns the default <see cref="Accessibility"/> in the context of the specified <paramref name="symbol"/>.
 		/// <para>Default <see cref="Accessibility"/> is determined by the following rules:</para>
 		/// <list type="bullet">
-		/// <item>For interface members, the default is <see cref="Accessibility.Public"/>.</item>
 		/// <item>For top-level members, the default is <see cref="Accessibility.Internal"/>.</item>
+		/// <item>For interface members other than partial methods, the default is <see cref="Accessibility.Public"/>.</item>
 		/// <item>For property accessors, the default is the accessibility of the parent property.</item>
 		/// <item>For all other members, the default is <see cref="Accessibility.Private"/>.</item>
 		/// </list>
@@ -923,6 +923,11 @@ namespace Durian.Analysis.Extensions
 
 			if (symbol.ContainingSymbol is INamedTypeSymbol type && type.TypeKind == TypeKind.Interface)
 			{
+				if(symbol is IMethodSymbol intfMethod && intfMethod.IsPartial(true))
+				{
+					return Accessibility.Private;
+				}
+
 				return Accessibility.Public;
 			}
 

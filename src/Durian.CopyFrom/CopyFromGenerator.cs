@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -12,6 +13,8 @@ using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.Filters;
 using Durian.Analysis.Logging;
+using Durian.Analysis.SymbolContainers;
+using Durian.Analysis.SyntaxVisitors;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -167,6 +170,24 @@ namespace Durian.Analysis.CopyFrom
 		protected override CopyFromPassContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
 		{
 			return new();
+		}
+
+		private static void AddTypeParameterReplacements(
+			ImmutableArray<ITypeParameterSymbol> typeParameters,
+			ImmutableArray<ITypeSymbol> typeArguments,
+			List<(string, string)> list
+		)
+		{
+			for (int i = 0; i < typeParameters.Length; i++)
+			{
+				ITypeParameterSymbol parameter = typeParameters[i];
+				ITypeSymbol argument = typeArguments[i];
+
+				if (parameter.Name != argument.Name && !SymbolEqualityComparer.Default.Equals(parameter, argument))
+				{
+					list.Add((parameter.Name, argument.GetTypeKeyword() ?? argument.GetGenericName(true)));
+				}
+			}
 		}
 
 		private static string ApplyPattern(ICopyFromMember member, CopyFromPassContext context, string input)
@@ -373,7 +394,7 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		private bool Generate(
-					IMemberData data,
+			IMemberData data,
 			string hintName,
 			CopyFromPassContext context,
 			Queue<(SyntaxReference, string)> dependencies,
@@ -496,7 +517,7 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		private void HandleFilterGroup(
-					IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
+			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
 			CopyFromPassContext context,
 			Queue<(SyntaxReference, string)> dependencies,
 			Queue<(CSharpSyntaxNode, string)> cache,
@@ -557,6 +578,21 @@ namespace Durian.Analysis.CopyFrom
 				{
 					context.FileNameProvider.Success();
 				}
+			}
+		}
+
+		private static void ReplaceTypeParameters(
+			ref CSharpSyntaxNode currentNode,
+			TypeParameterReplacer replacer,
+			List<(string identifier, string replacement)> replacements
+		)
+		{
+			foreach ((string identifier, string replacement) in replacements)
+			{
+				replacer.Identifier = identifier;
+				replacer.Replacement = replacement;
+
+				currentNode = (CSharpSyntaxNode)replacer.Visit(currentNode);
 			}
 		}
 

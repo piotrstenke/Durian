@@ -97,40 +97,6 @@ namespace Durian.Analysis.CopyFrom
 			return target.Symbol.GetPartialDeclarations<TypeDeclarationSyntax>().ToArray();
 		}
 
-		private static List<(string identifier, string replacement)> GetTypeParameterReplacements(INamedTypeSymbol type)
-		{
-			List<(string, string)> list = new();
-
-			foreach (INamedTypeSymbol parent in type.GetContainingTypes(true, ReturnOrder.Parent))
-			{
-				if (!parent.IsGenericType)
-				{
-					break;
-				}
-
-				if (parent.IsUnboundGenericType)
-				{
-					continue;
-				}
-
-				ImmutableArray<ITypeParameterSymbol> parameters = parent.TypeParameters;
-				ImmutableArray<ITypeSymbol> arguments = parent.TypeArguments;
-
-				for (int i = 0; i < parameters.Length; i++)
-				{
-					ITypeParameterSymbol parameter = parameters[i];
-					ITypeSymbol argument = arguments[i];
-
-					if (parameter.Name != argument.Name && !SymbolEqualityComparer.Default.Equals(parameter, argument))
-					{
-						list.Add((parameter.Name, argument.GetTypeKeyword() ?? argument.GetGenericName(true)));
-					}
-				}
-			}
-
-			return list;
-		}
-
 		private static void HandleSpecialMemberTypes(ref CSharpSyntaxNode member, CopyFromTypeData type, INamedTypeSymbol target)
 		{
 			switch (member)
@@ -414,26 +380,16 @@ namespace Durian.Analysis.CopyFrom
 					return (member, symbol, context, applyInheritdoc) =>
 					{
 						HandleSpecialMemberTypes(ref member, type, target.Symbol);
-						ReplaceAndGenerate(member, symbol, context, applyInheritdoc);
+						ReplaceTypeParameters(ref member, replacer, replacements);
+						WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
 					};
 				}
-				else
+
+				return (member, symbol, context, applyInheritdoc) =>
 				{
-					return ReplaceAndGenerate;
-				}
-
-				void ReplaceAndGenerate(CSharpSyntaxNode replaced, ISymbol symbol, CopyFromPassContext context, GenerateDocumentation applyInheritdoc)
-				{
-					foreach ((string identifier, string replacement) in replacements)
-					{
-						replacer.Identifier = identifier;
-						replacer.Replacement = replacement;
-
-						replaced = (CSharpSyntaxNode)replacer.Visit(replaced);
-					}
-
-					WriteGeneratedMember(type, replaced, symbol, context, applyInheritdoc);
-				}
+					ReplaceTypeParameters(ref member, replacer, replacements);
+					WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
+				};
 			}
 
 			if (target.HandleSpecialMembers)
@@ -446,6 +402,31 @@ namespace Durian.Analysis.CopyFrom
 			}
 
 			return (member, symbol, context, applyInheritdoc) => WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
+		}
+
+		private static List<(string identifier, string replacement)> GetTypeParameterReplacements(INamedTypeSymbol type)
+		{
+			List<(string, string)> list = new();
+
+			foreach (INamedTypeSymbol parent in type.GetContainingTypes(true, ReturnOrder.Parent))
+			{
+				if (!parent.IsGenericType)
+				{
+					break;
+				}
+
+				if (parent.IsUnboundGenericType)
+				{
+					continue;
+				}
+
+				ImmutableArray<ITypeParameterSymbol> parameters = parent.TypeParameters;
+				ImmutableArray<ITypeSymbol> arguments = parent.TypeArguments;
+
+				AddTypeParameterReplacements(parameters, arguments, list);
+			}
+
+			return list;
 		}
 
 		private bool IncludeAdditionalNodes(

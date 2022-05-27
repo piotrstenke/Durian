@@ -1333,10 +1333,91 @@ namespace Durian.Analysis.Extensions
 		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/>.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
+		/// <param name="declaration">First retrieved <see cref="MethodDeclarationSyntax"/> associated with the specified <paramref name="method"/>.</param>
+		public static bool IsPartial(this IMethodSymbol method, out MethodDeclarationSyntax? declaration)
+		{
+#if ENABLE_REFLECTION
+			if (CheckReflectionBool(method, "IsPartial"))
+			{
+				declaration = default;
+				return true;
+			}
+#endif
+			MethodDeclarationSyntax? decl = default;
+			bool result = IsPartial_Internal(method, () => decl = method.DeclaringSyntaxReferences[0].GetSyntax() as MethodDeclarationSyntax);
+
+			declaration = decl;
+			return result;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
 		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
-		public static bool IsPartial(this IMethodSymbol method, BaseMethodDeclarationSyntax declaration)
+		public static bool IsPartial(this IMethodSymbol method, MethodDeclarationSyntax declaration)
 		{
 			return IsPartial_Internal(method, () => declaration);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
+		public static bool IsPartialAccessibility(this IMethodSymbol method)
+		{
+			return method.IsPartialAccessibility(out _);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/> with no accessibility modifier specified.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
+		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
+		public static bool IsPartialAccessibility(this IMethodSymbol method, MethodDeclarationSyntax declaration)
+		{
+			if(method.DeclaredAccessibility != Accessibility.Private)
+			{
+				return false;
+			}
+
+			if(method.IsPartial(declaration))
+			{
+				return !declaration.Modifiers.Any(m => SyntaxFacts.IsAccessibilityModifier(m.Kind()));
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/> with no accessibility modifier specified.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
+		/// <param name="declaration">First retrieved <see cref="MethodDeclarationSyntax"/> associated with the specified <paramref name="method"/>.</param>
+		public static bool IsPartialAccessibility(this IMethodSymbol method, [NotNullWhen(true)]out MethodDeclarationSyntax? declaration)
+		{
+			if(method.DeclaredAccessibility != Accessibility.Private)
+			{
+				declaration = default;
+				return false;
+			}
+
+			if(!method.IsPartial(out declaration))
+			{
+				return false;
+			}
+
+			if(declaration is null)
+			{
+				declaration = method.GetSyntax<MethodDeclarationSyntax>();
+
+				if(declaration is null)
+				{
+					return false;
+				}
+			}
+
+			return !declaration.Modifiers.Any(m => SyntaxFacts.IsAccessibilityModifier(m.Kind()));
 		}
 
 		/// <summary>
@@ -1363,7 +1444,7 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>..
+		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
 		/// <param name="retrieveNode">Determines whether to call the <see cref="SyntaxReference.GetSyntax(CancellationToken)"/> method when partiality of the <paramref name="method"/> cannot be determined by other means.</param>
@@ -1373,11 +1454,21 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>..
+		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
+		/// <param name="declaration">First retrieved <see cref="MethodDeclarationSyntax"/> associated with the specified <paramref name="method"/>.</param>
+		public static bool IsPartialContext(this IMethodSymbol method, out MethodDeclarationSyntax? declaration)
+		{
+			return method.IsPartial(out declaration) && method.GetContainingTypes().All(t => t.IsPartial());
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
 		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
-		public static bool IsPartialContext(this IMethodSymbol method, BaseMethodDeclarationSyntax declaration)
+		public static bool IsPartialContext(this IMethodSymbol method, MethodDeclarationSyntax declaration)
 		{
 			return method.IsPartial(declaration) && method.GetContainingTypes().All(t => t.IsPartial());
 		}

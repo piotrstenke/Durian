@@ -505,7 +505,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		}
 
 		private static bool AnalyzeBaseMethodParameters(
-													in TypeParameterContainer typeParameters,
+			in TypeParameterContainer typeParameters,
 			in TypeParameterContainer baseTypeParameters,
 			IDiagnosticReceiver diagnosticReceiver
 		)
@@ -714,7 +714,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		}
 
 		private static bool AnalyzeCollidingMethodParameters(
-					IMethodSymbol symbol,
+			IMethodSymbol symbol,
 			in CollidingMember collidingMember,
 			in TypeParameterContainer typeParameters,
 			ParameterGeneration[] targetGeneration,
@@ -803,7 +803,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		}
 
 		private static bool AnalyzeParameterInBaseMethod(
-					in TypeParameterData thisData,
+			in TypeParameterData thisData,
 			in TypeParameterData baseData,
 			IDiagnosticReceiver diagnosticReceiver
 		)

@@ -6,7 +6,7 @@ namespace Durian.Analysis
 	/// <summary>
 	/// Defines all types that have a built-in alias.
 	/// </summary>
-	public enum KeywordType
+	public enum TypeKeyword
 	{
 		/// <summary>
 		/// Type is not primitive.
@@ -99,7 +99,7 @@ namespace Durian.Analysis
 		Void = 17,
 
 		/// <summary>
-		/// Type represents a <see cref="string"/>.
+		/// Type represents an <see cref="object"/>.
 		/// </summary>
 		Object = 18,
 

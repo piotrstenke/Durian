@@ -39,30 +39,6 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.CoreAnalyzer"/> package.
-		/// </summary>
-		public static PackageIdentity CoreAnalyzer
-		{
-			get
-			{
-				if(!IdentityPool.Packages.TryGetValue("CoreAnalyzer", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.CoreAnalyzer,
-						version: "3.0.0",
-						type: PackageType.Analyzer,
-						modules: new DurianModule[]
-						{
-							DurianModule.Core
-						}
-					);
-				}
-
-				return package;
-			}
-		}
-
-		/// <summary>
 		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.Core"/> package.
 		/// </summary>
 		public static PackageIdentity Core
@@ -75,6 +51,30 @@ namespace Durian.Info
 						enumValue: DurianPackage.Core,
 						version: "3.0.0",
 						type: PackageType.Library,
+						modules: new DurianModule[]
+						{
+							DurianModule.Core
+						}
+					);
+				}
+
+				return package;
+			}
+		}
+
+		/// <summary>
+		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.CoreAnalyzer"/> package.
+		/// </summary>
+		public static PackageIdentity CoreAnalyzer
+		{
+			get
+			{
+				if(!IdentityPool.Packages.TryGetValue("CoreAnalyzer", out PackageIdentity package))
+				{
+					package = new(
+						enumValue: DurianPackage.CoreAnalyzer,
+						version: "3.0.0",
+						type: PackageType.Analyzer,
 						modules: new DurianModule[]
 						{
 							DurianModule.Core

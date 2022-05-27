@@ -198,7 +198,7 @@ namespace Durian.Analysis.Data
 		}
 
 		private static FieldDeclarationSyntax GetFieldDeclarationFromSymbol(
-							IFieldSymbol symbol,
+			IFieldSymbol symbol,
 			ICompilationData compilation,
 			out SemanticModel semanticModel,
 			out VariableDeclaratorSyntax variable,

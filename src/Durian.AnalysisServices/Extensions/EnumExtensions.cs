@@ -13,10 +13,43 @@ namespace Durian.Analysis.Extensions
 	public static class EnumExtensions
 	{
 		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="Accessibility"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static Accessibility GetAccessibility(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.PublicKeyword => Accessibility.Public,
+				SyntaxKind.PrivateKeyword => Accessibility.Private,
+				SyntaxKind.ProtectedKeyword => Accessibility.Protected,
+				SyntaxKind.InternalKeyword => Accessibility.Internal,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="Accessor"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static Accessor GetAccessor(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.GetKeyword or SyntaxKind.GetAccessorDeclaration => Accessor.Get,
+				SyntaxKind.SetKeyword or SyntaxKind.SetAccessorDeclaration => Accessor.Set,
+				SyntaxKind.InitKeyword or SyntaxKind.InitAccessorDeclaration => Accessor.Init,
+				SyntaxKind.AddKeyword or SyntaxKind.AddAccessorDeclaration => Accessor.Add,
+				SyntaxKind.RemoveKeyword or SyntaxKind.RemoveAccessorDeclaration => Accessor.Remove,
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="Accessor"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="MethodKind"/> to convert.</param>
-		public static Accessor AsAccessor(this MethodKind value)
+		public static Accessor GetAccessor(this MethodKind value)
 		{
 			return value switch
 			{
@@ -32,7 +65,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="Accessor"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="PropertyAccessor"/> to convert.</param>
-		public static Accessor AsAccessor(this PropertyAccessor value)
+		public static Accessor GetAccessor(this PropertyAccessor value)
 		{
 			int n = (int)value;
 
@@ -48,7 +81,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="Accessor"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="EventAccessor"/> to convert.</param>
-		public static Accessor AsAccessor(this EventAccessor value)
+		public static Accessor GetAccessor(this EventAccessor value)
 		{
 			const int min = (int)Accessor.Init;
 
@@ -68,10 +101,113 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="AttributeTarget"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static AttributeTarget GetAttributeTarget(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.AssemblyKeyword => AttributeTarget.Assembly,
+				SyntaxKind.ReturnKeyword => AttributeTarget.Return,
+				SyntaxKind.FieldKeyword => AttributeTarget.Field,
+				SyntaxKind.MethodKeyword => AttributeTarget.Method,
+				SyntaxKind.EventKeyword => AttributeTarget.Event,
+				SyntaxKind.PropertyKeyword => AttributeTarget.Property,
+				SyntaxKind.ModuleKeyword => AttributeTarget.Module,
+				SyntaxKind.ParamKeyword => AttributeTarget.Param,
+				SyntaxKind.TypeKeyword => AttributeTarget.Type,
+				SyntaxKind.TypeVarKeyword => AttributeTarget.TypeVar,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns a keyword used to refer to a <see cref="ISymbol"/> of the specified <paramref name="kind"/> inside an attribute list.
+		/// </summary>
+		/// <param name="kind">Kind of method to get the keyword for.</param>
+		/// <param name="targetKind">Determines which keyword to return when there is more than one option.</param>
+		public static AttributeTarget GetAttributeTarget(this SymbolKind kind, AttributeTargetKind targetKind = default)
+		{
+			return kind switch
+			{
+				SymbolKind.NamedType => targetKind == AttributeTargetKind.Value ? AttributeTarget.Return : AttributeTarget.Type,
+				SymbolKind.Field => AttributeTarget.Field,
+				SymbolKind.Method => targetKind == AttributeTargetKind.Value ? AttributeTarget.Return : AttributeTarget.Method,
+				SymbolKind.Property => targetKind == AttributeTargetKind.Value ? AttributeTarget.Field : AttributeTarget.Property,
+				SymbolKind.Event => targetKind switch
+				{
+					AttributeTargetKind.This => AttributeTarget.Event,
+					AttributeTargetKind.Value => AttributeTarget.Field,
+					AttributeTargetKind.Handler => AttributeTarget.Method,
+					_ => default
+				},
+				SymbolKind.TypeParameter => AttributeTarget.TypeVar,
+				SymbolKind.Parameter => AttributeTarget.Param,
+				SymbolKind.Assembly => AttributeTarget.Assembly,
+				SymbolKind.NetModule => AttributeTarget.Module,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns a keyword used to refer to a <see cref="IMethodSymbol"/> of the specified <paramref name="kind"/> inside an attribute list.
+		/// </summary>
+		/// <param name="kind">Kind of method to get the keyword for.</param>
+		/// <param name="targetKind">Determines which keyword to return when there is more than one option.</param>
+		public static AttributeTarget GetAttributeTarget(this MethodKind kind, AttributeTargetKind targetKind = default)
+		{
+			return kind switch
+			{
+				MethodKind.EventAdd or
+				MethodKind.EventRemove or
+				MethodKind.PropertySet => targetKind switch
+				{
+					AttributeTargetKind.Value => AttributeTarget.Return,
+					AttributeTargetKind.Handler => AttributeTarget.Param,
+					_ => AttributeTarget.Method
+				},
+				_ => targetKind == AttributeTargetKind.Value ? AttributeTarget.Return : AttributeTarget.Method
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="GenericConstraint"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static GenericConstraint GetConstraint(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.TypeConstraint => GenericConstraint.Type,
+				SyntaxKind.ClassConstraint or SyntaxKind.ClassKeyword => GenericConstraint.Class,
+				SyntaxKind.StructConstraint or SyntaxKind.StructConstraint => GenericConstraint.Struct,
+				SyntaxKind.ConstructorConstraint or SyntaxKind.NewKeyword => GenericConstraint.New,
+				SyntaxKind.UnmanagedKeyword => GenericConstraint.Unmanaged,
+				SyntaxKind.DefaultConstraint or SyntaxKind.DefaultKeyword => GenericConstraint.Default,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="ConstructorInitializer"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static ConstructorInitializer GetConstructorInitializer(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.ThisKeyword or SyntaxKind.ThisConstructorInitializer => ConstructorInitializer.This,
+				SyntaxKind.BaseKeyword or SyntaxKind.BaseConstructorInitializer => ConstructorInitializer.Base,
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="DecimalLiteralSuffix"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="NumericLiteralSuffix"/> to convert.</param>
-		public static DecimalLiteralSuffix AsDecimal(this NumericLiteralSuffix value)
+		public static DecimalLiteralSuffix GetDecimalSuffix(this NumericLiteralSuffix value)
 		{
 			int number = (int)value - (int)NumericLiteralSuffix.LongUpperUnsignedUpper;
 
@@ -84,10 +220,42 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="DecimalLiteralSuffix"/> value.
+		/// </summary>
+		/// <remarks>The returned value is considered uppercase (see <see cref="IsUpper(DecimalLiteralSuffix)"/> for more details).</remarks>
+		/// <param name="value"><see cref="SpecialType"/> to convert.</param>
+		public static DecimalLiteralSuffix GetDecimalSuffix(this SpecialType value)
+		{
+			return value switch
+			{
+				SpecialType.System_Single => DecimalLiteralSuffix.FloatUpper,
+				SpecialType.System_Double => DecimalLiteralSuffix.DoubleUpper,
+				SpecialType.System_Decimal => DecimalLiteralSuffix.DecimalUpper,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="DecimalLiteralSuffix"/> value.
+		/// </summary>
+		/// <remarks>The returned value is considered uppercase (see <see cref="IsUpper(DecimalLiteralSuffix)"/> for more details).</remarks>
+		/// <param name="value"><see cref="TypeKeyword"/> to convert.</param>
+		public static DecimalLiteralSuffix GetDecimalSuffix(this TypeKeyword value)
+		{
+			return value switch
+			{
+				TypeKeyword.Float => DecimalLiteralSuffix.FloatUpper,
+				TypeKeyword.Double => DecimalLiteralSuffix.DoubleUpper,
+				TypeKeyword.Decimal => DecimalLiteralSuffix.DecimalUpper,
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="DecimalValueType"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="SpecialType"/> to convert.</param>
-		public static DecimalValueType AsDecimal(this SpecialType value)
+		public static DecimalValueType GetDecimalType(this SpecialType value)
 		{
 			return value switch
 			{
@@ -101,14 +269,74 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="DecimalValueType"/> value.
 		/// </summary>
-		/// <param name="value"><see cref="KeywordType"/> to convert.</param>
-		public static DecimalValueType AsDecimal(this KeywordType value)
+		/// <param name="value"><see cref="TypeKeyword"/> to convert.</param>
+		public static DecimalValueType GetDecimalType(this TypeKeyword value)
 		{
 			return value switch
 			{
-				KeywordType.Float => DecimalValueType.Float,
-				KeywordType.Double => DecimalValueType.Double,
-				KeywordType.Decimal => DecimalValueType.Decimal,
+				TypeKeyword.Float => DecimalValueType.Float,
+				TypeKeyword.Double => DecimalValueType.Double,
+				TypeKeyword.Decimal => DecimalValueType.Decimal,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="DecimalValueType"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static DecimalValueType GetDecimalType(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.FloatKeyword => DecimalValueType.Float,
+				SyntaxKind.DoubleKeyword => DecimalValueType.Double,
+				SyntaxKind.DecimalKeyword => DecimalValueType.Decimal,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns the value that is considered default for the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="TypeKeyword"/> to get the default value of.</param>
+		public static object? GetDefaultValue(this TypeKeyword type)
+		{
+			return type switch
+			{
+				TypeKeyword.Short => default(short),
+				TypeKeyword.Int => default(int),
+				TypeKeyword.Long => default(long),
+				TypeKeyword.UShort => default(ushort),
+				TypeKeyword.UInt => default(uint),
+				TypeKeyword.ULong => default(ulong),
+				TypeKeyword.Byte => default(byte),
+				TypeKeyword.SByte => default(sbyte),
+				TypeKeyword.Float => default(float),
+				TypeKeyword.Double => default(double),
+				TypeKeyword.Decimal => default(decimal),
+				TypeKeyword.Char => default(char),
+				TypeKeyword.String => default(string),
+				TypeKeyword.Bool => default(bool),
+				TypeKeyword.NInt => default(nint),
+				TypeKeyword.NUInt => default(nuint),
+				TypeKeyword.Object => default(object),
+				TypeKeyword.Dynamic => default(dynamic),
+				// TypeKeyword.Void => default,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="EventAccessor"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static EventAccessor GetEventAccessor(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.AddKeyword or SyntaxKind.AddAccessorDeclaration => EventAccessor.Add,
+				SyntaxKind.RemoveKeyword or SyntaxKind.RemoveAccessorDeclaration => EventAccessor.Remove,
 				_ => default
 			};
 		}
@@ -117,7 +345,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="EventAccessor"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="Accessor"/> to convert.</param>
-		public static EventAccessor AsEvent(this Accessor value)
+		public static EventAccessor GetEventAccessor(this Accessor value)
 		{
 			if (value == default)
 			{
@@ -131,7 +359,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="IntegerValueType"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="SpecialType"/> to convert.</param>
-		public static IntegerValueType AsInteger(this SpecialType value)
+		public static IntegerValueType GetIntegerType(this SpecialType value)
 		{
 			return value switch
 			{
@@ -150,12 +378,12 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="IntegerValueType"/> value.
 		/// </summary>
-		/// <param name="value"><see cref="KeywordType"/> to convert.</param>
-		public static IntegerValueType AsInteger(this KeywordType value)
+		/// <param name="value"><see cref="TypeKeyword"/> to convert.</param>
+		public static IntegerValueType GetIntegerType(this TypeKeyword value)
 		{
 			int n = (int)value;
 
-			if (n <= 0 || n > (int)KeywordType.SByte)
+			if (n <= 0 || n > (int)TypeKeyword.SByte)
 			{
 				return default;
 			}
@@ -164,66 +392,86 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <paramref name="value"/> to an associated <see cref="KeywordType"/> value.
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="IntegerValueType"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static IntegerValueType GetIntegerType(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.IntKeyword => IntegerValueType.Int32,
+				SyntaxKind.LongKeyword => IntegerValueType.Int64,
+				SyntaxKind.ShortKeyword => IntegerValueType.Int16,
+				SyntaxKind.ByteKeyword => IntegerValueType.Byte,
+				SyntaxKind.ULongKeyword => IntegerValueType.UInt64,
+				SyntaxKind.UIntKeyword => IntegerValueType.UInt32,
+				SyntaxKind.SByteKeyword => IntegerValueType.SByte,
+				SyntaxKind.UShortKeyword => IntegerValueType.UInt16,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="TypeKeyword"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="SpecialType"/> to convert.</param>
-		public static KeywordType AsKeyword(this SpecialType value)
+		public static TypeKeyword GetKeyword(this SpecialType value)
 		{
 			return value switch
 			{
-				SpecialType.System_Int16 => KeywordType.Short,
-				SpecialType.System_Int32 => KeywordType.Int,
-				SpecialType.System_Int64 => KeywordType.Long,
-				SpecialType.System_UInt16 => KeywordType.UShort,
-				SpecialType.System_UInt32 => KeywordType.UInt,
-				SpecialType.System_UInt64 => KeywordType.ULong,
-				SpecialType.System_Byte => KeywordType.Byte,
-				SpecialType.System_SByte => KeywordType.SByte,
-				SpecialType.System_Single => KeywordType.Float,
-				SpecialType.System_Double => KeywordType.Double,
-				SpecialType.System_Decimal => KeywordType.Decimal,
-				SpecialType.System_String => KeywordType.String,
-				SpecialType.System_Char => KeywordType.Char,
-				SpecialType.System_Boolean => KeywordType.Bool,
-				SpecialType.System_Object => KeywordType.Object,
-				SpecialType.System_IntPtr => KeywordType.NInt,
-				SpecialType.System_UIntPtr => KeywordType.NUInt,
-				SpecialType.System_Void => KeywordType.Void,
+				SpecialType.System_Int16 => TypeKeyword.Short,
+				SpecialType.System_Int32 => TypeKeyword.Int,
+				SpecialType.System_Int64 => TypeKeyword.Long,
+				SpecialType.System_UInt16 => TypeKeyword.UShort,
+				SpecialType.System_UInt32 => TypeKeyword.UInt,
+				SpecialType.System_UInt64 => TypeKeyword.ULong,
+				SpecialType.System_Byte => TypeKeyword.Byte,
+				SpecialType.System_SByte => TypeKeyword.SByte,
+				SpecialType.System_Single => TypeKeyword.Float,
+				SpecialType.System_Double => TypeKeyword.Double,
+				SpecialType.System_Decimal => TypeKeyword.Decimal,
+				SpecialType.System_String => TypeKeyword.String,
+				SpecialType.System_Char => TypeKeyword.Char,
+				SpecialType.System_Boolean => TypeKeyword.Bool,
+				SpecialType.System_Object => TypeKeyword.Object,
+				SpecialType.System_IntPtr => TypeKeyword.NInt,
+				SpecialType.System_UIntPtr => TypeKeyword.NUInt,
+				SpecialType.System_Void => TypeKeyword.Void,
 				_ => default
 			};
 		}
 
 		/// <summary>
-		/// Converts the specified <paramref name="value"/> to an associated <see cref="KeywordType"/> value.
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="TypeKeyword"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="IntegerValueType"/> to convert.</param>
-		public static KeywordType AsKeyword(this IntegerValueType value)
+		public static TypeKeyword GetKeyword(this IntegerValueType value)
 		{
 			return value switch
 			{
-				IntegerValueType.Int16 => KeywordType.Short,
-				IntegerValueType.Int32 => KeywordType.Int,
-				IntegerValueType.Int64 => KeywordType.Long,
-				IntegerValueType.UInt16 => KeywordType.UShort,
-				IntegerValueType.UInt32 => KeywordType.UInt,
-				IntegerValueType.UInt64 => KeywordType.ULong,
-				IntegerValueType.Byte => KeywordType.Byte,
-				IntegerValueType.SByte => KeywordType.SByte,
+				IntegerValueType.Int16 => TypeKeyword.Short,
+				IntegerValueType.Int32 => TypeKeyword.Int,
+				IntegerValueType.Int64 => TypeKeyword.Long,
+				IntegerValueType.UInt16 => TypeKeyword.UShort,
+				IntegerValueType.UInt32 => TypeKeyword.UInt,
+				IntegerValueType.UInt64 => TypeKeyword.ULong,
+				IntegerValueType.Byte => TypeKeyword.Byte,
+				IntegerValueType.SByte => TypeKeyword.SByte,
 				_ => default
 			};
 		}
 
 		/// <summary>
-		/// Converts the specified <paramref name="value"/> to an associated <see cref="KeywordType"/> value.
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="TypeKeyword"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="DecimalValueType"/> to convert.</param>
-		public static KeywordType AsKeyword(this DecimalValueType value)
+		public static TypeKeyword GetKeyword(this DecimalValueType value)
 		{
 			return value switch
 			{
-				DecimalValueType.Float => KeywordType.Float,
-				DecimalValueType.Double => KeywordType.Double,
-				DecimalValueType.Decimal => KeywordType.Decimal,
+				DecimalValueType.Float => TypeKeyword.Float,
+				DecimalValueType.Double => TypeKeyword.Double,
+				DecimalValueType.Decimal => TypeKeyword.Decimal,
 				_ => default
 			};
 		}
@@ -232,30 +480,16 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="LambdaStyle"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="MethodStyle"/> to convert.</param>
-		public static LambdaStyle AsLambda(this MethodStyle value)
+		public static LambdaStyle GetLambdaStyle(this MethodStyle value)
 		{
 			return (LambdaStyle)value;
-		}
-
-		/// <summary>
-		/// Converts the specified <paramref name="value"/> to an associated <see cref="MethodStyle"/> value.
-		/// </summary>
-		/// <param name="value"><see cref="LambdaStyle"/> to convert.</param>
-		public static MethodStyle AsMethod(this LambdaStyle value)
-		{
-			if (value == LambdaStyle.Method)
-			{
-				return MethodStyle.Block;
-			}
-
-			return (MethodStyle)value;
 		}
 
 		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="MethodKind"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="Accessor"/> to convert.</param>
-		public static MethodKind AsMethod(this Accessor value)
+		public static MethodKind GetMethodKind(this Accessor value)
 		{
 			return value switch
 			{
@@ -269,10 +503,38 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="MethodStyle"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="LambdaStyle"/> to convert.</param>
+		public static MethodStyle GetMethodStyle(this LambdaStyle value)
+		{
+			if (value == LambdaStyle.Method)
+			{
+				return MethodStyle.Block;
+			}
+
+			return (MethodStyle)value;
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="NamespaceStyle"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static NamespaceStyle GetNamespaceStyle(this SyntaxKind value)
+		{
+			if (value == SyntaxKind.FileScopedNamespaceDeclaration)
+			{
+				return NamespaceStyle.File;
+			}
+
+			return NamespaceStyle.Default;
+		}
+
+		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="NumericLiteralSuffix"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="DecimalLiteralSuffix"/> to convert.</param>
-		public static NumericLiteralSuffix AsNumeric(this DecimalLiteralSuffix value)
+		public static NumericLiteralSuffix GetNumericSuffix(this DecimalLiteralSuffix value)
 		{
 			return value == DecimalLiteralSuffix.None
 				? NumericLiteralSuffix.None
@@ -280,10 +542,155 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="OverloadableOperator"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static OverloadableOperator GetOperator(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.UnaryPlusExpression
+					=> OverloadableOperator.UnaryPlus,
+
+				SyntaxKind.UnaryMinusExpression
+					=> OverloadableOperator.UnaryMinus,
+
+				SyntaxKind.AddExpression or
+				SyntaxKind.AddAssignmentExpression or
+				SyntaxKind.PlusToken or
+				SyntaxKind.PlusEqualsToken
+					=> OverloadableOperator.Addition,
+
+				SyntaxKind.SubtractExpression or
+				SyntaxKind.SubtractAssignmentExpression or
+				SyntaxKind.MinusToken or
+				SyntaxKind.MinusEqualsToken
+					=> OverloadableOperator.Subtraction,
+
+				SyntaxKind.MultiplyExpression or
+				SyntaxKind.MultiplyAssignmentExpression or
+				SyntaxKind.AsteriskToken or
+				SyntaxKind.AsteriskEqualsToken
+					=> OverloadableOperator.Multiplication,
+
+				SyntaxKind.DivideExpression or
+				SyntaxKind.DivideAssignmentExpression or
+				SyntaxKind.SlashToken or
+				SyntaxKind.SlashEqualsToken
+					=> OverloadableOperator.Division,
+
+				SyntaxKind.ModuloExpression or
+				SyntaxKind.ModuloAssignmentExpression or
+				SyntaxKind.PercentToken or
+				SyntaxKind.PercentEqualsToken
+					=> OverloadableOperator.Remainder,
+
+				SyntaxKind.PreIncrementExpression or
+				SyntaxKind.PostDecrementExpression or
+				SyntaxKind.PlusPlusToken
+					=> OverloadableOperator.Increment,
+
+				SyntaxKind.PreDecrementExpression or
+				SyntaxKind.PostDecrementExpression or
+				SyntaxKind.MinusMinusToken
+					=> OverloadableOperator.Decrement,
+
+				SyntaxKind.EqualsExpression or
+				SyntaxKind.EqualsEqualsToken
+					=> OverloadableOperator.Equality,
+
+				SyntaxKind.NotEqualsExpression or
+				SyntaxKind.ExclamationEqualsToken
+					=> OverloadableOperator.Inequality,
+
+				SyntaxKind.ExclusiveOrExpression or
+				SyntaxKind.ExclusiveOrAssignmentExpression or
+				SyntaxKind.CaretToken or
+				SyntaxKind.CaretEqualsToken
+					=> OverloadableOperator.LogicalXor,
+
+				SyntaxKind.LogicalAndExpression or
+				SyntaxKind.BitwiseAndExpression or
+				SyntaxKind.AndAssignmentExpression or
+				SyntaxKind.AmpersandToken or
+				SyntaxKind.AmpersandEqualsToken
+					=> OverloadableOperator.LogicalAnd,
+
+				SyntaxKind.LogicalOrExpression or
+				SyntaxKind.BitwiseOrExpression or
+				SyntaxKind.OrAssignmentExpression or
+				SyntaxKind.BarToken or
+				SyntaxKind.BarEqualsToken
+					=> OverloadableOperator.LogicalOr,
+
+				SyntaxKind.LogicalNotExpression or
+				SyntaxKind.ExclamationToken
+					=> OverloadableOperator.Negation,
+
+				SyntaxKind.TrueLiteralExpression or
+				SyntaxKind.TrueKeyword
+					=> OverloadableOperator.True,
+
+				SyntaxKind.FalseLiteralExpression or
+				SyntaxKind.FalseKeyword
+					=> OverloadableOperator.False,
+
+				SyntaxKind.BitwiseNotExpression or
+				SyntaxKind.TildeToken
+					=> OverloadableOperator.Complement,
+
+				SyntaxKind.GreaterThanExpression or
+				SyntaxKind.GreaterThanToken
+					=> OverloadableOperator.GreaterThan,
+
+				SyntaxKind.GreaterThanOrEqualExpression or
+				SyntaxKind.GreaterThanEqualsToken
+					=> OverloadableOperator.GreaterThanOrEqual,
+
+				SyntaxKind.LessThanExpression or
+				SyntaxKind.LessThanToken
+					=> OverloadableOperator.LessThan,
+
+				SyntaxKind.LessThanOrEqualExpression or
+				SyntaxKind.LessThanEqualsToken
+					=> OverloadableOperator.LessThanOrEqual,
+
+				SyntaxKind.RightShiftExpression or
+				SyntaxKind.RightShiftAssignmentExpression or
+				SyntaxKind.GreaterThanGreaterThanToken or
+				SyntaxKind.GreaterThanGreaterThanEqualsToken
+					=> OverloadableOperator.RightShift,
+
+				SyntaxKind.LeftShiftExpression or
+				SyntaxKind.LeftShiftAssignmentExpression or
+				SyntaxKind.LessThanLessThanToken or
+				SyntaxKind.LessThanLessThanToken
+					=> OverloadableOperator.LeftShift,
+
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="PropertyAccessor"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static PropertyAccessor GetPropertyAccessor(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.GetKeyword or SyntaxKind.GetAccessorDeclaration => PropertyAccessor.Get,
+				SyntaxKind.SetKeyword or SyntaxKind.SetAccessorDeclaration => PropertyAccessor.Set,
+				SyntaxKind.InitKeyword or SyntaxKind.InitAccessorDeclaration => PropertyAccessor.Init,
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="PropertyAccessor"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="Accessor"/> to convert.</param>
-		public static PropertyAccessor AsProperty(this Accessor value)
+		public static PropertyAccessor GetPropertyAccessor(this Accessor value)
 		{
 			return (PropertyAccessor)value;
 		}
@@ -292,7 +699,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/>to an associated <see cref="RefKind"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
-		public static RefKind AsRef(this SyntaxKind value)
+		public static RefKind GetRefKind(this SyntaxKind value)
 		{
 			return value switch
 			{
@@ -306,27 +713,27 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SpecialType"/> value.
 		/// </summary>
-		/// <param name="value"><see cref="KeywordType"/> to convert.</param>
-		public static SpecialType AsSpecialType(this KeywordType value)
+		/// <param name="value"><see cref="TypeKeyword"/> to convert.</param>
+		public static SpecialType GetSpecialType(this TypeKeyword value)
 		{
 			return value switch
 			{
-				KeywordType.Short => SpecialType.System_Int16,
-				KeywordType.Int => SpecialType.System_Int32,
-				KeywordType.Long => SpecialType.System_Int64,
-				KeywordType.UShort => SpecialType.System_UInt16,
-				KeywordType.UInt => SpecialType.System_UInt32,
-				KeywordType.ULong => SpecialType.System_UInt64,
-				KeywordType.Byte => SpecialType.System_Byte,
-				KeywordType.SByte => SpecialType.System_SByte,
-				KeywordType.Float => SpecialType.System_Single,
-				KeywordType.Double => SpecialType.System_Double,
-				KeywordType.Decimal => SpecialType.System_Decimal,
-				KeywordType.Bool => SpecialType.System_Boolean,
-				KeywordType.Char => SpecialType.System_Char,
-				KeywordType.String => SpecialType.System_String,
-				KeywordType.Void => SpecialType.System_Void,
-				KeywordType.Object or KeywordType.Dynamic => SpecialType.System_Object,
+				TypeKeyword.Short => SpecialType.System_Int16,
+				TypeKeyword.Int => SpecialType.System_Int32,
+				TypeKeyword.Long => SpecialType.System_Int64,
+				TypeKeyword.UShort => SpecialType.System_UInt16,
+				TypeKeyword.UInt => SpecialType.System_UInt32,
+				TypeKeyword.ULong => SpecialType.System_UInt64,
+				TypeKeyword.Byte => SpecialType.System_Byte,
+				TypeKeyword.SByte => SpecialType.System_SByte,
+				TypeKeyword.Float => SpecialType.System_Single,
+				TypeKeyword.Double => SpecialType.System_Double,
+				TypeKeyword.Decimal => SpecialType.System_Decimal,
+				TypeKeyword.Bool => SpecialType.System_Boolean,
+				TypeKeyword.Char => SpecialType.System_Char,
+				TypeKeyword.String => SpecialType.System_String,
+				TypeKeyword.Void => SpecialType.System_Void,
+				TypeKeyword.Object or TypeKeyword.Dynamic => SpecialType.System_Object,
 				_ => default
 			};
 		}
@@ -335,7 +742,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SpecialType"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="DecimalValueType"/> to convert.</param>
-		public static SpecialType AsSpecialType(this DecimalValueType value)
+		public static SpecialType GetSpecialType(this DecimalValueType value)
 		{
 			return value switch
 			{
@@ -350,7 +757,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SpecialType"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="IntegerValueType"/> to convert.</param>
-		public static SpecialType AsSpecialType(this IntegerValueType value)
+		public static SpecialType GetSpecialType(this IntegerValueType value)
 		{
 			return value switch
 			{
@@ -370,17 +777,17 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="NumericLiteralSuffix"/> value.
 		/// </summary>
 		/// <remarks>The returned value is considered unsigned-first uppercase (see <see cref="IsUpper(NumericLiteralPrefix)"/> and <see cref="UnsignedFirst(NumericLiteralSuffix)"/>for more details).</remarks>
-		/// <param name="value"><see cref="KeywordType"/> to convert.</param>
-		public static NumericLiteralSuffix AsSuffix(this KeywordType value)
+		/// <param name="value"><see cref="TypeKeyword"/> to convert.</param>
+		public static NumericLiteralSuffix GetSuffix(this TypeKeyword value)
 		{
 			return value switch
 			{
-				KeywordType.Long => NumericLiteralSuffix.LongUpper,
-				KeywordType.ULong => NumericLiteralSuffix.UnsignedUpperLongUpper,
-				KeywordType.UInt => NumericLiteralSuffix.UnsignedUpper,
-				KeywordType.Float => NumericLiteralSuffix.FloatUpper,
-				KeywordType.Double => NumericLiteralSuffix.DoubleUpper,
-				KeywordType.Decimal => NumericLiteralSuffix.DecimalUpper,
+				TypeKeyword.Long => NumericLiteralSuffix.LongUpper,
+				TypeKeyword.ULong => NumericLiteralSuffix.UnsignedUpperLongUpper,
+				TypeKeyword.UInt => NumericLiteralSuffix.UnsignedUpper,
+				TypeKeyword.Float => NumericLiteralSuffix.FloatUpper,
+				TypeKeyword.Double => NumericLiteralSuffix.DoubleUpper,
+				TypeKeyword.Decimal => NumericLiteralSuffix.DecimalUpper,
 				_ => default
 			};
 		}
@@ -390,7 +797,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <remarks>The returned value is considered unsigned-first uppercase (see <see cref="IsUpper(NumericLiteralPrefix)"/> and <see cref="UnsignedFirst(NumericLiteralSuffix)"/>for more details).</remarks>
 		/// <param name="value"><see cref="SpecialType"/> to convert.</param>
-		public static NumericLiteralSuffix AsSuffix(this SpecialType value)
+		public static NumericLiteralSuffix GetSuffix(this SpecialType value)
 		{
 			return value switch
 			{
@@ -409,7 +816,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <remarks>The returned value is considered unsigned-first uppercase (see <see cref="IsUpper(NumericLiteralPrefix)"/> and <see cref="UnsignedFirst(NumericLiteralSuffix)"/>for more details).</remarks>
 		/// <param name="value"><see cref="IntegerValueType"/> to convert.</param>
-		public static NumericLiteralSuffix AsSuffix(this IntegerValueType value)
+		public static NumericLiteralSuffix GetSuffix(this IntegerValueType value)
 		{
 			return value switch
 			{
@@ -423,9 +830,9 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="DecimalLiteralSuffix"/> value.
 		/// </summary>
-		/// <remarks>The returned value is considered unsigned-first uppercase (see <see cref="IsUpper(NumericLiteralPrefix)"/> and <see cref="UnsignedFirst(NumericLiteralSuffix)"/>for more details).</remarks>
+		/// <remarks>The returned value is considered unsigned-first uppercase (see <see cref="IsUpper(NumericLiteralPrefix)"/> for more details).</remarks>
 		/// <param name="value"><see cref="DecimalValueType"/> to convert.</param>
-		public static DecimalLiteralSuffix AsSuffix(this DecimalValueType value)
+		public static DecimalLiteralSuffix GetSuffix(this DecimalValueType value)
 		{
 			return value switch
 			{
@@ -440,7 +847,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="DecimalValueType"/> to convert.</param>
-		public static SyntaxKind AsSyntax(this DecimalValueType value)
+		public static SyntaxKind GetSyntaxKind(this DecimalValueType value)
 		{
 			return value switch
 			{
@@ -455,7 +862,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="IntegerValueType"/> to convert.</param>
-		public static SyntaxKind AsSyntax(this IntegerValueType value)
+		public static SyntaxKind GetSyntaxKind(this IntegerValueType value)
 		{
 			return value switch
 			{
@@ -475,7 +882,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="RefKind"/> to convert.</param>
-		public static SyntaxKind AsSyntax(this RefKind value)
+		public static SyntaxKind GetSyntaxKind(this RefKind value)
 		{
 			return value switch
 			{
@@ -490,7 +897,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="ConstructorInitializer"/> to convert.</param>
-		public static SyntaxKind AsSyntax(this ConstructorInitializer value)
+		public static SyntaxKind GetSyntaxKind(this ConstructorInitializer value)
 		{
 			return value switch
 			{
@@ -504,7 +911,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="AttributeTarget"/> to convert.</param>
-		public static SyntaxKind AsSyntax(this AttributeTarget value)
+		public static SyntaxKind GetSyntaxKind(this AttributeTarget value)
 		{
 			return value switch
 			{
@@ -526,7 +933,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="OverloadableOperator"/> to convert.</param>
-		public static SyntaxKind AsSyntax(this OverloadableOperator value)
+		public static SyntaxKind GetSyntaxKind(this OverloadableOperator value)
 		{
 			return value switch
 			{
@@ -552,7 +959,7 @@ namespace Durian.Analysis.Extensions
 				OverloadableOperator.Inequality => SyntaxKind.ExclamationEqualsToken,
 				OverloadableOperator.LessThan => SyntaxKind.LessThanToken,
 				OverloadableOperator.GreaterThan => SyntaxKind.GreaterThanToken,
-				OverloadableOperator.LestThanOrEqual => SyntaxKind.LessThanEqualsToken,
+				OverloadableOperator.LessThanOrEqual => SyntaxKind.LessThanEqualsToken,
 				OverloadableOperator.GreaterThanOrEqual => SyntaxKind.GreaterThanEqualsToken,
 				_ => default
 			};
@@ -562,7 +969,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="NamespaceStyle"/> to convert.</param>
-		public static SyntaxKind AsSyntax(this GenericConstraint value)
+		public static SyntaxKind GetSyntaxKind(this GenericConstraint value)
 		{
 			return value switch
 			{
@@ -581,7 +988,7 @@ namespace Durian.Analysis.Extensions
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="NamespaceStyle"/> to convert.</param>
-		public static SyntaxKind AsSyntax(this NamespaceStyle value)
+		public static SyntaxKind GetSyntaxKind(this NamespaceStyle value)
 		{
 			return value switch
 			{
@@ -594,96 +1001,61 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
-		/// <param name="value"><see cref="Accessor"/> to convert.</param>
-		public static SyntaxKind AsSyntax(this Accessor value)
+		/// <param name="value"><see cref="PropertyAccessor"/> to convert.</param>
+		public static SyntaxKind GetSyntaxKind(this PropertyAccessor value)
 		{
 			return value switch
 			{
-				Accessor.Get => SyntaxKind.GetAccessorDeclaration,
-				Accessor.Set => SyntaxKind.SetAccessorDeclaration,
-				Accessor.Init => SyntaxKind.InitAccessorDeclaration,
-				Accessor.Add => SyntaxKind.AddAccessorDeclaration,
-				Accessor.Remove => SyntaxKind.RemoveAccessorDeclaration,
+				PropertyAccessor.Get => SyntaxKind.GetKeyword,
+				PropertyAccessor.Set => SyntaxKind.SetKeyword,
+				PropertyAccessor.Init => SyntaxKind.InitKeyword,
 				_ => default
 			};
 		}
 
 		/// <summary>
-		/// Returns a keyword used to refer to a <see cref="ISymbol"/> of the specified <paramref name="kind"/> inside an attribute list.
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
-		/// <param name="kind">Kind of method to get the keyword for.</param>
-		/// <param name="targetKind">Determines which keyword to return when there is more than one option.</param>
-		public static string? GetAttributeTarget(this SymbolKind kind, AttributeTargetKind targetKind = default)
+		/// <param name="value"><see cref="EventAccessor"/> to convert.</param>
+		public static SyntaxKind GetSyntaxKind(this EventAccessor value)
 		{
-			return kind switch
+			return value switch
 			{
-				SymbolKind.NamedType => targetKind == AttributeTargetKind.Value ? "return" : "type",
-				SymbolKind.Field => "field",
-				SymbolKind.Method => targetKind == AttributeTargetKind.Value ? "return" : "method",
-				SymbolKind.Property => targetKind == AttributeTargetKind.Value ? "field" : "property",
-				SymbolKind.Event => targetKind switch
-				{
-					AttributeTargetKind.This => "event",
-					AttributeTargetKind.Value => "field",
-					AttributeTargetKind.Handler => "method",
-					_ => default
-				},
-				SymbolKind.TypeParameter => "typevar",
-				SymbolKind.Parameter => "param",
-				SymbolKind.Assembly => "assembly",
-				SymbolKind.NetModule => "module",
+				EventAccessor.Add => SyntaxKind.AddKeyword,
+				EventAccessor.Remove => SyntaxKind.RemoveKeyword,
 				_ => default
 			};
 		}
 
 		/// <summary>
-		/// Returns a keyword used to refer to a <see cref="IMethodSymbol"/> of the specified <paramref name="kind"/> inside an attribute list.
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
-		/// <param name="kind">Kind of method to get the keyword for.</param>
-		/// <param name="targetKind">Determines which keyword to return when there is more than one option.</param>
-		public static string GetAttributeTarget(this MethodKind kind, AttributeTargetKind targetKind = default)
+		/// <param name="value"><see cref="Accessor"/> to convert.</param>
+		public static SyntaxKind GetSyntaxKind(this Accessor value)
 		{
-			return kind switch
+			return value switch
 			{
-				MethodKind.EventAdd or
-				MethodKind.EventRemove or
-				MethodKind.PropertySet => targetKind switch
-				{
-					AttributeTargetKind.Value => "return",
-					AttributeTargetKind.Handler => "param",
-					_ => "method"
-				},
-				_ => targetKind == AttributeTargetKind.Value ? "return" : "method"
+				Accessor.Get => SyntaxKind.GetKeyword,
+				Accessor.Set => SyntaxKind.SetKeyword,
+				Accessor.Init => SyntaxKind.InitKeyword,
+				Accessor.Add => SyntaxKind.AddKeyword,
+				Accessor.Remove => SyntaxKind.RemoveKeyword,
+				_ => default
 			};
 		}
 
 		/// <summary>
-		/// Returns the value that is considered default for the specified <paramref name="type"/>.
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
-		/// <param name="type"><see cref="KeywordType"/> to get the default value of.</param>
-		public static object? GetDefaultValue(this KeywordType type)
+		/// <param name="value"><see cref="Accessibility"/> to convert.</param>
+		public static SyntaxKind GetSyntaxKind(this Accessibility value)
 		{
-			return type switch
+			return value switch
 			{
-				KeywordType.Short => default(short),
-				KeywordType.Int => default(int),
-				KeywordType.Long => default(long),
-				KeywordType.UShort => default(ushort),
-				KeywordType.UInt => default(uint),
-				KeywordType.ULong => default(ulong),
-				KeywordType.Byte => default(byte),
-				KeywordType.SByte => default(sbyte),
-				KeywordType.Float => default(float),
-				KeywordType.Double => default(double),
-				KeywordType.Decimal => default(decimal),
-				KeywordType.Char => default(char),
-				KeywordType.String => default(string),
-				KeywordType.Bool => default(bool),
-				KeywordType.NInt => default(nint),
-				KeywordType.NUInt => default(nuint),
-				KeywordType.Object => default(object),
-				KeywordType.Dynamic => default(dynamic),
-				// KeywordType.Void => default,
+				Accessibility.Public => SyntaxKind.PublicKeyword,
+				Accessibility.Private => SyntaxKind.PrivateKeyword,
+				Accessibility.Protected => SyntaxKind.ProtectedKeyword,
+				Accessibility.Internal => SyntaxKind.InternalKeyword,
 				_ => default
 			};
 		}
@@ -724,32 +1096,32 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <see cref="KeywordType"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// Converts the specified <see cref="TypeKeyword"/> <paramref name="value"/> to its <see cref="string"/> representation.
 		/// </summary>
-		/// <param name="value"><see cref="KeywordType"/> to convert to a <see cref="string"/> representation.</param>
-		public static string? GetText(this KeywordType value)
+		/// <param name="value"><see cref="TypeKeyword"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this TypeKeyword value)
 		{
 			return value switch
 			{
-				KeywordType.Short => "short",
-				KeywordType.Int => "int",
-				KeywordType.Long => "long",
-				KeywordType.UShort => "ushort",
-				KeywordType.UInt => "uint",
-				KeywordType.ULong => "ulong",
-				KeywordType.Byte => "byte",
-				KeywordType.SByte => "sbyte",
-				KeywordType.Float => "float",
-				KeywordType.Double => "double",
-				KeywordType.Decimal => "decimal",
-				KeywordType.Bool => "bool",
-				KeywordType.String => "string",
-				KeywordType.Char => "char",
-				KeywordType.NInt => "nint",
-				KeywordType.NUInt => "nuint",
-				KeywordType.Void => "void",
-				KeywordType.Object => "object",
-				KeywordType.Dynamic => "dynamic",
+				TypeKeyword.Short => "short",
+				TypeKeyword.Int => "int",
+				TypeKeyword.Long => "long",
+				TypeKeyword.UShort => "ushort",
+				TypeKeyword.UInt => "uint",
+				TypeKeyword.ULong => "ulong",
+				TypeKeyword.Byte => "byte",
+				TypeKeyword.SByte => "sbyte",
+				TypeKeyword.Float => "float",
+				TypeKeyword.Double => "double",
+				TypeKeyword.Decimal => "decimal",
+				TypeKeyword.Bool => "bool",
+				TypeKeyword.String => "string",
+				TypeKeyword.Char => "char",
+				TypeKeyword.NInt => "nint",
+				TypeKeyword.NUInt => "nuint",
+				TypeKeyword.Void => "void",
+				TypeKeyword.Object => "object",
+				TypeKeyword.Dynamic => "dynamic",
 				_ => default
 			};
 		}
@@ -762,6 +1134,7 @@ namespace Durian.Analysis.Extensions
 		{
 			return value switch
 			{
+				Accessibility.Private => "private",
 				Accessibility.Public => "public",
 				Accessibility.Protected => "protected",
 				Accessibility.Internal => "internal",
@@ -789,7 +1162,7 @@ namespace Durian.Analysis.Extensions
 				OverloadableOperator.GreaterThan => ">",
 				OverloadableOperator.GreaterThanOrEqual => ">=",
 				OverloadableOperator.LessThan => "<",
-				OverloadableOperator.LestThanOrEqual => "<=",
+				OverloadableOperator.LessThanOrEqual => "<=",
 				OverloadableOperator.Complement => "~",
 				OverloadableOperator.LogicalAnd => "&",
 				OverloadableOperator.LogicalOr => "|",
@@ -857,7 +1230,16 @@ namespace Durian.Analysis.Extensions
 		/// <param name="value"><see cref="DecimalLiteralSuffix"/> to convert to a <see cref="string"/> representation.</param>
 		public static string? GetText(this DecimalLiteralSuffix value)
 		{
-			return value.AsNumeric().GetText();
+			return value switch
+			{
+				DecimalLiteralSuffix.FloatLower => "f",
+				DecimalLiteralSuffix.FloatUpper => "F",
+				DecimalLiteralSuffix.DoubleLower => "d",
+				DecimalLiteralSuffix.DoubleUpper => "D",
+				DecimalLiteralSuffix.DecimalLower => "m",
+				DecimalLiteralSuffix.DecimalUpper => "M",
+				_ => default
+			};
 		}
 
 		/// <summary>
@@ -928,15 +1310,44 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <see cref="Exponential"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// Converts the specified <see cref="ExponentialStyle"/> <paramref name="value"/> to its <see cref="string"/> representation.
 		/// </summary>
-		/// <param name="value"><see cref="Exponential"/> to convert to a <see cref="string"/> representation.</param>
-		public static string? GetText(this Exponential value)
+		/// <param name="value"><see cref="ExponentialStyle"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this ExponentialStyle value)
 		{
 			return value switch
 			{
-				Exponential.Lowercase => "e",
-				Exponential.Uppercase => "E",
+				ExponentialStyle.Lowercase => "e",
+				ExponentialStyle.Uppercase => "E",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="PropertyAccessor"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="PropertyAccessor"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this PropertyAccessor value)
+		{
+			return value switch
+			{
+				PropertyAccessor.Get => "get",
+				PropertyAccessor.Set => "set",
+				PropertyAccessor.Init => "init",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="EventAccessor"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="EventAccessor"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this EventAccessor value)
+		{
+			return value switch
+			{
+				EventAccessor.Add => "add",
+				EventAccessor.Remove => "remove",
 				_ => default
 			};
 		}
@@ -1007,6 +1418,34 @@ namespace Durian.Analysis.Extensions
 				DecimalValueType.Float => "float",
 				DecimalValueType.Double => "double",
 				DecimalValueType.Decimal => "decimal",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="TypeKeyword"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static TypeKeyword GetTypeKeyword(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.IntKeyword => TypeKeyword.Int,
+				SyntaxKind.LongKeyword => TypeKeyword.Long,
+				SyntaxKind.FloatKeyword => TypeKeyword.Float,
+				SyntaxKind.DoubleKeyword => TypeKeyword.Double,
+				SyntaxKind.StringKeyword => TypeKeyword.String,
+				SyntaxKind.BoolKeyword => TypeKeyword.Bool,
+				SyntaxKind.ByteKeyword => TypeKeyword.Byte,
+				SyntaxKind.CharKeyword => TypeKeyword.Char,
+				SyntaxKind.DecimalKeyword => TypeKeyword.Decimal,
+				SyntaxKind.ObjectKeyword => TypeKeyword.Object,
+				SyntaxKind.VoidKeyword => TypeKeyword.Void,
+				SyntaxKind.ShortKeyword => TypeKeyword.Short,
+				SyntaxKind.UIntKeyword => TypeKeyword.UInt,
+				SyntaxKind.UShortKeyword => TypeKeyword.UShort,
+				SyntaxKind.ULongKeyword => TypeKeyword.ULong,
+				SyntaxKind.SByteKeyword => TypeKeyword.SByte,
 				_ => default
 			};
 		}

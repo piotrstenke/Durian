@@ -126,7 +126,7 @@ namespace Durian.Analysis.CodeGeneration
 		/// <summary>
 		/// Represents the less than or equal operator: x &lt;= y.
 		/// </summary>
-		LestThanOrEqual = 23,
+		LessThanOrEqual = 23,
 
 		/// <summary>
 		/// Represents the greater than or equal operator: x &gt;= y.
