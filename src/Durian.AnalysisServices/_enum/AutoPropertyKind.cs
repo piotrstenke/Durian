@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-namespace Durian.Analysis.CodeGeneration
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Defines all possible auto-property kinds.
@@ -26,6 +26,6 @@ namespace Durian.Analysis.CodeGeneration
 		/// <summary>
 		/// Auto-property with <see langword="get"/> and <see langword="init"/> accessors.
 		/// </summary>
-		GetInit,
+		GetInit = 3,
 	}
 }

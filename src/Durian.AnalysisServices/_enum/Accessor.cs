@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-namespace Durian.Analysis.CodeGeneration
+namespace Durian.Analysis
 {
 	/// <summary>
-	/// Defines all possible property accessor kinds.
+	/// Defines all possible accessor kinds.
 	/// </summary>
-	public enum PropertyAccessor
+	public enum Accessor
 	{
 		/// <summary>
 		/// Member is not an accessor.
@@ -27,5 +27,15 @@ namespace Durian.Analysis.CodeGeneration
 		/// Represents the <see langword="init"/> accessor.
 		/// </summary>
 		Init = 3,
+
+		/// <summary>
+		/// Represents the <see langword="add"/> accessor.
+		/// </summary>
+		Add = 4,
+
+		/// <summary>
+		/// Represents the <see langword="remove"/> accessor.
+		/// </summary>
+		Remove = 5
 	}
 }

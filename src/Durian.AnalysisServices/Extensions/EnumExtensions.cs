@@ -477,12 +477,180 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns a <see cref="string"/> representation of a C# keyword associated with the specified <paramref name="specialType"/> value.
+		/// </summary>
+		/// <param name="specialType">Value of <see cref="SpecialType"/> to get the C# keyword associated with.</param>
+		public static string? GetKeywordText(this SpecialType specialType)
+		{
+			if (specialType == SpecialType.None)
+			{
+				return default;
+			}
+
+			return specialType switch
+			{
+				SpecialType.System_Byte => "byte",
+				SpecialType.System_Char => "char",
+				SpecialType.System_Boolean => "bool",
+				SpecialType.System_Decimal => "decimal",
+				SpecialType.System_Double => "double",
+				SpecialType.System_Int16 => "short",
+				SpecialType.System_Int32 => "int",
+				SpecialType.System_Int64 => "long",
+				SpecialType.System_Object => "object",
+				SpecialType.System_SByte => "sbyte",
+				SpecialType.System_Single => "float",
+				SpecialType.System_String => "string",
+				SpecialType.System_UInt16 => "ushort",
+				SpecialType.System_UInt32 => "uint",
+				SpecialType.System_UInt64 => "ulong",
+				SpecialType.System_IntPtr => "nint",
+				SpecialType.System_UIntPtr => "nuint",
+				SpecialType.System_Void => "void",
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="LambdaStyle"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="MethodStyle"/> to convert.</param>
 		public static LambdaStyle GetLambdaStyle(this MethodStyle value)
 		{
+			if ((int)value == (int)LambdaStyle.Method)
+			{
+				return default;
+			}
+
 			return (LambdaStyle)value;
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="LiteralKind"/> value.
+		/// </summary>
+		/// <remarks><b>Special case:</b> if the <paramref name="value"/> is <see cref="SyntaxKind.BoolKeyword"/>, <see cref="LiteralKind.False"/> is returned.</remarks>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
+		public static LiteralKind GetLiteralKind(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.NumericLiteralExpression or
+				SyntaxKind.NumericLiteralToken or
+				SyntaxKind.IntKeyword or
+				SyntaxKind.UIntKeyword or
+				SyntaxKind.LongKeyword or
+				SyntaxKind.ULongKeyword or
+				SyntaxKind.ShortKeyword or
+				SyntaxKind.UShortKeyword or
+				SyntaxKind.ByteKeyword or
+				SyntaxKind.SByteKeyword or
+				SyntaxKind.FloatKeyword or
+				SyntaxKind.DoubleKeyword or
+				SyntaxKind.DecimalKeyword
+					=> LiteralKind.Number,
+
+				SyntaxKind.StringLiteralExpression or
+				SyntaxKind.StringLiteralToken or
+				SyntaxKind.InterpolatedStringExpression or
+				SyntaxKind.InterpolatedStringToken or
+				SyntaxKind.InterpolatedStringText or
+				SyntaxKind.InterpolatedStringTextToken or
+				SyntaxKind.InterpolatedStringStartToken or
+				SyntaxKind.InterpolatedStringEndToken or
+				SyntaxKind.InterpolatedVerbatimStringStartToken or
+				SyntaxKind.StringKeyword or
+				SyntaxKind.DoubleQuoteToken
+					=> LiteralKind.String,
+
+				SyntaxKind.CharacterLiteralExpression or
+				SyntaxKind.CharacterLiteralToken or
+				SyntaxKind.CharKeyword or
+				SyntaxKind.SingleQuoteToken
+					=> LiteralKind.Character,
+
+				SyntaxKind.DefaultLiteralExpression or
+				SyntaxKind.DefaultExpression or
+				SyntaxKind.DefaultKeyword
+					=> LiteralKind.Default,
+
+				SyntaxKind.TrueLiteralExpression or
+				SyntaxKind.TrueKeyword
+					=> LiteralKind.True,
+
+				SyntaxKind.FalseLiteralExpression or
+				SyntaxKind.FalseKeyword or
+				SyntaxKind.BoolKeyword
+					=> LiteralKind.False,
+
+				SyntaxKind.NullLiteralExpression or
+				SyntaxKind.NullKeyword
+					=> LiteralKind.Null,
+
+				SyntaxKind.ArgListExpression or
+				SyntaxKind.ArgListKeyword
+					=> LiteralKind.ArgList,
+
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="LiteralKind"/> value.
+		/// </summary>
+		/// <remarks><b>Special case:</b> if the <paramref name="value"/> is <see cref="TypeKeyword.Bool"/>, <see cref="LiteralKind.False"/> is returned.</remarks>
+		/// <param name="value"><see cref="TypeKeyword"/> to convert.</param>
+		public static LiteralKind GetLiteralKind(this TypeKeyword value)
+		{
+			if (value.IsNumberType())
+			{
+				return LiteralKind.Number;
+			}
+
+			return value switch
+			{
+				TypeKeyword.Char => LiteralKind.Character,
+				TypeKeyword.String => LiteralKind.String,
+				TypeKeyword.Bool => LiteralKind.False,
+				TypeKeyword.Object => LiteralKind.Null,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="LiteralKind"/> value.
+		/// </summary>
+		/// <remarks><b>Special case:</b> if the <paramref name="value"/> is <see cref="SpecialType.System_Boolean"/>, <see cref="LiteralKind.False"/> is returned.</remarks>
+		/// <param name="value"><see cref="SpecialType"/> to convert.</param>
+		public static LiteralKind GetLiteralKind(this SpecialType value)
+		{
+			if (value.IsNumberType())
+			{
+				return LiteralKind.Number;
+			}
+
+			switch (value)
+			{
+				case SpecialType.System_Boolean:
+					return LiteralKind.False;
+
+				case SpecialType.System_Char:
+					return LiteralKind.Character;
+
+				case SpecialType.System_String:
+					return LiteralKind.String;
+
+				case SpecialType.System_ArgIterator:
+					return LiteralKind.ArgList;
+
+				default:
+
+					if (value.IsReferenceType())
+					{
+						return LiteralKind.Null;
+					}
+
+					return default;
+			}
 		}
 
 		/// <summary>
@@ -707,6 +875,26 @@ namespace Durian.Analysis.Extensions
 				SyntaxKind.InKeyword => RefKind.In,
 				SyntaxKind.OutKeyword => RefKind.Out,
 				_ => RefKind.None
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SpecialType"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="LiteralKind"/> to convert.</param>
+		public static SpecialType GetSpecialType(this LiteralKind value)
+		{
+			return value switch
+			{
+				LiteralKind.Number => SpecialType.System_Int32,
+				LiteralKind.String => SpecialType.System_String,
+				LiteralKind.Character => SpecialType.System_Char,
+
+				LiteralKind.False or LiteralKind.True => SpecialType.System_Boolean,
+				LiteralKind.Null or LiteralKind.Default => SpecialType.System_Object,
+
+				LiteralKind.ArgList => SpecialType.System_ArgIterator,
+				_ => default
 			};
 		}
 
@@ -968,6 +1156,26 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
+		/// <param name="value"><see cref="LiteralKind"/> to convert.</param>
+		public static SyntaxKind GetSyntaxKind(this LiteralKind value)
+		{
+			return value switch
+			{
+				LiteralKind.Number => SyntaxKind.NumericLiteralToken,
+				LiteralKind.String => SyntaxKind.StringLiteralToken,
+				LiteralKind.Character => SyntaxKind.CharacterLiteralToken,
+				LiteralKind.True => SyntaxKind.TrueLiteralExpression,
+				LiteralKind.False => SyntaxKind.FalseLiteralExpression,
+				LiteralKind.Null => SyntaxKind.NullLiteralExpression,
+				LiteralKind.Default => SyntaxKind.DefaultLiteralExpression,
+				LiteralKind.ArgList => SyntaxKind.ArgListExpression,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
+		/// </summary>
 		/// <param name="value"><see cref="NamespaceStyle"/> to convert.</param>
 		public static SyntaxKind GetSyntaxKind(this GenericConstraint value)
 		{
@@ -1061,36 +1269,31 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns a <see cref="string"/> representation of a C# keyword associated with the specified <paramref name="specialType"/> value.
+		/// Returns the name of system type the specified <see cref="TypeKeyword"/> represents.
 		/// </summary>
-		/// <param name="specialType">Value of <see cref="SpecialType"/> to get the C# keyword associated with.</param>
-		public static string? GetText(this SpecialType specialType)
+		/// <param name="value"><see cref="TypeKeyword"/> to return the name of system type represented by.</param>
+		public static string? GetSystemName(this TypeKeyword value)
 		{
-			if (specialType == SpecialType.None)
+			return value switch
 			{
-				return default;
-			}
-
-			return specialType switch
-			{
-				SpecialType.System_Byte => "byte",
-				SpecialType.System_Char => "char",
-				SpecialType.System_Boolean => "bool",
-				SpecialType.System_Decimal => "decimal",
-				SpecialType.System_Double => "double",
-				SpecialType.System_Int16 => "short",
-				SpecialType.System_Int32 => "int",
-				SpecialType.System_Int64 => "long",
-				SpecialType.System_Object => "object",
-				SpecialType.System_SByte => "sbyte",
-				SpecialType.System_Single => "float",
-				SpecialType.System_String => "string",
-				SpecialType.System_UInt16 => "ushort",
-				SpecialType.System_UInt32 => "uint",
-				SpecialType.System_UInt64 => "ulong",
-				SpecialType.System_IntPtr => "nint",
-				SpecialType.System_UIntPtr => "nuint",
-				SpecialType.System_Void => "void",
+				TypeKeyword.Short => "Int16",
+				TypeKeyword.Int => "Int32",
+				TypeKeyword.Long => "Int64",
+				TypeKeyword.UShort => "UInt16",
+				TypeKeyword.UInt => "UInt32",
+				TypeKeyword.ULong => "UInt64",
+				TypeKeyword.Byte => "Byte",
+				TypeKeyword.SByte => "SByte",
+				TypeKeyword.NInt => "IntPtr",
+				TypeKeyword.NUInt => "UIntPtr",
+				TypeKeyword.Float => "Single",
+				TypeKeyword.Double => "Double",
+				TypeKeyword.Decimal => "Decimal",
+				TypeKeyword.Bool => "Boolean",
+				TypeKeyword.Char => "Char",
+				TypeKeyword.String => "String",
+				TypeKeyword.Void => "Void",
+				TypeKeyword.Object or TypeKeyword.Dynamic => "Object",
 				_ => default
 			};
 		}
@@ -1388,6 +1591,23 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Converts the specified <see cref="LiteralKind"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="LiteralKind"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this LiteralKind value)
+		{
+			return value switch
+			{
+				LiteralKind.True => "true",
+				LiteralKind.False => "false",
+				LiteralKind.Default => "default",
+				LiteralKind.Null => "null",
+				LiteralKind.ArgList => "__arglist",
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Converts the specified <see cref="IntegerValueType"/> <paramref name="value"/> to its <see cref="string"/> representation.
 		/// </summary>
 		/// <param name="value"><see cref="IntegerValueType"/> to convert to a <see cref="string"/> representation.</param>
@@ -1451,6 +1671,23 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="TypeKeyword"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="LiteralKind"/> to convert.</param>
+		public static TypeKeyword GetTypeKeyword(this LiteralKind value)
+		{
+			return value switch
+			{
+				LiteralKind.Number => TypeKeyword.Int,
+				LiteralKind.String => TypeKeyword.String,
+				LiteralKind.Character => TypeKeyword.Char,
+				LiteralKind.True or LiteralKind.False => TypeKeyword.Bool,
+				LiteralKind.Default or LiteralKind.Null or LiteralKind.ArgList => TypeKeyword.Object,
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Determines whether the specified <see cref="NumericLiteralPrefix"/> <paramref name="value"/> is considered to be binary, that is either:
 		/// <list type="bullet">
 		/// <item><see cref="NumericLiteralPrefix.BinaryLower"/></item>
@@ -1478,12 +1715,58 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <see cref="SpecialType"/> is a delegate type (including <see cref="System.Delegate"/> and <see cref="System.MulticastDelegate"/>).
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to determine whether is a delegate type.</param>
+		public static bool IsDelegateType(this SpecialType value)
+		{
+			return value is
+				SpecialType.System_AsyncCallback or
+				SpecialType.System_Delegate or
+				SpecialType.System_MulticastDelegate;
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="accessor"/> is an event accessor.
 		/// </summary>
 		/// <param name="accessor"><see cref="Accessor"/> to determine whether is an event accessor.</param>
 		public static bool IsEventAccessor(this Accessor accessor)
 		{
 			return accessor is Accessor.Add or Accessor.Remove;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="SpecialType"/> is a floating point numeric type.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to determine whether is a floating point numeric type.</param>
+		public static bool IsFloatingPointType(this SpecialType value)
+		{
+			return value is SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="TypeKeyword"/> is a floating point numeric type.
+		/// </summary>
+		/// <param name="value"><see cref="TypeKeyword"/> to determine whether is a floating point numeric type.</param>
+		public static bool IsFloatingPointType(this TypeKeyword value)
+		{
+			return value is TypeKeyword.Float or TypeKeyword.Double or TypeKeyword.Decimal;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="SpecialType"/> is a generic type.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to determine whether is a generic type.</param>
+		public static bool IsGenericType(this SpecialType value)
+		{
+			return value is
+				SpecialType.System_Collections_Generic_ICollection_T or
+				SpecialType.System_Collections_Generic_IEnumerable_T or
+				SpecialType.System_Collections_Generic_IEnumerator_T or
+				SpecialType.System_Collections_Generic_IList_T or
+				SpecialType.System_Collections_Generic_IReadOnlyCollection_T or
+				SpecialType.System_Collections_Generic_IReadOnlyList_T or
+				SpecialType.System_Nullable_T;
 		}
 
 		/// <summary>
@@ -1497,6 +1780,43 @@ namespace Durian.Analysis.Extensions
 		public static bool IsHexadecimal(this NumericLiteralPrefix value)
 		{
 			return value is NumericLiteralPrefix.HexadecimalLower or NumericLiteralPrefix.HexadecimalUpper;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="TypeKeyword"/> represents an integer type.
+		/// </summary>
+		/// <param name="value"><see cref="TypeKeyword"/> to determine whether represents an integer type.</param>
+		public static bool IsIntegerType(this TypeKeyword value)
+		{
+			return value >= TypeKeyword.Short && value <= TypeKeyword.SByte;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="SpecialType"/> represents an integer type.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to determine whether represents an integer type.</param>
+		public static bool IsIntegerType(this SpecialType value)
+		{
+			return value >= SpecialType.System_SByte && value <= SpecialType.System_UInt64;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="SpecialType"/> is an interface type.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to determine whether is an interface type.</param>
+		public static bool IsInterfaceType(this SpecialType value)
+		{
+			return value is
+				SpecialType.System_Collections_Generic_ICollection_T or
+				SpecialType.System_Collections_Generic_IEnumerable_T or
+				SpecialType.System_Collections_Generic_IEnumerator_T or
+				SpecialType.System_Collections_Generic_IList_T or
+				SpecialType.System_Collections_Generic_IReadOnlyCollection_T or
+				SpecialType.System_Collections_Generic_IReadOnlyList_T or
+				SpecialType.System_Collections_IEnumerable or
+				SpecialType.System_Collections_IEnumerator or
+				SpecialType.System_IAsyncResult or
+				SpecialType.System_IDisposable;
 		}
 
 		/// <summary>
@@ -1609,12 +1929,156 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <see cref="TypeKeyword"/> represents a native integer type.
+		/// </summary>
+		/// <param name="value"><see cref="TypeKeyword"/> to determine whether represents a native integer type.</param>
+		public static bool IsNativeIntegerType(this TypeKeyword value)
+		{
+			return value is TypeKeyword.NInt or TypeKeyword.NUInt;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="SpecialType"/> represents a native integer type.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to determine whether represents a native integer type.</param>
+		public static bool IsNativeIntegerType(this SpecialType value)
+		{
+			return value is SpecialType.System_IntPtr or SpecialType.System_UIntPtr;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="TypeKeyword"/> represents a number type.
+		/// </summary>
+		/// <param name="value"><see cref="TypeKeyword"/> to determine whether represents a number type.</param>
+		public static bool IsNumberType(this TypeKeyword value)
+		{
+			return value >= TypeKeyword.Short && value <= TypeKeyword.SByte;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="SpecialType"/> represents a number type.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to determine whether represents a number type.</param>
+		public static bool IsNumberType(this SpecialType value)
+		{
+			return value >= SpecialType.System_SByte && value <= SpecialType.System_Double;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="TypeKeyword"/> represents a primitive type of a fixed size.
+		/// </summary>
+		/// <param name="value"><see cref="TypeKeyword"/> to determine whether is primitive.</param>
+		public static bool IsPrimitive(this SpecialType value)
+		{
+			if (value >= SpecialType.System_Boolean && value <= SpecialType.System_UInt64)
+			{
+				return true;
+			}
+
+			return value is SpecialType.System_Single or SpecialType.System_Double;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="TypeKeyword"/> represents a primitive type of a fixed size.
+		/// </summary>
+		/// <param name="value"><see cref="TypeKeyword"/> to determine whether is primitive.</param>
+		public static bool IsPrimitive(this TypeKeyword value)
+		{
+			if (value >= TypeKeyword.Short && value <= TypeKeyword.SByte)
+			{
+				return true;
+			}
+
+			return value is
+				TypeKeyword.Float or
+				TypeKeyword.Double or
+				TypeKeyword.Char or
+				TypeKeyword.Bool;
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="accessor"/> is a property accessor.
 		/// </summary>
 		/// <param name="accessor"><see cref="Accessor"/> to determine whether is a property accessor.</param>
 		public static bool IsPropertyAccessor(this Accessor accessor)
 		{
 			return accessor is Accessor.Get or Accessor.Set or Accessor.Init;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="TypeKeyword"/> is a reference type.
+		/// </summary>
+		/// <param name="value"><see cref="TypeKeyword"/> to determine whether is a reference type.</param>
+		public static bool IsReferenceType(this TypeKeyword value)
+		{
+			return value is TypeKeyword.String or TypeKeyword.Object or TypeKeyword.Dynamic;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="SpecialType"/> is a reference type.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to determine whether is a reference type.</param>
+		public static bool IsReferenceType(this SpecialType value)
+		{
+			if (value.IsInterfaceType())
+			{
+				return true;
+			}
+
+			if (value.IsDelegateType())
+			{
+				return true;
+			}
+
+			return value is
+				SpecialType.System_Array or
+				SpecialType.System_Enum or
+				SpecialType.System_Object or
+				SpecialType.System_Runtime_CompilerServices_IsVolatile or
+				SpecialType.System_Runtime_CompilerServices_PreserveBaseOverridesAttribute or
+				SpecialType.System_Runtime_CompilerServices_RuntimeFeature or
+				SpecialType.System_ValueType;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="IntegerValueType"/> represents a signed integer type.
+		/// </summary>
+		/// <param name="value"><see cref="IntegerValueType"/> to determine whether represents a signed integer type.</param>
+		public static bool IsSigned(this IntegerValueType value)
+		{
+			return value is
+				IntegerValueType.Int16 or
+				IntegerValueType.Int32 or
+				IntegerValueType.Int64 or
+				IntegerValueType.SByte;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="SpecialType"/> represents a signed integer type.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to determine whether represents a signed integer type.</param>
+		public static bool IsSigned(this SpecialType value)
+		{
+			return value is
+				SpecialType.System_Int64 or
+				SpecialType.System_Int32 or
+				SpecialType.System_Int16 or
+				SpecialType.System_SByte or
+				SpecialType.System_IntPtr;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="TypeKeyword"/> represents a signed integer type.
+		/// </summary>
+		/// <param name="value"><see cref="TypeKeyword"/> to determine whether represents a signed integer type.</param>
+		public static bool IsSigned(this TypeKeyword value)
+		{
+			return value is
+				TypeKeyword.Short or
+				TypeKeyword.Int or
+				TypeKeyword.Long or
+				TypeKeyword.SByte or
+				TypeKeyword.NInt;
 		}
 
 		/// <summary>
@@ -1631,6 +2095,47 @@ namespace Durian.Analysis.Extensions
 				DecimalValueType.Decimal => value is DecimalLiteralSuffix.DecimalLower or DecimalLiteralSuffix.DecimalUpper,
 				_ => false
 			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="SpecialType"/> represents an unsigned integer type.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to determine whether represents an unsigned integer type.</param>
+		public static bool IsUnsigned(this SpecialType value)
+		{
+			return value is
+				SpecialType.System_UInt16 or
+				SpecialType.System_UInt32 or
+				SpecialType.System_UInt64 or
+				SpecialType.System_Byte or
+				SpecialType.System_UIntPtr;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="TypeKeyword"/> represents an unsigned integer type.
+		/// </summary>
+		/// <param name="value"><see cref="TypeKeyword"/> to determine whether represents an unsigned integer type.</param>
+		public static bool IsUnsigned(this TypeKeyword value)
+		{
+			return value is
+				TypeKeyword.UInt or
+				TypeKeyword.UShort or
+				TypeKeyword.ULong or
+				TypeKeyword.Byte or
+				TypeKeyword.NUInt;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="IntegerValueType"/> represents an unsigned integer type.
+		/// </summary>
+		/// <param name="value"><see cref="IntegerValueType"/> to determine whether represents an unsigned integer type.</param>
+		public static bool IsUnsigned(this IntegerValueType value)
+		{
+			return value is
+				IntegerValueType.UInt16 or
+				IntegerValueType.UInt32 or
+				IntegerValueType.UInt64 or
+				IntegerValueType.Byte;
 		}
 
 		/// <summary>
@@ -1763,6 +2268,48 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <see cref="SpecialType"/> is a value type.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to determine whether is a value type.</param>
+		public static bool IsValueType(this SpecialType value)
+		{
+			return value is
+				SpecialType.System_Void or
+				SpecialType.System_Boolean or
+				SpecialType.System_Char or
+				SpecialType.System_Byte or
+				SpecialType.System_SByte or
+				SpecialType.System_Int16 or
+				SpecialType.System_UInt16 or
+				SpecialType.System_Int32 or
+				SpecialType.System_UInt32 or
+				SpecialType.System_Int64 or
+				SpecialType.System_UInt64 or
+				SpecialType.System_Single or
+				SpecialType.System_Double or
+				SpecialType.System_Decimal or
+				SpecialType.System_IntPtr or
+				SpecialType.System_UIntPtr or
+				SpecialType.System_Nullable_T or
+				SpecialType.System_DateTime or
+				SpecialType.System_TypedReference or
+				SpecialType.System_ArgIterator or
+				SpecialType.System_RuntimeArgumentHandle or
+				SpecialType.System_RuntimeFieldHandle or
+				SpecialType.System_RuntimeMethodHandle or
+				SpecialType.System_RuntimeTypeHandle;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="TypeKeyword"/> is a value type.
+		/// </summary>
+		/// <param name="value"><see cref="TypeKeyword"/> to determine whether is a value type.</param>
+		public static bool IsValueType(this TypeKeyword value)
+		{
+			return (value >= TypeKeyword.Short && value <= TypeKeyword.Char) || value == TypeKeyword.Void;
+		}
+
+		/// <summary>
 		/// Converts the specified <see cref="NumericLiteralSuffix"/> value to its variant with the long suffix ('l' or 'L') before the unsigned suffix ('u' or 'U').
 		/// </summary>
 		/// <param name="value"><see cref="NumericLiteralSuffix"/> value to convert to its unsigned-first variant.</param>
@@ -1775,6 +2322,91 @@ namespace Durian.Analysis.Extensions
 				NumericLiteralSuffix.UnsignedUpperLongLower => NumericLiteralSuffix.LongLowerUnsignedUpper,
 				NumericLiteralSuffix.UnsignedUpperLongUpper => NumericLiteralSuffix.LongUpperUnsignedUpper,
 				_ => value
+			};
+		}
+
+		/// <summary>
+		/// Returns the size in bytes of the type the specified <see cref="SpecialType"/> represents.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialType"/> to get the size in bytes of.</param>
+		public static int SizeInBytes(this SpecialType value)
+		{
+			return value switch
+			{
+				SpecialType.System_SByte => sizeof(sbyte),
+				SpecialType.System_Byte => sizeof(byte),
+				SpecialType.System_Int16 => sizeof(short),
+				SpecialType.System_UInt16 => sizeof(ushort),
+				SpecialType.System_Int32 => sizeof(int),
+				SpecialType.System_UInt32 => sizeof(uint),
+				SpecialType.System_Int64 => sizeof(long),
+				SpecialType.System_UInt64 => sizeof(ulong),
+				SpecialType.System_Char => sizeof(char),
+				SpecialType.System_Single => sizeof(float),
+				SpecialType.System_Double => sizeof(double),
+				SpecialType.System_Boolean => sizeof(bool),
+				SpecialType.System_Decimal => sizeof(decimal),
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns the size in bytes of the type the specified <see cref="TypeKeyword"/> represents.
+		/// </summary>
+		/// <param name="value"><see cref="TypeKeyword"/> to get the size in bytes of.</param>
+		public static int SizeInBytes(this TypeKeyword value)
+		{
+			return value switch
+			{
+				TypeKeyword.SByte => sizeof(sbyte),
+				TypeKeyword.Byte => sizeof(byte),
+				TypeKeyword.Int => sizeof(int),
+				TypeKeyword.UInt => sizeof(uint),
+				TypeKeyword.Short => sizeof(short),
+				TypeKeyword.UShort => sizeof(ushort),
+				TypeKeyword.Long => sizeof(long),
+				TypeKeyword.ULong => sizeof(ulong),
+				TypeKeyword.Float => sizeof(float),
+				TypeKeyword.Double => sizeof(double),
+				TypeKeyword.Char => sizeof(char),
+				TypeKeyword.Bool => sizeof(bool),
+				TypeKeyword.Decimal => sizeof(decimal),
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns the size in bytes of the type the specified <see cref="IntegerValueType"/> represents.
+		/// </summary>
+		/// <param name="value"><see cref="IntegerValueType"/> to get the size in bytes of.</param>
+		public static int SizeInBytes(this IntegerValueType value)
+		{
+			return value switch
+			{
+				IntegerValueType.SByte => sizeof(sbyte),
+				IntegerValueType.Byte => sizeof(byte),
+				IntegerValueType.Int16 => sizeof(short),
+				IntegerValueType.UInt16 => sizeof(ushort),
+				IntegerValueType.Int32 => sizeof(int),
+				IntegerValueType.UInt32 => sizeof(uint),
+				IntegerValueType.Int64 => sizeof(long),
+				IntegerValueType.UInt64 => sizeof(ulong),
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns the size in bytes of the type the specified <see cref="DecimalValueType"/> represents.
+		/// </summary>
+		/// <param name="value"><see cref="DecimalValueType"/> to get the size in bytes of.</param>
+		public static int SizeInBytes(this DecimalValueType value)
+		{
+			return value switch
+			{
+				DecimalValueType.Float => sizeof(float),
+				DecimalValueType.Double => sizeof(double),
+				DecimalValueType.Decimal => sizeof(decimal),
+				_ => default
 			};
 		}
 
@@ -1802,47 +2434,44 @@ namespace Durian.Analysis.Extensions
 		/// <param name="value"><see cref="NumericLiteralSuffix"/> value to convert into its all-lowercase variant.</param>
 		public static NumericLiteralSuffix ToLower(this NumericLiteralSuffix value)
 		{
-#pragma warning disable IDE0066 // Convert switch statement to expression
-			switch (value)
+			return value switch
 			{
-				case NumericLiteralSuffix.LongLower:
-				case NumericLiteralSuffix.UnsignedLower:
-				case NumericLiteralSuffix.LongLowerUnsignedLower:
-				case NumericLiteralSuffix.UnsignedLowerLongLower:
-				case NumericLiteralSuffix.FloatLower:
-				case NumericLiteralSuffix.DecimalLower:
-				case NumericLiteralSuffix.DoubleLower:
-					return value;
+				NumericLiteralSuffix.LongLower or
+				NumericLiteralSuffix.UnsignedLower or
+				NumericLiteralSuffix.LongLowerUnsignedLower or
+				NumericLiteralSuffix.UnsignedLowerLongLower or
+				NumericLiteralSuffix.FloatLower or
+				NumericLiteralSuffix.DecimalLower or
+				NumericLiteralSuffix.DoubleLower
+					=> value,
 
-				case NumericLiteralSuffix.UnsignedUpper:
-					return NumericLiteralSuffix.UnsignedLower;
+				NumericLiteralSuffix.UnsignedUpper
+					=> NumericLiteralSuffix.UnsignedLower,
 
-				case NumericLiteralSuffix.LongUpper:
-					return NumericLiteralSuffix.LongLower;
+				NumericLiteralSuffix.LongUpper
+					=> NumericLiteralSuffix.LongLower,
 
-				case NumericLiteralSuffix.LongUpperUnsignedLower:
-				case NumericLiteralSuffix.LongUpperUnsignedUpper:
-				case NumericLiteralSuffix.LongLowerUnsignedUpper:
-					return NumericLiteralSuffix.LongLowerUnsignedLower;
+				NumericLiteralSuffix.LongUpperUnsignedLower or
+				NumericLiteralSuffix.LongUpperUnsignedUpper or
+				NumericLiteralSuffix.LongLowerUnsignedUpper
+					=> NumericLiteralSuffix.LongLowerUnsignedLower,
 
-				case NumericLiteralSuffix.UnsignedUpperLongLower:
-				case NumericLiteralSuffix.UnsignedUpperLongUpper:
-				case NumericLiteralSuffix.UnsignedLowerLongUpper:
-					return NumericLiteralSuffix.UnsignedLowerLongLower;
+				NumericLiteralSuffix.UnsignedUpperLongLower or
+				NumericLiteralSuffix.UnsignedUpperLongUpper or
+				NumericLiteralSuffix.UnsignedLowerLongUpper
+					=> NumericLiteralSuffix.UnsignedLowerLongLower,
 
-				case NumericLiteralSuffix.DecimalUpper:
-					return NumericLiteralSuffix.DecimalLower;
+				NumericLiteralSuffix.DecimalUpper
+					=> NumericLiteralSuffix.DecimalLower,
 
-				case NumericLiteralSuffix.DoubleUpper:
-					return NumericLiteralSuffix.DoubleLower;
+				NumericLiteralSuffix.DoubleUpper
+					=> NumericLiteralSuffix.DoubleLower,
 
-				case NumericLiteralSuffix.FloatUpper:
-					return NumericLiteralSuffix.FloatLower;
+				NumericLiteralSuffix.FloatUpper
+					=> NumericLiteralSuffix.FloatLower,
 
-				default:
-					return default;
-			}
-#pragma warning restore IDE0066 // Convert switch statement to expression
+				_ => default,
+			};
 		}
 
 		/// <summary>
@@ -1869,47 +2498,43 @@ namespace Durian.Analysis.Extensions
 		/// <param name="value"><see cref="NumericLiteralSuffix"/> value to convert into its all-uppercase variant.</param>
 		public static NumericLiteralSuffix ToUpper(this NumericLiteralSuffix value)
 		{
-#pragma warning disable IDE0066 // Convert switch statement to expression
-			switch (value)
+			return value switch
 			{
-				case NumericLiteralSuffix.LongUpper:
-				case NumericLiteralSuffix.UnsignedUpper:
-				case NumericLiteralSuffix.LongUpperUnsignedUpper:
-				case NumericLiteralSuffix.UnsignedUpperLongUpper:
-				case NumericLiteralSuffix.FloatUpper:
-				case NumericLiteralSuffix.DecimalUpper:
-				case NumericLiteralSuffix.DoubleUpper:
-					return value;
+				NumericLiteralSuffix.LongUpper or
+				NumericLiteralSuffix.UnsignedUpper or
+				NumericLiteralSuffix.LongUpperUnsignedUpper or
+				NumericLiteralSuffix.UnsignedUpperLongUpper or
+				NumericLiteralSuffix.FloatUpper or
+				NumericLiteralSuffix.DecimalUpper or
+				NumericLiteralSuffix.DoubleUpper
+					=> value,
 
-				case NumericLiteralSuffix.UnsignedLower:
-					return NumericLiteralSuffix.UnsignedUpper;
+				NumericLiteralSuffix.UnsignedLower
+					=> NumericLiteralSuffix.UnsignedUpper,
 
-				case NumericLiteralSuffix.LongLower:
-					return NumericLiteralSuffix.LongUpper;
+				NumericLiteralSuffix.LongLower
+					=> NumericLiteralSuffix.LongUpper,
 
-				case NumericLiteralSuffix.LongLowerUnsignedLower:
-				case NumericLiteralSuffix.LongLowerUnsignedUpper:
-				case NumericLiteralSuffix.LongUpperUnsignedLower:
-					return NumericLiteralSuffix.LongUpperUnsignedUpper;
+				NumericLiteralSuffix.LongLowerUnsignedLower or
+				NumericLiteralSuffix.LongLowerUnsignedUpper or
+				NumericLiteralSuffix.LongUpperUnsignedLower
+					=> NumericLiteralSuffix.LongUpperUnsignedUpper,
 
-				case NumericLiteralSuffix.UnsignedLowerLongLower:
-				case NumericLiteralSuffix.UnsignedLowerLongUpper:
-				case NumericLiteralSuffix.UnsignedUpperLongLower:
-					return NumericLiteralSuffix.UnsignedUpperLongUpper;
+				NumericLiteralSuffix.UnsignedLowerLongLower or
+				NumericLiteralSuffix.UnsignedLowerLongUpper or
+				NumericLiteralSuffix.UnsignedUpperLongLower
+					=> NumericLiteralSuffix.UnsignedUpperLongUpper,
 
-				case NumericLiteralSuffix.DecimalLower:
-					return NumericLiteralSuffix.DecimalUpper;
+				NumericLiteralSuffix.DecimalLower
+					=> NumericLiteralSuffix.DecimalUpper,
 
-				case NumericLiteralSuffix.DoubleLower:
-					return NumericLiteralSuffix.DoubleLower;
+				NumericLiteralSuffix.DoubleLower
+					=> NumericLiteralSuffix.DoubleLower,
 
-				case NumericLiteralSuffix.FloatLower:
-					return NumericLiteralSuffix.FloatUpper;
-
-				default:
-					return default;
-			}
-#pragma warning restore IDE0066 // Convert switch statement to expression
+				NumericLiteralSuffix.FloatLower
+					=> NumericLiteralSuffix.FloatUpper,
+				_ => default,
+			};
 		}
 
 		/// <summary>

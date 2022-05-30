@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Durian.Analysis.CodeGeneration
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Modifiers of a <see cref="string"/> literal.

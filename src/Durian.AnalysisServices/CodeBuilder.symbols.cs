@@ -1026,7 +1026,7 @@ namespace Durian.Analysis
 				TextBuilder.Append(':');
 				Space();
 
-				TextBuilder.Append(type.EnumUnderlyingType.SpecialType.GetText()!);
+				TextBuilder.Append(type.EnumUnderlyingType.SpecialType.GetKeywordText()!);
 			}
 
 			BeginBlock();

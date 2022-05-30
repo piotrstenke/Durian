@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Durian.Analysis.CodeGeneration
+namespace Durian.Analysis
 {
 	/// <summary>
 	/// Represents all types of generic constraints that can be applied to a generic parameter.

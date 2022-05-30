@@ -1982,7 +1982,7 @@ namespace Durian.Analysis.Extensions
 				return "dynamic";
 			}
 
-			return type.SpecialType.GetText();
+			return type.SpecialType.GetKeywordText();
 		}
 
 		/// <summary>

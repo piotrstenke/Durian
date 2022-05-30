@@ -1052,23 +1052,126 @@ namespace Durian.Analysis.Extensions
 			return NamespaceStyle.Default;
 		}
 
+		/// <summary>
+		/// Returns the <see cref="OverloadableOperator"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="ExpressionSyntax"/> to get the <see cref="OverloadableOperator"/> represented by.</param>
+		public static OverloadableOperator GetOperator(this ExpressionSyntax node)
+		{
+
+		}
+
+		/// <summary>
+		/// Returns the <see cref="OverloadableOperator"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="OperatorDeclarationSyntax"/> to get the <see cref="OverloadableOperator"/> represented by.</param>
 		public static OverloadableOperator GetOperator(this OperatorDeclarationSyntax node)
 		{
+			SyntaxKind.literalEx
 		}
 
+		/// <summary>
+		/// Returns the <see cref="OverloadableOperator"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="BinaryExpressionSyntax"/> to get the <see cref="OverloadableOperator"/> represented by.</param>
 		public static OverloadableOperator GetOperator(this BinaryExpressionSyntax node)
 		{
+			return (SyntaxKind)node.RawKind switch
+			{
+				SyntaxKind.AddExpression or
+				SyntaxKind.AddAssignmentExpression
+					=> OverloadableOperator.Addition,
 
+				SyntaxKind.SubtractExpression or
+				SyntaxKind.SubtractAssignmentExpression
+					=> OverloadableOperator.Subtraction,
+
+				SyntaxKind.MultiplyExpression or
+				SyntaxKind.MultiplyAssignmentExpression
+					=> OverloadableOperator.Multiplication,
+
+				SyntaxKind.DivideExpression or
+				SyntaxKind.DivideAssignmentExpression
+					=> OverloadableOperator.Division,
+
+				SyntaxKind.ModuloExpression or
+				SyntaxKind.ModuloAssignmentExpression
+					=> OverloadableOperator.Remainder,
+
+				SyntaxKind.EqualsExpression
+					=> OverloadableOperator.Equality,
+
+				SyntaxKind.NotEqualsExpression
+					=> OverloadableOperator.Inequality,
+
+				SyntaxKind.ExclusiveOrExpression or
+				SyntaxKind.ExclusiveOrAssignmentExpression
+					=> OverloadableOperator.LogicalXor,
+
+				SyntaxKind.LogicalAndExpression or
+				SyntaxKind.BitwiseAndExpression or
+				SyntaxKind.AndAssignmentExpression
+					=> OverloadableOperator.LogicalAnd,
+
+				SyntaxKind.LogicalOrExpression or
+				SyntaxKind.BitwiseOrExpression or
+				SyntaxKind.OrAssignmentExpression
+					=> OverloadableOperator.LogicalOr,
+
+				SyntaxKind.GreaterThanExpression
+					=> OverloadableOperator.GreaterThan,
+
+				SyntaxKind.GreaterThanOrEqualExpression
+					=> OverloadableOperator.GreaterThanOrEqual,
+
+				SyntaxKind.LessThanExpression
+					=> OverloadableOperator.LessThan,
+
+				SyntaxKind.LessThanOrEqualExpression
+					=> OverloadableOperator.LessThanOrEqual,
+
+				SyntaxKind.RightShiftExpression or
+				SyntaxKind.RightShiftAssignmentExpression
+					=> OverloadableOperator.RightShift,
+
+				SyntaxKind.LeftShiftExpression or
+				SyntaxKind.LeftShiftAssignmentExpression
+					=> OverloadableOperator.LeftShift,
+
+				_ => default
+			};
 		}
 
+		/// <summary>
+		/// Returns the <see cref="OverloadableOperator"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="PostfixUnaryExpressionSyntax"/> to get the <see cref="OverloadableOperator"/> represented by.</param>
 		public static OverloadableOperator GetOperator(this PostfixUnaryExpressionSyntax node)
 		{
-
+			return (SyntaxKind)node.RawKind switch
+			{
+				SyntaxKind.PostIncrementExpression => OverloadableOperator.Increment,
+				SyntaxKind.PostDecrementExpression => OverloadableOperator.Decrement,
+				_ => default
+			};
 		}
 
+		/// <summary>
+		/// Returns the <see cref="OverloadableOperator"/> represented by the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="PrefixUnaryExpressionSyntax"/> to get the <see cref="OverloadableOperator"/> represented by.</param>
 		public static OverloadableOperator GetOperator(this PrefixUnaryExpressionSyntax node)
 		{
-
+			return (SyntaxKind)node.RawKind switch
+			{
+				SyntaxKind.PreIncrementExpression => OverloadableOperator.Increment,
+				SyntaxKind.PreDecrementExpression => OverloadableOperator.Decrement,
+				SyntaxKind.UnaryPlusExpression => OverloadableOperator.UnaryPlus,
+				SyntaxKind.UnaryMinusExpression => OverloadableOperator.UnaryMinus,
+				SyntaxKind.LogicalNotExpression => OverloadableOperator.Negation,
+				SyntaxKind.BitwiseNotExpression => OverloadableOperator.Complement,
+				_ => default
+			};
 		}
 
 		/// <summary>
