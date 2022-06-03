@@ -10,6 +10,7 @@
 	<Version>3.0.0</Version>
 	<RootNamespace>Durian.Analysis</RootNamespace>
 	<DefineConstants>$(DefineConstants)TRACE;ENABLE_REFLECTION</DefineConstants>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
   </PropertyGroup>
 

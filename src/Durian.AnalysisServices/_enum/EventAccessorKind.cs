@@ -6,7 +6,7 @@ namespace Durian.Analysis
 	/// <summary>
 	/// Defines all possible event accessor kinds.
 	/// </summary>
-	public enum EventAccessor
+	public enum EventAccessorKind
 	{
 		/// <summary>
 		/// Member is not an accessor.

@@ -240,7 +240,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns the kind of accessor the specified <paramref name="method"/> represents.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the accessor kind of.</param>
-		public static Accessor GetAccessorKind(this IMethodSymbol method)
+		public static AccessorKind GetAccessorKind(this IMethodSymbol method)
 		{
 			return method.MethodKind.GetAccessor();
 		}
@@ -321,13 +321,13 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the attribute target symbol of.</param>
 		/// <param name="target">Kind of attribute target.</param>
-		/// <remarks><b>Note</b>: In actual code the <see langword="method"/> target applied to an event refers to both the <see langword="add"/> and <see langword="remove"/> accessors. In such case, this method returns the event itself.</remarks>
+		/// <remarks><b>Note:</b> In actual code the <see langword="method"/> target applied to an event refers to both the <see langword="add"/> and <see langword="remove"/> accessors. In such case, this method returns the event itself.</remarks>
 		public static ISymbol? GetAttributeTarget(this ISymbol symbol, AttributeTarget target)
 		{
 			switch (target)
 			{
 				case AttributeTarget.Assembly:
-					return symbol.ContainingAssembly;
+					return symbol as IAssemblySymbol;
 
 				case AttributeTarget.Return:
 				{
@@ -392,7 +392,7 @@ namespace Durian.Analysis.Extensions
 				}
 
 				case AttributeTarget.Module:
-					return symbol.ContainingModule;
+					return symbol as IModuleSymbol;
 
 				case AttributeTarget.TypeVar:
 					return symbol as ITypeParameterSymbol;
@@ -407,7 +407,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the attribute target symbol of.</param>
 		/// <param name="kind">Kind of attribute target.</param>
-		/// <remarks><b>Note</b>: In actual code the <see langword="method"/> target applied to an event refers to both the <see langword="add"/> and <see langword="remove"/> accessors. In such case, this method returns the event itself.</remarks>
+		/// <remarks><b>Note:</b> In actual code the <see langword="method"/> target applied to an event refers to both the <see langword="add"/> and <see langword="remove"/> accessors. In such case, this method returns the event itself.</remarks>
 		public static ISymbol? GetAttributeTarget(this ISymbol symbol, AttributeTargetKind kind)
 		{
 			return symbol switch
@@ -417,7 +417,7 @@ namespace Durian.Analysis.Extensions
 				IMethodSymbol method => kind switch
 				{
 					AttributeTargetKind.This => method.SupportsAttributeTargets() ? method : default,
-					AttributeTargetKind.Value => method.SupportsAlternativeAttributeTargets() && method.MethodKind != MethodKind.PropertySet ? method.ReturnType : default,
+					AttributeTargetKind.Value => method.SupportsAlternativeAttributeTargets() ? method.ReturnType : default,
 					AttributeTargetKind.Handler when method.MethodKind == MethodKind.PropertySet || method.IsEventAccessor() => method.Parameters[0],
 					_ => default
 				},
@@ -471,7 +471,7 @@ namespace Durian.Analysis.Extensions
 				},
 				AttributeTarget.Return => symbol switch
 				{
-					IMethodSymbol method => method.SupportsAlternativeAttributeTargets() && method.MethodKind != MethodKind.PropertySet ? AttributeTargetKind.Value : default,
+					IMethodSymbol method => method.SupportsAlternativeAttributeTargets() ? AttributeTargetKind.Value : default,
 					INamedTypeSymbol type when type.SupportsAlternativeAttributeTargets() => AttributeTargetKind.Value,
 					_ => default
 				},
@@ -543,6 +543,30 @@ namespace Durian.Analysis.Extensions
 			{
 				return kind == AttributeTargetKind.This ? @this : default;
 			}
+		}
+
+		/// <summary>
+		/// Returns the <see cref="AutoPropertyKind"/> of the specified <paramref name="property"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to get the <see cref="AutoPropertyKind"/> of.</param>
+		public static AutoPropertyKind GetAutoPropertyKind(this IPropertySymbol property)
+		{
+			if(property.GetMethod is null || property.GetBackingField() is null)
+			{
+				return default;
+			}
+
+			if(property.SetMethod is null)
+			{
+				return AutoPropertyKind.GetOnly;
+			}
+
+			if(property.SetMethod.IsInitOnly)
+			{
+				return AutoPropertyKind.GetInit;
+			}
+
+			return AutoPropertyKind.GetSet;
 		}
 
 		/// <summary>
@@ -661,6 +685,11 @@ namespace Durian.Analysis.Extensions
 		/// <param name="property"><see cref="IPropertySymbol"/> to get the backing field of.</param>
 		public static IFieldSymbol? GetBackingField(this IPropertySymbol property)
 		{
+			if(property.IsIndexer || property.IsAbstract || property.IsExtern)
+			{
+				return default;
+			}
+
 			return property.ContainingType?
 				.GetMembers()
 				.OfType<IFieldSymbol>()
@@ -687,25 +716,37 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IEnumerable<INamedTypeSymbol> GetBaseTypes(this INamedTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.Parent)
 		{
-			return AnalysisUtilities.ByOrder(GetBaseTypes_Internal(type, includeSelf), order);
-		}
+			return AnalysisUtilities.ByOrder(Yield(type, includeSelf), order);
 
-		/// <summary>
-		/// Returns all types the specified <paramref name="type"/> inherits from.
-		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the base types of.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static TypeContainer GetBaseTypes(this INamedTypeSymbol type, ICompilationData? compilation, bool includeSelf = false, ReturnOrder order = ReturnOrder.Parent)
-		{
-			if (compilation is null)
+			static IEnumerable<INamedTypeSymbol> Yield(INamedTypeSymbol type, bool includeSelf)
 			{
-				throw new ArgumentNullException(nameof(compilation));
-			}
+				if (includeSelf)
+				{
+					yield return type;
+				}
 
-			return GetBaseTypes_Internal(type, includeSelf).ToContainer(compilation, true, order);
+				if (type.TypeKind == TypeKind.Interface)
+				{
+					foreach (INamedTypeSymbol t in type.AllInterfaces)
+					{
+						yield return t;
+					}
+
+					yield break;
+				}
+
+				INamedTypeSymbol? currentType = type.BaseType;
+
+				if (currentType is not null)
+				{
+					yield return currentType;
+
+					while ((currentType = currentType!.BaseType) is not null)
+					{
+						yield return currentType;
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -831,7 +872,29 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(this ISymbol symbol, bool includeGlobal = false, ReturnOrder order = ReturnOrder.Root)
 		{
-			return AnalysisUtilities.ByOrder(GetContainingNamespaces_Internal(symbol, includeGlobal), order);
+			IEnumerable<INamespaceSymbol> namespaces = AnalysisUtilities.ByOrder(Yield(symbol), order);
+
+			if (!includeGlobal)
+			{
+				namespaces = namespaces.Where(n => !n.IsGlobalNamespace);
+			}
+
+			return namespaces;
+
+			static IEnumerable<INamespaceSymbol> Yield(ISymbol symbol)
+			{
+				INamespaceSymbol parent = symbol.ContainingNamespace;
+
+				if (parent is not null)
+				{
+					yield return parent;
+
+					while ((parent = parent!.ContainingNamespace) is not null)
+					{
+						yield return parent;
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -867,7 +930,27 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IEnumerable<INamedTypeSymbol> GetContainingTypes(this ISymbol symbol, bool includeSelf = false, ReturnOrder order = ReturnOrder.Root)
 		{
-			return AnalysisUtilities.ByOrder(GetContainingTypes_Internal(symbol, includeSelf), order);
+			return AnalysisUtilities.ByOrder(Yield(symbol, includeSelf), order);
+
+			static IEnumerable<INamedTypeSymbol> Yield(ISymbol symbol, bool includeSelf)
+			{
+				if (includeSelf && symbol is INamedTypeSymbol t)
+				{
+					yield return t;
+				}
+
+				INamedTypeSymbol parent = symbol.ContainingType;
+
+				if (parent is not null)
+				{
+					yield return parent;
+
+					while ((parent = parent!.ContainingType) is not null)
+					{
+						yield return parent;
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -889,11 +972,12 @@ namespace Durian.Analysis.Extensions
 		/// Returns a keyword used to declare the specified <paramref name="type"/> (e.g. <see langword="class"/>, <see langword="enum"/>).
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the keyword of.</param>
-		public static string? GetDeclaredKeyword(this INamedTypeSymbol type)
+		/// <param name="includeSecondary">Determines whether to include the <see langword="class"/> keyword for record classes.</param>
+		public static string? GetDeclaredKeyword(this INamedTypeSymbol type, bool includeSecondary = false)
 		{
 			return type.TypeKind switch
 			{
-				TypeKind.Class => type.IsRecord ? "record" : "class",
+				TypeKind.Class => type.IsRecord ? (includeSecondary ? "record class" : "record") : "class",
 				TypeKind.Struct => type.IsRecord ? "record struct" : "struct",
 				TypeKind.Interface => "interface",
 				TypeKind.Enum => "enum",
@@ -903,13 +987,12 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns the default <see cref="Accessibility"/> in the context of the specified <paramref name="symbol"/>.
-		/// <para>Default <see cref="Accessibility"/> is determined by the following rules:</para>
+		/// Returns the default <see cref="Accessibility"/> in the context of the specified <paramref name="symbol"/>, that is:
 		/// <list type="bullet">
-		/// <item>For top-level members, the default is <see cref="Accessibility.Internal"/>.</item>
-		/// <item>For interface members other than partial methods, the default is <see cref="Accessibility.Public"/>.</item>
-		/// <item>For property accessors, the default is the accessibility of the parent property.</item>
-		/// <item>For all other members, the default is <see cref="Accessibility.Private"/>.</item>
+		/// <item>For top-level types: <see cref="Accessibility.Internal"/>.</item>
+		/// <item>For interface members other than partial methods: <see cref="Accessibility.Public"/>.</item>
+		/// <item>For property/event accessors: accessibility of the parent property/event.</item>
+		/// <item>For all other members: <see cref="Accessibility.Private"/>.</item>
 		/// </list>
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the default accessibility of.</param>
@@ -931,7 +1014,7 @@ namespace Durian.Analysis.Extensions
 				return Accessibility.Public;
 			}
 
-			if (includeAssociated && symbol is IMethodSymbol method && method.IsPropertyAccessor())
+			if (includeAssociated && symbol is IMethodSymbol method && method.IsAccessor())
 			{
 				return method.AssociatedSymbol!.DeclaredAccessibility;
 			}
@@ -969,46 +1052,74 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns the effective underlaying element type of the <paramref name="array"/> or any of its element array types.
+		/// Returns the effective underlaying element type of the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to get the effective underlaying type of.</param>
+		public static ITypeSymbol? GetEffectiveElementType(this ITypeSymbol type)
+		{
+			return type switch
+			{
+				IArrayTypeSymbol array => array.GetEffectiveElementType(),
+				IPointerTypeSymbol pointer => pointer.GetEffectiveElementType(),
+				_ => type.GetNullableUnderlayingType() is ITypeSymbol nullable ? nullable : default,
+			};
+		}
+
+		/// <summary>
+		/// Returns the effective underlaying element type of the <paramref name="array"/>.
 		/// </summary>
 		/// <param name="array"><see cref="IArrayTypeSymbol"/> to get the effective underlaying type of.</param>
-		/// <returns>The effective underlaying type the <paramref name="array"/> or any of its element array types. -or- <paramref name="array"/> if no such type was found.</returns>
 		public static ITypeSymbol GetEffectiveElementType(this IArrayTypeSymbol array)
 		{
+			return array.GetEffectiveElementType(out _);
+		}
+
+		/// <summary>
+		/// Returns the effective underlaying element type of the <paramref name="array"/>.
+		/// </summary>
+		/// <param name="array"><see cref="IArrayTypeSymbol"/> to get the effective underlaying type of.</param>
+		/// <param name="nestingLevel">Number of inner <see cref="IArrayTypeSymbol"/>s (including the <paramref name="array"/> itself).</param>
+		public static ITypeSymbol GetEffectiveElementType(this IArrayTypeSymbol array, out int nestingLevel)
+		{
+			int count = 0;
 			ITypeSymbol? a = array;
 
 			while (a is IArrayTypeSymbol t)
 			{
 				a = t.ElementType;
+				count++;
 			}
 
-			if (a is null)
-			{
-				return array;
-			}
-
+			nestingLevel = count;
 			return a;
 		}
 
 		/// <summary>
-		/// Returns the effective underlaying type the <paramref name="pointer"/> or any of its child pointers point to.
+		/// Returns the effective underlaying type the <paramref name="pointer"/>.
 		/// </summary>
 		/// <param name="pointer"><see cref="IPointerTypeSymbol"/> to get the effective underlaying type of.</param>
-		/// <returns>The effective underlaying type the <paramref name="pointer"/> or any of its child pointers point to. -or- <paramref name="pointer"/> if no such type was found.</returns>
-		public static ITypeSymbol GetEffectivePointerAtType(this IPointerTypeSymbol pointer)
+		public static ITypeSymbol GetEffectiveElementType(this IPointerTypeSymbol pointer)
+		{
+			return pointer.GetEffectiveElementType(out _);
+		}
+
+		/// <summary>
+		/// Returns the effective underlaying type the <paramref name="pointer"/>.
+		/// </summary>
+		/// <param name="pointer"><see cref="IPointerTypeSymbol"/> to get the effective underlaying type of.</param>
+		/// <param name="nestingLevel">Number of inner <see cref="IPointerTypeSymbol"/>s (including the <paramref name="pointer"/> itself).</param>
+		public static ITypeSymbol GetEffectiveElementType(this IPointerTypeSymbol pointer, out int nestingLevel)
 		{
 			ITypeSymbol? p = pointer;
+			int count = 0;
 
 			while (p is IPointerTypeSymbol t)
 			{
 				p = t.PointedAtType;
+				count++;
 			}
 
-			if (p is null)
-			{
-				return pointer;
-			}
-
+			nestingLevel = count;
 			return p;
 		}
 
@@ -1031,6 +1142,29 @@ namespace Durian.Analysis.Extensions
 				{
 					yield return array.ElementType;
 					element = array.ElementType;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns all underlaying element types of the specified <paramref name="pointer"/>.
+		/// </summary>
+		/// <param name="pointer"><see cref="IPointerTypeSymbol"/> to get the element types of.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static IEnumerable<ITypeSymbol> GetElementTypes(this IPointerTypeSymbol pointer, ReturnOrder order = ReturnOrder.Root)
+		{
+			return AnalysisUtilities.ByOrder(Yield(), order);
+
+			IEnumerable<ITypeSymbol> Yield()
+			{
+				ITypeSymbol element = pointer.PointedAtType;
+
+				yield return element;
+
+				while(element is IPointerTypeSymbol pointer)
+				{
+					yield return pointer.PointedAtType;
+					element = pointer.PointedAtType;
 				}
 			}
 		}
@@ -1335,50 +1469,44 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the inner types of.</param>
 		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static IEnumerable<INamedTypeSymbol> GetInnerTypes(this INamedTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.Parent)
+		public static IEnumerable<INamedTypeSymbol> GetInnerTypes(this INamedTypeSymbol type, bool includeSelf = false)
 		{
 			const int capacity = 32;
 
-			return AnalysisUtilities.ByOrder(Yield(), order);
-
-			IEnumerable<INamedTypeSymbol> Yield()
+			if (includeSelf)
 			{
-				if (includeSelf)
-				{
-					yield return type;
-				}
+				yield return type;
+			}
 
-				ImmutableArray<INamedTypeSymbol> array = type.GetTypeMembers();
+			ImmutableArray<INamedTypeSymbol> array = type.GetTypeMembers();
+
+			if (array.Length == 0)
+			{
+				yield break;
+			}
+
+			Stack<INamedTypeSymbol> innerTypes = new(array.Length > capacity ? array.Length : capacity);
+
+			foreach (INamedTypeSymbol t in array)
+			{
+				innerTypes.Push(t);
+			}
+
+			while (innerTypes.Count > 0)
+			{
+				INamedTypeSymbol t = innerTypes.Pop();
+				yield return t;
+
+				array = t.GetTypeMembers();
 
 				if (array.Length == 0)
 				{
-					yield break;
+					continue;
 				}
 
-				Stack<INamedTypeSymbol> innerTypes = new(array.Length > capacity ? array.Length : capacity);
-
-				foreach (INamedTypeSymbol t in array)
+				foreach (INamedTypeSymbol child in array.Reverse())
 				{
-					innerTypes.Push(t);
-				}
-
-				while (innerTypes.Count > 0)
-				{
-					INamedTypeSymbol t = innerTypes.Pop();
-					yield return t;
-
-					array = t.GetTypeMembers();
-
-					if (array.Length == 0)
-					{
-						continue;
-					}
-
-					foreach (INamedTypeSymbol child in array.Reverse())
-					{
-						innerTypes.Push(child);
-					}
+					innerTypes.Push(child);
 				}
 			}
 		}
@@ -1643,6 +1771,32 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return modifiers.ToArray();
+		}
+
+		/// <summary>
+		/// Returns the underlaying <see cref="ITypeSymbol"/> of a nullable <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to get the underlaying <see cref="ITypeSymbol"/> of.</param>
+		public static ITypeSymbol? GetNullableUnderlayingType(this ITypeSymbol type)
+		{
+			if(type.NullableAnnotation == NullableAnnotation.Annotated)
+			{
+				return type;
+			}
+
+			if(type is not INamedTypeSymbol named || !named.IsValueType || named.ConstructedFrom is null || named.ConstructedFrom.SpecialType != SpecialType.System_Nullable_T)
+			{
+				return default;
+			}
+
+			ImmutableArray<ITypeSymbol> arguments = named.TypeArguments;
+
+			if(arguments.Length != 1)
+			{
+				return default;
+			}
+
+			return arguments[0];
 		}
 
 		/// <summary>
@@ -1993,7 +2147,7 @@ namespace Durian.Analysis.Extensions
 		{
 			NameSyntax name;
 
-			if (@namespace.GetContainingNamespaces().ToQualifiedName() is QualifiedNameSyntax q)
+			if (@namespace.GetContainingNamespaces().GetQualifiedName() is QualifiedNameSyntax q)
 			{
 				name = q;
 			}
@@ -2014,7 +2168,7 @@ namespace Durian.Analysis.Extensions
 		{
 			NameSyntax name;
 
-			if (namespaces.ToQualifiedName() is QualifiedNameSyntax q)
+			if (namespaces.GetQualifiedName() is QualifiedNameSyntax q)
 			{
 				name = q;
 			}
@@ -2211,7 +2365,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to create the <see cref="QualifiedNameSyntax"/> from.</param>
 		/// <returns>A <see cref="QualifiedNameSyntax"/> created by combining the <paramref name="namespaces"/>. -or- <see langword="null"/> if there were less then 2 <paramref name="namespaces"/> provided.</returns>
-		public static QualifiedNameSyntax? ToQualifiedName(this IEnumerable<INamespaceSymbol> namespaces)
+		public static QualifiedNameSyntax? GetQualifiedName(this IEnumerable<INamespaceSymbol> namespaces)
 		{
 			return AnalysisUtilities.GetQualifiedName(namespaces.Select(n => n.GetVerbatimName()));
 		}
@@ -2311,83 +2465,6 @@ namespace Durian.Analysis.Extensions
 		private static InvalidOperationException Exc_SymbolNotAssociatedWithNode(ISymbol symbol, Type type)
 		{
 			return new InvalidOperationException($"Method '{symbol}' is not associated with a syntax node of type '{type.Name}'");
-		}
-
-		private static IEnumerable<INamedTypeSymbol> GetBaseTypes_Internal(INamedTypeSymbol type, bool includeSelf)
-		{
-			if (includeSelf)
-			{
-				yield return type;
-			}
-
-			if (type.TypeKind == TypeKind.Interface)
-			{
-				foreach (INamedTypeSymbol t in type.AllInterfaces)
-				{
-					yield return t;
-				}
-
-				yield break;
-			}
-
-			INamedTypeSymbol? currentType = type.BaseType;
-
-			if (currentType is not null)
-			{
-				yield return currentType;
-
-				while ((currentType = currentType!.BaseType) is not null)
-				{
-					yield return currentType;
-				}
-			}
-		}
-
-		private static IEnumerable<INamespaceSymbol> GetContainingNamespaces_Internal(ISymbol symbol, bool includeGlobal)
-		{
-			IEnumerable<INamespaceSymbol> namespaces = GetNamespaces();
-
-			if (!includeGlobal)
-			{
-				namespaces = namespaces.Where(n => !n.IsGlobalNamespace);
-			}
-
-			return namespaces;
-
-			IEnumerable<INamespaceSymbol> GetNamespaces()
-			{
-				INamespaceSymbol parent = symbol.ContainingNamespace;
-
-				if (parent is not null)
-				{
-					yield return parent;
-
-					while ((parent = parent!.ContainingNamespace) is not null)
-					{
-						yield return parent;
-					}
-				}
-			}
-		}
-
-		private static IEnumerable<INamedTypeSymbol> GetContainingTypes_Internal(ISymbol symbol, bool includeSelf)
-		{
-			if (includeSelf && symbol is INamedTypeSymbol t)
-			{
-				yield return t;
-			}
-
-			INamedTypeSymbol parent = symbol.ContainingType;
-
-			if (parent is not null)
-			{
-				yield return parent;
-
-				while ((parent = parent!.ContainingType) is not null)
-				{
-					yield return parent;
-				}
-			}
 		}
 
 		private static ISymbol? GetHiddenSymbol_Internal(ISymbol symbol)

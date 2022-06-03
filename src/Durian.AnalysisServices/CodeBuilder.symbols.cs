@@ -108,7 +108,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
 		/// <param name="accessor">Kind of accessor to begin declaration of.</param>
-		public CodeBuilder Accessor(IMethodSymbol method, Accessor accessor)
+		public CodeBuilder Accessor(IMethodSymbol method, AccessorKind accessor)
 		{
 			return Accessor(method, accessor, Style.MethodStyle);
 		}
@@ -119,7 +119,7 @@ namespace Durian.Analysis
 		/// <param name="method"><see cref="IMethodSymbol"/> to begin the declaration of.</param>
 		/// <param name="accessor">Kind of accessor to begin declaration of.</param>
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder Accessor(IMethodSymbol method, Accessor accessor, MethodStyle body)
+		public CodeBuilder Accessor(IMethodSymbol method, AccessorKind accessor, MethodStyle body)
 		{
 			Indent();
 
@@ -691,7 +691,7 @@ namespace Durian.Analysis
 
 			foreach (ITypeParameterSymbol typeParameter in typeParameters)
 			{
-				if (typeParameter.HasConstraint())
+				if (typeParameter.HasConstraints())
 				{
 					TextBuilder.Append(" where ");
 					SimpleName_Internal(typeParameter);

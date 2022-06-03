@@ -17,7 +17,7 @@ namespace Durian.Analysis
 		/// The attribute targets the member itself. Applicable targets:
 		/// <list type="bullet">
 		/// <item><see langword="field"/> for fields.</item>
-		/// <item><see langword="method"/> for methods.</item>
+		/// <item><see langword="method"/> for methods and lambdas.</item>
 		/// <item><see langword="type"/> for types.</item>
 		/// <item><see langword="typevar"/> for type parameters.</item>
 		/// <item><see langword="property"/> for properties.</item>
@@ -33,7 +33,7 @@ namespace Durian.Analysis
 		/// The attribute targets a the actual value of the member. Applicable targets:
 		/// <list type="bullet">
 		/// <item><see langword="field"/> for properties and events.</item>
-		/// <item><see langword="return"/> for methods, delegates, property getters and event accessors.</item>
+		/// <item><see langword="return"/> for methods, delegates and accessors.</item>
 		/// </list>
 		/// </summary>
 		Value = 2,

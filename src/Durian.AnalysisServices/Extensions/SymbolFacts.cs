@@ -12,7 +12,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Durian.Generator;
 using System.Diagnostics.CodeAnalysis;
-using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.SymbolContainers;
 
 #if ENABLE_REFLECTION
@@ -203,7 +202,7 @@ namespace Durian.Analysis.Extensions
 			}
 			else if (type is IPointerTypeSymbol pointer)
 			{
-				symbol = pointer.GetEffectivePointerAtType();
+				symbol = pointer.GetEffectiveElementType();
 			}
 			else
 			{
@@ -243,25 +242,25 @@ namespace Durian.Analysis.Extensions
 		/// Determines whether the specified <paramref name="type"/> has at least one generic constraint.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if has at least one generic constraint.</param>
-		public static bool HasConstraint(this INamedTypeSymbol type)
+		public static bool HasConstraints(this INamedTypeSymbol type)
 		{
-			return type.IsGenericType && type.TypeParameters.Any(p => p.HasConstraint());
+			return type.IsGenericType && type.TypeParameters.Any(p => p.HasConstraints());
 		}
 
 		/// <summary>
 		/// Determines whether the specified <paramref name="method"/> has at least one generic constraint.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if has at least one generic constraint.</param>
-		public static bool HasConstraint(this IMethodSymbol method)
+		public static bool HasConstraints(this IMethodSymbol method)
 		{
-			return method.IsGenericMethod && method.TypeParameters.Any(p => p.HasConstraint());
+			return method.IsGenericMethod && method.TypeParameters.Any(p => p.HasConstraints());
 		}
 
 		/// <summary>
 		/// Determines whether the specified <paramref name="parameter"/> has at least one generic constraint.
 		/// </summary>
 		/// <param name="parameter"><see cref="ITypeParameterSymbol"/> to check if has at least one generic constraint.</param>
-		public static bool HasConstraint(this ITypeParameterSymbol parameter)
+		public static bool HasConstraints(this ITypeParameterSymbol parameter)
 		{
 			return
 				parameter.HasConstructorConstraint ||
@@ -277,74 +276,110 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="parameter"><see cref="ITypeParameterSymbol"/> to check if has a specific <paramref name="constraint"/> applied.</param>
 		/// <param name="constraint"><see cref="GenericConstraint"/> to check if is applied to the <paramref name="parameter"/>.</param>
-		/// <param name="strict">Determines whether to only include constraints that are explicitly applied to the <paramref name="parameter"/>.</param>
-		public static bool HasConstraint(this ITypeParameterSymbol parameter, GenericConstraint constraint, bool strict = true)
+		/// <param name="includeImplicit">Determines whether to include constraints that are implicitly applied to the <paramref name="parameter"/>.</param>
+		public static bool HasConstraints(this ITypeParameterSymbol parameter, GenericConstraint constraint, bool includeImplicit = false)
 		{
-			switch (constraint)
+			if(constraint == GenericConstraint.None)
 			{
-				case GenericConstraint.Class:
-
-					if (parameter.HasReferenceTypeConstraint)
-					{
-						return true;
-					}
-
-					if (strict)
-					{
-						return false;
-					}
-
-					return parameter.ConstraintTypes.Any(type =>
-					{
-						if (type.TypeKind == TypeKind.Class)
-						{
-							return true;
-						}
-
-						if (type.TypeKind == TypeKind.TypeParameter)
-						{
-							return (type as ITypeParameterSymbol)?.HasConstraint(GenericConstraint.Class, false) ?? false;
-						}
-
-						return true;
-					});
-
-				case GenericConstraint.Struct:
-
-					if (parameter.HasValueTypeConstraint)
-					{
-						return true;
-					}
-
-					return !strict && parameter.HasUnmanagedTypeConstraint;
-
-				case GenericConstraint.Unmanaged:
-					return parameter.HasUnmanagedTypeConstraint;
-
-				case GenericConstraint.Type:
-					return parameter.ConstraintTypes.Length > 0;
-
-				case GenericConstraint.NotNull:
-					return parameter.HasNotNullConstraint;
-
-				case GenericConstraint.New:
-
-					if (parameter.HasConstructorConstraint)
-					{
-						return true;
-					}
-
-					return !strict && (parameter.HasConstructorConstraint || parameter.HasUnmanagedTypeConstraint);
-
-				//case GenericConstraint.Default:
-				//	break;
-
-				case GenericConstraint.None:
-					return !parameter.HasConstraint();
-
-				default:
-					return false;
+				return !parameter.HasConstraints();
 			}
+
+			bool hasValidConstraint = false;
+
+			if(constraint.HasFlag(GenericConstraint.Class))
+			{
+				if (parameter.HasReferenceTypeConstraint)
+				{
+					hasValidConstraint = true;
+				}
+				else if (!includeImplicit)
+				{
+					return false;
+				}
+
+				hasValidConstraint = parameter.ConstraintTypes.Any(type =>
+				{
+					if (type.TypeKind == TypeKind.Class)
+					{
+						return true;
+					}
+
+					if (type.TypeKind == TypeKind.TypeParameter)
+					{
+						return (type as ITypeParameterSymbol)?.HasConstraints(GenericConstraint.Class, true) ?? false;
+					}
+
+					return true;
+				});
+
+				if(!hasValidConstraint)
+				{
+					return false;
+				}
+			}
+			else if(constraint.HasFlag(GenericConstraint.Struct))
+			{
+				if (parameter.HasValueTypeConstraint || (includeImplicit && parameter.HasUnmanagedTypeConstraint))
+				{
+					hasValidConstraint = true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else if(constraint.HasFlag(GenericConstraint.Unmanaged))
+			{
+				if(parameter.HasUnmanagedTypeConstraint)
+				{
+					hasValidConstraint = true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else if (constraint.HasFlag(GenericConstraint.NotNull))
+			{
+				if (parameter.HasNotNullConstraint)
+				{
+					hasValidConstraint = true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else if(constraint.HasFlag(GenericConstraint.Default))
+			{
+				return false;
+			}
+
+			if (constraint.HasFlag(GenericConstraint.Type))
+			{
+				if(parameter.ConstraintTypes.Length > 0)
+				{
+					hasValidConstraint = true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			if(constraint.HasFlag(GenericConstraint.New))
+			{
+				if(parameter.HasConstructorConstraint || (includeImplicit && (parameter.HasValueTypeConstraint || parameter.HasUnmanagedTypeConstraint)))
+				{
+					hasValidConstraint = true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			return hasValidConstraint;
 		}
 
 		/// <summary>
@@ -592,7 +627,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="property"><see cref="IPropertySymbol"/> to check if is auto-implemented.</param>
 		public static bool IsAutoProperty(this IPropertySymbol property)
 		{
-			return !property.IsIndexer && property.GetBackingField() is not null;
+			return property.GetBackingField() is not null;
 		}
 
 		/// <summary>
@@ -601,7 +636,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an accessor of an auto-implemented property.</param>
 		public static bool IsAutoPropertyAccessor(this IMethodSymbol method)
 		{
-			return method.AssociatedSymbol is IPropertySymbol property && property.GetBackingField() is not null;
+			return method.AssociatedSymbol is IPropertySymbol property && property.IsAutoProperty();
 		}
 
 		/// <summary>
@@ -814,15 +849,6 @@ namespace Durian.Analysis.Extensions
 		public static bool IsBackingField(this IFieldSymbol field, IPropertySymbol property)
 		{
 			return SymbolEqualityComparer.Default.Equals(field.AssociatedSymbol, property);
-		}
-
-		/// <summary>
-		/// Determines whether the specified <paramref name="method"/> can be used as a collection initializer.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to check whether can be used as a collection initializer.</param>
-		public static bool IsCollectionInitializer(this IMethodSymbol method)
-		{
-			return method.IsSpecialMember(SpecialMember.Add);
 		}
 
 		/// <summary>
@@ -1155,19 +1181,10 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="type"/> is nullable.
 		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to check whether is nullable.</param>
-		public static bool IsNullable(this INamedTypeSymbol type)
+		/// <param name="type"><see cref="ITypeSymbol"/> to check whether is nullable.</param>
+		public static bool IsNullable(this ITypeSymbol type)
 		{
-			if (type.NullableAnnotation == NullableAnnotation.Annotated)
-			{
-				return true;
-			}
-
-			return
-				type.IsValueType &&
-				type.ConstructedFrom is not null &&
-				type.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T &&
-				type.ConstructedFrom.TypeArguments.Length > 0;
+			return type.GetNullableUnderlayingType() is not null;
 		}
 
 		/// <summary>
@@ -1198,7 +1215,7 @@ namespace Durian.Analysis.Extensions
 			return
 				type.ConstructedFrom is not null &&
 				type.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T &&
-				type.ConstructedFrom.TypeArguments.Length > 0;
+				type.ConstructedFrom.TypeArguments.Length == 1;
 		}
 
 		/// <summary>
@@ -2024,7 +2041,7 @@ namespace Durian.Analysis.Extensions
 			return type
 				.GetAllMembers()
 				.OfType<IMethodSymbol>()
-				.Any(IsCollectionInitializer);
+				.Any(m => m.IsSpecialMember(SpecialMember.Add));
 		}
 
 		/// <summary>
@@ -2047,7 +2064,12 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check whether can have an explicit base type.</param>
 		public static bool SupportsExplicitBaseType(this INamedTypeSymbol type)
 		{
-			return type.TypeKind == TypeKind.Class && !type.IsStatic && !type.IsSealed;
+			if(type.TypeKind == TypeKind.Enum || type.TypeKind == TypeKind.Interface)
+			{
+				return true;
+			}
+
+			return type.TypeKind == TypeKind.Class && !type.IsStatic;
 		}
 
 		internal static bool CanHideSymbol_Internal(IMethodSymbol method, IMethodSymbol other)
@@ -2222,20 +2244,12 @@ namespace Durian.Analysis.Extensions
 			}
 #endif
 
-			if (method.GetSyntax() is not CSharpSyntaxNode node)
+			if (method.GetSyntax() is not MethodDeclarationSyntax node)
 			{
 				return false;
 			}
 
-			return node
-				.DescendantNodes(node => node.Kind() is
-					not SyntaxKind.LocalFunctionStatement and
-					not SyntaxKind.AnonymousMethodExpression and
-					not SyntaxKind.SimpleLambdaExpression and
-					not SyntaxKind.ParenthesizedLambdaExpression &&
-					node is not ExpressionSyntax
-				)
-				.Any(n => n is YieldStatementSyntax);
+			return node.IsIterator();
 		}
 
 		private static bool IsPartial_Internal(IMethodSymbol method, Func<BaseMethodDeclarationSyntax?>? declarationRetriever)

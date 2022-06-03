@@ -412,7 +412,7 @@ namespace Durian.Analysis.CopyFrom
 
 		private static AdditionalNodes RemoveInvalidFlags(AdditionalNodes additionalNodes, INamedTypeSymbol symbol)
 		{
-			if (additionalNodes.HasFlag(AdditionalNodes.Constraints) && (!symbol.IsGenericType || symbol.HasConstraint()))
+			if (additionalNodes.HasFlag(AdditionalNodes.Constraints) && (!symbol.IsGenericType || symbol.HasConstraints()))
 			{
 				RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
 			}
@@ -470,7 +470,7 @@ namespace Durian.Analysis.CopyFrom
 					diagnosticReceiver.ReportDiagnostic(DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember, location, symbol);
 					RemoveFlag(ref additionalNodes, AdditionalNodes.Constraints);
 				}
-				else if (symbol.HasConstraint())
+				else if (symbol.HasConstraints())
 				{
 					location ??= attribute.GetNamedArgumentLocation(CopyFromTypeAttributeProvider.AdditionalNodes);
 					diagnosticReceiver.ReportDiagnostic(DUR0223_MemberAlreadyHasConstraints, location, symbol);

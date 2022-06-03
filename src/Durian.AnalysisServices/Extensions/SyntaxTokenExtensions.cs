@@ -80,10 +80,10 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns the <see cref="Accessor"/> represented by the specified <paramref name="token"/>.
+		/// Returns the <see cref="AccessorKind"/> represented by the specified <paramref name="token"/>.
 		/// </summary>
-		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="Accessor"/> represented by.</param>
-		public static Accessor GetAccessor(this SyntaxToken token)
+		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="AccessorKind"/> represented by.</param>
+		public static AccessorKind GetAccessor(this SyntaxToken token)
 		{
 			return ((SyntaxKind)token.RawKind).GetAccessor();
 		}
@@ -165,10 +165,10 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns the <see cref="EventAccessor"/> represented by the specified <paramref name="token"/>.
+		/// Returns the <see cref="EventAccessorKind"/> represented by the specified <paramref name="token"/>.
 		/// </summary>
-		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="EventAccessor"/> represented by.</param>
-		public static EventAccessor GetEventAccessor(this SyntaxToken token)
+		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="EventAccessorKind"/> represented by.</param>
+		public static EventAccessorKind GetEventAccessor(this SyntaxToken token)
 		{
 			return ((SyntaxKind)token.RawKind).GetEventAccessor();
 		}
@@ -207,6 +207,63 @@ namespace Durian.Analysis.Extensions
 		public static IntegerValueType GetIntegerType(this SyntaxToken token)
 		{
 			return ((SyntaxKind)token.RawKind).GetIntegerType();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="LiteralKind"/> of the specified <paramref name="token"/>.
+		/// </summary>
+		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="LiteralKind"/> of.</param>
+		public static LiteralKind GetLiteralKind(this SyntaxToken token)
+		{
+			return (SyntaxKind)token.RawKind switch
+			{
+				SyntaxKind.NumericLiteralToken or
+				SyntaxKind.IntKeyword or
+				SyntaxKind.UIntKeyword or
+				SyntaxKind.LongKeyword or
+				SyntaxKind.ULongKeyword or
+				SyntaxKind.ShortKeyword or
+				SyntaxKind.UShortKeyword or
+				SyntaxKind.ByteKeyword or
+				SyntaxKind.SByteKeyword or
+				SyntaxKind.FloatKeyword or
+				SyntaxKind.DoubleKeyword or
+				SyntaxKind.DecimalKeyword
+					=> LiteralKind.Number,
+
+				SyntaxKind.StringLiteralToken or
+				SyntaxKind.InterpolatedStringToken or
+				SyntaxKind.InterpolatedStringTextToken or
+				SyntaxKind.InterpolatedStringStartToken or
+				SyntaxKind.InterpolatedStringEndToken or
+				SyntaxKind.InterpolatedVerbatimStringStartToken or
+				SyntaxKind.StringKeyword or
+				SyntaxKind.DoubleQuoteToken
+					=> LiteralKind.String,
+
+				SyntaxKind.CharacterLiteralToken or
+				SyntaxKind.CharKeyword or
+				SyntaxKind.SingleQuoteToken
+					=> LiteralKind.Character,
+
+				SyntaxKind.DefaultKeyword
+					=> LiteralKind.Default,
+
+				SyntaxKind.TrueKeyword
+					=> LiteralKind.True,
+
+				SyntaxKind.FalseKeyword or
+				SyntaxKind.BoolKeyword
+					=> LiteralKind.False,
+
+				SyntaxKind.NullKeyword
+					=> LiteralKind.Null,
+
+				SyntaxKind.ArgListKeyword
+					=> LiteralKind.ArgList,
+
+				_ => default
+			};
 		}
 
 		/// <summary>
@@ -397,10 +454,10 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns the <see cref="PropertyAccessor"/> represented by the specified <paramref name="token"/>.
+		/// Returns the <see cref="PropertyAccessorKind"/> represented by the specified <paramref name="token"/>.
 		/// </summary>
-		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="PropertyAccessor"/> represented by.</param>
-		public static PropertyAccessor GetPropertyAccessor(this SyntaxToken token)
+		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="PropertyAccessorKind"/> represented by.</param>
+		public static PropertyAccessorKind GetPropertyAccessor(this SyntaxToken token)
 		{
 			return ((SyntaxKind)token.RawKind).GetPropertyAccessor();
 		}
@@ -420,30 +477,13 @@ namespace Durian.Analysis.Extensions
 		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="StringModifiers"/> applied to.</param>
 		public static StringModifiers GetStringModifiers(this SyntaxToken token)
 		{
-			if (!token.IsKind(SyntaxKind.StringLiteralToken) || token.Text.Length == 0)
+			return (SyntaxKind)token.RawKind switch
 			{
-				return default;
-			}
-
-			string text = token.Text;
-
-			StringModifiers modifiers = default;
-
-			int length = token.Text.Length == 1 ? 1 : 2;
-
-			for (int i = 0; i < length; i++)
-			{
-				if (text[i] == '@')
-				{
-					modifiers |= StringModifiers.Verbatim;
-				}
-				else if (text[i] == '$')
-				{
-					modifiers |= StringModifiers.Interpolation;
-				}
-			}
-
-			return modifiers;
+				SyntaxKind.StringLiteralToken => token.ValueText.Length > 0 && token.ValueText[0] == '@' ? StringModifiers.Verbatim : default,
+				SyntaxKind.InterpolatedStringStartToken => StringModifiers.Interpolation,
+				SyntaxKind.InterpolatedVerbatimStringStartToken => StringModifiers.Interpolation | StringModifiers.Verbatim,
+				_ => default
+			};
 		}
 
 		/// <summary>
@@ -456,20 +496,33 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="tokenlist"/> contains the <see langword="abstract"/> token.
+		/// Returns the <see cref="VarianceKind"/> represented by the specified <paramref name="token"/>.
 		/// </summary>
-		/// <param name="tokenlist">Determines whether the specified <paramref name="tokenlist"/> contains the <see langword="abstract"/> token.</param>
-		public static bool IsAbstract(this SyntaxTokenList tokenlist)
+		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="VarianceKind"/> represented by.</param>
+		public static VarianceKind GetVariance(this SyntaxToken token)
 		{
-			return tokenlist.Any(SyntaxKind.AbstractKeyword);
+			return (SyntaxKind)token.RawKind switch
+			{
+				SyntaxKind.OutKeyword => VarianceKind.Out,
+				SyntaxKind.InKeyword => VarianceKind.In,
+				_ => default
+			};
 		}
 
 		/// <summary>
-		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="async"/> token.
+		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="abstract"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="async"/> token.</param>
-#pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'.
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="abstract"/> modifier.</param>
+		public static bool IsAbstract(this SyntaxTokenList tokenList)
+		{
+			return tokenList.Any(SyntaxKind.AbstractKeyword);
+		}
 
+		/// <summary>
+		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="async"/> modifier.
+		/// </summary>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="async"/> modifier.</param>
+#pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'.
 		public static bool IsAsync(this SyntaxTokenList tokenList)
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
 		{
@@ -479,7 +532,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="extern"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="extern"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="extern"/> modifier.</param>
 		public static bool IsExtern(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.ExternKeyword);
@@ -488,7 +541,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="fixed"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="fixed"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="fixed"/> modifier.</param>
 		public static bool IsFixed(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.FixedKeyword);
@@ -497,7 +550,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="in"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="in"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="in"/> modifier.</param>
 		public static bool IsIn(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.InKeyword);
@@ -506,7 +559,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="new"/> token.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="new"/> token.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="new"/> modifier.</param>
 		public static bool IsNew(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.NewKeyword);
@@ -515,7 +568,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="override"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="override"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="override"/> modifier.</param>
 		public static bool IsOverride(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.OverrideKeyword);
@@ -524,7 +577,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="params"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="params"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="params"/> modifier.</param>
 		public static bool IsParams(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.ParamsKeyword);
@@ -533,7 +586,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="partial"/> token.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="parital"/> token.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="partial"/> modifier.</param>
 		public static bool IsPartial(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.PartialKeyword);
@@ -542,7 +595,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="readonly"/> modifier (<see langword="ref"/> <see langword="readonly"/> does not count).
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="readonly"/> or <see langword="in"/>  modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="readonly"/> modifier.</param>
 		public static bool IsReadOnly(this SyntaxTokenList tokenList)
 		{
 			SyntaxTokenList tokens = tokenList;
@@ -564,7 +617,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="ref"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="ref"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="ref"/> modifier..</param>
 		public static bool IsRef(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.RefKeyword);
@@ -573,7 +626,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="ref"/> and <see langword="readonly"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="ref"/> and <see langword="readonly"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="ref"/> and <see langword="readonly"/> modifiers.</param>
 		public static bool IsRefReadOnly(this SyntaxTokenList tokenList)
 		{
 			SyntaxTokenList tokens = tokenList;
@@ -584,7 +637,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="sealed"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="sealed"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="sealed"/> modifier.</param>
 		public static bool IsSealed(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.SealedKeyword);
@@ -593,7 +646,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="static"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="static"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="static"/> modifier.</param>
 		public static bool IsStatic(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.StaticKeyword);
@@ -602,7 +655,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="this"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="this"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="this"/> modifier.</param>
 		public static bool IsThis(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.ThisKeyword);
@@ -611,7 +664,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="unsafe"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="unsafe"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="unsafe"/> modifier.</param>
 		public static bool IsUnsafe(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.UnsafeKeyword);
@@ -620,7 +673,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="virtual"/> token.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="virtual"/> token.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="virtual"/> modifier.</param>
 		public static bool IsVirtual(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.VirtualKeyword);
@@ -629,7 +682,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="tokenList"/> contains the <see langword="volatile"/> modifier.
 		/// </summary>
-		/// <param name="tokenList">Determines whether the specified <paramref name="tokenList"/> contains the <see langword="volatile"/> modifier.</param>
+		/// <param name="tokenList"><see cref="SyntaxTokenList"/> to determine whether contains the <see langword="volatile"/> modifier.</param>
 		public static bool IsVolatile(this SyntaxTokenList tokenList)
 		{
 			return tokenList.Any(SyntaxKind.VolatileKeyword);

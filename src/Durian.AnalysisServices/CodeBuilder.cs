@@ -141,7 +141,7 @@ namespace Durian.Analysis
 		/// Begins declaration of a property or event accessor.
 		/// </summary>
 		/// <param name="accessor">Kind of accessor to begin declaration of.</param>
-		public CodeBuilder Accessor(Accessor accessor)
+		public CodeBuilder Accessor(AccessorKind accessor)
 		{
 			return Accessor(accessor, Style.MethodStyle);
 		}
@@ -151,7 +151,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="accessor">Kind of accessor to begin declaration of.</param>
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
-		public CodeBuilder Accessor(Accessor accessor, MethodStyle body)
+		public CodeBuilder Accessor(AccessorKind accessor, MethodStyle body)
 		{
 			InitBuilder();
 

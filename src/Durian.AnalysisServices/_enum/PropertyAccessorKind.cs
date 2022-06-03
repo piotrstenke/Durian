@@ -4,9 +4,9 @@
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// Defines all possible accessor kinds.
+	/// Defines all possible property accessor kinds.
 	/// </summary>
-	public enum Accessor
+	public enum PropertyAccessorKind
 	{
 		/// <summary>
 		/// Member is not an accessor.
@@ -27,15 +27,5 @@ namespace Durian.Analysis
 		/// Represents the <see langword="init"/> accessor.
 		/// </summary>
 		Init = 3,
-
-		/// <summary>
-		/// Represents the <see langword="add"/> accessor.
-		/// </summary>
-		Add = 4,
-
-		/// <summary>
-		/// Represents the <see langword="remove"/> accessor.
-		/// </summary>
-		Remove = 5
 	}
 }
