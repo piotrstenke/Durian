@@ -263,7 +263,7 @@ namespace Durian.Analysis.DefaultParam
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			ImmutableArray<ITypeData> types = symbol.GetContainingTypes().ToContainer(compilation).GetData();
+			ImmutableArray<ITypeData> types = symbol.GetContainingTypes().ToWritableContainer(compilation).GetData();
 			bool isValid = true;
 
 			if (types.Length > 0)
@@ -371,7 +371,7 @@ namespace Durian.Analysis.DefaultParam
 				return false;
 			}
 
-			ImmutableArray<ITypeData> arr = types.ToContainer(compilation).GetData();
+			ImmutableArray<ITypeData> arr = types.ToWritableContainer(compilation).GetData();
 
 			foreach (ITypeData parent in arr)
 			{

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Durian.Analysis.CodeGeneration;
+using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -22,27 +23,16 @@ namespace Durian.Analysis.Data
 		public new BaseNamespaceDeclarationSyntax Declaration => (base.Declaration as BaseNamespaceDeclarationSyntax)!;
 
 		/// <summary>
-		/// Type of this namespace declaration.
+		/// Style of this namespace declaration.
 		/// </summary>
-		public NamespaceStyle DeclarationType
-		{
-			get
-			{
-				if (Declaration is FileScopedNamespaceDeclarationSyntax)
-				{
-					return NamespaceStyle.File;
-				}
-
-				return NamespaceStyle.Default;
-			}
-		}
+		public NamespaceStyle DeclarationStyle { get; }
 
 		/// <summary>
 		/// <see cref="IPropertySymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		public new INamespaceSymbol Symbol => (base.Symbol as INamespaceSymbol)!;
 
-		internal CSharpSyntaxNode BaseDeclaration => base.Declaration;
+		internal SyntaxNode BaseDeclaration => base.Declaration;
 		internal ISymbol BaseSymbol => base.Symbol;
 
 		/// <summary>
@@ -50,11 +40,13 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="declaration"><see cref="BaseNamespaceDeclarationSyntax"/> this <see cref="PropertyData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="PropertyData"/>.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
 		/// </exception>
-		public NamespaceData(BaseNamespaceDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
+		public NamespaceData(BaseNamespaceDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
+			DeclarationStyle = declaration.GetNamespaceStyle();
 		}
 
 		internal NamespaceData(MemberDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
@@ -65,63 +57,7 @@ namespace Durian.Analysis.Data
 		{
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PropertyData"/> class.
-		/// </summary>
-		/// <param name="declaration"><see cref="BaseNamespaceDeclarationSyntax"/> this <see cref="PropertyData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="PropertyData"/>.</param>
-		/// <param name="symbol"><see cref="INamespaceSymbol"/> this <see cref="PropertyData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal NamespaceData(
-			BaseNamespaceDeclarationSyntax declaration,
-			ICompilationData compilation,
-			INamespaceSymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			default,
-			containingNamespaces,
-			attributes
-		)
-		{
-		}
-
-		private protected NamespaceData(
-			MemberDeclarationSyntax declaration,
-			ICompilationData compilation,
-			INamespaceOrTypeSymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
-		{
-		}
-
 		/// <inheritdoc/>
-		public override TypeContainer GetContainingTypes()
-		{
-			return SymbolContainerFactory.Empty<TypeContainer>();
-		}
+		public override TypeContainer ContainingTypes => SymbolContainerFactory.Empty<TypeContainer>();
 	}
 }

@@ -27,5 +27,15 @@ namespace Durian.Analysis
 		/// Auto-property with <see langword="get"/> and <see langword="init"/> accessors.
 		/// </summary>
 		GetInit = 3,
+
+		/// <summary>
+		/// Auto-property with a <see langword="set"/> accessor only. Usable only in interfaces.
+		/// </summary>
+		SetOnly = 4,
+
+		/// <summary>
+		/// Auto-property with an <see langword="init"/> accessor only. Usable only in interfaces.
+		/// </summary>
+		InitOnly = 5,
 	}
 }

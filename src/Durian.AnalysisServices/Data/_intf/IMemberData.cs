@@ -10,14 +10,14 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.Analysis.Data
 {
 	/// <summary>
-	/// Encapsulates data associated with a single <see cref="MemberDeclarationSyntax"/>.
+	/// Encapsulates data associated with a single <see cref="SyntaxNode"/>.
 	/// </summary>
-	public interface IMemberData
+	public interface IMemberData : ISymbolOrMember
 	{
 		/// <summary>
-		/// Target <see cref="CSharpSyntaxNode"/>.
+		/// Target <see cref="SyntaxNode"/>.
 		/// </summary>
-		CSharpSyntaxNode Declaration { get; }
+		SyntaxNode Declaration { get; }
 
 		/// <summary>
 		/// Determines whether the current member is declared using the <see langword="new"/> keyword.
@@ -35,9 +35,19 @@ namespace Durian.Analysis.Data
 		bool IsUnsafe { get; }
 
 		/// <summary>
+		/// <see cref="Analysis.Virtuality"/> of the member.
+		/// </summary>
+		Virtuality Virtuality { get; }
+
+		/// <summary>
+		/// Member this member hides using the <see langword="new"/> keyword.
+		/// </summary>
+		ISymbolOrMember? HiddenSymbol { get; }
+
+		/// <summary>
 		/// Location of the member.
 		/// </summary>
-		Location Location { get; }
+		Location? Location { get; }
 
 		/// <summary>
 		/// Name of the underlaying symbol including the verbatim identifier '@' token.
@@ -57,26 +67,26 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// <see cref="ISymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
-		ISymbol Symbol { get; }
+		new ISymbol Symbol { get; }
 
 		/// <summary>
-		/// Returns data of all attributes applied to the <see cref="Symbol"/>.
+		/// Data of all attributes applied to the <see cref="Symbol"/>.
 		/// </summary>
-		ImmutableArray<AttributeData> GetAttributes();
+		ImmutableArray<AttributeData> Attributes { get; }
 
 		/// <summary>
-		/// Returns all <see cref="INamespaceSymbol"/>s that contain the <see cref="Symbol"/>.
+		/// All <see cref="INamespaceSymbol"/>s that contain the <see cref="Symbol"/>.
 		/// </summary>
-		NamespaceContainer GetContainingNamespaces();
+		WritableSymbolContainer<INamespaceSymbol> ContainingNamespaces { get; }
 
 		/// <summary>
-		/// Returns all <see cref="ITypeData"/>s that contain the <see cref="Symbol"/>.
+		/// All <see cref="ITypeData"/>s that contain the <see cref="Symbol"/>.
 		/// </summary>
-		TypeContainer GetContainingTypes();
+		GenericSymbolContainer<INamedTypeSymbol> ContainingTypes { get; }
 
 		/// <summary>
-		/// Returns all modifiers of the current symbol.
+		/// All modifiers of the current symbol.
 		/// </summary>
-		string[] GetModifiers();
+		string[] Modifiers { get; }
 	}
 }

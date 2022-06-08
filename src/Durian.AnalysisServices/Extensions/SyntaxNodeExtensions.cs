@@ -286,7 +286,7 @@ namespace Durian.Analysis.Extensions
 		/// <item><see cref="AttributeTarget.Method"/> for events.</item>
 		/// </list>
 		/// </remarks>
-		public static SyntaxNode? GetAttributeTarget(this SyntaxNode node, AttributeTarget target)
+		public static CSharpSyntaxNode? GetAttributeTarget(this SyntaxNode node, AttributeTarget target)
 		{
 			switch (target)
 			{
@@ -302,13 +302,13 @@ namespace Durian.Analysis.Extensions
 						LocalFunctionStatementSyntax or
 						ParenthesizedLambdaExpressionSyntax or
 						AccessorDeclarationSyntax
-						? node : default;
+						? node as CSharpSyntaxNode : default;
 
 				case AttributeTarget.Type:
 					return node is
 						BaseTypeDeclarationSyntax or
 						DelegateDeclarationSyntax
-						? node : default;
+						? node as CSharpSyntaxNode: default;
 
 				case AttributeTarget.TypeVar:
 					return node as TypeParameterSyntax;
@@ -317,7 +317,7 @@ namespace Durian.Analysis.Extensions
 
 					if (node is EventDeclarationSyntax or EventFieldDeclarationSyntax)
 					{
-						return node;
+						return node as CSharpSyntaxNode;
 					}
 
 					return default;
@@ -338,7 +338,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the attribute target node of.</param>
 		/// <param name="target">Kind of attribute target.</param>
-		public static SyntaxNode? GetAttributeTarget(this SyntaxNode node, AttributeTargetKind target)
+		public static CSharpSyntaxNode? GetAttributeTarget(this SyntaxNode node, AttributeTargetKind target)
 		{
 			return target switch
 			{
@@ -352,7 +352,7 @@ namespace Durian.Analysis.Extensions
 					LocalFunctionStatementSyntax or
 					ParenthesizedLambdaExpressionSyntax or
 					AccessorDeclarationSyntax
-					? node : default,
+					? node as CSharpSyntaxNode : default,
 
 				AttributeTargetKind.Value => node is not BasePropertyDeclarationSyntax ? node.GetReturnType() : default,
 
@@ -458,24 +458,19 @@ namespace Durian.Analysis.Extensions
 				return default;
 			}
 
-			AccessorDeclarationSyntax get = node.Accessors[0];
-
-			if (get.GetPropertyAccessorKind() != PropertyAccessorKind.Get)
-			{
-				return default;
-			}
+			PropertyAccessorKind first = node.Accessors[0].GetPropertyAccessorKind();
 
 			if (node.Accessors.Count == 1)
 			{
-				return AutoPropertyKind.GetOnly;
+				return first.GetAutoPropertyKind();
 			}
 
-			AccessorKind set = node.Accessors[1].GetAccessorKind();
+			PropertyAccessorKind second = node.Accessors[1].GetPropertyAccessorKind();
 
-			return set switch
+			return second switch
 			{
-				AccessorKind.Set => AutoPropertyKind.GetSet,
-				AccessorKind.Init => AutoPropertyKind.GetInit,
+				PropertyAccessorKind.Set => AutoPropertyKind.GetSet,
+				PropertyAccessorKind.Init => AutoPropertyKind.GetInit,
 				_ => default
 			};
 		}
@@ -499,12 +494,12 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns the block body of the specified <paramref name="statement"/>.
+		/// Returns the block body of the specified <paramref name="node"/>.
 		/// </summary>
-		/// <param name="statement"><see cref="StatementSyntax"/> to get the block body of.</param>
-		public static BlockSyntax? GetBlock(this StatementSyntax statement)
+		/// <param name="node"><see cref="StatementSyntax"/> to get the block body of.</param>
+		public static BlockSyntax? GetBlock(this StatementSyntax node)
 		{
-			return statement switch
+			return node switch
 			{
 				LocalFunctionStatementSyntax local => local.Body,
 				CheckedStatementSyntax @checked => @checked.Block,
@@ -516,79 +511,160 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns the body of the specified <paramref name="method"/>.
+		/// Returns the body of the specified <paramref name="node"/>.
 		/// </summary>
-		/// <param name="method"><see cref="BaseMethodDeclarationSyntax"/> to get the body of.</param>
-		public static SyntaxNode? GetBody(this BaseMethodDeclarationSyntax method)
+		/// <param name="node"><see cref="BaseMethodDeclarationSyntax"/> to get the body of.</param>
+		public static CSharpSyntaxNode? GetBody(this BaseMethodDeclarationSyntax node)
 		{
-			if (method.Body is not null)
+			if (node.Body is not null)
 			{
-				return method.Body;
+				return node.Body;
 			}
 
-			if (method.ExpressionBody is not null)
+			if (node.ExpressionBody is not null)
 			{
-				return method.ExpressionBody;
+				return node.ExpressionBody;
 			}
 
 			return null;
 		}
 
 		/// <summary>
-		/// Returns the body of the specified <paramref name="method"/>.
+		/// Returns the body of the specified <paramref name="node"/>.
 		/// </summary>
-		/// <param name="method"><see cref="LocalFunctionStatementSyntax"/> to get the body of.</param>
-		public static SyntaxNode? GetBody(this LocalFunctionStatementSyntax method)
+		/// <param name="node"><see cref="LocalFunctionStatementSyntax"/> to get the body of.</param>
+		public static CSharpSyntaxNode? GetBody(this LocalFunctionStatementSyntax node)
 		{
-			if (method.Body is not null)
+			if (node.Body is not null)
 			{
-				return method.Body;
+				return node.Body;
 			}
 
-			if (method.ExpressionBody is not null)
+			if (node.ExpressionBody is not null)
 			{
-				return method.ExpressionBody;
+				return node.ExpressionBody;
 			}
 
 			return null;
 		}
 
 		/// <summary>
-		/// Returns the body of the specified <paramref name="accessor"/>.
+		/// Returns the body of the specified <paramref name="node"/>.
 		/// </summary>
-		/// <param name="accessor"><see cref="AccessorDeclarationSyntax"/> to get the body of.</param>
-		public static SyntaxNode? GetBody(this AccessorDeclarationSyntax accessor)
+		/// <param name="node"><see cref="AccessorDeclarationSyntax"/> to get the body of.</param>
+		public static CSharpSyntaxNode? GetBody(this AccessorDeclarationSyntax node)
 		{
-			if (accessor.Body is not null)
+			if (node.Body is not null)
 			{
-				return accessor.Body;
+				return node.Body;
 			}
 
-			if (accessor.ExpressionBody is not null)
+			if (node.ExpressionBody is not null)
 			{
-				return accessor.ExpressionBody;
+				return node.ExpressionBody;
 			}
 
 			return null;
 		}
 
 		/// <summary>
-		/// Returns type of the body of the specified <paramref name="method"/>.
+		/// Returns the body of the specified <paramref name="node"/>.
 		/// </summary>
-		/// <param name="method"><see cref="BaseMethodDeclarationSyntax"/> to get the type of body of.</param>
-		public static MethodStyle GetBodyType(this BaseMethodDeclarationSyntax method)
+		/// <param name="node"><see cref="AnonymousFunctionExpressionSyntax"/> to get the body of.</param>
+		public static CSharpSyntaxNode? GetBody(this AnonymousFunctionExpressionSyntax node)
 		{
-			if (method.Body is not null)
+			if (node.Body is not null)
+			{
+				return node.Body;
+			}
+
+			if (node.ExpressionBody is not null)
+			{
+				return node.ExpressionBody;
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Returns type of the body of the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="BaseMethodDeclarationSyntax"/> to get the type of body of.</param>
+		public static MethodStyle GetBodyType(this BaseMethodDeclarationSyntax node)
+		{
+			if (node.Body is not null)
 			{
 				return MethodStyle.Block;
 			}
 
-			if (method.ExpressionBody is not null)
+			if (node.ExpressionBody is not null)
 			{
 				return MethodStyle.Expression;
 			}
 
-			return MethodStyle.None;
+			return default;
+		}
+
+		/// <summary>
+		/// Returns type of the body of the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="AccessorDeclarationSyntax"/> to get the type of body of.</param>
+		public static MethodStyle GetBodyType(this AccessorDeclarationSyntax node)
+		{
+			if (node.Body is not null)
+			{
+				return MethodStyle.Block;
+			}
+
+			if (node.ExpressionBody is not null)
+			{
+				return MethodStyle.Expression;
+			}
+
+			return default;
+		}
+
+		/// <summary>
+		/// Returns type of the body of the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="LocalFunctionStatementSyntax"/> to get the type of body of.</param>
+		public static MethodStyle GetBodyType(this LocalFunctionStatementSyntax node)
+		{
+			if (node.Body is not null)
+			{
+				return MethodStyle.Block;
+			}
+
+			if (node.ExpressionBody is not null)
+			{
+				return MethodStyle.Expression;
+			}
+
+			return default;
+		}
+
+		/// <summary>
+		/// Returns type of the body of the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="AnonymousFunctionExpressionSyntax"/> to get the type of body of.</param>
+		public static LambdaStyle GetBodyType(this AnonymousFunctionExpressionSyntax node)
+		{
+			if(node is AnonymousMethodExpressionSyntax)
+			{
+				return LambdaStyle.Method;
+			}
+
+			if(node.Body is not null)
+			{
+				return LambdaStyle.Block;
+			}
+
+			if(node.ExpressionBody is not null)
+			{
+				return LambdaStyle.Expression;
+			}
+
+			return default;
 		}
 
 		/// <summary>
@@ -795,9 +871,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the containing namespaces of.</param>
 		/// <param name="order">Specifies ordering of the returned values.</param>
-		public static IEnumerable<string> GetContainingNamespaces(this SyntaxNode node, ReturnOrder order = ReturnOrder.Parent)
+		public static IReturnOrderEnumerable<string> GetContainingNamespaces(this SyntaxNode node, ReturnOrder order = ReturnOrder.Parent)
 		{
-			return AnalysisUtilities.ByOrder(Yield(), order);
+			return Yield().OrderBy(order);
 
 			IEnumerable<string> Yield()
 			{
@@ -833,9 +909,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the containing <see cref="BaseTypeDeclarationSyntax"/>es of.</param>
 		/// <param name="order">Specifies ordering of the returned values.</param>
-		public static IEnumerable<BaseTypeDeclarationSyntax> GetContainingTypes(this SyntaxNode node, ReturnOrder order = ReturnOrder.Parent)
+		public static IReturnOrderEnumerable<BaseTypeDeclarationSyntax> GetContainingTypes(this SyntaxNode node, ReturnOrder order = ReturnOrder.Parent)
 		{
-			return AnalysisUtilities.ByOrder(Yield(), order);
+			return Yield().OrderBy(order);
 
 			IEnumerable<BaseTypeDeclarationSyntax> Yield()
 			{
@@ -1021,7 +1097,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="AccessorDeclarationSyntax"/> to get the <see cref="AccessorKind"/> kind represented by.</param>
 		public static EventAccessorKind GetEventAccessorKind(this AccessorDeclarationSyntax node)
 		{
-			return node.GetAccessorKind().GetEventAccessor();
+			return node.GetAccessorKind().GetEventAccessorKind();
 		}
 
 		/// <summary>
@@ -1598,7 +1674,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="AccessorDeclarationSyntax"/> to get the <see cref="AccessorKind"/> kind represented by.</param>
 		public static PropertyAccessorKind GetPropertyAccessorKind(this AccessorDeclarationSyntax node)
 		{
-			return node.GetAccessorKind().GetPropertyAccessor();
+			return node.GetAccessorKind().GetPropertyAccessorKind();
 		}
 
 		/// <summary>
@@ -1901,7 +1977,7 @@ namespace Durian.Analysis.Extensions
 		{
 			return node switch
 			{
-				BaseNamespaceDeclarationSyntax @namespace
+				BaseNamespaceDeclarationSyntax
 					=> SymbolKind.Namespace,
 
 				BaseTypeDeclarationSyntax or
@@ -1978,6 +2054,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="ArrayTypeSyntax"/> to get the <see cref="TypeKeyword"/> represented by.</param>
 		public static TypeKeyword GetTypeKeyword(this ArrayTypeSyntax node)
 		{
+			return node.ElementType.GetTypeKeyword();
 		}
 
 		/// <summary>
@@ -1986,6 +2063,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="PointerTypeSyntax"/> to get the <see cref="TypeKeyword"/> represented by.</param>
 		public static TypeKeyword GetTypeKeyword(this PointerTypeSyntax node)
 		{
+			return node.ElementType.GetTypeKeyword();
 		}
 
 		/// <summary>
@@ -1994,6 +2072,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="NullableTypeSyntax"/> to get the <see cref="TypeKeyword"/> represented by.</param>
 		public static TypeKeyword GetTypeKeyword(this NullableTypeSyntax node)
 		{
+			return node.ElementType.GetTypeKeyword();
 		}
 
 		/// <summary>
@@ -2002,7 +2081,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="RefTypeSyntax"/> to get the <see cref="TypeKeyword"/> represented by.</param>
 		public static TypeKeyword GetTypeKeyword(this RefTypeSyntax node)
 		{
-			return (node.Type as Predef)
+			return node.Type.GetTypeKeyword();
 		}
 
 		/// <summary>
@@ -2017,27 +2096,43 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Returns the <see cref="TypeKeyword"/> represented by the specified <paramref name="node"/>.
 		/// </summary>
-		/// <param name="node"><see cref="IdentifierNameSyntax"/> to get the <see cref="TypeKeyword"/> represented by.</param>
-		public static TypeKeyword GetTypeKeyword(this IdentifierNameSyntax node)
-		{
-		}
-
-		/// <summary>
-		/// Returns the <see cref="TypeKeyword"/> represented by the specified <paramref name="node"/>.
-		/// </summary>
 		/// <param name="node"><see cref="TypeSyntax"/> to get the <see cref="TypeKeyword"/> represented by.</param>
 		public static TypeKeyword GetTypeKeyword(this TypeSyntax node)
 		{
-			return node switch
+			switch (node)
 			{
-				PredefinedTypeSyntax predefined => predefined.GetTypeKeyword(),
-				RefTypeSyntax refType => refType.GetTypeKeyword(),
-				NullableTypeSyntax nullableType => nullableType.GetTypeKeyword(),
-				PointerTypeSyntax pointerType => pointerType.GetTypeKeyword(),
-				ArrayTypeSyntax arrayType => arrayType.GetTypeKeyword(),
-				IdentifierNameSyntax name => name.GetTypeKeyword(),
-				_ => default
-			};
+				case PredefinedTypeSyntax predefined:
+					return predefined.GetTypeKeyword();
+
+				case RefTypeSyntax refType:
+					return refType.GetTypeKeyword();
+
+				case NullableTypeSyntax nullable:
+					return nullable.GetTypeKeyword();
+
+				case PointerTypeSyntax pointer:
+					return pointer.GetTypeKeyword();
+
+				case ArrayTypeSyntax array:
+					return array.GetTypeKeyword();
+			}
+
+			if (node.IsNint)
+			{
+				return TypeKeyword.NInt;
+			}
+
+			if (node.IsNuint)
+			{
+				return TypeKeyword.NUInt;
+			}
+
+			if(node.IsDynamic())
+			{
+				return TypeKeyword.Dynamic;
+			}
+
+			return default;
 		}
 
 		/// <summary>
@@ -2171,7 +2266,7 @@ namespace Durian.Analysis.Extensions
 				return accessor == PropertyAccessorKind.Get;
 			}
 
-			return node.AccessorList?.HasAccessor(accessor.GetAccessor()) ?? false;
+			return node.AccessorList?.HasAccessor(accessor.GetAccessorKind()) ?? false;
 		}
 
 		/// <summary>
@@ -2186,7 +2281,7 @@ namespace Durian.Analysis.Extensions
 				return accessor == PropertyAccessorKind.Get;
 			}
 
-			return node.AccessorList?.HasAccessor(accessor.GetAccessor()) ?? false;
+			return node.AccessorList?.HasAccessor(accessor.GetAccessorKind()) ?? false;
 		}
 
 		/// <summary>
@@ -2196,7 +2291,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="accessor">Kind of accessor to check for.</param>
 		public static bool HasAccessor(this EventDeclarationSyntax node, EventAccessorKind accessor)
 		{
-			return node.AccessorList?.HasAccessor(accessor.GetAccessor()) ?? false;
+			return node.AccessorList?.HasAccessor(accessor.GetAccessorKind()) ?? false;
 		}
 
 		/// <summary>
@@ -2541,6 +2636,36 @@ namespace Durian.Analysis.Extensions
 		public static bool IsClass(this RecordDeclarationSyntax node)
 		{
 			return node.ClassOrStructKeyword.IsKind(SyntaxKind.ClassKeyword);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="SyntaxNode"/> is considered a declaration node and can be used as argument for the <c>GetDeclaredSymbol</c> method of a <see cref="SemanticModel"/>.
+		/// </summary>
+		/// <param name="node"><see cref="SyntaxNode"/> to determine whether is considered a declaration node.</param>
+		public static bool IsDeclaration(this SyntaxNode node)
+		{
+			return node is
+				MemberDeclarationSyntax or
+				AccessorDeclarationSyntax or
+				TypeParameterSyntax or
+				ParameterSyntax or
+				VariableDesignationSyntax or
+				AnonymousObjectCreationExpressionSyntax or
+				AnonymousObjectMemberDeclaratorSyntax or
+				ArgumentSyntax or
+				CatchDeclarationSyntax or
+				ExternAliasDirectiveSyntax or
+				CompilationUnitSyntax or
+				ForEachStatementSyntax or
+				LabeledStatementSyntax or
+				JoinIntoClauseSyntax or
+				QueryClauseSyntax or
+				QueryContinuationSyntax or
+				SingleVariableDesignationSyntax or
+				SwitchLabelSyntax or
+				UsingDirectiveSyntax or
+				TupleElementSyntax or
+				TupleExpressionSyntax;
 		}
 
 		/// <summary>

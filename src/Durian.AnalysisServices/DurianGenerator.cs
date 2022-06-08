@@ -3,7 +3,7 @@
 
 using System;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

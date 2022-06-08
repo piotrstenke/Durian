@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Cache

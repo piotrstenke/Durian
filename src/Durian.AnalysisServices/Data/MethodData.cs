@@ -25,10 +25,6 @@ namespace Durian.Analysis.Data
 		{
 		}
 
-		internal MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
-		{
-		}
-
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MethodData"/> class.
 		/// </summary>
@@ -59,6 +55,10 @@ namespace Durian.Analysis.Data
 			containingNamespaces,
 			attributes
 		)
+		{
+		}
+
+		internal MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 	}

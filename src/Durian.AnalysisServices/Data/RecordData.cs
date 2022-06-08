@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -14,59 +16,114 @@ namespace Durian.Analysis.Data
 	public class RecordData : TypeData<RecordDeclarationSyntax>
 	{
 		/// <summary>
+		/// Contains optional data that can be passed to a <see cref="RecordData"/>.
+		/// </summary>
+		public new class Properties : TypeData<RecordDeclarationSyntax>.Properties
+		{
+			/// <inheritdoc cref="RecordData.ParameterList"/>
+			public DefaultedValue<ParameterListSyntax> ParameterList { get; set; }
+
+			/// <inheritdoc cref="RecordData.PrimaryConstructor"/>
+			public DefaultedValue<ISymbolOrMember<IMethodSymbol>> PrimaryConstructor { get; set; }
+
+			/// <inheritdoc cref="RecordData.CopyConstructor"/>
+			public DefaultedValue<ISymbolOrMember<IMethodSymbol>> CopyConstructor { get; set; }
+		}
+
+		private DefaultedValue<ParameterListSyntax> _parameterList;
+		private DefaultedValue<ISymbolOrMember<IMethodSymbol>> _primaryConstructor;
+		private DefaultedValue<ISymbolOrMember<IMethodSymbol>> _copyConstructor;
+
+		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="TypeData{TDeclaration}.Declaration"/>.
 		/// </summary>
 		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="RecordData"/> class.
+		/// <see cref="ParameterListSyntax"/> of the record's primary constructor.
 		/// </summary>
-		/// <param name="declaration"><see cref="RecordDeclarationSyntax"/> this <see cref="RecordData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="RecordData"/>.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
-		/// </exception>
-		public RecordData(RecordDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
+		public ParameterListSyntax? ParameterList
 		{
+			get
+			{
+				if(_parameterList.IsDefault)
+				{
+					if(Declaration.ParameterList is not null)
+					{
+						_parameterList = Declaration.ParameterList;
+					}
+					else
+					{
+						_parameterList = PartialDeclarations.Select(d => d.ParameterList).FirstOrDefault(d => d is not null);
+					}
+				}
+
+				return _parameterList.Value;
+			}
 		}
 
-		internal RecordData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		/// <summary>
+		/// Primary constructor of the record.
+		/// </summary>
+		public ISymbolOrMember<IMethodSymbol>? PrimaryConstructor
 		{
+			get
+			{
+				if(_primaryConstructor.IsDefault)
+				{
+					_primaryConstructor = Symbol.GetPrimaryConstructor().ToDataOrSymbolInternal(ParentCompilation);
+				}
+
+				return _primaryConstructor.Value;
+			}
 		}
+
+		/// <summary>
+		/// Copy constructor of the record.
+		/// </summary>
+		public ISymbolOrMember<IMethodSymbol>? CopyConstructor
+		{
+			get
+			{
+				if(_copyConstructor.IsDefault)
+				{
+					_copyConstructor = Symbol.GetSpecialConstructor(SpecialConstructor.Copy).ToDataOrSymbolInternal(ParentCompilation);
+				}
+
+				return _copyConstructor.Value;
+			}
+		}
+
+		/// <summary>
+		/// Determines whether the record is a <see langword="class"/>.
+		/// </summary>
+		public bool IsClass => Symbol.IsReferenceType;
+
+		/// <summary>
+		/// Determines whether the record is a <see langword="struct"/>.
+		/// </summary>
+		public bool IsStruct => Symbol.IsValueType;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RecordData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="RecordDeclarationSyntax"/> this <see cref="RecordData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="RecordData"/>.</param>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> this <see cref="RecordData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="partialDeclarations">A collection of <see cref="RecordDeclarationSyntax"/> that represent the partial declarations of the target <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal RecordData(
-			RecordDeclarationSyntax declaration,
-			ICompilationData compilation,
-			INamedTypeSymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<RecordDeclarationSyntax>? partialDeclarations = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			partialDeclarations,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
+		/// </exception>
+		public RecordData(RecordDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
+		{
+			if(properties is not null)
+			{
+				_primaryConstructor = properties.PrimaryConstructor;
+				_parameterList = properties.ParameterList;
+				_copyConstructor = properties.CopyConstructor;
+			}
+		}
+
+		internal RecordData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 	}

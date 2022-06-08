@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -13,6 +14,28 @@ namespace Durian.Analysis.Data
 	/// </summary>
 	public class TypeParameterData : MemberData
 	{
+		/// <summary>
+		/// Contains optional data that can be passed to a <see cref="Properties"/>.
+		/// </summary>
+		public new class Properties : Properties<ITypeParameterSymbol>
+		{
+			/// <inheritdoc cref="TypeParameterData.Constraints"/>
+			public GenericConstraint? Constraints { get; set; }
+
+			/// <inheritdoc cref="TypeParameterData.ConstraintClause"/>
+			public TypeParameterConstraintClauseSyntax? ConstraintClause { get; set; }
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+		}
+
+		private GenericConstraint? _constraints;
+		private DefaultedValue<TypeParameterConstraintClauseSyntax> _constraintClause;
+
 		/// <summary>
 		/// Target <see cref="TypeParameterSyntax"/>.
 		/// </summary>
@@ -24,19 +47,30 @@ namespace Durian.Analysis.Data
 		public new ITypeParameterSymbol Symbol => (base.Symbol as ITypeParameterSymbol)!;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="TypeParameterData"/> class.
+		/// Generic constraints applied to this type parameter.
 		/// </summary>
-		/// <param name="declaration"><see cref="TypeParameterSyntax"/> this <see cref="TypeParameterData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="TypeParameterData"/>.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
-		/// </exception>
-		public TypeParameterData(TypeParameterSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
+		public GenericConstraint Constraints
 		{
+			get
+			{
+				return _constraints ??= Symbol.GetConstraints(true);
+			}
 		}
 
-		internal TypeParameterData(ITypeParameterSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		/// <summary>
+		/// <see cref="TypeParameterConstraintSyntax"/> associated with the <see cref="Declaration"/>.
+		/// </summary>
+		public TypeParameterConstraintClauseSyntax? ConstraintClause
 		{
+			get
+			{
+				if(!_constraintClause.IsDefault)
+				{
+					_constraintClause.SetValue(Declaration.GetConstraintClause());
+				}
+
+				return _constraintClause.Value;
+			}
 		}
 
 		/// <summary>
@@ -44,31 +78,20 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="declaration"><see cref="TypeParameterSyntax"/> this <see cref="TypeParameterData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="TypeParameterData"/>.</param>
-		/// <param name="symbol"><see cref="ITypeParameterSymbol"/> this <see cref="TypeParameterData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal TypeParameterData(
-			TypeParameterSyntax declaration,
-			ICompilationData compilation,
-			ITypeParameterSymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
+		/// </exception>
+		public TypeParameterData(TypeParameterSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
+		{
+			if(properties is not null)
+			{
+				_constraintClause = properties.ConstraintClause;
+				_constraints = properties.Constraints;
+			}
+		}
+
+		internal TypeParameterData(ITypeParameterSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 	}

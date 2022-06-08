@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -27,7 +27,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public sealed override bool TryGetContext(in ValidationDataContext validationContext, [NotNullWhen(true)] out TContext? context)
+		public sealed override bool TryGetContext(in PreValidationContext validationContext, [NotNullWhen(true)] out TContext? context)
 		{
 			if (validationContext.TargetCompilation is not DefaultParamCompilationData compilation)
 			{

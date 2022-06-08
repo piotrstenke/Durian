@@ -155,7 +155,7 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc/>
-		public ImmutableArray<BaseTypeDeclarationSyntax> GetPartialDeclarations()
+		public ImmutableArray<BaseTypeDeclarationSyntax> PartialDeclarations()
 		{
 			if (Symbol.IsNamespace)
 			{

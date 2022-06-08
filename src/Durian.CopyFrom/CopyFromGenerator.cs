@@ -11,7 +11,7 @@ using Durian.Analysis.Cache;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 using Durian.Analysis.Logging;
 using Durian.Analysis.SymbolContainers;
 using Durian.Analysis.SyntaxVisitors;
@@ -572,7 +572,7 @@ namespace Durian.Analysis.CopyFrom
 
 			foreach ((CSharpSyntaxNode node, string hintName) in nodes)
 			{
-				ValidationDataContext validation = new(node, context.TargetCompilation, context.CancellationToken);
+				PreValidationContext validation = new(node, context.TargetCompilation, context.CancellationToken);
 
 				if (single.ValidateAndCreate(validation, out IMemberData? member) && Generate(member, hintName, context, dependencies, cache))
 				{

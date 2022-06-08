@@ -7,7 +7,7 @@ using Durian.Analysis.Cache;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;

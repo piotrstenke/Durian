@@ -6,7 +6,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -27,7 +27,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 		}
 
 		/// <inheritdoc/>
-		public override bool TryGetContext(in ValidationDataContext validationContext, [NotNullWhen(true)] out CopyFromMethodContext context)
+		public override bool TryGetContext(in PreValidationContext validationContext, [NotNullWhen(true)] out CopyFromMethodContext context)
 		{
 			SemanticModel semanticModel = validationContext.TargetCompilation.Compilation.GetSemanticModel(validationContext.Node.SyntaxTree);
 

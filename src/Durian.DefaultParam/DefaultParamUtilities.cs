@@ -214,7 +214,7 @@ namespace Durian.Analysis.DefaultParam
 					continue;
 				}
 
-				string n = data.TargetType.GetContainingNamespaces().ToContainer().ToString();
+				string n = data.TargetType.GetContainingNamespaces().ToWritableContainer().ToString();
 
 				if (!string.IsNullOrWhiteSpace(n) && !namespaces.Contains(n))
 				{

@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Durian.Analysis.CodeGeneration;
+using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -483,16 +484,6 @@ namespace Durian.Analysis
 			}
 
 			return true;
-		}
-
-		internal static IEnumerable<T> ByOrder<T>(IEnumerable<T> collection, ReturnOrder order)
-		{
-			if (order == ReturnOrder.Root)
-			{
-				return collection.Reverse();
-			}
-
-			return collection;
 		}
 
 		internal static int GetArrayHashCode<T>(T[]? array)

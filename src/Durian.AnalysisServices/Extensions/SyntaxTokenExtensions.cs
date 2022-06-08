@@ -85,7 +85,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="AccessorKind"/> represented by.</param>
 		public static AccessorKind GetAccessor(this SyntaxToken token)
 		{
-			return ((SyntaxKind)token.RawKind).GetAccessor();
+			return ((SyntaxKind)token.RawKind).GetAccessorKind();
 		}
 
 		/// <summary>
@@ -170,7 +170,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="EventAccessorKind"/> represented by.</param>
 		public static EventAccessorKind GetEventAccessor(this SyntaxToken token)
 		{
-			return ((SyntaxKind)token.RawKind).GetEventAccessor();
+			return ((SyntaxKind)token.RawKind).GetEventAccessorKind();
 		}
 
 		/// <summary>
@@ -459,7 +459,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="token"><see cref="SyntaxToken"/> to get the <see cref="PropertyAccessorKind"/> represented by.</param>
 		public static PropertyAccessorKind GetPropertyAccessor(this SyntaxToken token)
 		{
-			return ((SyntaxKind)token.RawKind).GetPropertyAccessor();
+			return ((SyntaxKind)token.RawKind).GetPropertyAccessorKind();
 		}
 
 		/// <summary>

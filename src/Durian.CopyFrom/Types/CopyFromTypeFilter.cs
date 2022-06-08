@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

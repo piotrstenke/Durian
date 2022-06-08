@@ -100,7 +100,7 @@ namespace Durian.Analysis
 		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
 		public CodeBuilder Accessor(IMethodSymbol method, MethodStyle body)
 		{
-			return Accessor(method, method.MethodKind.GetAccessor(), body);
+			return Accessor(method, method.MethodKind.GetAccessorKind(), body);
 		}
 
 		/// <summary>
@@ -852,10 +852,10 @@ namespace Durian.Analysis
 				MethodKind.LambdaMethod => AnonymousFunction(method, body.GetLambdaStyle()),
 				MethodKind.Destructor => Destructor(method, body),
 				MethodKind.Constructor => Constructor(method, body),
-				MethodKind.EventAdd => Accessor(method, CodeGeneration.Accessor.Add, body),
-				MethodKind.EventRemove => Accessor(method, CodeGeneration.Accessor.Remove, body),
-				MethodKind.PropertyGet => Accessor(method, CodeGeneration.Accessor.Get, body),
-				MethodKind.PropertySet => Accessor(method, method.IsInitOnly ? CodeGeneration.Accessor.Init : CodeGeneration.Accessor.Set, body),
+				MethodKind.EventAdd => Accessor(method, AccessorKind.Add, body),
+				MethodKind.EventRemove => Accessor(method, AccessorKind.Remove, body),
+				MethodKind.PropertyGet => Accessor(method, AccessorKind.Get, body),
+				MethodKind.PropertySet => Accessor(method, method.IsInitOnly ? AccessorKind.Init : AccessorKind.Set, body),
 				_ => throw new ArgumentException($"Method '{method}' is of kind that does not support declarations", nameof(method))
 			};
 		}
@@ -2070,6 +2070,18 @@ namespace Durian.Analysis
 					BeginAccessor();
 					WriteAccessor(property.GetMethod, "get");
 					WriteAccessor(property.SetMethod, "init");
+					EndAccessor();
+					break;
+
+				case AutoPropertyKind.SetOnly:
+					BeginAccessor();
+					WriteAccessor(property.GetMethod, "set");
+					EndAccessor();
+					break;
+
+				case AutoPropertyKind.InitOnly:
+					BeginAccessor();
+					WriteAccessor(property.GetMethod, "init");
 					EndAccessor();
 					break;
 			}

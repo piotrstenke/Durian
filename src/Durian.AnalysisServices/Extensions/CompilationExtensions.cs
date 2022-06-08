@@ -133,23 +133,11 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="MemberDeclarationSyntax"/> to get the <see cref="ISymbol"/> and <see cref="SemanticModel"/> of.</param>
 		/// <param name="symbol">Returned <see cref="ISymbol"/>.</param>
 		/// <param name="ignoreAccessibility"><see langword="true"/> if the <see cref="SemanticModel"/> should ignore accessibility rules when answering semantic questions.</param>
-		/// <exception cref="ArgumentException">Specified <paramref name="node"/> doesn't represent any symbols.</exception>
+		/// <exception cref="ArgumentException"><paramref name="node"/> doesn't represent any symbol.</exception>
 		public static SemanticModel GetSemanticModel(this Compilation compilation, SyntaxNode node, out ISymbol symbol, bool ignoreAccessibility = true)
 		{
-			if (node is MemberDeclarationSyntax m)
-			{
-				return compilation.GetSemanticModel(m, out symbol, ignoreAccessibility);
-			}
-
 			SemanticModel semanticModel = compilation.GetSemanticModel(node, ignoreAccessibility);
-			SymbolInfo info = semanticModel.GetSymbolInfo(node);
-
-			if (info.Symbol is null)
-			{
-				throw new ArgumentException("Syntax node doesn't represent any symbols!", nameof(node));
-			}
-
-			symbol = info.Symbol;
+			symbol = semanticModel.GetSymbol(node);
 			return semanticModel;
 		}
 
@@ -160,19 +148,11 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="MemberDeclarationSyntax"/> to get the <see cref="ISymbol"/> and <see cref="SemanticModel"/> of.</param>
 		/// <param name="symbol">Returned <see cref="ISymbol"/>.</param>
 		/// <param name="ignoreAccessibility"><see langword="true"/> if the <see cref="SemanticModel"/> should ignore accessibility rules when answering semantic questions.</param>
-		/// <exception cref="ArgumentException">Specified <paramref name="node"/> doesn't represent any symbols.</exception>
+		/// <exception cref="ArgumentException"><paramref name="node"/> doesn't represent any symbol.</exception>
 		public static SemanticModel GetSemanticModel(this Compilation compilation, MemberDeclarationSyntax node, out ISymbol symbol, bool ignoreAccessibility = true)
 		{
 			SemanticModel semanticModel = compilation.GetSemanticModel(node, ignoreAccessibility);
-			ISymbol? s = semanticModel.GetDeclaredSymbol(node);
-
-			if (s is null)
-			{
-				throw new ArgumentException("Syntax node doesn't represent any symbols!", nameof(node));
-			}
-
-			symbol = s;
-
+			symbol = semanticModel.GetSymbol(node);
 			return semanticModel;
 		}
 

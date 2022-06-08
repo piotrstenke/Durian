@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Immutable;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -13,7 +14,7 @@ namespace Durian.Analysis.Data
 	public interface ITypeData : IMemberData
 	{
 		/// <summary>
-		/// Target <see cref="TypeDeclarationSyntax"/>.
+		/// Target <see cref="BaseTypeDeclarationSyntax"/>.
 		/// </summary>
 		new BaseTypeDeclarationSyntax Declaration { get; }
 
@@ -23,9 +24,48 @@ namespace Durian.Analysis.Data
 		new ITypeSymbol Symbol { get; }
 
 		/// <summary>
-		/// If the type is partial, returns all declarations of the type (including <see cref="IMemberData.Declaration"/>), otherwise returns only <see cref="IMemberData.Declaration"/>.
-		/// <para>If the type is not <see cref="BaseTypeDeclarationSyntax"/>, an empty collection is returned instead.</para>
+		/// All partial declarations of the type (including <see cref="Declaration"/>).
 		/// </summary>
-		ImmutableArray<BaseTypeDeclarationSyntax> GetPartialDeclarations();
+		ImmutableArray<BaseTypeDeclarationSyntax> PartialDeclarations { get; }
+
+		/// <summary>
+		/// Member <see cref="ISymbol"/>s of the current type and its parent types.
+		/// </summary>
+		SymbolContainer<ISymbol> AllMembers { get; }
+
+		/// <summary>
+		/// Member <see cref="ISymbol"/>s of the current type.
+		/// </summary>
+		SymbolContainer<ISymbol> Members { get; }
+
+		/// <summary>
+		/// Base types of the current type.
+		/// </summary>
+		SymbolContainer<INamedTypeSymbol> BaseTypes { get; }
+
+		/// <summary>
+		/// Inner types of the current type and its parent types.
+		/// </summary>
+		SymbolContainer<INamedTypeSymbol> AllInnerTypes { get; }
+
+		/// <summary>
+		/// Inner types of the current type.
+		/// </summary>
+		SymbolContainer<INamedTypeSymbol> InnerTypes { get; }
+
+		/// <summary>
+		/// Parameterless constructor of this type.
+		/// </summary>
+		ISymbolOrMember<IMethodSymbol, IMethodData>? ParameterlessConstructor { get; }
+
+		/// <summary>
+		/// Type parameters of this type.
+		/// </summary>
+		SymbolContainer<ITypeParameterSymbol> TypeParameters { get; }
+
+		/// <summary>
+		/// Type arguments of this type.
+		/// </summary>
+		SymbolContainer<ITypeSymbol> TypeArguments { get; }
 	}
 }

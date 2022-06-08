@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using Durian.Analysis.Extensions;
+using Durian.Analysis.Filtration;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,17 +19,127 @@ namespace Durian.Analysis.Data
 	[DebuggerDisplay("{Symbol}")]
 	public class MemberData : IMemberData
 	{
+		/// <summary>
+		/// Contains optional data that can be passed to a <see cref="MemberData"/>.
+		/// </summary>
+		public class Properties<TSymbol> : Properties where TSymbol : class, ISymbol
+		{
+			/// <inheritdoc cref="Properties.Symbol"/>
+			public new TSymbol? Symbol
+			{
+				get => (_symbol as TSymbol)!;
+				set => _symbol = value;
+			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties{TSymbol}"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+
+			private protected override void ValidateSymbol(ISymbol? symbol)
+			{
+				if(symbol is null)
+				{
+					return;
+				}
+
+				if(symbol is not TSymbol)
+				{
+					throw new ArgumentException($"Symbol '{symbol}' is not of type '{typeof(TSymbol)}", nameof(symbol));
+				}
+			}
+		}
+
+		/// <summary>
+		/// Contains optional data that can be passed to a <see cref="MemberData"/>.
+		/// </summary>
+		[DebuggerDisplay("{Symbol ?? string.Empty}")]
+		public class Properties
+		{
+			private protected ISymbol? _symbol;
+
+			/// <inheritdoc cref="IMemberData.Symbol"/>
+			public ISymbol? Symbol
+			{
+				get => _symbol;
+				set
+				{
+					ValidateSymbol(value);
+					_symbol = value;
+				}
+			}
+
+			/// <inheritdoc cref="IMemberData.SemanticModel"/>
+			public SemanticModel? SemanticModel { get; set; }
+
+			/// <inheritdoc cref="IMemberData.Location"/>
+			public Location? Location { get; set; }
+
+			/// <inheritdoc cref="IMemberData.IsNew"/>
+			public bool? IsNew { get; set; }
+
+			/// <inheritdoc cref="IMemberData.IsUnsafe"/>
+			public bool? IsUnsafe { get; set; }
+
+			/// <inheritdoc cref="IMemberData.IsPartial"/>
+			public bool? IsPartial { get; set; }
+
+			/// <inheritdoc cref="IMemberData.Name"/>
+			public string? Name { get; set; }
+
+			/// <inheritdoc cref="IMemberData.Virtuality"/>
+			public Virtuality? Virtuality { get; set; }
+
+			/// <inheritdoc cref="IMemberData.HiddenSymbol"/>
+			public DefaultedValue<ISymbolOrMember> HiddenMember { get; set; }
+
+			/// <summary>
+			/// All modifiers of the current symbol.
+			/// </summary>
+			public string[]? Modifiers { get; set; }
+
+			/// <summary>
+			/// All containing types of the current symbol.
+			/// </summary>
+			public GenericSymbolContainer<INamedTypeSymbol>? ContainingTypes { get; set; }
+
+			/// <summary>
+			/// All containing namespaces of the current symbol.
+			/// </summary>
+			public WritableSymbolContainer<INamespaceSymbol>? ContainingNamespaces { get; set; }
+
+			/// <summary>
+			/// All attributes if the current symbol.
+			/// </summary>
+			public ImmutableArray<AttributeData> Attributes { get; set; }
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties{TSymbol}"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+
+			private protected virtual void ValidateSymbol(ISymbol? symbol)
+			{
+				// Do nothing by default.
+			}
+		}
+
 		private ImmutableArray<AttributeData> _attributes;
-		private NamespaceContainer? _containingNamespaces;
-		private TypeContainer? _containingTypes;
+		private WritableSymbolContainer<INamespaceSymbol>? _containingNamespaces;
+		private GenericSymbolContainer<INamedTypeSymbol>? _containingTypes;
 		private bool? _isNew;
 		private bool? _isPartial;
 		private bool? _isUnsafe;
 		private Location? _location;
+		private DefaultedValue<ISymbolOrMember> _hiddenMember;
 		private string[]? _modifiers;
 
 		/// <inheritdoc/>
-		public CSharpSyntaxNode Declaration { get; }
+		public SyntaxNode Declaration { get; }
 
 		/// <inheritdoc/>
 		public bool IsNew => _isNew ??= Symbol.IsNew();
@@ -46,6 +157,9 @@ namespace Durian.Analysis.Data
 		public string Name { get; }
 
 		/// <inheritdoc/>
+		public Virtuality Virtuality { get; }
+
+		/// <inheritdoc/>
 		public ICompilationData ParentCompilation { get; }
 
 		/// <inheritdoc/>
@@ -54,16 +168,19 @@ namespace Durian.Analysis.Data
 		/// <inheritdoc/>
 		public ISymbol Symbol { get; }
 
+		IMemberData ISymbolOrMember.Member => this;
+		bool ISymbolOrMember.HasMember => true;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemberData"/> class.
 		/// </summary>
-		/// <param name="declaration"><see cref="CSharpSyntaxNode"/> this <see cref="MemberData"/> represents.</param>
+		/// <param name="declaration"><see cref="SyntaxNode"/> this <see cref="MemberData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="MemberData"/>.</param>
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
 		/// </exception>
-		/// <exception cref="ArgumentException">Specified <paramref name="declaration"/> doesn't represent any symbols. </exception>
-		public MemberData(CSharpSyntaxNode declaration, ICompilationData compilation)
+		public MemberData(SyntaxNode declaration, ICompilationData compilation, Properties? properties = default)
 		{
 			if (declaration is null)
 			{
@@ -75,16 +192,41 @@ namespace Durian.Analysis.Data
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			SemanticModel = compilation.Compilation.GetSemanticModel(declaration, out ISymbol symbol);
-			Symbol = symbol;
-			Declaration = declaration;
-			ParentCompilation = compilation;
-			Name = Symbol.GetVerbatimName();
+			if (properties is null)
+			{
+				SemanticModel = compilation.Compilation.GetSemanticModel(declaration, out ISymbol? symbol);
+				Symbol = symbol;
+
+				Declaration = declaration;
+				ParentCompilation = compilation;
+				Name = Symbol.GetVerbatimName();
+				Virtuality = Symbol.GetVirtuality();
+			}
+			else
+			{
+				SemanticModel = properties.SemanticModel ?? compilation.Compilation.GetSemanticModel(declaration);
+				Symbol = properties.Symbol ?? SemanticModel.GetSymbol(declaration);
+
+				Declaration = declaration;
+				ParentCompilation = compilation;
+				Name = properties.Name ?? Symbol.GetVerbatimName();
+				Virtuality = properties.Virtuality ?? Symbol.GetVirtuality();
+
+				_attributes = properties.Attributes;
+				_containingNamespaces = properties.ContainingNamespaces;
+				_containingTypes = properties.ContainingTypes;
+				_isNew = properties.IsNew;
+				_isPartial = properties.IsPartial;
+				_isUnsafe = properties.IsUnsafe;
+				_location = properties.Location;
+				_modifiers = properties.Modifiers;
+				_hiddenMember = properties.HiddenMember;
+			}
 		}
 
 		internal MemberData(ISymbol symbol, ICompilationData compilation)
 		{
-			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not MemberDeclarationSyntax decl)
+			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not SyntaxNode decl)
 			{
 				throw Exc_NoSyntaxReference(symbol);
 			}
@@ -96,75 +238,59 @@ namespace Durian.Analysis.Data
 			Name = Symbol.GetVerbatimName();
 		}
 
+		/// <inheritdoc/>
+		public virtual ImmutableArray<AttributeData> Attributes
+		{
+			get
+			{
+				return _attributes.IsDefault ? (_attributes = Symbol.GetAttributes()) : _attributes;
+			}
+		}
+
 		/// <summary>
-		/// Initializes a new instance of the <see cref="MemberData"/> class.
+		/// Root namespace of the current member (excluding the <see langword="global"/> namespace).
 		/// </summary>
-		/// <param name="declaration"><see cref="CSharpSyntaxNode"/> this <see cref="MemberData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="MemberData"/>.</param>
-		/// <param name="symbol"><see cref="ISymbol"/> this <see cref="MemberData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal MemberData(
-			CSharpSyntaxNode declaration,
-			ICompilationData compilation,
-			ISymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = default,
-			IEnumerable<ITypeData>? containingTypes = default,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = default,
-			IEnumerable<AttributeData>? attributes = default
-		)
+		public ISymbolOrMember<INamespaceSymbol> RootNamespace => ContainingNamespaces.First();
+
+		/// <inheritdoc/>
+		public WritableSymbolContainer<INamespaceSymbol> ContainingNamespaces
 		{
-			Declaration = declaration;
-			ParentCompilation = compilation;
-			Symbol = symbol;
-			SemanticModel = semanticModel;
-
-			_modifiers = modifiers;
-
-			if (containingTypes is not null)
+			get
 			{
-				_containingTypes = containingTypes.ToContainer(true, ReturnOrder.Root);
+				return _containingNamespaces ??= Symbol.GetContainingNamespaces().ToWritableContainer(ParentCompilation);
 			}
+		}
 
-			if (containingNamespaces is not null)
+		/// <inheritdoc/>
+		public GenericSymbolContainer<INamedTypeSymbol> ContainingTypes
+		{
+			get
 			{
-				_containingNamespaces = containingNamespaces.ToContainer(compilation, ReturnOrder.Root);
+				return _containingTypes ??= Symbol.GetContainingTypes().ToWritableContainer(ParentCompilation);
 			}
+		}
 
-			if (attributes is not null)
+		/// <inheritdoc/>
+		public ISymbolOrMember? HiddenSymbol
+		{
+			get
 			{
-				_attributes = attributes.ToImmutableArray();
+				if(_hiddenMember.IsDefault)
+				{
+					_hiddenMember = Symbol.GetHiddenSymbol().ToDataOrSymbolInternal(ParentCompilation);
+				}
+
+				return _hiddenMember.Value;
 			}
-
-			Name = Symbol.GetVerbatimName();
 		}
 
 		/// <inheritdoc/>
-		public virtual ImmutableArray<AttributeData> GetAttributes()
+		public string[] Modifiers
 		{
-			return _attributes.IsDefault ? (_attributes = Symbol.GetAttributes()) : _attributes;
-		}
-
-		/// <inheritdoc/>
-		public virtual NamespaceContainer GetContainingNamespaces()
-		{
-			return _containingNamespaces ??= Symbol.GetContainingNamespaces().ToContainer(ParentCompilation);
-		}
-
-		/// <inheritdoc/>
-		public virtual TypeContainer GetContainingTypes()
-		{
-			return _containingTypes ??= Symbol.GetContainingTypes().ToContainer(ParentCompilation);
-		}
-
-		/// <inheritdoc/>
-		public virtual string[] GetModifiers()
-		{
-			return _modifiers ??= Symbol.GetModifiers();
+			get
+			{
+				return _modifiers ??= Symbol.GetModifiers();
+			}
 		}
 
 		private protected static InvalidOperationException Exc_NoSyntaxReference(ISymbol symbol)

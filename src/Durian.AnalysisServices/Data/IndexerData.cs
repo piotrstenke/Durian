@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -13,6 +14,22 @@ namespace Durian.Analysis.Data
 	/// </summary>
 	public class IndexerData : MemberData
 	{
+		/// <summary>
+		/// Contains optional data that can be passed to a <see cref="IndexerData"/>.
+		/// </summary>
+		public new class Properties : Properties<IPropertySymbol>
+		{
+			/// <inheritdoc cref="PropertyData.AutoPropertyKind"/>
+			public AutoPropertyKind? AutoPropertyKind { get; set; }
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+		}
+
 		/// <summary>
 		/// Target <see cref="IndexerDeclarationSyntax"/>.
 		/// </summary>
@@ -24,51 +41,30 @@ namespace Durian.Analysis.Data
 		public new IPropertySymbol Symbol => (base.Symbol as IPropertySymbol)!;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="IndexerData"/> class.
+		/// Determines whether this property is an auto-property.
 		/// </summary>
-		/// <param name="declaration"><see cref="IndexerDeclarationSyntax"/> this <see cref="IndexerData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="IndexerData"/>.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
-		/// </exception>
-		public IndexerData(IndexerDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
-		{
-		}
+		public bool IsAutoProperty => AutoPropertyKind != AutoPropertyKind.None;
 
-		internal IndexerData(IPropertySymbol symbol, ICompilationData compilation) : base(symbol, compilation)
-		{
-		}
+		/// <summary>
+		/// Kind of the auto-property.
+		/// </summary>
+		public AutoPropertyKind AutoPropertyKind { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="IndexerData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="IndexerDeclarationSyntax"/> this <see cref="IndexerData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="IndexerData"/>.</param>
-		/// <param name="symbol"><see cref="IPropertySymbol"/> this <see cref="IndexerData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal IndexerData(
-			IndexerDeclarationSyntax declaration,
-			ICompilationData compilation,
-			IPropertySymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
+		/// </exception>
+		public IndexerData(IndexerDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
+		{
+			AutoPropertyKind = properties?.AutoPropertyKind ?? Symbol.GetAutoPropertyKind();
+		}
+
+		internal IndexerData(IPropertySymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 	}

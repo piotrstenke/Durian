@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Analysis.Data;
@@ -398,6 +399,38 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Retrieves an <see cref="ISymbol"/> from the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> to retrieve the <see cref="ISymbol"/> with.</param>
+		/// <param name="node"><see cref="SyntaxNode"/> to retrieve the <see cref="ISymbol"/> from.</param>
+		/// <exception cref="ArgumentException"><paramref name="node"/> does not represent any symbol.</exception>
+		public static ISymbol GetSymbol(this SemanticModel semanticModel, SyntaxNode node)
+		{
+			if (!semanticModel.TryGetSymbol(node, out ISymbol? symbol))
+			{
+				throw new ArgumentException("Syntax node doesn't represent any symbol", nameof(node));
+			}
+
+			return symbol;
+		}
+
+		/// <summary>
+		/// Retrieves an <see cref="ISymbol"/> from the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> to retrieve the <see cref="ISymbol"/> with.</param>
+		/// <param name="node"><see cref="MemberDeclarationSyntax"/> to retrieve the <see cref="ISymbol"/> from.</param>
+		/// <exception cref="ArgumentException"><paramref name="node"/> does not represent any symbol.</exception>
+		public static ISymbol GetSymbol(this SemanticModel semanticModel, MemberDeclarationSyntax node)
+		{
+			if (!semanticModel.TryGetSymbol(node, out ISymbol? symbol))
+			{
+				throw new ArgumentException("Syntax node doesn't represent any symbol", nameof(node));
+			}
+
+			return symbol;
+		}
+
+		/// <summary>
 		/// Returns all namespaces that are used by this <see cref="MemberDeclarationSyntax"/>.
 		/// </summary>
 		/// <param name="semanticModel">Target <see cref="SemanticModel"/>.</param>
@@ -405,7 +438,8 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilationData"><see cref="ICompilationData"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="skipQualifiedNames">Determines whether to skip nodes that reside inside a qualified name.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public static IEnumerable<string> GetUsedNamespaces(this SemanticModel semanticModel,
+		public static IEnumerable<string> GetUsedNamespaces(
+			this SemanticModel semanticModel,
 			SyntaxNode node,
 			ICompilationData compilationData,
 			bool skipQualifiedNames = false,
@@ -500,7 +534,8 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="CSharpCompilation"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="skipQualifiedNames">Determines whether to skip nodes that reside inside a qualified name.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public static IEnumerable<string> GetUsedNamespacesWithoutDistinct(this SemanticModel semanticModel,
+		public static IEnumerable<string> GetUsedNamespacesWithoutDistinct(
+			this SemanticModel semanticModel,
 			SyntaxNode node,
 			CSharpCompilation compilation,
 			bool skipQualifiedNames = false,
@@ -593,6 +628,49 @@ namespace Durian.Analysis.Extensions
 					}
 				}
 			}
+		}
+
+		/// <summary>
+		/// Attempts to retrieve a <paramref name="symbol"/> from the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> to retrieve the <paramref name="symbol"/> with.</param>
+		/// <param name="node"><see cref="SyntaxNode"/> to retrieve the <paramref name="symbol"/> from.</param>
+		/// <param name="symbol">Retrieved <see cref="ISymbol"/>.</param>
+		public static bool TryGetSymbol(this SemanticModel semanticModel, SyntaxNode node, [NotNullWhen(true)] out ISymbol? symbol)
+		{
+			if (node is MemberDeclarationSyntax member)
+			{
+				return semanticModel.TryGetSymbol(member, out symbol);
+			}
+
+			ISymbol? s = semanticModel.GetDeclaredSymbol(node);
+
+			if (s is null)
+			{
+				SymbolInfo info = semanticModel.GetSymbolInfo(node);
+				s = info.Symbol;
+
+				if (s is null)
+				{
+					symbol = default;
+					return false;
+				}
+			}
+
+			symbol = s;
+			return true;
+		}
+
+		/// <summary>
+		/// Attempts to retrieve a <paramref name="symbol"/> from the specified <paramref name="node"/>.
+		/// </summary>
+		/// <param name="semanticModel"><see cref="SemanticModel"/> to retrieve the <paramref name="symbol"/> with.</param>
+		/// <param name="node"><see cref="MemberDeclarationSyntax"/> to retrieve the <paramref name="symbol"/> from.</param>
+		/// <param name="symbol">Retrieved <see cref="ISymbol"/>.</param>
+		public static bool TryGetSymbol(this SemanticModel semanticModel, MemberDeclarationSyntax node, [NotNullWhen(true)] out ISymbol? symbol)
+		{
+			symbol = semanticModel.GetDeclaredSymbol(node);
+			return symbol is not null;
 		}
 
 		private static IEnumerable<AttributeSyntax> GetAllAttributes_Internal(

@@ -18,50 +18,15 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="declaration"><see cref="BaseTypeDeclarationSyntax"/> this <see cref="UnknownTypeData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="UnknownTypeData"/>.</param>
+		/// <param name="properties"><see cref="TypeData{TDeclaration}.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
-		public UnknownTypeData(InterfaceDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
+		public UnknownTypeData(BaseTypeDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
 		}
 
 		internal UnknownTypeData(ITypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="UnknownTypeData"/> class.
-		/// </summary>
-		/// <param name="declaration"><see cref="BaseTypeDeclarationSyntax"/> this <see cref="UnknownTypeData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="UnknownTypeData"/>.</param>
-		/// <param name="symbol"><see cref="ITypeSymbol"/> this <see cref="UnknownTypeData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="partialDeclarations">A collection of <see cref="BaseTypeDeclarationSyntax"/> that represent the partial declarations of the target <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal UnknownTypeData(
-			BaseTypeDeclarationSyntax declaration,
-			ICompilationData compilation,
-			ITypeSymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<InterfaceDeclarationSyntax>? partialDeclarations = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			partialDeclarations,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
 		{
 		}
 	}

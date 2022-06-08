@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -120,7 +120,7 @@ namespace Durian.Analysis.Logging
 					continue;
 				}
 
-				if (!Validator.TryGetContext(new ValidationDataContext(node, Compilation, cancellationToken), out T? context))
+				if (!Validator.TryGetContext(new PreValidationContext(node, Compilation, cancellationToken), out T? context))
 				{
 					continue;
 				}

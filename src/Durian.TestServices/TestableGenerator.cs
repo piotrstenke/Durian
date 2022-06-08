@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Durian.Analysis;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

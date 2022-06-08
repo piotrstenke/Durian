@@ -4,7 +4,7 @@
 using Durian.Analysis.DefaultParam.Delegates;
 using Durian.Analysis.DefaultParam.Methods;
 using Durian.Analysis.DefaultParam.Types;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 
 namespace Durian.Analysis.DefaultParam
 {

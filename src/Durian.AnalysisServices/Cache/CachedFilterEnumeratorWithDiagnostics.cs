@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -144,7 +144,7 @@ namespace Durian.Analysis.Cache
 					return true;
 				}
 
-				if (Validator.ValidateAndCreate(new ValidationDataContext(node, Compilation, cancellationToken), out IMemberData? member, DiagnosticReceiver) && member is TData d)
+				if (Validator.ValidateAndCreate(new PreValidationContext(node, Compilation, cancellationToken), out IMemberData? member, DiagnosticReceiver) && member is TData d)
 				{
 					Current = d;
 					return true;

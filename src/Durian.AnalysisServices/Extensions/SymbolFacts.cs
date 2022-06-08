@@ -407,11 +407,35 @@ namespace Durian.Analysis.Extensions
 
 		/// <summary>
 		/// Determines whether the specified <paramref name="method"/> has an implementation in code.
+		/// <para>A method is considered implemented if it's neither:
+		/// <list type="bullet">
+		/// <item><see langword="abstract"/></item>
+		/// <item><see langword="extern"/></item>
+		/// <item><see langword="partial"/> definition</item>
+		/// <item>compiler-generated</item>
+		/// </list>
+		/// </para>
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if has implementation.</param>
 		public static bool HasImplementation(this IMethodSymbol method)
 		{
 			return !(method.IsExtern || method.IsAbstract || method.IsImplicitlyDeclared || method.IsPartialDefinition);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> has an implementation in code.
+		/// <para>A property is considered implemented if it's neither:
+		/// <list type="bullet">
+		/// <item><see langword="abstract"/></item>
+		/// <item><see langword="extern"/></item>
+		/// <item>compiler-generated</item>
+		/// </list>
+		/// </para>
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to check if has implementation.</param>
+		public static bool HasImplementation(this IPropertySymbol property)
+		{
+			return !(property.IsExtern || property.IsAbstract || property.IsImplicitlyDeclared);
 		}
 
 		/// <summary>
@@ -899,6 +923,15 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the <see cref="MethodKind"/> of the specified <paramref name="method"/> is a declaration kind.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether is of a declaration kind.</param>
+		public static bool IsDeclarationKind(this IMethodSymbol method)
+		{
+			return method.MethodKind.IsDeclarationKind();
+		}
+
+		/// <summary>
 		/// Determines whether the <see cref="TypeKind"/> of the specified <paramref name="type"/> is a declaration kind.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether is of a declaration kind.</param>
@@ -914,6 +947,42 @@ namespace Durian.Analysis.Extensions
 		public static bool IsDefaultConstructor(this IMethodSymbol method)
 		{
 			return method.IsImplicitlyDeclared && method.IsParameterlessConstructor();
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="IMethodSymbol"/> represents a default implementation of an interface member.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether represents a default implementation of an interface member.</param>
+		public static bool IsDefaultImplementation(this IMethodSymbol method)
+		{
+			return
+				method.ContainingType.TypeKind == TypeKind.Interface &&
+				!method.IsAbstract;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="IPropertySymbol"/> represents a default implementation of an interface member.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to determine whether represents a default implementation of an interface member.</param>
+		public static bool IsDefaultImplementation(this IPropertySymbol property)
+		{
+			return
+				property.ContainingType.TypeKind == TypeKind.Interface &&
+				!property.IsAbstract;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <see cref="ISymbol"/> represents a default implementation of an interface member.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether represents a default implementation of an interface member.</param>
+		public static bool IsDefaultImplementation(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				IMethodSymbol method => method.IsDefaultImplementation(),
+				IPropertySymbol property => property.IsDefaultImplementation(),
+				_ => false
+			};
 		}
 
 		/// <summary>
@@ -1732,6 +1801,22 @@ namespace Durian.Analysis.Extensions
 				default:
 					return false;
 			}
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> has the <see langword="readonly"/> modifier applied.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether has the <see langword="readonly"/> modifier applied.</param>
+		public static bool IsStructReadOnly(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				IMethodSymbol method => method.IsReadOnly,
+				IPropertySymbol property => property.IsReadOnlyContext(),
+				IEventSymbol @event => @event.IsReadOnlyContext(),
+				IFieldSymbol field => field.IsReadOnly,
+				_ => false
+			};
 		}
 
 		/// <summary>

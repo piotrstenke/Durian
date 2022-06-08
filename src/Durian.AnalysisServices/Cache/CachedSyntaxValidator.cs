@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filters;
+using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -100,7 +100,7 @@ namespace Durian.Analysis.Cache
 		}
 
 		/// <inheritdoc/>
-		public override bool TryGetContext(in ValidationDataContext validationContext, [NotNullWhen(true)] out SyntaxValidationContext context)
+		public override bool TryGetContext(in PreValidationContext validationContext, [NotNullWhen(true)] out SyntaxValidationContext context)
 		{
 			SemanticModel semanticModel = validationContext.TargetCompilation.Compilation.GetSemanticModel(validationContext.Node.SyntaxTree);
 

@@ -132,6 +132,14 @@ namespace Durian.Analysis
 				case AutoPropertyKind.GetInit:
 					TextBuilder.Append(" { get; init; }");
 					break;
+
+				case AutoPropertyKind.SetOnly:
+					TextBuilder.Append(" { set; }");
+					break;
+
+				case AutoPropertyKind.InitOnly:
+					TextBuilder.Append(" { init; }");
+					break;
 			}
 
 			return this;

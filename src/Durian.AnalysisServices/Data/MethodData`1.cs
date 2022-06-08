@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
@@ -17,20 +18,46 @@ namespace Durian.Analysis.Data
 	/// <typeparam name="TDeclaration">Type of method declaration this class represents.</typeparam>
 	public abstract class MethodData<TDeclaration> : MemberData, IMethodData where TDeclaration : CSharpSyntaxNode
 	{
+		private MethodStyle? _bodyType;
+		private ImmutableArray<ISymbolOrMember<ITypeParameterSymbol>> _typeParameters;
+		private ImmutableArray<ISymbolOrMember<IParameterSymbol>> _parameters;
+
 		/// <inheritdoc/>
-		public virtual CSharpSyntaxNode? Body => BodyRaw ??= (Declaration as BaseMethodDeclarationSyntax)!.GetBody();
+		public virtual CSharpSyntaxNode? Body
+		{
+			get
+			{
+				return BodyRaw ??= (Declaration as BaseMethodDeclarationSyntax)!.GetBody();
+			}
+		}
 
 		/// <inheritdoc/>
 		public MethodStyle BodyType
 		{
 			get
 			{
-				return Body switch
+				return _bodyType ??= Body switch
 				{
 					BlockSyntax => MethodStyle.Block,
 					ArrowExpressionClauseSyntax => MethodStyle.Expression,
 					_ => MethodStyle.None
 				};
+			}
+		}
+
+		public ImmutableArray<ISymbolOrMember<ITypeParameterSymbol>> TypeParameters
+		{
+			get
+			{
+
+			}
+		}
+
+		public ImmutableArray<ISymbolOrMember<IParameterSymbol>> Parameters
+		{
+			get
+			{
+
 			}
 		}
 
@@ -49,52 +76,20 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		protected CSharpSyntaxNode? BodyRaw { get; set; }
 
-		internal MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
-		{
-		}
-
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MethodData{TDeclaration}"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="BaseMethodDeclarationSyntax"/> this <see cref="MethodData{TDeclaration}"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="MethodData{TDeclaration}"/>.</param>
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
-		protected MethodData(TDeclaration declaration, ICompilationData compilation) : base(declaration, compilation)
+		protected MethodData(TDeclaration declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="MethodData{TDeclaration}"/> class.
-		/// </summary>
-		/// <param name="declaration"><see cref="BaseMethodDeclarationSyntax"/> this <see cref="MethodData{TDeclaration}"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="MethodData{TDeclaration}"/>.</param>
-		/// <param name="symbol"><see cref="IMethodSymbol"/> this <see cref="MethodData{TDeclaration}"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected MethodData(
-			TDeclaration declaration,
-			ICompilationData compilation,
-			IMethodSymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
+		internal MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 	}

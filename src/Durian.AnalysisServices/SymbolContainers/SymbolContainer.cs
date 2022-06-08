@@ -5,9 +5,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
+using System.Runtime.CompilerServices;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
@@ -17,298 +17,260 @@ namespace Durian.Analysis.SymbolContainers
 	/// <summary>
 	/// Provides methods for returning symbol representations using either <see cref="ISymbol"/>s or <see cref="IMemberData"/>s.
 	/// </summary>
-	public abstract class SymbolContainer : ISymbolContainer, IEnumerable
+	/// <typeparam name="TSymbol">Type of target <see cref="ISymbol"/>.</typeparam>
+	[DebuggerDisplay("Count = {Count}, Order = {Order}")]
+	public class SymbolContainer<TSymbol> : ISymbolContainer, IReturnOrderEnumerable<ISymbolOrMember<TSymbol>> where TSymbol : class, ISymbol
 	{
-		private protected class ArrayHandler<TSymbol, TData> : IArrayHandler
-			where TSymbol : class, ISymbol
-			where TData : class, IMemberData
-		{
-			ISymbol[] IArrayHandler.CreateArray(int length)
-			{
-				return new TSymbol[length];
-			}
-
-			ISymbol[] IArrayHandler.CreateArray(IEnumerable<ISymbol> collection)
-			{
-				return collection.Cast<TSymbol>().ToArray();
-			}
-
-			IMemberData[] IArrayHandler.CreateArray(IEnumerable<IMemberData> collection)
-			{
-				return collection.Cast<TData>().ToArray();
-			}
-
-			ImmutableArray<IMemberData> IArrayHandler.ToImmutableData()
-			{
-				return ImmutableArray.Create<TData>().CastArray<IMemberData>();
-			}
-
-			ImmutableArray<IMemberData> IArrayHandler.ToImmutableData(IEnumerable<IMemberData> collection)
-			{
-				return ImmutableArray.CreateRange(collection.Cast<TData>()).CastArray<IMemberData>();
-			}
-
-			ImmutableArray<ISymbol> IArrayHandler.ToImmutableSymbol()
-			{
-				return ImmutableArray.Create<TSymbol>().CastArray<ISymbol>();
-			}
-
-			ImmutableArray<ISymbol> IArrayHandler.ToImmutableSymbol(IEnumerable<ISymbol> collection)
-			{
-				return ImmutableArray.CreateRange(collection.Cast<TSymbol>()).CastArray<ISymbol>();
-			}
-		}
-
-		private protected interface IArrayHandler
-		{
-			ISymbol[] CreateArray(int length);
-
-			ISymbol[] CreateArray(IEnumerable<ISymbol> collection);
-
-			IMemberData[] CreateArray(IEnumerable<IMemberData> collection);
-
-			ImmutableArray<IMemberData> ToImmutableData();
-
-			ImmutableArray<IMemberData> ToImmutableData(IEnumerable<IMemberData> collection);
-
-			ImmutableArray<ISymbol> ToImmutableSymbol();
-
-			ImmutableArray<ISymbol> ToImmutableSymbol(IEnumerable<ISymbol> collection);
-		}
-
-		private readonly IArrayHandler _arrayHandler;
-		private object[]? _array;
-		private IEnumerable<object>? _collection;
+		private ReturnOrder _order;
 
 		/// <summary>
-		/// Determines whether the <see cref="GetData()"/> method is safe to call.
+		/// Number of elements in the container.
 		/// </summary>
-		public bool CanRetrieveData { get; }
-
-		/// <inheritdoc/>
-		public ReturnOrder Order { get; }
+		public int Count => Content.Count;
 
 		/// <summary>
-		/// <see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.
+		/// Order in which the elements are added.
 		/// </summary>
-		public ICompilationData? TargetCompilation { get; }
-
-		private protected SymbolContainer(ReturnOrder order = default)
+		public ReturnOrder Order
 		{
-			_collection = default!;
-			_arrayHandler = GetArrayHandler();
-			Order = order;
-		}
-
-		private protected SymbolContainer(IEnumerable<ISymbol> collection, ICompilationData? compilation, ReturnOrder order) : this(collection, order)
-		{
-			if (compilation is not null)
+			get => _order;
+			set
 			{
-				TargetCompilation = compilation;
-				CanRetrieveData = true;
+				if (_order == value)
+				{
+					return;
+				}
+
+				Reverse();
 			}
 		}
 
-		private protected SymbolContainer(IEnumerable<IMemberData> collection, ReturnOrder order) : this(collection as IEnumerable<object>, order)
+		/// <summary>
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// </summary>
+		public ICompilationData? ParentCompilation { get; }
+
+		/// <summary>
+		/// List of all <see cref="ISymbolOrMember"/>s added to the container.
+		/// </summary>
+		protected List<ISymbolOrMember<TSymbol>> Content { get; } = new();
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol}"/> class.
+		/// </summary>
+		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
+		public SymbolContainer(ICompilationData? parentCompilation = default)
 		{
-			CanRetrieveData = true;
+			ParentCompilation = parentCompilation;
 		}
 
-		private SymbolContainer(IEnumerable<object> collection, ReturnOrder order)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol}"/> class.
+		/// </summary>
+		/// <param name="capacity">Initial capacity of the container.</param>
+		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="capacity"/> is less than <c>0</c>.</exception>
+		public SymbolContainer(int capacity, ICompilationData? parentCompilation = default)
+		{
+			Content = new(capacity);
+			ParentCompilation = parentCompilation;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol}"/> class.
+		/// </summary>
+		/// <param name="collection">Collection of <typeparamref name="TSymbol"/>s to add to the container.</param>
+		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
+		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
+		public SymbolContainer(IEnumerable<TSymbol> collection, ICompilationData? parentCompilation = default)
+		{
+			Order = GetInitialOrder(collection);
+			ParentCompilation = parentCompilation;
+			AddRange(collection);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol}"/> class.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="ISymbolOrMember"/> to add to the container.</param>
+		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
+		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
+		public SymbolContainer(IEnumerable<ISymbolOrMember<TSymbol>> collection, ICompilationData? parentCompilation = default)
+		{
+			Order = GetInitialOrder(collection);
+			ParentCompilation = parentCompilation;
+			AddRange(collection);
+		}
+
+		/// <summary>
+		/// Adds the specified <paramref name="symbol"/> to the container.
+		/// </summary>
+		/// <param name="symbol"><typeparamref name="TSymbol"/> to add to the container.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public void Add(TSymbol symbol)
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			Content.Add(new SymbolOrMemberWrapper<TSymbol, IMemberData>(symbol, ParentCompilation));
+		}
+
+		/// <summary>
+		/// Adds the specified <paramref name="member"/> to the container.
+		/// </summary>
+		/// <param name="member"><see cref="ISymbolOrMember"/> to add to the container.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
+		public void Add(ISymbolOrMember<TSymbol> member)
+		{
+			if (member is null)
+			{
+				throw new ArgumentNullException(nameof(member));
+			}
+
+			Content.Add(member);
+		}
+
+		/// <summary>
+		/// Adds the specified <paramref name="collection"/> of <see cref="ISymbol"/>s to the container.
+		/// </summary>
+		/// <param name="collection">Collection of <typeparamref name="TSymbol"/>s to add to the container.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
+		public void AddRange(IEnumerable<TSymbol> collection)
 		{
 			if (collection is null)
 			{
 				throw new ArgumentNullException(nameof(collection));
 			}
 
-			_collection = collection;
-			_arrayHandler = GetArrayHandler();
-			Order = order;
+			Content.AddRange(collection.Select(symbol => new SymbolOrMemberWrapper<TSymbol, IMemberData>(symbol, ParentCompilation)));
+		}
+
+		/// <summary>
+		/// Adds the specified <paramref name="collection"/> of <see cref="ISymbolOrMember"/>s to the container.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="ISymbolOrMember"/>s to add to the container.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
+		public void AddRange(IEnumerable<ISymbolOrMember<TSymbol>> collection)
+		{
+			if (collection is null)
+			{
+				throw new ArgumentNullException(nameof(collection));
+			}
+
+			Content.AddRange(collection);
 		}
 
 		/// <inheritdoc/>
-		public abstract void Build(StringBuilder builder);
+		public virtual ImmutableArray<IMemberData> GetData()
+		{
+			return ImmutableArray.CreateRange(Content.Select(s => s.Member));
+		}
 
 		/// <inheritdoc/>
-		/// <exception cref="InvalidOperationException"><see cref="ISymbol"/>s cannot be converted into <see cref="IMemberData"/>, because <see cref="TargetCompilation"/> wasn't specified for the current container.</exception>
-		public ImmutableArray<IMemberData> GetData()
+		public IEnumerator<ISymbolOrMember<TSymbol>> GetEnumerator()
 		{
-			if (!InitArray())
-			{
-				return _arrayHandler.ToImmutableData();
-			}
-
-			if (_array is IMemberData[] members)
-			{
-				return _arrayHandler.ToImmutableData(members);
-			}
-
-			if (TargetCompilation is null)
-			{
-				throw new InvalidOperationException("ISymbols cannot be converted into IMemberDatas, because TargetCompilation wasn't specified for the current container");
-			}
-
-			ISymbol[] symbols = (_array as ISymbol[])!;
-			members = symbols.Select(s => GetData(s, TargetCompilation!)).ToArray();
-
-			return _arrayHandler.ToImmutableData(members);
+			return Content.GetEnumerator();
 		}
 
 		/// <inheritdoc/>
 		public virtual ImmutableArray<string> GetNames()
 		{
-			if (!InitArray())
-			{
-				return ImmutableArray<string>.Empty;
-			}
-
-			ImmutableArray<string>.Builder builder = ImmutableArray.CreateBuilder<string>(_array.Length);
-
-			if (_array is IMemberData[] members)
-			{
-				for (int i = 0; i < _array.Length; i++)
-				{
-					builder.Add(members[i].Name);
-				}
-			}
-			else
-			{
-				ISymbol[] symbols = (_array as ISymbol[])!;
-
-				for (int i = 0; i < _array.Length; i++)
-				{
-					builder.Add(symbols[i].GetVerbatimName());
-				}
-			}
-
-			return builder.ToImmutableArray();
+			return ImmutableArray.CreateRange(Content.Select(s => s.HasMember ? s.Member.Name : s.Symbol.GetVerbatimName()));
 		}
 
-		/// <inheritdoc/>
-		public ImmutableArray<ISymbol> GetSymbols()
+		/// <inheritdoc cref="ISymbolContainer.GetSymbols"/>
+		public virtual ImmutableArray<TSymbol> GetSymbols()
 		{
-			if (!InitArray())
-			{
-				return _arrayHandler.ToImmutableSymbol();
-			}
-
-			if (_array is ISymbol[] symbols)
-			{
-				return _arrayHandler.ToImmutableSymbol(symbols);
-			}
-
-			IMemberData[] members = (_array as IMemberData[])!;
-
-			return _arrayHandler.ToImmutableSymbol(members.Select(m => m.Symbol));
+			return ImmutableArray.CreateRange(Content.Select(s => s.Symbol));
 		}
 
 		/// <summary>
-		/// Converts the current array into an array of <see cref="ISymbol"/>s.
+		/// Reverses the container.
 		/// </summary>
-		public ISymbol[] ToArray()
+		public void Reverse()
 		{
-			if (!TryGetArray(out object[]? array))
-			{
-				return Array.Empty<ISymbol>();
-			}
-
-			ISymbol[] newArray = _arrayHandler.CreateArray(array.Length);
-
-			if (array is ISymbol[] symbols)
-			{
-				symbols.CopyTo(newArray, 0);
-				return newArray;
-			}
-
-			IMemberData[] members = (array as IMemberData[])!;
-
-			for (int i = 0; i < members.Length; i++)
-			{
-				newArray[i] = members[i].Symbol;
-			}
-
-			return newArray;
-		}
-
-		/// <inheritdoc/>
-		public override string ToString()
-		{
-			StringBuilder builder = new();
-			Build(builder);
-			return builder.ToString();
+			_order = Order.Reverse();
+			Content.Reverse();
 		}
 
 		/// <summary>
-		/// Returns a <see cref="IMemberData"/>s created for the specified <paramref name="symbol"/>.
+		/// Returns the first member according to the current <see cref="Order"/>.
 		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/>s to create the <see cref="IMemberData"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> the given <see cref="ISymbol"/> is part of.</param>
-		protected abstract IMemberData GetData(ISymbol symbol, ICompilationData compilation);
+		public ISymbolOrMember<TSymbol> First()
+		{
+			return First(Order);
+		}
 
+		/// <summary>
+		/// Returns the first member according to the specified <paramref name="order"/>.
+		/// </summary>
+		/// <param name="order"><see cref="ReturnOrder"/> by which to return the first member.</param>
+		public ISymbolOrMember<TSymbol> First(ReturnOrder order)
+		{
+			if (order == Order)
+			{
+				return Content[0];
+			}
+
+			return Content[Content.Count - 1];
+		}
+
+		/// <summary>
+		/// Returns the last member according to the current <see cref="Order"/>.
+		/// </summary>
+		public ISymbolOrMember<TSymbol> Last()
+		{
+			return Last(Order);
+		}
+
+		/// <summary>
+		/// Returns the first member according to the specified <paramref name="order"/>.
+		/// </summary>
+		/// <param name="order"><see cref="ReturnOrder"/> by which to return the last member.</param>
+		public ISymbolOrMember<TSymbol> Last(ReturnOrder order)
+		{
+			if (order == Order)
+			{
+				return Content[Content.Count - 1];
+			}
+
+			return Content[0];
+		}
+
+		/// <summary>
+		/// Converts the current array into an array of <typeparamref name="TSymbol"/>s.
+		/// </summary>
+		public virtual TSymbol[] ToArray()
+		{
+			return Content.Select(s => s.Symbol).ToArray();
+		}
+
+		/// <inheritdoc/>
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			if (InitArray())
-			{
-				return _array.GetEnumerator();
-			}
-
-			return Array.Empty<object>().GetEnumerator();
+			return GetEnumerator();
 		}
 
-		internal static void DefaultBuild(StringBuilder builder, ImmutableArray<string> names)
+		ImmutableArray<ISymbol> ISymbolContainer.GetSymbols()
 		{
-			if (names.Length == 0)
-			{
-				return;
-			}
-
-			builder.Append(names[0]);
-
-			for (int i = 1; i < names.Length; i++)
-			{
-				builder.Append('.');
-				builder.Append(names[i]);
-			}
+			return GetSymbols().CastArray<ISymbol>();
 		}
 
-		private protected abstract IArrayHandler GetArrayHandler();
-
-		private protected bool TryGetArray([NotNullWhen(true)] out object[]? array)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static ReturnOrder GetInitialOrder(IEnumerable collection)
 		{
-			if (InitArray())
+			return collection switch
 			{
-				array = _array;
-				return true;
-			}
-
-			array = default;
-			return false;
-		}
-
-		[MemberNotNullWhen(true, nameof(_array))]
-		private bool InitArray()
-		{
-			if (_array is not null)
-			{
-				return true;
-			}
-
-			if (_collection is null)
-			{
-				return false;
-			}
-
-			if (_collection is IEnumerable<ISymbol> symbols)
-			{
-				_array = _arrayHandler.CreateArray(symbols);
-			}
-			else
-			{
-				_array = _arrayHandler.CreateArray((_collection as IEnumerable<IMemberData>)!);
-			}
-
-			_collection = default;
-			return true;
+				IReturnOrderEnumerable<TSymbol> symbol => symbol.Order,
+				IReturnOrderEnumerable<ISymbolOrMember<TSymbol>> member => member.Order,
+				_ => default
+			};
 		}
 	}
 }

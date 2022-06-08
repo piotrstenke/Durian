@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
 
 namespace Durian.Analysis.Data
 {
@@ -14,24 +17,44 @@ namespace Durian.Analysis.Data
 	public class InterfaceData : TypeData<InterfaceDeclarationSyntax>
 	{
 		/// <summary>
+		/// Contains optional data that can be passed to a <see cref="InterfaceData"/>.
+		/// </summary>
+		public new class Properties : TypeData<InterfaceDeclarationSyntax>.Properties
+		{
+			/// <inheritdoc cref="InterfaceData.DefaultImplementations"/>
+			public ImmutableArray<ISymbolOrMember> DefaultImplementations { get; set; }
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+		}
+
+		private ImmutableArray<ISymbolOrMember> _defaultImplementations;
+
+		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="TypeData{TDeclaration}.Declaration"/>.
 		/// </summary>
 		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="InterfaceData"/> class.
+		/// Members of the interface that are default-implemented.
 		/// </summary>
-		/// <param name="declaration"><see cref="InterfaceDeclarationSyntax"/> this <see cref="InterfaceData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="InterfaceData"/>.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
-		/// </exception>
-		public InterfaceData(InterfaceDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
+		public ImmutableArray<ISymbolOrMember> DefaultImplementations
 		{
-		}
+			get
+			{
+				if(_defaultImplementations.IsDefault)
+				{
+					_defaultImplementations = ImmutableArray.CreateRange<ISymbolOrMember>(Symbol
+						.GetDefaultImplementations(true)
+						.Select(d => d.ToDataOrSymbolInternal(ParentCompilation)));
+				}
 
-		internal InterfaceData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
-		{
+				return _defaultImplementations;
+			}
 		}
 
 		/// <summary>
@@ -39,34 +62,19 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="declaration"><see cref="InterfaceDeclarationSyntax"/> this <see cref="InterfaceData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="InterfaceData"/>.</param>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> this <see cref="InterfaceData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="partialDeclarations">A collection of <see cref="InterfaceDeclarationSyntax"/> that represent the partial declarations of the target <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal InterfaceData(
-			InterfaceDeclarationSyntax declaration,
-			ICompilationData compilation,
-			INamedTypeSymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<InterfaceDeclarationSyntax>? partialDeclarations = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			partialDeclarations,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
+		/// </exception>
+		public InterfaceData(InterfaceDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
+		{
+			if(properties is not null)
+			{
+
+			}
+		}
+
+		internal InterfaceData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
 	}
