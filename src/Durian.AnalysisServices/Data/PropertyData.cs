@@ -23,7 +23,7 @@ namespace Durian.Analysis.Data
 			public AutoPropertyKind? AutoPropertyKind { get; set; }
 
 			/// <inheritdoc cref="PropertyData.BackingField"/>
-			public DefaultedValue<ISymbolOrMember<IFieldSymbol>> BackingField { get; set; }
+			public DefaultedValue<ISymbolOrMember<IFieldSymbol, FieldData>> BackingField { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -33,7 +33,7 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		private DefaultedValue<ISymbolOrMember<IFieldSymbol>> _backingField;
+		private DefaultedValue<ISymbolOrMember<IFieldSymbol, FieldData>> _backingField;
 
 		/// <summary>
 		/// Target <see cref="PropertyDeclarationSyntax"/>.
@@ -53,13 +53,13 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Backing field of the property or <see langword="null"/> if not an auto-property.
 		/// </summary>
-		public ISymbolOrMember<IFieldSymbol>? BackingField
+		public ISymbolOrMember<IFieldSymbol, FieldData>? BackingField
 		{
 			get
 			{
 				if(_backingField.IsDefault)
 				{
-					_backingField = Symbol.GetBackingField().ToDataOrSymbolInternal(ParentCompilation);
+					_backingField = Symbol.GetBackingField().ToDataOrSymbolInternal<FieldData>(ParentCompilation);
 				}
 
 				return _backingField.Value;

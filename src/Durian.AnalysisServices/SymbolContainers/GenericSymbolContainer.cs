@@ -12,10 +12,13 @@ using Microsoft.CodeAnalysis;
 namespace Durian.Analysis.SymbolContainers
 {
 	/// <summary>
-	/// <see cref="WritableSymbolContainer{TSymbol}"/> that handles generic names when calling <see cref="SymbolContainer{TSymbol}.GetNames"/>.
+	/// <see cref="WritableSymbolContainer{TSymbol, TData}"/> that handles generic names when calling <see cref="SymbolContainer{TSymbol, TData}.GetNames"/>.
 	/// </summary>
 	/// <typeparam name="TSymbol">Type of target <see cref="ISymbol"/>.</typeparam>
-	public class GenericSymbolContainer<TSymbol> : WritableSymbolContainer<TSymbol> where TSymbol : class, ISymbol
+	/// <typeparam name="TData">Type of target <see cref="IMemberData"/>.</typeparam>
+	public class GenericSymbolContainer<TSymbol, TData> : WritableSymbolContainer<TSymbol, TData>
+		where TSymbol : class, ISymbol
+		where TData : class, IMemberData
 	{
 		/// <summary>
 		/// Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.
@@ -23,7 +26,7 @@ namespace Durian.Analysis.SymbolContainers
 		public bool UseArguments { get; set; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="GenericSymbolContainer{TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="GenericSymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
@@ -32,7 +35,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="GenericSymbolContainer{TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="GenericSymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="collection">Collection of <typeparamref name="TSymbol"/>s to add to the container.</param>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
@@ -43,7 +46,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="GenericSymbolContainer{TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="GenericSymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="ISymbolOrMember"/> to add to the container.</param>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.

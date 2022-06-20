@@ -18,14 +18,41 @@ namespace Durian.Analysis.SymbolContainers
 	/// Provides methods for returning symbol representations using either <see cref="ISymbol"/>s or <see cref="IMemberData"/>s.
 	/// </summary>
 	/// <typeparam name="TSymbol">Type of target <see cref="ISymbol"/>.</typeparam>
+	/// <typeparam name="TData">Type of target <see cref="IMemberData"/>.</typeparam>
 	[DebuggerDisplay("Count = {Count}, Order = {Order}")]
-	public class SymbolContainer<TSymbol> : ISymbolContainer, IReturnOrderEnumerable<ISymbolOrMember<TSymbol>> where TSymbol : class, ISymbol
+	public class SymbolContainer<TSymbol, TData> : ISymbolContainer<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>
+		where TSymbol : class, ISymbol
+		where TData : class, IMemberData
 	{
+		private class MemberWrapper : ISymbolOrMember<TSymbol, TData>
+		{
+			private readonly ISymbolOrMember _underlaying;
+
+			/// <inheritdoc/>
+			public TSymbol Symbol => (_underlaying.Symbol as TSymbol)!;
+
+			/// <inheritdoc/>
+			public bool HasMember => _underlaying.HasMember;
+
+			/// <inheritdoc/>
+			public TData Member => (_underlaying.Member as TData)!;
+
+			ISymbol ISymbolOrMember.Symbol => _underlaying.Symbol;
+			IMemberData ISymbolOrMember.Member => _underlaying.Member;
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="MemberWrapper"/> class.
+			/// </summary>
+			/// <param name="underlaying">Underlaying <see cref="ISymbolOrMember"/>.</param>
+			public MemberWrapper(ISymbolOrMember underlaying)
+			{
+				_underlaying = underlaying;
+			}
+		}
+
 		private ReturnOrder _order;
 
-		/// <summary>
-		/// Number of elements in the container.
-		/// </summary>
+		/// <inheritdoc/>
 		public int Count => Content.Count;
 
 		/// <summary>
@@ -45,28 +72,27 @@ namespace Durian.Analysis.SymbolContainers
 			}
 		}
 
-		/// <summary>
-		/// Parent <see cref="ICompilationData"/> of the current container.
-		/// </summary>
+		/// <inheritdoc/>
 		public ICompilationData? ParentCompilation { get; }
 
 		/// <summary>
 		/// List of all <see cref="ISymbolOrMember"/>s added to the container.
 		/// </summary>
-		protected List<ISymbolOrMember<TSymbol>> Content { get; } = new();
+		protected List<ISymbolOrMember<TSymbol, TData>> Content { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
 		public SymbolContainer(ICompilationData? parentCompilation = default)
 		{
+			Content = new();
 			ParentCompilation = parentCompilation;
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="capacity">Initial capacity of the container.</param>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
@@ -79,7 +105,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="collection">Collection of <typeparamref name="TSymbol"/>s to add to the container.</param>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
@@ -87,23 +113,32 @@ namespace Durian.Analysis.SymbolContainers
 		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
 		public SymbolContainer(IEnumerable<TSymbol> collection, ICompilationData? parentCompilation = default)
 		{
+			Content = new();
 			Order = GetInitialOrder(collection);
 			ParentCompilation = parentCompilation;
 			AddRange(collection);
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="ISymbolOrMember"/> to add to the container.</param>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
 		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public SymbolContainer(IEnumerable<ISymbolOrMember<TSymbol>> collection, ICompilationData? parentCompilation = default)
+		public SymbolContainer(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection, ICompilationData? parentCompilation = default)
 		{
+			Content = new(collection);
 			Order = GetInitialOrder(collection);
 			ParentCompilation = parentCompilation;
-			AddRange(collection);
+		}
+
+		private SymbolContainer(IEnumerable<ISymbolOrMember> collection, ICompilationData? parentCompilation)
+		{
+			Content = new();
+			Order = GetInitialOrder(collection);
+			ParentCompilation = parentCompilation;
+			AddRange(collection.Select(m => m is ISymbolOrMember<TSymbol, TData> s ? s : new MemberWrapper(m)));
 		}
 
 		/// <summary>
@@ -118,7 +153,7 @@ namespace Durian.Analysis.SymbolContainers
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			Content.Add(new SymbolOrMemberWrapper<TSymbol, IMemberData>(symbol, ParentCompilation));
+			Content.Add(new SymbolOrMemberWrapper<TSymbol, TData>(symbol, ParentCompilation));
 		}
 
 		/// <summary>
@@ -126,7 +161,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="member"><see cref="ISymbolOrMember"/> to add to the container.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void Add(ISymbolOrMember<TSymbol> member)
+		public void Add(ISymbolOrMember<TSymbol, TData> member)
 		{
 			if (member is null)
 			{
@@ -148,7 +183,7 @@ namespace Durian.Analysis.SymbolContainers
 				throw new ArgumentNullException(nameof(collection));
 			}
 
-			Content.AddRange(collection.Select(symbol => new SymbolOrMemberWrapper<TSymbol, IMemberData>(symbol, ParentCompilation)));
+			Content.AddRange(collection.Select(symbol => new SymbolOrMemberWrapper<TSymbol, TData>(symbol, ParentCompilation)));
 		}
 
 		/// <summary>
@@ -156,7 +191,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="ISymbolOrMember"/>s to add to the container.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public void AddRange(IEnumerable<ISymbolOrMember<TSymbol>> collection)
+		public void AddRange(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection)
 		{
 			if (collection is null)
 			{
@@ -167,13 +202,13 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <inheritdoc/>
-		public virtual ImmutableArray<IMemberData> GetData()
+		public virtual ImmutableArray<TData> GetData()
 		{
 			return ImmutableArray.CreateRange(Content.Select(s => s.Member));
 		}
 
 		/// <inheritdoc/>
-		public IEnumerator<ISymbolOrMember<TSymbol>> GetEnumerator()
+		public IEnumerator<ISymbolOrMember<TSymbol, TData>> GetEnumerator()
 		{
 			return Content.GetEnumerator();
 		}
@@ -202,17 +237,19 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Returns the first member according to the current <see cref="Order"/>.
 		/// </summary>
-		public ISymbolOrMember<TSymbol> First()
+		public ISymbolOrMember<TSymbol, TData> First()
 		{
 			return First(Order);
 		}
 
-		/// <summary>
-		/// Returns the first member according to the specified <paramref name="order"/>.
-		/// </summary>
-		/// <param name="order"><see cref="ReturnOrder"/> by which to return the first member.</param>
-		public ISymbolOrMember<TSymbol> First(ReturnOrder order)
+		/// <inheritdoc/>
+		public ISymbolOrMember<TSymbol, TData> First(ReturnOrder order)
 		{
+			if(Content.Count == 0)
+			{
+				throw SymbolContainerFactory.Exc_EmptySymbolContainer();
+			}
+
 			if (order == Order)
 			{
 				return Content[0];
@@ -224,17 +261,19 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Returns the last member according to the current <see cref="Order"/>.
 		/// </summary>
-		public ISymbolOrMember<TSymbol> Last()
+		public ISymbolOrMember<TSymbol, TData> Last()
 		{
 			return Last(Order);
 		}
 
-		/// <summary>
-		/// Returns the first member according to the specified <paramref name="order"/>.
-		/// </summary>
-		/// <param name="order"><see cref="ReturnOrder"/> by which to return the last member.</param>
-		public ISymbolOrMember<TSymbol> Last(ReturnOrder order)
+		/// <inheritdoc/>
+		public ISymbolOrMember<TSymbol, TData> Last(ReturnOrder order)
 		{
+			if (Content.Count == 0)
+			{
+				throw SymbolContainerFactory.Exc_EmptySymbolContainer();
+			}
+
 			if (order == Order)
 			{
 				return Content[Content.Count - 1];
@@ -243,15 +282,6 @@ namespace Durian.Analysis.SymbolContainers
 			return Content[0];
 		}
 
-		/// <summary>
-		/// Converts the current array into an array of <typeparamref name="TSymbol"/>s.
-		/// </summary>
-		public virtual TSymbol[] ToArray()
-		{
-			return Content.Select(s => s.Symbol).ToArray();
-		}
-
-		/// <inheritdoc/>
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
@@ -268,9 +298,34 @@ namespace Durian.Analysis.SymbolContainers
 			return collection switch
 			{
 				IReturnOrderEnumerable<TSymbol> symbol => symbol.Order,
-				IReturnOrderEnumerable<ISymbolOrMember<TSymbol>> member => member.Order,
+				IReturnOrderEnumerable<ISymbolOrMember> member => member.Order,
 				_ => default
 			};
+		}
+
+		ISymbolOrMember<TSymbol> ISymbolContainer<TSymbol>.First()
+		{
+			return First();
+		}
+
+		ISymbolOrMember<TSymbol> ISymbolContainer<TSymbol>.First(ReturnOrder order)
+		{
+			return First(order);
+		}
+
+		ISymbolOrMember<TSymbol> ISymbolContainer<TSymbol>.Last()
+		{
+			return Last();
+		}
+
+		ISymbolOrMember<TSymbol> ISymbolContainer<TSymbol>.Last(ReturnOrder order)
+		{
+			return Last(order);
+		}
+
+		ImmutableArray<IMemberData> ISymbolContainer.GetData()
+		{
+			return GetData().CastArray<IMemberData>();
 		}
 	}
 }

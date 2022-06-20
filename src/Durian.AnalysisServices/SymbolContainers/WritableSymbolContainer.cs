@@ -10,13 +10,16 @@ using Microsoft.CodeAnalysis;
 namespace Durian.Analysis.SymbolContainers
 {
 	/// <summary>
-	/// <see cref="SymbolContainer{TSymbol}"/> that writes name of the contained <see cref="ISymbol"/>s into a <see cref="StringBuilder"/>.
+	/// <see cref="SymbolContainer{TSymbol, TData}"/> that writes name of the contained <see cref="ISymbol"/>s into a <see cref="StringBuilder"/>.
 	/// </summary>
 	/// <typeparam name="TSymbol">Type of target <see cref="ISymbol"/>.</typeparam>
-	public class WritableSymbolContainer<TSymbol> : SymbolContainer<TSymbol> where TSymbol : class, ISymbol
+	/// <typeparam name="TData">Type of target <see cref="IMemberData"/>.</typeparam>
+	public class WritableSymbolContainer<TSymbol, TData> : SymbolContainer<TSymbol, TData>, IWrittableSymbolContainer<TSymbol, TData>
+		where TSymbol : class, ISymbol
+		where TData : class, IMemberData
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="WritableSymbolContainer{TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="WritableSymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
@@ -25,7 +28,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="WritableSymbolContainer{TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="WritableSymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="capacity">Initial capacity of the container.</param>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
@@ -36,7 +39,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="WritableSymbolContainer{TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="WritableSymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="collection">Collection of <typeparamref name="TSymbol"/>s to add to the container.</param>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
@@ -47,27 +50,27 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="WritableSymbolContainer{TSymbol}"/> class.
+		/// Initializes a new instance of the <see cref="WritableSymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="ISymbolOrMember"/> to add to the container.</param>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
 		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public WritableSymbolContainer(IEnumerable<ISymbolOrMember<TSymbol>> collection, ICompilationData? parentCompilation = default) : base(collection, parentCompilation)
+		public WritableSymbolContainer(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection, ICompilationData? parentCompilation = default) : base(collection, parentCompilation)
 		{
 		}
 
 		/// <inheritdoc/>
-		public virtual void Build(StringBuilder builder)
+		public virtual void WriteTo(StringBuilder builder)
 		{
 			SymbolContainerFactory.DefaultBuild(this, builder);
 		}
 
-		/// <inheritdoc/>
+		/// <inheritdoc cref="IWrittableSymbolContainer.ToString"/>
 		public override string ToString()
 		{
 			StringBuilder builder = new();
-			Build(builder);
+			WriteTo(builder);
 			return builder.ToString();
 		}
 	}

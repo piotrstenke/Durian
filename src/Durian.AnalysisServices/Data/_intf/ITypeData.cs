@@ -31,27 +31,27 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Member <see cref="ISymbol"/>s of the current type and its parent types.
 		/// </summary>
-		SymbolContainer<ISymbol> AllMembers { get; }
+		ISymbolContainer<ISymbol> AllMembers { get; }
 
 		/// <summary>
 		/// Member <see cref="ISymbol"/>s of the current type.
 		/// </summary>
-		SymbolContainer<ISymbol> Members { get; }
+		ISymbolContainer<ISymbol> Members { get; }
 
 		/// <summary>
 		/// Base types of the current type.
 		/// </summary>
-		SymbolContainer<INamedTypeSymbol> BaseTypes { get; }
+		ISymbolContainer<INamedTypeSymbol> BaseTypes { get; }
 
 		/// <summary>
 		/// Inner types of the current type and its parent types.
 		/// </summary>
-		SymbolContainer<INamedTypeSymbol> AllInnerTypes { get; }
+		ISymbolContainer<INamedTypeSymbol> AllInnerTypes { get; }
 
 		/// <summary>
 		/// Inner types of the current type.
 		/// </summary>
-		SymbolContainer<INamedTypeSymbol> InnerTypes { get; }
+		ISymbolContainer<INamedTypeSymbol> InnerTypes { get; }
 
 		/// <summary>
 		/// Parameterless constructor of this type.
@@ -61,11 +61,11 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Type parameters of this type.
 		/// </summary>
-		SymbolContainer<ITypeParameterSymbol> TypeParameters { get; }
+		ISymbolContainer<ITypeParameterSymbol> TypeParameters { get; }
 
 		/// <summary>
 		/// Type arguments of this type.
 		/// </summary>
-		SymbolContainer<ITypeSymbol> TypeArguments { get; }
+		ISymbolContainer<ITypeSymbol> TypeArguments { get; }
 	}
 }

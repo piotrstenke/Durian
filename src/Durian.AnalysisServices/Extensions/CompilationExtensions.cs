@@ -195,6 +195,39 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the <see cref="INamedTypeSymbol"/> represented by the specified <see cref="DecimalValueType"/>.
+		/// </summary>
+		/// <param name="compilation"><see cref="Compilation"/> to get the <see cref="INamedTypeSymbol"/> from.</param>
+		/// <param name="type"><see cref="DecimalValueType"/> to get.</param>
+		public static INamedTypeSymbol? GetSpecialType(this Compilation compilation, DecimalValueType type)
+		{
+			SpecialType specialType = type.GetSpecialType();
+			return compilation.GetSpecialType(specialType);
+		}
+
+		/// <summary>
+		/// Returns the <see cref="INamedTypeSymbol"/> represented by the specified <see cref="IntegerValueType"/>.
+		/// </summary>
+		/// <param name="compilation"><see cref="Compilation"/> to get the <see cref="INamedTypeSymbol"/> from.</param>
+		/// <param name="type"><see cref="IntegerValueType"/> to get.</param>
+		public static INamedTypeSymbol? GetSpecialType(this Compilation compilation, IntegerValueType type)
+		{
+			SpecialType specialType = type.GetSpecialType();
+			return compilation.GetSpecialType(specialType);
+		}
+
+		/// <summary>
+		/// Returns the <see cref="INamedTypeSymbol"/> represented by the specified <see cref="TypeKeyword"/>.
+		/// </summary>
+		/// <param name="compilation"><see cref="Compilation"/> to get the <see cref="INamedTypeSymbol"/> from.</param>
+		/// <param name="type"><see cref="TypeKeyword"/> to get.</param>
+		public static INamedTypeSymbol? GetSpecialType(this Compilation compilation, TypeKeyword type)
+		{
+			SpecialType specialType = type.GetSpecialType();
+			return compilation.GetSpecialType(specialType);
+		}
+
+		/// <summary>
 		/// Returns all special types in the <paramref name="compilation"/>. See: <see cref="SpecialType"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the special types from.</param>

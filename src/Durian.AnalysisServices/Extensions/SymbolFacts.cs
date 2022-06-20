@@ -60,11 +60,57 @@ namespace Durian.Analysis.Extensions
 			return other switch
 			{
 				INamedTypeSymbol otherType => type.Arity == otherType.Arity && type.Name == otherType.Name,
-				IMethodSymbol method => CanHideSymbol_Internal(type, method),
-				IPropertySymbol property => CanHideSymbol_Internal(type, property),
-				IEventSymbol or IFieldSymbol => type.Arity == 0 && type.Name == other.Name,
+				IMethodSymbol method => type.CanHideSymbol(method),
+				IPropertySymbol property => type.CanHideSymbol(property),
+				IEventSymbol @event => type.CanHideSymbol(@event),
+				IFieldSymbol field => type.CanHideSymbol(field),
 				_ => false
 			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> can potentially hide the <paramref name="other"/> method using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check can hide the <paramref name="other"/> method.</param>
+		/// <param name="other"><see cref="IMethodSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this INamedTypeSymbol type, IMethodSymbol other)
+		{
+			return type.Arity == other.Arity && type.Name == other.Name;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> can potentially hide the <paramref name="other"/> property using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check can hide the <paramref name="other"/> property.</param>
+		/// <param name="other"><see cref="IPropertySymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this INamedTypeSymbol type, IPropertySymbol other)
+		{
+			if (other.IsIndexer)
+			{
+				return false;
+			}
+
+			return type.CanHideSymbol_Internal(other);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> can potentially hide the <paramref name="other"/> field using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check can hide the <paramref name="other"/> field.</param>
+		/// <param name="other"><see cref="IFieldSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this INamedTypeSymbol type, IFieldSymbol other)
+		{
+			return type.CanHideSymbol_Internal(other);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> can potentially hide the <paramref name="other"/> event using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to check can hide the <paramref name="other"/> event.</param>
+		/// <param name="other"><see cref="IEventSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this INamedTypeSymbol type, IEventSymbol other)
+		{
+			return type.CanHideSymbol_Internal(other);
 		}
 
 		/// <summary>
@@ -81,12 +127,68 @@ namespace Durian.Analysis.Extensions
 
 			return other switch
 			{
-				INamedTypeSymbol type => CanHideSymbol_Internal(type, method),
-				IMethodSymbol otherMethod => CanHideSymbol_Internal(method, otherMethod),
-				IPropertySymbol property => CanHideSymbol_Internal(method, property),
-				IEventSymbol or IFieldSymbol => method.Arity == 0 && method.Name == other.Name,
+				INamedTypeSymbol type => method.CanHideSymbol(type),
+				IMethodSymbol otherMethod => method.CanHideSymbol(otherMethod),
+				IPropertySymbol property => method.CanHideSymbol(property),
+				IEventSymbol @event => @event.CanHideSymbol(@event),
+				IFieldSymbol field => field.CanHideSymbol(field),
 				_ => false
 			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> can potentially hide the <paramref name="other"/> method using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check can hide the <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="IMethodSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IMethodSymbol method, IMethodSymbol other)
+		{
+			return method.CanHideSymbol_Internal(other, false);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> can potentially hide the <paramref name="other"/> type using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check can hide the <paramref name="other"/> type.</param>
+		/// <param name="other"><see cref="INamedTypeSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IMethodSymbol method, INamedTypeSymbol other)
+		{
+			return other.CanHideSymbol(method);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> can potentially hide the <paramref name="other"/> property using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check can hide the <paramref name="other"/> property.</param>
+		/// <param name="other"><see cref="IPropertySymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IMethodSymbol method, IPropertySymbol other)
+		{
+			if (other.IsIndexer)
+			{
+				return false;
+			}
+
+			return method.CanHideSymbol_Internal(other);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> can potentially hide the <paramref name="other"/> field using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check can hide the <paramref name="other"/> field.</param>
+		/// <param name="other"><see cref="IFieldSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IMethodSymbol method, IFieldSymbol other)
+		{
+			return method.CanHideSymbol_Internal(other);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> can potentially hide the <paramref name="other"/> event using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to check can hide the <paramref name="other"/> event.</param>
+		/// <param name="other"><see cref="IEventSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IMethodSymbol method, IEventSymbol other)
+		{
+			return method.CanHideSymbol_Internal(other);
 		}
 
 		/// <summary>
@@ -96,24 +198,85 @@ namespace Durian.Analysis.Extensions
 		/// <param name="other"><see cref="ISymbol"/> to check if can be hidden.</param>
 		public static bool CanHideSymbol(this IPropertySymbol property, ISymbol other)
 		{
+			return other switch
+			{
+				INamedTypeSymbol type => property.CanHideSymbol(type),
+				IMethodSymbol method => property.CanHideSymbol(method),
+				IPropertySymbol otherProperty => property.CanHideSymbol(otherProperty),
+				IEventSymbol @event => property.CanHideSymbol(@event),
+				IFieldSymbol field => property.CanHideSymbol(field),
+				_ => false
+			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> can potentially hide the <paramref name="other"/> type using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to check can hide the <paramref name="other"/> type.</param>
+		/// <param name="other"><see cref="INamedTypeSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IPropertySymbol property, INamedTypeSymbol other)
+		{
+			return other.CanHideSymbol(property);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> can potentially hide the <paramref name="other"/> method using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to check can hide the <paramref name="other"/> method.</param>
+		/// <param name="other"><see cref="IMethodSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IPropertySymbol property, IMethodSymbol other)
+		{
+			return other.CanHideSymbol(property);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> can potentially hide the <paramref name="other"/> property using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to check can hide the <paramref name="other"/> property.</param>
+		/// <param name="other"><see cref="IPropertySymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IPropertySymbol property, IPropertySymbol other)
+		{
 			if (property.IsIndexer)
 			{
-				if (other is IPropertySymbol { IsIndexer: true } indexer)
+				if (other.IsIndexer)
 				{
-					return ParametersAreEquivalent(property.Parameters, indexer.Parameters);
+					return ParametersAreEquivalent(property.Parameters, other.Parameters);
 				}
 
 				return false;
 			}
 
-			return other switch
+			return property.Name == other.Name;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> can potentially hide the <paramref name="other"/> field using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to check can hide the <paramref name="other"/> field.</param>
+		/// <param name="other"><see cref="IFieldSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IPropertySymbol property, IFieldSymbol other)
+		{
+			if (property.IsIndexer)
 			{
-				INamedTypeSymbol type => CanHideSymbol_Internal(type, property),
-				IMethodSymbol method => CanHideSymbol_Internal(method, property),
-				IPropertySymbol otherProperty => !otherProperty.IsIndexer && property.Name == otherProperty.Name,
-				IEventSymbol or IFieldSymbol => property.Name == other.Name,
-				_ => false
-			};
+				return false;
+			}
+
+			return property.Name == other.Name;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> can potentially hide the <paramref name="other"/> event using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to check can hide the <paramref name="other"/> event.</param>
+		/// <param name="other"><see cref="IEventSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IPropertySymbol property, IEventSymbol other)
+		{
+			if (property.IsIndexer)
+			{
+				return false;
+			}
+
+			return property.Name == other.Name;
 		}
 
 		/// <summary>
@@ -125,12 +288,63 @@ namespace Durian.Analysis.Extensions
 		{
 			return other switch
 			{
-				INamedTypeSymbol type => type.Arity == 0 && type.Name == field.Name,
-				IMethodSymbol method => method.Arity == 0 && method.Name == field.Name,
-				IPropertySymbol property => !property.IsIndexer && property.Name == field.Name,
-				IEventSymbol or IFieldSymbol => other.Name == field.Name,
+				INamedTypeSymbol type => field.CanHideSymbol(type),
+				IMethodSymbol method => field.CanHideSymbol(method),
+				IPropertySymbol property => field.CanHideSymbol(property),
+				IEventSymbol @event => field.CanHideSymbol(@event),
+				IFieldSymbol otherField => field.CanHideSymbol(otherField),
 				_ => false
 			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="field"/> can potentially hide the <paramref name="other"/> type using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to check can hide the <paramref name="other"/> type.</param>
+		/// <param name="other"><see cref="INamedTypeSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IFieldSymbol field, INamedTypeSymbol other)
+		{
+			return other.CanHideSymbol(field);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="field"/> can potentially hide the <paramref name="other"/> method using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to check can hide the <paramref name="other"/> method.</param>
+		/// <param name="other"><see cref="IMethodSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IFieldSymbol field, IMethodSymbol other)
+		{
+			return other.CanHideSymbol(field);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="field"/> can potentially hide the <paramref name="other"/> property using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to check can hide the <paramref name="other"/> property.</param>
+		/// <param name="other"><see cref="IPropertySymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IFieldSymbol field, IPropertySymbol other)
+		{
+			return other.CanHideSymbol(field);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="field"/> can potentially hide the <paramref name="other"/> event using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to check can hide the <paramref name="other"/> event.</param>
+		/// <param name="other"><see cref="IEventSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IFieldSymbol field, IEventSymbol other)
+		{
+			return field.Name == other.Name;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="field"/> can potentially hide the <paramref name="other"/> field using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to check can hide the <paramref name="other"/> field.</param>
+		/// <param name="other"><see cref="IFieldSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IFieldSymbol field, IFieldSymbol other)
+		{
+			return field.Name == other.Name;
 		}
 
 		/// <summary>
@@ -142,12 +356,63 @@ namespace Durian.Analysis.Extensions
 		{
 			return other switch
 			{
-				INamedTypeSymbol type => type.Arity == 0 && type.Name == @event.Name,
-				IMethodSymbol method => method.Arity == 0 && method.Name == @event.Name,
-				IPropertySymbol property => !property.IsIndexer && property.Name == @event.Name,
-				IEventSymbol or IFieldSymbol => other.Name == @event.Name,
+				INamedTypeSymbol type => @event.CanHideSymbol(type),
+				IMethodSymbol method => @event.CanHideSymbol(method),
+				IPropertySymbol property => @event.CanHideSymbol(property),
+				IEventSymbol otherEvent => @event.CanHideSymbol(otherEvent),
+				IFieldSymbol field => @event.CanHideSymbol(field),
 				_ => false
 			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> can potentially hide the <paramref name="other"/> type using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to check can hide the <paramref name="other"/> type.</param>
+		/// <param name="other"><see cref="INamedTypeSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IEventSymbol @event, INamedTypeSymbol other)
+		{
+			return other.CanHideSymbol(@event);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> can potentially hide the <paramref name="other"/> property using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to check can hide the <paramref name="other"/> property.</param>
+		/// <param name="other"><see cref="IPropertySymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IEventSymbol @event, IPropertySymbol other)
+		{
+			return other.CanHideSymbol(@event);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> can potentially hide the <paramref name="other"/> method using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to check can hide the <paramref name="other"/> event.</param>
+		/// <param name="other"><see cref="IMethodSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IEventSymbol @event, IMethodSymbol other)
+		{
+			return other.CanHideSymbol(@event);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> can potentially hide the <paramref name="other"/> field using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to check can hide the <paramref name="other"/> field.</param>
+		/// <param name="other"><see cref="IFieldSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IEventSymbol @event, IFieldSymbol other)
+		{
+			return other.CanHideSymbol(@event);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> can potentially hide the <paramref name="other"/> event using the <see langword="new"/>.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to check can hide the <paramref name="other"/> event.</param>
+		/// <param name="other"><see cref="IEventSymbol"/> to check if can be hidden.</param>
+		public static bool CanHideSymbol(this IEventSymbol @event, IEventSymbol other)
+		{
+			return @event.Name == other.Name;
 		}
 
 		/// <summary>
@@ -279,14 +544,14 @@ namespace Durian.Analysis.Extensions
 		/// <param name="includeImplicit">Determines whether to include constraints that are implicitly applied to the <paramref name="parameter"/>.</param>
 		public static bool HasConstraints(this ITypeParameterSymbol parameter, GenericConstraint constraint, bool includeImplicit = false)
 		{
-			if(constraint == GenericConstraint.None)
+			if (constraint == GenericConstraint.None)
 			{
 				return !parameter.HasConstraints();
 			}
 
 			bool hasValidConstraint = false;
 
-			if(constraint.HasFlag(GenericConstraint.Class))
+			if (constraint.HasFlag(GenericConstraint.Class))
 			{
 				if (parameter.HasReferenceTypeConstraint)
 				{
@@ -312,12 +577,12 @@ namespace Durian.Analysis.Extensions
 					return true;
 				});
 
-				if(!hasValidConstraint)
+				if (!hasValidConstraint)
 				{
 					return false;
 				}
 			}
-			else if(constraint.HasFlag(GenericConstraint.Struct))
+			else if (constraint.HasFlag(GenericConstraint.Struct))
 			{
 				if (parameter.HasValueTypeConstraint || (includeImplicit && parameter.HasUnmanagedTypeConstraint))
 				{
@@ -328,9 +593,9 @@ namespace Durian.Analysis.Extensions
 					return false;
 				}
 			}
-			else if(constraint.HasFlag(GenericConstraint.Unmanaged))
+			else if (constraint.HasFlag(GenericConstraint.Unmanaged))
 			{
-				if(parameter.HasUnmanagedTypeConstraint)
+				if (parameter.HasUnmanagedTypeConstraint)
 				{
 					hasValidConstraint = true;
 				}
@@ -350,14 +615,14 @@ namespace Durian.Analysis.Extensions
 					return false;
 				}
 			}
-			else if(constraint.HasFlag(GenericConstraint.Default))
+			else if (constraint.HasFlag(GenericConstraint.Default))
 			{
 				return false;
 			}
 
 			if (constraint.HasFlag(GenericConstraint.Type))
 			{
-				if(parameter.ConstraintTypes.Length > 0)
+				if (parameter.ConstraintTypes.Length > 0)
 				{
 					hasValidConstraint = true;
 				}
@@ -367,9 +632,9 @@ namespace Durian.Analysis.Extensions
 				}
 			}
 
-			if(constraint.HasFlag(GenericConstraint.New))
+			if (constraint.HasFlag(GenericConstraint.New))
 			{
-				if(parameter.HasConstructorConstraint || (includeImplicit && (parameter.HasValueTypeConstraint || parameter.HasUnmanagedTypeConstraint)))
+				if (parameter.HasConstructorConstraint || (includeImplicit && (parameter.HasValueTypeConstraint || parameter.HasUnmanagedTypeConstraint)))
 				{
 					hasValidConstraint = true;
 				}
@@ -1099,6 +1364,15 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="field"/> is a field of an <see langword="enum"/>.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to determine whether is a field of an <see langword="enum"/>.</param>
+		public static bool IsEnumField(this IFieldSymbol field)
+		{
+			return field.ContainingType.TypeKind == TypeKind.Enum;
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="method"/> is an event accessor.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an event accessor.</param>
@@ -1328,6 +1602,20 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> can be overridden.
+		/// <para>A member can be overridden when:</para>
+		/// <list type="bullet">
+		/// <item>It is declared with the <see langword="virtual"/> or <see langword="abstract"/> keyword.</item>
+		/// <item>It is declared with the <see langword="override"/> keyword without the <see langword="sealed"/> keyword.</item>
+		/// </list>
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether can be overridden.</param>
+		public static bool IsOverridable(this IMethodSymbol method)
+		{
+			return method.GetVirtuality() is Virtuality.Virtual or Virtuality.Abstract;
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="method"/> is parameterless.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is parameterless.</param>
@@ -1462,12 +1750,12 @@ namespace Durian.Analysis.Extensions
 		/// <param name="declaration">Main declaration of this <paramref name="method"/>.</param>
 		public static bool IsPartialAccessibility(this IMethodSymbol method, MethodDeclarationSyntax declaration)
 		{
-			if(method.DeclaredAccessibility != Accessibility.Private)
+			if (method.DeclaredAccessibility != Accessibility.Private)
 			{
 				return false;
 			}
 
-			if(method.IsPartial(declaration))
+			if (method.IsPartial(declaration))
 			{
 				return !declaration.Modifiers.Any(m => SyntaxFacts.IsAccessibilityModifier(m.Kind()));
 			}
@@ -1480,24 +1768,24 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is <see langword="partial"/>.</param>
 		/// <param name="declaration">First retrieved <see cref="MethodDeclarationSyntax"/> associated with the specified <paramref name="method"/>.</param>
-		public static bool IsPartialAccessibility(this IMethodSymbol method, [NotNullWhen(true)]out MethodDeclarationSyntax? declaration)
+		public static bool IsPartialAccessibility(this IMethodSymbol method, [NotNullWhen(true)] out MethodDeclarationSyntax? declaration)
 		{
-			if(method.DeclaredAccessibility != Accessibility.Private)
+			if (method.DeclaredAccessibility != Accessibility.Private)
 			{
 				declaration = default;
 				return false;
 			}
 
-			if(!method.IsPartial(out declaration))
+			if (!method.IsPartial(out declaration))
 			{
 				return false;
 			}
 
-			if(declaration is null)
+			if (declaration is null)
 			{
 				declaration = method.GetSyntax<MethodDeclarationSyntax>();
 
-				if(declaration is null)
+				if (declaration is null)
 				{
 					return false;
 				}
@@ -2149,7 +2437,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check whether can have an explicit base type.</param>
 		public static bool SupportsExplicitBaseType(this INamedTypeSymbol type)
 		{
-			if(type.TypeKind == TypeKind.Enum || type.TypeKind == TypeKind.Interface)
+			if (type.TypeKind == TypeKind.Enum || type.TypeKind == TypeKind.Interface)
 			{
 				return true;
 			}
@@ -2157,14 +2445,19 @@ namespace Durian.Analysis.Extensions
 			return type.TypeKind == TypeKind.Class && !type.IsStatic;
 		}
 
-		internal static bool CanHideSymbol_Internal(IMethodSymbol method, IMethodSymbol other)
+		internal static bool CanHideSymbol_Internal(this IMethodSymbol method, IMethodSymbol other, bool ignoreArity)
 		{
 			if (other.MethodKind != MethodKind.Ordinary)
 			{
 				return false;
 			}
 
-			if (method.Arity != other.Arity || method.Name != other.Name)
+			if(!ignoreArity && method.Arity != other.Arity)
+			{
+				return false;
+			}
+
+			if (method.Name != other.Name)
 			{
 				return false;
 			}
@@ -2232,29 +2525,14 @@ namespace Durian.Analysis.Extensions
 			return true;
 		}
 
-		private static bool CanHideSymbol_Internal(INamedTypeSymbol type, IMethodSymbol method)
+		private static bool CanHideSymbol_Internal(this INamedTypeSymbol type, ISymbol other)
 		{
-			return type.Arity == method.Arity && type.Name == method.Name;
+			return type.Arity == 0 && type.Name == other.Name;
 		}
 
-		private static bool CanHideSymbol_Internal(INamedTypeSymbol type, IPropertySymbol property)
+		private static bool CanHideSymbol_Internal(this IMethodSymbol method, ISymbol other)
 		{
-			if (property.IsIndexer)
-			{
-				return false;
-			}
-
-			return type.Arity == 0 && type.Name == property.Name;
-		}
-
-		private static bool CanHideSymbol_Internal(IMethodSymbol method, IPropertySymbol property)
-		{
-			if (property.IsIndexer)
-			{
-				return false;
-			}
-
-			return method.Arity == 0 && method.Name == property.Name;
+			return method.Arity == 0 && method.Name == other.Name;
 		}
 
 #if ENABLE_REFLECTION

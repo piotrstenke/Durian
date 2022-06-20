@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Durian.Analysis.Extensions;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
 
@@ -22,7 +23,7 @@ namespace Durian.Analysis.Data
 		public new class Properties : TypeData<InterfaceDeclarationSyntax>.Properties
 		{
 			/// <inheritdoc cref="InterfaceData.DefaultImplementations"/>
-			public ImmutableArray<ISymbolOrMember> DefaultImplementations { get; set; }
+			public SymbolContainer<ISymbol>? DefaultImplementations { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -32,7 +33,7 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		private ImmutableArray<ISymbolOrMember> _defaultImplementations;
+		private SymbolContainer<ISymbol>? _defaultImplementations;
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="TypeData{TDeclaration}.Declaration"/>.
@@ -42,18 +43,11 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Members of the interface that are default-implemented.
 		/// </summary>
-		public ImmutableArray<ISymbolOrMember> DefaultImplementations
+		public SymbolContainer<ISymbol> DefaultImplementations
 		{
 			get
 			{
-				if(_defaultImplementations.IsDefault)
-				{
-					_defaultImplementations = ImmutableArray.CreateRange<ISymbolOrMember>(Symbol
-						.GetDefaultImplementations(true)
-						.Select(d => d.ToDataOrSymbolInternal(ParentCompilation)));
-				}
-
-				return _defaultImplementations;
+				return _defaultImplementations ??= Symbol.GetDefaultImplementations(true).ToContainer(ParentCompilation);
 			}
 		}
 
@@ -70,7 +64,7 @@ namespace Durian.Analysis.Data
 		{
 			if(properties is not null)
 			{
-
+				_defaultImplementations = properties.DefaultImplementations;
 			}
 		}
 

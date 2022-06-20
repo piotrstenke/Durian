@@ -24,15 +24,15 @@ namespace Durian.Analysis.Data
 			public DefaultedValue<ParameterListSyntax> ParameterList { get; set; }
 
 			/// <inheritdoc cref="RecordData.PrimaryConstructor"/>
-			public DefaultedValue<ISymbolOrMember<IMethodSymbol>> PrimaryConstructor { get; set; }
+			public DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> PrimaryConstructor { get; set; }
 
 			/// <inheritdoc cref="RecordData.CopyConstructor"/>
-			public DefaultedValue<ISymbolOrMember<IMethodSymbol>> CopyConstructor { get; set; }
+			public DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> CopyConstructor { get; set; }
 		}
 
 		private DefaultedValue<ParameterListSyntax> _parameterList;
-		private DefaultedValue<ISymbolOrMember<IMethodSymbol>> _primaryConstructor;
-		private DefaultedValue<ISymbolOrMember<IMethodSymbol>> _copyConstructor;
+		private DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> _primaryConstructor;
+		private DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> _copyConstructor;
 
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="TypeData{TDeclaration}.Declaration"/>.
@@ -65,13 +65,13 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Primary constructor of the record.
 		/// </summary>
-		public ISymbolOrMember<IMethodSymbol>? PrimaryConstructor
+		public ISymbolOrMember<IMethodSymbol, ConstructorData>? PrimaryConstructor
 		{
 			get
 			{
 				if(_primaryConstructor.IsDefault)
 				{
-					_primaryConstructor = Symbol.GetPrimaryConstructor().ToDataOrSymbolInternal(ParentCompilation);
+					_primaryConstructor = Symbol.GetPrimaryConstructor().ToDataOrSymbolInternal<ConstructorData>(ParentCompilation);
 				}
 
 				return _primaryConstructor.Value;
@@ -81,13 +81,13 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Copy constructor of the record.
 		/// </summary>
-		public ISymbolOrMember<IMethodSymbol>? CopyConstructor
+		public ISymbolOrMember<IMethodSymbol, ConstructorData>? CopyConstructor
 		{
 			get
 			{
 				if(_copyConstructor.IsDefault)
 				{
-					_copyConstructor = Symbol.GetSpecialConstructor(SpecialConstructor.Copy).ToDataOrSymbolInternal(ParentCompilation);
+					_copyConstructor = Symbol.GetSpecialConstructor(SpecialConstructor.Copy).ToDataOrSymbolInternal<ConstructorData>(ParentCompilation);
 				}
 
 				return _copyConstructor.Value;

@@ -12,7 +12,7 @@ namespace Durian.Analysis.SymbolContainers
 	/// <summary>
 	/// <see cref="ISymbolContainer"/> that handles <see cref="INamespaceOrTypeSymbol"/>s.
 	/// </summary>
-	public class NamespaceOrTypeContainer : GenericSymbolContainer<INamespaceOrTypeSymbol>
+	public class NamespaceOrTypeContainer : GenericSymbolContainer<INamespaceOrTypeSymbol, NamespaceOrTypeData>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="NamespaceOrTypeContainer"/> class.
@@ -48,7 +48,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Returns all namespaces contained within this container,
 		/// </summary>
-		public WritableSymbolContainer<INamespaceSymbol> GetNamespaces()
+		public WritableSymbolContainer<INamespaceSymbol, NamespaceData> GetNamespaces()
 		{
 			return Content
 				.Select(s => s.Symbol)
@@ -60,7 +60,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Returns all types contained within this container,
 		/// </summary>
-		public GenericSymbolContainer<INamedTypeSymbol> GetTypes()
+		public GenericSymbolContainer<INamedTypeSymbol, ITypeData> GetTypes()
 		{
 			return Content
 				.Select(s => s.Symbol)

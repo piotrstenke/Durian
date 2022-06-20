@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
@@ -15,6 +14,16 @@ namespace Durian.Analysis.SymbolContainers
 	/// </summary>
 	public interface ISymbolContainer : IEnumerable
 	{
+		/// <summary>
+		/// Number of elements in the container.
+		/// </summary>
+		int Count { get; }
+
+		/// <summary>
+		/// Order of elements in the container.
+		/// </summary>
+		ReturnOrder Order { get; }
+
 		/// <summary>
 		/// Returns the <see cref="IMemberData"/>s contained within this instance.
 		/// </summary>
@@ -29,5 +38,10 @@ namespace Durian.Analysis.SymbolContainers
 		/// Returns the <see cref="ISymbol"/>s contained within this instance.
 		/// </summary>
 		ImmutableArray<ISymbol> GetSymbols();
+
+		/// <summary>
+		/// Reverses the contents of the container.
+		/// </summary>
+		void Reverse();
 	}
 }

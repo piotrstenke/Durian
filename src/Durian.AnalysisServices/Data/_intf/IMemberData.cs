@@ -77,12 +77,12 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// All <see cref="INamespaceSymbol"/>s that contain the <see cref="Symbol"/>.
 		/// </summary>
-		WritableSymbolContainer<INamespaceSymbol> ContainingNamespaces { get; }
+		IWrittableSymbolContainer<INamespaceSymbol> ContainingNamespaces { get; }
 
 		/// <summary>
 		/// All <see cref="ITypeData"/>s that contain the <see cref="Symbol"/>.
 		/// </summary>
-		GenericSymbolContainer<INamedTypeSymbol> ContainingTypes { get; }
+		IWrittableSymbolContainer<INamedTypeSymbol> ContainingTypes { get; }
 
 		/// <summary>
 		/// All modifiers of the current symbol.

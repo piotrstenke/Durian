@@ -1177,6 +1177,15 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns a <see cref="TypeKeyword"/> representing a C# keyword associated with the <see cref="INamedTypeSymbol.EnumUnderlyingType"/> of the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to get the keyword associated with.</param>
+		public static TypeKeyword GetEnumUnderlayingTypeKeyword(this INamedTypeSymbol type)
+		{
+			return type.EnumUnderlyingType?.GetTypeKeywordKind() ?? default;
+		}
+
+		/// <summary>
 		/// Returns fully qualified name of the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the fully qualified name of.</param>
@@ -1332,11 +1341,11 @@ namespace Durian.Analysis.Extensions
 			if (method.Arity == 0)
 			{
 				return method.ContainingType
-					.GetAllMembers(method.GetVerbatimName())
+					.GetAllMembers(method.Name)
 					.FirstOrDefault(member => member switch
 					{
 						INamedTypeSymbol type => type.Arity == 0,
-						IMethodSymbol other => SymbolFacts.CanHideSymbol_Internal(method, other),
+						IMethodSymbol other => method.CanHideSymbol(other),
 						IPropertySymbol property => !property.IsIndexer,
 						IFieldSymbol or IFieldSymbol => true,
 						_ => false
@@ -1344,11 +1353,11 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return method.ContainingType
-				.GetAllMembers(method.GetVerbatimName())
+				.GetAllMembers(method.Name)
 				.FirstOrDefault(member => member switch
 				{
 					INamedTypeSymbol type => type.Arity == method.Arity,
-					IMethodSymbol other => SymbolFacts.CanHideSymbol_Internal(method, other),
+					IMethodSymbol other => method.CanHideSymbol(other),
 					_ => false
 				});
 		}
@@ -1835,6 +1844,120 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns collection of overloads of the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the overloads of.</param>
+		/// <param name="includeInherited">Determines whether to also include inherited overloads.</param>
+		/// <param name="ignoreArity">Determines whether to also include methods with different arity than the <paramref name="method"/>.</param>
+		public static IEnumerable<IMethodSymbol> GetOverloads(this IMethodSymbol method, bool includeInherited = true, bool ignoreArity = false)
+		{
+			if (method.MethodKind != MethodKind.Ordinary)
+			{
+				return Array.Empty<IMethodSymbol>();
+			}
+
+			IEnumerable<IMethodSymbol> overloads = method.ContainingType
+				.GetMembers(method.Name)
+				.OfType<IMethodSymbol>();
+
+			if(ignoreArity)
+			{
+				overloads = overloads.Where(m => method.Arity == m.Arity);
+			}
+
+			if(!includeInherited || !method.ContainingType.HasExplicitBaseType())
+			{
+				return overloads;
+			}
+
+			IMethodSymbol[] array = overloads.ToArray();
+
+			List<IMethodSymbol> inheritedMethods = new(array.Length * 4);
+			List<IMethodSymbol> overrides = new(inheritedMethods.Count);
+
+			inheritedMethods.Add(method);
+
+			if(method.IsOverride)
+			{
+				overrides.Add(method);
+			}
+
+			foreach (INamedTypeSymbol type in method.ContainingType.GetBaseTypes())
+			{
+				// These two values allow to skip methods that were added to the lists during this loop pass.
+
+				int currentOverrideLength = overrides.Count;
+				int currentRegistryLength = inheritedMethods.Count;
+
+				foreach (IMethodSymbol inheritedMethod in type.GetMembers(method.Name).OfType<IMethodSymbol>())
+				{
+					if (!CheckVirtuality(inheritedMethod, currentOverrideLength, out bool addOverride))
+					{
+						continue;
+					}
+
+					if(!CheckNewModifier(inheritedMethod, currentRegistryLength))
+					{
+						continue;
+					}
+
+					inheritedMethods.Add(inheritedMethod);
+
+					if(addOverride)
+					{
+						overrides.Add(inheritedMethod);
+					}
+				}
+			}
+
+			return overloads.Concat(inheritedMethods);
+
+			bool CheckVirtuality(IMethodSymbol inheritedMethod, int length, out bool addOverride)
+			{
+				Virtuality virtuality = inheritedMethod.GetVirtuality();
+
+				switch (virtuality)
+				{
+					case Virtuality.Sealed:
+						addOverride = true;
+						break;
+
+					case Virtuality.Abstract:
+					case Virtuality.Virtual:
+
+						for (int i = 0; i < length; i++)
+						{
+							if (SymbolEqualityComparer.Default.Equals(overrides[i], inheritedMethod))
+							{
+								addOverride = false;
+								return false;
+							}
+						}
+
+						break;
+				}
+
+				addOverride = false;
+				return true;
+			}
+
+			bool CheckNewModifier(IMethodSymbol inheritedMethod, int length)
+			{
+				for (int i = 0; i < length; i++)
+				{
+					IMethodSymbol registered = inheritedMethods[i];
+
+					if (registered.CanHideSymbol_Internal(inheritedMethod, ignoreArity))
+					{
+						return false;
+					}
+				}
+
+				return true;
+			}
+		}
+
+		/// <summary>
 		/// Returns the <see cref="ISymbol"/> overridden by the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the symbol overridden by.</param>
@@ -1963,7 +2086,7 @@ namespace Durian.Analysis.Extensions
 		/// <remarks>If the <paramref name="type"/> is not a <see langword="struct"/>, empty collection is returned.</remarks>
 		public static IEnumerable<ISymbol> GetReadOnlyMembers(this INamedTypeSymbol type)
 		{
-			if(type.TypeKind != TypeKind.Struct)
+			if (type.TypeKind != TypeKind.Struct)
 			{
 				return Array.Empty<ISymbol>();
 			}
@@ -2155,6 +2278,20 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns a <see cref="TypeKeyword"/> representing a C# keyword associated with the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to get the keyword associated with.</param>
+		public static TypeKeyword GetTypeKeywordKind(this ITypeSymbol type)
+		{
+			if (type is IDynamicTypeSymbol)
+			{
+				return TypeKeyword.Dynamic;
+			}
+
+			return type.SpecialType.GetKeyword();
+		}
+
+		/// <summary>
 		/// Returns a new <see cref="UsingDirectiveSyntax"/> build for the specified <paramref name="namespace"/> symbol.
 		/// </summary>
 		/// <param name="namespace"><see cref="INamespaceSymbol"/> to built the <see cref="UsingDirectiveSyntax"/> from.</param>
@@ -2216,17 +2353,22 @@ namespace Durian.Analysis.Extensions
 		/// <param name="symbol"><see cref="ISymbol"/> to get the virtuality of.</param>
 		public static Virtuality GetVirtuality(this ISymbol symbol)
 		{
-			if(symbol.IsAbstract)
+			if (symbol.IsAbstract)
 			{
 				return Virtuality.Abstract;
 			}
 
-			if(symbol.IsSealed)
+			if(symbol.IsOverride)
 			{
-				return Virtuality.Sealed;
+				if (symbol.IsSealed)
+				{
+					return Virtuality.Sealed;
+				}
+
+				return Virtuality.Virtual;
 			}
 
-			if(symbol.IsVirtual)
+			if (symbol.IsVirtual)
 			{
 				return Virtuality.Virtual;
 			}
@@ -2252,12 +2394,12 @@ namespace Durian.Analysis.Extensions
 
 				default:
 
-					if(type is null)
+					if (type is null)
 					{
 						throw new ArgumentNullException(nameof(type));
 					}
 
-					if(compilation is null)
+					if (compilation is null)
 					{
 						throw new ArgumentNullException(nameof(compilation));
 					}
@@ -2482,12 +2624,12 @@ namespace Durian.Analysis.Extensions
 
 				default:
 
-					if(symbol is null)
+					if (symbol is null)
 					{
 						throw new ArgumentNullException(nameof(symbol));
 					}
 
-					if(compilation is null)
+					if (compilation is null)
 					{
 						throw new ArgumentNullException(nameof(compilation));
 					}
@@ -2548,27 +2690,55 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="namespace"/>.
+		/// </summary>
+		/// <param name="namespace"><see cref="INamespaceSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<INamespaceSymbol, TData> ToDataOrSymbo<TData>(this INamespaceSymbol @namespace, ICompilationData? compilation = default) where TData : class, IMemberData
+		{
+			if (@namespace is null)
+			{
+				throw new ArgumentNullException(nameof(@namespace));
+			}
+
+			return @namespace.ToDataOrSymbolInternal<TData>(compilation);
+		}
+
+		/// <summary>
 		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static ISymbolOrMember ToDataOrSymbol(this ISymbol symbol, ICompilationData? compilation = default)
+		public static ISymbolOrMember<ISymbol> ToDataOrSymbol(this ISymbol symbol, ICompilationData? compilation = default)
+		{
+			return symbol.ToDataOrSymbol<IMemberData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<ISymbol, TData> ToDataOrSymbol<TData>(this ISymbol symbol, ICompilationData? compilation = default) where TData : class, IMemberData
 		{
 			return symbol switch
 			{
-				ITypeParameterSymbol typeParameter => typeParameter.ToDataOrSymbol(compilation),
-				INamedTypeSymbol type => type.ToDataOrSymbol(compilation),
-				IMethodSymbol method => method.ToDataOrSymbol(compilation),
-				IPropertySymbol property => property.ToDataOrSymbol(compilation),
-				IFieldSymbol field => field.ToDataOrSymbol(compilation),
-				IEventSymbol @event => @event.ToDataOrSymbol(compilation),
-				IParameterSymbol parameter => parameter.ToDataOrSymbol(compilation),
-				INamespaceSymbol @namespace => @namespace.ToDataOrSymbol(compilation),
-				ILocalSymbol local => local.ToDataOrSymbol(compilation),
-				ITypeSymbol unknownType => new SymbolOrMemberWrapper<ITypeSymbol, ITypeData>(unknownType, compilation),
+				ITypeParameterSymbol typeParameter => typeParameter.ToDataOrSymbol<TData>(compilation),
+				INamedTypeSymbol type => type.ToDataOrSymbol<TData>(compilation),
+				IMethodSymbol method => method.ToDataOrSymbol<TData>(compilation),
+				IPropertySymbol property => property.ToDataOrSymbol<TData>(compilation),
+				IFieldSymbol field => field.ToDataOrSymbol<TData>(compilation),
+				IEventSymbol @event => @event.ToDataOrSymbol<TData>(compilation),
+				IParameterSymbol parameter => parameter.ToDataOrSymbol<TData>(compilation),
+				INamespaceSymbol @namespace => @namespace.ToDataOrSymbol<TData>(compilation),
+				ILocalSymbol local => local.ToDataOrSymbol<TData>(compilation),
+				ITypeSymbol unknownType => new SymbolOrMemberWrapper<ITypeSymbol, TData>(unknownType, compilation),
 				null => throw new ArgumentNullException(nameof(symbol)),
-				_ => new SymbolOrMemberWrapper<ISymbol, IMemberData>(symbol, compilation)
+				_ => new SymbolOrMemberWrapper<ISymbol, TData>(symbol, compilation)
 			};
 		}
 
@@ -2585,7 +2755,24 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			return type.ToDataOrSymbolInternal(compilation);
+			return type.ToDataOrSymbolInternal<IMemberData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<ITypeSymbol, TData> ToDataOrSymbol<TData>(this ITypeSymbol type, ICompilationData? compilation = default) where TData : class, IMemberData
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.ToDataOrSymbolInternal<TData>(compilation);
 		}
 
 		/// <summary>
@@ -2601,7 +2788,24 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(symbol));
 			}
 
-			return symbol.ToDataOrSymbolInternal(compilation);
+			return symbol.ToDataOrSymbolInternal<IMemberData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="INamespaceOrTypeSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<INamespaceOrTypeSymbol, TData> ToDataOrSymbol<TData>(this INamespaceOrTypeSymbol symbol, ICompilationData? compilation = default) where TData : class, IMemberData
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return symbol.ToDataOrSymbolInternal<TData>(compilation);
 		}
 
 		/// <summary>
@@ -2617,7 +2821,24 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(parameter));
 			}
 
-			return parameter.ToDataOrSymbolInternal(compilation);
+			return parameter.ToDataOrSymbolInternal<IMemberData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="parameter"/>.
+		/// </summary>
+		/// <param name="parameter"><see cref="IParameterSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="parameter"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<IParameterSymbol, TData> ToDataOrSymbol<TData>(this IParameterSymbol parameter, ICompilationData? compilation = default) where TData : class, IMemberData
+		{
+			if (parameter is null)
+			{
+				throw new ArgumentNullException(nameof(parameter));
+			}
+
+			return parameter.ToDataOrSymbolInternal<TData>(compilation);
 		}
 
 		/// <summary>
@@ -2633,7 +2854,24 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(method));
 			}
 
-			return method.ToDataOrSymbolInternal(compilation);
+			return method.ToDataOrSymbolInternal<IMethodData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<IMethodSymbol, TData> ToDataOrSymbol<TData>(this IMethodSymbol method, ICompilationData? compilation = default) where TData : class, IMemberData
+		{
+			if (method is null)
+			{
+				throw new ArgumentNullException(nameof(method));
+			}
+
+			return method.ToDataOrSymbolInternal<TData>(compilation);
 		}
 
 		/// <summary>
@@ -2649,7 +2887,24 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(typeParameter));
 			}
 
-			return typeParameter.ToDataOrSymbolInternal(compilation);
+			return typeParameter.ToDataOrSymbolInternal<IMemberData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="typeParameter"/>.
+		/// </summary>
+		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="typeParameter"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<ITypeParameterSymbol, TData> ToDataOrSymbol<TData>(this ITypeParameterSymbol typeParameter, ICompilationData? compilation = default) where TData : class, IMemberData
+		{
+			if (typeParameter is null)
+			{
+				throw new ArgumentNullException(nameof(typeParameter));
+			}
+
+			return typeParameter.ToDataOrSymbolInternal<TData>(compilation);
 		}
 
 		/// <summary>
@@ -2665,7 +2920,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(@namespace));
 			}
 
-			return @namespace.ToDataOrSymbolInternal(compilation);
+			return @namespace.ToDataOrSymbolInternal<IMemberData>(compilation);
 		}
 
 		/// <summary>
@@ -2681,7 +2936,24 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(@event));
 			}
 
-			return @event.ToDataOrSymbolInternal(compilation);
+			return @event.ToDataOrSymbolInternal<IMemberData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="event"/>.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="event"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<IEventSymbol, TData> ToDataOrSymbol<TData>(this IEventSymbol @event, ICompilationData? compilation = default) where TData : class, IMemberData
+		{
+			if (@event is null)
+			{
+				throw new ArgumentNullException(nameof(@event));
+			}
+
+			return @event.ToDataOrSymbolInternal<TData>(compilation);
 		}
 
 		/// <summary>
@@ -2697,7 +2969,62 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(field));
 			}
 
-			return field.ToDataOrSymbolInternal(compilation);
+			return field.ToDataOrSymbolInternal<IMemberData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><typeparamref name="TSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TSymbol">Type of target <see cref="ISymbol"/>.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<TSymbol> ToDataOrSymbol<TSymbol>(this TSymbol symbol, ICompilationData? compilation = default)
+			where TSymbol : class, ISymbol
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return symbol.ToDataOrSymbolInternal<TSymbol>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><typeparamref name="TSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TSymbol">Type of target <see cref="ISymbol"/>.</typeparam>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<TSymbol, TData> ToDataOrSymbol<TSymbol, TData>(this TSymbol symbol, ICompilationData? compilation = default)
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData
+		{
+			if (symbol is null)
+			{
+				throw new ArgumentNullException(nameof(symbol));
+			}
+
+			return symbol.ToDataOrSymbolInternal<TSymbol, TData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="field"/>.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<IFieldSymbol, TData> ToDataOrSymbol<TData>(this IFieldSymbol field, ICompilationData? compilation = default) where TData : class, IMemberData
+		{
+			if (field is null)
+			{
+				throw new ArgumentNullException(nameof(field));
+			}
+
+			return field.ToDataOrSymbolInternal<TData>(compilation);
 		}
 
 		/// <summary>
@@ -2713,7 +3040,24 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(property));
 			}
 
-			return property.ToDataOrSymbolInternal(compilation);
+			return property.ToDataOrSymbolInternal<IMemberData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="property"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<IPropertySymbol, TData> ToDataOrSymbol<TData>(this IPropertySymbol property, ICompilationData? compilation = default) where TData : class, IMemberData
+		{
+			if (property is null)
+			{
+				throw new ArgumentNullException(nameof(property));
+			}
+
+			return property.ToDataOrSymbolInternal<TData>(compilation);
 		}
 
 		/// <summary>
@@ -2729,7 +3073,24 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(local));
 			}
 
-			return local.ToDataOrSymbolInternal(compilation);
+			return local.ToDataOrSymbolInternal<IMemberData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="local"/>.
+		/// </summary>
+		/// <param name="local"><see cref="ILocalSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="local"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<ILocalSymbol, TData> ToDataOrSymbol<TData>(this ILocalSymbol local, ICompilationData? compilation = default) where TData : class, IMemberData
+		{
+			if (local is null)
+			{
+				throw new ArgumentNullException(nameof(local));
+			}
+
+			return local.ToDataOrSymbolInternal<TData>(compilation);
 		}
 
 		/// <summary>
@@ -2745,7 +3106,24 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(type));
 			}
 
-			return type.ToDataOrSymbolInternal(compilation);
+			return type.ToDataOrSymbolInternal<IMemberData>(compilation);
+		}
+
+		/// <summary>
+		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <typeparam name="TData">Type of returned data.</typeparam>
+		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
+		public static ISymbolOrMember<INamedTypeSymbol, TData> ToDataOrSymbol<TData>(this INamedTypeSymbol type, ICompilationData? compilation = default) where TData : class, IMemberData
+		{
+			if (type is null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			return type.ToDataOrSymbolInternal<TData>(compilation);
 		}
 
 		/// <summary>
@@ -2772,135 +3150,159 @@ namespace Durian.Analysis.Extensions
 		}
 
 		[return: NotNullIfNotNull("symbol")]
-		internal static SymbolOrMemberWrapper<ISymbol, IMemberData>? ToDataOrSymbolInternal(this ISymbol? symbol, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<TSymbol, TData>? ToDataOrSymbolInternal<TSymbol, TData>(this TSymbol? symbol, ICompilationData? compilation)
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData
 		{
 			if (symbol is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<ISymbol, IMemberData>(symbol, compilation);
+			return new SymbolOrMemberWrapper<TSymbol, TData>(symbol, compilation);
+		}
+
+		[return: NotNullIfNotNull("symbol")]
+		internal static SymbolOrMemberWrapper<TSymbol, IMemberData>? ToDataOrSymbolInternal<TSymbol>(this TSymbol? symbol, ICompilationData? compilation) where TSymbol : class, ISymbol
+		{
+			if (symbol is null)
+			{
+				return null;
+			}
+
+			return new SymbolOrMemberWrapper<TSymbol, IMemberData>(symbol, compilation);
+		}
+
+		[return: NotNullIfNotNull("symbol")]
+		internal static SymbolOrMemberWrapper<ISymbol, TData>? ToDataOrSymbolInternal<TData>(this ISymbol? symbol, ICompilationData? compilation) where TData : class, IMemberData
+		{
+			if (symbol is null)
+			{
+				return null;
+			}
+
+			return new SymbolOrMemberWrapper<ISymbol, TData>(symbol, compilation);
 		}
 
 		[return: NotNullIfNotNull("type")]
-		internal static SymbolOrMemberWrapper<ITypeSymbol, IMemberData>? ToDataOrSymbolInternal(this ITypeSymbol type, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<ITypeSymbol, TData>? ToDataOrSymbolInternal<TData>(this ITypeSymbol type, ICompilationData? compilation) where TData : class, IMemberData
 		{
 			if (type is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<ITypeSymbol, IMemberData>(type, compilation);
+			return new SymbolOrMemberWrapper<ITypeSymbol, TData>(type, compilation);
 		}
 
 		[return: NotNullIfNotNull("symbol")]
-		internal static SymbolOrMemberWrapper<INamespaceOrTypeSymbol, IMemberData>? ToDataOrSymbolInternal(this INamespaceOrTypeSymbol? symbol, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<INamespaceOrTypeSymbol, TData>? ToDataOrSymbolInternal<TData>(this INamespaceOrTypeSymbol? symbol, ICompilationData? compilation) where TData : class, IMemberData
 		{
 			if (symbol is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<INamespaceOrTypeSymbol, IMemberData>(symbol, compilation);
+			return new SymbolOrMemberWrapper<INamespaceOrTypeSymbol, TData>(symbol, compilation);
 		}
 
 		[return: NotNullIfNotNull("parameter")]
-		internal static SymbolOrMemberWrapper<IParameterSymbol, IMemberData>? ToDataOrSymbolInternal(this IParameterSymbol? parameter, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<IParameterSymbol, TData>? ToDataOrSymbolInternal<TData>(this IParameterSymbol? parameter, ICompilationData? compilation) where TData : class, IMemberData
 		{
 			if (parameter is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<IParameterSymbol, IMemberData>(parameter, compilation);
+			return new SymbolOrMemberWrapper<IParameterSymbol, TData>(parameter, compilation);
 		}
 
 		[return: NotNullIfNotNull("method")]
-		internal static SymbolOrMemberWrapper<IMethodSymbol, IMethodData>? ToDataOrSymbolInternal(this IMethodSymbol? method, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<IMethodSymbol, TData>? ToDataOrSymbolInternal<TData>(this IMethodSymbol? method, ICompilationData? compilation) where TData : class, IMemberData
 		{
 			if (method is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<IMethodSymbol, IMethodData>(method, compilation);
+			return new SymbolOrMemberWrapper<IMethodSymbol, TData>(method, compilation);
 		}
 
 		[return: NotNullIfNotNull("typeParameter")]
-		internal static SymbolOrMemberWrapper<ITypeParameterSymbol, IMemberData>? ToDataOrSymbolInternal(this ITypeParameterSymbol? typeParameter, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<ITypeParameterSymbol, TData>? ToDataOrSymbolInternal<TData>(this ITypeParameterSymbol? typeParameter, ICompilationData? compilation) where TData : class, IMemberData
 		{
 			if (typeParameter is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<ITypeParameterSymbol, IMemberData>(typeParameter, compilation);
+			return new SymbolOrMemberWrapper<ITypeParameterSymbol, TData>(typeParameter, compilation);
 		}
 
 		[return: NotNullIfNotNull("namespace")]
-		internal static SymbolOrMemberWrapper<INamespaceSymbol, IMemberData>? ToDataOrSymbolInternal(this INamespaceSymbol? @namespace, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<INamespaceSymbol, TData>? ToDataOrSymbolInternal<TData>(this INamespaceSymbol? @namespace, ICompilationData? compilation) where TData : class, IMemberData
 		{
 			if (@namespace is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<INamespaceSymbol, IMemberData>(@namespace, compilation);
+			return new SymbolOrMemberWrapper<INamespaceSymbol, TData>(@namespace, compilation);
 		}
 
 		[return: NotNullIfNotNull("event")]
-		internal static SymbolOrMemberWrapper<IEventSymbol, IMemberData>? ToDataOrSymbolInternal(this IEventSymbol? @event, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<IEventSymbol, TData>? ToDataOrSymbolInternal<TData>(this IEventSymbol? @event, ICompilationData? compilation) where TData : class, IMemberData
 		{
 			if (@event is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<IEventSymbol, IMemberData>(@event, compilation);
+			return new SymbolOrMemberWrapper<IEventSymbol, TData>(@event, compilation);
 		}
 
 		[return: NotNullIfNotNull("field")]
-		internal static SymbolOrMemberWrapper<IFieldSymbol, IMemberData>? ToDataOrSymbolInternal(this IFieldSymbol? field, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<IFieldSymbol, TData>? ToDataOrSymbolInternal<TData>(this IFieldSymbol? field, ICompilationData? compilation) where TData : class, IMemberData
 		{
 			if (field is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<IFieldSymbol, IMemberData>(field, compilation);
+			return new SymbolOrMemberWrapper<IFieldSymbol, TData>(field, compilation);
 		}
 
 		[return: NotNullIfNotNull("property")]
-		internal static SymbolOrMemberWrapper<IPropertySymbol, IMemberData>? ToDataOrSymbolInternal(this IPropertySymbol? property, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<IPropertySymbol, TData>? ToDataOrSymbolInternal<TData>(this IPropertySymbol? property, ICompilationData? compilation) where TData : class, IMemberData
 		{
 			if (property is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<IPropertySymbol, IMemberData>(property, compilation);
+			return new SymbolOrMemberWrapper<IPropertySymbol, TData>(property, compilation);
 		}
 
 		[return: NotNullIfNotNull("local")]
-		internal static SymbolOrMemberWrapper<ILocalSymbol, IMemberData>? ToDataOrSymbolInternal(this ILocalSymbol? local, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<ILocalSymbol, TData>? ToDataOrSymbolInternal<TData>(this ILocalSymbol? local, ICompilationData? compilation) where TData : class, IMemberData
 		{
 			if (local is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<ILocalSymbol, IMemberData>(local, compilation);
+			return new SymbolOrMemberWrapper<ILocalSymbol, TData>(local, compilation);
 		}
 
 		[return: NotNullIfNotNull("type")]
-		internal static SymbolOrMemberWrapper<INamedTypeSymbol, IMemberData>? ToDataOrSymbolInternal(this INamedTypeSymbol? type, ICompilationData? compilation)
+		internal static SymbolOrMemberWrapper<INamedTypeSymbol, TData>? ToDataOrSymbolInternal<TData>(this INamedTypeSymbol? type, ICompilationData? compilation) where TData : class, IMemberData
 		{
 			if (type is null)
 			{
 				return null;
 			}
 
-			return new SymbolOrMemberWrapper<INamedTypeSymbol, IMemberData>(type, compilation);
+			return new SymbolOrMemberWrapper<INamedTypeSymbol, TData>(type, compilation);
 		}
 
 		private static void AddAccessibilityModifiers(List<string> modifiers, Accessibility accessibility)

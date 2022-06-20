@@ -103,12 +103,12 @@ namespace Durian.Analysis.Data
 			/// <summary>
 			/// All containing types of the current symbol.
 			/// </summary>
-			public GenericSymbolContainer<INamedTypeSymbol>? ContainingTypes { get; set; }
+			public IWrittableSymbolContainer<INamedTypeSymbol>? ContainingTypes { get; set; }
 
 			/// <summary>
 			/// All containing namespaces of the current symbol.
 			/// </summary>
-			public WritableSymbolContainer<INamespaceSymbol>? ContainingNamespaces { get; set; }
+			public IWrittableSymbolContainer<INamespaceSymbol>? ContainingNamespaces { get; set; }
 
 			/// <summary>
 			/// All attributes if the current symbol.
@@ -129,8 +129,8 @@ namespace Durian.Analysis.Data
 		}
 
 		private ImmutableArray<AttributeData> _attributes;
-		private WritableSymbolContainer<INamespaceSymbol>? _containingNamespaces;
-		private GenericSymbolContainer<INamedTypeSymbol>? _containingTypes;
+		private IWrittableSymbolContainer<INamespaceSymbol>? _containingNamespaces;
+		private IWrittableSymbolContainer<INamedTypeSymbol>? _containingTypes;
 		private bool? _isNew;
 		private bool? _isPartial;
 		private bool? _isUnsafe;
@@ -192,39 +192,32 @@ namespace Durian.Analysis.Data
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			if (properties is null)
-			{
-				SemanticModel = compilation.Compilation.GetSemanticModel(declaration, out ISymbol? symbol);
-				Symbol = symbol;
+			Declaration = declaration;
+			ParentCompilation = compilation;
 
-				Declaration = declaration;
-				ParentCompilation = compilation;
+			Properties? props = properties ?? GetDefaultProperties();
+
+			if (props is null)
+			{
+				SemanticModel = ParentCompilation.Compilation.GetSemanticModel(Declaration);
+				Symbol = SemanticModel.GetSymbol(Declaration);
+
 				Name = Symbol.GetVerbatimName();
 				Virtuality = Symbol.GetVirtuality();
 			}
 			else
 			{
-				SemanticModel = properties.SemanticModel ?? compilation.Compilation.GetSemanticModel(declaration);
-				Symbol = properties.Symbol ?? SemanticModel.GetSymbol(declaration);
+				SemanticModel = props.SemanticModel ?? ParentCompilation.Compilation.GetSemanticModel(Declaration);
+				Symbol = props.Symbol ?? SemanticModel.GetSymbol(Declaration);
 
-				Declaration = declaration;
-				ParentCompilation = compilation;
-				Name = properties.Name ?? Symbol.GetVerbatimName();
-				Virtuality = properties.Virtuality ?? Symbol.GetVirtuality();
+				Name = props.Name ?? Symbol.GetVerbatimName();
+				Virtuality = props.Virtuality ?? Symbol.GetVirtuality();
 
-				_attributes = properties.Attributes;
-				_containingNamespaces = properties.ContainingNamespaces;
-				_containingTypes = properties.ContainingTypes;
-				_isNew = properties.IsNew;
-				_isPartial = properties.IsPartial;
-				_isUnsafe = properties.IsUnsafe;
-				_location = properties.Location;
-				_modifiers = properties.Modifiers;
-				_hiddenMember = properties.HiddenMember;
+				SetPropertiesCore(props);
 			}
 		}
 
-		internal MemberData(ISymbol symbol, ICompilationData compilation)
+		internal MemberData(ISymbol symbol, ICompilationData compilation, bool initDefaultProperties = false)
 		{
 			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not SyntaxNode decl)
 			{
@@ -235,11 +228,23 @@ namespace Durian.Analysis.Data
 			Declaration = decl;
 			SemanticModel = compilation.Compilation.GetSemanticModel(decl.SyntaxTree);
 			ParentCompilation = compilation;
-			Name = Symbol.GetVerbatimName();
+
+			if (initDefaultProperties && GetDefaultProperties() is Properties properties)
+			{
+				Name = properties.Name ?? Symbol.GetVerbatimName();
+				Virtuality = properties.Virtuality ?? Symbol.GetVirtuality();
+
+				SetPropertiesCore(properties);
+			}
+			else
+			{
+				Name = Symbol.GetVerbatimName();
+				Virtuality = Symbol.GetVirtuality();
+			}
 		}
 
 		/// <inheritdoc/>
-		public virtual ImmutableArray<AttributeData> Attributes
+		public ImmutableArray<AttributeData> Attributes
 		{
 			get
 			{
@@ -253,7 +258,7 @@ namespace Durian.Analysis.Data
 		public ISymbolOrMember<INamespaceSymbol> RootNamespace => ContainingNamespaces.First();
 
 		/// <inheritdoc/>
-		public WritableSymbolContainer<INamespaceSymbol> ContainingNamespaces
+		public IWrittableSymbolContainer<INamespaceSymbol> ContainingNamespaces
 		{
 			get
 			{
@@ -262,7 +267,7 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc/>
-		public GenericSymbolContainer<INamedTypeSymbol> ContainingTypes
+		public IWrittableSymbolContainer<INamedTypeSymbol> ContainingTypes
 		{
 			get
 			{
@@ -277,7 +282,7 @@ namespace Durian.Analysis.Data
 			{
 				if(_hiddenMember.IsDefault)
 				{
-					_hiddenMember = Symbol.GetHiddenSymbol().ToDataOrSymbolInternal(ParentCompilation);
+					_hiddenMember = Symbol.GetHiddenSymbol().ToDataOrSymbolInternal<IMemberData>(ParentCompilation);
 				}
 
 				return _hiddenMember.Value;
@@ -291,6 +296,28 @@ namespace Durian.Analysis.Data
 			{
 				return _modifiers ??= Symbol.GetModifiers();
 			}
+		}
+
+		/// <summary>
+		/// Provides default <see cref="Properties"/> when no other were specified by the user.
+		/// </summary>
+		protected virtual Properties? GetDefaultProperties()
+		{
+			// Do nothing by default.
+			return null;
+		}
+
+		private void SetPropertiesCore(Properties properties)
+		{
+			_attributes = properties.Attributes;
+			_containingNamespaces = properties.ContainingNamespaces;
+			_containingTypes = properties.ContainingTypes;
+			_isNew = properties.IsNew;
+			_isPartial = properties.IsPartial;
+			_isUnsafe = properties.IsUnsafe;
+			_location = properties.Location;
+			_modifiers = properties.Modifiers;
+			_hiddenMember = properties.HiddenMember;
 		}
 
 		private protected static InvalidOperationException Exc_NoSyntaxReference(ISymbol symbol)

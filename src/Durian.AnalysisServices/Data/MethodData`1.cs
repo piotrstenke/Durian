@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Extensions;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,9 +19,37 @@ namespace Durian.Analysis.Data
 	/// <typeparam name="TDeclaration">Type of method declaration this class represents.</typeparam>
 	public abstract class MethodData<TDeclaration> : MemberData, IMethodData where TDeclaration : CSharpSyntaxNode
 	{
+		/// <summary>
+		/// Contains optional data that can be passed to a <see cref="MethodData{TDeclaration}"/>.
+		/// </summary>
+		public new class Properties : Properties<IMethodSymbol>
+		{
+			/// <inheritdoc cref="MethodData{TDeclaration}.Parameters"/>
+			public ISymbolContainer<IParameterSymbol, ParameterData>? Parameters { get; set; }
+
+			/// <inheritdoc cref="MethodData{TDeclaration}.TypeParameters"/>
+			public ISymbolContainer<ITypeParameterSymbol, >? TypeParameters { get; set; }
+
+			/// <inheritdoc cref="MethodData{TDeclaration}.OverridenMethods"/>
+			public ISymbolContainer<IMethodSymbol>? OverridenMethods { get; set; }
+
+			/// <inheritdoc cref="MethodData{TDeclaration}.Overloads"/>
+			public ISymbolContainer<IMethodSymbol>? Overloads { get; set; }
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+		}
+
 		private MethodStyle? _bodyType;
-		private ImmutableArray<ISymbolOrMember<ITypeParameterSymbol>> _typeParameters;
-		private ImmutableArray<ISymbolOrMember<IParameterSymbol>> _parameters;
+		private ISymbolContainer<IParameterSymbol>? _parameters;
+		private ISymbolContainer<ITypeSymbol>? _typeArguments;
+		private ISymbolContainer<ITypeParameterSymbol>? _typeParameters;
+		private ISymbolContainer<IMethodSymbol>? _overridenMethods;
+		private ISymbolContainer<IMethodSymbol>? _overloads;
 
 		/// <inheritdoc/>
 		public virtual CSharpSyntaxNode? Body
@@ -45,22 +74,6 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		public ImmutableArray<ISymbolOrMember<ITypeParameterSymbol>> TypeParameters
-		{
-			get
-			{
-
-			}
-		}
-
-		public ImmutableArray<ISymbolOrMember<IParameterSymbol>> Parameters
-		{
-			get
-			{
-
-			}
-		}
-
 		/// <summary>
 		/// Target <see cref="BaseMethodDeclarationSyntax"/>.
 		/// </summary>
@@ -76,6 +89,15 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		protected CSharpSyntaxNode? BodyRaw { get; set; }
 
+		/// <inheritdoc/>
+		public ISymbolContainer<ITypeParameterSymbol, TypeParameterData>? TypeParameters
+		{
+			get
+			{
+				return _typeParameters ??= Symbol.TypeParameters.ToContainer(ParentCompilation);
+			}
+		}
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MethodData{TDeclaration}"/> class.
 		/// </summary>
@@ -87,6 +109,10 @@ namespace Durian.Analysis.Data
 		/// </exception>
 		protected MethodData(TDeclaration declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
+			if(properties is not null)
+			{
+
+			}
 		}
 
 		internal MethodData(IMethodSymbol symbol, ICompilationData compilation) : base(symbol, compilation)

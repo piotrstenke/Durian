@@ -23,7 +23,7 @@ namespace Durian.Analysis.Data
 			public GenericConstraint? Constraints { get; set; }
 
 			/// <inheritdoc cref="TypeParameterData.ConstraintClause"/>
-			public TypeParameterConstraintClauseSyntax? ConstraintClause { get; set; }
+			public DefaultedValue<TypeParameterConstraintClauseSyntax> ConstraintClause { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -64,9 +64,9 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-				if(!_constraintClause.IsDefault)
+				if(_constraintClause.IsDefault)
 				{
-					_constraintClause.SetValue(Declaration.GetConstraintClause());
+					_constraintClause = Declaration.GetConstraintClause();
 				}
 
 				return _constraintClause.Value;

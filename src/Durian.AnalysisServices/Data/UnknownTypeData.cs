@@ -11,7 +11,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with an unknown kind of type declaration.
 	/// </summary>
-	public class UnknownTypeData : TypeData<BaseTypeDeclarationSyntax>
+	public class UnknownTypeData : TypeData<TypeDeclarationSyntax>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="UnknownTypeData"/> class.
@@ -22,7 +22,7 @@ namespace Durian.Analysis.Data
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
-		public UnknownTypeData(BaseTypeDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
+		public UnknownTypeData(TypeDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
 		}
 
