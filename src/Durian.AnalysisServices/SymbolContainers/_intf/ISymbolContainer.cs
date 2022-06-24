@@ -12,7 +12,7 @@ namespace Durian.Analysis.SymbolContainers
 	/// <summary>
 	/// Provides methods for returning symbol representations using either <see cref="ISymbol"/>s or <see cref="IMemberData"/>s.
 	/// </summary>
-	public interface ISymbolContainer : IEnumerable
+	public interface ISymbolContainer : IEnumerable, ISealable
 	{
 		/// <summary>
 		/// Number of elements in the container.
@@ -22,7 +22,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Order of elements in the container.
 		/// </summary>
-		ReturnOrder Order { get; }
+		ReturnOrder Order { get; set; }
 
 		/// <summary>
 		/// Returns the <see cref="IMemberData"/>s contained within this instance.

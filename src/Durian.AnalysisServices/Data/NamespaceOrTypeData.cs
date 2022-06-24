@@ -176,5 +176,15 @@ namespace Durian.Analysis.Data
 
 			return ImmutableArray.Create(_partialDeclarations);
 		}
+
+		public ITypeData ToTypeData()
+		{
+
+		}
+
+		public NamespaceData ToNamespaceData()
+		{
+			return new()
+		}
 	}
 }

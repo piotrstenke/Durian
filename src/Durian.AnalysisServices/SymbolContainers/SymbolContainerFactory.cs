@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
+using System.Linq;
 
 namespace Durian.Analysis.SymbolContainers
 {
@@ -17,22 +18,30 @@ namespace Durian.Analysis.SymbolContainers
 	/// </summary>
 	public static class SymbolContainerFactory
 	{
-		private class EmptySymbolContainer<T> : ISymbolContainer<T> where T : class, ISymbol
+		private class EmptySymbolContainer<TSymbol, TData> : ISymbolContainer<TSymbol, TData>
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData
 		{
-			private readonly List<ISymbolOrMember<T>> _list = new();
+			private readonly List<ISymbolOrMember<TSymbol, TData>> _list = new();
 
-			public static EmptySymbolContainer<T> Instance { get; } = new();
+			public static EmptySymbolContainer<TSymbol, TData> Instance { get; } = new();
 
 			public int Count => 0;
 			public ReturnOrder Order => default;
 			public ICompilationData? ParentCompilation => null;
 
-			public ISymbolOrMember<T> First()
+			bool ISealable.IsSealed => false;
+
+			bool ISealable.CanBeSealed => false;
+
+			bool ISealable.CanBeUnsealed => false;
+
+			public ISymbolOrMember<TSymbol, TData> First()
 			{
 				throw Exc_EmptySymbolContainer();
 			}
 
-			public ISymbolOrMember<T> First(ReturnOrder order)
+			public ISymbolOrMember<TSymbol, TData> First(ReturnOrder order)
 			{
 				throw Exc_EmptySymbolContainer();
 			}
@@ -42,7 +51,7 @@ namespace Durian.Analysis.SymbolContainers
 				return ImmutableArray<IMemberData>.Empty;
 			}
 
-			public IEnumerator<ISymbolOrMember<T>> GetEnumerator()
+			public IEnumerator<ISymbolOrMember<TSymbol, TData>> GetEnumerator()
 			{
 				return _list.GetEnumerator();
 			}
@@ -57,12 +66,12 @@ namespace Durian.Analysis.SymbolContainers
 				return ImmutableArray<ISymbol>.Empty;
 			}
 
-			public ISymbolOrMember<T> Last()
+			public ISymbolOrMember<TSymbol, TData> Last()
 			{
 				throw Exc_EmptySymbolContainer();
 			}
 
-			public ISymbolOrMember<T> Last(ReturnOrder order)
+			public ISymbolOrMember<TSymbol, TData> Last(ReturnOrder order)
 			{
 				throw Exc_EmptySymbolContainer();
 			}
@@ -76,15 +85,73 @@ namespace Durian.Analysis.SymbolContainers
 			{
 				return GetEnumerator();
 			}
+
+			void ISealable.Seal()
+			{
+				// Do nothing.
+			}
+
+			void ISealable.Unseal()
+			{
+				// Do nothing.
+			}
+		}
+
+		private class GenericWrapper<TSymbol, TData> : ISymbolOrMember<TSymbol, TData>
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData
+		{
+			private readonly ISymbolOrMember _underlaying;
+
+			/// <inheritdoc/>
+			public TSymbol Symbol => (_underlaying.Symbol as TSymbol)!;
+
+			/// <inheritdoc/>
+			public bool HasMember => _underlaying.HasMember;
+
+			/// <inheritdoc/>
+			public TData Member => (_underlaying.Member as TData)!;
+
+			ISymbol ISymbolOrMember.Symbol => _underlaying.Symbol;
+			IMemberData ISymbolOrMember.Member => _underlaying.Member;
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="GenericWrapper{TSymbol, TData}"/> class.
+			/// </summary>
+			/// <param name="underlaying">Underlaying <see cref="ISymbolOrMember"/>.</param>
+			public GenericWrapper(ISymbolOrMember underlaying)
+			{
+				_underlaying = underlaying;
+			}
 		}
 
 		/// <summary>
 		/// Returns a shared instance of an empty container.
 		/// </summary>
-		/// <typeparam name="T">Type of symbols stored in the container.</typeparam>
-		public static ISymbolContainer<T> Empty<T>() where T : class, ISymbol
+		public static ISymbolContainer<ISymbol, IMemberData> Empty()
 		{
-			return EmptySymbolContainer<T>.Instance;
+			return EmptySymbolContainer<ISymbol, IMemberData>.Instance;
+		}
+
+		/// <summary>
+		/// Returns a shared instance of an empty container.
+		/// </summary>
+		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/>s stored in the container.</typeparam>
+		public static ISymbolContainer<TSymbol, IMemberData> Empty<TSymbol>() where TSymbol : class, ISymbol
+		{
+			return EmptySymbolContainer<TSymbol, IMemberData>.Instance;
+		}
+
+		/// <summary>
+		/// Returns a shared instance of an empty container.
+		/// </summary>
+		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/>s stored in the container.</typeparam>
+		/// <typeparam name="TData">Type of <see cref="IMemberData"/>s stored in the container.</typeparam>
+		public static ISymbolContainer<TSymbol, TData> Empty<TSymbol, TData>()
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData
+		{
+			return EmptySymbolContainer<TSymbol, TData>.Instance;
 		}
 
 		/// <summary>
@@ -92,31 +159,31 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IMethodSymbol, AccessorData> ForAccessors()
 		{
-			return new SymbolContainer<IMethodSymbol, AccessorData>();
+			return new();
 		}
 
 		/// <summary>
 		/// Returns a new <see cref="SymbolContainer{TSymbol, TData}"/> for any member kind.
 		/// </summary>
-		public static SymbolContainer<ISymbol, IMemberData> ForAnyMember()
+		public static SymbolContainer<ISymbol, IMemberData> ForAnyMembers()
 		{
-			return new SymbolContainer<ISymbol, IMemberData>();
+			return new();
 		}
 
 		/// <summary>
 		/// Returns a new <see cref="SymbolContainer{TSymbol, TData}"/> for any method kind.
 		/// </summary>
-		public static SymbolContainer<IMethodSymbol, IMethodData> ForAnyMethod()
+		public static SymbolContainer<IMethodSymbol, IMethodData> ForAnyMethods()
 		{
-			return new SymbolContainer<IMethodSymbol, IMethodData>();
+			return new();
 		}
 
 		/// <summary>
 		/// Returns a new <see cref="SymbolContainer{TSymbol, TData}"/> for any type kind.
 		/// </summary>
-		public static SymbolContainer<ITypeSymbol, ITypeData> ForAnyType()
+		public static SymbolContainer<ITypeSymbol, ITypeData> ForAnyTypes()
 		{
-			return new SymbolContainer<ITypeSymbol, ITypeData>();
+			return new();
 		}
 
 		/// <summary>
@@ -124,7 +191,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<INamedTypeSymbol, ClassData> ForClasses()
 		{
-			return new SymbolContainer<INamedTypeSymbol, ClassData>();
+			return new();
 		}
 
 		/// <summary>
@@ -132,7 +199,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IMethodSymbol, ConstructorData> ForConstructors()
 		{
-			return new SymbolContainer<IMethodSymbol, ConstructorData>();
+			return new();
 		}
 
 		/// <summary>
@@ -140,7 +207,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IMethodSymbol, ConversionOperatorData> ForConversionOperators()
 		{
-			return new SymbolContainer<IMethodSymbol, ConversionOperatorData>();
+			return new();
 		}
 
 		/// <summary>
@@ -148,7 +215,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<INamedTypeSymbol, DelegateData> ForDelegates()
 		{
-			return new SymbolContainer<INamedTypeSymbol, DelegateData>();
+			return new();
 		}
 
 		/// <summary>
@@ -156,7 +223,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IMethodSymbol, DestructorData> ForDestructors()
 		{
-			return new SymbolContainer<IMethodSymbol, DestructorData>();
+			return new();
 		}
 
 		/// <summary>
@@ -164,7 +231,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<INamedTypeSymbol, EnumData> ForEnums()
 		{
-			return new SymbolContainer<INamedTypeSymbol, EnumData>();
+			return new();
 		}
 
 		/// <summary>
@@ -172,7 +239,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IEventSymbol, EventData> ForEvents()
 		{
-			return new SymbolContainer<IEventSymbol, EventData>();
+			return new();
 		}
 
 		/// <summary>
@@ -180,7 +247,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IFieldSymbol, FieldData> ForFields()
 		{
-			return new SymbolContainer<IFieldSymbol, FieldData>();
+			return new();
 		}
 
 		/// <summary>
@@ -188,7 +255,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IPropertySymbol, IndexerData> ForIndexers()
 		{
-			return new SymbolContainer<IPropertySymbol, IndexerData>();
+			return new();
 		}
 
 		/// <summary>
@@ -196,7 +263,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<INamedTypeSymbol, InterfaceData> ForInterfaces()
 		{
-			return new SymbolContainer<INamedTypeSymbol, InterfaceData>();
+			return new();
 		}
 
 		/// <summary>
@@ -204,7 +271,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IMethodSymbol, LambdaData> ForLambdas()
 		{
-			return new SymbolContainer<IMethodSymbol, LambdaData>();
+			return new();
 		}
 
 		/// <summary>
@@ -212,7 +279,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IMethodSymbol, LocalFunctionData> ForLocalFunctions()
 		{
-			return new SymbolContainer<IMethodSymbol, LocalFunctionData>();
+			return new();
 		}
 
 		/// <summary>
@@ -220,7 +287,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<ILocalSymbol, LocalData> ForLocals()
 		{
-			return new SymbolContainer<ILocalSymbol, LocalData>();
+			return new();
 		}
 
 		/// <summary>
@@ -228,7 +295,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IMethodSymbol, MethodData> ForMethods()
 		{
-			return new SymbolContainer<IMethodSymbol, MethodData>();
+			return new();
 		}
 
 		/// <summary>
@@ -236,7 +303,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<INamespaceSymbol, NamespaceData> ForNamespaces()
 		{
-			return new SymbolContainer<INamespaceSymbol, NamespaceData>();
+			return new();
 		}
 
 		/// <summary>
@@ -244,7 +311,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<INamespaceOrTypeSymbol, NamespaceOrTypeData> ForNamespacesOrTypes()
 		{
-			return new SymbolContainer<INamespaceOrTypeSymbol, NamespaceOrTypeData>();
+			return new();
 		}
 
 		/// <summary>
@@ -252,7 +319,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IMethodSymbol, OperatorData> ForOperators()
 		{
-			return new SymbolContainer<IMethodSymbol, OperatorData>();
+			return new();
 		}
 
 		/// <summary>
@@ -260,7 +327,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IParameterSymbol, ParameterData> ForParameters()
 		{
-			return new SymbolContainer<IParameterSymbol, ParameterData>();
+			return new();
 		}
 
 		/// <summary>
@@ -268,7 +335,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<IPropertySymbol, PropertyData> ForProperties()
 		{
-			return new SymbolContainer<IPropertySymbol, PropertyData>();
+			return new();
 		}
 
 		/// <summary>
@@ -276,7 +343,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<INamedTypeSymbol, RecordData> ForRecords()
 		{
-			return new SymbolContainer<INamedTypeSymbol, RecordData>();
+			return new();
 		}
 
 		/// <summary>
@@ -284,7 +351,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<INamedTypeSymbol, StructData> ForStructs()
 		{
-			return new SymbolContainer<INamedTypeSymbol, StructData>();
+			return new();
 		}
 
 		/// <summary>
@@ -292,71 +359,31 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static SymbolContainer<ITypeParameterSymbol, TypeParameterData> ForTypeParameters()
 		{
-			return new SymbolContainer<ITypeParameterSymbol, TypeParameterData>();
+			return new();
 		}
 
 		/// <summary>
 		/// Returns a new <see cref="SymbolContainer{TSymbol, TData}"/> for methods of unknown kind.
 		/// </summary>
-		public static SymbolContainer<IMethodSymbol, UnknownMethodData> ForUnknownMethod()
+		public static SymbolContainer<IMethodSymbol, UnknownMethodData> ForUnknownMethods()
 		{
-			return new SymbolContainer<IMethodSymbol, UnknownMethodData>();
+			return new();
 		}
 
 		/// <summary>
 		/// Returns a new <see cref="SymbolContainer{TSymbol, TData}"/> for types of unknown kind.
 		/// </summary>
-		public static SymbolContainer<ITypeSymbol, UnknownTypeData> ForUnknownType()
+		public static SymbolContainer<ITypeSymbol, UnknownTypeData> ForUnknownTypes()
 		{
-			return new SymbolContainer<ITypeSymbol, UnknownTypeData>();
+			return new();
 		}
 
 		/// <summary>
 		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
-		/// <param name="collection">Collection of <see cref="ITypeParameterSymbol"/>s to add to the container.</param>
+		/// <param name="collection">Collection of <see cref="ISymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<ITypeParameterSymbol, TypeParameterData> ToContainer(this IEnumerable<ISymbolOrMember<ITypeParameterSymbol>> collection, ICompilationData? compilation = default)
-		{
-			return new(collection, compilation);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="ITypeParameterSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<ITypeParameterSymbol, TypeParameterData> ToContainer(this IEnumerable<ISymbolOrMember<ITypeParameterSymbol, TypeParameterData>> collection, ICompilationData? compilation = default)
-		{
-			return new(collection, compilation);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="ITypeParameterSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<ITypeParameterSymbol, TypeParameterData> ToContainer(this IEnumerable<ITypeParameterSymbol> collection, ICompilationData? compilation = default)
-		{
-			return new(collection, compilation);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="ITypeSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<ITypeSymbol, ITypeData> ToContainer(this IEnumerable<ISymbolOrMember<ITypeSymbol>> collection, ICompilationData? compilation = default)
-		{
-			return new(collection, compilation);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="ITypeSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<ITypeSymbol, ITypeData> ToContainer(this IEnumerable<ITypeSymbol> collection, ICompilationData? compilation = default)
+		public static SymbolContainer<ISymbol, IMemberData> ToContainer(this IEnumerable<ISymbol> collection, ICompilationData? compilation = default)
 		{
 			return new(collection, compilation);
 		}
@@ -366,9 +393,9 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="ISymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<ISymbol> ToContainer(this IEnumerable<ISymbolOrMember> collection, ICompilationData? compilation = default)
+		public static SymbolContainer<ISymbol, IMemberData> ToContainer(this IEnumerable<ISymbolOrMember> collection, ICompilationData? compilation = default)
 		{
-			return new(collection, compilation);
+			return new(collection.Select(m => EnsureGeneric<ISymbol, IMemberData>(m)), compilation);
 		}
 
 		/// <summary>
@@ -376,7 +403,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="ISymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<ISymbol> ToContainer(this IEnumerable<ISymbol> collection, ICompilationData? compilation = default)
+		public static SymbolContainer<ISymbol, IMemberData> ToContainer(this IEnumerable<ISymbolOrMember<ISymbol, IMemberData>> collection, ICompilationData? compilation = default)
 		{
 			return new(collection, compilation);
 		}
@@ -384,9 +411,9 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
-		/// <param name="collection">Collection of <see cref="IFieldSymbol"/>s to add to the container.</param>
+		/// <param name="collection">Collection of <see cref="ITypeParameterSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<IFieldSymbol> ToContainer(this IEnumerable<ISymbolOrMember<IFieldSymbol>> collection, ICompilationData? compilation = default)
+		public static SymbolContainer<ITypeParameterSymbol, ITypeParameterData> ToContainer(this IEnumerable<ITypeParameterSymbol> collection, ICompilationData? compilation = default)
 		{
 			return new(collection, compilation);
 		}
@@ -394,9 +421,9 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
-		/// <param name="collection">Collection of <see cref="IFieldSymbol"/>s to add to the container.</param>
+		/// <param name="collection">Collection of <see cref="ITypeParameterSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<IFieldSymbol> ToContainer(this IEnumerable<IFieldSymbol> collection, ICompilationData? compilation = default)
+		public static SymbolContainer<ITypeParameterSymbol, ITypeParameterData> ToContainer(this IEnumerable<ISymbolOrMember<ITypeParameterSymbol, ITypeParameterData>> collection, ICompilationData? compilation = default)
 		{
 			return new(collection, compilation);
 		}
@@ -404,9 +431,10 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
-		/// <param name="collection">Collection of <see cref="IEventSymbol"/>s to add to the container.</param>
+		/// <param name="collection">Collection of <see cref="ITypeParameterSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<IEventSymbol> ToContainer(this IEnumerable<ISymbolOrMember<IEventSymbol>> collection, ICompilationData? compilation = default)
+		/// <typeparam name="TData">Type of target <see cref="ITypeParameterData"/>.</typeparam>
+		public static SymbolContainer<ITypeParameterSymbol, TData> ToContainer<TData>(this IEnumerable<ITypeParameterSymbol> collection, ICompilationData? compilation = default) where TData : class, ITypeParameterData
 		{
 			return new(collection, compilation);
 		}
@@ -414,9 +442,10 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
-		/// <param name="collection">Collection of <see cref="IEventSymbol"/>s to add to the container.</param>
+		/// <param name="collection">Collection of <see cref="ITypeParameterSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<IEventSymbol> ToContainer(this IEnumerable<IEventSymbol> collection, ICompilationData? compilation = default)
+		/// <typeparam name="TData">Type of target <see cref="ITypeParameterData"/>.</typeparam>
+		public static SymbolContainer<ITypeParameterSymbol, TData> ToContainer<TData>(this IEnumerable<ISymbolOrMember<ITypeParameterSymbol, TData>> collection, ICompilationData? compilation = default) where TData : class, ITypeParameterData
 		{
 			return new(collection, compilation);
 		}
@@ -424,9 +453,9 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
-		/// <param name="collection">Collection of <see cref="IPropertySymbol"/>s to add to the container.</param>
+		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<IPropertySymbol> ToContainer(this IEnumerable<ISymbolOrMember<IPropertySymbol>> collection, ICompilationData? compilation = default)
+		public static SymbolContainer<INamedTypeSymbol, ITypeData> ToContainer(this IEnumerable<INamedTypeSymbol> collection, ICompilationData? compilation = default)
 		{
 			return new(collection, compilation);
 		}
@@ -434,9 +463,31 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
-		/// <param name="collection">Collection of <see cref="IPropertySymbol"/>s to add to the container.</param>
+		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<IPropertySymbol> ToContainer(this IEnumerable<IPropertySymbol> collection, ICompilationData? compilation = default)
+		public static SymbolContainer<INamedTypeSymbol, ITypeData> ToContainer(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, ITypeData>> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		///  <typeparam name="TData">Type of target <see cref="ITypeData"/>.</typeparam>
+		public static SymbolContainer<INamedTypeSymbol, TData> ToContainer<TData>(this IEnumerable<INamedTypeSymbol> collection, ICompilationData? compilation = default) where TData : class, ITypeData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="ITypeData"/>.</typeparam>
+		public static SymbolContainer<INamedTypeSymbol, TData> ToContainer<TData>(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, TData>> collection, ICompilationData? compilation = default) where TData : class, ITypeData
 		{
 			return new(collection, compilation);
 		}
@@ -446,7 +497,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="ILocalSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<ILocalSymbol> ToContainer(this IEnumerable<ISymbolOrMember<ILocalSymbol>> collection, ICompilationData? compilation = default)
+		public static SymbolContainer<ILocalSymbol, ILocalData> ToContainer(this IEnumerable<ILocalSymbol> collection, ICompilationData? compilation = default)
 		{
 			return new(collection, compilation);
 		}
@@ -456,47 +507,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="ILocalSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<ILocalSymbol> ToContainer(this IEnumerable<ILocalSymbol> collection, ICompilationData? compilation = default)
-		{
-			return new(collection, compilation);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="IMethodSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<IMethodSymbol> ToContainer(this IEnumerable<ISymbolOrMember<IMethodSymbol>> collection, ICompilationData? compilation = default)
-		{
-			return new(collection, compilation);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="IMethodSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<IMethodSymbol> ToContainer(this IEnumerable<IMethodSymbol> collection, ICompilationData? compilation = default)
-		{
-			return new(collection, compilation);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<INamespaceSymbol> ToContainer(this IEnumerable<ISymbolOrMember<INamespaceSymbol>> collection, ICompilationData? compilation = default)
-		{
-			return new(collection, compilation);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<INamespaceSymbol> ToContainer(this IEnumerable<INamespaceSymbol> collection, ICompilationData? compilation = default)
+		public static SymbolContainer<ILocalSymbol, ILocalData> ToContainer(this IEnumerable<ISymbolOrMember<ILocalSymbol, ILocalData>> collection, ICompilationData? compilation = default)
 		{
 			return new(collection, compilation);
 		}
@@ -506,7 +517,8 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<INamedTypeSymbol> ToContainer(this IEnumerable<ISymbolOrMember<INamedTypeSymbol>> collection, ICompilationData? compilation = default)
+		/// <typeparam name="TData">Type of target <see cref="ILocalData"/>.</typeparam>
+		public static SymbolContainer<ILocalSymbol, TData> ToContainer<TData>(this IEnumerable<ILocalSymbol> collection, ICompilationData? compilation = default) where TData : class, ILocalData
 		{
 			return new(collection, compilation);
 		}
@@ -514,9 +526,136 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
-		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>>
-		public static SymbolContainer<INamedTypeSymbol> ToContainer(this IEnumerable<INamedTypeSymbol> collection, ICompilationData? compilation = default)
+		/// <param name="collection">Collection of <see cref="ILocalSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="ILocalData"/>.</typeparam>
+		public static SymbolContainer<ILocalSymbol, TData> ToContainer<TData>(this IEnumerable<ISymbolOrMember<ILocalSymbol, TData>> collection, ICompilationData? compilation = default) where TData : class, ILocalData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IFieldSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static SymbolContainer<IFieldSymbol, IFieldData> ToContainer(this IEnumerable<IFieldSymbol> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IFieldSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static SymbolContainer<IFieldSymbol, IFieldData> ToContainer(this IEnumerable<ISymbolOrMember<IFieldSymbol, IFieldData>> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IFieldSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="IFieldData"/>.</typeparam>
+		public static SymbolContainer<IFieldSymbol, TData> ToContainer<TData>(this IEnumerable<IFieldSymbol> collection, ICompilationData? compilation = default) where TData : class, IFieldData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IFieldSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="IFieldData"/>.</typeparam>
+		public static SymbolContainer<IFieldSymbol, TData> ToContainer<TData>(this IEnumerable<ISymbolOrMember<IFieldSymbol, TData>> collection, ICompilationData? compilation = default) where TData : class, IFieldData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IParameterSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static SymbolContainer<IParameterSymbol, IParameterData> ToContainer(this IEnumerable<IParameterSymbol> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IParameterSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static SymbolContainer<IParameterSymbol, IParameterData> ToContainer(this IEnumerable<ISymbolOrMember<IParameterSymbol, IParameterData>> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IParameterSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="IParameterData"/>.</typeparam>
+		public static SymbolContainer<IParameterSymbol, TData> ToContainer<TData>(this IEnumerable<IParameterSymbol> collection, ICompilationData? compilation = default) where TData : class, IParameterData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IParameterSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="IParameterData"/>.</typeparam>
+		public static SymbolContainer<IParameterSymbol, TData> ToContainer<TData>(this IEnumerable<ISymbolOrMember<IParameterSymbol, TData>> collection, ICompilationData? compilation = default) where TData : class, IParameterData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IParameterSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static SymbolContainer<INamespaceSymbol, INamespaceData> ToContainer(this IEnumerable<INamespaceSymbol> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static SymbolContainer<INamespaceSymbol, INamespaceData> ToContainer(this IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="INamespaceData"/>.</typeparam>
+		public static SymbolContainer<INamespaceSymbol, TData> ToContainer<TData>(this IEnumerable<INamespaceSymbol> collection, ICompilationData? compilation = default) where TData : class, INamespaceData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="INamespaceData"/>.</typeparam>
+		public static SymbolContainer<INamespaceSymbol, TData> ToContainer<TData>(this IEnumerable<ISymbolOrMember<INamespaceSymbol, TData>> collection, ICompilationData? compilation = default) where TData : class, INamespaceData
 		{
 			return new(collection, compilation);
 		}
@@ -526,7 +665,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<INamespaceOrTypeSymbol> ToContainer(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol>> collection, ICompilationData? compilation = default)
+		public static SymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData> ToContainer(this IEnumerable<INamespaceOrTypeSymbol> collection, ICompilationData? compilation = default)
 		{
 			return new(collection, compilation);
 		}
@@ -536,82 +675,221 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static SymbolContainer<INamespaceOrTypeSymbol> ToContainer(this IEnumerable<INamespaceOrTypeSymbol> collection, ICompilationData? compilation = default)
+		public static SymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData> ToContainer(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> collection, ICompilationData? compilation = default)
 		{
 			return new(collection, compilation);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="WritableSymbolContainer{TSymbol}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static WritableSymbolContainer<INamespaceSymbol> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamespaceSymbol>> collection, ICompilationData? compilation = default)
-		{
-			return new(collection, compilation);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="WritableSymbolContainer{TSymbol}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		public static WritableSymbolContainer<INamespaceSymbol> ToWritableContainer(this IEnumerable<INamespaceSymbol> collection, ICompilationData? compilation = default)
-		{
-			return new(collection, compilation);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="GenericSymbolContainer{TSymbol}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
-		public static GenericSymbolContainer<INamedTypeSymbol> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamedTypeSymbol>> collection, ICompilationData? compilation = default, bool useArguments = false)
-		{
-			return new(collection, compilation) { UseArguments = useArguments };
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="GenericSymbolContainer{TSymbol}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
-		public static GenericSymbolContainer<INamedTypeSymbol> ToWritableContainer(this IEnumerable<INamedTypeSymbol> collection, ICompilationData? compilation = default, bool useArguments = false)
-		{
-			return new(collection, compilation) { UseArguments = useArguments };
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="GenericSymbolContainer{TSymbol}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="IMethodSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
-		public static GenericSymbolContainer<IMethodSymbol> ToWritableContainer(this IEnumerable<ISymbolOrMember<IMethodSymbol>> collection, ICompilationData? compilation = default, bool useArguments = false)
-		{
-			return new(collection, compilation) { UseArguments = useArguments };
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="GenericSymbolContainer{TSymbol}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="IMethodSymbol"/>s to add to the container.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
-		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
-		public static GenericSymbolContainer<IMethodSymbol> ToWritableContainer(this IEnumerable<IMethodSymbol> collection, ICompilationData? compilation = default, bool useArguments = false)
-		{
-			return new(collection, compilation) { UseArguments = useArguments };
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="NamespaceOrTypeContainer"/>.
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="INamespaceOrTypeData"/>.</typeparam>
+		public static SymbolContainer<INamespaceOrTypeSymbol, TData> ToContainer<TData>(this IEnumerable<INamespaceOrTypeSymbol> collection, ICompilationData? compilation = default) where TData : class, INamespaceOrTypeData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="INamespaceOrTypeData"/>.</typeparam>
+		public static SymbolContainer<INamespaceOrTypeSymbol, TData> ToContainer<TData>(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, TData>> collection, ICompilationData? compilation = default) where TData : class, INamespaceOrTypeData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IEventSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static SymbolContainer<IEventSymbol, IEventData> ToContainer(this IEnumerable<IEventSymbol> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IEventData"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static SymbolContainer<IEventSymbol, IEventData> ToContainer(this IEnumerable<ISymbolOrMember<IEventSymbol, IEventData>> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IEventSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="IEventData"/>.</typeparam>
+		public static SymbolContainer<IEventSymbol, TData> ToContainer<TData>(this IEnumerable<IEventSymbol> collection, ICompilationData? compilation = default) where TData : class, IEventData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IEventSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="IEventData"/>.</typeparam>
+		public static SymbolContainer<IEventSymbol, TData> ToContainer<TData>(this IEnumerable<ISymbolOrMember<IEventSymbol, TData>> collection, ICompilationData? compilation = default) where TData : class, IEventData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IMethodSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static SymbolContainer<IMethodSymbol, IMethodData> ToContainer(this IEnumerable<IMethodSymbol> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IMethodSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static SymbolContainer<IMethodSymbol, IMethodData> ToContainer(this IEnumerable<ISymbolOrMember<IMethodSymbol, IMethodData>> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IMethodSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="IMethodData"/>.</typeparam>
+		public static SymbolContainer<IMethodSymbol, TData> ToContainer<TData>(this IEnumerable<IMethodSymbol> collection, ICompilationData? compilation = default) where TData : class, IMethodData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IParameterSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="IMethodData"/>.</typeparam>
+		public static SymbolContainer<IMethodSymbol, TData> ToContainer<TData>(this IEnumerable<ISymbolOrMember<IMethodSymbol, TData>> collection, ICompilationData? compilation = default) where TData : class, IMethodData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="WritableSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="ISymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static WritableSymbolContainer<ISymbol, IMemberData> ToWritableContainer(this IEnumerable<ISymbolOrMember> collection, ICompilationData? compilation = default)
+		{
+			return new(collection.Select(m => EnsureGeneric<ISymbol, IMemberData>(m)), compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="WritableSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="ISymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static WritableSymbolContainer<ISymbol, IMemberData> ToWritableContainer(this IEnumerable<ISymbolOrMember<ISymbol, IMemberData>> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="WritableSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static WritableSymbolContainer<INamespaceSymbol, INamespaceData> ToWritableContainer(this IEnumerable<INamespaceSymbol> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="WritableSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		public static WritableSymbolContainer<INamespaceSymbol, INamespaceData> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> collection, ICompilationData? compilation = default)
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="WritableSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		///  <typeparam name="TData">Type of target <see cref="INamespaceData"/>.</typeparam>
+		public static WritableSymbolContainer<INamespaceSymbol, TData> ToWritableContainer<TData>(this IEnumerable<INamespaceSymbol> collection, ICompilationData? compilation = default) where TData : class, INamespaceData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="WritableSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamespaceSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		///  <typeparam name="TData">Type of target <see cref="INamespaceData"/>.</typeparam>
+		public static WritableSymbolContainer<INamespaceSymbol, TData> ToWritableContainer<TData>(this IEnumerable<ISymbolOrMember<INamespaceSymbol, TData>> collection, ICompilationData? compilation = default) where TData : class, INamespaceData
+		{
+			return new(collection, compilation);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="GenericSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
 		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
-		public static NamespaceOrTypeContainer ToWritableContainer(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol>> collection, ICompilationData? compilation = default, bool useArguments = false)
+		public static GenericSymbolContainer<INamedTypeSymbol, ITypeData> ToWritableContainer(this IEnumerable<INamedTypeSymbol> collection, ICompilationData? compilation = default, bool useArguments = false)
+		{
+			return new(collection, compilation) { UseArguments = useArguments };
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="GenericSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
+		public static GenericSymbolContainer<INamedTypeSymbol, ITypeData> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, ITypeData>> collection, ICompilationData? compilation = default, bool useArguments = false)
+		{
+			return new(collection, compilation) { UseArguments = useArguments };
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="GenericSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="ITypeData"/>.</typeparam>
+		public static GenericSymbolContainer<INamedTypeSymbol, TData> ToWritableContainer<TData>(this IEnumerable<INamedTypeSymbol> collection, ICompilationData? compilation = default, bool useArguments = false) where TData : class, ITypeData
+		{
+			return new(collection, compilation) { UseArguments = useArguments };
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="GenericSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
+		/// <typeparam name="TData">Type of target <see cref="ITypeData"/>.</typeparam>
+		public static GenericSymbolContainer<INamedTypeSymbol, TData> ToWritableContainer<TData>(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, TData>> collection, ICompilationData? compilation = default, bool useArguments = false) where TData : class, ITypeData
 		{
 			return new(collection, compilation) { UseArguments = useArguments };
 		}
@@ -623,6 +901,39 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
 		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
 		public static NamespaceOrTypeContainer ToWritableContainer(this IEnumerable<INamespaceOrTypeSymbol> collection, ICompilationData? compilation = default, bool useArguments = false)
+		{
+			return new(collection, compilation) { UseArguments = useArguments };
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="NamespaceOrTypeContainer"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
+		public static NamespaceOrTypeContainer ToWritableContainer(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData>> collection, ICompilationData? compilation = default, bool useArguments = false)
+		{
+			return new(collection as Inamed, compilation) { UseArguments = useArguments };
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="NamespaceOrTypeContainer"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
+		public static NamespaceOrTypeContainer ToWritableContainer(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceData>> collection, ICompilationData? compilation = default, bool useArguments = false)
+		{
+			return new(collection as Inamed, compilation) { UseArguments = useArguments };
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="NamespaceOrTypeContainer"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
+		/// <param name="compilation"><see cref="ICompilationData"/> to use when converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>.</param>
+		/// <param name="useArguments">Determines whether to use type arguments instead of type parameters when building a <see cref="string"/>.</param>
+		public static NamespaceOrTypeContainer ToWritableContainer(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> collection, ICompilationData? compilation = default, bool useArguments = false)
 		{
 			return new(collection, compilation) { UseArguments = useArguments };
 		}
@@ -649,6 +960,19 @@ namespace Durian.Analysis.SymbolContainers
 		internal static Exception Exc_EmptySymbolContainer()
 		{
 			return new InvalidOperationException("Container does not contain any symbols");
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static ISymbolOrMember<TSymbol, TData> EnsureGeneric<TSymbol, TData>(ISymbolOrMember original)
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData
+		{
+			if(original is ISymbolOrMember<TSymbol, TData> member)
+			{
+				return member;
+			}
+
+			return new GenericWrapper<TSymbol, TData>(original);
 		}
 	}
 }

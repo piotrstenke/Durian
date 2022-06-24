@@ -9,13 +9,13 @@ namespace Durian.Analysis.SymbolContainers
 	public enum ReturnOrder
 	{
 		/// <summary>
-		/// Root is returned first.
+		/// Parent value is returned first, followed by its children.
 		/// </summary>
-		Root = 0,
+		ParentToChild = 0,
 
 		/// <summary>
-		/// Root is returned last.
+		/// Parent the value is returned last, proceeded by its children.
 		/// </summary>
-		Parent = 1
+		ChildToParent = 1
 	}
 }

@@ -103,12 +103,12 @@ namespace Durian.Analysis.Data
 			/// <summary>
 			/// All containing types of the current symbol.
 			/// </summary>
-			public IWrittableSymbolContainer<INamedTypeSymbol>? ContainingTypes { get; set; }
+			public IWritableSymbolContainer<INamedTypeSymbol, ITypeData>? ContainingTypes { get; set; }
 
 			/// <summary>
 			/// All containing namespaces of the current symbol.
 			/// </summary>
-			public IWrittableSymbolContainer<INamespaceSymbol>? ContainingNamespaces { get; set; }
+			public IWritableSymbolContainer<INamespaceSymbol, INamespaceData>? ContainingNamespaces { get; set; }
 
 			/// <summary>
 			/// All attributes if the current symbol.
@@ -122,6 +122,26 @@ namespace Durian.Analysis.Data
 			{
 			}
 
+			/// <summary>
+			/// Seals all <see cref="ISymbolContainer"/>s in this instance.
+			/// </summary>
+			internal virtual void SealContainers()
+			{
+				TrySeal(ContainingTypes);
+				TrySeal(ContainingNamespaces);
+			}
+
+			private protected bool TrySeal(ISymbolContainer? container)
+			{
+				if(container is not null && container.CanBeSealed)
+				{
+					container.Seal();
+					return true;
+				}
+
+				return false;
+			}
+
 			private protected virtual void ValidateSymbol(ISymbol? symbol)
 			{
 				// Do nothing by default.
@@ -129,8 +149,8 @@ namespace Durian.Analysis.Data
 		}
 
 		private ImmutableArray<AttributeData> _attributes;
-		private IWrittableSymbolContainer<INamespaceSymbol>? _containingNamespaces;
-		private IWrittableSymbolContainer<INamedTypeSymbol>? _containingTypes;
+		private IWritableSymbolContainer<INamespaceSymbol, INamespaceData>? _containingNamespaces;
+		private IWritableSymbolContainer<INamedTypeSymbol, ITypeData>? _containingTypes;
 		private bool? _isNew;
 		private bool? _isPartial;
 		private bool? _isUnsafe;
@@ -217,6 +237,15 @@ namespace Durian.Analysis.Data
 			}
 		}
 
+		/// <summary>
+		/// Prepares the <paramref name="properties"/> to be consumed by the current object.
+		/// </summary>
+		/// <param name="properties"><see cref="Properties"/> to init.</param>
+		protected virtual void InitProperties(Properties properties)
+		{
+			properties.SealContainers();
+		}
+
 		internal MemberData(ISymbol symbol, ICompilationData compilation, bool initDefaultProperties = false)
 		{
 			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not SyntaxNode decl)
@@ -255,10 +284,10 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Root namespace of the current member (excluding the <see langword="global"/> namespace).
 		/// </summary>
-		public ISymbolOrMember<INamespaceSymbol> RootNamespace => ContainingNamespaces.First();
+		public ISymbolOrMember<INamespaceSymbol, NamespaceData> RootNamespace => ContainingNamespaces.First();
 
-		/// <inheritdoc/>
-		public IWrittableSymbolContainer<INamespaceSymbol> ContainingNamespaces
+		/// <inheritdoc cref="IMemberData.ContainingNamespaces"/>
+		public IWritableSymbolContainer<INamespaceSymbol, NamespaceData> ContainingNamespaces
 		{
 			get
 			{
@@ -267,11 +296,14 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc/>
-		public IWrittableSymbolContainer<INamedTypeSymbol> ContainingTypes
+		public IWritableSymbolContainer<INamedTypeSymbol, ITypeData> ContainingTypes
 		{
 			get
 			{
-				return _containingTypes ??= Symbol.GetContainingTypes().ToWritableContainer(ParentCompilation);
+
+				var a = Symbol.GetContainingTypes().ToContainer<ClassData>(ParentCompilation);
+
+				return _containingTypes ??= Symbol.GetContainingTypes().ToContainer<ISymbol>(ParentCompilation);
 			}
 		}
 

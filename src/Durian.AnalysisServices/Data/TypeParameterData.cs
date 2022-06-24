@@ -12,7 +12,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="TypeParameterSyntax"/>.
 	/// </summary>
-	public class TypeParameterData : MemberData
+	public class TypeParameterData : MemberData, ITypeData
 	{
 		/// <summary>
 		/// Contains optional data that can be passed to a <see cref="Properties"/>.

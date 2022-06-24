@@ -28,20 +28,14 @@ namespace Durian.Analysis.Data
 
 	/// <inheritdoc cref="ISymbolOrMember"/>
 	/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/>.</typeparam>
-	public interface ISymbolOrMember<out TSymbol> : ISymbolOrMember
-		where TSymbol : class, ISymbol
-	{
-		/// <inheritdoc cref="ISymbolOrMember.Symbol"/>
-		new TSymbol Symbol { get; }
-	}
-
-	/// <inheritdoc cref="ISymbolOrMember"/>
-	/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/>.</typeparam>
 	/// <typeparam name="TData">Type of <see cref="IMemberData"/>.</typeparam>
-	public interface ISymbolOrMember<out TSymbol, out TData> : ISymbolOrMember<TSymbol>
+	public interface ISymbolOrMember<out TSymbol, out TData> : ISymbolOrMember
 		where TSymbol : class, ISymbol
 		where TData : class, IMemberData
 	{
+		/// <inheritdoc cref="ISymbolOrMember.Symbol"/>
+		new TSymbol Symbol { get; }
+
 		/// <inheritdoc cref="ISymbolOrMember.Member"/>
 		new TData Member { get; }
 	}

@@ -2281,7 +2281,7 @@ namespace Durian.Analysis.Extensions
 				return false;
 			}
 
-			return symbol.ContainingNamespace.GetContainingNamespaces(order: ReturnOrder.Parent).Any(n => n.Name == @namespace);
+			return symbol.ContainingNamespace.GetContainingNamespaces(order: ReturnOrder.ChildToParent).Any(n => n.Name == @namespace);
 		}
 
 		/// <summary>
@@ -2664,7 +2664,7 @@ namespace Durian.Analysis.Extensions
 		private static bool IsWithinNamespace_Internal(ISymbol symbol, string[] @namespace, bool topLevel, bool lookupOuter)
 		{
 			int current = 0;
-			IEnumerator<INamespaceSymbol> all = symbol.GetContainingNamespaces(order: ReturnOrder.Parent).GetEnumerator();
+			IEnumerator<INamespaceSymbol> all = symbol.GetContainingNamespaces(order: ReturnOrder.ChildToParent).GetEnumerator();
 
 			while (current < @namespace.Length)
 			{

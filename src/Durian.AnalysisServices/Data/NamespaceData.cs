@@ -15,8 +15,12 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="BaseNamespaceDeclarationSyntax"/>.
 	/// </summary>
-	public class NamespaceData : MemberData
+	public class NamespaceData : MemberData, INamespaceData
 	{
+		public new class Properties
+		{
+			public ISymbolContainer<INamedTypeSymbol>
+		}
 		/// <summary>
 		/// Target <see cref="BaseNamespaceDeclarationSyntax"/>.
 		/// </summary>
@@ -32,9 +36,6 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new INamespaceSymbol Symbol => (base.Symbol as INamespaceSymbol)!;
 
-		internal SyntaxNode BaseDeclaration => base.Declaration;
-		internal ISymbol BaseSymbol => base.Symbol;
-
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PropertyData"/> class.
 		/// </summary>
@@ -49,15 +50,8 @@ namespace Durian.Analysis.Data
 			DeclarationStyle = declaration.GetNamespaceStyle();
 		}
 
-		internal NamespaceData(MemberDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
-		{
-		}
-
 		internal NamespaceData(ISymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
-
-		/// <inheritdoc/>
-		public override TypeContainer ContainingTypes => SymbolContainerFactory.Empty<TypeContainer>();
 	}
 }

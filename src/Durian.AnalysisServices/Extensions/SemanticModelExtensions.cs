@@ -249,7 +249,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the namespaces used by.</param>
 		/// <param name="compilation"><see cref="CSharpCompilation"/> the specified <paramref name="node"/> is defined in.</param>
 		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
-		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>tion>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static IEnumerable<INamespaceSymbol> GetContainingNamespaces(
 			this SemanticModel semanticModel,
 			SyntaxNode node,

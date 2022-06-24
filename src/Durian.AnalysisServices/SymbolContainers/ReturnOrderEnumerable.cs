@@ -3,6 +3,8 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Durian.Analysis.Extensions;
 
 namespace Durian.Analysis.SymbolContainers
 {
@@ -13,12 +15,12 @@ namespace Durian.Analysis.SymbolContainers
 	internal sealed class ReturnOrderEnumerable<T> : IReturnOrderEnumerable<T>
 	{
 		/// <inheritdoc/>
-		public ReturnOrder Order { get; }
+		public ReturnOrder Order { get; private set; }
 
 		/// <summary>
 		/// Underlaying <see cref="IEnumerable{T}"/>.
 		/// </summary>
-		public IEnumerable<T> Collection { get; }
+		public IEnumerable<T> Collection { get; private set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ReturnOrderEnumerable{T}"/> class.
@@ -35,6 +37,13 @@ namespace Durian.Analysis.SymbolContainers
 		public IEnumerator<T> GetEnumerator()
 		{
 			return Collection.GetEnumerator();
+		}
+
+		/// <inheritdoc/>
+		public void Reverse()
+		{
+			Order = Order.Reverse();
+			Collection = Collection.Reverse();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

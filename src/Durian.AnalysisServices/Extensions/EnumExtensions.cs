@@ -2966,12 +2966,12 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order"><see cref="ReturnOrder"/> to reverse.</param>
 		public static ReturnOrder Reverse(this ReturnOrder order)
 		{
-			if (order == ReturnOrder.Parent)
+			if (order == ReturnOrder.ChildToParent)
 			{
-				return ReturnOrder.Root;
+				return ReturnOrder.ParentToChild;
 			}
 
-			return ReturnOrder.Root;
+			return ReturnOrder.ParentToChild;
 		}
 
 		/// <summary>

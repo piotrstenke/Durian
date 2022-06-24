@@ -12,7 +12,7 @@ namespace Durian.Analysis.SymbolContainers
 	/// <summary>
 	/// <see cref="ISymbolContainer"/> that handles <see cref="INamespaceOrTypeSymbol"/>s.
 	/// </summary>
-	public class NamespaceOrTypeContainer : GenericSymbolContainer<INamespaceOrTypeSymbol, NamespaceOrTypeData>
+	public class NamespaceOrTypeContainer : GenericSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="NamespaceOrTypeContainer"/> class.
@@ -41,14 +41,14 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
 		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public NamespaceOrTypeContainer(IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol>> collection, ICompilationData? parentCompilation = default) : base(collection, parentCompilation)
+		public NamespaceOrTypeContainer(IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> collection, ICompilationData? parentCompilation = default) : base(collection, parentCompilation)
 		{
 		}
 
 		/// <summary>
 		/// Returns all namespaces contained within this container,
 		/// </summary>
-		public WritableSymbolContainer<INamespaceSymbol, NamespaceData> GetNamespaces()
+		public WritableSymbolContainer<INamespaceSymbol, INamespaceData> GetNamespaces()
 		{
 			return Content
 				.Select(s => s.Symbol)

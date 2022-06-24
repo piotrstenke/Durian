@@ -15,5 +15,10 @@ namespace Durian.Analysis.SymbolContainers
 		/// Order in which elements of this <see cref="IEnumerable{T}"/> are returned.
 		/// </summary>
 		ReturnOrder Order { get; }
+
+		/// <summary>
+		/// Reverses the collection.
+		/// </summary>
+		void Reverse();
 	}
 }

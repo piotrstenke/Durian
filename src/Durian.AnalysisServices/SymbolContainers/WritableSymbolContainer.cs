@@ -14,7 +14,7 @@ namespace Durian.Analysis.SymbolContainers
 	/// </summary>
 	/// <typeparam name="TSymbol">Type of target <see cref="ISymbol"/>.</typeparam>
 	/// <typeparam name="TData">Type of target <see cref="IMemberData"/>.</typeparam>
-	public class WritableSymbolContainer<TSymbol, TData> : SymbolContainer<TSymbol, TData>, IWrittableSymbolContainer<TSymbol, TData>
+	public class WritableSymbolContainer<TSymbol, TData> : SymbolContainer<TSymbol, TData>, IWritableSymbolContainer<TSymbol, TData>
 		where TSymbol : class, ISymbol
 		where TData : class, IMemberData
 	{
@@ -66,7 +66,7 @@ namespace Durian.Analysis.SymbolContainers
 			SymbolContainerFactory.DefaultBuild(this, builder);
 		}
 
-		/// <inheritdoc cref="IWrittableSymbolContainer.ToString"/>
+		/// <inheritdoc cref="IWritableSymbolContainer.ToString"/>
 		public override string ToString()
 		{
 			StringBuilder builder = new();

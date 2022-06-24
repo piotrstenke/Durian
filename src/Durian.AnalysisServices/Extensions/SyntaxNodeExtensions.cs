@@ -871,7 +871,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the containing namespaces of.</param>
 		/// <param name="order">Specifies ordering of the returned values.</param>
-		public static IReturnOrderEnumerable<string> GetContainingNamespaces(this SyntaxNode node, ReturnOrder order = ReturnOrder.Parent)
+		public static IReturnOrderEnumerable<string> GetContainingNamespaces(this SyntaxNode node, ReturnOrder order = ReturnOrder.ChildToParent)
 		{
 			return Yield().OrderBy(order);
 
@@ -909,7 +909,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the containing <see cref="BaseTypeDeclarationSyntax"/>es of.</param>
 		/// <param name="order">Specifies ordering of the returned values.</param>
-		public static IReturnOrderEnumerable<BaseTypeDeclarationSyntax> GetContainingTypes(this SyntaxNode node, ReturnOrder order = ReturnOrder.Parent)
+		public static IReturnOrderEnumerable<BaseTypeDeclarationSyntax> GetContainingTypes(this SyntaxNode node, ReturnOrder order = ReturnOrder.ChildToParent)
 		{
 			return Yield().OrderBy(order);
 
@@ -1907,7 +1907,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> to get the root namespace of.</param>
 		public static string? GetRootNamespace(this SyntaxNode node)
 		{
-			return node.GetContainingNamespaces(ReturnOrder.Root).FirstOrDefault();
+			return node.GetContainingNamespaces(ReturnOrder.ParentToChild).FirstOrDefault();
 		}
 
 		/// <summary>

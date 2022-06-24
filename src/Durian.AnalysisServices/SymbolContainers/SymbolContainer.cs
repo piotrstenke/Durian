@@ -20,36 +20,10 @@ namespace Durian.Analysis.SymbolContainers
 	/// <typeparam name="TSymbol">Type of target <see cref="ISymbol"/>.</typeparam>
 	/// <typeparam name="TData">Type of target <see cref="IMemberData"/>.</typeparam>
 	[DebuggerDisplay("Count = {Count}, Order = {Order}")]
-	public class SymbolContainer<TSymbol, TData> : ISymbolContainer<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>
+	public class SymbolContainer<TSymbol, TData> : ISymbolContainer<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>, ISealable
 		where TSymbol : class, ISymbol
 		where TData : class, IMemberData
 	{
-		private class MemberWrapper : ISymbolOrMember<TSymbol, TData>
-		{
-			private readonly ISymbolOrMember _underlaying;
-
-			/// <inheritdoc/>
-			public TSymbol Symbol => (_underlaying.Symbol as TSymbol)!;
-
-			/// <inheritdoc/>
-			public bool HasMember => _underlaying.HasMember;
-
-			/// <inheritdoc/>
-			public TData Member => (_underlaying.Member as TData)!;
-
-			ISymbol ISymbolOrMember.Symbol => _underlaying.Symbol;
-			IMemberData ISymbolOrMember.Member => _underlaying.Member;
-
-			/// <summary>
-			/// Initializes a new instance of the <see cref="MemberWrapper"/> class.
-			/// </summary>
-			/// <param name="underlaying">Underlaying <see cref="ISymbolOrMember"/>.</param>
-			public MemberWrapper(ISymbolOrMember underlaying)
-			{
-				_underlaying = underlaying;
-			}
-		}
-
 		private ReturnOrder _order;
 
 		/// <inheritdoc/>
@@ -65,15 +39,21 @@ namespace Durian.Analysis.SymbolContainers
 			{
 				if (_order == value)
 				{
-					return;
+					retun;
 				}
 
+				// TODO 
 				Reverse();
 			}
 		}
 
 		/// <inheritdoc/>
 		public ICompilationData? ParentCompilation { get; }
+
+		/// <inheritdoc/>
+		public bool IsSealed { get; private set; }
+
+		bool ISealable.CanBeUnsealed => false;
 
 		/// <summary>
 		/// List of all <see cref="ISymbolOrMember"/>s added to the container.
@@ -133,12 +113,21 @@ namespace Durian.Analysis.SymbolContainers
 			ParentCompilation = parentCompilation;
 		}
 
-		private SymbolContainer(IEnumerable<ISymbolOrMember> collection, ICompilationData? parentCompilation)
+		/// <summary>
+		/// Prohibits further modification of the object.
+		/// </summary>
+		/// <remarks>Once the container is sealed, it cannot be unsealed.</remarks>
+		public void Seal()
 		{
-			Content = new();
-			Order = GetInitialOrder(collection);
-			ParentCompilation = parentCompilation;
-			AddRange(collection.Select(m => m is ISymbolOrMember<TSymbol, TData> s ? s : new MemberWrapper(m)));
+			IsSealed = true;
+		}
+
+		void ISealable.Unseal()
+		{
+			if(IsSealed)
+			{
+				throw new InvalidOperationException("Sealed SymbolContainer cannot be unsealed.");
+			}
 		}
 
 		/// <summary>
@@ -216,7 +205,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <inheritdoc/>
 		public virtual ImmutableArray<string> GetNames()
 		{
-			return ImmutableArray.CreateRange(Content.Select(s => s.HasMember ? s.Member.Name : s.Symbol.GetVerbatimName()));
+			return ImmutableArray.CreateRange(Content.Select(s => s.HasMember ? s.Member.Name : s.Symbol.GetGenericName()));
 		}
 
 		/// <inheritdoc cref="ISymbolContainer.GetSymbols"/>
@@ -230,7 +219,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public void Reverse()
 		{
-			_order = Order.Reverse();
+			_order = _order.Reverse();
 			Content.Reverse();
 		}
 
@@ -292,6 +281,11 @@ namespace Durian.Analysis.SymbolContainers
 			return GetSymbols().CastArray<ISymbol>();
 		}
 
+		ImmutableArray<IMemberData> ISymbolContainer.GetData()
+		{
+			return GetData().CastArray<IMemberData>();
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static ReturnOrder GetInitialOrder(IEnumerable collection)
 		{
@@ -301,31 +295,6 @@ namespace Durian.Analysis.SymbolContainers
 				IReturnOrderEnumerable<ISymbolOrMember> member => member.Order,
 				_ => default
 			};
-		}
-
-		ISymbolOrMember<TSymbol> ISymbolContainer<TSymbol>.First()
-		{
-			return First();
-		}
-
-		ISymbolOrMember<TSymbol> ISymbolContainer<TSymbol>.First(ReturnOrder order)
-		{
-			return First(order);
-		}
-
-		ISymbolOrMember<TSymbol> ISymbolContainer<TSymbol>.Last()
-		{
-			return Last();
-		}
-
-		ISymbolOrMember<TSymbol> ISymbolContainer<TSymbol>.Last(ReturnOrder order)
-		{
-			return Last(order);
-		}
-
-		ImmutableArray<IMemberData> ISymbolContainer.GetData()
-		{
-			return GetData().CastArray<IMemberData>();
 		}
 	}
 }

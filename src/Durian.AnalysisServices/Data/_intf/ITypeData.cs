@@ -9,63 +9,48 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.Analysis.Data
 {
 	/// <summary>
-	/// Encapsulates data associated with a single <see cref="BaseTypeDeclarationSyntax"/>.
+	/// Encapsulates data associated with a single <see cref="INamedTypeSymbol"/>.
 	/// </summary>
-	public interface ITypeData : IMemberData
+	public interface ITypeData : IGenericMemberData
 	{
 		/// <summary>
-		/// Target <see cref="BaseTypeDeclarationSyntax"/>.
+		/// <see cref="ITypeSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.
 		/// </summary>
-		new BaseTypeDeclarationSyntax Declaration { get; }
+		new INamedTypeSymbol Symbol { get; }
 
 		/// <summary>
-		/// <see cref="ITypeSymbol"/> associated with the <see cref="Declaration"/>.
+		/// All partial declarations of the type (including <see cref="IMemberData.Declaration"/>).
 		/// </summary>
-		new ITypeSymbol Symbol { get; }
-
-		/// <summary>
-		/// All partial declarations of the type (including <see cref="Declaration"/>).
-		/// </summary>
-		ImmutableArray<BaseTypeDeclarationSyntax> PartialDeclarations { get; }
+		ImmutableArray<TypeDeclarationSyntax> PartialDeclarations { get; }
 
 		/// <summary>
 		/// Member <see cref="ISymbol"/>s of the current type and its parent types.
 		/// </summary>
-		ISymbolContainer<ISymbol> AllMembers { get; }
+		ISymbolContainer<ISymbol, IMemberData> AllMembers { get; }
 
 		/// <summary>
 		/// Member <see cref="ISymbol"/>s of the current type.
 		/// </summary>
-		ISymbolContainer<ISymbol> Members { get; }
+		ISymbolContainer<ISymbol, IMemberData> Members { get; }
 
 		/// <summary>
 		/// Base types of the current type.
 		/// </summary>
-		ISymbolContainer<INamedTypeSymbol> BaseTypes { get; }
+		ISymbolContainer<INamedTypeSymbol, ITypeData> BaseTypes { get; }
 
 		/// <summary>
 		/// Inner types of the current type and its parent types.
 		/// </summary>
-		ISymbolContainer<INamedTypeSymbol> AllInnerTypes { get; }
+		ISymbolContainer<INamedTypeSymbol, ITypeData> AllInnerTypes { get; }
 
 		/// <summary>
 		/// Inner types of the current type.
 		/// </summary>
-		ISymbolContainer<INamedTypeSymbol> InnerTypes { get; }
+		ISymbolContainer<INamedTypeSymbol, ITypeData> InnerTypes { get; }
 
 		/// <summary>
 		/// Parameterless constructor of this type.
 		/// </summary>
 		ISymbolOrMember<IMethodSymbol, IMethodData>? ParameterlessConstructor { get; }
-
-		/// <summary>
-		/// Type parameters of this type.
-		/// </summary>
-		ISymbolContainer<ITypeParameterSymbol> TypeParameters { get; }
-
-		/// <summary>
-		/// Type arguments of this type.
-		/// </summary>
-		ISymbolContainer<ITypeSymbol> TypeArguments { get; }
 	}
 }

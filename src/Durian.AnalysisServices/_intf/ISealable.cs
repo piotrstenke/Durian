@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// Provides a mechanism for prohibiting and permitting modifications to the object.
+	/// Provides a mechanism for prohibiting and permitting modifications of the current object.
 	/// </summary>
 	public interface ISealable
 	{
@@ -14,13 +16,25 @@ namespace Durian.Analysis
 		bool IsSealed { get; }
 
 		/// <summary>
-		/// Prohibits this object to be modified.
+		/// Determines whether the current state of the object allows it to be sealed.
 		/// </summary>
+		bool CanBeSealed { get; }
+
+		/// <summary>
+		/// Determines whether the current state of the object allows it to be unsealed.
+		/// </summary>
+		bool CanBeUnsealed { get; }
+
+		/// <summary>
+		/// Prohibits further modification of the object.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Current state of the object does not allow it to be sealed.</exception>
 		void Seal();
 
 		/// <summary>
 		/// Permits this object to be modified.
 		/// </summary>
+		/// <exception cref="InvalidOperationException">Current state of the object does not allow it to be unsealed.</exception>
 		void Unseal();
 	}
 }

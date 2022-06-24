@@ -408,7 +408,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			List<(string, string)> list = new();
 
-			foreach (INamedTypeSymbol parent in type.GetContainingTypes(true, ReturnOrder.Parent))
+			foreach (INamedTypeSymbol parent in type.GetContainingTypes(true, ReturnOrder.ChildToParent))
 			{
 				if (!parent.IsGenericType)
 				{
