@@ -347,7 +347,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <inheritdoc/>
-		protected override sealed bool SealCore()
+		protected sealed override bool SealCore()
 		{
 			_levels.TrimExcess();
 

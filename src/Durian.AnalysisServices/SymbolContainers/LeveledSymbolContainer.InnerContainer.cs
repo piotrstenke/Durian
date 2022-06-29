@@ -20,7 +20,9 @@ namespace Durian.Analysis.SymbolContainers
 			private readonly LeveledSymbolContainer<TSymbol, TData> _parentContainer;
 
 			public int Count => EndIndex;
+
 			public int EndIndex { get; }
+
 			public bool IsEmpty => EndIndex == 0;
 
 			public ReturnOrder Order { get; private set; }
@@ -91,6 +93,11 @@ namespace Durian.Analysis.SymbolContainers
 				return _parentContainer._data[EndIndex - 1];
 			}
 
+			public void Reverse()
+			{
+				Order = Order.Reverse();
+			}
+
 			ImmutableArray<IMemberData> ISymbolContainer.GetData()
 			{
 				return GetData().CastArray<IMemberData>();
@@ -111,9 +118,10 @@ namespace Durian.Analysis.SymbolContainers
 				return GetSymbols().CastArray<ISymbol>();
 			}
 
-			public void Reverse()
+			IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>.Reverse()
 			{
-				Order = Order.Reverse();
+				Reverse();
+				return this;
 			}
 
 			private IEnumerator<ISymbolOrMember<TSymbol, TData>> GetEnumeratorAsInterface()
@@ -124,12 +132,6 @@ namespace Durian.Analysis.SymbolContainers
 				}
 
 				return _parentContainer.GetEnumerator(EndIndex);
-			}
-
-			IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>.Reverse()
-			{
-				Reverse();
-				return this;
 			}
 		}
 	}

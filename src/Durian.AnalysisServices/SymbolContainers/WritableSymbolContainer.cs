@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
@@ -21,10 +22,17 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Initializes a new instance of the <see cref="WritableSymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
+		public WritableSymbolContainer() : this(null, null)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="WritableSymbolContainer{TSymbol, TData}"/> class.
+		/// </summary>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-		public WritableSymbolContainer(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(parentCompilation, nameResolver)
+		public WritableSymbolContainer(ICompilationData? parentCompilation, ISymbolNameResolver? nameResolver = default) : base(parentCompilation, nameResolver)
 		{
 		}
 
@@ -75,7 +83,20 @@ namespace Durian.Analysis.SymbolContainers
 		/// <inheritdoc/>
 		public virtual void WriteTo(StringBuilder builder)
 		{
-			SymbolContainerFactory.DefaultBuild(this, builder);
+			ImmutableArray<string> names = GetNames();
+
+			if (names.Length == 0)
+			{
+				return;
+			}
+
+			builder.Append(names[0]);
+
+			for (int i = 1; i < names.Length; i++)
+			{
+				builder.Append('.');
+				builder.Append(names[i]);
+			}
 		}
 	}
 }

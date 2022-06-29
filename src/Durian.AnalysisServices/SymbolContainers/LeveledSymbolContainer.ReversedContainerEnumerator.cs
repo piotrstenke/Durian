@@ -18,7 +18,9 @@ namespace Durian.Analysis.SymbolContainers
 			private int _currentIndex;
 
 			public ISymbolOrMember<TSymbol, TData> Current => _data[_currentIndex];
+
 			public int EndIndex { get; }
+
 			object IEnumerator.Current => Current;
 
 			public ReversedContainerEnumerator(List<ISymbolOrMember<TSymbol, TData>> data, int endIndex)

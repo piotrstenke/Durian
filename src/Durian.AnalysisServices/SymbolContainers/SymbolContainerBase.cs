@@ -33,7 +33,7 @@ namespace Durian.Analysis.SymbolContainers
 		public ReturnOrder Order { get; private set; }
 
 		/// <inheritdoc/>
-		public ICompilationData? ParentCompilation { get; }
+		public ICompilationData? ParentCompilation { get; protected set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SymbolContainerBase{TSymbol, TData}"/> class.
