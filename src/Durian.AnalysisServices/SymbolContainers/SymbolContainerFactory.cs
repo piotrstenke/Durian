@@ -5,11 +5,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
-using System.Linq;
 
 namespace Durian.Analysis.SymbolContainers
 {
@@ -29,12 +29,6 @@ namespace Durian.Analysis.SymbolContainers
 			public int Count => 0;
 			public ReturnOrder Order => default;
 			public ICompilationData? ParentCompilation => null;
-
-			bool ISealable.IsSealed => false;
-
-			bool ISealable.CanBeSealed => false;
-
-			bool ISealable.CanBeUnsealed => false;
 
 			public ISymbolOrMember<TSymbol, TData> First()
 			{
@@ -85,16 +79,6 @@ namespace Durian.Analysis.SymbolContainers
 			{
 				return GetEnumerator();
 			}
-
-			void ISealable.Seal()
-			{
-				// Do nothing.
-			}
-
-			void ISealable.Unseal()
-			{
-				// Do nothing.
-			}
 		}
 
 		private class GenericWrapper<TSymbol, TData> : ISymbolOrMember<TSymbol, TData>
@@ -104,16 +88,16 @@ namespace Durian.Analysis.SymbolContainers
 			private readonly ISymbolOrMember _underlaying;
 
 			/// <inheritdoc/>
-			public TSymbol Symbol => (_underlaying.Symbol as TSymbol)!;
-
-			/// <inheritdoc/>
 			public bool HasMember => _underlaying.HasMember;
 
 			/// <inheritdoc/>
 			public TData Member => (_underlaying.Member as TData)!;
 
-			ISymbol ISymbolOrMember.Symbol => _underlaying.Symbol;
+			/// <inheritdoc/>
+			public TSymbol Symbol => (_underlaying.Symbol as TSymbol)!;
+
 			IMemberData ISymbolOrMember.Member => _underlaying.Member;
+			ISymbol ISymbolOrMember.Symbol => _underlaying.Symbol;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="GenericWrapper{TSymbol, TData}"/> class.
@@ -959,7 +943,7 @@ namespace Durian.Analysis.SymbolContainers
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static Exception Exc_EmptySymbolContainer()
 		{
-			return new InvalidOperationException("Container does not contain any symbols");
+			return new EmptyContainerException("Container does not contain any symbols");
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -967,7 +951,7 @@ namespace Durian.Analysis.SymbolContainers
 			where TSymbol : class, ISymbol
 			where TData : class, IMemberData
 		{
-			if(original is ISymbolOrMember<TSymbol, TData> member)
+			if (original is ISymbolOrMember<TSymbol, TData> member)
 			{
 				return member;
 			}

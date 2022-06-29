@@ -25,45 +25,54 @@ namespace Durian.Analysis
 		}
 
 		/// <inheritdoc/>
-		public void Seal()
+		public bool Seal()
 		{
 			if (IsSealed)
 			{
-				return;
+				return false;
 			}
 
 			if (!CanBeSealed)
 			{
-				throw new InvalidOperationException("Current state of the object does not allow it to be sealed");
+				throw new SealedObjectException("Current state of the object does not allow it to be sealed");
 			}
 
 			IsSealed = SealCore();
+			return IsSealed;
 		}
 
 		/// <inheritdoc/>
-		public void Unseal()
+		public bool Unseal()
 		{
 			if (!IsSealed)
 			{
-				return;
+				return false;
 			}
 
 			if (!CanBeUnsealed)
 			{
-				throw new InvalidOperationException("Current state of the object does not allow it to be unsealed");
+				throw new SealedObjectException("Current state of the object does not allow it to be unsealed");
 			}
 
-			IsSealed = !UnsealCore();
+			bool result = UnsealCore();
+			IsSealed = !result;
+			return result;
 		}
 
 		/// <summary>
 		/// Actually seals the object.
 		/// </summary>
-		protected abstract bool SealCore();
+		protected virtual bool SealCore()
+		{
+			return true;
+		}
 
 		/// <summary>
 		/// Actually unseals the object.
 		/// </summary>
-		protected abstract bool UnsealCore();
+		protected virtual bool UnsealCore()
+		{
+			return true;
+		}
 	}
 }

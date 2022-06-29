@@ -28,13 +28,15 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Prohibits further modification of the object.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Current state of the object does not allow it to be sealed.</exception>
-		void Seal();
+		/// <returns><see langword="true"/> if successfully sealed, <see langword="false"/> otherwise.</returns>
+		/// <exception cref="SealedObjectException">Current state of the object does not allow it to be sealed.</exception>
+		bool Seal();
 
 		/// <summary>
 		/// Permits this object to be modified.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Current state of the object does not allow it to be unsealed.</exception>
-		void Unseal();
+		/// <returns><see langword="true"/> if successfully unsealed, <see langword="false"/> otherwise.</returns>
+		/// <exception cref="SealedObjectException">Current state of the object does not allow it to be unsealed.</exception>
+		bool Unseal();
 	}
 }

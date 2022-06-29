@@ -2,14 +2,10 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.SymbolContainers
@@ -19,83 +15,71 @@ namespace Durian.Analysis.SymbolContainers
 	/// </summary>
 	/// <typeparam name="TSymbol">Type of target <see cref="ISymbol"/>.</typeparam>
 	/// <typeparam name="TData">Type of target <see cref="IMemberData"/>.</typeparam>
-	[DebuggerDisplay("Count = {Count}, Order = {Order}")]
-	public class SymbolContainer<TSymbol, TData> : ISymbolContainer<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>, ISealable
+	public class SymbolContainer<TSymbol, TData> : SymbolContainerBase<TSymbol, TData>, IBuilderReceiver<SymbolContainerBuilder<SymbolContainer<TSymbol, TData>>>
 		where TSymbol : class, ISymbol
 		where TData : class, IMemberData
 	{
-		private ReturnOrder _order;
-
 		/// <inheritdoc/>
-		public int Count => Content.Count;
+		public override int Count => Content.Count;
 
 		/// <summary>
-		/// Order in which the elements are added.
+		/// <see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.
 		/// </summary>
-		public ReturnOrder Order
-		{
-			get => _order;
-			set
-			{
-				if (_order == value)
-				{
-					retun;
-				}
-
-				// TODO 
-				Reverse();
-			}
-		}
-
-		/// <inheritdoc/>
-		public ICompilationData? ParentCompilation { get; }
-
-		/// <inheritdoc/>
-		public bool IsSealed { get; private set; }
-
-		bool ISealable.CanBeUnsealed => false;
+		public ISymbolNameResolver SymbolNameResolver { get; }
 
 		/// <summary>
-		/// List of all <see cref="ISymbolOrMember"/>s added to the container.
+		/// List of all added symbols.
 		/// </summary>
 		protected List<ISymbolOrMember<TSymbol, TData>> Content { get; }
+
+		private SymbolContainer()
+		{
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
-		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
-		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
-		public SymbolContainer(ICompilationData? parentCompilation = default)
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
+		public SymbolContainer(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(parentCompilation)
 		{
 			Content = new();
-			ParentCompilation = parentCompilation;
+			SymbolNameResolver = nameResolver ?? Analysis.SymbolNameResolver.Default;
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="capacity">Initial capacity of the container.</param>
-		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
-		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentOutOfRangeException"><paramref name="capacity"/> is less than <c>0</c>.</exception>
-		public SymbolContainer(int capacity, ICompilationData? parentCompilation = default)
+		public SymbolContainer(int capacity, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(parentCompilation)
 		{
 			Content = new(capacity);
-			ParentCompilation = parentCompilation;
+			SymbolNameResolver = nameResolver ?? Analysis.SymbolNameResolver.Default;
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="collection">Collection of <typeparamref name="TSymbol"/>s to add to the container.</param>
-		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
-		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public SymbolContainer(IEnumerable<TSymbol> collection, ICompilationData? parentCompilation = default)
+		public SymbolContainer(IEnumerable<TSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(collection, parentCompilation)
 		{
 			Content = new();
-			Order = GetInitialOrder(collection);
-			ParentCompilation = parentCompilation;
+			SymbolNameResolver = nameResolver ?? Analysis.SymbolNameResolver.Default;
 			AddRange(collection);
 		}
 
@@ -103,138 +87,23 @@ namespace Durian.Analysis.SymbolContainers
 		/// Initializes a new instance of the <see cref="SymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="ISymbolOrMember"/> to add to the container.</param>
-		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
-		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public SymbolContainer(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection, ICompilationData? parentCompilation = default)
+		public SymbolContainer(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(collection, parentCompilation)
 		{
-			Content = new(collection);
-			Order = GetInitialOrder(collection);
-			ParentCompilation = parentCompilation;
-		}
-
-		/// <summary>
-		/// Prohibits further modification of the object.
-		/// </summary>
-		/// <remarks>Once the container is sealed, it cannot be unsealed.</remarks>
-		public void Seal()
-		{
-			IsSealed = true;
-		}
-
-		void ISealable.Unseal()
-		{
-			if(IsSealed)
-			{
-				throw new InvalidOperationException("Sealed SymbolContainer cannot be unsealed.");
-			}
-		}
-
-		/// <summary>
-		/// Adds the specified <paramref name="symbol"/> to the container.
-		/// </summary>
-		/// <param name="symbol"><typeparamref name="TSymbol"/> to add to the container.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public void Add(TSymbol symbol)
-		{
-			if (symbol is null)
-			{
-				throw new ArgumentNullException(nameof(symbol));
-			}
-
-			Content.Add(new SymbolOrMemberWrapper<TSymbol, TData>(symbol, ParentCompilation));
-		}
-
-		/// <summary>
-		/// Adds the specified <paramref name="member"/> to the container.
-		/// </summary>
-		/// <param name="member"><see cref="ISymbolOrMember"/> to add to the container.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-		public void Add(ISymbolOrMember<TSymbol, TData> member)
-		{
-			if (member is null)
-			{
-				throw new ArgumentNullException(nameof(member));
-			}
-
-			Content.Add(member);
-		}
-
-		/// <summary>
-		/// Adds the specified <paramref name="collection"/> of <see cref="ISymbol"/>s to the container.
-		/// </summary>
-		/// <param name="collection">Collection of <typeparamref name="TSymbol"/>s to add to the container.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public void AddRange(IEnumerable<TSymbol> collection)
-		{
-			if (collection is null)
-			{
-				throw new ArgumentNullException(nameof(collection));
-			}
-
-			Content.AddRange(collection.Select(symbol => new SymbolOrMemberWrapper<TSymbol, TData>(symbol, ParentCompilation)));
-		}
-
-		/// <summary>
-		/// Adds the specified <paramref name="collection"/> of <see cref="ISymbolOrMember"/>s to the container.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="ISymbolOrMember"/>s to add to the container.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public void AddRange(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection)
-		{
-			if (collection is null)
-			{
-				throw new ArgumentNullException(nameof(collection));
-			}
-
-			Content.AddRange(collection);
+			Content = new();
+			SymbolNameResolver = nameResolver ?? Analysis.SymbolNameResolver.Default;
+			AddRange(collection);
 		}
 
 		/// <inheritdoc/>
-		public virtual ImmutableArray<TData> GetData()
+		public override ISymbolOrMember<TSymbol, TData> First(ReturnOrder order)
 		{
-			return ImmutableArray.CreateRange(Content.Select(s => s.Member));
-		}
-
-		/// <inheritdoc/>
-		public IEnumerator<ISymbolOrMember<TSymbol, TData>> GetEnumerator()
-		{
-			return Content.GetEnumerator();
-		}
-
-		/// <inheritdoc/>
-		public virtual ImmutableArray<string> GetNames()
-		{
-			return ImmutableArray.CreateRange(Content.Select(s => s.HasMember ? s.Member.Name : s.Symbol.GetGenericName()));
-		}
-
-		/// <inheritdoc cref="ISymbolContainer.GetSymbols"/>
-		public virtual ImmutableArray<TSymbol> GetSymbols()
-		{
-			return ImmutableArray.CreateRange(Content.Select(s => s.Symbol));
-		}
-
-		/// <summary>
-		/// Reverses the container.
-		/// </summary>
-		public void Reverse()
-		{
-			_order = _order.Reverse();
-			Content.Reverse();
-		}
-
-		/// <summary>
-		/// Returns the first member according to the current <see cref="Order"/>.
-		/// </summary>
-		public ISymbolOrMember<TSymbol, TData> First()
-		{
-			return First(Order);
-		}
-
-		/// <inheritdoc/>
-		public ISymbolOrMember<TSymbol, TData> First(ReturnOrder order)
-		{
-			if(Content.Count == 0)
+			if (Content.Count == 0)
 			{
 				throw SymbolContainerFactory.Exc_EmptySymbolContainer();
 			}
@@ -247,16 +116,26 @@ namespace Durian.Analysis.SymbolContainers
 			return Content[Content.Count - 1];
 		}
 
-		/// <summary>
-		/// Returns the last member according to the current <see cref="Order"/>.
-		/// </summary>
-		public ISymbolOrMember<TSymbol, TData> Last()
+		/// <inheritdoc/>
+		public override ImmutableArray<TData> GetData()
 		{
-			return Last(Order);
+			return ImmutableArray.CreateRange(Content.Select(s => s.Member));
 		}
 
 		/// <inheritdoc/>
-		public ISymbolOrMember<TSymbol, TData> Last(ReturnOrder order)
+		public override ImmutableArray<string> GetNames()
+		{
+			return ImmutableArray.CreateRange(Content.Select(s => SymbolNameResolver.ResolveName(s)));
+		}
+
+		/// <inheritdoc cref="ISymbolContainer.GetSymbols"/>
+		public override ImmutableArray<TSymbol> GetSymbols()
+		{
+			return ImmutableArray.CreateRange(Content.Select(s => s.Symbol));
+		}
+
+		/// <inheritdoc/>
+		public override ISymbolOrMember<TSymbol, TData> Last(ReturnOrder order)
 		{
 			if (Content.Count == 0)
 			{
@@ -271,30 +150,47 @@ namespace Durian.Analysis.SymbolContainers
 			return Content[0];
 		}
 
-		IEnumerator IEnumerable.GetEnumerator()
+		/// <inheritdoc cref="SymbolContainerBase{TSymbol, TData}.Reverse"/>
+		public new SymbolContainer<TSymbol, TData> Reverse()
 		{
-			return GetEnumerator();
+			return (base.Reverse() as SymbolContainer<TSymbol, TData>)!;
 		}
 
-		ImmutableArray<ISymbol> ISymbolContainer.GetSymbols()
+		/// <inheritdoc/>
+		protected override void AddCore(ISymbolOrMember<TSymbol, TData> member)
 		{
-			return GetSymbols().CastArray<ISymbol>();
+			Content.Add(member);
 		}
 
-		ImmutableArray<IMemberData> ISymbolContainer.GetData()
+		/// <inheritdoc/>
+		protected override void AddRangeCore(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection)
 		{
-			return GetData().CastArray<IMemberData>();
+			Content.AddRange(collection);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static ReturnOrder GetInitialOrder(IEnumerable collection)
+		/// <inheritdoc/>
+		protected override IEnumerator<ISymbolOrMember<TSymbol, TData>> GetEnumeratorCore()
 		{
-			return collection switch
-			{
-				IReturnOrderEnumerable<TSymbol> symbol => symbol.Order,
-				IReturnOrderEnumerable<ISymbolOrMember> member => member.Order,
-				_ => default
-			};
+			return Content.GetEnumerator();
+		}
+
+		/// <inheritdoc/>
+		protected override void ReverseCore()
+		{
+			Content.Reverse();
+		}
+
+		/// <inheritdoc/>
+		protected override bool SealCore()
+		{
+			Content.TrimExcess();
+
+			return true;
+		}
+
+		void IBuilderReceiver<SymbolContainerBuilder<SymbolContainer<TSymbol, TData>>>.Receive(SymbolContainerBuilder<SymbolContainer<TSymbol, TData>> builder)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

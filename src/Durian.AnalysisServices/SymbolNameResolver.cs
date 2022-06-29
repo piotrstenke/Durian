@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
@@ -12,10 +13,26 @@ namespace Durian.Analysis
 	/// </summary>
 	public static class SymbolNameResolver
 	{
+		private static ISymbolNameResolver _default = Verbatim.Instance;
+
 		/// <summary>
-		/// Default <see cref="ISymbolNameResolver"/>, that is <see cref="Verbatim.Instance"/>.
+		/// Default <see cref="ISymbolNameResolver"/>.
 		/// </summary>
-		public static ISymbolNameResolver Default => Verbatim.Instance;
+		/// <remarks>At application start, <see cref="Verbatim.Instance"/> is the default.</remarks>
+		/// <exception cref="ArgumentNullException">Value is <see langword="null"/>.</exception>
+		public static ISymbolNameResolver Default
+		{
+			get => _default;
+			set
+			{
+				if(value is null)
+				{
+					throw new ArgumentNullException(nameof(value));
+				}
+
+				_default = value;
+			}
+		}
 
 		/// <summary>
 		/// Returns a globally accessible <see cref="ISymbolNameResolver"/> that handles the specified <see cref="SymbolName"/> format.

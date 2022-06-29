@@ -23,7 +23,8 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
-		public WritableSymbolContainer(ICompilationData? parentCompilation = default) : base(parentCompilation)
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
+		public WritableSymbolContainer(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(parentCompilation, nameResolver)
 		{
 		}
 
@@ -33,8 +34,9 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="capacity">Initial capacity of the container.</param>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentOutOfRangeException"><paramref name="capacity"/> is less than <c>0</c>.</exception>
-		public WritableSymbolContainer(int capacity, ICompilationData? parentCompilation = default) : base(capacity, parentCompilation)
+		public WritableSymbolContainer(int capacity, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(capacity, parentCompilation, nameResolver)
 		{
 		}
 
@@ -44,8 +46,9 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="collection">Collection of <typeparamref name="TSymbol"/>s to add to the container.</param>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public WritableSymbolContainer(IEnumerable<TSymbol> collection, ICompilationData? parentCompilation = default) : base(collection, parentCompilation)
+		public WritableSymbolContainer(IEnumerable<TSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(collection, parentCompilation, nameResolver)
 		{
 		}
 
@@ -55,15 +58,10 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="collection">Collection of <see cref="ISymbolOrMember"/> to add to the container.</param>
 		/// <param name="parentCompilation">Parent <see cref="ICompilationData"/> of the current container.
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para></param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public WritableSymbolContainer(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection, ICompilationData? parentCompilation = default) : base(collection, parentCompilation)
+		public WritableSymbolContainer(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(collection, parentCompilation, nameResolver)
 		{
-		}
-
-		/// <inheritdoc/>
-		public virtual void WriteTo(StringBuilder builder)
-		{
-			SymbolContainerFactory.DefaultBuild(this, builder);
 		}
 
 		/// <inheritdoc cref="IWritableSymbolContainer.ToString"/>
@@ -72,6 +70,12 @@ namespace Durian.Analysis.SymbolContainers
 			StringBuilder builder = new();
 			WriteTo(builder);
 			return builder.ToString();
+		}
+
+		/// <inheritdoc/>
+		public virtual void WriteTo(StringBuilder builder)
+		{
+			SymbolContainerFactory.DefaultBuild(this, builder);
 		}
 	}
 }
