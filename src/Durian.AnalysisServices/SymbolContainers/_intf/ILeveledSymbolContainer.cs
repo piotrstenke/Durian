@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 
@@ -32,7 +33,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="function">Function used to retrieve the ?<typeparamref name="TSymbol"/>s.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
 		/// <exception cref="SealedObjectException">Cannot register new level to a sealed container</exception>
-		void RegisterLevel(Func<TSymbol, IReturnOrderEnumerable<TSymbol>> function);
+		void RegisterLevel(Func<TSymbol, IEnumerable<TSymbol>> function);
 
 		/// <summary>
 		/// Registers a new nesting level.
@@ -40,7 +41,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="function">Function used to retrieve the ?<typeparamref name="TSymbol"/>s.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
 		/// <exception cref="SealedObjectException">Cannot register new level to a sealed container</exception>
-		void RegisterLevel(Func<TSymbol, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>> function);
+		void RegisterLevel(Func<TSymbol, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function);
 
 		/// <summary>
 		/// Registers a new nesting level.
@@ -48,7 +49,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="function">Function used to retrieve the ?<typeparamref name="TSymbol"/>s.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
 		/// <exception cref="SealedObjectException">Cannot register new level to a sealed container</exception>
-		void RegisterLevel(Func<ISymbolOrMember<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>> function);
+		void RegisterLevel(Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function);
 
 		/// <summary>
 		/// Resolves a <see cref="ISymbolContainer{TSymbol, TData}"/> at the specified nesting level.

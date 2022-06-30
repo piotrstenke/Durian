@@ -124,6 +124,12 @@ namespace Durian.Analysis.SymbolContainers
 				return this;
 			}
 
+			IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
+			{
+				Reverse();
+				return this;
+			}
+
 			private IEnumerator<ISymbolOrMember<TSymbol, TData>> GetEnumeratorAsInterface()
 			{
 				if (Order == ReturnOrder.ChildToParent)

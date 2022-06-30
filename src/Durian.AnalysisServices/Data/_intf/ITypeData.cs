@@ -11,7 +11,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="INamedTypeSymbol"/>.
 	/// </summary>
-	public interface ITypeData : IGenericMemberData
+	public interface ITypeData : IGenericMemberData, ISymbolOrMember<INamedTypeSymbol, ITypeData>
 	{
 		/// <summary>
 		/// <see cref="ITypeSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.
@@ -52,5 +52,10 @@ namespace Durian.Analysis.Data
 		/// Parameterless constructor of this type.
 		/// </summary>
 		ISymbolOrMember<IMethodSymbol, IMethodData>? ParameterlessConstructor { get; }
+
+
+		ISymbolContainer<ISymbol, IMemberData> GetMembers(IncludedMembers members);
+
+		ISymbolContainer<INamedTypeSymbol, ITypeData> GetInnerTypes(IncludedMembers members);
 	}
 }

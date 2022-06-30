@@ -9,7 +9,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="IFieldSymbol"/>.
 	/// </summary>
-	public interface IFieldData : IMemberData, IDeclarator<FieldDeclarationSyntax>
+	public interface IFieldData : IMemberData, IDeclarator<FieldDeclarationSyntax>, ISymbolOrMember<IFieldSymbol, IFieldData>
 	{
 		/// <summary>
 		/// <see cref="IFieldSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.

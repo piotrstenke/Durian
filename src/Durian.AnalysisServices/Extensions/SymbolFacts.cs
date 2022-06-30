@@ -1134,7 +1134,7 @@ namespace Durian.Analysis.Extensions
 		/// Determines whether the specified <paramref name="field"/> is a backing field of the given <paramref name="property"/>.
 		/// </summary>
 		/// <param name="field"><see cref="IFieldSymbol"/> to check if is a backing field of the given <paramref name="property"/>.</param>
-		/// <param name="property"><see cref="IParameterSymbol"/> to check if the specified <paramref name="field"/> is a backing field of.</param>
+		/// <param name="property"><see cref="IPropertySymbol"/> to check if the specified <paramref name="field"/> is a backing field of.</param>
 		public static bool IsBackingField(this IFieldSymbol field, IPropertySymbol property)
 		{
 			return SymbolEqualityComparer.Default.Equals(field.AssociatedSymbol, property);

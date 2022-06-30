@@ -12,7 +12,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="IndexerDeclarationSyntax"/>.
 	/// </summary>
-	public class IndexerData : MemberData
+	public class IndexerData : MemberData, IPropertyData
 	{
 		/// <summary>
 		/// Contains optional data that can be passed to a <see cref="IndexerData"/>.
@@ -49,6 +49,12 @@ namespace Durian.Analysis.Data
 		/// Kind of the auto-property.
 		/// </summary>
 		public AutoPropertyKind AutoPropertyKind { get; }
+
+		BasePropertyDeclarationSyntax IPropertyData.Declaration => Declaration;
+
+		ISymbolOrMember<IFieldSymbol, IFieldData>? IPropertyData.BackingField => null;
+
+		IPropertyData ISymbolOrMember<IPropertySymbol, IPropertyData>.Member => this;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="IndexerData"/> class.

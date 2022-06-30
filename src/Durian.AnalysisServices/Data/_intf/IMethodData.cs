@@ -12,7 +12,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="IMethodSymbol"/>.
 	/// </summary>
-	public interface IMethodData : IGenericMemberData
+	public interface IMethodData : IGenericMemberData, ISymbolOrMember<IMethodSymbol, IMethodData>
 	{
 		/// <summary>
 		/// Body of the method.

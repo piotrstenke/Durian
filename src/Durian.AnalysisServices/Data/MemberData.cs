@@ -89,6 +89,12 @@ namespace Durian.Analysis.Data
 			/// <inheritdoc cref="IMemberData.Name"/>
 			public string? Name { get; set; }
 
+			/// <inheritdoc cref="IMemberData.GenericName"/>
+			public string? GenericName { get; set; }
+
+			/// <inheritdoc cref="IMemberData.SubstitutedName"/>
+			public string? SubstitutedName { get; set; }
+
 			/// <inheritdoc cref="IMemberData.Virtuality"/>
 			public Virtuality? Virtuality { get; set; }
 
@@ -98,7 +104,7 @@ namespace Durian.Analysis.Data
 			/// <summary>
 			/// All modifiers of the current symbol.
 			/// </summary>
-			public string[]? Modifiers { get; set; }
+			public ImmutableArray<string> Modifiers { get; set; }
 
 			/// <summary>
 			/// All containing types of the current symbol.
@@ -131,11 +137,11 @@ namespace Durian.Analysis.Data
 				TrySeal(ContainingNamespaces);
 			}
 
-			private protected bool TrySeal(ISymbolContainer? container)
+			private protected static bool TrySeal(ISymbolContainer? container)
 			{
-				if(container is not null && container.CanBeSealed)
+				if(container is ISealable sealable && sealable.CanBeSealed)
 				{
-					container.Seal();
+					sealable.Seal();
 					return true;
 				}
 
@@ -156,7 +162,9 @@ namespace Durian.Analysis.Data
 		private bool? _isUnsafe;
 		private Location? _location;
 		private DefaultedValue<ISymbolOrMember> _hiddenMember;
-		private string[]? _modifiers;
+		private ImmutableArray<string> _modifiers;
+		private string? _genericName;
+		private string? _substitutedName;
 
 		/// <inheritdoc/>
 		public SyntaxNode Declaration { get; }
@@ -174,6 +182,12 @@ namespace Durian.Analysis.Data
 		public Location Location => _location ??= Declaration.GetLocation();
 
 		/// <inheritdoc/>
+		public string GenericName => _genericName ??= Symbol.GetGenericName();
+
+		/// <inheritdoc/>
+		public string SubstitutedName => _substitutedName ??= Symbol.GetGenericName(true);
+
+		/// <inheritdoc/>
 		public string Name { get; }
 
 		/// <inheritdoc/>
@@ -187,6 +201,8 @@ namespace Durian.Analysis.Data
 
 		/// <inheritdoc/>
 		public ISymbol Symbol { get; }
+
+		bool IMemberData.HasDeclaration => true;
 
 		IMemberData ISymbolOrMember.Member => this;
 		bool ISymbolOrMember.HasMember => true;
@@ -215,7 +231,8 @@ namespace Durian.Analysis.Data
 			Declaration = declaration;
 			ParentCompilation = compilation;
 
-			Properties? props = properties ?? GetDefaultProperties();
+			bool isDefaultProps = properties is null;
+			Properties? props = isDefaultProps ? GetDefaultProperties() : properties;
 
 			if (props is null)
 			{
@@ -227,6 +244,11 @@ namespace Durian.Analysis.Data
 			}
 			else
 			{
+				if(!isDefaultProps)
+				{
+					props.SealContainers();
+				}
+
 				SemanticModel = props.SemanticModel ?? ParentCompilation.Compilation.GetSemanticModel(Declaration);
 				Symbol = props.Symbol ?? SemanticModel.GetSymbol(Declaration);
 
@@ -235,15 +257,6 @@ namespace Durian.Analysis.Data
 
 				SetPropertiesCore(props);
 			}
-		}
-
-		/// <summary>
-		/// Prepares the <paramref name="properties"/> to be consumed by the current object.
-		/// </summary>
-		/// <param name="properties"><see cref="Properties"/> to init.</param>
-		protected virtual void InitProperties(Properties properties)
-		{
-			properties.SealContainers();
 		}
 
 		internal MemberData(ISymbol symbol, ICompilationData compilation, bool initDefaultProperties = false)
@@ -284,10 +297,10 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Root namespace of the current member (excluding the <see langword="global"/> namespace).
 		/// </summary>
-		public ISymbolOrMember<INamespaceSymbol, NamespaceData> RootNamespace => ContainingNamespaces.First();
+		public ISymbolOrMember<INamespaceSymbol, INamespaceData> RootNamespace => ContainingNamespaces.First();
 
 		/// <inheritdoc cref="IMemberData.ContainingNamespaces"/>
-		public IWritableSymbolContainer<INamespaceSymbol, NamespaceData> ContainingNamespaces
+		public IWritableSymbolContainer<INamespaceSymbol, INamespaceData> ContainingNamespaces
 		{
 			get
 			{
@@ -300,10 +313,7 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-
-				var a = Symbol.GetContainingTypes().ToContainer<ClassData>(ParentCompilation);
-
-				return _containingTypes ??= Symbol.GetContainingTypes().ToContainer<ISymbol>(ParentCompilation);
+				return _containingTypes ??= Symbol.GetContainingTypes().ToWritableContainer(ParentCompilation);
 			}
 		}
 
@@ -314,7 +324,7 @@ namespace Durian.Analysis.Data
 			{
 				if(_hiddenMember.IsDefault)
 				{
-					_hiddenMember = Symbol.GetHiddenSymbol().ToDataOrSymbolInternal<IMemberData>(ParentCompilation);
+					_hiddenMember = new(Symbol.GetHiddenSymbol()?.ToDataOrSymbol(ParentCompilation));
 				}
 
 				return _hiddenMember.Value;
@@ -322,11 +332,11 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc/>
-		public string[] Modifiers
+		public ImmutableArray<string> Modifiers
 		{
 			get
 			{
-				return _modifiers ??= Symbol.GetModifiers();
+				return _modifiers.IsDefault ? (_modifiers = Symbol.GetModifiers().ToImmutableArray()) : _modifiers;
 			}
 		}
 
@@ -350,6 +360,8 @@ namespace Durian.Analysis.Data
 			_location = properties.Location;
 			_modifiers = properties.Modifiers;
 			_hiddenMember = properties.HiddenMember;
+			_substitutedName = properties.SubstitutedName;
+			_genericName = properties.GenericName;
 		}
 
 		private protected static InvalidOperationException Exc_NoSyntaxReference(ISymbol symbol)

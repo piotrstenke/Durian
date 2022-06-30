@@ -246,6 +246,11 @@ namespace Durian.Analysis.SymbolContainers
 			return Reverse();
 		}
 
+		IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
+		{
+			return Reverse();
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static ReturnOrder GetInitialOrder(IEnumerable collection)
 		{

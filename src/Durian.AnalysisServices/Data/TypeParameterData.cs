@@ -12,7 +12,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="TypeParameterSyntax"/>.
 	/// </summary>
-	public class TypeParameterData : MemberData, ITypeData
+	public class TypeParameterData : MemberData, ITypeParameterData
 	{
 		/// <summary>
 		/// Contains optional data that can be passed to a <see cref="Properties"/>.
@@ -72,6 +72,8 @@ namespace Durian.Analysis.Data
 				return _constraintClause.Value;
 			}
 		}
+
+		ITypeParameterData ISymbolOrMember<ITypeParameterSymbol, ITypeParameterData>.Member => this;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TypeParameterData"/> class.

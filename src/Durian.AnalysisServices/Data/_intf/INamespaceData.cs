@@ -11,7 +11,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="INamespaceSymbol"/>.
 	/// </summary>
-	public interface INamespaceData : IMemberData
+	public interface INamespaceData : INamespaceOrTypeData, ISymbolOrMember<INamespaceSymbol, INamespaceData>
 	{
 		/// <summary>
 		/// Target <see cref="BaseNamespaceDeclarationSyntax"/>.
@@ -29,23 +29,21 @@ namespace Durian.Analysis.Data
 		NamespaceStyle DeclarationStyle { get; }
 
 		/// <summary>
-		/// All <see cref="INamespaceSymbol"/>s that are contained directly within this namespace.
+		/// Returns all <see cref="INamedTypeSymbol"/>s contained within this namespace.
 		/// </summary>
-		ISymbolContainer<INamespaceSymbol, INamespaceData> SubNamespaces { get; }
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<INamedTypeSymbol, ITypeData> GetTypes(IncludedMembers members);
 
 		/// <summary>
-		/// All <see cref="INamespaceSymbol"/>s that are contained within this namespace or one if its sub namespaces.
+		/// Returns all <see cref="INamespaceSymbol"/>s contained within this namespace.
 		/// </summary>
-		ISymbolContainer<INamespaceSymbol, INamespaceData> AllSubNamespaces { get; }
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<INamespaceSymbol, INamespaceData> GetNamespaces(IncludedMembers members);
 
 		/// <summary>
-		/// All <see cref="INamedTypeSymbol"/>s that are contained directly within this namespace.
+		/// Returns all <see cref="INamespaceOrTypeSymbol"/>s contained within this namespace.
 		/// </summary>
-		ISymbolContainer<INamedTypeSymbol, ITypeData> Types { get; }
-
-		/// <summary>
-		/// All <see cref="INamedTypeSymbol"/> that are contained either within this namespace, one of its sub namespaces or one of its inner types.
-		/// </summary>
-		ISymbolContainer<INamedTypeSymbol, ITypeData> AllTypes { get; }
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData> GetMembers(IncludedMembers members);
 	}
 }

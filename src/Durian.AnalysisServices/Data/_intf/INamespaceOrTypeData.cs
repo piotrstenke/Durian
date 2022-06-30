@@ -9,7 +9,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="INamespaceOrTypeData"/>.
 	/// </summary>
-	public interface INamespaceOrTypeData : INamespaceData, ITypeData
+	public interface INamespaceOrTypeData : IMemberData, ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>
 	{
 		/// <summary>
 		/// <see cref="INamespaceOrTypeSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.

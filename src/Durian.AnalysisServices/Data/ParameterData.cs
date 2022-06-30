@@ -11,7 +11,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="ParameterSyntax"/>.
 	/// </summary>
-	public class ParameterData : MemberData
+	public class ParameterData : MemberData, IParameterData
 	{
 		/// <summary>
 		/// Target <see cref="ParameterSyntax"/>.
@@ -22,6 +22,10 @@ namespace Durian.Analysis.Data
 		/// <see cref="IPropertySymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		public new IParameterSymbol Symbol => (base.Symbol as IParameterSymbol)!;
+
+		BaseParameterSyntax IParameterData.Declaration => Declaration;
+
+		IParameterData ISymbolOrMember<IParameterSymbol, IParameterData>.Member => this;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ParameterData"/> class.

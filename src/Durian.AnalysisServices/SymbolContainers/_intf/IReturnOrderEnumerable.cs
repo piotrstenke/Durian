@@ -15,6 +15,11 @@ namespace Durian.Analysis.SymbolContainers
 		/// Order in which elements of this <see cref="IEnumerable{T}"/> are returned.
 		/// </summary>
 		ReturnOrder Order { get; }
+
+		/// <summary>
+		/// Reverses the collection.
+		/// </summary>
+		IReturnOrderEnumerable Reverse();
 	}
 
 	/// <summary>
@@ -23,9 +28,7 @@ namespace Durian.Analysis.SymbolContainers
 	/// <typeparam name="T">Type of objects to enumerate.</typeparam>
 	public interface IReturnOrderEnumerable<out T> : IReturnOrderEnumerable, IEnumerable<T>
 	{
-		/// <summary>
-		/// Reverses the collection.
-		/// </summary>
-		IReturnOrderEnumerable<T> Reverse();
+		/// <inheritdoc cref="IReturnOrderEnumerable.Reverse"/>
+		new IReturnOrderEnumerable<T> Reverse();
 	}
 }

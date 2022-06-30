@@ -9,7 +9,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="IEventSymbol"/>.
 	/// </summary>
-	public interface IEventData : IMemberData, IDeclarator<EventFieldDeclarationSyntax>
+	public interface IEventData : IMemberData, IDeclarator<EventFieldDeclarationSyntax>, ISymbolOrMember<IEventSymbol, IEventData>
 	{
 		/// <summary>
 		/// Target <see cref="MemberDeclarationSyntax"/>.

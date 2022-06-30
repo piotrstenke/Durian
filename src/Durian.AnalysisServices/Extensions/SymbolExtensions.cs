@@ -1244,6 +1244,18 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns formatted name of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the formatted name of.</param>
+		/// <param name="format"><see cref="SymbolName"/> format to apply.</param>
+		public static string GetFormattedName(this ISymbol symbol, SymbolName format)
+		{
+			CodeBuilder builder = new(false);
+			builder.Name(symbol, format);
+			return builder.ToString();
+		}
+
+		/// <summary>
 		/// Returns fully qualified name of the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the fully qualified name of.</param>

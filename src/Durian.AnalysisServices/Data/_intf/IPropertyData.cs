@@ -9,7 +9,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="BasePropertyDeclarationSyntax"/>.
 	/// </summary>
-	public interface IPropertyData : IMemberData
+	public interface IPropertyData : IMemberData, ISymbolOrMember<IPropertySymbol, IPropertyData>
 	{
 		/// <summary>
 		/// Target <see cref="BasePropertyDeclarationSyntax"/>.
@@ -24,7 +24,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Backing field of the property or <see langword="null"/> if not an auto-property.
 		/// </summary>
-		ISymbolOrMember<IFieldSymbol, IMemberData>? BackingField { get; }
+		ISymbolOrMember<IFieldSymbol, IFieldData>? BackingField { get; }
 
 		/// <summary>
 		/// Kind of the auto-property.

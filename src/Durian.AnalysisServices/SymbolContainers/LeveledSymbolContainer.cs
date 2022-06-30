@@ -21,6 +21,20 @@ namespace Durian.Analysis.SymbolContainers
 		where TSymbol : class, ISymbol
 		where TData : class, IMemberData
 	{
+		private sealed class LevelEntry
+		{
+			public InnerContainer? Container { get; set; }
+
+			public Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> Creator { get; }
+
+			public int StartIndex { get; set; }
+
+			public LevelEntry(Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> creator)
+			{
+				Creator = creator;
+			}
+		}
+
 		private readonly List<ISymbolOrMember<TSymbol, TData>> _data;
 		private readonly List<LevelEntry> _levels;
 
@@ -59,7 +73,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
-		/// Maximal possible nesting level (<see cref="NumLevels"/> - 1).
+		/// Maximal currently possible nesting level (<see cref="NumLevels"/> - 1).
 		/// </summary>
 		public int MaxLevel => NumLevels - 1;
 
@@ -91,14 +105,14 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
-		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <typeparamref name="TData"/>s.</param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
 		public LeveledSymbolContainer(
 			ISymbolOrMember<TSymbol, TData> root,
 			bool includeRoot = false,
-			ISymbolNameResolver? nameResolver = default,
-			ICompilationData? parentCompilation = default
+			ICompilationData? parentCompilation = default,
+			ISymbolNameResolver? nameResolver = default
 		)
 		{
 			if (root is null)
@@ -189,7 +203,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <inheritdoc/>
-		public void RegisterLevel(Func<TSymbol, IReturnOrderEnumerable<TSymbol>> function)
+		public void RegisterLevel(Func<TSymbol, IEnumerable<TSymbol>> function)
 		{
 			if (function is null)
 			{
@@ -200,7 +214,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <inheritdoc/>
-		public void RegisterLevel(Func<TSymbol, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
+		public void RegisterLevel(Func<TSymbol, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
 		{
 			if (function is null)
 			{
@@ -211,7 +225,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <inheritdoc/>
-		public void RegisterLevel(Func<ISymbolOrMember<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
+		public void RegisterLevel(Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
 		{
 			if (function is null)
 			{
@@ -290,13 +304,13 @@ namespace Durian.Analysis.SymbolContainers
 			CurrentLevel = level;
 			return _levels[CurrentLevel].Container!;
 
-			void FillLevel(ISymbolOrMember<TSymbol, TData> member, Func<ISymbolOrMember<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>> creator)
+			void FillLevel(ISymbolOrMember<TSymbol, TData> member, Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> creator)
 			{
-				IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> collection = creator(member);
+				IEnumerable<ISymbolOrMember<TSymbol, TData>> collection = creator(member);
 
-				if (collection.Order == ReturnOrder.ChildToParent)
+				if(collection is IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> orderEnumerable && orderEnumerable.Order == ReturnOrder.ChildToParent)
 				{
-					collection = collection.Reverse();
+					collection = orderEnumerable.Reverse();
 				}
 
 				_data.AddRange(collection);
@@ -319,6 +333,23 @@ namespace Durian.Analysis.SymbolContainers
 			}
 
 			return this;
+		}
+
+		/// <inheritdoc/>
+		protected sealed override bool SealCore()
+		{
+			_levels.TrimExcess();
+
+			return true;
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="member"/> and its members should be skipped when retrieving a <see cref="IReturnOrderEnumerable{T}"/>.
+		/// </summary>
+		/// <param name="member"><see cref="ISymbolContainer{TSymbol, TData}"/> to determine whether to skip.</param>
+		protected virtual bool SkipMember(ISymbolOrMember<TSymbol, TData> member)
+		{
+			return false;
 		}
 
 		ImmutableArray<IMemberData> ISymbolContainer.GetData()
@@ -346,21 +377,9 @@ namespace Durian.Analysis.SymbolContainers
 			return Reverse();
 		}
 
-		/// <inheritdoc/>
-		protected sealed override bool SealCore()
+		IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
 		{
-			_levels.TrimExcess();
-
-			return true;
-		}
-
-		/// <summary>
-		/// Determines whether the <paramref name="member"/> and its members should be skipped when retrieving a <see cref="IReturnOrderEnumerable{T}"/>.
-		/// </summary>
-		/// <param name="member"><see cref="ISymbolContainer{TSymbol, TData}"/> to determine whether to skip.</param>
-		protected virtual bool SkipMember(ISymbolOrMember<TSymbol, TData> member)
-		{
-			return false;
+			return Reverse();
 		}
 
 		private ImmutableArray<TData> GetData(int endIndex)
@@ -472,14 +491,12 @@ namespace Durian.Analysis.SymbolContainers
 			return builder.ToImmutable();
 		}
 
-		private void RegisterLevelInternal(Func<ISymbolOrMember<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
+		private void RegisterLevelInternal(Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
 		{
 			if (IsSealed)
 			{
 				throw new SealedObjectException("Cannot register new level to a sealed container");
 			}
-
-			int level = MaxLevel;
 
 			_levels.Add(new LevelEntry(function));
 		}

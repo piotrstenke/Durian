@@ -12,7 +12,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="PropertyDeclarationSyntax"/>.
 	/// </summary>
-	public class PropertyData : MemberData
+	public class PropertyData : MemberData, IPropertyData
 	{
 		/// <summary>
 		/// Contains optional data that can be passed to a <see cref="PropertyData"/>.
@@ -23,7 +23,7 @@ namespace Durian.Analysis.Data
 			public AutoPropertyKind? AutoPropertyKind { get; set; }
 
 			/// <inheritdoc cref="PropertyData.BackingField"/>
-			public DefaultedValue<ISymbolOrMember<IFieldSymbol, FieldData>> BackingField { get; set; }
+			public DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> BackingField { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -33,7 +33,7 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		private DefaultedValue<ISymbolOrMember<IFieldSymbol, FieldData>> _backingField;
+		private DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> _backingField;
 
 		/// <summary>
 		/// Target <see cref="PropertyDeclarationSyntax"/>.
@@ -53,13 +53,13 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Backing field of the property or <see langword="null"/> if not an auto-property.
 		/// </summary>
-		public ISymbolOrMember<IFieldSymbol, FieldData>? BackingField
+		public ISymbolOrMember<IFieldSymbol, IFieldData>? BackingField
 		{
 			get
 			{
 				if(_backingField.IsDefault)
 				{
-					_backingField = Symbol.GetBackingField().ToDataOrSymbolInternal<FieldData>(ParentCompilation);
+					_backingField = new(Symbol.GetBackingField()?.ToDataOrSymbol(ParentCompilation));
 				}
 
 				return _backingField.Value;
@@ -70,6 +70,10 @@ namespace Durian.Analysis.Data
 		/// Kind of the auto-property.
 		/// </summary>
 		public AutoPropertyKind AutoPropertyKind { get; }
+
+		BasePropertyDeclarationSyntax IPropertyData.Declaration => Declaration;
+
+		IPropertyData ISymbolOrMember<IPropertySymbol, IPropertyData>.Member => this;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PropertyData"/> class.

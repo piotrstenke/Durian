@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Durian.Analysis.Extensions;
@@ -19,9 +20,15 @@ namespace Durian.Analysis.Data
 	public interface IMemberData : ISymbolOrMember
 	{
 		/// <summary>
+		/// Determines whether the current object represents a symbol that has an accessible declaration.
+		/// </summary>
+		[MemberNotNullWhen(true, nameof(Declaration))]
+		bool HasDeclaration { get; }
+
+		/// <summary>
 		/// Target <see cref="SyntaxNode"/>.
 		/// </summary>
-		SyntaxNode Declaration { get; }
+		SyntaxNode? Declaration { get; }
 
 		/// <summary>
 		/// Determines whether the current member is declared using the <see langword="new"/> keyword.

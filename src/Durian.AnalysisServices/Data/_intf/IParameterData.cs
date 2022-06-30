@@ -9,7 +9,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="IParameterSymbol"/>.
 	/// </summary>
-	public interface IParameterData : IMemberData
+	public interface IParameterData : IMemberData, ISymbolOrMember<IParameterSymbol, IParameterData>
 	{
 		/// <summary>
 		/// Target <see cref="BaseParameterSyntax"/>.

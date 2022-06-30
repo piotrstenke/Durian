@@ -1,0 +1,70 @@
+﻿// Copyright (c) Piotr Stenke. All rights reserved.
+// Licensed under the MIT license.
+
+using System;
+using System.ComponentModel;
+using Durian.Analysis.Data;
+using Microsoft.CodeAnalysis;
+
+namespace Durian.Analysis.SymbolContainers.Specialized
+{
+	/// <summary>
+	/// <see cref="IncludedMembersSymbolContainer{TSymbol, TData}"/> that is configured to ignore or map <see cref="IncludedMembers.Inner"/>.
+	/// </summary>
+	/// <typeparam name="TSymbol">Type of returned <see cref="ISymbol"/>s.</typeparam>
+	/// <typeparam name="TData">Type of returned <see cref="IMemberData"/>s.</typeparam>s
+	public abstract class IncludedMembersSymbolContainerWithoutInner<TSymbol, TData> : IncludedMembersSymbolContainer<TSymbol, TData>
+		where TSymbol : class, ISymbol
+		where TData : class, IMemberData
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="IncludedMembersSymbolContainerWithoutInner{TSymbol, TData}"/> class.
+		/// </summary>
+		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
+		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
+		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <typeparamref name="TData"/>s.</param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
+		protected IncludedMembersSymbolContainerWithoutInner(
+			ISymbolOrMember<TSymbol, TData> root,
+			bool includeRoot = false,
+			ICompilationData? parentCompilation = default,
+			ISymbolNameResolver? nameResolver = default
+		) : base(root, includeRoot, parentCompilation, nameResolver)
+		{
+		}
+
+		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.Reverse"/>
+		public new IncludedMembersSymbolContainerWithoutInner<TSymbol, TData> Reverse()
+		{
+			return (base.Reverse() as IncludedMembersSymbolContainerWithoutInner<TSymbol, TData>)!;
+		}
+
+		/// <inheritdoc/>
+		protected sealed override IncludedMembers MapLevel(IncludedMembers members)
+		{
+			return members switch
+			{
+				IncludedMembers.All => IncludedMembers.Inner,
+				IncludedMembers.Inner => IncludedMembers.Direct,
+				_ => members
+			};
+		}
+
+		/// <inheritdoc/>
+		protected sealed override bool AllowLevel(IncludedMembers members)
+		{
+			return members != IncludedMembers.Inner;
+		}
+
+		/// <inheritdoc/>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Container is configured to ignore or map IncludeMembers.Inner calls")]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		protected sealed override IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> Inner(ISymbolOrMember<TSymbol, TData> member)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			throw new InvalidOperationException("Container is configured to ignore or map IncludeMembers.Inner calls");
+		}
+	}
+}
