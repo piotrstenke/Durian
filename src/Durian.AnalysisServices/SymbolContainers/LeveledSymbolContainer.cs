@@ -35,7 +35,7 @@ namespace Durian.Analysis.SymbolContainers
 			}
 		}
 
-		private readonly List<ISymbolOrMember<TSymbol, TData>> _data;
+		internal readonly List<ISymbolOrMember<TSymbol, TData>> _data;
 		private readonly List<LevelEntry> _levels;
 
 		/// <inheritdoc/>
@@ -263,7 +263,9 @@ namespace Durian.Analysis.SymbolContainers
 			{
 				LevelEntry firstLevel = _levels[0];
 
+				OnLevelReady(0);
 				FillLevel(Root, firstLevel.Creator);
+				OnLevelFilled(0);
 				CurrentLevel++;
 
 				firstLevel.StartIndex = 1;
@@ -274,15 +276,20 @@ namespace Durian.Analysis.SymbolContainers
 
 			for (int i = CurrentLevel + 1; i < length; i++)
 			{
+				OnLevelReady(i);
 				LevelEntry levelEntry = _levels[i];
-
 				int firstIndex = _data.Count;
+
+				if(IsHandledExternally(i))
+				{
+					goto LEVEL_FILLED;
+				}
 
 				for (int j = previousStart; j < firstIndex; j++)
 				{
 					ISymbolOrMember<TSymbol, TData> member = _data[j];
 
-					if (SkipMember(member))
+					if (SkipMember(member, i))
 					{
 						continue;
 					}
@@ -290,10 +297,14 @@ namespace Durian.Analysis.SymbolContainers
 					FillLevel(member, levelEntry.Creator);
 				}
 
+			LEVEL_FILLED:
+
 				levelEntry.StartIndex = firstIndex;
 				levelEntry.Container = new InnerContainer(this, _data.Count);
 
 				previousStart = firstIndex;
+
+				OnLevelFilled(i);
 			}
 
 			if (level == MaxLevel)
@@ -347,7 +358,36 @@ namespace Durian.Analysis.SymbolContainers
 		/// Determines whether the <paramref name="member"/> and its members should be skipped when retrieving a <see cref="IReturnOrderEnumerable{T}"/>.
 		/// </summary>
 		/// <param name="member"><see cref="ISymbolContainer{TSymbol, TData}"/> to determine whether to skip.</param>
-		protected virtual bool SkipMember(ISymbolOrMember<TSymbol, TData> member)
+		/// <param name="level">Currently filled level.</param>
+		protected virtual bool SkipMember(ISymbolOrMember<TSymbol, TData> member, int level)
+		{
+			return false;
+		}
+
+		/// <summary>
+		/// Called after a <paramref name="level"/> is filled with data.
+		/// </summary>
+		/// <param name="level">Level that was filled.</param>
+		protected virtual void OnLevelFilled(int level)
+		{
+			// Do nothing.
+		}
+
+
+		/// <summary>
+		/// Called before a <paramref name="level"/> is filled with data.
+		/// </summary>
+		/// <param name="level">Level that is about to be filled.</param>
+		protected virtual void OnLevelReady(int level)
+		{
+			// Do nothing.
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="level"/> is handled by external means.
+		/// </summary>
+		/// <param name="level">Level to determine whether is handled externally.</param>
+		private protected virtual bool IsHandledExternally(int level)
 		{
 			return false;
 		}

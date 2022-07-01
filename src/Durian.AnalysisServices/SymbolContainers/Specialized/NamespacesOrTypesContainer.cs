@@ -15,6 +15,39 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// </summary>
 	public sealed class NamespacesOrTypesContainer : IncludedMembersSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>
 	{
+		private sealed class InnerSubNamespacesContainer : SubNamespacesContainer
+		{
+			public NamespacesOrTypesContainer ParentContainer { get; }
+
+			public InnerSubNamespacesContainer(NamespacesOrTypesContainer parentContainer, ISymbolOrMember<INamespaceSymbol, INamespaceData> root)
+				: base(root, parentContainer.IncludeRoot, parentContainer.ParentCompilation, parentContainer.SymbolNameResolver)
+			{
+				ParentContainer = parentContainer;
+			}
+
+			/// <inheritdoc/>
+			protected override void OnLevelReady(IncludedMembers level)
+			{
+				base.OnLevelReady(level);
+			}
+
+			/// <inheritdoc/>
+			private protected override bool IsHandledExternally(int level)
+			{
+				ParentContainer.
+				return true;
+			}
+
+			private protected override IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> GetNamespaces(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
+			{
+				if(CurrentLevel !=)
+			}
+		}
+
+		private SubNamespacesContainer? _subNamespaces;
+		private InnerTypesContainer? _innerTypes;
+		private IncludedMembers _previousLevel;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="NamespacesOrTypesContainer"/> class.
 		/// </summary>
@@ -30,17 +63,44 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 			ISymbolNameResolver? nameResolver = default
 		) : base(root, includeRoot, parentCompilation, nameResolver)
 		{
+
 		}
 
-		public SubNamespacesContainer GetNamespaces(IncludedMembers level)
+		public SubNamespacesContainer GetNamespaces()
+		{
+			return _subNamespaces ??= new SubNamespacesContainer(this);
+		}
+
+		public InnerTypesContainer GetTypes()
 		{
 
 		}
 
-		public InnerTypesContainer GetTypes(IncludedMembers level)
-		{
+		///// <inheritdoc/>
+		//protected override bool SkipMember(ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> member, IncludedMembers level)
+		//{
+		//	if(member.Symbol.IsNamespace)
+		//	{
+		//		if(_subNamespaces is not null && member is ISymbolOrMember<INamespaceSymbol, INamespaceData> @namespace)
+		//		{
+		//			_subNamespaces._data.Add(@namespace);
+		//		}
+		//	}
+		//	else if(member.Symbol.IsType)
+		//	{
+		//		if(_innerTypes is not null && member is ISymbolOrMember<INamedTypeSymbol, ITypeData> type)
+		//		{
+		//			_innerTypes._data.Add(type);
+		//		}
+		//	}
 
-		}
+		//	if(_previousLevel != level)
+		//	{
+				
+		//	}
+
+		//	return false;
+		//}
 
 		/// <inheritdoc/>
 		protected override IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> All(ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> member)

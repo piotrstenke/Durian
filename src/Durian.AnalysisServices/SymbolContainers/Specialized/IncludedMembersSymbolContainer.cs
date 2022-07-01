@@ -59,8 +59,14 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		public ISymbolContainer<TSymbol, TData> ResolveLevel(IncludedMembers level)
 		{
 			level = MapLevel(level);
+			return base.ResolveLevel((int)level);
+		}
 
-			return ResolveLevel((int)level);
+		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.ResolveLevel(int)"/>
+		[Obsolete("Use ResolveLevel(IncludedMembers) instead")]
+		public new ISymbolContainer<TSymbol, TData> ResolveLevel(int level)
+		{
+			return base.ResolveLevel(level);
 		}
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.Reverse"/>
@@ -90,19 +96,71 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		/// <summary>
 		/// Maps the current <see cref="IncludedMembers"/> to a different value.
 		/// </summary>
-		/// <param name="members"><see cref="IncludedMembers"/> to map.</param>
-		protected virtual IncludedMembers MapLevel(IncludedMembers members)
+		/// <param name="level"><see cref="IncludedMembers"/> to map.</param>
+		protected virtual IncludedMembers MapLevel(IncludedMembers level)
 		{
-			return members;
+			return level;
 		}
 
 		/// <summary>
 		/// Determines whether the specified <see cref="IncludedMembers"/> can be registered as a valid level.
 		/// </summary>
-		/// <param name="members"><see cref="IncludedMembers"/> to determine whether can be registered as a valid level.</param>
-		protected virtual bool AllowLevel(IncludedMembers members)
+		/// <param name="level"><see cref="IncludedMembers"/> to determine whether can be registered as a valid level.</param>
+		protected virtual bool AllowLevel(IncludedMembers level)
 		{
 			return true;
+		}
+
+		/// <inheritdoc/>
+		[Obsolete("Use OnLevelFilled(IncludedMembers) instead")]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		protected sealed override void OnLevelFilled(int level)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			IncludedMembers members = MapLevel((IncludedMembers)level);
+			OnLevelFilled(members);
+		}
+
+		/// <inheritdoc/>
+		[Obsolete("Use OnLevelFilled(IncludedMembers) instead")]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		protected sealed override void OnLevelReady(int level)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			IncludedMembers members = MapLevel((IncludedMembers)level);
+			OnLevelReady(members);
+		}
+
+		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.OnLevelReady(int)"/>
+		protected virtual void OnLevelReady(IncludedMembers level)
+		{
+			// Do nothing.
+		}
+
+		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.OnLevelFilled(int)"/>
+		protected virtual void OnLevelFilled(IncludedMembers level)
+		{
+			// Do nothing.
+		}
+
+		/// <inheritdoc/>
+		[Obsolete("Use SkipMember(ISymbolOrMember<TSymbol, TData>, IncludedMembers) instead")]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		protected sealed override bool SkipMember(ISymbolOrMember<TSymbol, TData> member, int level)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			IncludedMembers members = MapLevel((IncludedMembers)level);
+			return SkipMember(member, members);
+		}
+
+		/// <summary>
+		/// Determines whether the <paramref name="member"/> and its members should be skipped when retrieving a <see cref="IReturnOrderEnumerable{T}"/>.
+		/// </summary>
+		/// <param name="member"><see cref="ISymbolContainer{TSymbol, TData}"/> to determine whether to skip.</param>
+		/// <param name="level">Currently filled level.</param>
+		protected virtual bool SkipMember(ISymbolOrMember<TSymbol, TData> member, IncludedMembers level)
+		{
+			return false;
 		}
 
 		private void InitLevels()
