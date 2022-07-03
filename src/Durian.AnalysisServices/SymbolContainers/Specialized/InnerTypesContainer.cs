@@ -12,7 +12,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// <summary>
 	/// <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> that handles inner types.
 	/// </summary>
-	public sealed class InnerTypesContainer : IncludedMembersSymbolContainerWithoutInner<INamedTypeSymbol, ITypeData>
+	public class InnerTypesContainer : IncludedMembersSymbolContainerWithoutInner<INamespaceOrTypeSymbol, ITypeData>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="InnerTypesContainer"/> class.
@@ -23,7 +23,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
 		public InnerTypesContainer(
-			ISymbolOrMember<INamedTypeSymbol, ITypeData> root,
+			ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData> root,
 			bool includeRoot = false,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default
@@ -32,13 +32,13 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <inheritdoc/>
-		protected override IEnumerable<ISymbolOrMember<INamedTypeSymbol, ITypeData>> All(ISymbolOrMember<INamedTypeSymbol, ITypeData> member)
+		protected override IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData>> All(ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData> member)
 		{
 			return GetTypes(member);
 		}
 
 		/// <inheritdoc/>
-		protected override IEnumerable<ISymbolOrMember<INamedTypeSymbol, ITypeData>> Direct(ISymbolOrMember<INamedTypeSymbol, ITypeData> member)
+		protected override IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData>> Direct(ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData> member)
 		{
 			return GetTypes(member);
 		}
@@ -49,7 +49,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 			return (base.Reverse() as InnerTypesContainer)!;
 		}
 
-		private IEnumerable<ISymbolOrMember<INamedTypeSymbol, ITypeData>> GetTypes(ISymbolOrMember<INamedTypeSymbol, ITypeData> member)
+		private IEnumerable<ISymbolOrMember<INamedTypeSymbol, ITypeData>> GetTypes(ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData> member)
 		{
 			return member.Symbol.GetInnerTypes().Select(s => s.ToDataOrSymbol(ParentCompilation));
 		}

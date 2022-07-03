@@ -15,7 +15,7 @@ namespace Durian.Analysis.SymbolContainers
 	public partial class LeveledSymbolContainer<TSymbol, TData> where TSymbol : class, ISymbol
 		where TData : class, IMemberData
 	{
-		private sealed class InnerContainer : ISymbolContainer<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>
+		internal sealed class InnerContainer : ISymbolContainer<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>
 		{
 			private readonly LeveledSymbolContainer<TSymbol, TData> _parentContainer;
 

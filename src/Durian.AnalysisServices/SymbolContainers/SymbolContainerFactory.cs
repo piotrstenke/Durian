@@ -83,7 +83,7 @@ namespace Durian.Analysis.SymbolContainers
 			}
 		}
 
-		private class GenericWrapper<TSymbol, TData> : ISymbolOrMember<TSymbol, TData>
+		private class GenericMemberWrapper<TSymbol, TData> : ISymbolOrMember<TSymbol, TData>
 			where TSymbol : class, ISymbol
 			where TData : class, IMemberData
 		{
@@ -103,10 +103,10 @@ namespace Durian.Analysis.SymbolContainers
 			ISymbol ISymbolOrMember.Symbol => _underlaying.Symbol;
 
 			/// <summary>
-			/// Initializes a new instance of the <see cref="GenericWrapper{TSymbol, TData}"/> class.
+			/// Initializes a new instance of the <see cref="GenericMemberWrapper{TSymbol, TData}"/> class.
 			/// </summary>
 			/// <param name="underlaying">Underlaying <see cref="ISymbolOrMember"/>.</param>
-			public GenericWrapper(ISymbolOrMember underlaying)
+			public GenericMemberWrapper(ISymbolOrMember underlaying)
 			{
 				_underlaying = underlaying;
 			}
@@ -1424,7 +1424,7 @@ namespace Durian.Analysis.SymbolContainers
 				return member;
 			}
 
-			return new GenericWrapper<TSymbol, TData>(original);
+			return new GenericMemberWrapper<TSymbol, TData>(original);
 		}
 	}
 }

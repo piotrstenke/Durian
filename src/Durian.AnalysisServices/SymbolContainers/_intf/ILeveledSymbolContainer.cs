@@ -32,7 +32,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="function">Function used to retrieve the ?<typeparamref name="TSymbol"/>s.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-		/// <exception cref="SealedObjectException">Cannot register new level to a sealed container</exception>
+		/// <exception cref="SealedObjectException">Cannot register new level to a sealed container.</exception>
 		void RegisterLevel(Func<TSymbol, IEnumerable<TSymbol>> function);
 
 		/// <summary>
@@ -40,7 +40,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="function">Function used to retrieve the ?<typeparamref name="TSymbol"/>s.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-		/// <exception cref="SealedObjectException">Cannot register new level to a sealed container</exception>
+		/// <exception cref="SealedObjectException">Cannot register new level to a sealed container.</exception>
 		void RegisterLevel(Func<TSymbol, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function);
 
 		/// <summary>
@@ -48,7 +48,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="function">Function used to retrieve the ?<typeparamref name="TSymbol"/>s.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-		/// <exception cref="SealedObjectException">Cannot register new level to a sealed container</exception>
+		/// <exception cref="SealedObjectException">Cannot register new level to a sealed container.</exception>
 		void RegisterLevel(Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function);
 
 		/// <summary>
@@ -57,5 +57,12 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="level">Nesting level of the container.</param>
 		/// <exception cref="ArgumentOutOfRangeException"><paramref name="level"/> must be greater than <c>0</c> and less than <see cref="NumLevels"/>.</exception>
 		ISymbolContainer<TSymbol, TData> ResolveLevel(int level);
+
+		/// <summary>
+		/// Removes the cached data of the specified <paramref name="level"/> and all levels after it.
+		/// </summary>
+		/// <param name="level">Level to clear the cached data of.</param>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="level"/> must be greater than <c>0</c> and less than <see cref="NumLevels"/>.</exception>
+		void ClearLevel(int level);
 	}
 }

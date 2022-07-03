@@ -50,7 +50,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 			return (base.Reverse() as SubNamespacesContainer)!;
 		}
 
-		private protected virtual IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> GetNamespaces(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
+		private IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> GetNamespaces(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
 		{
 			return member.Symbol.GetNamespaceMembers().Select(s => s.ToDataOrSymbol(ParentCompilation));
 		}

@@ -1554,9 +1554,9 @@ namespace Durian.Analysis.Extensions
 		/// Returns a collection of all inner types of the specified <paramref name="type"/>.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the inner types of.</param>
-		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
 		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static IReturnOrderEnumerable<INamedTypeSymbol> GetInnerTypes(this INamedTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.ChildToParent)
+		public static IReturnOrderEnumerable<INamedTypeSymbol> GetInnerTypes(this INamespaceOrTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.ChildToParent)
 		{
 			return Yield().OrderBy(order);
 
@@ -1564,9 +1564,9 @@ namespace Durian.Analysis.Extensions
 			{
 				const int capacity = 32;
 
-				if (includeSelf)
+				if (includeSelf && type is INamedTypeSymbol named)
 				{
-					yield return type;
+					yield return named;
 				}
 
 				ImmutableArray<INamedTypeSymbol> array = type.GetTypeMembers();
@@ -2698,7 +2698,7 @@ namespace Durian.Analysis.Extensions
 				case INamespaceSymbol @namespace:
 					return @namespace.ToData(compilation);
 
-				case ITypeSymbol type:
+				case INamedTypeSymbol type:
 					return type.ToData(compilation);
 
 				default:

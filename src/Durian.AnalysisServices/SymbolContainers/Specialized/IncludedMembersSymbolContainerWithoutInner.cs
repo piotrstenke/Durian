@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
@@ -41,13 +43,14 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <inheritdoc/>
-		protected sealed override IncludedMembers MapLevel(IncludedMembers members)
+		protected sealed override IncludedMembers MapLevel(int level)
 		{
-			return members switch
+			return level switch
 			{
-				IncludedMembers.All => IncludedMembers.Inner,
-				IncludedMembers.Inner => IncludedMembers.Direct,
-				_ => members
+				0 => IncludedMembers.Direct,
+				1 => IncludedMembers.All,
+				-1 => IncludedMembers.None,
+				_ => (IncludedMembers)(level + 2)
 			};
 		}
 
@@ -61,10 +64,10 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Obsolete("Container is configured to ignore or map IncludeMembers.Inner calls")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-		protected sealed override IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> Inner(ISymbolOrMember<TSymbol, TData> member)
+		protected sealed override IEnumerable<ISymbolOrMember<TSymbol, TData>> Inner(ISymbolOrMember<TSymbol, TData> member)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 		{
-			throw new InvalidOperationException("Container is configured to ignore or map IncludeMembers.Inner calls");
+			throw new InvalidOperationException("Container is configured to ignore or map IncludeMembers.Inner");
 		}
 	}
 }

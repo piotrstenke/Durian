@@ -13,10 +13,8 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="BaseNamespaceDeclarationSyntax"/> or <see cref="BaseTypeDeclarationSyntax"/>.
 	/// </summary>
-	public class NamespaceOrTypeData : NamespaceData, ITypeData
+	public class NamespaceOrTypeData : MemberData, INamespaceOrTypeData
 	{
-		private BaseTypeDeclarationSyntax[]? _partialDeclarations;
-
 		/// <summary>
 		/// Returns the <see cref="Declaration"/> as a <see cref="BaseNamespaceDeclarationSyntax"/>.
 		/// </summary>
@@ -26,11 +24,6 @@ namespace Durian.Analysis.Data
 		/// Returns the <see cref="Declaration"/> as a <see cref="BaseTypeDeclarationSyntax"/>.
 		/// </summary>
 		public BaseTypeDeclarationSyntax? AsType => (BaseDeclaration as BaseTypeDeclarationSyntax)!;
-
-		/// <summary>
-		/// Target <see cref="MemberDeclarationSyntax"/>.
-		/// </summary>
-		public new MemberDeclarationSyntax Declaration => (BaseDeclaration as MemberDeclarationSyntax)!;
 
 		/// <summary>
 		/// <see cref="INamespaceOrTypeSymbol"/> associated with the <see cref="Declaration"/>.
@@ -177,12 +170,12 @@ namespace Durian.Analysis.Data
 			return ImmutableArray.Create(_partialDeclarations);
 		}
 
-		public ITypeData ToTypeData()
+		public ITypeData ToType()
 		{
 
 		}
 
-		public NamespaceData ToNamespaceData()
+		public INamespaceData ToNamespace()
 		{
 			return new()
 		}

@@ -3,10 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
+
+using BaseInnerContainer = Durian.Analysis.SymbolContainers.LeveledSymbolContainer<Microsoft.CodeAnalysis.INamespaceOrTypeSymbol, Durian.Analysis.Data.INamespaceOrTypeData>.InnerContainer;
+using BaseLevelEntry = Durian.Analysis.SymbolContainers.LeveledSymbolContainer<Microsoft.CodeAnalysis.INamespaceOrTypeSymbol, Durian.Analysis.Data.INamespaceOrTypeData>.LevelEntry;
+using BaseList = System.Collections.Generic.List<Durian.Analysis.Data.ISymbolOrMember<Microsoft.CodeAnalysis.INamespaceOrTypeSymbol, Durian.Analysis.Data.INamespaceOrTypeData>>;
 
 namespace Durian.Analysis.SymbolContainers.Specialized
 {
@@ -15,38 +20,88 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// </summary>
 	public sealed class NamespacesOrTypesContainer : IncludedMembersSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>
 	{
-		private sealed class InnerSubNamespacesContainer : SubNamespacesContainer
+		private sealed class PrivateSubNamespacesContainer : SubNamespacesContainer
 		{
 			public NamespacesOrTypesContainer ParentContainer { get; }
 
-			public InnerSubNamespacesContainer(NamespacesOrTypesContainer parentContainer, ISymbolOrMember<INamespaceSymbol, INamespaceData> root)
+			public PrivateSubNamespacesContainer(NamespacesOrTypesContainer parentContainer, ISymbolOrMember<INamespaceSymbol, INamespaceData> root)
 				: base(root, parentContainer.IncludeRoot, parentContainer.ParentCompilation, parentContainer.SymbolNameResolver)
 			{
 				ParentContainer = parentContainer;
 			}
 
 			/// <inheritdoc/>
-			protected override void OnLevelReady(IncludedMembers level)
+			private protected override bool IsHandledExternally(int level)
 			{
-				base.OnLevelReady(level);
+#pragma warning disable CS0618 // Type or member is obsolete
+				BaseInnerContainer? container = (ParentContainer.ResolveLevel(level) as BaseInnerContainer)!;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+				BaseLevelEntry levelEntry = ParentContainer._levels[level];
+				BaseList baseList = ParentContainer._data;
+
+				if(levelEntry.IsEmpty)
+				{
+					return true;
+				}
+
+				int start = levelEntry.StartIndex;
+				int end = container.EndIndex;
+
+				for (int i = start; i < end; i++)
+				{
+					if(baseList[i] is ISymbolOrMember<INamespaceSymbol, INamespaceData> @namespace)
+					{
+						_data.Add(@namespace);
+					}
+				}
+
+				return true;
+			}
+		}
+
+		private sealed class PrivateInnerTypesContainer : InnerTypesContainer
+		{
+			public NamespacesOrTypesContainer ParentContainer { get; }
+
+			public PrivateInnerTypesContainer(NamespacesOrTypesContainer parentContainer, ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData> root)
+				: base(root, parentContainer.IncludeRoot, parentContainer.ParentCompilation, parentContainer.SymbolNameResolver)
+			{
+				ParentContainer = parentContainer;
 			}
 
 			/// <inheritdoc/>
 			private protected override bool IsHandledExternally(int level)
 			{
-				ParentContainer.
-				return true;
-			}
+#pragma warning disable CS0618 // Type or member is obsolete
+				BaseInnerContainer container = (ParentContainer.ResolveLevel(level) as BaseInnerContainer)!;
+#pragma warning restore CS0618 // Type or member is obsolete
 
-			private protected override IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> GetNamespaces(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
-			{
-				if(CurrentLevel !=)
+				BaseLevelEntry levelEntry = ParentContainer._levels[level];
+				BaseList baseList = ParentContainer._data;
+
+				if (levelEntry.IsEmpty)
+				{
+					return true;
+				}
+
+				int start = levelEntry.StartIndex;
+				int end = container.EndIndex;
+
+				for (int i = start; i < end; i++)
+				{
+					if (baseList[i] is ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData> type)
+					{
+						_data.Add(type);
+					}
+				}
+
+				return true;
 			}
 		}
 
-		private SubNamespacesContainer? _subNamespaces;
-		private InnerTypesContainer? _innerTypes;
-		private IncludedMembers _previousLevel;
+		private readonly PrivateSubNamespacesContainer _subNamespaces;
+		private readonly PrivateInnerTypesContainer _innerTypes;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="NamespacesOrTypesContainer"/> class.
@@ -63,44 +118,51 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 			ISymbolNameResolver? nameResolver = default
 		) : base(root, includeRoot, parentCompilation, nameResolver)
 		{
+			if (root is not ISymbolOrMember<INamespaceSymbol, INamespaceData> @namespace)
+			{
+				@namespace = new NamespaceOrTypeData;
+			}
 
+			if (root is not ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData> type)
+			{
+				type = root.Symbol.ToDataOrSymbol<ITypeData>(ParentCompilation);
+			}
+
+			_innerTypes = new(this, type);
+			_subNamespaces = new(this, @namespace);
 		}
 
+		/// <summary>
+		/// Returns a <see cref="SubNamespacesContainer"/> created from data within this container.
+		/// <para><b>Note:</b> this container and the returned <see cref="SubNamespacesContainer"/> use the same set of data - resolving a level for the <see cref="SubNamespacesContainer"/> will also resolve the same level for the current container and vice versa.</para>
+		/// </summary>
 		public SubNamespacesContainer GetNamespaces()
 		{
-			return _subNamespaces ??= new SubNamespacesContainer(this);
+			return _subNamespaces;
 		}
 
+		/// <summary>
+		/// Returns a <see cref="InnerTypesContainer"/> created from data within this container.
+		/// <para><b>Note:</b> this container and the returned <see cref="InnerTypesContainer"/> use the same set of data - resolving a level for the <see cref="InnerTypesContainer"/> will also resolve the same level for the current container and vice versa.</para>
+		/// </summary>
 		public InnerTypesContainer GetTypes()
 		{
-
+			return _innerTypes;
 		}
 
-		///// <inheritdoc/>
-		//protected override bool SkipMember(ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> member, IncludedMembers level)
-		//{
-		//	if(member.Symbol.IsNamespace)
-		//	{
-		//		if(_subNamespaces is not null && member is ISymbolOrMember<INamespaceSymbol, INamespaceData> @namespace)
-		//		{
-		//			_subNamespaces._data.Add(@namespace);
-		//		}
-		//	}
-		//	else if(member.Symbol.IsType)
-		//	{
-		//		if(_innerTypes is not null && member is ISymbolOrMember<INamedTypeSymbol, ITypeData> type)
-		//		{
-		//			_innerTypes._data.Add(type);
-		//		}
-		//	}
+		/// <inheritdoc/>
+		protected override void OnLevelFilled(IncludedMembers level)
+		{
+			_innerTypes.ResolveLevel(level);
+			_subNamespaces.ResolveLevel(level);
+		}
 
-		//	if(_previousLevel != level)
-		//	{
-				
-		//	}
-
-		//	return false;
-		//}
+		/// <inheritdoc/>
+		protected override void OnLevelCleared(IncludedMembers level)
+		{
+			_innerTypes.ClearLevel(level);
+			_subNamespaces.ClearLevel(level);
+		}
 
 		/// <inheritdoc/>
 		protected override IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> All(ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> member)

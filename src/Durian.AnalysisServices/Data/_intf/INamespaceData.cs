@@ -29,12 +29,6 @@ namespace Durian.Analysis.Data
 		NamespaceStyle DeclarationStyle { get; }
 
 		/// <summary>
-		/// Returns all <see cref="INamedTypeSymbol"/>s contained within this namespace.
-		/// </summary>
-		/// <param name="members">Range of members to include.</param>
-		ISymbolContainer<INamedTypeSymbol, ITypeData> GetTypes(IncludedMembers members);
-
-		/// <summary>
 		/// Returns all <see cref="INamespaceSymbol"/>s contained within this namespace.
 		/// </summary>
 		/// <param name="members">Range of members to include.</param>

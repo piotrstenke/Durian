@@ -11,7 +11,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="INamedTypeSymbol"/>.
 	/// </summary>
-	public interface ITypeData : IGenericMemberData, ISymbolOrMember<INamedTypeSymbol, ITypeData>
+	public interface ITypeData : IGenericMemberData, INamespaceOrTypeData, ISymbolOrMember<INamedTypeSymbol, ITypeData>
 	{
 		/// <summary>
 		/// <see cref="ITypeSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.

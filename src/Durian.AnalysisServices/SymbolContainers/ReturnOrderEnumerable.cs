@@ -64,5 +64,10 @@ namespace Durian.Analysis.SymbolContainers
 		{
 			return Reverse();
 		}
+
+		IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
+		{
+			return Reverse();
+		}
 	}
 }

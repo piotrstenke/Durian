@@ -18,14 +18,14 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		where TData : class, IMemberData
 	{
 		/// <summary>
-		/// Current nesting level of <see cref="ISymbolContainer"/>s or <c>-1</c> if no internal container is initialized.
+		/// Current nesting level of <see cref="ISymbolContainer"/>s.
 		/// </summary>
-		public new IncludedMembers CurrentLevel => MapLevel((IncludedMembers)base.CurrentLevel);
+		public new IncludedMembers CurrentLevel => MapLevel(base.CurrentLevel);
 
 		/// <summary>
-		/// Maximal possible nesting level (<see cref="LeveledSymbolContainer{TSymbol, TData}.NumLevels"/> - 1).
+		/// Maximal possible nesting level.
 		/// </summary>
-		public new IncludedMembers MaxLevel => MapLevel((IncludedMembers)base.MaxLevel);
+		public new IncludedMembers MaxLevel => MapLevel(base.MaxLevel);
 
 		/// <summary>
 		/// Determines whether levels beyond the limit of <see cref="IncludedMembers"/> can be registered.
@@ -58,8 +58,38 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.ResolveLevel(int)"/>
 		public ISymbolContainer<TSymbol, TData> ResolveLevel(IncludedMembers level)
 		{
-			level = MapLevel(level);
-			return base.ResolveLevel((int)level);
+			int mappedLevel = MapLevel(level);
+			return base.ResolveLevel(mappedLevel);
+		}
+
+		private int MapLevel(IncludedMembers level)
+		{
+			int current = (int)level;
+			IncludedMembers mappedCurrent = MapLevel(current);
+
+			if (mappedCurrent <= IncludedMembers.None)
+			{
+				throw new ArgumentOutOfRangeException(nameof(level), $"Level cannot be '{nameof(IncludedMembers.None)}' or less");
+			}
+
+			int diff = (int)mappedCurrent - current;
+			int mappedLevel = current - diff;
+
+			return mappedLevel;
+		}
+
+		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.ClearLevel(int)"/>
+		public void ClearLevel(IncludedMembers level)
+		{
+			int mappedLevel = MapLevel(level);
+			base.ClearLevel(mappedLevel);
+		}
+
+		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.ClearLevel(int)"/>
+		[Obsolete("Use ClearLevel(IncludedMembers) instead")]
+		public new void ClearLevel(int level)
+		{
+			base.ClearLevel(level);
 		}
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.ResolveLevel(int)"/>
@@ -96,10 +126,10 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		/// <summary>
 		/// Maps the current <see cref="IncludedMembers"/> to a different value.
 		/// </summary>
-		/// <param name="level"><see cref="IncludedMembers"/> to map.</param>
-		protected virtual IncludedMembers MapLevel(IncludedMembers level)
+		/// <param name="level">Level to map.</param>
+		protected virtual IncludedMembers MapLevel(int level)
 		{
-			return level;
+			return (IncludedMembers)level + 1;
 		}
 
 		/// <summary>
@@ -111,13 +141,29 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 			return true;
 		}
 
+		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.OnLevelCleared(int)"/>
+		protected virtual void OnLevelCleared(IncludedMembers level)
+		{
+			// Do nothing.
+		}
+
+		/// <inheritdoc/>
+		[Obsolete("Use OnLevelCleared(IncludedMembers) instead")]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		protected override void OnLevelCleared(int level)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			IncludedMembers members = MapLevel(level);
+			OnLevelCleared(members);
+		}
+
 		/// <inheritdoc/>
 		[Obsolete("Use OnLevelFilled(IncludedMembers) instead")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		protected sealed override void OnLevelFilled(int level)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 		{
-			IncludedMembers members = MapLevel((IncludedMembers)level);
+			IncludedMembers members = MapLevel(level);
 			OnLevelFilled(members);
 		}
 
@@ -127,7 +173,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		protected sealed override void OnLevelReady(int level)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 		{
-			IncludedMembers members = MapLevel((IncludedMembers)level);
+			IncludedMembers members = MapLevel(level);
 			OnLevelReady(members);
 		}
 
@@ -149,7 +195,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		protected sealed override bool SkipMember(ISymbolOrMember<TSymbol, TData> member, int level)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 		{
-			IncludedMembers members = MapLevel((IncludedMembers)level);
+			IncludedMembers members = MapLevel(level);
 			return SkipMember(member, members);
 		}
 

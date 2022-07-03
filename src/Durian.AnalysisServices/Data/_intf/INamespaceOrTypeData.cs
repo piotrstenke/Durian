@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using System;
 
@@ -27,5 +28,11 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Current member is not a <see cref="INamespaceData"/>.</exception>
 		INamespaceData ToNamespace();
+
+		/// <summary>
+		/// Returns all <see cref="INamedTypeSymbol"/>s contained within this namespace.
+		/// </summary>
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<INamedTypeSymbol, ITypeData> GetTypes(IncludedMembers members);
 	}
 }

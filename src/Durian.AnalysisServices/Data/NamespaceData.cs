@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Extensions;
@@ -34,6 +35,43 @@ namespace Durian.Analysis.Data
 			/// </summary>
 			public Properties()
 			{
+			}
+		}
+
+		private sealed class ContainerWrapper : SymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>
+		{
+			private SubNamespacesContainer? _namespaces;
+			private InnerTypesContainer? _innerTypes;
+
+			public NamespaceData Root { get; }
+
+			public ContainerWrapper(
+				NamespaceData root,
+				ICompilationData? parentCompilation,
+				ISymbolNameResolver? nameResolver
+			) : base(parentCompilation, nameResolver)
+			{
+				Root = root;
+			}
+
+			public SubNamespacesContainer GetNamespaces()
+			{
+				return _namespaces ??= new(Root, false, ParentCompilation, NameResolver);
+			}
+
+			public InnerTypesContainer GetTypes()
+			{
+				if(_innerTypes is null)
+				{
+					if (Root is not ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData> type)
+					{
+						type = new NamespaceOrTypeData()
+					}
+
+					_innerTypes = new(type, false, ParentCompilation, NameResolver);
+				}
+
+				return _innerTypes;
 			}
 		}
 
@@ -88,24 +126,32 @@ namespace Durian.Analysis.Data
 		/// <inheritdoc/>
 		public ISymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData> GetMembers(IncludedMembers members)
 		{
-			if (_members is null)
-			{
-				_members = new NamespacesOrTypesContainer(this, false, ParentCompilation);
-			}
-
+			InitMembers();
 			return _members.ResolveLevel((int)members);
 		}
 
 		/// <inheritdoc/>
 		public ISymbolContainer<INamespaceSymbol, INamespaceData> GetNamespaces(IncludedMembers members)
 		{
-			return GetMembers(members).OfType<ISymbolOrMember<INamespaceSymbol, INamespaceData>>().ToContainer(ParentCompilation);
+			InitMembers();
+
+			if(_members is NamespacesOrTypesContainer container)
+			{
+				return container.GetNamespaces().ResolveLevel(members);
+			}
+
+			return (_members as ContainerWrapper)
 		}
 
 		/// <inheritdoc/>
 		public ISymbolContainer<INamedTypeSymbol, ITypeData> GetTypes(IncludedMembers members)
 		{
-			return GetMembers(members).OfType<ISymbolOrMember<INamedTypeSymbol, ITypeData>>().ToContainer(ParentCompilation);
+
+		}
+
+		public NamespaceOrTypeData ToNamespaceOrType()
+		{
+
 		}
 
 		ITypeData INamespaceOrTypeData.ToType()
@@ -116,6 +162,15 @@ namespace Durian.Analysis.Data
 		INamespaceData INamespaceOrTypeData.ToNamespace()
 		{
 			return this;
+		}
+
+		[MemberNotNull(nameof(_members))]
+		private void InitMembers()
+		{
+			if (_members is null)
+			{
+				_members = new NamespacesOrTypesContainer(this, false, ParentCompilation);
+			}
 		}
 	}
 }

@@ -21,7 +21,7 @@ namespace Durian.Analysis.SymbolContainers
 		where TSymbol : class, ISymbol
 		where TData : class, IMemberData
 	{
-		private sealed class LevelEntry
+		internal sealed class LevelEntry
 		{
 			public InnerContainer? Container { get; set; }
 
@@ -29,14 +29,24 @@ namespace Durian.Analysis.SymbolContainers
 
 			public int StartIndex { get; set; }
 
+			public bool IsEmpty { get; set; }
+
 			public LevelEntry(Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> creator)
 			{
 				Creator = creator;
+				StartIndex = -1;
+			}
+
+			public void Reset()
+			{
+				Container = null;
+				StartIndex = -1;
+				IsEmpty = false;
 			}
 		}
 
 		internal readonly List<ISymbolOrMember<TSymbol, TData>> _data;
-		private readonly List<LevelEntry> _levels;
+		internal readonly List<LevelEntry> _levels;
 
 		/// <inheritdoc/>
 		public int Count => _data.Count;
@@ -236,12 +246,30 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <inheritdoc/>
+		public void ClearLevel(int level)
+		{
+			ValidateLevel(level);
+
+			for (int i = _levels.Count - 1; i >= level; i--)
+			{
+				LevelEntry entry = _levels[i];
+
+				int start = entry.StartIndex;
+
+				if(start > -1 && !entry.IsEmpty)
+				{
+					_data.RemoveRange(entry.StartIndex, _data.Count - entry.StartIndex);
+				}
+
+				_levels[i].Reset();
+				OnLevelCleared(level);
+			}
+		}
+
+		/// <inheritdoc/>
 		public ISymbolContainer<TSymbol, TData> ResolveLevel(int level)
 		{
-			if (level < 0 || level >= NumLevels)
-			{
-				throw new ArgumentOutOfRangeException(nameof(level), $"Level must be greater than 0 and less than {nameof(NumLevels)}");
-			}
+			ValidateLevel(level);
 
 			LevelEntry levelData = _levels[level];
 
@@ -261,18 +289,12 @@ namespace Durian.Analysis.SymbolContainers
 
 			if (CurrentLevel == -1)
 			{
-				LevelEntry firstLevel = _levels[0];
-
-				OnLevelReady(0);
-				FillLevel(Root, firstLevel.Creator);
-				OnLevelFilled(0);
-				CurrentLevel++;
-
-				firstLevel.StartIndex = 1;
+				FillFirstLevel();
 			}
 
 			int previousStart = _levels[CurrentLevel].StartIndex;
 			int length = level + 1;
+			bool nextLevelsAreEmpty = false;
 
 			for (int i = CurrentLevel + 1; i < length; i++)
 			{
@@ -280,7 +302,7 @@ namespace Durian.Analysis.SymbolContainers
 				LevelEntry levelEntry = _levels[i];
 				int firstIndex = _data.Count;
 
-				if(IsHandledExternally(i))
+				if (nextLevelsAreEmpty || IsHandledExternally(i))
 				{
 					goto LEVEL_FILLED;
 				}
@@ -302,6 +324,13 @@ namespace Durian.Analysis.SymbolContainers
 				levelEntry.StartIndex = firstIndex;
 				levelEntry.Container = new InnerContainer(this, _data.Count);
 
+				// If current level is empty, all next levels are also empty.
+				if (firstIndex == _data.Count)
+				{
+					levelEntry.IsEmpty = true;
+					nextLevelsAreEmpty = true;
+				}
+
 				previousStart = firstIndex;
 
 				OnLevelFilled(i);
@@ -314,17 +343,13 @@ namespace Durian.Analysis.SymbolContainers
 
 			CurrentLevel = level;
 			return _levels[CurrentLevel].Container!;
+		}
 
-			void FillLevel(ISymbolOrMember<TSymbol, TData> member, Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> creator)
+		private void ValidateLevel(int level)
+		{
+			if (level < 0 || level >= NumLevels)
 			{
-				IEnumerable<ISymbolOrMember<TSymbol, TData>> collection = creator(member);
-
-				if(collection is IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> orderEnumerable && orderEnumerable.Order == ReturnOrder.ChildToParent)
-				{
-					collection = orderEnumerable.Reverse();
-				}
-
-				_data.AddRange(collection);
+				throw new ArgumentOutOfRangeException(nameof(level), $"Level must be greater than 0 and less than {nameof(NumLevels)}");
 			}
 		}
 
@@ -365,6 +390,15 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
+		/// Called after a level is cleared of cached data.
+		/// </summary>
+		/// <param name="level">Level that was cleared.</param>
+		protected virtual void OnLevelCleared(int level)
+		{
+
+		}
+
+		/// <summary>
 		/// Called after a <paramref name="level"/> is filled with data.
 		/// </summary>
 		/// <param name="level">Level that was filled.</param>
@@ -372,7 +406,6 @@ namespace Durian.Analysis.SymbolContainers
 		{
 			// Do nothing.
 		}
-
 
 		/// <summary>
 		/// Called before a <paramref name="level"/> is filled with data.
@@ -420,6 +453,37 @@ namespace Durian.Analysis.SymbolContainers
 		IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
 		{
 			return Reverse();
+		}
+
+		private void FillFirstLevel()
+		{
+			const int firstLevelIndex = 0;
+
+			OnLevelReady(firstLevelIndex);
+
+			LevelEntry firstLevel = _levels[firstLevelIndex];
+
+			if (!IsHandledExternally(firstLevelIndex))
+			{
+				FillLevel(Root, firstLevel.Creator);
+			}
+
+			OnLevelFilled(firstLevelIndex);
+			CurrentLevel++;
+
+			firstLevel.StartIndex = 1;
+		}
+
+		private void FillLevel(ISymbolOrMember<TSymbol, TData> member, Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> creator)
+		{
+			IEnumerable<ISymbolOrMember<TSymbol, TData>> collection = creator(member);
+
+			if (collection is IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> orderEnumerable && orderEnumerable.Order == ReturnOrder.ChildToParent)
+			{
+				collection = orderEnumerable.Reverse();
+			}
+
+			_data.AddRange(collection);
 		}
 
 		private ImmutableArray<TData> GetData(int endIndex)
