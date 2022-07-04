@@ -248,7 +248,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <inheritdoc/>
 		public void ClearLevel(int level)
 		{
-			ValidateLevel(level);
+			SymbolContainerFactory.ValidateLevel(level, NumLevels);
 
 			for (int i = _levels.Count - 1; i >= level; i--)
 			{
@@ -269,7 +269,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <inheritdoc/>
 		public ISymbolContainer<TSymbol, TData> ResolveLevel(int level)
 		{
-			ValidateLevel(level);
+			SymbolContainerFactory.ValidateLevel(level, NumLevels);
 
 			LevelEntry levelData = _levels[level];
 
@@ -343,14 +343,6 @@ namespace Durian.Analysis.SymbolContainers
 
 			CurrentLevel = level;
 			return _levels[CurrentLevel].Container!;
-		}
-
-		private void ValidateLevel(int level)
-		{
-			if (level < 0 || level >= NumLevels)
-			{
-				throw new ArgumentOutOfRangeException(nameof(level), $"Level must be greater than 0 and less than {nameof(NumLevels)}");
-			}
 		}
 
 		/// <inheritdoc cref="ISymbolContainer.Reverse"/>

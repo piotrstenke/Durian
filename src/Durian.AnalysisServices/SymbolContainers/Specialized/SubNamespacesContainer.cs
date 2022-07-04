@@ -13,7 +13,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// <summary>
 	/// <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> that handles sub-namespaces.
 	/// </summary>
-	public class SubNamespacesContainer : IncludedMembersSymbolContainerWithoutInner<INamespaceSymbol, INamespaceData>
+	public sealed class SubNamespacesContainer : IncludedMembersSymbolContainerWithoutInner<INamespaceSymbol, INamespaceData>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SubNamespacesContainer"/> class.
@@ -33,13 +33,13 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <inheritdoc/>
-		protected sealed override IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> All(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
+		protected override IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> All(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
 		{
 			return GetNamespaces(member);
 		}
 
 		/// <inheritdoc/>
-		protected sealed override IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> Direct(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
+		protected override IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> Direct(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
 		{
 			return GetNamespaces(member);
 		}

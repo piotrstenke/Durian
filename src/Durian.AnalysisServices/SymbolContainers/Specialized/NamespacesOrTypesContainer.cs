@@ -20,7 +20,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// </summary>
 	public sealed class NamespacesOrTypesContainer : IncludedMembersSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>
 	{
-		private sealed class PrivateSubNamespacesContainer : SubNamespacesContainer
+		private sealed class PrivateSubNamespacesContainer : IncludedMembersSymbolContainerWithoutInner<INamespaceSymbol, INamespaceData>
 		{
 			public NamespacesOrTypesContainer ParentContainer { get; }
 
@@ -58,9 +58,26 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 
 				return true;
 			}
+
+			/// <inheritdoc/>
+			protected override IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> All(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
+			{
+				return GetNamespaces(member);
+			}
+
+			/// <inheritdoc/>
+			protected override IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> Direct(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
+			{
+				return GetNamespaces(member);
+			}
+
+			private IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> GetNamespaces(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
+			{
+				return member.Symbol.GetNamespaceMembers().Select(s => s.ToDataOrSymbol(ParentCompilation));
+			}
 		}
 
-		private sealed class PrivateInnerTypesContainer : InnerTypesContainer
+		private sealed class PrivateInnerTypesContainer : IncludedMembersSymbolContainerWithoutInner<INamespaceOrTypeSymbol, INamespaceOrTypeData>
 		{
 			public NamespacesOrTypesContainer ParentContainer { get; }
 
@@ -90,7 +107,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 
 				for (int i = start; i < end; i++)
 				{
-					if (baseList[i] is ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData> type)
+					if (baseList[i] is ISymbolOrMember<INamedTypeSymbol, ITypeData> type)
 					{
 						_data.Add(type);
 					}
@@ -98,9 +115,26 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 
 				return true;
 			}
+
+			/// <inheritdoc/>
+			protected override IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> All(ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> member)
+			{
+				return GetTypes(member);
+			}
+
+			/// <inheritdoc/>
+			protected override IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> Direct(ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> member)
+			{
+				return GetTypes(member);
+			}
+
+			private IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> GetTypes(ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> member)
+			{
+				return member.Symbol.GetInnerTypes().Select(s => s.ToDataOrSymbol(ParentCompilation));
+			}
 		}
 
-		private readonly PrivateSubNamespacesContainer _subNamespaces;
+		private readonly PrivateSubNamespacesContainer? _subNamespaces;
 		private readonly PrivateInnerTypesContainer _innerTypes;
 
 		/// <summary>
@@ -118,9 +152,9 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 			ISymbolNameResolver? nameResolver = default
 		) : base(root, includeRoot, parentCompilation, nameResolver)
 		{
-			if (root is not ISymbolOrMember<INamespaceSymbol, INamespaceData> @namespace)
+			if (root is ISymbolOrMember<INamespaceSymbol, INamespaceData> @namespace)
 			{
-				@namespace = new NamespaceOrTypeData;
+				_subNamespaces = new(this, @namespace);
 			}
 
 			if (root is not ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData> type)
@@ -129,23 +163,22 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 			}
 
 			_innerTypes = new(this, type);
-			_subNamespaces = new(this, @namespace);
 		}
 
 		/// <summary>
-		/// Returns a <see cref="SubNamespacesContainer"/> created from data within this container.
-		/// <para><b>Note:</b> this container and the returned <see cref="SubNamespacesContainer"/> use the same set of data - resolving a level for the <see cref="SubNamespacesContainer"/> will also resolve the same level for the current container and vice versa.</para>
+		/// Returns a <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> created from namespaces contained within this container.
+		/// <para><b>Note:</b> this container and the returned <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> use the same set of data - resolving a level for the <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> will also resolve the same level for the current container and vice versa.</para>
 		/// </summary>
-		public SubNamespacesContainer GetNamespaces()
+		public ILeveledSymbolContainer<INamespaceSymbol, INamespaceData> GetNamespaces()
 		{
 			return _subNamespaces;
 		}
 
 		/// <summary>
-		/// Returns a <see cref="InnerTypesContainer"/> created from data within this container.
-		/// <para><b>Note:</b> this container and the returned <see cref="InnerTypesContainer"/> use the same set of data - resolving a level for the <see cref="InnerTypesContainer"/> will also resolve the same level for the current container and vice versa.</para>
+		/// Returns a <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> created from data within this container.
+		/// <para><b>Note:</b> this container and the returned <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> use the same set of data - resolving a level for the <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> will also resolve the same level for the current container and vice versa.</para>
 		/// </summary>
-		public InnerTypesContainer GetTypes()
+		public ILeveledSymbolContainer<INamedTypeSymbol, ITypeData> GetTypes()
 		{
 			return _innerTypes;
 		}

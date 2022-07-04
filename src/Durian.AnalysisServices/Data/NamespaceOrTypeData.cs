@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Durian.Analysis.Extensions;
+using Durian.Analysis.SymbolContainers;
+using Durian.Analysis.SymbolContainers.Specialized;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -16,44 +19,59 @@ namespace Durian.Analysis.Data
 	public class NamespaceOrTypeData : MemberData, INamespaceOrTypeData
 	{
 		/// <summary>
-		/// Returns the <see cref="Declaration"/> as a <see cref="BaseNamespaceDeclarationSyntax"/>.
+		/// Contains optional data that can be passed to a <see cref="NamespaceOrTypeData"/>.
 		/// </summary>
-		public BaseNamespaceDeclarationSyntax? AsNamespace => (BaseDeclaration as BaseNamespaceDeclarationSyntax)!;
-
-		/// <summary>
-		/// Returns the <see cref="Declaration"/> as a <see cref="BaseTypeDeclarationSyntax"/>.
-		/// </summary>
-		public BaseTypeDeclarationSyntax? AsType => (BaseDeclaration as BaseTypeDeclarationSyntax)!;
-
-		/// <summary>
-		/// <see cref="INamespaceOrTypeSymbol"/> associated with the <see cref="Declaration"/>.
-		/// </summary>
-		public new INamespaceOrTypeSymbol Symbol => (BaseSymbol as INamespaceOrTypeSymbol)!;
-
-		BaseTypeDeclarationSyntax ITypeData.Declaration
+		public new class Properties : Properties<INamespaceOrTypeSymbol>
 		{
-			get
-			{
-				if (!Symbol.IsType)
-				{
-					throw new InvalidOperationException("Current NamespaceOrTypeData does not represent a type");
-				}
+			/// <summary>
+			/// Inner types of the current symbol.
+			/// </summary>
+			public ILeveledSymbolContainer<INamedTypeSymbol, ITypeData>? Types { get; set; }
 
-				return AsType!;
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
 			}
 		}
 
-		ITypeSymbol ITypeData.Symbol
-		{
-			get
-			{
-				if (!Symbol.IsType)
-				{
-					throw new InvalidOperationException("Current NamespaceOrTypeData does not represent a type");
-				}
+		private ILeveledSymbolContainer<INamedTypeSymbol, ITypeData>? _types;
 
-				return (Symbol as INamedTypeSymbol)!;
-			}
+		/// <summary>
+		/// Returns the <see cref="MemberData.Declaration"/> as a <see cref="BaseNamespaceDeclarationSyntax"/>.
+		/// </summary>
+		public BaseNamespaceDeclarationSyntax? AsNamespace => (Declaration as BaseNamespaceDeclarationSyntax)!;
+
+		/// <summary>
+		/// Returns the <see cref="MemberData.Declaration"/> as a <see cref="BaseTypeDeclarationSyntax"/>.
+		/// </summary>
+		public BaseTypeDeclarationSyntax? AsType => (Declaration as BaseTypeDeclarationSyntax)!;
+
+		/// <summary>
+		/// Returns the <see cref="MemberData.Declaration"/> as a <see cref="DelegateDeclarationSyntax"/>.
+		/// </summary>
+		public DelegateDeclarationSyntax? AsDelegate => (Declaration as DelegateDeclarationSyntax)!;
+
+		/// <summary>
+		/// <see cref="INamespaceOrTypeSymbol"/> associated with the <see cref="MemberData.Declaration"/>.
+		/// </summary>
+		public new INamespaceOrTypeSymbol Symbol => (base.Symbol as INamespaceOrTypeSymbol)!;
+
+		INamespaceOrTypeData ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>.Member => this;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="NamespaceOrTypeData"/> class.
+		/// </summary>
+		/// <param name="declaration"><see cref="TypeDeclarationSyntax"/> this <see cref="NamespaceOrTypeData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="NamespaceOrTypeData"/>.</param>
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
+		/// </exception>
+		public NamespaceOrTypeData(TypeDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
+		{
+			SetProperties(properties);
 		}
 
 		/// <summary>
@@ -61,23 +79,13 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="declaration"><see cref="BaseNamespaceDeclarationSyntax"/> this <see cref="NamespaceOrTypeData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="NamespaceOrTypeData"/>.</param>
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
 		/// </exception>
-		public NamespaceOrTypeData(BaseNamespaceDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
+		public NamespaceOrTypeData(BaseNamespaceDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="NamespaceOrTypeData"/> class.
-		/// </summary>
-		/// <param name="declaration"><see cref="BaseTypeDeclarationSyntax"/> this <see cref="NamespaceOrTypeData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="NamespaceOrTypeData"/>.</param>
-		/// <exception cref="ArgumentNullException">
-		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
-		/// </exception>
-		public NamespaceOrTypeData(BaseTypeDeclarationSyntax declaration, ICompilationData compilation) : base(declaration, compilation)
-		{
+			SetProperties(properties);
 		}
 
 		internal NamespaceOrTypeData(INamespaceOrTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
@@ -85,99 +93,55 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="NamespaceOrTypeData"/> class.
+		/// Converts the current object to a <see cref="ITypeData"/>.
 		/// </summary>
-		/// <param name="declaration"><see cref="BaseNamespaceDeclarationSyntax"/> this <see cref="NamespaceOrTypeData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="NamespaceOrTypeData"/>.</param>
-		/// <param name="symbol"><see cref="INamespaceSymbol"/> this <see cref="NamespaceOrTypeData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal NamespaceOrTypeData(
-			BaseNamespaceDeclarationSyntax declaration,
-			ICompilationData compilation,
-			INamespaceSymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			containingNamespaces,
-			attributes
-		)
+		/// <exception cref="InvalidOperationException">Symbol is not a type.</exception>
+		public ITypeData ToType()
 		{
+			if(!Symbol.IsType)
+			{
+				throw new InvalidOperationException("Symbol is not a type");
+			}
+
+			return (Symbol as INamedTypeSymbol)!.ToData(ParentCompilation);
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="NamespaceOrTypeData"/> class.
+		/// Converts the current object to a <see cref="ITypeData"/>.
 		/// </summary>
-		/// <param name="declaration"><see cref="BaseTypeDeclarationSyntax"/> this <see cref="NamespaceOrTypeData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="NamespaceOrTypeData"/>.</param>
-		/// <param name="symbol"><see cref="ITypeSymbol"/> this <see cref="NamespaceOrTypeData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal NamespaceOrTypeData(
-			BaseTypeDeclarationSyntax declaration,
-			ICompilationData compilation,
-			ITypeSymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
+		/// <exception cref="InvalidOperationException">Symbol is not a namespace.</exception>
+		public INamespaceData ToNamespace()
 		{
+			if(!Symbol.IsNamespace)
+			{
+				throw new InvalidOperationException("Symbol is not a namespace");
+			}
+
+			return (Symbol as INamespaceSymbol)!.ToData(ParentCompilation);
 		}
 
 		/// <inheritdoc/>
-		public ImmutableArray<BaseTypeDeclarationSyntax> PartialDeclarations()
+		public ISymbolContainer<INamedTypeSymbol, ITypeData> GetTypes(IncludedMembers members)
 		{
-			if (Symbol.IsNamespace)
+			if(_types is null)
 			{
-				return ImmutableArray<BaseTypeDeclarationSyntax>.Empty;
+				_types = new NamespacesOrTypesContainer(this, false, ParentCompilation).GetTypes();
 			}
 
-			if (_partialDeclarations is null)
+			if(_types is IncludedMembersSymbolContainer<INamedTypeSymbol, ITypeData> t)
 			{
-				if (Symbol is ITypeSymbol t && t.TypeKind == TypeKind.Enum)
-				{
-					_partialDeclarations = Array.Empty<BaseTypeDeclarationSyntax>();
-				}
-				else
-				{
-					_partialDeclarations = Symbol.DeclaringSyntaxReferences.Select(e => e.GetSyntax()).OfType<BaseTypeDeclarationSyntax>().ToArray();
-				}
+				return t.ResolveLevel(members);
 			}
 
-			return ImmutableArray.Create(_partialDeclarations);
+			return _types.ResolveLevel((int)members);
 		}
 
-		public ITypeData ToType()
+		private void SetProperties(Properties? properties)
 		{
-
-		}
-
-		public INamespaceData ToNamespace()
-		{
-			return new()
+			if (properties is not null)
+			{
+				_types = properties.Types;
+			}
 		}
 	}
 }

@@ -18,13 +18,79 @@ namespace Durian.Analysis.SymbolContainers
 	/// </summary>
 	public static partial class SymbolContainerFactory
 	{
-		private class EmptySymbolContainer<TSymbol, TData> : ISymbolContainer<TSymbol, TData>
+		private class EmptyLeveledContainer<TSymbol, TData> : EmptyContainer<TSymbol, TData>, ILeveledSymbolContainer<TSymbol, TData>
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData
+		{
+			public int CurrentLevel { get; private set; }
+
+			public int NumLevels { get; private set; }
+
+			bool ISealable.IsSealed => false;
+			bool ISealable.CanBeSealed => false;
+			bool ISealable.CanBeUnsealed => false;
+
+			public void RegisterLevel(Func<TSymbol, IEnumerable<TSymbol>> function)
+			{
+				NumLevels++;
+
+				// Do nothing.
+			}
+
+			public void RegisterLevel(Func<TSymbol, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
+			{
+				NumLevels++;
+
+				// Do nothing.
+			}
+
+			public void RegisterLevel(Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
+			{
+				NumLevels++;
+
+				// Do nothing.
+			}
+
+			public ISymbolContainer<TSymbol, TData> ResolveLevel(int level)
+			{
+				ValidateLevel(level, NumLevels);
+
+				if(level > CurrentLevel)
+				{
+					CurrentLevel = level;
+				}
+
+				return this;
+			}
+
+			bool ISealable.Seal()
+			{
+				return false;
+			}
+
+			bool ISealable.Unseal()
+			{
+				return false;
+			}
+
+			IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>.Reverse()
+			{
+				return this;
+			}
+
+			IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
+			{
+				return this;
+			}
+		}
+
+		private class EmptyContainer<TSymbol, TData> : ISymbolContainer<TSymbol, TData>
 			where TSymbol : class, ISymbol
 			where TData : class, IMemberData
 		{
 			private readonly List<ISymbolOrMember<TSymbol, TData>> _list = new();
 
-			public static EmptySymbolContainer<TSymbol, TData> Instance { get; } = new();
+			public static EmptyContainer<TSymbol, TData> Instance { get; } = new();
 
 			public int Count => 0;
 
@@ -117,7 +183,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		public static ISymbolContainer<ISymbol, IMemberData> Empty()
 		{
-			return EmptySymbolContainer<ISymbol, IMemberData>.Instance;
+			return EmptyContainer<ISymbol, IMemberData>.Instance;
 		}
 
 		/// <summary>
@@ -126,7 +192,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/>s stored in the container.</typeparam>
 		public static ISymbolContainer<TSymbol, IMemberData> Empty<TSymbol>() where TSymbol : class, ISymbol
 		{
-			return EmptySymbolContainer<TSymbol, IMemberData>.Instance;
+			return EmptyContainer<TSymbol, IMemberData>.Instance;
 		}
 
 		/// <summary>
@@ -138,7 +204,7 @@ namespace Durian.Analysis.SymbolContainers
 			where TSymbol : class, ISymbol
 			where TData : class, IMemberData
 		{
-			return EmptySymbolContainer<TSymbol, TData>.Instance;
+			return EmptyContainer<TSymbol, TData>.Instance;
 		}
 
 		/// <summary>
@@ -1412,6 +1478,15 @@ namespace Durian.Analysis.SymbolContainers
 		internal static Exception Exc_EmptySymbolContainer()
 		{
 			return new EmptyContainerException("Container does not contain any symbols");
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static void ValidateLevel(int level, int numLevels)
+		{
+			if (level < 0 || level >= numLevels)
+			{
+				throw new ArgumentOutOfRangeException(nameof(level), $"Level must be greater than 0 and less than {nameof(NumLevels)}");
+			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
