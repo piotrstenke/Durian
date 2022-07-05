@@ -125,7 +125,7 @@ namespace Durian.Analysis.Data
 		{
 			if(_types is null)
 			{
-				_types = new NamespacesOrTypesContainer(this, false, ParentCompilation).GetTypes();
+				_types = new NamespacesOrTypesContainer(this, ParentCompilation).GetTypes();
 			}
 
 			if(_types is IncludedMembersSymbolContainer<INamedTypeSymbol, ITypeData> t)

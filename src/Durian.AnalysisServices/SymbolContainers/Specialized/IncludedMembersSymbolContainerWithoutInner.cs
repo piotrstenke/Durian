@@ -23,16 +23,31 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		/// Initializes a new instance of the <see cref="IncludedMembersSymbolContainerWithoutInner{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
+		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <typeparamref name="TData"/>s.</param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
+		protected IncludedMembersSymbolContainerWithoutInner(
+			ISymbolOrMember<TSymbol, TData> root,
+			ICompilationData? parentCompilation = default,
+			ISymbolNameResolver? nameResolver = default,
+			bool includeRoot = false
+		) : base(root, parentCompilation, nameResolver, includeRoot)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="IncludedMembersSymbolContainerWithoutInner{TSymbol, TData}"/> class.
+		/// </summary>
+		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <typeparamref name="TData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
 		protected IncludedMembersSymbolContainerWithoutInner(
-			ISymbolOrMember<TSymbol, TData> root,
-			bool includeRoot = false,
+			ISymbolOrMember root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default
-		) : base(root, includeRoot, parentCompilation, nameResolver)
+		) : base(root, parentCompilation, nameResolver)
 		{
 		}
 

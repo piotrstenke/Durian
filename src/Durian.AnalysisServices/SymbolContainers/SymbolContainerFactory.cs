@@ -18,17 +18,21 @@ namespace Durian.Analysis.SymbolContainers
 	/// </summary>
 	public static partial class SymbolContainerFactory
 	{
-		private class EmptyLeveledContainer<TSymbol, TData> : EmptyContainer<TSymbol, TData>, ILeveledSymbolContainer<TSymbol, TData>
+		private class EmptyLeveledContainer<TSymbol, TData> : EmptyContainer<TSymbol, TData>, IMappedSymbolContainer<TSymbol, TData, IncludedMembers>
 			where TSymbol : class, ISymbol
 			where TData : class, IMemberData
 		{
-			public int CurrentLevel { get; private set; }
+			public int CurrentLevelInt { get; private set; }
+
+			public IncludedMembers CurrentLevel => (IncludedMembers)CurrentLevelInt + 1;
 
 			public int NumLevels { get; private set; }
 
 			bool ISealable.IsSealed => false;
 			bool ISealable.CanBeSealed => false;
 			bool ISealable.CanBeUnsealed => false;
+
+			int ILeveledSymbolContainer.CurrentLevel => CurrentLevelInt;
 
 			public void RegisterLevel(Func<TSymbol, IEnumerable<TSymbol>> function)
 			{
@@ -55,12 +59,36 @@ namespace Durian.Analysis.SymbolContainers
 			{
 				ValidateLevel(level, NumLevels);
 
-				if(level > CurrentLevel)
+				if(level > CurrentLevelInt)
 				{
-					CurrentLevel = level;
+					CurrentLevelInt = level;
 				}
 
 				return this;
+			}
+
+			public IMappedSymbolContainer<TSymbol, TData, IncludedMembers> ResolveLevel(IncludedMembers level)
+			{
+				return (ResolveLevel((int)level - 1) as IMappedSymbolContainer<TSymbol, TData, IncludedMembers>)!;
+			}
+
+			public void ClearLevel(IncludedMembers level)
+			{
+				ClearLevel((int)level - 1);
+			}
+
+			public void ClearLevel(int level)
+			{
+				ValidateLevel(level, NumLevels);
+
+				int levelsToDelete = NumLevels - level;
+
+				NumLevels -= levelsToDelete;
+
+				if(CurrentLevelInt >= NumLevels)
+				{
+					CurrentLevelInt = NumLevels - 1;
+				}
 			}
 
 			bool ISealable.Seal()
@@ -81,6 +109,21 @@ namespace Durian.Analysis.SymbolContainers
 			IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
 			{
 				return this;
+			}
+
+			ISymbolContainer ILeveledSymbolContainer.ResolveLevel(int level)
+			{
+				return ResolveLevel(level);
+			}
+
+			ISymbolContainer IMappedSymbolContainer<IncludedMembers>.ResolveLevel(IncludedMembers level)
+			{
+				return ResolveLevel(level);
+			}
+
+			ISymbolContainer<TSymbol, TData> IMappedSymbolContainer<TSymbol, TData, IncludedMembers>.ResolveLevel(IncludedMembers level)
+			{
+				return ResolveLevel(level);
 			}
 		}
 
@@ -179,7 +222,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
-		/// Returns a shared instance of an empty container.
+		/// Returns a shared instance of an empty <see cref="ISymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
 		public static ISymbolContainer<ISymbol, IMemberData> Empty()
 		{
@@ -187,7 +230,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
-		/// Returns a shared instance of an empty container.
+		/// Returns a shared instance of an empty <see cref="ISymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
 		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/>s stored in the container.</typeparam>
 		public static ISymbolContainer<TSymbol, IMemberData> Empty<TSymbol>() where TSymbol : class, ISymbol
@@ -196,7 +239,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
-		/// Returns a shared instance of an empty container.
+		/// Returns a shared instance of an empty <see cref="ISymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
 		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/>s stored in the container.</typeparam>
 		/// <typeparam name="TData">Type of <see cref="IMemberData"/>s stored in the container.</typeparam>
@@ -205,6 +248,36 @@ namespace Durian.Analysis.SymbolContainers
 			where TData : class, IMemberData
 		{
 			return EmptyContainer<TSymbol, TData>.Instance;
+		}
+
+		/// <summary>
+		/// Returns a new instance of an empty <see cref="ILeveledSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		public static ILeveledSymbolContainer<ISymbol, IMemberData> EmptyLeveled()
+		{
+			return new EmptyLeveledContainer<ISymbol, IMemberData>();
+		}
+
+		/// <summary>
+		/// Returns a new instance of an empty <see cref="ILeveledSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/>s stored in the container.</typeparam>
+		public static ILeveledSymbolContainer<TSymbol, IMemberData> EmptyLeveled<TSymbol>()
+			where TSymbol : class, ISymbol
+		{
+			return new EmptyLeveledContainer<TSymbol, IMemberData>();
+		}
+
+		/// <summary>
+		/// Returns a new instance of an empty <see cref="ILeveledSymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/>s stored in the container.</typeparam>
+		/// <typeparam name="TData">Type of <see cref="IMemberData"/>s stored in the container.</typeparam>
+		public static ILeveledSymbolContainer<TSymbol, TData> EmptyLeveled<TSymbol, TData>()
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData
+		{
+			return new EmptyLeveledContainer<TSymbol, TData>();
 		}
 
 		/// <summary>
@@ -1485,7 +1558,7 @@ namespace Durian.Analysis.SymbolContainers
 		{
 			if (level < 0 || level >= numLevels)
 			{
-				throw new ArgumentOutOfRangeException(nameof(level), $"Level must be greater than 0 and less than {nameof(NumLevels)}");
+				throw new ArgumentOutOfRangeException(nameof(level), $"Level must be greater than 0 and less than NumLevels");
 			}
 		}
 

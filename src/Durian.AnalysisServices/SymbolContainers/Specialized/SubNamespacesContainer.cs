@@ -19,16 +19,16 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		/// Initializes a new instance of the <see cref="SubNamespacesContainer"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
-		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <see cref="INamespaceData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
+		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
 		public SubNamespacesContainer(
 			ISymbolOrMember<INamespaceSymbol, INamespaceData> root,
-			bool includeRoot = false,
 			ICompilationData? parentCompilation = default,
-			ISymbolNameResolver? nameResolver = default
-		) : base(root, includeRoot, parentCompilation, nameResolver)
+			ISymbolNameResolver? nameResolver = default,
+			bool includeRoot = false
+		) : base(root, parentCompilation, nameResolver, includeRoot)
 		{
 		}
 
@@ -42,6 +42,12 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		protected override IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> Direct(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)
 		{
 			return GetNamespaces(member);
+		}
+
+		/// <inheritdoc/>
+		protected override IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> ResolveRoot(ISymbolOrMember root)
+		{
+			return GetNamespaces((root as SymbolOrMemberWrapper<INamespaceSymbol, INamespaceData>)!);
 		}
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.Reverse"/>

@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
@@ -48,6 +49,8 @@ namespace Durian.Analysis.SymbolContainers
 		internal readonly List<ISymbolOrMember<TSymbol, TData>> _data;
 		internal readonly List<LevelEntry> _levels;
 
+		private readonly Func<ISymbolOrMember, IEnumerable<ISymbolOrMember<TSymbol, TData>>>? _rootFunction;
+
 		/// <inheritdoc/>
 		public int Count => _data.Count;
 
@@ -59,6 +62,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Determines whether the <see cref="Root"/> is included in the underlaying containers.
 		/// </summary>
+		[MemberNotNullWhen(true, nameof(Root))]
 		public bool IncludeRoot { get; }
 
 		/// <summary>
@@ -103,7 +107,12 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// <see cref="ISymbol"/> that is a root of all the underlaying containers.
 		/// </summary>
-		public ISymbolOrMember<TSymbol, TData> Root { get; }
+		public ISymbolOrMember<TSymbol, TData>? Root => TargetRoot as ISymbolOrMember<TSymbol, TData>;
+
+		/// <summary>
+		/// <see cref="ISymbol"/> that is a root of all the underlaying containers. Used when the root <see cref="ISymbol"/> is of different kind that all its children. (e.g. namespace for inner types).
+		/// </summary>
+		public ISymbolOrMember TargetRoot { get; }
 
 		/// <summary>
 		/// <see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.
@@ -114,15 +123,64 @@ namespace Durian.Analysis.SymbolContainers
 		/// Initializes a new instance of the <see cref="LeveledSymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
-		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <typeparamref name="TData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
+		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
 		public LeveledSymbolContainer(
 			ISymbolOrMember<TSymbol, TData> root,
-			bool includeRoot = false,
+			ICompilationData? parentCompilation = default,
+			ISymbolNameResolver? nameResolver = default,
+			bool includeRoot = false
+		) : this(root as ISymbolOrMember, parentCompilation, nameResolver, includeRoot)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="LeveledSymbolContainer{TSymbol, TData}"/> class.
+		/// </summary>
+		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
+		/// <param name="rootFunction">Function to use when retrieving data from the <paramref name="root"/> itself.</param>
+		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <typeparamref name="TData"/>s.</param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>. -or- <paramref name="rootFunction"/> is <see langword="null"/>.</exception>
+		public LeveledSymbolContainer(
+			ISymbolOrMember root,
+			Func<ISymbolOrMember, IEnumerable<ISymbolOrMember<TSymbol, TData>>> rootFunction,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default
+		) : this(root, parentCompilation, nameResolver, false)
+		{
+			if(rootFunction is null)
+			{
+				throw new ArgumentNullException(nameof(rootFunction));
+			}
+
+			_rootFunction = rootFunction;
+
+			_levels.Add(new LevelEntry(null!));
+		}
+
+		private protected LeveledSymbolContainer(
+			ISymbolOrMember root,
+			ICompilationData? parentCompilation = default,
+			ISymbolNameResolver? nameResolver = default
+		) : this(root, parentCompilation, nameResolver, false)
+		{
+			_rootFunction = ResolveRootInternal;
+			_levels.Add(new LevelEntry(null!));
+		}
+
+		internal virtual IEnumerable<ISymbolOrMember<TSymbol, TData>> ResolveRootInternal(ISymbolOrMember root)
+		{
+			throw new NotImplementedException("ResolveRoot(ISymbolOrMember) is not implemented");
+		}
+
+		private LeveledSymbolContainer(
+			ISymbolOrMember root,
+			ICompilationData? parentCompilation,
+			ISymbolNameResolver? nameResolver,
+			bool includeRoot
 		)
 		{
 			if (root is null)
@@ -132,7 +190,7 @@ namespace Durian.Analysis.SymbolContainers
 
 			SymbolNameResolver = nameResolver ?? Analysis.SymbolNameResolver.Default;
 			ParentCompilation = parentCompilation;
-			Root = root;
+			TargetRoot = root;
 			IncludeRoot = includeRoot;
 
 			_levels = new(8);
@@ -285,7 +343,7 @@ namespace Durian.Analysis.SymbolContainers
 			// 1: (((root), A, B), A1, B1)
 			// 2: ((((root), A, B), A1, B1), A2, A3, B2, B3)
 
-			// The inclusion of root in a container is determined by the IncludeRootSymbol property.
+			// The inclusion of root in a container is determined by the IncludeRoot property.
 
 			if (CurrentLevel == -1)
 			{
@@ -316,7 +374,7 @@ namespace Durian.Analysis.SymbolContainers
 						continue;
 					}
 
-					FillLevel(member, levelEntry.Creator);
+					FillLevel(levelEntry.Creator(member));
 				}
 
 			LEVEL_FILLED:
@@ -387,7 +445,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// <param name="level">Level that was cleared.</param>
 		protected virtual void OnLevelCleared(int level)
 		{
-
+			// Do nothing.
 		}
 
 		/// <summary>
@@ -457,19 +515,25 @@ namespace Durian.Analysis.SymbolContainers
 
 			if (!IsHandledExternally(firstLevelIndex))
 			{
-				FillLevel(Root, firstLevel.Creator);
+				if (_rootFunction is null)
+				{
+					FillLevel(firstLevel.Creator(Root!));
+				}
+				else
+				{
+					IEnumerable<ISymbolOrMember<TSymbol, TData>> collection = _rootFunction(TargetRoot);
+					FillLevel(collection);
+				}
 			}
 
 			OnLevelFilled(firstLevelIndex);
 			CurrentLevel++;
 
-			firstLevel.StartIndex = 1;
+			_levels[firstLevelIndex].StartIndex = 1;
 		}
 
-		private void FillLevel(ISymbolOrMember<TSymbol, TData> member, Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> creator)
+		private void FillLevel(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection)
 		{
-			IEnumerable<ISymbolOrMember<TSymbol, TData>> collection = creator(member);
-
 			if (collection is IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> orderEnumerable && orderEnumerable.Order == ReturnOrder.ChildToParent)
 			{
 				collection = orderEnumerable.Reverse();
@@ -595,6 +659,11 @@ namespace Durian.Analysis.SymbolContainers
 			}
 
 			_levels.Add(new LevelEntry(function));
+		}
+
+		ISymbolContainer ILeveledSymbolContainer.ResolveLevel(int level)
+		{
+			return ResolveLevel(level);
 		}
 	}
 }

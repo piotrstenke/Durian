@@ -9,13 +9,9 @@ using Microsoft.CodeAnalysis;
 namespace Durian.Analysis.SymbolContainers
 {
 	/// <summary>
-	/// <see cref="ISymbolContainer{TSymbol, TData}"/> that allows to share a single symbol collection between multiple sub-set containers.
+	/// <see cref="ISymbolContainer"/> that allows to share a single symbol collection between multiple sub-set containers.
 	/// </summary>
-	/// <typeparam name="TSymbol">Type of returned <see cref="ISymbol"/>s.</typeparam>
-	/// <typeparam name="TData">Type of returned <see cref="IMemberData"/>s.</typeparam>
-	public interface ILeveledSymbolContainer<TSymbol, TData> : ISymbolContainer<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>, ISealable
-		where TSymbol : class, ISymbol
-		where TData : class, IMemberData
+	public interface ILeveledSymbolContainer : ISymbolContainer, ISealable
 	{
 		/// <summary>
 		/// Current nesting level of <see cref="ISymbolContainer"/>s or <c>-1</c> if no internal container is initialized.
@@ -27,6 +23,30 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		int NumLevels { get; }
 
+		/// <summary>
+		/// Resolves a <see cref="ISymbolContainer"/> at the specified nesting level.
+		/// </summary>
+		/// <param name="level">Nesting level of the container.</param>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="level"/> must be greater than <c>0</c> and less than <see cref="NumLevels"/>.</exception>
+		ISymbolContainer ResolveLevel(int level);
+
+		/// <summary>
+		/// Removes the cached data of the specified <paramref name="level"/> and all levels after it.
+		/// </summary>
+		/// <param name="level">Level to clear the cached data of.</param>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="level"/> must be greater than <c>0</c> and less than <see cref="NumLevels"/>.</exception>
+		void ClearLevel(int level);
+	}
+
+	/// <summary>
+	/// <see cref="ISymbolContainer{TSymbol, TData}"/> that allows to share a single symbol collection between multiple sub-set containers.
+	/// </summary>
+	/// <typeparam name="TSymbol">Type of returned <see cref="ISymbol"/>s.</typeparam>
+	/// <typeparam name="TData">Type of returned <see cref="IMemberData"/>s.</typeparam>
+	public interface ILeveledSymbolContainer<TSymbol, TData> : ILeveledSymbolContainer, ISymbolContainer<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>
+		where TSymbol : class, ISymbol
+		where TData : class, IMemberData
+	{
 		/// <summary>
 		/// Registers a new nesting level.
 		/// </summary>
@@ -55,14 +75,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// Resolves a <see cref="ISymbolContainer{TSymbol, TData}"/> at the specified nesting level.
 		/// </summary>
 		/// <param name="level">Nesting level of the container.</param>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="level"/> must be greater than <c>0</c> and less than <see cref="NumLevels"/>.</exception>
-		ISymbolContainer<TSymbol, TData> ResolveLevel(int level);
-
-		/// <summary>
-		/// Removes the cached data of the specified <paramref name="level"/> and all levels after it.
-		/// </summary>
-		/// <param name="level">Level to clear the cached data of.</param>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="level"/> must be greater than <c>0</c> and less than <see cref="NumLevels"/>.</exception>
-		void ClearLevel(int level);
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="level"/> must be greater than <c>0</c> and less than <see cref="ILeveledSymbolContainer.NumLevels"/>.</exception>
+		new ISymbolContainer<TSymbol, TData> ResolveLevel(int level);
 	}
 }

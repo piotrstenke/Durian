@@ -38,43 +38,6 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		private sealed class ContainerWrapper : SymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>
-		{
-			private SubNamespacesContainer? _namespaces;
-			private InnerTypesContainer? _innerTypes;
-
-			public NamespaceData Root { get; }
-
-			public ContainerWrapper(
-				NamespaceData root,
-				ICompilationData? parentCompilation,
-				ISymbolNameResolver? nameResolver
-			) : base(parentCompilation, nameResolver)
-			{
-				Root = root;
-			}
-
-			public SubNamespacesContainer GetNamespaces()
-			{
-				return _namespaces ??= new(Root, false, ParentCompilation, NameResolver);
-			}
-
-			public InnerTypesContainer GetTypes()
-			{
-				if(_innerTypes is null)
-				{
-					if (Root is not ISymbolOrMember<INamespaceOrTypeSymbol, ITypeData> type)
-					{
-						type = new NamespaceOrTypeData()
-					}
-
-					_innerTypes = new(type, false, ParentCompilation, NameResolver);
-				}
-
-				return _innerTypes;
-			}
-		}
-
 		private ILeveledSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>? _members;
 
 		/// <summary>
@@ -127,6 +90,12 @@ namespace Durian.Analysis.Data
 		public ISymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData> GetMembers(IncludedMembers members)
 		{
 			InitMembers();
+
+			if(_members is IMappedSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData, IncludedMembers> container)
+			{
+				return container.ResolveLevel(members);
+			}
+
 			return _members.ResolveLevel((int)members);
 		}
 
@@ -137,16 +106,47 @@ namespace Durian.Analysis.Data
 
 			if(_members is NamespacesOrTypesContainer container)
 			{
-				return container.GetNamespaces().ResolveLevel(members);
+				IMappedSymbolContainer<INamespaceSymbol, INamespaceData, IncludedMembers> namespaces = container.GetNamespaces();
+				return namespaces.ResolveLevel(members);
 			}
 
-			return (_members as ContainerWrapper)
+			ISymbolContainer<INamespaceSymbol, INamespaceData> genericContainer;
+
+			if (_members is IMappedSymbolContainer<INamespaceSymbol, INamespaceData, IncludedMembers> mapped)
+			{
+				genericContainer = mapped.ResolveLevel(members);
+			}
+			else
+			{
+				genericContainer = _members.ResolveLevel((int)members);
+			}
+
+			return genericContainer.OfType<ISymbolOrMember<INamespaceSymbol, INamespaceData>>().ToContainer(ParentCompilation);
 		}
 
 		/// <inheritdoc/>
 		public ISymbolContainer<INamedTypeSymbol, ITypeData> GetTypes(IncludedMembers members)
 		{
+			InitMembers();
 
+			if (_members is NamespacesOrTypesContainer container)
+			{
+				IMappedSymbolContainer<INamedTypeSymbol, ITypeData, IncludedMembers> namespaces = container.GetTypes();
+				return namespaces.ResolveLevel(members);
+			}
+
+			ISymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData> genericContainer;
+
+			if (_members is IMappedSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData, IncludedMembers> mapped)
+			{
+				genericContainer = mapped.ResolveLevel(members);
+			}
+			else
+			{
+				genericContainer = _members.ResolveLevel((int)members);
+			}
+
+			return genericContainer.OfType<ISymbolOrMember<INamedTypeSymbol, ITypeData>>().ToContainer(ParentCompilation);
 		}
 
 		public NamespaceOrTypeData ToNamespaceOrType()
@@ -169,7 +169,7 @@ namespace Durian.Analysis.Data
 		{
 			if (_members is null)
 			{
-				_members = new NamespacesOrTypesContainer(this, false, ParentCompilation);
+				_members = new NamespacesOrTypesContainer(this, ParentCompilation);
 			}
 		}
 	}

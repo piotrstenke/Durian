@@ -13,7 +13,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// </summary>
 	/// <typeparam name="TSymbol">Type of returned <see cref="ISymbol"/>s.</typeparam>
 	/// <typeparam name="TData">Type of returned <see cref="IMemberData"/>s.</typeparam>s
-	public abstract class IncludedMembersSymbolContainer<TSymbol, TData> : LeveledSymbolContainer<TSymbol, TData>
+	public abstract class IncludedMembersSymbolContainer<TSymbol, TData> : LeveledSymbolContainer<TSymbol, TData>, IMappedSymbolContainer<TSymbol, TData, IncludedMembers>
 		where TSymbol : class, ISymbol
 		where TData : class, IMemberData
 	{
@@ -41,18 +41,39 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		/// Initializes a new instance of the <see cref="IncludedMembersSymbolContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
+		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <typeparamref name="TData"/>s.</param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
+		protected IncludedMembersSymbolContainer(
+			ISymbolOrMember<TSymbol, TData> root,
+			ICompilationData? parentCompilation = default,
+			ISymbolNameResolver? nameResolver = default,
+			bool includeRoot = false
+		) : base(root, parentCompilation, nameResolver, includeRoot)
+		{
+			InitLevels(false);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="IncludedMembersSymbolContainer{TSymbol, TData}"/> class.
+		/// </summary>
+		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <typeparamref name="TData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
 		protected IncludedMembersSymbolContainer(
-			ISymbolOrMember<TSymbol, TData> root,
-			bool includeRoot = false,
+			ISymbolOrMember root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default
-		) : base(root, includeRoot, parentCompilation, nameResolver)
+		) : base(root, parentCompilation, nameResolver)
 		{
-			InitLevels();
+			InitLevels(true);
+		}
+
+		internal sealed override IEnumerable<ISymbolOrMember<TSymbol, TData>> ResolveRootInternal(ISymbolOrMember root)
+		{
+			return ResolveRoot(root);
 		}
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.ResolveLevel(int)"/>
@@ -60,22 +81,6 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		{
 			int mappedLevel = MapLevel(level);
 			return base.ResolveLevel(mappedLevel);
-		}
-
-		private int MapLevel(IncludedMembers level)
-		{
-			int current = (int)level;
-			IncludedMembers mappedCurrent = MapLevel(current);
-
-			if (mappedCurrent <= IncludedMembers.None)
-			{
-				throw new ArgumentOutOfRangeException(nameof(level), $"Level cannot be '{nameof(IncludedMembers.None)}' or less");
-			}
-
-			int diff = (int)mappedCurrent - current;
-			int mappedLevel = current - diff;
-
-			return mappedLevel;
 		}
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.ClearLevel(int)"/>
@@ -118,18 +123,45 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		protected abstract IEnumerable<ISymbolOrMember<TSymbol, TData>> Direct(ISymbolOrMember<TSymbol, TData> member);
 
 		/// <summary>
+		/// Resolves the members of root symbol for the lowest level.
+		/// </summary>
+		/// <param name="root">Root symbol.</param>
+		protected abstract IEnumerable<ISymbolOrMember<TSymbol, TData>> ResolveRoot(ISymbolOrMember root);
+
+		/// <summary>
 		/// Returns a <see cref="IReturnOrderEnumerable{T}"/> representing the <see cref="IncludedMembers.Direct"/> of the <see cref="LeveledSymbolContainer{TSymbol, TData}.Root"/>.
 		/// </summary>
 		/// <param name="member"><see cref="ISymbolOrMember"/> to get the <see cref="IncludedMembers.Direct"/> for.</param>
 		protected abstract IEnumerable<ISymbolOrMember<TSymbol, TData>> Inner(ISymbolOrMember<TSymbol, TData> member);
 
 		/// <summary>
-		/// Maps the current <see cref="IncludedMembers"/> to a different value.
+		/// Maps the current <see cref="int"/> to an <see cref="IncludedMembers"/>.
 		/// </summary>
 		/// <param name="level">Level to map.</param>
 		protected virtual IncludedMembers MapLevel(int level)
 		{
 			return (IncludedMembers)level + 1;
+		}
+
+		/// <summary>
+		/// Maps the current <see cref="IncludedMembers"/> to an <see cref="int"/>.
+		/// </summary>
+		/// <param name="level">Level to map.</param>
+		/// <exception cref="ArgumentOutOfRangeException">Level cannot be <see cref="IncludedMembers.None"/> or less.</exception>
+		protected virtual int MapLevel(IncludedMembers level)
+		{
+			int current = (int)level;
+			IncludedMembers mappedCurrent = MapLevel(current);
+
+			if (mappedCurrent <= IncludedMembers.None)
+			{
+				throw new ArgumentOutOfRangeException(nameof(level), $"Level cannot be '{nameof(IncludedMembers.None)}' or less");
+			}
+
+			int diff = (int)mappedCurrent - current;
+			int mappedLevel = current - diff;
+
+			return mappedLevel;
 		}
 
 		/// <summary>
@@ -209,9 +241,11 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 			return false;
 		}
 
-		private void InitLevels()
+		private void InitLevels(bool skipRoot)
 		{
 			IncludedMembers level = MaxLevel + 1;
+
+			bool isSkipped = false;
 
 			if (CheckLevel(IncludedMembers.Direct))
 			{
@@ -235,8 +269,24 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 
 			bool CheckLevel(IncludedMembers target)
 			{
-				return level > target && AllowLevel(target);
+				if(level > target && AllowLevel(target))
+				{
+					if(skipRoot && !isSkipped)
+					{
+						isSkipped = true;
+						return false;
+					}
+
+					return true;
+				}
+
+				return false;
 			}
+		}
+
+		ISymbolContainer IMappedSymbolContainer<IncludedMembers>.ResolveLevel(IncludedMembers level)
+		{
+			return ResolveLevel(level);
 		}
 	}
 }
