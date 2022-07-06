@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Durian.Analysis.Extensions;
@@ -38,6 +39,43 @@ namespace Durian.Analysis.Data
 			{
 			}
 
+			/// <inheritdoc cref="Properties.Clone"/>
+			public new Properties<TSymbol> Clone()
+			{
+				return (CloneCore() as Properties<TSymbol>)!;
+			}
+
+			/// <inheritdoc cref="Properties.Map(Properties)"/>
+			public virtual void Map(Properties<TSymbol> properties)
+			{
+				base.Map(properties);
+			}
+
+			/// <inheritdoc/>
+			[Obsolete("Use Map(Properties<TSymbol> instead")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+			public sealed override void Map(Properties properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			{
+				if(properties is Properties<TSymbol> child)
+				{
+					Map(child);
+				}
+				else
+				{
+					base.Map(properties);
+				}
+			}
+
+			/// <inheritdoc/>
+			protected override Properties CloneCore()
+			{
+				Properties<TSymbol> properties = new();
+				Map(properties);
+				return properties;
+			}
+
 			private protected override void ValidateSymbol(ISymbol? symbol)
 			{
 				if(symbol is null)
@@ -56,7 +94,7 @@ namespace Durian.Analysis.Data
 		/// Contains optional data that can be passed to a <see cref="MemberData"/>.
 		/// </summary>
 		[DebuggerDisplay("{Symbol ?? string.Empty}")]
-		public class Properties
+		public class Properties : ICloneable
 		{
 			private protected ISymbol? _symbol;
 
@@ -129,12 +167,44 @@ namespace Durian.Analysis.Data
 			}
 
 			/// <summary>
-			/// Seals all <see cref="ISymbolContainer"/>s in this instance.
+			/// Maps the data of the current object to the specified <paramref name="properties"/>.
 			/// </summary>
-			internal virtual void SealContainers()
+			/// <param name="properties"><see cref="Properties"/> to map to.</param>
+			public virtual void Map(Properties properties)
 			{
-				TrySeal(ContainingTypes);
-				TrySeal(ContainingNamespaces);
+				properties.Attributes = Attributes;
+				properties.ContainingNamespaces = ContainingNamespaces;
+				properties.ContainingTypes = ContainingTypes;
+				properties.GenericName = GenericName;
+				properties.HiddenMember = HiddenMember;
+				properties.IsNew = IsNew;
+				properties.IsPartial = IsPartial;
+				properties.IsUnsafe = IsUnsafe;
+				properties.Location = Location;
+				properties.Modifiers = Modifiers;
+				properties.Name = Name;
+				properties.SemanticModel = SemanticModel;
+				properties.SubstitutedName = SubstitutedName;
+				properties.Symbol = Symbol;
+				properties.Virtuality = Virtuality;
+			}
+
+			/// <summary>
+			/// Clones the current object.
+			/// </summary>
+			public Properties Clone()
+			{
+				return CloneCore();
+			}
+
+			/// <summary>
+			/// Actually clones the current object.
+			/// </summary>
+			protected virtual Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
 			}
 
 			private protected static bool TrySeal(ISymbolContainer? container)
@@ -151,6 +221,11 @@ namespace Durian.Analysis.Data
 			private protected virtual void ValidateSymbol(ISymbol? symbol)
 			{
 				// Do nothing by default.
+			}
+
+			object ICloneable.Clone()
+			{
+				return Clone();
 			}
 		}
 
@@ -244,11 +319,6 @@ namespace Durian.Analysis.Data
 			}
 			else
 			{
-				if(!isDefaultProps)
-				{
-					props.SealContainers();
-				}
-
 				SemanticModel = props.SemanticModel ?? ParentCompilation.Compilation.GetSemanticModel(Declaration);
 				Symbol = props.Symbol ?? SemanticModel.GetSymbol(Declaration);
 
@@ -338,6 +408,17 @@ namespace Durian.Analysis.Data
 			{
 				return _modifiers.IsDefault ? (_modifiers = Symbol.GetModifiers().ToImmutableArray()) : _modifiers;
 			}
+		}
+
+		/// <summary>
+		/// Returns new <see cref="Properties"/> build from the data contained within the current object.
+		/// </summary>
+		public virtual Properties GetProperties()
+		{
+			return new Properties()
+			{
+
+			};
 		}
 
 		/// <summary>

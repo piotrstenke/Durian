@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.CodeGeneration;
@@ -35,6 +36,37 @@ namespace Durian.Analysis.Data
 			/// </summary>
 			public Properties()
 			{
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Clone"/>
+			public new Properties Clone()
+			{
+				return (CloneCore() as Properties)!;
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Map(MemberData.Properties)"/>
+			public virtual void Map(Properties properties)
+			{
+				base.Map(properties);
+				properties.Members = Members;
+			}
+
+			/// <inheritdoc/>
+			[Obsolete("Use Map(Properties) instead")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+			public override void Map(Properties<INamespaceSymbol> properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			{
+				base.Map(properties);
+			}
+
+			/// <inheritdoc/>
+			protected override MemberData.Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
 			}
 		}
 
@@ -104,24 +136,24 @@ namespace Durian.Analysis.Data
 		{
 			InitMembers();
 
-			if(_members is NamespacesOrTypesContainer container)
+			switch (_members)
 			{
-				IMappedSymbolContainer<INamespaceSymbol, INamespaceData, IncludedMembers> namespaces = container.GetNamespaces();
-				return namespaces.ResolveLevel(members);
-			}
+				case NamespacesOrTypesContainer typed:
+					IMappedSymbolContainer<INamespaceSymbol, INamespaceData, IncludedMembers> namespaces = typed.GetNamespaces();
+					return namespaces.ResolveLevel(members);
 
-			ISymbolContainer<INamespaceSymbol, INamespaceData> genericContainer;
+				case IMappedSymbolContainer<INamespaceSymbol, INamespaceData, IncludedMembers> mapped:
+					return mapped.ResolveLevel(members);
 
-			if (_members is IMappedSymbolContainer<INamespaceSymbol, INamespaceData, IncludedMembers> mapped)
-			{
-				genericContainer = mapped.ResolveLevel(members);
-			}
-			else
-			{
-				genericContainer = _members.ResolveLevel((int)members);
-			}
+				case ILeveledSymbolContainer<INamespaceSymbol, INamespaceData> leveled:
+					return leveled.ResolveLevel((int)members);
 
-			return genericContainer.OfType<ISymbolOrMember<INamespaceSymbol, INamespaceData>>().ToContainer(ParentCompilation);
+				case IMappedSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData, IncludedMembers> mappedUnknown:
+					return mappedUnknown.ResolveLevel(members).OfType<ISymbolOrMember<INamespaceSymbol, INamespaceData>>().ToContainer(ParentCompilation);
+
+				default:
+					return _members.ResolveLevel((int)members).OfType<ISymbolOrMember<INamespaceSymbol, INamespaceData>>().ToContainer(ParentCompilation);
+			}
 		}
 
 		/// <inheritdoc/>
@@ -129,29 +161,36 @@ namespace Durian.Analysis.Data
 		{
 			InitMembers();
 
-			if (_members is NamespacesOrTypesContainer container)
+			switch (_members)
 			{
-				IMappedSymbolContainer<INamedTypeSymbol, ITypeData, IncludedMembers> namespaces = container.GetTypes();
-				return namespaces.ResolveLevel(members);
-			}
+				case NamespacesOrTypesContainer typed:
+					IMappedSymbolContainer<INamedTypeSymbol, ITypeData, IncludedMembers> namespaces = typed.GetTypes();
+					return namespaces.ResolveLevel(members);
 
-			ISymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData> genericContainer;
+				case IMappedSymbolContainer<INamedTypeSymbol, ITypeData, IncludedMembers> mapped:
+					return mapped.ResolveLevel(members);
 
-			if (_members is IMappedSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData, IncludedMembers> mapped)
-			{
-				genericContainer = mapped.ResolveLevel(members);
-			}
-			else
-			{
-				genericContainer = _members.ResolveLevel((int)members);
-			}
+				case ILeveledSymbolContainer<INamedTypeSymbol, ITypeData> leveled:
+					return leveled.ResolveLevel((int)members);
 
-			return genericContainer.OfType<ISymbolOrMember<INamedTypeSymbol, ITypeData>>().ToContainer(ParentCompilation);
+				case IMappedSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData, IncludedMembers> mappedUnknown:
+					return mappedUnknown.ResolveLevel(members).OfType<ISymbolOrMember<INamedTypeSymbol, ITypeData>>().ToContainer(ParentCompilation);
+
+				default:
+					return _members.ResolveLevel((int)members).OfType<ISymbolOrMember<INamedTypeSymbol, ITypeData>>().ToContainer(ParentCompilation);
+			}
 		}
 
 		public NamespaceOrTypeData ToNamespaceOrType()
 		{
-
+			return new NamespaceOrTypeData(Declaration, ParentCompilation, new()
+			{
+				Attributes = Attributes,
+				ContainingNamespaces = ContainingNamespaces,
+				ContainingTypes = ContainingTypes,
+				GenericName = GenericName,
+				HiddenMember = HiddenSymbol,
+			})
 		}
 
 		ITypeData INamespaceOrTypeData.ToType()

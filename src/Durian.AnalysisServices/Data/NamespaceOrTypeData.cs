@@ -88,6 +88,20 @@ namespace Durian.Analysis.Data
 			SetProperties(properties);
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="NamespaceOrTypeData"/> class.
+		/// </summary>
+		/// <param name="declaration"><see cref="DelegateDeclarationSyntax"/> this <see cref="NamespaceOrTypeData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="NamespaceOrTypeData"/>.</param>
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.
+		/// </exception>
+		public NamespaceOrTypeData(DelegateDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
+		{
+			SetProperties(properties);
+		}
+
 		internal NamespaceOrTypeData(INamespaceOrTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
 		{
 		}
