@@ -13,11 +13,6 @@ namespace Durian.Analysis.SymbolContainers
 	public interface IWritableSymbolContainer : ISymbolContainer
 	{
 		/// <summary>
-		/// Returns a <see cref="string"/> representing all the members in the current container.
-		/// </summary>
-		string ToString();
-
-		/// <summary>
 		/// Writes the contents of this container to the specified <paramref name="builder"/>.
 		/// </summary>
 		/// <param name="builder"><see cref="StringBuilder"/> to write the contents of this container to.</param>

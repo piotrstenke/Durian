@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -13,6 +13,70 @@ namespace Durian.Analysis.Data
 	/// </summary>
 	public class ParameterData : MemberData, IParameterData
 	{
+		/// <summary>
+		/// Contains optional data that can be passed to a <see cref="ParameterData"/>.
+		/// </summary>
+		public new class Properties : Properties<IParameterSymbol>
+		{
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			/// <param name="fillWithDefault">Determines whether to fill the current properties with default data.</param>
+			public Properties(bool fillWithDefault) : base(fillWithDefault)
+			{
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Clone"/>
+			public new Properties Clone()
+			{
+				return (CloneCore() as Properties)!;
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Map(MemberData.Properties)"/>
+			public virtual void Map(Properties properties)
+			{
+				base.Map(properties);
+			}
+
+			/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+			[Obsolete("Use Map(Properties) instead")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
+			public sealed override void Map(Properties<IParameterSymbol> properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			{
+				if (properties is Properties props)
+				{
+					Map(props);
+				}
+				else
+				{
+					base.Map(properties);
+				}
+			}
+
+			/// <inheritdoc/>
+			protected override MemberData.Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
+			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				SetDefault();
+			}
+		}
+
 		/// <summary>
 		/// Target <see cref="ParameterSyntax"/>.
 		/// </summary>
@@ -36,12 +100,67 @@ namespace Durian.Analysis.Data
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
-		public ParameterData(ParameterSyntax declaration, ICompilationData compilation, Properties<IParameterSymbol>? properties = default) : base(declaration, compilation, properties)
+		public ParameterData(ParameterSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
 		}
 
-		internal ParameterData(IParameterSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		internal ParameterData(IParameterSymbol symbol, ICompilationData compilation, Properties? properties = default) : base(symbol, compilation, properties)
 		{
+		}
+
+		/// <inheritdoc cref="MemberData.Clone"/>
+		public new ParameterData Clone()
+		{
+			return (CloneCore() as ParameterData)!;
+		}
+
+		/// <inheritdoc cref="MemberData.GetProperties"/>
+		public new Properties GetProperties()
+		{
+			return (GetPropertiesCore() as Properties)!;
+		}
+
+		/// <inheritdoc cref="MemberData.Map(MemberData.Properties)"/>
+		public virtual void Map(Properties properties)
+		{
+			base.Map(properties);
+		}
+
+		/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		[Obsolete("Use Map(Properties) instead")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public sealed override void Map(MemberData.Properties properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			if (properties is Properties props)
+			{
+				Map(props);
+			}
+			else
+			{
+				base.Map(properties);
+			}
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData CloneCore()
+		{
+			return new ParameterData(Declaration, ParentCompilation, GetProperties());
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties? GetDefaultProperties()
+		{
+			return new Properties(true);
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties GetPropertiesCore()
+		{
+			Properties properties = new();
+			Map(properties);
+			return properties;
 		}
 	}
 }

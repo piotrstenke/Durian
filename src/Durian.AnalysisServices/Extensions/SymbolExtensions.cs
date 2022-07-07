@@ -2460,8 +2460,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="type"><see cref="ITypeSymbol"/> to create the <see cref="IMemberData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IMemberData ToData(this ITypeSymbol type, ICompilationData compilation)
+		public static IMemberData ToData(this ITypeSymbol type, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			switch (type)
 			{
@@ -2483,7 +2484,7 @@ namespace Durian.Analysis.Extensions
 						throw new ArgumentNullException(nameof(compilation));
 					}
 
-					return new UnknownTypeData(type, compilation);
+					return new UnknownTypeData(type, compilation, properties);
 			}
 		}
 
@@ -2492,8 +2493,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to create the <see cref="ITypeData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ITypeData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static ITypeData ToData(this INamedTypeSymbol type, ICompilationData compilation)
+		public static ITypeData ToData(this INamedTypeSymbol type, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			if (type is null)
 			{
@@ -2507,17 +2509,17 @@ namespace Durian.Analysis.Extensions
 
 			if (type.IsRecord)
 			{
-				return new RecordData(type, compilation);
+				return new RecordData(type, compilation, properties);
 			}
 
 			return type.TypeKind switch
 			{
-				TypeKind.Class => new ClassData(type, compilation),
-				TypeKind.Struct => new StructData(type, compilation),
-				TypeKind.Interface => new InterfaceData(type, compilation),
-				TypeKind.Delegate => new DelegateData(type, compilation),
-				TypeKind.Enum => new EnumData(type, compilation),
-				_ => new UnknownTypeData(type, compilation)
+				TypeKind.Class => new ClassData(type, compilation, properties),
+				TypeKind.Struct => new StructData(type, compilation, properties),
+				TypeKind.Interface => new InterfaceData(type, compilation, properties),
+				TypeKind.Delegate => new DelegateData(type, compilation, properties),
+				TypeKind.Enum => new EnumData(type, compilation, properties),
+				_ => new UnknownTypeData(type, compilation, properties)
 			};
 		}
 
@@ -2526,8 +2528,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to create the <see cref="IMethodData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMethodData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IMethodData ToData(this IMethodSymbol method, ICompilationData compilation)
+		public static IMethodData ToData(this IMethodSymbol method, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			if (method is null)
 			{
@@ -2541,16 +2544,16 @@ namespace Durian.Analysis.Extensions
 
 			return method.MethodKind switch
 			{
-				MethodKind.Ordinary => new MethodData(method, compilation),
-				MethodKind.UserDefinedOperator => new OperatorData(method, compilation),
-				MethodKind.Constructor or MethodKind.StaticConstructor => new ConstructorData(method, compilation),
-				MethodKind.Destructor => new DestructorData(method, compilation),
-				MethodKind.LocalFunction => new LocalFunctionData(method, compilation),
-				MethodKind.Conversion => new ConversionOperatorData(method, compilation),
-				MethodKind.AnonymousFunction => new LambdaData(method, compilation),
+				MethodKind.Ordinary => new MethodData(method, compilation, properties),
+				MethodKind.UserDefinedOperator => new OperatorData(method, compilation, properties),
+				MethodKind.Constructor or MethodKind.StaticConstructor => new ConstructorData(method, compilation, properties),
+				MethodKind.Destructor => new DestructorData(method, compilation, properties),
+				MethodKind.LocalFunction => new LocalFunctionData(method, compilation, properties),
+				MethodKind.Conversion => new ConversionOperatorData(method, compilation, properties),
+				MethodKind.AnonymousFunction => new LambdaData(method, compilation, properties),
 				_ => method.IsAccessor()
-					? new AccessorData(method, compilation)
-					: new UnknownMethodData(method, compilation)
+					? new AccessorData(method, compilation, properties)
+					: new UnknownMethodData(method, compilation, properties)
 			};
 		}
 
@@ -2559,8 +2562,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="field"><see cref="IFieldSymbol"/> to create the <see cref="IFieldData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IFieldData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IFieldData ToData(this IFieldSymbol field, ICompilationData compilation)
+		public static IFieldData ToData(this IFieldSymbol field, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			if (field is null)
 			{
@@ -2572,7 +2576,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			return new FieldData(field, compilation);
+			return new FieldData(field, compilation, properties);
 		}
 
 		/// <summary>
@@ -2580,8 +2584,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="event"><see cref="IEventSymbol"/> to create the <see cref="IEventData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IEventData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="event"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IEventData ToData(this IEventSymbol @event, ICompilationData compilation)
+		public static IEventData ToData(this IEventSymbol @event, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			if (@event is null)
 			{
@@ -2593,7 +2598,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			return new EventData(@event, compilation);
+			return new EventData(@event, compilation, properties);
 		}
 
 		/// <summary>
@@ -2601,8 +2606,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="property"><see cref="IPropertySymbol"/> to create the <see cref="IPropertyData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IPropertyData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IPropertyData ToData(this IPropertySymbol property, ICompilationData compilation)
+		public static IPropertyData ToData(this IPropertySymbol property, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			if (property is null)
 			{
@@ -2619,7 +2625,7 @@ namespace Durian.Analysis.Extensions
 				return new IndexerData(property, compilation);
 			}
 
-			return new PropertyData(property, compilation);
+			return new PropertyData(property, compilation, properties);
 		}
 
 		/// <summary>
@@ -2627,8 +2633,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="local"><see cref="ILocalSymbol"/> to create the <see cref="ILocalData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ILocalData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="local"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static ILocalData ToData(this ILocalSymbol local, ICompilationData compilation)
+		public static ILocalData ToData(this ILocalSymbol local, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			if (local is null)
 			{
@@ -2640,7 +2647,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			return new LocalData(local, compilation);
+			return new LocalData(local, compilation, properties);
 		}
 
 		/// <summary>
@@ -2648,8 +2655,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to create the <see cref="ITypeParameterData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ITypeParameterData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="typeParameter"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static ITypeParameterData ToData(this ITypeParameterSymbol typeParameter, ICompilationData compilation)
+		public static ITypeParameterData ToData(this ITypeParameterSymbol typeParameter, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			if (typeParameter is null)
 			{
@@ -2661,7 +2669,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			return new TypeParameterData(typeParameter, compilation);
+			return new TypeParameterData(typeParameter, compilation, properties);
 		}
 
 		/// <summary>
@@ -2669,8 +2677,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="parameter"><see cref="IParameterSymbol"/> to create the <see cref="IParameterData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IParameterData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="parameter"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IParameterData ToData(this IParameterSymbol parameter, ICompilationData compilation)
+		public static IParameterData ToData(this IParameterSymbol parameter, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			if (parameter is null)
 			{
@@ -2682,7 +2691,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			return new ParameterData(parameter, compilation);
+			return new ParameterData(parameter, compilation, properties);
 		}
 
 		/// <summary>
@@ -2690,16 +2699,17 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="INamespaceOrTypeSymbol"/> to create the <see cref="INamespaceOrTypeData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="INamespaceOrTypeData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static INamespaceOrTypeData ToData(this INamespaceOrTypeSymbol symbol, ICompilationData compilation)
+		public static INamespaceOrTypeData ToData(this INamespaceOrTypeSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			switch (symbol)
 			{
 				case INamespaceSymbol @namespace:
-					return @namespace.ToData(compilation);
+					return @namespace.ToData(compilation, properties);
 
 				case INamedTypeSymbol type:
-					return type.ToData(compilation);
+					return type.ToData(compilation, properties);
 
 				default:
 
@@ -2713,7 +2723,7 @@ namespace Durian.Analysis.Extensions
 						throw new ArgumentNullException(nameof(compilation));
 					}
 
-					return new NamespaceOrTypeData(symbol, compilation);
+					return new NamespaceOrTypeData(symbol, compilation, properties);
 			}
 		}
 
@@ -2722,8 +2732,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="IMemberData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static IMemberData ToData(this ISymbol symbol, ICompilationData compilation)
+		public static IMemberData ToData(this ISymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			if (compilation is null)
 			{
@@ -2732,19 +2743,19 @@ namespace Durian.Analysis.Extensions
 
 			return symbol switch
 			{
-				ITypeParameterSymbol typeParameter => typeParameter.ToData(compilation),
-				INamedTypeSymbol type => type.ToData(compilation),
-				IMethodSymbol method => method.ToData(compilation),
-				IPropertySymbol property => property.ToData(compilation),
-				IFieldSymbol field => field.ToData(compilation),
-				IEventSymbol @event => @event.ToData(compilation),
-				IParameterSymbol parameter => parameter.ToData(compilation),
-				INamespaceSymbol @namespace => @namespace.ToData(compilation),
-				ILocalSymbol local => local.ToData(compilation),
-				ITypeSymbol unknownType => new UnknownTypeData(unknownType, compilation),
-				INamespaceOrTypeSymbol namespaceOrType => namespaceOrType.ToData(compilation),
+				ITypeParameterSymbol typeParameter => typeParameter.ToData(compilation, properties),
+				INamedTypeSymbol type => type.ToData(compilation, properties),
+				IMethodSymbol method => method.ToData(compilation, properties),
+				IPropertySymbol property => property.ToData(compilation, properties),
+				IFieldSymbol field => field.ToData(compilation, properties),
+				IEventSymbol @event => @event.ToData(compilation, properties),
+				IParameterSymbol parameter => parameter.ToData(compilation, properties),
+				INamespaceSymbol @namespace => @namespace.ToData(compilation, properties),
+				ILocalSymbol local => local.ToData(compilation, properties),
+				ITypeSymbol unknownType => new UnknownTypeData(unknownType, compilation, properties),
+				INamespaceOrTypeSymbol namespaceOrType => namespaceOrType.ToData(compilation, properties),
 				null => throw new ArgumentNullException(nameof(symbol)),
-				_ => new MemberData(symbol, compilation)
+				_ => new MemberData(symbol, compilation, properties)
 			};
 		}
 
@@ -2753,8 +2764,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="namespace"><see cref="INamespaceSymbol"/> to create the <see cref="INamespaceData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="INamespaceData"/> from.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static INamespaceData ToData(this INamespaceSymbol @namespace, ICompilationData compilation)
+		public static NamespaceData ToData(this INamespaceSymbol @namespace, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			if (@namespace is null)
 			{
@@ -2766,7 +2778,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			return new NamespaceData(@namespace, compilation);
+			return new NamespaceData(@namespace, compilation, properties);
 		}
 
 		/// <summary>
@@ -2777,31 +2789,20 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
 		public static ISymbolOrMember<ISymbol, IMemberData> ToDataOrSymbol(this ISymbol symbol, ICompilationData? compilation = default)
 		{
-			return symbol.ToDataOrSymbol<IMemberData>(compilation);
-		}
-
-		/// <summary>
-		/// Returns new <see cref="ISymbolOrMember"/> created for the specified <paramref name="symbol"/>.
-		/// </summary>
-		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
-		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
-		public static ISymbolOrMember<ISymbol, TData> ToDataOrSymbol<TData>(this ISymbol symbol, ICompilationData? compilation = default) where TData : class, IMemberData
-		{
 			return symbol switch
 			{
-				ITypeParameterSymbol typeParameter => typeParameter.ToDataOrSymbol<TData>(compilation),
-				INamedTypeSymbol type => type.ToDataOrSymbol<TData>(compilation),
-				IMethodSymbol method => method.ToDataOrSymbol<TData>(compilation),
-				IPropertySymbol property => property.ToDataOrSymbol<TData>(compilation),
-				IFieldSymbol field => field.ToDataOrSymbol<TData>(compilation),
-				IEventSymbol @event => @event.ToDataOrSymbol<TData>(compilation),
-				IParameterSymbol parameter => parameter.ToDataOrSymbol<TData>(compilation),
-				INamespaceSymbol @namespace => @namespace.ToDataOrSymbol<TData>(compilation),
-				ILocalSymbol local => local.ToDataOrSymbol<TData>(compilation),
-				ITypeSymbol unknownType => new SymbolOrMemberWrapper<ITypeSymbol, TData>(unknownType, compilation),
+				ITypeParameterSymbol typeParameter => typeParameter.ToDataOrSymbol(compilation),
+				INamedTypeSymbol type => type.ToDataOrSymbol(compilation),
+				IMethodSymbol method => method.ToDataOrSymbol(compilation),
+				IPropertySymbol property => property.ToDataOrSymbol(compilation),
+				IFieldSymbol field => field.ToDataOrSymbol(compilation),
+				IEventSymbol @event => @event.ToDataOrSymbol(compilation),
+				IParameterSymbol parameter => parameter.ToDataOrSymbol(compilation),
+				INamespaceSymbol @namespace => @namespace.ToDataOrSymbol(compilation),
+				ILocalSymbol local => local.ToDataOrSymbol(compilation),
+				ITypeSymbol unknownType => new SymbolOrMemberWrapper<ITypeSymbol, IMemberData>(unknownType, compilation),
 				null => throw new ArgumentNullException(nameof(symbol)),
-				_ => new SymbolOrMemberWrapper<ISymbol, TData>(symbol, compilation)
+				_ => new SymbolOrMemberWrapper<ISymbol, IMemberData>(symbol, compilation)
 			};
 		}
 

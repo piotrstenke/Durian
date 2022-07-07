@@ -33,10 +33,10 @@ namespace Durian.Analysis.Data
 		where TSymbol : class, ISymbol
 		where TData : class, IMemberData
 	{
-		/// <inheritdoc cref="ISymbolOrMember.Symbol"/>
-		new TSymbol Symbol { get; }
-
 		/// <inheritdoc cref="ISymbolOrMember.Member"/>
 		new TData Member { get; }
+
+		/// <inheritdoc cref="ISymbolOrMember.Symbol"/>
+		new TSymbol Symbol { get; }
 	}
 }

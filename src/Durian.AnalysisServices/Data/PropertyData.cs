@@ -2,7 +2,8 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -31,24 +32,68 @@ namespace Durian.Analysis.Data
 			public Properties()
 			{
 			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			/// <param name="fillWithDefault">Determines whether to fill the current properties with default data.</param>
+			public Properties(bool fillWithDefault) : base(fillWithDefault)
+			{
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Clone"/>
+			public new Properties Clone()
+			{
+				return (CloneCore() as Properties)!;
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Map(MemberData.Properties)"/>
+			public virtual void Map(Properties properties)
+			{
+				base.Map(properties);
+				properties.AutoPropertyKind = AutoPropertyKind;
+				properties.BackingField = BackingField;
+			}
+
+			/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+			[Obsolete("Use Map(Properties) instead")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
+			public sealed override void Map(Properties<IPropertySymbol> properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			{
+				if (properties is Properties props)
+				{
+					Map(props);
+				}
+				else
+				{
+					base.Map(properties);
+				}
+			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				IsPartial = false;
+			}
+
+			/// <inheritdoc/>
+			protected override MemberData.Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
+			}
 		}
 
+		private AutoPropertyKind? _autoPropertyKind;
 		private DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> _backingField;
 
 		/// <summary>
-		/// Target <see cref="PropertyDeclarationSyntax"/>.
+		/// Kind of the auto-property.
 		/// </summary>
-		public new PropertyDeclarationSyntax Declaration => (base.Declaration as PropertyDeclarationSyntax)!;
-
-		/// <summary>
-		/// <see cref="IPropertySymbol"/> associated with the <see cref="Declaration"/>.
-		/// </summary>
-		public new IPropertySymbol Symbol => (base.Symbol as IPropertySymbol)!;
-
-		/// <summary>
-		/// Determines whether this property is an auto-property.
-		/// </summary>
-		public bool IsAutoProperty => AutoPropertyKind != AutoPropertyKind.None;
+		public AutoPropertyKind AutoPropertyKind => _autoPropertyKind!.Value;
 
 		/// <summary>
 		/// Backing field of the property or <see langword="null"/> if not an auto-property.
@@ -57,7 +102,7 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-				if(_backingField.IsDefault)
+				if (_backingField.IsDefault)
 				{
 					_backingField = new(Symbol.GetBackingField()?.ToDataOrSymbol(ParentCompilation));
 				}
@@ -67,9 +112,19 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <summary>
-		/// Kind of the auto-property.
+		/// Target <see cref="PropertyDeclarationSyntax"/>.
 		/// </summary>
-		public AutoPropertyKind AutoPropertyKind { get; }
+		public new PropertyDeclarationSyntax Declaration => (base.Declaration as PropertyDeclarationSyntax)!;
+
+		/// <summary>
+		/// Determines whether this property is an auto-property.
+		/// </summary>
+		public bool IsAutoProperty => AutoPropertyKind != AutoPropertyKind.None;
+
+		/// <summary>
+		/// <see cref="IPropertySymbol"/> associated with the <see cref="Declaration"/>.
+		/// </summary>
+		public new IPropertySymbol Symbol => (base.Symbol as IPropertySymbol)!;
 
 		BasePropertyDeclarationSyntax IPropertyData.Declaration => Declaration;
 
@@ -86,19 +141,90 @@ namespace Durian.Analysis.Data
 		/// </exception>
 		public PropertyData(PropertyDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
-			if(properties is not null)
+			SetAutoPropertyKind();
+		}
+
+		internal PropertyData(IPropertySymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
+		{
+			SetAutoPropertyKind();
+		}
+
+		/// <inheritdoc cref="MemberData.Clone"/>
+		public new PropertyData Clone()
+		{
+			return (CloneCore() as PropertyData)!;
+		}
+
+		/// <inheritdoc cref="MemberData.GetProperties"/>
+		public new Properties GetProperties()
+		{
+			return (GetPropertiesCore() as Properties)!;
+		}
+
+		/// <inheritdoc cref="MemberData.Map(MemberData.Properties)"/>
+		public virtual void Map(Properties properties)
+		{
+			base.Map(properties);
+			properties.AutoPropertyKind = _autoPropertyKind;
+			properties.BackingField = _backingField;
+		}
+
+		/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		[Obsolete("Use Map(Properties) instead")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public sealed override void Map(MemberData.Properties properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			if (properties is Properties props)
 			{
-				_backingField = properties.BackingField;
-				AutoPropertyKind = properties.AutoPropertyKind ?? Symbol.GetAutoPropertyKind();
+				Map(props);
 			}
 			else
 			{
-				AutoPropertyKind = Symbol.GetAutoPropertyKind();
+				base.Map(properties);
 			}
 		}
 
-		internal PropertyData(IPropertySymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		/// <inheritdoc/>
+		protected override MemberData CloneCore()
 		{
+			return new PropertyData(Declaration, ParentCompilation, GetProperties());
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties? GetDefaultProperties()
+		{
+			return new Properties(true);
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties GetPropertiesCore()
+		{
+			Properties properties = new();
+			Map(properties);
+			return properties;
+		}
+
+		/// <inheritdoc/>
+		protected override void SetProperties(MemberData.Properties properties)
+		{
+			base.SetProperties(properties);
+
+			if (properties is Properties props)
+			{
+				_backingField = props.BackingField;
+				_autoPropertyKind = props.AutoPropertyKind ?? Symbol.GetAutoPropertyKind();
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void SetAutoPropertyKind()
+		{
+			if (!_autoPropertyKind.HasValue)
+			{
+				_autoPropertyKind = Symbol.GetAutoPropertyKind();
+			}
 		}
 	}
 }

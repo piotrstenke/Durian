@@ -12,13 +12,13 @@ namespace Durian.Analysis.Data
 	public interface IGenericMemberData : IMemberData
 	{
 		/// <summary>
-		/// Type parameters of this member.
-		/// </summary>
-		ISymbolContainer<ITypeParameterSymbol, ITypeParameterData> TypeParameters { get; }
-
-		/// <summary>
 		/// Type arguments of this member.
 		/// </summary>
 		ISymbolContainer<ITypeSymbol, ITypeData> TypeArguments { get; }
+
+		/// <summary>
+		/// Type parameters of this member.
+		/// </summary>
+		ISymbolContainer<ITypeParameterSymbol, ITypeParameterData> TypeParameters { get; }
 	}
 }

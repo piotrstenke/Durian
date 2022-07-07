@@ -19,14 +19,20 @@ namespace Durian.Analysis.Data
 		new BaseNamespaceDeclarationSyntax Declaration { get; }
 
 		/// <summary>
+		/// Style of this namespace declaration.
+		/// </summary>
+		NamespaceStyle DeclarationStyle { get; }
+
+		/// <summary>
 		/// <see cref="INamespaceSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		new INamespaceSymbol Symbol { get; }
 
 		/// <summary>
-		/// Style of this namespace declaration.
+		/// Returns all <see cref="INamespaceOrTypeSymbol"/>s contained within this namespace.
 		/// </summary>
-		NamespaceStyle DeclarationStyle { get; }
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData> GetMembers(IncludedMembers members);
 
 		/// <summary>
 		/// Returns all <see cref="INamespaceSymbol"/>s contained within this namespace.
@@ -35,9 +41,8 @@ namespace Durian.Analysis.Data
 		ISymbolContainer<INamespaceSymbol, INamespaceData> GetNamespaces(IncludedMembers members);
 
 		/// <summary>
-		/// Returns all <see cref="INamespaceOrTypeSymbol"/>s contained within this namespace.
+		/// Converts the current <see cref="INamespaceData"/> to a <see cref="INamespaceOrTypeData"/>.
 		/// </summary>
-		/// <param name="members">Range of members to include.</param>
-		ISymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData> GetMembers(IncludedMembers members);
+		INamespaceOrTypeData ToNamespaceOrType();
 	}
 }

@@ -12,6 +12,16 @@ namespace Durian.Analysis.Data
 	public interface ITypeParameterData : IMemberData, ISymbolOrMember<ITypeParameterSymbol, ITypeParameterData>
 	{
 		/// <summary>
+		/// <see cref="TypeParameterConstraintSyntax"/> associated with the <see cref="Declaration"/>.
+		/// </summary>
+		TypeParameterConstraintClauseSyntax? ConstraintClause { get; }
+
+		/// <summary>
+		/// Generic constraints applied to this type parameter.
+		/// </summary>
+		GenericConstraint Constraints { get; }
+
+		/// <summary>
 		/// Target <see cref="TypeParameterSyntax"/>.
 		/// </summary>
 		new TypeParameterSyntax Declaration { get; }
@@ -20,15 +30,5 @@ namespace Durian.Analysis.Data
 		/// <see cref="ITypeParameterSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		new ITypeParameterSymbol Symbol { get; }
-
-		/// <summary>
-		/// Generic constraints applied to this type parameter.
-		/// </summary>
-		GenericConstraint Constraints { get; }
-
-		/// <summary>
-		/// <see cref="TypeParameterConstraintSyntax"/> associated with the <see cref="Declaration"/>.
-		/// </summary>
-		TypeParameterConstraintClauseSyntax? ConstraintClause { get; }
 	}
 }

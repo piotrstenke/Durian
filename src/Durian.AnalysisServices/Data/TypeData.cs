@@ -24,29 +24,27 @@ namespace Durian.Analysis.Data
 			/// <inheritdoc cref="ITypeData.PartialDeclarations"/>
 			public ImmutableArray<TDeclaration> PartialDeclarations { get; set; }
 
-			/// <inheritdoc cref="ITypeData.Members"/>
-			public ISymbolContainer<ISymbol>? Members { get; set; }
-
-			/// <inheritdoc cref="ITypeData.AllMembers"/>
-			public ISymbolContainer<ISymbol>? AllMembers { get; set; }
+			/// <summary>
+			/// Container of child <see cref="ISymbol"/>s of this type.
+			/// </summary>
+			public ILeveledSymbolContainer<ISymbol, IMemberData>? Members { get; set; }
 
 			/// <inheritdoc cref="ITypeData.BaseTypes"/>
-			public ISymbolContainer<INamedTypeSymbol>? BaseTypes { get; set; }
+			public ISymbolContainer<INamedTypeSymbol, ITypeData>? BaseTypes { get; set; }
 
-			/// <inheritdoc cref="ITypeData.InnerTypes"/>
-			public ISymbolContainer<INamedTypeSymbol>? InnerTypes { get; set; }
-
-			/// <inheritdoc cref="ITypeData.AllInnerTypes"/>
-			public ISymbolContainer<INamedTypeSymbol>? AllInnerTypes { get; set; }
+			/// <summary>
+			/// Container of inner types of this type.
+			/// </summary>
+			public ILeveledSymbolContainer<INamedTypeSymbol, ITypeData>? InnerTypes { get; set; }
 
 			/// <inheritdoc cref="ITypeData.ParameterlessConstructor"/>
-			public DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> ParameterlessConstructor { get; set; }
+			public DefaultedValue<ISymbolOrMember<IMethodSymbol, IMethodData>> ParameterlessConstructor { get; set; }
 
-			/// <inheritdoc cref="ITypeData.TypeParameters"/>
-			public ISymbolContainer<ITypeParameterSymbol>? TypeParameters { get; set; }
+			/// <inheritdoc cref="IGenericMemberData.TypeParameters"/>
+			public ISymbolContainer<ITypeParameterSymbol, ITypeParameterData>? TypeParameters { get; set; }
 
-			/// <inheritdoc cref="ITypeData.TypeArguments"/>
-			public ISymbolContainer<ITypeSymbol>? TypeArguments { get; }
+			/// <inheritdoc cref="IGenericMemberData.TypeArguments"/>
+			public ISymbolContainer<ITypeSymbol, ITypeData>? TypeArguments { get; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -57,14 +55,12 @@ namespace Durian.Analysis.Data
 		}
 
 		private ImmutableArray<TDeclaration> _partialDeclarations;
-		private ISymbolContainer<ISymbol>? _members;
-		private ISymbolContainer<ISymbol>? _allMembers;
-		private ISymbolContainer<INamedTypeSymbol>? _baseTypes;
-		private protected ISymbolContainer<INamedTypeSymbol>? _allInnerTypes;
-		private protected ISymbolContainer<INamedTypeSymbol>? _innerTypes;
-		private ISymbolContainer<ITypeParameterSymbol>? _typeParameters;
-		private ISymbolContainer<ITypeSymbol>? _typeArguments;
-		private DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> _parameterlessConstructor;
+		private ILeveledSymbolContainer<ISymbol, IMemberData>? _members;
+		private ISymbolContainer<INamedTypeSymbol, ITypeData>? _baseTypes;
+		private ILeveledSymbolContainer<INamedTypeSymbol, ITypeData>? _innerTypes;
+		private ISymbolContainer<ITypeParameterSymbol, ITypeParameterData>? _typeParameters;
+		private ISymbolContainer<ITypeSymbol, ITypeData>? _typeArguments;
+		private DefaultedValue<ISymbolOrMember<IMethodSymbol, IMethodData>> _parameterlessConstructor;
 
 		/// <summary>
 		/// Target <see cref="TypeDeclarationSyntax"/>.
@@ -72,22 +68,20 @@ namespace Durian.Analysis.Data
 		public new TDeclaration Declaration => (base.Declaration as TDeclaration)!;
 
 		/// <summary>
-		/// <see cref="ITypeSymbol"/> associated with the <see cref="Declaration"/>.
+		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
-		public new ITypeSymbol Symbol => (base.Symbol as ITypeSymbol)!;
+		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
 
-		ISymbolOrMember<IMethodSymbol, IMethodData>? ITypeData.ParameterlessConstructor => ParameterlessConstructor;
+		ITypeSymbol ITypeData.Symbol => Symbol;
 
 		/// <inheritdoc/>
-		public ISymbolOrMember<IMethodSymbol, ConstructorData>? ParameterlessConstructor
+		public ISymbolOrMember<IMethodSymbol, IMethodData>? ParameterlessConstructor
 		{
 			get
 			{
 				if(_parameterlessConstructor.IsDefault)
 				{
-					_parameterlessConstructor = Symbol is INamedTypeSymbol type
-						? type.GetSpecialConstructor(SpecialConstructor.Parameterless).ToDataOrSymbolInternal<ConstructorData>(ParentCompilation)
-						: null;
+					_parameterlessConstructor = new(Symbol.GetSpecialConstructor(SpecialConstructor.Parameterless)?.ToDataOrSymbol(ParentCompilation));
 				}
 
 				return _parameterlessConstructor.Value;
@@ -95,28 +89,26 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc/>
-		public ISymbolContainer<ITypeParameterSymbol> TypeParameters
+		public ISymbolContainer<ITypeParameterSymbol, ITypeParameterData> TypeParameters
 		{
 			get
 			{
-				return _typeParameters ??= Symbol is INamedTypeSymbol type && type.IsGenericType
-					? type.TypeParameters.ToContainer(ParentCompilation)
-					: SymbolContainerFactory.Empty<ITypeParameterSymbol>();
+				return _typeParameters ??= Symbol.IsGenericType
+					? Symbol.TypeParameters.ToContainer(ParentCompilation)
+					: SymbolContainerFactory.Empty<ITypeParameterSymbol, ITypeParameterData>();
 			}
 		}
 
 		/// <inheritdoc/>
-		public ISymbolContainer<ITypeSymbol> TypeArguments
+		public ISymbolContainer<ITypeSymbol, ITypeData> TypeArguments
 		{
 			get
 			{
-				return _typeArguments ??= Symbol is INamedTypeSymbol type && type.IsGenericType
-					? type.TypeArguments.ToContainer(ParentCompilation)
-					: SymbolContainerFactory.Empty<ITypeSymbol>();
+				return _typeArguments ??= Symbol.IsGenericType
+					? Symbol.TypeArguments.ToContainer(ParentCompilation)
+					: SymbolContainerFactory.Empty<ITypeSymbol, ITypeData>();
 			}
 		}
-
-		BaseTypeDeclarationSyntax ITypeData.Declaration => Declaration;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TypeData{TDeclaration}"/> class.
@@ -129,86 +121,10 @@ namespace Durian.Analysis.Data
 		/// </exception>
 		protected TypeData(TDeclaration declaration, ICompilationData compilation, MemberData.Properties? properties = default) : base(declaration, compilation, properties)
 		{
-			if(properties is Properties props)
-			{
-				_members = props.Members;
-				_partialDeclarations = props.PartialDeclarations;
-				_allInnerTypes = props.AllInnerTypes;
-				_innerTypes = props.InnerTypes;
-				_allMembers = props.AllMembers;
-				_baseTypes = props.BaseTypes;
-				_parameterlessConstructor = props.ParameterlessConstructor;
-				_typeParameters = props.TypeParameters;
-				_typeArguments = props.TypeArguments;
-			}
 		}
 
-		internal TypeData(ITypeSymbol symbol, ICompilationData compilation, bool initDefaultProperties = false) : base(symbol, compilation, initDefaultProperties)
+		internal TypeData(ITypeSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
 		{
-		}
-
-		/// <inheritdoc/>
-		protected override MemberData.Properties? GetDefaultProperties()
-		{
-			return new MemberData.Properties()
-			{
-				Virtuality = Virtuality.NotVirtual
-			};
-		}
-
-		/// <inheritdoc/>
-		public ISymbolContainer<ISymbol> Members
-		{
-			get
-			{
-				return _members ??= Symbol is INamedTypeSymbol type
-					? type.GetMembers().ToContainer(ParentCompilation)
-					: SymbolContainerFactory.Empty<ISymbol>();
-			}
-		}
-
-		/// <inheritdoc/>
-		public ISymbolContainer<INamedTypeSymbol> InnerTypes
-		{
-			get
-			{
-				return _innerTypes ??= Symbol is INamedTypeSymbol type
-					? type.GetTypeMembers().ToContainer(ParentCompilation)
-					: SymbolContainerFactory.Empty<INamedTypeSymbol>();
-			}
-		}
-
-		/// <inheritdoc/>
-		public ISymbolContainer<INamedTypeSymbol> AllInnerTypes
-		{
-			get
-			{
-				return _allInnerTypes ??= Symbol is INamedTypeSymbol type
-					? type.GetInnerTypes(false).ToContainer(ParentCompilation)
-					: SymbolContainerFactory.Empty<INamedTypeSymbol>();
-			}
-		}
-
-		/// <inheritdoc/>
-		public ISymbolContainer<INamedTypeSymbol> BaseTypes
-		{
-			get
-			{
-				return _baseTypes ??= Symbol is INamedTypeSymbol type
-					? type.GetBaseTypes(false).ToContainer(ParentCompilation)
-					: SymbolContainerFactory.Empty<INamedTypeSymbol>();
-			}
-		}
-
-		/// <inheritdoc/>
-		public ISymbolContainer<ISymbol> AllMembers
-		{
-			get
-			{
-				return _allMembers ??= Symbol is INamedTypeSymbol type
-					? type.GetAllMembers().ToContainer(ParentCompilation)
-					: SymbolContainerFactory.Empty<ISymbol>();
-			}
 		}
 
 		/// <inheritdoc cref="ITypeData.PartialDeclarations"/>
@@ -218,23 +134,16 @@ namespace Durian.Analysis.Data
 			{
 				if (_partialDeclarations.IsDefault)
 				{
-					if (Symbol.TypeKind == TypeKind.Enum)
-					{
-						_partialDeclarations = ImmutableArray<TDeclaration>.Empty;
-					}
-					else
-					{
-						_partialDeclarations = Symbol.DeclaringSyntaxReferences
-							.Select(e => e.GetSyntax())
-							.OfType<TDeclaration>()
-							.ToImmutableArray();
-					}
+					_partialDeclarations = Symbol.DeclaringSyntaxReferences
+						.Select(e => e.GetSyntax())
+						.OfType<TDeclaration>()
+						.ToImmutableArray();
 				}
 
 				return _partialDeclarations;
 			}
 		}
 
-		ImmutableArray<BaseTypeDeclarationSyntax> ITypeData.PartialDeclarations => PartialDeclarations.CastArray<BaseTypeDeclarationSyntax>();
+		ImmutableArray<TypeDeclarationSyntax> ITypeData.PartialDeclarations => PartialDeclarations.CastArray<TypeDeclarationSyntax>();
 	}
 }

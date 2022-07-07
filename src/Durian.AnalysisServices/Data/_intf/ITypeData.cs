@@ -14,9 +14,14 @@ namespace Durian.Analysis.Data
 	public interface ITypeData : IGenericMemberData, INamespaceOrTypeData, ISymbolOrMember<INamedTypeSymbol, ITypeData>
 	{
 		/// <summary>
-		/// <see cref="ITypeSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.
+		/// Base types of the current type.
 		/// </summary>
-		new INamedTypeSymbol Symbol { get; }
+		ISymbolContainer<INamedTypeSymbol, ITypeData> BaseTypes { get; }
+
+		/// <summary>
+		/// Parameterless constructor of this type.
+		/// </summary>
+		ISymbolOrMember<IMethodSymbol, IMethodData>? ParameterlessConstructor { get; }
 
 		/// <summary>
 		/// All partial declarations of the type (including <see cref="IMemberData.Declaration"/>).
@@ -24,38 +29,49 @@ namespace Durian.Analysis.Data
 		ImmutableArray<TypeDeclarationSyntax> PartialDeclarations { get; }
 
 		/// <summary>
-		/// Member <see cref="ISymbol"/>s of the current type and its parent types.
+		/// <see cref="ITypeSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.
 		/// </summary>
-		ISymbolContainer<ISymbol, IMemberData> AllMembers { get; }
+		new ITypeSymbol Symbol { get; }
 
 		/// <summary>
-		/// Member <see cref="ISymbol"/>s of the current type.
+		/// Returns all <see cref="IEventSymbol"/>s contained within this type.
 		/// </summary>
-		ISymbolContainer<ISymbol, IMemberData> Members { get; }
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<IEventSymbol, IEventData> GetEvents(IncludedMembers members);
 
 		/// <summary>
-		/// Base types of the current type.
+		/// Returns all <see cref="IFieldSymbol"/>s contained within this type.
 		/// </summary>
-		ISymbolContainer<INamedTypeSymbol, ITypeData> BaseTypes { get; }
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<IFieldSymbol, IFieldData> GetFields(IncludedMembers members);
 
 		/// <summary>
-		/// Inner types of the current type and its parent types.
+		/// Returns all <see cref="INamedTypeSymbol"/>s contained within this type.
 		/// </summary>
-		ISymbolContainer<INamedTypeSymbol, ITypeData> AllInnerTypes { get; }
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<INamedTypeSymbol, ITypeData> GetInnerTypes(IncludedMembers members);
 
 		/// <summary>
-		/// Inner types of the current type.
+		/// Returns all <see cref="ISymbol"/>s contained within this type.
 		/// </summary>
-		ISymbolContainer<INamedTypeSymbol, ITypeData> InnerTypes { get; }
-
-		/// <summary>
-		/// Parameterless constructor of this type.
-		/// </summary>
-		ISymbolOrMember<IMethodSymbol, IMethodData>? ParameterlessConstructor { get; }
-
-
+		/// <param name="members">Range of members to include.</param>
 		ISymbolContainer<ISymbol, IMemberData> GetMembers(IncludedMembers members);
 
-		ISymbolContainer<INamedTypeSymbol, ITypeData> GetInnerTypes(IncludedMembers members);
+		/// <summary>
+		/// Returns all <see cref="IMethodSymbol"/>s contained within this type.
+		/// </summary>
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<IMethodSymbol, IMethodData> GetMethods(IncludedMembers members);
+
+		/// <summary>
+		/// Returns all <see cref="IPropertySymbol"/>s contained within this type.
+		/// </summary>
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<IPropertySymbol, IPropertyData> GetProperties(IncludedMembers members);
+
+		/// <summary>
+		/// Converts the current <see cref="ITypeData"/> to a <see cref="INamespaceOrTypeData"/>.
+		/// </summary>
+		INamespaceOrTypeData ToNamespaceOrType();
 	}
 }

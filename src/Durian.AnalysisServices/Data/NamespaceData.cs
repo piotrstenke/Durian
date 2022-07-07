@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -11,7 +11,6 @@ using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Durian.Analysis.SymbolContainers.Specialized;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -52,13 +51,20 @@ namespace Durian.Analysis.Data
 			}
 
 			/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 			[Obsolete("Use Map(Properties) instead")]
 			[EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-			public override void Map(Properties<INamespaceSymbol> properties)
+			public sealed override void Map(Properties<INamespaceSymbol> properties)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 			{
-				base.Map(properties);
+				if (properties is Properties props)
+				{
+					Map(props);
+				}
+				else
+				{
+					base.Map(properties);
+				}
 			}
 
 			/// <inheritdoc/>
@@ -67,6 +73,15 @@ namespace Durian.Analysis.Data
 				Properties properties = new();
 				Map(properties);
 				return properties;
+			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				SetDefault();
+
+				Attributes = ImmutableArray<AttributeData>.Empty;
+				ContainingTypes = SymbolContainerFactory.EmptyWritable<INamedTypeSymbol, ITypeData>();
 			}
 		}
 
@@ -89,11 +104,10 @@ namespace Durian.Analysis.Data
 
 		INamespaceData ISymbolOrMember<INamespaceSymbol, INamespaceData>.Member => this;
 
+		INamespaceOrTypeData ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>.Member => this;
 		INamespaceOrTypeSymbol INamespaceOrTypeData.Symbol => Symbol;
 
 		INamespaceOrTypeSymbol ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>.Symbol => Symbol;
-
-		INamespaceOrTypeData ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>.Member => this;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PropertyData"/> class.
@@ -107,15 +121,17 @@ namespace Durian.Analysis.Data
 		public NamespaceData(BaseNamespaceDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
 			DeclarationStyle = declaration.GetNamespaceStyle();
-
-			if(properties is not null)
-			{
-				_members = properties.Members;
-			}
 		}
 
-		internal NamespaceData(ISymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		internal NamespaceData(ISymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
 		{
+			DeclarationStyle = Declaration.GetNamespaceStyle();
+		}
+
+		/// <inheritdoc cref="MemberData.Clone"/>
+		public new NamespaceData Clone()
+		{
+			return (CloneCore() as NamespaceData)!;
 		}
 
 		/// <inheritdoc/>
@@ -123,7 +139,7 @@ namespace Durian.Analysis.Data
 		{
 			InitMembers();
 
-			if(_members is IMappedSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData, IncludedMembers> container)
+			if (_members is IMappedSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData, IncludedMembers> container)
 			{
 				return container.ResolveLevel(members);
 			}
@@ -156,6 +172,12 @@ namespace Durian.Analysis.Data
 			}
 		}
 
+		/// <inheritdoc cref="MemberData.GetProperties"/>
+		public new Properties GetProperties()
+		{
+			return (GetPropertiesCore() as Properties)!;
+		}
+
 		/// <inheritdoc/>
 		public ISymbolContainer<INamedTypeSymbol, ITypeData> GetTypes(IncludedMembers members)
 		{
@@ -164,8 +186,8 @@ namespace Durian.Analysis.Data
 			switch (_members)
 			{
 				case NamespacesOrTypesContainer typed:
-					IMappedSymbolContainer<INamedTypeSymbol, ITypeData, IncludedMembers> namespaces = typed.GetTypes();
-					return namespaces.ResolveLevel(members);
+					IMappedSymbolContainer<INamedTypeSymbol, ITypeData, IncludedMembers> types = typed.GetTypes();
+					return types.ResolveLevel(members);
 
 				case IMappedSymbolContainer<INamedTypeSymbol, ITypeData, IncludedMembers> mapped:
 					return mapped.ResolveLevel(members);
@@ -181,26 +203,78 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		public NamespaceOrTypeData ToNamespaceOrType()
+		/// <inheritdoc cref="MemberData.Map(MemberData.Properties)"/>
+		public virtual void Map(Properties properties)
 		{
-			return new NamespaceOrTypeData(Declaration, ParentCompilation, new()
-			{
-				Attributes = Attributes,
-				ContainingNamespaces = ContainingNamespaces,
-				ContainingTypes = ContainingTypes,
-				GenericName = GenericName,
-				HiddenMember = HiddenSymbol,
-			})
+			base.Map(properties);
+			properties.Members = _members;
 		}
 
-		ITypeData INamespaceOrTypeData.ToType()
+		/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		[Obsolete("Use Map(Properties) instead")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public sealed override void Map(MemberData.Properties properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 		{
-			throw new InvalidOperationException("Current symbol is not a type");
+			if (properties is Properties props)
+			{
+				Map(props);
+			}
+			else
+			{
+				base.Map(properties);
+			}
+		}
+
+		/// <summary>
+		/// Converts the current <see cref="NamespaceData"/> to a <see cref="NamespaceOrTypeData"/>
+		/// </summary>
+		public NamespaceOrTypeData ToNamespaceOrType()
+		{
+			NamespaceOrTypeData.Properties properties = new();
+			base.Map(properties);
+			return new(Declaration, ParentCompilation, properties);
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData CloneCore()
+		{
+			return new NamespaceData(Declaration, ParentCompilation, GetProperties());
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties GetPropertiesCore()
+		{
+			Properties properties = new();
+			Map(properties);
+			return properties;
+		}
+
+		/// <inheritdoc/>
+		protected override void SetProperties(MemberData.Properties properties)
+		{
+			base.SetProperties(properties);
+
+			if (properties is Properties props)
+			{
+				_members = props.Members;
+			}
 		}
 
 		INamespaceData INamespaceOrTypeData.ToNamespace()
 		{
 			return this;
+		}
+
+		INamespaceOrTypeData INamespaceData.ToNamespaceOrType()
+		{
+			return ToNamespaceOrType();
+		}
+
+		ITypeData INamespaceOrTypeData.ToType()
+		{
+			throw new InvalidOperationException("Current symbol is not a type");
 		}
 
 		[MemberNotNull(nameof(_members))]

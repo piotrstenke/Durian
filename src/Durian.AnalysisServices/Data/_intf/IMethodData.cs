@@ -5,7 +5,6 @@ using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
 {
@@ -25,11 +24,6 @@ namespace Durian.Analysis.Data
 		MethodStyle BodyType { get; }
 
 		/// <summary>
-		/// <see cref="IMethodSymbol"/> associated with the <see cref="Declaration"/>.
-		/// </summary>
-		new IMethodSymbol Symbol { get; }
-
-		/// <summary>
 		/// Overloads of this method.
 		/// </summary>
 		ISymbolContainer<IMethodSymbol, IMethodData> Overloads { get; }
@@ -43,5 +37,10 @@ namespace Durian.Analysis.Data
 		/// Parameters of this method.
 		/// </summary>
 		ISymbolContainer<IParameterSymbol, IParameterData> Parameters { get; }
+
+		/// <summary>
+		/// <see cref="IMethodSymbol"/> associated with the <see cref="Declaration"/>.
+		/// </summary>
+		new IMethodSymbol Symbol { get; }
 	}
 }

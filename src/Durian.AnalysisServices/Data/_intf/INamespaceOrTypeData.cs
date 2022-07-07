@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
-using System;
 
 namespace Durian.Analysis.Data
 {
@@ -18,10 +18,10 @@ namespace Durian.Analysis.Data
 		new INamespaceOrTypeSymbol Symbol { get; }
 
 		/// <summary>
-		/// Converts the current <see cref="INamespaceOrTypeData"/> to an actual <see cref="ITypeData"/>.
+		/// Returns all <see cref="INamedTypeSymbol"/>s contained within this namespace.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Current member is not a <see cref="ITypeData"/>.</exception>
-		ITypeData ToType();
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<INamedTypeSymbol, ITypeData> GetTypes(IncludedMembers members);
 
 		/// <summary>
 		/// Converts the current <see cref="INamespaceOrTypeData"/> to an actual <see cref="INamespaceData"/>.
@@ -30,9 +30,9 @@ namespace Durian.Analysis.Data
 		INamespaceData ToNamespace();
 
 		/// <summary>
-		/// Returns all <see cref="INamedTypeSymbol"/>s contained within this namespace.
+		/// Converts the current <see cref="INamespaceOrTypeData"/> to an actual <see cref="ITypeData"/>.
 		/// </summary>
-		/// <param name="members">Range of members to include.</param>
-		ISymbolContainer<INamedTypeSymbol, ITypeData> GetTypes(IncludedMembers members);
+		/// <exception cref="InvalidOperationException">Current member is not a <see cref="ITypeData"/>.</exception>
+		ITypeData ToType();
 	}
 }

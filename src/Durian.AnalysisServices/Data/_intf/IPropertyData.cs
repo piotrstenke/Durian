@@ -12,6 +12,16 @@ namespace Durian.Analysis.Data
 	public interface IPropertyData : IMemberData, ISymbolOrMember<IPropertySymbol, IPropertyData>
 	{
 		/// <summary>
+		/// Kind of the auto-property.
+		/// </summary>
+		AutoPropertyKind AutoPropertyKind { get; }
+
+		/// <summary>
+		/// Backing field of the property or <see langword="null"/> if not an auto-property.
+		/// </summary>
+		ISymbolOrMember<IFieldSymbol, IFieldData>? BackingField { get; }
+
+		/// <summary>
 		/// Target <see cref="BasePropertyDeclarationSyntax"/>.
 		/// </summary>
 		new BasePropertyDeclarationSyntax Declaration { get; }
@@ -20,15 +30,5 @@ namespace Durian.Analysis.Data
 		/// <see cref="ISymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		new IPropertySymbol Symbol { get; }
-
-		/// <summary>
-		/// Backing field of the property or <see langword="null"/> if not an auto-property.
-		/// </summary>
-		ISymbolOrMember<IFieldSymbol, IFieldData>? BackingField { get; }
-
-		/// <summary>
-		/// Kind of the auto-property.
-		/// </summary>
-		AutoPropertyKind AutoPropertyKind { get; }
 	}
 }
