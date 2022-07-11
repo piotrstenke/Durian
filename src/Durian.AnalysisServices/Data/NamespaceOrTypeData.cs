@@ -49,10 +49,9 @@ namespace Durian.Analysis.Data
 
 			/// <inheritdoc/>
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-
 			[Obsolete("Use Map(Properties) instead")]
 			[EditorBrowsable(EditorBrowsableState.Never)]
-			public override sealed void Map(Properties<INamespaceOrTypeSymbol> properties)
+			public sealed override void Map(Properties<INamespaceOrTypeSymbol> properties)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 			{
 				if (properties is Properties props)
@@ -187,7 +186,7 @@ namespace Durian.Analysis.Data
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		[Obsolete("Use Map(Properties) instead")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public override sealed void Map(MemberData.Properties properties)
+		public sealed override void Map(MemberData.Properties properties)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 		{
 			if (properties is Properties props)

@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
-using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -20,24 +20,100 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new class Properties : TypeData<RecordDeclarationSyntax>.Properties
 		{
+			/// <inheritdoc cref="RecordData.CopyConstructor"/>
+			public DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> CopyConstructor { get; set; }
+
 			/// <inheritdoc cref="RecordData.ParameterList"/>
 			public DefaultedValue<ParameterListSyntax> ParameterList { get; set; }
 
 			/// <inheritdoc cref="RecordData.PrimaryConstructor"/>
 			public DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> PrimaryConstructor { get; set; }
 
-			/// <inheritdoc cref="RecordData.CopyConstructor"/>
-			public DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> CopyConstructor { get; set; }
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			/// <param name="fillWithDefault">Determines whether to fill the current properties with default data.</param>
+			public Properties(bool fillWithDefault) : base(fillWithDefault)
+			{
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Clone"/>
+			public new Properties Clone()
+			{
+				return (CloneCore() as Properties)!;
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Map(MemberData.Properties)"/>
+			public virtual void Map(Properties properties)
+			{
+				base.Map(properties);
+				properties.ParameterList = ParameterList;
+				properties.PrimaryConstructor = PrimaryConstructor;
+				properties.CopyConstructor = CopyConstructor;
+			}
+
+			/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+			[Obsolete("Use Map(Properties) instead")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
+			public sealed override void Map(TypeData<RecordDeclarationSyntax>.Properties properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			{
+				if (properties is Properties props)
+				{
+					Map(props);
+				}
+				else
+				{
+					base.Map(properties);
+				}
+			}
+
+			/// <inheritdoc/>
+			protected override MemberData.Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
+			}
 		}
 
+		private DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> _copyConstructor;
 		private DefaultedValue<ParameterListSyntax> _parameterList;
 		private DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> _primaryConstructor;
-		private DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> _copyConstructor;
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="TypeData{TDeclaration}.Declaration"/>.
+		/// Copy constructor of the record.
 		/// </summary>
-		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
+		public ISymbolOrMember<IMethodSymbol, ConstructorData>? CopyConstructor
+		{
+			get
+			{
+				if (_copyConstructor.IsDefault)
+				{
+					_copyConstructor = new(Symbol.GetSpecialConstructor(SpecialConstructor.Copy)?.ToDataOrSymbol<ConstructorData>(ParentCompilation));
+				}
+
+				return _copyConstructor.Value;
+			}
+		}
+
+		/// <summary>
+		/// Determines whether the record is a <see langword="class"/>.
+		/// </summary>
+		public bool IsClass => Symbol.IsReferenceType;
+
+		/// <summary>
+		/// Determines whether the record is a <see langword="struct"/>.
+		/// </summary>
+		public bool IsStruct => Symbol.IsValueType;
 
 		/// <summary>
 		/// <see cref="ParameterListSyntax"/> of the record's primary constructor.
@@ -46,9 +122,9 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-				if(_parameterList.IsDefault)
+				if (_parameterList.IsDefault)
 				{
-					if(Declaration.ParameterList is not null)
+					if (Declaration.ParameterList is not null)
 					{
 						_parameterList = Declaration.ParameterList;
 					}
@@ -69,40 +145,14 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-				if(_primaryConstructor.IsDefault)
+				if (_primaryConstructor.IsDefault)
 				{
-					_primaryConstructor = Symbol.GetPrimaryConstructor().ToDataOrSymbolInternal<ConstructorData>(ParentCompilation);
+					_primaryConstructor = new(Symbol.GetPrimaryConstructor()?.ToDataOrSymbol<ConstructorData>(ParentCompilation));
 				}
 
 				return _primaryConstructor.Value;
 			}
 		}
-
-		/// <summary>
-		/// Copy constructor of the record.
-		/// </summary>
-		public ISymbolOrMember<IMethodSymbol, ConstructorData>? CopyConstructor
-		{
-			get
-			{
-				if(_copyConstructor.IsDefault)
-				{
-					_copyConstructor = Symbol.GetSpecialConstructor(SpecialConstructor.Copy).ToDataOrSymbolInternal<ConstructorData>(ParentCompilation);
-				}
-
-				return _copyConstructor.Value;
-			}
-		}
-
-		/// <summary>
-		/// Determines whether the record is a <see langword="class"/>.
-		/// </summary>
-		public bool IsClass => Symbol.IsReferenceType;
-
-		/// <summary>
-		/// Determines whether the record is a <see langword="struct"/>.
-		/// </summary>
-		public bool IsStruct => Symbol.IsValueType;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RecordData"/> class.
@@ -115,16 +165,81 @@ namespace Durian.Analysis.Data
 		/// </exception>
 		public RecordData(RecordDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
-			if(properties is not null)
+		}
+
+		internal RecordData(INamedTypeSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
+		{
+		}
+
+		/// <inheritdoc cref="MemberData.Clone"/>
+		public new RecordData Clone()
+		{
+			return (CloneCore() as RecordData)!;
+		}
+
+		/// <inheritdoc cref="MemberData.GetProperties"/>
+		public new Properties GetProperties()
+		{
+			return (GetPropertiesCore() as Properties)!;
+		}
+
+		/// <inheritdoc cref="MemberData.Properties.Map(MemberData.Properties)"/>
+		public virtual void Map(Properties properties)
+		{
+			base.Map(properties);
+			properties.ParameterList = ParameterList;
+			properties.CopyConstructor = new(CopyConstructor);
+			properties.PrimaryConstructor = new(PrimaryConstructor);
+		}
+
+		/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		[Obsolete("Use Map(Properties) instead")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public sealed override void Map(TypeData<RecordDeclarationSyntax>.Properties properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			if (properties is Properties props)
 			{
-				_primaryConstructor = properties.PrimaryConstructor;
-				_parameterList = properties.ParameterList;
-				_copyConstructor = properties.CopyConstructor;
+				Map(props);
+			}
+			else
+			{
+				base.Map(properties);
 			}
 		}
 
-		internal RecordData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		/// <inheritdoc/>
+		protected override MemberData CloneCore()
 		{
+			return new RecordData(Declaration, ParentCompilation, GetProperties());
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties? GetDefaultProperties()
+		{
+			return new Properties(true);
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties GetPropertiesCore()
+		{
+			Properties properties = new();
+			Map(properties);
+			return properties;
+		}
+
+		/// <inheritdoc/>
+		protected override void SetProperties(MemberData.Properties properties)
+		{
+			base.SetProperties(properties);
+
+			if (properties is Properties props)
+			{
+				_copyConstructor = props.CopyConstructor;
+				_primaryConstructor = props.PrimaryConstructor;
+				_parameterList = props.ParameterList;
+			}
 		}
 	}
 }

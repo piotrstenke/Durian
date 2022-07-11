@@ -18,7 +18,7 @@ namespace Durian.Analysis.Data
 		new INamespaceOrTypeSymbol Symbol { get; }
 
 		/// <summary>
-		/// Returns all <see cref="INamedTypeSymbol"/>s contained within this namespace.
+		/// Returns all <see cref="INamedTypeSymbol"/>s contained within this namespace or type.
 		/// </summary>
 		/// <param name="members">Range of members to include.</param>
 		ISymbolContainer<INamedTypeSymbol, ITypeData> GetTypes(IncludedMembers members);

@@ -3,7 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -13,8 +16,81 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="FieldDeclarationSyntax"/>.
 	/// </summary>
-	public class FieldData : MemberData
+	public class FieldData : MemberData, IFieldData
 	{
+		/// <summary>
+		/// Contains optional data that can be passed to a <see cref="FieldData"/>.
+		/// </summary>
+		public new class Properties : Properties<IFieldSymbol>
+		{
+			/// <inheritdoc cref="FieldData.Index"/>
+			public int Index { get; set; }
+
+			/// <inheritdoc cref="FieldData.Variable"/>
+			public VariableDeclaratorSyntax? Variable { get; set; }
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			/// <param name="fillWithDefault">Determines whether to fill the current properties with default data.</param>
+			public Properties(bool fillWithDefault) : base(fillWithDefault)
+			{
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Clone"/>
+			public new Properties Clone()
+			{
+				return (CloneCore() as Properties)!;
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Map(MemberData.Properties)"/>
+			public virtual void Map(Properties properties)
+			{
+				base.Map(properties);
+				properties.Index = Index;
+				properties.Variable = Variable;
+			}
+
+			/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+			[Obsolete("Use Map(Properties) instead")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
+			public sealed override void Map(Properties<IFieldSymbol> properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			{
+				if (properties is Properties props)
+				{
+					Map(props);
+				}
+				else
+				{
+					base.Map(properties);
+				}
+			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				IsPartial = false;
+				Virtuality = Analysis.Virtuality.NotVirtual;
+			}
+
+			/// <inheritdoc/>
+			protected override MemberData.Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
+			}
+		}
+
 		/// <summary>
 		/// Target <see cref="FieldDeclarationSyntax"/>.
 		/// </summary>
@@ -23,7 +99,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Index of this field in the <see cref="Declaration"/>.
 		/// </summary>
-		public int Index { get; }
+		public int Index { get; private set; }
 
 		/// <summary>
 		/// <see cref="IFieldSymbol"/> associated with the <see cref="Declaration"/>.
@@ -33,7 +109,9 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// <see cref="VariableDeclaratorSyntax"/> used to declare this field. Equivalent to using <c>Declaration.Declaration.Variables[Index]</c>.
 		/// </summary>
-		public VariableDeclaratorSyntax Variable { get; }
+		public VariableDeclaratorSyntax Variable { get; private set; }
+
+		IFieldData ISymbolOrMember<IFieldSymbol, IFieldData>.Member => this;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FieldData"/> class.
@@ -47,73 +125,61 @@ namespace Durian.Analysis.Data
 		/// <exception cref="IndexOutOfRangeException">
 		/// <paramref name="index"/> was out of range.
 		/// </exception>
-		public FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, int index = 0) : this(
+		public FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, int index) : this(
 			declaration,
 			compilation,
-			GetSemanticModel(compilation, declaration),
-			GetVariable(declaration.Declaration, index))
+			GetSemanticModel(declaration, compilation, null),
+			declaration.Declaration.GetVariable(index)
+		)
 		{
-			Index = index;
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="FieldData"/> class.
+		/// Initializes a new instance of the <see cref="PropertyData"/> class.
 		/// </summary>
-		/// <param name="symbol"><see cref="IFieldSymbol"/> this <see cref="FieldData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="FieldData"/>.</param>
-		internal FieldData(IFieldSymbol symbol, ICompilationData compilation) : base(
+		/// <param name="declaration"><see cref="PropertyDeclarationSyntax"/> this <see cref="PropertyData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="PropertyData"/>.</param>
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
+		/// </exception>
+		/// <exception cref="IndexOutOfRangeException">
+		/// <see cref="Properties.Index"/> was out of range.
+		/// </exception>
+		public FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, Properties? properties) : this(
+			declaration,
+			compilation,
+			properties?.Index ?? default
+		)
+		{
+		}
+
+		internal FieldData(IFieldSymbol symbol, ICompilationData compilation, Properties? properties = default) : this(symbol, compilation, properties as MemberData.Properties)
+		{
+		}
+
+
+		internal FieldData(IFieldSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(
 			GetFieldDeclarationFromSymbol(
 				symbol,
 				compilation,
+				properties as Properties,
 				out SemanticModel semanticModel,
 				out VariableDeclaratorSyntax var,
-				out int index),
+				out int index,
+				out bool usedPropertySemanticModel
+			),
 			compilation,
-			symbol,
-			semanticModel
+			isFullProperty ? properties : new Properties(true)
+			{ 
+				SemanticModel = semanticModel,
+				Variable = var,
+				Index = index
+			}
 		)
 		{
 			Variable = var;
 			Index = index;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FieldData"/> class.
-		/// </summary>
-		/// <param name="declaration"><see cref="FieldDeclarationSyntax"/> this <see cref="FieldData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="FieldData"/>.</param>
-		/// <param name="symbol"><see cref="IFieldSymbol"/> this <see cref="FieldData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="variable"><see cref="VariableDeclaratorSyntax"/> that represents the target variable.</param>
-		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="IFieldSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal FieldData(
-			FieldDeclarationSyntax declaration,
-			ICompilationData compilation,
-			IFieldSymbol symbol,
-			SemanticModel semanticModel,
-			VariableDeclaratorSyntax variable,
-			int index,
-			string[]? modifiers = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
-		{
-			Index = index;
-			Variable = variable;
 		}
 
 		private FieldData(
@@ -151,17 +217,21 @@ namespace Durian.Analysis.Data
 			int index = Index;
 			int length = Declaration.Declaration.Variables.Count;
 
-			for (int i = 0; i < length; i++)
+			for (int i = 0; i < index; i++)
 			{
-				if (i == index)
-				{
-					yield return this;
-					continue;
-				}
+				yield return GetData(i);
+			}
 
-				VariableDeclaratorSyntax variable = Declaration.Declaration.Variables[i];
+			for (int i = index + 1; i < length; i++)
+			{
+				yield return GetData(i);
+			}
 
-				yield return new FieldData(
+			FieldData GetData(int index)
+			{
+				VariableDeclaratorSyntax variable = Declaration.Declaration.Variables[index];
+
+				return new FieldData(
 					Declaration,
 					ParentCompilation,
 					(IFieldSymbol)SemanticModel.GetDeclaredSymbol(variable)!,
@@ -172,8 +242,19 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		internal static SemanticModel GetSemanticModel(ICompilationData compilation, CSharpSyntaxNode declaration)
+		IEnumerable<IFieldData> IFieldData.GetUnderlayingFields()
 		{
+			return GetUnderlayingFields();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static SemanticModel GetSemanticModel(CSharpSyntaxNode declaration, ICompilationData compilation, MemberData.Properties? properties)
+		{
+			if(properties?.SemanticModel is SemanticModel semanticModel)
+			{
+				return semanticModel;
+			}
+
 			if (declaration is null)
 			{
 				throw new ArgumentNullException(nameof(declaration));
@@ -187,44 +268,81 @@ namespace Durian.Analysis.Data
 			return compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
 		}
 
-		internal static VariableDeclaratorSyntax GetVariable(VariableDeclarationSyntax declaration, int index)
-		{
-			if (index < 0 || index >= declaration.Variables.Count)
-			{
-				throw new IndexOutOfRangeException(nameof(index));
-			}
-
-			return declaration.Variables[index];
-		}
-
 		private static FieldDeclarationSyntax GetFieldDeclarationFromSymbol(
 			IFieldSymbol symbol,
 			ICompilationData compilation,
+			Properties? properties,
 			out SemanticModel semanticModel,
 			out VariableDeclaratorSyntax variable,
-			out int index
+			out int index,
+			out bool usedPropertySemanticModel
 		)
 		{
-			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not VariableDeclaratorSyntax decl || decl?.Parent?.Parent is not FieldDeclarationSyntax field)
+			if(properties is not null)
 			{
+				variable = properties.Variable ?? GetVariable();
+				FieldDeclarationSyntax field = GetDeclaration(variable);
+
+				if(properties.SemanticModel is null)
+				{
+					semanticModel = compilation.Compilation.GetSemanticModel(variable.SyntaxTree);
+					usedPropertySemanticModel = false;
+				}
+				else
+				{
+					semanticModel = properties.SemanticModel;
+					usedPropertySemanticModel = true;
+				}
+
+				index = GetIndex(variable, field);
+
+				return field;
+			}
+			else
+			{
+				variable = GetVariable();
+				FieldDeclarationSyntax field = GetDeclaration(variable);
+				semanticModel = compilation.Compilation.GetSemanticModel(variable.SyntaxTree);
+				index = GetIndex(variable, field);
+				usedPropertySemanticModel = false;
+
+				return field;
+			}
+
+			VariableDeclaratorSyntax GetVariable()
+			{
+				if(symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not VariableDeclaratorSyntax decl)
+				{
+					throw Exc_NoSyntaxReference(symbol);
+				}
+
+				return decl;
+			}
+
+			FieldDeclarationSyntax GetDeclaration(VariableDeclaratorSyntax variable)
+			{
+				if(variable?.Parent?.Parent is not FieldDeclarationSyntax field)
+				{
+					throw Exc_NoSyntaxReference(symbol);
+				}
+
+				return field;
+			}
+
+			int GetIndex(VariableDeclaratorSyntax variable, FieldDeclarationSyntax field)
+			{
+				SeparatedSyntaxList<VariableDeclaratorSyntax> variables = field.Declaration.Variables;
+
+				for (int i = 0; i < variables.Count; i++)
+				{
+					if (variables[i].IsEquivalentTo(variable))
+					{
+						return i;
+					}
+				}
+
 				throw Exc_NoSyntaxReference(symbol);
 			}
-
-			SeparatedSyntaxList<VariableDeclaratorSyntax> variables = field.Declaration.Variables;
-			int length = variables.Count;
-
-			for (int i = 0; i < length; i++)
-			{
-				if (variables[i].IsEquivalentTo(decl))
-				{
-					index = i;
-					variable = decl;
-					semanticModel = compilation.Compilation.GetSemanticModel(decl.SyntaxTree);
-					return field;
-				}
-			}
-
-			throw Exc_NoSyntaxReference(symbol);
 		}
 	}
 }

@@ -245,6 +245,53 @@ namespace Durian.Analysis.Extensions
 			return method.MethodKind.GetAccessorKind();
 		}
 
+		/// <summary>
+		/// Returns a collection of all inner types of the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the inner types of.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static IReturnOrderEnumerable<INamedTypeSymbol> GetAllInnerTypes(this INamespaceOrTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.ChildToParent)
+		{
+			return Yield().OrderBy(order);
+
+			IEnumerable<INamedTypeSymbol> Yield()
+			{
+				const int capacity = 32;
+
+				if (includeSelf && type is INamedTypeSymbol named)
+				{
+					yield return named;
+				}
+
+				ImmutableArray<INamedTypeSymbol> array = type.GetTypeMembers();
+
+				if (array.Length == 0)
+				{
+					yield break;
+				}
+
+				Stack<INamedTypeSymbol> innerTypes = new(array.Length > capacity ? array.Length : capacity);
+
+				PushReverse(ref array, innerTypes);
+
+				while (innerTypes.Count > 0)
+				{
+					INamedTypeSymbol t = innerTypes.Pop();
+					yield return t;
+
+					array = t.GetTypeMembers();
+
+					if (array.Length == 0)
+					{
+						continue;
+					}
+
+					PushReverse(ref array, innerTypes);
+				}
+			}
+		}
+
 		/// <inheritdoc cref="GetAllMembers(INamedTypeSymbol, string, ReturnOrder)"/>
 		public static IReturnOrderEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, ReturnOrder order = ReturnOrder.ChildToParent)
 		{
@@ -850,64 +897,6 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return default;
-		}
-
-		/// <summary>
-		/// Returns all sub-namespaces of the specified <paramref name="assembly"/>.
-		/// </summary>
-		/// <param name="assembly"><see cref="IAssemblySymbol"/> to get the sub-namespaces of.</param>
-		/// <param name="includeGlobal">Determines whether to include the global namespace in the returned collection.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static IReturnOrderEnumerable<INamespaceSymbol> GetSubNamespaces(this IAssemblySymbol assembly, bool includeGlobal = false, ReturnOrder order = ReturnOrder.ParentToChild)
-		{
-			return assembly.GlobalNamespace.GetSubNamespaces(includeGlobal, order);
-		}
-
-		/// <summary>
-		/// Returns all sub-namespaces of the specified <paramref name="namespace"/>.
-		/// </summary>
-		/// <param name="namespace"><see cref="INamespaceSymbol"/> to get the sub-namespaces of.</param>
-		/// <param name="includeSelf">Determines whether to also include the <paramref name="namespace"/> itself in the collection.</param>
-		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static IReturnOrderEnumerable<INamespaceSymbol> GetSubNamespaces(this INamespaceSymbol @namespace, bool includeSelf = false, ReturnOrder order = ReturnOrder.ParentToChild)
-		{
-			return Yield().OrderBy(order);
-
-			IEnumerable<INamespaceSymbol> Yield()
-			{
-				const int capacity = 32;
-
-				if (includeSelf)
-				{
-					yield return @namespace;
-				}
-
-				ImmutableArray<INamespaceSymbol> array = @namespace.GetNamespaceMembers().ToImmutableArray();
-
-				if (array.Length == 0)
-				{
-					yield break;
-				}
-
-				Stack<INamespaceSymbol> subs = new(array.Length > capacity ? array.Length : capacity);
-
-				PushReverse(ref array, subs);
-
-				while (subs.Count > 0)
-				{
-					INamespaceSymbol t = subs.Pop();
-					yield return t;
-
-					array = t.GetNamespaceMembers().ToImmutableArray();
-
-					if (array.Length == 0)
-					{
-						continue;
-					}
-
-					PushReverse(ref array, subs);
-				}
-			}
 		}
 
 		/// <summary>
@@ -1551,58 +1540,69 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns a collection of all inner types of the specified <paramref name="type"/>.
+		/// Returns a collection of all local functions of the specified <paramref name="method"/>.
 		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the inner types of.</param>
-		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the local functions of.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="method"/> itself.</param>
+		/// <param name="includeNested">Determines whether to include nested local functions.</param>
 		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static IReturnOrderEnumerable<INamedTypeSymbol> GetInnerTypes(this INamespaceOrTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.ChildToParent)
+		public static IEnumerable<IMethodSymbol> GetLocalFunctions(this IMethodSymbol method, bool includeSelf = false, bool includeNested = false, ReturnOrder order = ReturnOrder.ParentToChild)
 		{
-			return Yield().OrderBy(order);
+			IEnumerable<IMethodSymbol> collection;
 
-			IEnumerable<INamedTypeSymbol> Yield()
+			if (includeNested)
 			{
-				const int capacity = 32;
+				collection = GetFuncs(method);
+			}
+			else
+			{
+				collection = GetNested();
+			}
 
-				if (includeSelf && type is INamedTypeSymbol named)
-				{
-					yield return named;
-				}
+			if(includeSelf)
+			{
+				collection = new[] { method }.Concat(collection);
+			}
 
-				ImmutableArray<INamedTypeSymbol> array = type.GetTypeMembers();
+			return GetNested().OrderBy(order);
+
+			IEnumerable<IMethodSymbol> GetFuncs(IMethodSymbol method)
+			{
+				return method.ContainingType
+					.GetMembers()
+					.OfType<IMethodSymbol>()
+					.Where(m => m.MethodKind == MethodKind.LocalFunction && SymbolEqualityComparer.Default.Equals(method, m.ContainingSymbol));
+			}
+
+			IEnumerable<IMethodSymbol> GetNested()
+			{
+				const int capacity = 8;
+
+				ImmutableArray<IMethodSymbol> array = GetFuncs(method).ToImmutableArray();
 
 				if (array.Length == 0)
 				{
 					yield break;
 				}
 
-				Stack<INamedTypeSymbol> innerTypes = new(array.Length > capacity ? array.Length : capacity);
+				Stack<IMethodSymbol> subs = new(array.Length > capacity ? array.Length : capacity);
 
-				PushReverse(ref array, innerTypes);
+				PushReverse(ref array, subs);
 
-				while (innerTypes.Count > 0)
+				while (subs.Count > 0)
 				{
-					INamedTypeSymbol t = innerTypes.Pop();
-					yield return t;
+					IMethodSymbol local = subs.Pop();
+					yield return local;
 
-					array = t.GetTypeMembers();
+					array = GetFuncs(local).ToImmutableArray();
 
 					if (array.Length == 0)
 					{
 						continue;
 					}
 
-					PushReverse(ref array, innerTypes);
+					PushReverse(ref array, subs);
 				}
-			}
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static void PushReverse<T>(ref ImmutableArray<T> array, Stack<T> stack)
-		{
-			for (int i = array.Length - 1; i > -1; i--)
-			{
-				stack.Push(array[i]);
 			}
 		}
 
@@ -1939,12 +1939,12 @@ namespace Durian.Analysis.Extensions
 				.GetMembers(method.Name)
 				.OfType<IMethodSymbol>();
 
-			if(ignoreArity)
+			if (ignoreArity)
 			{
 				overloads = overloads.Where(m => method.Arity == m.Arity);
 			}
 
-			if(!includeInherited || !method.ContainingType.HasExplicitBaseType())
+			if (!includeInherited || !method.ContainingType.HasExplicitBaseType())
 			{
 				return overloads;
 			}
@@ -1956,7 +1956,7 @@ namespace Durian.Analysis.Extensions
 
 			inheritedMethods.Add(method);
 
-			if(method.IsOverride)
+			if (method.IsOverride)
 			{
 				overrides.Add(method);
 			}
@@ -1975,14 +1975,14 @@ namespace Durian.Analysis.Extensions
 						continue;
 					}
 
-					if(!CheckNewModifier(inheritedMethod, currentRegistryLength))
+					if (!CheckNewModifier(inheritedMethod, currentRegistryLength))
 					{
 						continue;
 					}
 
 					inheritedMethods.Add(inheritedMethod);
 
-					if(addOverride)
+					if (addOverride)
 					{
 						overrides.Add(inheritedMethod);
 					}
@@ -2212,6 +2212,64 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns all sub-namespaces of the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="assembly"><see cref="IAssemblySymbol"/> to get the sub-namespaces of.</param>
+		/// <param name="includeGlobal">Determines whether to include the global namespace in the returned collection.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static IReturnOrderEnumerable<INamespaceSymbol> GetSubNamespaces(this IAssemblySymbol assembly, bool includeGlobal = false, ReturnOrder order = ReturnOrder.ParentToChild)
+		{
+			return assembly.GlobalNamespace.GetSubNamespaces(includeGlobal, order);
+		}
+
+		/// <summary>
+		/// Returns all sub-namespaces of the specified <paramref name="namespace"/>.
+		/// </summary>
+		/// <param name="namespace"><see cref="INamespaceSymbol"/> to get the sub-namespaces of.</param>
+		/// <param name="includeSelf">Determines whether to also include the <paramref name="namespace"/> itself in the collection.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static IReturnOrderEnumerable<INamespaceSymbol> GetSubNamespaces(this INamespaceSymbol @namespace, bool includeSelf = false, ReturnOrder order = ReturnOrder.ParentToChild)
+		{
+			return Yield().OrderBy(order);
+
+			IEnumerable<INamespaceSymbol> Yield()
+			{
+				const int capacity = 32;
+
+				if (includeSelf)
+				{
+					yield return @namespace;
+				}
+
+				ImmutableArray<INamespaceSymbol> array = @namespace.GetNamespaceMembers().ToImmutableArray();
+
+				if (array.Length == 0)
+				{
+					yield break;
+				}
+
+				Stack<INamespaceSymbol> subs = new(array.Length > capacity ? array.Length : capacity);
+
+				PushReverse(ref array, subs);
+
+				while (subs.Count > 0)
+				{
+					INamespaceSymbol t = subs.Pop();
+					yield return t;
+
+					array = t.GetNamespaceMembers().ToImmutableArray();
+
+					if (array.Length == 0)
+					{
+						continue;
+					}
+
+					PushReverse(ref array, subs);
+				}
+			}
+		}
+
+		/// <summary>
 		/// Returns a <see cref="CSharpSyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to return.</typeparam>
@@ -2437,7 +2495,7 @@ namespace Durian.Analysis.Extensions
 				return Virtuality.Abstract;
 			}
 
-			if(symbol.IsOverride)
+			if (symbol.IsOverride)
 			{
 				if (symbol.IsSealed)
 				{
@@ -3318,6 +3376,15 @@ namespace Durian.Analysis.Extensions
 					IFieldSymbol or IFieldSymbol => true,
 					_ => false
 				});
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static void PushReverse<T>(ref ImmutableArray<T> array, Stack<T> stack)
+		{
+			for (int i = array.Length - 1; i > -1; i--)
+			{
+				stack.Push(array[i]);
+			}
 		}
 	}
 }

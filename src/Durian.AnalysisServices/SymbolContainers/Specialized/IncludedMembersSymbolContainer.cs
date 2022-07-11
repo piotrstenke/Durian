@@ -68,7 +68,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 			ISymbolNameResolver? nameResolver = default
 		) : base(root, parentCompilation, nameResolver)
 		{
-			InitLevels(true);
+			InitLevels(skipRoot: root is not ISymbolOrMember<TSymbol, TData>);
 		}
 
 		internal sealed override IEnumerable<ISymbolOrMember<TSymbol, TData>> ResolveRootInternal(ISymbolOrMember root)
@@ -120,7 +120,10 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		/// Returns a <see cref="IReturnOrderEnumerable{T}"/> representing the <see cref="IncludedMembers.Direct"/> of the <see cref="LeveledSymbolContainer{TSymbol, TData}.Root"/>.
 		/// </summary>
 		/// <param name="member"><see cref="ISymbolOrMember"/> to get the <see cref="IncludedMembers.Direct"/> for.</param>
-		protected abstract IEnumerable<ISymbolOrMember<TSymbol, TData>> Direct(ISymbolOrMember<TSymbol, TData> member);
+		protected virtual IEnumerable<ISymbolOrMember<TSymbol, TData>> Direct(ISymbolOrMember<TSymbol, TData> member)
+		{
+			return ResolveRoot(member);
+		}
 
 		/// <summary>
 		/// Resolves the members of root symbol for the lowest level.

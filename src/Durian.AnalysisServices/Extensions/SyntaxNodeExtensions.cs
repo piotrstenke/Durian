@@ -2246,6 +2246,36 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns a <see cref="VariableDeclaratorSyntax"/> at the specified <paramref name="index"/> in the <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="FieldDeclarationSyntax"/> to get the variable of.</param>
+		/// <param name="index">Index to get the <see cref="VariableDeclarationSyntax"/> at.</param>
+		public static VariableDeclaratorSyntax GetVariable(this LocalDeclarationStatementSyntax node, int index)
+		{
+			return node.Declaration.GetVariable(index);
+		}
+
+		/// <summary>
+		/// Returns a <see cref="VariableDeclaratorSyntax"/> at the specified <paramref name="index"/> in the <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="FieldDeclarationSyntax"/> to get the variable of.</param>
+		/// <param name="index">Index to get the <see cref="VariableDeclarationSyntax"/> at.</param>
+		public static VariableDeclaratorSyntax GetVariable(this BaseFieldDeclarationSyntax node, int index)
+		{
+			return node.Declaration.GetVariable(index);
+		}
+
+		/// <summary>
+		/// Returns a <see cref="VariableDeclaratorSyntax"/> at the specified <paramref name="index"/> in the <paramref name="node"/>.
+		/// </summary>
+		/// <param name="node"><see cref="VariableDeclarationSyntax"/> to get the variable of.</param>
+		/// <param name="index">Index to get the <see cref="VariableDeclarationSyntax"/> at.</param>
+		public static VariableDeclaratorSyntax GetVariable(this VariableDeclarationSyntax node, int index)
+		{
+			return node.Variables[index];
+		}
+
+		/// <summary>
 		/// Returns the <see cref="VarianceKind"/> of the specified <see cref="TypeParameterSyntax"/>.
 		/// </summary>
 		/// <param name="node"><see cref="TypeParameterSyntax"/> to get the <see cref="VarianceKind"/> of.</param>

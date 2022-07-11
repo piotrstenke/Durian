@@ -687,6 +687,44 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Creates a new <see cref="SymbolContainerBuilder{T}"/>.
 		/// </summary>
+		/// <param name="collection">Collection of <see cref="IPropertySymbol"/>s to add to the container.</param>
+		public static SymbolContainerBuilder<SymbolContainer<IPropertySymbol, IPropertyData>> ToContainer(this IEnumerable<IPropertySymbol> collection)
+		{
+			return new(collection);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainerBuilder{T}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IPropertyData"/>s to add to the container.</param>
+		public static SymbolContainerBuilder<SymbolContainer<IPropertySymbol, IPropertyData>> ToContainer(this IEnumerable<ISymbolOrMember<IPropertySymbol, IPropertyData>> collection)
+		{
+			return new(collection);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainerBuilder{T}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IPropertySymbol"/>s to add to the container.</param>
+		/// <typeparam name="TData">Type of target <see cref="IPropertyData"/>.</typeparam>
+		public static SymbolContainerBuilder<SymbolContainer<IPropertySymbol, TData>> ToContainer<TData>(this IEnumerable<IPropertySymbol> collection) where TData : class, IPropertyData
+		{
+			return new(collection);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainerBuilder{T}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IPropertySymbol"/>s to add to the container.</param>
+		/// <typeparam name="TData">Type of target <see cref="IPropertyData"/>.</typeparam>
+		public static SymbolContainerBuilder<SymbolContainer<IPropertySymbol, TData>> ToContainer<TData>(this IEnumerable<ISymbolOrMember<IPropertySymbol, TData>> collection) where TData : class, IPropertyData
+		{
+			return new(collection);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainerBuilder{T}"/>.
+		/// </summary>
 		/// <param name="collection">Collection of <see cref="IMethodSymbol"/>s to add to the container.</param>
 		public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, IMethodData>> ToContainer(this IEnumerable<IMethodSymbol> collection)
 		{
@@ -1289,6 +1327,64 @@ namespace Durian.Analysis.SymbolContainers
 		/// <summary>
 		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
 		/// </summary>
+		/// <param name="collection">Collection of <see cref="IPropertySymbol"/>s to add to the container.</param>
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
+		public static SymbolContainer<IPropertySymbol, IPropertyData> ToContainer(this IEnumerable<IPropertySymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+		{
+			return new(collection, parentCompilation, nameResolver);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="IPropertyData"/>s to add to the container.</param>
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
+		public static SymbolContainer<IPropertySymbol, IPropertyData> ToContainer(this IEnumerable<ISymbolOrMember<IPropertySymbol, IPropertyData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+		{
+			return new(collection, parentCompilation, nameResolver);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <typeparam name="TData">Type of target <see cref="IPropertyData"/>.</typeparam>
+		/// <param name="collection">Collection of <see cref="IPropertySymbol"/>s to add to the container.</param>
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
+		public static SymbolContainer<IPropertySymbol, TData> ToContainer<TData>(this IEnumerable<IPropertySymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) where TData : class, IPropertyData
+		{
+			return new(collection, parentCompilation, nameResolver);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
+		/// <typeparam name="TData">Type of target <see cref="IPropertyData"/>.</typeparam>
+		/// <param name="collection">Collection of <see cref="IPropertySymbol"/>s to add to the container.</param>
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
+		public static SymbolContainer<IPropertySymbol, TData> ToContainer<TData>(this IEnumerable<ISymbolOrMember<IPropertySymbol, TData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) where TData : class, IPropertyData
+		{
+			return new(collection, parentCompilation, nameResolver);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainer{TSymbol, TData}"/>.
+		/// </summary>
 		/// <param name="collection">Collection of <see cref="IMethodSymbol"/>s to add to the container.</param>
 		/// <param name="parentCompilation">
 		/// Parent <see cref="ICompilationData"/> of the current container.
@@ -1689,7 +1785,7 @@ namespace Durian.Analysis.SymbolContainers
 		{
 			if (level < 0 || level >= numLevels)
 			{
-				throw new ArgumentOutOfRangeException(nameof(level), $"Level must be greater than 0 and less than NumLevels");
+				throw new ArgumentOutOfRangeException(nameof(level), "Level must be greater than 0 and less than NumLevels");
 			}
 		}
 

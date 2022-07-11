@@ -167,13 +167,11 @@ namespace Durian.Analysis.SymbolContainers
 			ISymbolNameResolver? nameResolver = default
 		) : this(root, parentCompilation, nameResolver, false)
 		{
-			_rootFunction = ResolveRootInternal;
-			_levels.Add(new LevelEntry(null!));
-		}
-
-		internal virtual IEnumerable<ISymbolOrMember<TSymbol, TData>> ResolveRootInternal(ISymbolOrMember root)
-		{
-			throw new NotImplementedException("ResolveRoot(ISymbolOrMember) is not implemented");
+			if(root is not ISymbolOrMember<TSymbol, TData>)
+			{
+				_rootFunction = ResolveRootInternal;
+				_levels.Add(new LevelEntry(null!));
+			}
 		}
 
 		private LeveledSymbolContainer(
@@ -503,6 +501,11 @@ namespace Durian.Analysis.SymbolContainers
 		IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
 		{
 			return Reverse();
+		}
+
+		internal virtual IEnumerable<ISymbolOrMember<TSymbol, TData>> ResolveRootInternal(ISymbolOrMember root)
+		{
+			throw new NotImplementedException("ResolveRoot(ISymbolOrMember) is not implemented");
 		}
 
 		private void FillFirstLevel()

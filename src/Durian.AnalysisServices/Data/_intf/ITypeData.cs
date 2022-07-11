@@ -29,9 +29,9 @@ namespace Durian.Analysis.Data
 		ImmutableArray<TypeDeclarationSyntax> PartialDeclarations { get; }
 
 		/// <summary>
-		/// <see cref="ITypeSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.
+		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.
 		/// </summary>
-		new ITypeSymbol Symbol { get; }
+		new INamedTypeSymbol Symbol { get; }
 
 		/// <summary>
 		/// Returns all <see cref="IEventSymbol"/>s contained within this type.
@@ -44,12 +44,6 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="members">Range of members to include.</param>
 		ISymbolContainer<IFieldSymbol, IFieldData> GetFields(IncludedMembers members);
-
-		/// <summary>
-		/// Returns all <see cref="INamedTypeSymbol"/>s contained within this type.
-		/// </summary>
-		/// <param name="members">Range of members to include.</param>
-		ISymbolContainer<INamedTypeSymbol, ITypeData> GetInnerTypes(IncludedMembers members);
 
 		/// <summary>
 		/// Returns all <see cref="ISymbol"/>s contained within this type.

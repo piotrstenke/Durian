@@ -2,13 +2,11 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Linq;
+using System.ComponentModel;
 
 namespace Durian.Analysis.Data
 {
@@ -23,7 +21,7 @@ namespace Durian.Analysis.Data
 		public new class Properties : TypeData<InterfaceDeclarationSyntax>.Properties
 		{
 			/// <inheritdoc cref="InterfaceData.DefaultImplementations"/>
-			public SymbolContainer<ISymbol>? DefaultImplementations { get; set; }
+			public ISymbolContainer<ISymbol, IMemberData>? DefaultImplementations { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -31,19 +29,67 @@ namespace Durian.Analysis.Data
 			public Properties()
 			{
 			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			/// <param name="fillWithDefault">Determines whether to fill the current properties with default data.</param>
+			public Properties(bool fillWithDefault) : base(fillWithDefault)
+			{
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Clone"/>
+			public new Properties Clone()
+			{
+				return (CloneCore() as Properties)!;
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Map(MemberData.Properties)"/>
+			public virtual void Map(Properties properties)
+			{
+				base.Map(properties);
+				properties.DefaultImplementations = DefaultImplementations;
+			}
+
+			/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+			[Obsolete("Use Map(Properties) instead")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
+			public override void Map(TypeData<InterfaceDeclarationSyntax>.Properties properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			{
+				if (properties is Properties props)
+				{
+					Map(props);
+				}
+				else
+				{
+					base.Map(properties);
+				}
+			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				Virtuality = Analysis.Virtuality.NotVirtual;
+				ParameterlessConstructor = null;
+			}
+
+			/// <inheritdoc/>
+			protected override MemberData.Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
+			}
 		}
 
-		private SymbolContainer<ISymbol>? _defaultImplementations;
-
-		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="TypeData{TDeclaration}.Declaration"/>.
-		/// </summary>
-		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
+		private ISymbolContainer<ISymbol, IMemberData>? _defaultImplementations;
 
 		/// <summary>
 		/// Members of the interface that are default-implemented.
 		/// </summary>
-		public SymbolContainer<ISymbol> DefaultImplementations
+		public ISymbolContainer<ISymbol, IMemberData> DefaultImplementations
 		{
 			get
 			{
@@ -68,8 +114,75 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		internal InterfaceData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		internal InterfaceData(INamedTypeSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
 		{
+		}
+
+		/// <inheritdoc cref="MemberData.Clone"/>
+		public new RecordData Clone()
+		{
+			return (CloneCore() as RecordData)!;
+		}
+
+		/// <inheritdoc cref="MemberData.GetProperties"/>
+		public new Properties GetProperties()
+		{
+			return (GetPropertiesCore() as Properties)!;
+		}
+
+		/// <inheritdoc cref="MemberData.Properties.Map(MemberData.Properties)"/>
+		public virtual void Map(Properties properties)
+		{
+			base.Map(properties);
+			properties.DefaultImplementations = DefaultImplementations;
+		}
+
+		/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		[Obsolete("Use Map(Properties) instead")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public sealed override void Map(TypeData<InterfaceDeclarationSyntax>.Properties properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			if (properties is Properties props)
+			{
+				Map(props);
+			}
+			else
+			{
+				base.Map(properties);
+			}
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData CloneCore()
+		{
+			return new InterfaceData(Declaration, ParentCompilation, GetProperties());
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties? GetDefaultProperties()
+		{
+			return new Properties(true);
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties GetPropertiesCore()
+		{
+			Properties properties = new();
+			Map(properties);
+			return properties;
+		}
+
+		/// <inheritdoc/>
+		protected override void SetProperties(MemberData.Properties properties)
+		{
+			base.SetProperties(properties);
+
+			if (properties is Properties props)
+			{
+				_defaultImplementations = props.DefaultImplementations;
+			}
 		}
 	}
 }

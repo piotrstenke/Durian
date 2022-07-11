@@ -37,6 +37,14 @@ namespace Durian.Analysis.Data
 			{
 			}
 
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			/// <param name="fillWithDefault">Determines whether to fill the current properties with default data.</param>
+			public Properties(bool fillWithDefault) : base(fillWithDefault)
+			{
+			}
+
 			/// <inheritdoc cref="MemberData.Properties.Clone"/>
 			public new Properties Clone()
 			{
@@ -241,6 +249,12 @@ namespace Durian.Analysis.Data
 		protected override MemberData CloneCore()
 		{
 			return new NamespaceData(Declaration, ParentCompilation, GetProperties());
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties? GetDefaultProperties()
+		{
+			return new Properties(true);
 		}
 
 		/// <inheritdoc/>
