@@ -24,12 +24,12 @@ namespace Durian.Analysis.Data
 		public new class Properties : Properties<INamedTypeSymbol>
 		{
 			/// <inheritdoc cref="ITypeData.BaseTypes"/>
-			public ISymbolContainer<INamedTypeSymbol, ITypeData>? BaseTypes { get; set; }
+			public DefaultedValue<ISymbolContainer<INamedTypeSymbol, ITypeData>> BaseTypes { get; set; }
 
 			/// <summary>
 			/// Container of child <see cref="ISymbol"/>s of this type.
 			/// </summary>
-			public ILeveledSymbolContainer<ISymbol, IMemberData>? Members { get; set; }
+			public DefaultedValue<ILeveledSymbolContainer<ISymbol, IMemberData>> Members { get; set; }
 
 			/// <inheritdoc cref="ITypeData.ParameterlessConstructor"/>
 			public DefaultedValue<ISymbolOrMember<IMethodSymbol, IMethodData>> ParameterlessConstructor { get; set; }
@@ -38,10 +38,10 @@ namespace Durian.Analysis.Data
 			public ImmutableArray<TDeclaration> PartialDeclarations { get; set; }
 
 			/// <inheritdoc cref="IGenericMemberData.TypeArguments"/>
-			public ISymbolContainer<ITypeSymbol, ITypeData>? TypeArguments { get; set; }
+			public DefaultedValue<ISymbolContainer<ITypeSymbol, ITypeData>> TypeArguments { get; set; }
 
 			/// <inheritdoc cref="IGenericMemberData.TypeParameters"/>
-			public ISymbolContainer<ITypeParameterSymbol, ITypeParameterData>? TypeParameters { get; set; }
+			public DefaultedValue<ISymbolContainer<ITypeParameterSymbol, ITypeParameterData>> TypeParameters { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -100,6 +100,12 @@ namespace Durian.Analysis.Data
 				Properties properties = new();
 				Map(properties);
 				return properties;
+			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				OverriddenSymbols = new(null);
 			}
 		}
 
@@ -359,12 +365,12 @@ namespace Durian.Analysis.Data
 		public virtual void Map(Properties properties)
 		{
 			base.Map(properties);
-			properties.Members = _members;
-			properties.TypeParameters = _typeParameters;
-			properties.TypeArguments = _typeArguments;
+			properties.Members = DataHelpers.ToDefaultedValue(_members);
+			properties.TypeParameters = DataHelpers.ToDefaultedValue(_typeParameters);
+			properties.TypeArguments = DataHelpers.ToDefaultedValue(_typeArguments);
 			properties.PartialDeclarations = _partialDeclarations;
 			properties.ParameterlessConstructor = _parameterlessConstructor;
-			properties.BaseTypes = _baseTypes;
+			properties.BaseTypes = DataHelpers.ToDefaultedValue(_baseTypes);
 		}
 
 		/// <inheritdoc/>
@@ -392,21 +398,6 @@ namespace Durian.Analysis.Data
 			return new(Declaration, ParentCompilation, properties);
 		}
 
-		INamespaceData INamespaceOrTypeData.ToNamespace()
-		{
-			throw new InvalidOperationException("Current symbol is not a namespace");
-		}
-
-		INamespaceOrTypeData ITypeData.ToNamespaceOrType()
-		{
-			return ToNamespaceOrType();
-		}
-
-		ITypeData INamespaceOrTypeData.ToType()
-		{
-			return this;
-		}
-
 		/// <inheritdoc/>
 		protected abstract override MemberData CloneCore();
 
@@ -431,13 +422,28 @@ namespace Durian.Analysis.Data
 
 			if (properties is Properties props)
 			{
-				_members = props.Members;
-				_baseTypes = props.BaseTypes;
+				_members = DataHelpers.FromDefaultedOrEmpty(props.Members);
+				_baseTypes = DataHelpers.FromDefaultedOrEmpty(props.BaseTypes);
 				_parameterlessConstructor = props.ParameterlessConstructor;
 				_partialDeclarations = props.PartialDeclarations;
-				_typeArguments = props.TypeArguments;
-				_typeParameters = props.TypeParameters;
+				_typeArguments = DataHelpers.FromDefaultedOrEmpty(props.TypeArguments);
+				_typeParameters = DataHelpers.FromDefaultedOrEmpty(props.TypeParameters);
 			}
+		}
+
+		INamespaceData INamespaceOrTypeData.ToNamespace()
+		{
+			throw new InvalidOperationException("Current symbol is not a namespace");
+		}
+
+		INamespaceOrTypeData ITypeData.ToNamespaceOrType()
+		{
+			return ToNamespaceOrType();
+		}
+
+		ITypeData INamespaceOrTypeData.ToType()
+		{
+			return this;
 		}
 
 		[MemberNotNull(nameof(_members))]

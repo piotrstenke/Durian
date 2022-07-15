@@ -73,7 +73,7 @@ namespace Durian.Analysis.Data
 			/// <inheritdoc/>
 			protected override void FillWithDefaultData()
 			{
-				SetDefault();
+				SetDefaultData();
 			}
 		}
 

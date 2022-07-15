@@ -69,6 +69,12 @@ namespace Durian.Analysis.Data
 				Map(properties);
 				return properties;
 			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				OverriddenSymbols = null;
+			}
 		}
 
 		/// <summary>

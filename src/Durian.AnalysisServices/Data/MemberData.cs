@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
@@ -110,18 +111,18 @@ namespace Durian.Analysis.Data
 			/// <summary>
 			/// All containing namespaces of the current symbol.
 			/// </summary>
-			public IWritableSymbolContainer<INamespaceSymbol, INamespaceData>? ContainingNamespaces { get; set; }
+			public DefaultedValue<IWritableSymbolContainer<INamespaceSymbol, INamespaceData>> ContainingNamespaces { get; set; }
 
 			/// <summary>
 			/// All containing types of the current symbol.
 			/// </summary>
-			public IWritableSymbolContainer<INamedTypeSymbol, ITypeData>? ContainingTypes { get; set; }
+			public DefaultedValue<IWritableSymbolContainer<INamedTypeSymbol, ITypeData>> ContainingTypes { get; set; }
 
 			/// <inheritdoc cref="IMemberData.GenericName"/>
 			public string? GenericName { get; set; }
 
 			/// <inheritdoc cref="IMemberData.HiddenSymbol"/>
-			public DefaultedValue<ISymbolOrMember> HiddenSymbol { get; set; }
+			public DefaultedValue<ISymbolOrMember<ISymbol, IMemberData>> HiddenSymbol { get; set; }
 
 			/// <inheritdoc cref="IMemberData.IsNew"/>
 			public bool? IsNew { get; set; }
@@ -142,6 +143,9 @@ namespace Durian.Analysis.Data
 
 			/// <inheritdoc cref="IMemberData.Name"/>
 			public string? Name { get; set; }
+
+			/// <inheritdoc cref="IMemberData.OverriddenSymbols"/>
+			public DefaultedValue<ISymbolContainer<ISymbol, IMemberData>> OverriddenSymbols { get; set; }
 
 			/// <inheritdoc cref="IMemberData.SemanticModel"/>
 			public SemanticModel? SemanticModel { get; set; }
@@ -211,6 +215,7 @@ namespace Durian.Analysis.Data
 				properties.SubstitutedName = SubstitutedName;
 				properties.Symbol = Symbol;
 				properties.Virtuality = Virtuality;
+				properties.OverriddenSymbols = OverriddenSymbols;
 			}
 
 			/// <summary>
@@ -236,13 +241,15 @@ namespace Durian.Analysis.Data
 				return Clone();
 			}
 
-			private protected void SetDefault()
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private protected void SetDefaultData()
 			{
 				IsPartial = false;
 				IsNew = false;
 				IsUnsafe = false;
 				Virtuality = Analysis.Virtuality.NotVirtual;
 				HiddenSymbol = null;
+				OverriddenSymbols = null;
 			}
 
 			private protected virtual void ValidateSymbol(ISymbol? symbol)
@@ -254,8 +261,9 @@ namespace Durian.Analysis.Data
 		private ImmutableArray<AttributeData> _attributes;
 		private IWritableSymbolContainer<INamespaceSymbol, INamespaceData>? _containingNamespaces;
 		private IWritableSymbolContainer<INamedTypeSymbol, ITypeData>? _containingTypes;
+		private ISymbolContainer<ISymbol, IMemberData>? _overriddenSymbols;
 		private string? _genericName;
-		private DefaultedValue<ISymbolOrMember> _hiddenMember;
+		private DefaultedValue<ISymbolOrMember<ISymbol, IMemberData>> _hiddenMember;
 		private bool? _isNew;
 		private bool? _isPartial;
 		private bool? _isUnsafe;
@@ -297,7 +305,7 @@ namespace Durian.Analysis.Data
 		public string GenericName => _genericName ??= Symbol.GetGenericName();
 
 		/// <inheritdoc/>
-		public ISymbolOrMember? HiddenSymbol
+		public ISymbolOrMember<ISymbol, IMemberData>? HiddenSymbol
 		{
 			get
 			{
@@ -333,6 +341,15 @@ namespace Durian.Analysis.Data
 
 		/// <inheritdoc/>
 		public string Name { get; }
+
+		/// <inheritdoc/>
+		public ISymbolContainer<ISymbol, IMemberData> OverriddenSymbols
+		{
+			get
+			{
+				return _overriddenSymbols ??= Symbol.GetOverriddenSymbols().ToContainer(ParentCompilation);
+			}
+		}
 
 		/// <inheritdoc/>
 		public ICompilationData ParentCompilation { get; }
@@ -409,7 +426,7 @@ namespace Durian.Analysis.Data
 		{
 			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not SyntaxNode decl)
 			{
-				throw Exc_NoSyntaxReference(symbol);
+				throw DataHelpers.Exc_NoSyntaxReference(symbol);
 			}
 
 			Symbol = symbol;
@@ -456,8 +473,9 @@ namespace Durian.Analysis.Data
 		public virtual void Map(Properties properties)
 		{
 			properties.Attributes = _attributes;
-			properties.ContainingNamespaces = _containingNamespaces;
-			properties.ContainingTypes = _containingTypes;
+			properties.ContainingNamespaces = DataHelpers.ToDefaultedValue(_containingNamespaces);
+			properties.ContainingTypes = DataHelpers.ToDefaultedValue(_containingTypes);
+			properties.OverriddenSymbols = DataHelpers.ToDefaultedValue(_overriddenSymbols);
 			properties.GenericName = _genericName;
 			properties.HiddenSymbol = _hiddenMember;
 			properties.IsNew = _isNew;
@@ -506,8 +524,9 @@ namespace Durian.Analysis.Data
 		protected virtual void SetProperties(Properties properties)
 		{
 			_attributes = properties.Attributes;
-			_containingNamespaces = properties.ContainingNamespaces;
-			_containingTypes = properties.ContainingTypes;
+			_containingNamespaces = DataHelpers.FromDefaultedOrEmpty(properties.ContainingNamespaces);
+			_containingTypes = DataHelpers.FromDefaultedOrEmpty(properties.ContainingTypes);
+			_overriddenSymbols = DataHelpers.FromDefaultedOrEmpty(properties.OverriddenSymbols);
 			_isNew = properties.IsNew;
 			_isPartial = properties.IsPartial;
 			_isUnsafe = properties.IsUnsafe;
@@ -521,11 +540,6 @@ namespace Durian.Analysis.Data
 		object ICloneable.Clone()
 		{
 			return CloneCore();
-		}
-
-		private protected static InvalidOperationException Exc_NoSyntaxReference(ISymbol symbol)
-		{
-			return new InvalidOperationException($"Symbol '{symbol}' doesn't define any syntax reference, thus can't be used in a {nameof(MemberData)}!");
 		}
 	}
 }

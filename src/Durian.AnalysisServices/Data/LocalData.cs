@@ -3,7 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
+using System.ComponentModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -12,8 +13,87 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="LocalDeclarationStatementSyntax"/>.
 	/// </summary>
-	public class LocalData : MemberData
+	public class LocalData : MemberData, ILocalData
 	{
+		/// <summary>
+		/// Contains optional data that can be passed to a <see cref="FieldData"/>.
+		/// </summary>
+		public new class Properties : Properties<ILocalSymbol>, IDeclaratorProperties
+		{
+			/// <inheritdoc cref="LocalData.Index"/>
+			public int? Index { get; set; }
+
+			/// <inheritdoc cref="LocalData.Variable"/>
+			public VariableDeclaratorSyntax? Variable { get; set; }
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			/// <param name="fillWithDefault">Determines whether to fill the current properties with default data.</param>
+			public Properties(bool fillWithDefault) : base(fillWithDefault)
+			{
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Clone"/>
+			public new Properties Clone()
+			{
+				return (CloneCore() as Properties)!;
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Map(MemberData.Properties)"/>
+			public virtual void Map(Properties properties)
+			{
+				base.Map(properties);
+				properties.Index = Index;
+				properties.Variable = Variable;
+			}
+
+			/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+			[Obsolete("Use Map(Properties) instead")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
+			public sealed override void Map(Properties<ILocalSymbol> properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			{
+				if (properties is Properties props)
+				{
+					Map(props);
+				}
+				else
+				{
+					base.Map(properties);
+				}
+			}
+
+			/// <inheritdoc/>
+			protected override MemberData.Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
+			}
+
+			void IDeclaratorProperties.FillWithDefaultData()
+			{
+				FillWithDefaultData();
+			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				SetDefaultData();
+
+				Attributes = ImmutableArray<AttributeData>.Empty;
+			}
+		}
+
 		/// <summary>
 		/// Target <see cref="LocalDeclarationStatementSyntax"/>.
 		/// </summary>
@@ -22,7 +102,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Index of this local in the <see cref="Declaration"/>.
 		/// </summary>
-		public int Index { get; }
+		public int Index { get; private set; }
 
 		/// <summary>
 		/// <see cref="ILocalSymbol"/> associated with the <see cref="Declaration"/>.
@@ -32,10 +112,12 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// <see cref="VariableDeclaratorSyntax"/> used to declare this field. Equivalent to using <c>Declaration.Declaration.Variables[Index]</c>.
 		/// </summary>
-		public VariableDeclaratorSyntax Variable { get; }
+		public VariableDeclaratorSyntax Variable { get; private set; } = null!;
+
+		ILocalData ISymbolOrMember<ILocalSymbol, ILocalData>.Member => this;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="LocalData"/> class.
+		/// Initializes a new instance of the <see cref="FieldData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="LocalDeclarationStatementSyntax"/> this <see cref="LocalData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="LocalData"/>.</param>
@@ -46,34 +128,8 @@ namespace Durian.Analysis.Data
 		/// <exception cref="IndexOutOfRangeException">
 		/// <paramref name="index"/> was out of range.
 		/// </exception>
-		public LocalData(LocalDeclarationStatementSyntax declaration, ICompilationData compilation, int index = 0) : this(
-			declaration,
-			compilation,
-			FieldData.GetSemanticModel(compilation, declaration.Declaration),
-			FieldData.GetVariable(declaration.Declaration, index))
+		public LocalData(LocalDeclarationStatementSyntax declaration, ICompilationData compilation, int index) : this(declaration, compilation, new Properties { Index = index })
 		{
-			Index = index;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="LocalData"/> class.
-		/// </summary>
-		/// <param name="symbol"><see cref="ILocalSymbol"/> this <see cref="LocalData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="LocalData"/>.</param>
-		internal LocalData(ILocalSymbol symbol, ICompilationData compilation) : base(
-			GetLocalDeclarationFromSymbol(
-				symbol,
-				compilation,
-				out SemanticModel semanticModel,
-				out VariableDeclaratorSyntax var,
-				out int index),
-			compilation,
-			symbol,
-			semanticModel
-		)
-		{
-			Variable = var;
-			Index = index;
 		}
 
 		/// <summary>
@@ -81,65 +137,19 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="declaration"><see cref="LocalDeclarationStatementSyntax"/> this <see cref="LocalData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="LocalData"/>.</param>
-		/// <param name="symbol"><see cref="ILocalSymbol"/> this <see cref="LocalData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="variable"><see cref="VariableDeclaratorSyntax"/> that represents the target variable.</param>
-		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="ILocalSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal LocalData(
-			LocalDeclarationStatementSyntax declaration,
-			ICompilationData compilation,
-			ILocalSymbol symbol,
-			SemanticModel semanticModel,
-			VariableDeclaratorSyntax variable,
-			int index,
-			string[]? modifiers = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
+		/// </exception>
+		/// <exception cref="IndexOutOfRangeException">
+		/// <see cref="Properties.Index"/> was out of range.
+		/// </exception>
+		public LocalData(LocalDeclarationStatementSyntax declaration, ICompilationData compilation, Properties? properties) : base(declaration, compilation, DataHelpers.EnsureValidDeclaratorProperties<Properties>(declaration, compilation, properties))
 		{
-			Index = index;
-			Variable = variable;
 		}
 
-		private LocalData(
-			LocalDeclarationStatementSyntax declaration,
-			ICompilationData compilation,
-			ILocalSymbol symbol,
-			SemanticModel semanticModel,
-			VariableDeclaratorSyntax variable,
-			int index
-		) : base(declaration, compilation, symbol, semanticModel)
+		internal LocalData(ILocalSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
 		{
-			Variable = variable;
-			Index = index;
-		}
-
-		private LocalData(
-			LocalDeclarationStatementSyntax declaration,
-			ICompilationData compilation,
-			SemanticModel semanticModel,
-			VariableDeclaratorSyntax variable
-		) : base(
-			declaration,
-			compilation,
-			(semanticModel.GetDeclaredSymbol(variable) as IFieldSymbol)!,
-			semanticModel)
-		{
-			Variable = variable;
 		}
 
 		/// <summary>
@@ -150,55 +160,114 @@ namespace Durian.Analysis.Data
 			int index = Index;
 			int length = Declaration.Declaration.Variables.Count;
 
-			for (int i = 0; i < length; i++)
+			for (int i = 0; i < index; i++)
 			{
-				if (i == index)
-				{
-					yield return this;
-					continue;
-				}
+				yield return GetData(i);
+			}
 
-				VariableDeclaratorSyntax variable = Declaration.Declaration.Variables[i];
+			for (int i = index + 1; i < length; i++)
+			{
+				yield return GetData(i);
+			}
 
-				yield return new LocalData(
+			LocalData GetData(int index)
+			{
+				VariableDeclaratorSyntax variable = Declaration.Declaration.Variables[index];
+
+				Properties props = GetProperties();
+				props.Symbol = (ILocalSymbol)SemanticModel.GetDeclaredSymbol(variable)!;
+				props.Variable = variable;
+
+				return new LocalData(
 					Declaration,
 					ParentCompilation,
-					(ILocalSymbol)SemanticModel.GetDeclaredSymbol(variable)!,
-					SemanticModel,
-					variable,
-					index
+					props
 				);
 			}
 		}
 
-		private static LocalDeclarationStatementSyntax GetLocalDeclarationFromSymbol(
-			ILocalSymbol symbol,
-			ICompilationData compilation,
-			out SemanticModel semanticModel,
-			out VariableDeclaratorSyntax variable,
-			out int index
-		)
+		/// <inheritdoc cref="MemberData.Map(MemberData.Properties)"/>
+		public virtual void Map(Properties properties)
 		{
-			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not VariableDeclaratorSyntax decl || decl?.Parent?.Parent is not LocalDeclarationStatementSyntax field)
+			base.Map(properties);
+			properties.Variable = Variable;
+			properties.Index = Index;
+		}
+
+		/// <inheritdoc cref="MemberData.Clone"/>
+		public new LocalData Clone()
+		{
+			return (CloneCore() as LocalData)!;
+		}
+
+		/// <inheritdoc cref="MemberData.GetProperties"/>
+		public new Properties GetProperties()
+		{
+			return (GetPropertiesCore() as Properties)!;
+		}
+
+		/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		[Obsolete("Use Map(Properties) instead")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public sealed override void Map(MemberData.Properties properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			if (properties is Properties props)
 			{
-				throw Exc_NoSyntaxReference(symbol);
+				Map(props);
 			}
-
-			SeparatedSyntaxList<VariableDeclaratorSyntax> variables = field.Declaration.Variables;
-			int length = variables.Count;
-
-			for (int i = 0; i < length; i++)
+			else
 			{
-				if (variables[i].IsEquivalentTo(decl))
-				{
-					index = i;
-					variable = decl;
-					semanticModel = compilation.Compilation.GetSemanticModel(decl.SyntaxTree);
-					return field;
-				}
+				base.Map(properties);
 			}
+		}
 
-			throw Exc_NoSyntaxReference(symbol);
+		/// <inheritdoc/>
+		protected override MemberData CloneCore()
+		{
+			return new LocalData(Declaration, ParentCompilation, GetProperties());
+		}
+
+		/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use GetDefaultPropertiesCore() instead")]
+		protected sealed override MemberData.Properties? GetDefaultProperties()
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			return GetDefaultPropertiesCore();
+		}
+
+		/// <inheritdoc cref="MemberData.GetDefaultProperties()"/>
+		protected virtual Properties? GetDefaultPropertiesCore()
+		{
+			return new Properties(true);
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties GetPropertiesCore()
+		{
+			Properties properties = new();
+			Map(properties);
+			return properties;
+		}
+
+		/// <inheritdoc/>
+		protected override void SetProperties(MemberData.Properties properties)
+		{
+			base.SetProperties(properties);
+
+			if (properties is Properties props)
+			{
+				Index = props.Index ?? default;
+				Variable = props.Variable ?? Declaration.Declaration.Variables[Index];
+			}
+		}
+
+		IEnumerable<ILocalData> ILocalData.GetUnderlayingLocals()
+		{
+			return GetUnderlayingLocals();
 		}
 	}
 }

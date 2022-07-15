@@ -24,7 +24,7 @@ namespace Durian.Analysis.Data
 		IWritableSymbolContainer<INamespaceSymbol, INamespaceData> ContainingNamespaces { get; }
 
 		/// <summary>
-		/// All <see cref="ITypeData"/>s that contain the <see cref="Symbol"/>.
+		/// All <see cref="INamedTypeSymbol"/>s that contain the <see cref="Symbol"/>.
 		/// </summary>
 		IWritableSymbolContainer<INamedTypeSymbol, ITypeData> ContainingTypes { get; }
 
@@ -47,7 +47,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Member this member hides using the <see langword="new"/> keyword.
 		/// </summary>
-		ISymbolOrMember? HiddenSymbol { get; }
+		ISymbolOrMember<ISymbol, IMemberData>? HiddenSymbol { get; }
 
 		/// <summary>
 		/// Determines whether the current member is declared using the <see langword="new"/> keyword.
@@ -78,6 +78,11 @@ namespace Durian.Analysis.Data
 		/// Name of the underlaying symbol including the verbatim identifier '@' token.
 		/// </summary>
 		string Name { get; }
+
+		/// <summary>
+		/// All <see cref="ISymbol"/>s overridden by this symbol.
+		/// </summary>
+		ISymbolContainer<ISymbol, IMemberData> OverriddenSymbols { get; }
 
 		/// <summary>
 		/// Parent compilation of this <see cref="IMemberData"/>.

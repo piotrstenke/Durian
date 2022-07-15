@@ -3,7 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Linq;
+using Durian.Analysis.Extensions;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -13,8 +17,111 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="EventFieldDeclarationSyntax"/> or <see cref="EventDeclarationSyntax"/>.
 	/// </summary>
-	public class EventData : MemberData
+	public class EventData : MemberData, IEventData
 	{
+		/// <summary>
+		/// Contains optional data that can be passed to a <see cref="FieldData"/>.
+		/// </summary>
+		public new class Properties : Properties<ILocalSymbol>, IDeclaratorProperties
+		{
+			/// <inheritdoc cref="PropertyData.BackingField"/>
+			public DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> BackingField { get; set; }
+
+			/// <inheritdoc cref="LocalData.Index"/>
+			public int? Index { get; set; }
+
+			/// <inheritdoc cref="LocalData.Variable"/>
+			public VariableDeclaratorSyntax? Variable { get; set; }
+
+			/// <inheritdoc cref="MemberData.Properties.OverriddenSymbols"/>
+			public new DefaultedValue<ISymbolContainer<IEventSymbol, IEventData>> OverriddenSymbols
+			{
+				get
+				{
+					DefaultedValue<ISymbolContainer<ISymbol, IMemberData>> baseValue = base.OverriddenSymbols;
+
+					if (baseValue.IsDefault)
+					{
+						return default;
+					}
+
+					return new(DataHelpers.GetEventOverriddenSymbols(baseValue.Value));
+				}
+				set
+				{
+					base.OverriddenSymbols = new DefaultedValue<ISymbolContainer<ISymbol, IMemberData>>(value.Value);
+				}
+			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			/// <param name="fillWithDefault">Determines whether to fill the current properties with default data.</param>
+			public Properties(bool fillWithDefault) : base(fillWithDefault)
+			{
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Clone"/>
+			public new Properties Clone()
+			{
+				return (CloneCore() as Properties)!;
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Map(MemberData.Properties)"/>
+			public virtual void Map(Properties properties)
+			{
+				base.Map(properties);
+				properties.Index = Index;
+				properties.Variable = Variable;
+				properties.BackingField = BackingField;
+			}
+
+			/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+			[Obsolete("Use Map(Properties) instead")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
+			public sealed override void Map(Properties<ILocalSymbol> properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			{
+				if (properties is Properties props)
+				{
+					Map(props);
+				}
+				else
+				{
+					base.Map(properties);
+				}
+			}
+
+			/// <inheritdoc/>
+			protected override MemberData.Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
+			}
+
+			void IDeclaratorProperties.FillWithDefaultData()
+			{
+				FillWithDefaultData();
+			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				IsPartial = false;
+			}
+		}
+
+		private DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> _backingField;
+
 		/// <summary>
 		/// Returns the <see cref="Declaration"/> as a <see cref="EventFieldDeclarationSyntax"/>.
 		/// </summary>
@@ -25,6 +132,20 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public EventDeclarationSyntax? AsProperty => Declaration as EventDeclarationSyntax;
 
+		/// <inheritdoc/>
+		public ISymbolOrMember<IFieldSymbol, IFieldData>? BackingField
+		{
+			get
+			{
+				if (_backingField.IsDefault)
+				{
+					_backingField = new(Symbol.GetBackingField()?.ToDataOrSymbol(ParentCompilation));
+				}
+
+				return _backingField.Value;
+			}
+		}
+
 		/// <summary>
 		/// Target <see cref="MemberDeclarationSyntax"/>.
 		/// </summary>
@@ -33,7 +154,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Index of this field in the <see cref="MemberData.Declaration"/>. Returns <c>0</c> if the event is defined as a property.
 		/// </summary>
-		public int Index { get; }
+		public int Index { get; private set; }
 
 		/// <summary>
 		/// <see cref="IEventSymbol"/> associated with the <see cref="EventFieldDeclarationSyntax"/> or <see cref="EventDeclarationSyntax"/>.
@@ -43,7 +164,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// <see cref="VariableDeclaratorSyntax"/> used to declare this event field. Equivalent to using <c>AsField.Declaration.Variables[Index]</c>.
 		/// </summary>
-		public VariableDeclaratorSyntax? Variable { get; }
+		public VariableDeclaratorSyntax? Variable { get; private set; } = null!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EventData"/> class.

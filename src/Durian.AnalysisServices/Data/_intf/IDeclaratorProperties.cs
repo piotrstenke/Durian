@@ -9,5 +9,7 @@ namespace Durian.Analysis.Data
 	{
 		int? Index { get; set; }
 		VariableDeclaratorSyntax? Variable { get; set; }
+
+		void FillWithDefaultData();
 	}
 }

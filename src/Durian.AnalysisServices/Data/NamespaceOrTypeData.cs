@@ -25,12 +25,20 @@ namespace Durian.Analysis.Data
 			/// <summary>
 			/// Inner types of the current symbol.
 			/// </summary>
-			public ILeveledSymbolContainer<INamedTypeSymbol, ITypeData>? Types { get; set; }
+			public DefaultedValue<ILeveledSymbolContainer<INamedTypeSymbol, ITypeData>> Types { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
 			/// </summary>
 			public Properties()
+			{
+			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			/// <param name="fillWithDefault">Determines whether to fill the current properties with default data.</param>
+			public Properties(bool fillWithDefault) : base(fillWithDefault)
 			{
 			}
 
@@ -70,6 +78,12 @@ namespace Durian.Analysis.Data
 				Properties properties = new();
 				Map(properties);
 				return properties;
+			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				OverriddenSymbols = null;
 			}
 		}
 
@@ -179,7 +193,7 @@ namespace Durian.Analysis.Data
 		public virtual void Map(Properties properties)
 		{
 			base.Map(properties);
-			properties.Types = _types;
+			properties.Types = DataHelpers.ToDefaultedValue(_types);
 		}
 
 		/// <inheritdoc/>
@@ -255,6 +269,17 @@ namespace Durian.Analysis.Data
 			Properties properties = new();
 			Map(properties);
 			return properties;
+		}
+
+		/// <inheritdoc/>
+		protected override void SetProperties(MemberData.Properties properties)
+		{
+			base.SetProperties(properties);
+
+			if(properties is Properties props)
+			{
+				_types = DataHelpers.FromDefaultedOrEmpty(props.Types);
+			}
 		}
 
 		INamespaceData INamespaceOrTypeData.ToNamespace()

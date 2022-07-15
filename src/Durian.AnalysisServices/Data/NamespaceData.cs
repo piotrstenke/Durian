@@ -28,7 +28,7 @@ namespace Durian.Analysis.Data
 			/// <summary>
 			/// Container of child <see cref="INamespaceOrTypeSymbol"/>s of this namespace.
 			/// </summary>
-			public ILeveledSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>? Members { get; set; }
+			public DefaultedValue<ILeveledSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>> Members { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -86,10 +86,10 @@ namespace Durian.Analysis.Data
 			/// <inheritdoc/>
 			protected override void FillWithDefaultData()
 			{
-				SetDefault();
+				SetDefaultData();
 
 				Attributes = ImmutableArray<AttributeData>.Empty;
-				ContainingTypes = SymbolContainerFactory.EmptyWritable<INamedTypeSymbol, ITypeData>();
+				ContainingTypes = new(null);
 			}
 		}
 
@@ -215,7 +215,7 @@ namespace Durian.Analysis.Data
 		public virtual void Map(Properties properties)
 		{
 			base.Map(properties);
-			properties.Members = _members;
+			properties.Members = DataHelpers.ToDefaultedValue(_members);
 		}
 
 		/// <inheritdoc/>
@@ -272,7 +272,7 @@ namespace Durian.Analysis.Data
 
 			if (properties is Properties props)
 			{
-				_members = props.Members;
+				_members = DataHelpers.FromDefaultedOrEmpty(props.Members);
 			}
 		}
 

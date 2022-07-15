@@ -774,6 +774,35 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the kind of the <see cref="BackingFieldKind"/> of the specified <paramref name="field"/>.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to get the <see cref="BackingFieldKind"/> of.</param>
+		public static BackingFieldKind GetBackingFieldKind(this IFieldSymbol field)
+		{
+			return field.AssociatedSymbol switch
+			{
+				IPropertySymbol => BackingFieldKind.Property,
+				IEventSymbol => BackingFieldKind.Event,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns the kind of the backing field of the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the kind of the backing field of.</param>
+		public static BackingFieldKind GetBackingFieldKind(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				IFieldSymbol field => field.GetBackingFieldKind(),
+				IPropertySymbol => BackingFieldKind.Property,
+				IEventSymbol => BackingFieldKind.Event,
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Returns all types the specified <paramref name="type"/> inherits from.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the base types of.</param>

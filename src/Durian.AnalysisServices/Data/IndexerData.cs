@@ -25,7 +25,27 @@ namespace Durian.Analysis.Data
 			public AutoPropertyKind? AutoPropertyKind { get; set; }
 
 			/// <inheritdoc cref="IndexerData.Parameters"/>
-			public ISymbolContainer<IParameterSymbol, IParameterData>? Parameters { get; set; }
+			public DefaultedValue<ISymbolContainer<IParameterSymbol, IParameterData>> Parameters { get; set; }
+
+			/// <inheritdoc cref="MemberData.Properties.OverriddenSymbols"/>
+			public new DefaultedValue<ISymbolContainer<IPropertySymbol, IPropertyData>> OverriddenSymbols
+			{
+				get
+				{
+					DefaultedValue<ISymbolContainer<ISymbol, IMemberData>> baseValue = base.OverriddenSymbols;
+
+					if (baseValue.IsDefault)
+					{
+						return default;
+					}
+
+					return new(DataHelpers.GetPropertyOverriddenSymbols(baseValue.Value));
+				}
+				set
+				{
+					base.OverriddenSymbols = new DefaultedValue<ISymbolContainer<ISymbol, IMemberData>>(value.Value);
+				}
+			}
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -106,6 +126,15 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public bool IsAutoProperty => AutoPropertyKind != AutoPropertyKind.None;
 
+		/// <inheritdoc cref="MemberData.OverriddenSymbols"/>
+		public new ISymbolContainer<IPropertySymbol, IPropertyData> OverriddenSymbols
+		{
+			get
+			{
+				return DataHelpers.GetPropertyOverriddenSymbols(base.OverriddenSymbols)!;
+			}
+		}
+
 		/// <summary>
 		/// Container of <see cref="IParameterSymbol"/> of this indexer.
 		/// </summary>
@@ -162,6 +191,7 @@ namespace Durian.Analysis.Data
 		{
 			base.Map(properties);
 			properties.AutoPropertyKind = _autoPropertyKind;
+			properties.Parameters = DataHelpers.ToDefaultedValue(_parameters);
 		}
 
 		/// <inheritdoc/>
@@ -209,7 +239,7 @@ namespace Durian.Analysis.Data
 			if (properties is Properties props)
 			{
 				_autoPropertyKind = props.AutoPropertyKind;
-				_parameters = props.Parameters;
+				_parameters = DataHelpers.FromDefaultedOrEmpty(props.Parameters);
 			}
 		}
 

@@ -13,6 +13,11 @@ namespace Durian.Analysis.Data
 	public interface IFieldData : IMemberData, IDeclarator<FieldDeclarationSyntax>, ISymbolOrMember<IFieldSymbol, IFieldData>
 	{
 		/// <summary>
+		/// The kind of the field if its a backing field.
+		/// </summary>
+		BackingFieldKind BackingFieldKind { get; }
+
+		/// <summary>
 		/// <see cref="IFieldSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.
 		/// </summary>
 		new IFieldSymbol Symbol { get; }

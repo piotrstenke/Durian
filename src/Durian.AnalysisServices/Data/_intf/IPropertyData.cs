@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -25,6 +26,9 @@ namespace Durian.Analysis.Data
 		/// Target <see cref="BasePropertyDeclarationSyntax"/>.
 		/// </summary>
 		new BasePropertyDeclarationSyntax Declaration { get; }
+
+		/// <inheritdoc cref="IMemberData.OverriddenSymbols"/>
+		new ISymbolContainer<IPropertySymbol, IPropertyData> OverriddenSymbols { get; }
 
 		/// <summary>
 		/// <see cref="ISymbol"/> associated with the <see cref="Declaration"/>.

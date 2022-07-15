@@ -208,7 +208,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="AutoPropertyKind"/> value.
 		/// </summary>
-		/// <param name="value"><see cref="PropertyAccessorKind"/> to convert.</param>
+		/// <param name="value"><see cref="AccessorKind"/> to convert.</param>
 		public static AutoPropertyKind GetAutoPropertyKind(this AccessorKind value)
 		{
 			return value switch
@@ -223,7 +223,7 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="AutoPropertyKind"/> value.
 		/// </summary>
-		/// <param name="value"><see cref="PropertyAccessorKind"/> to convert.</param>
+		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
 		public static AutoPropertyKind GetAutoPropertyKind(this SyntaxKind value)
 		{
 			return value switch
@@ -231,6 +231,40 @@ namespace Durian.Analysis.Extensions
 				SyntaxKind.GetKeyword or SyntaxKind.GetAccessorDeclaration => AutoPropertyKind.GetOnly,
 				SyntaxKind.SetKeyword or SyntaxKind.SetAccessorDeclaration => AutoPropertyKind.SetOnly,
 				SyntaxKind.InitKeyword or SyntaxKind.InitAccessorDeclaration => AutoPropertyKind.InitOnly,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="AutoPropertyKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="BackingFieldKind"/> to convert.</param>
+		public static BackingFieldKind GetBackingFieldKind(this SyntaxKind value)
+		{
+			return value switch
+			{
+				SyntaxKind.PropertyDeclaration or
+				SyntaxKind.PropertyKeyword
+					=> BackingFieldKind.Property,
+
+				SyntaxKind.EventDeclaration or
+				SyntaxKind.EventKeyword
+					=> BackingFieldKind.Event,
+
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="AutoPropertyKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="SymbolKind"/> to convert.</param>
+		public static BackingFieldKind GetBackingFieldKind(this SymbolKind value)
+		{
+			return value switch
+			{
+				SymbolKind.Property => BackingFieldKind.Property,
+				SymbolKind.Event => BackingFieldKind.Event,
 				_ => default
 			};
 		}
@@ -1425,6 +1459,20 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
+		/// <param name="value"><see cref="BackingFieldKind"/> to convert.</param>
+		public static SyntaxKind GetSyntaxKind(this BackingFieldKind value)
+		{
+			return value switch
+			{
+				BackingFieldKind.Property => SyntaxKind.PropertyDeclaration,
+				BackingFieldKind.Event => SyntaxKind.EventDeclaration,
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
+		/// </summary>
 		/// <param name="value"><see cref="AutoPropertyKind"/> to convert.</param>
 		public static SyntaxKind GetSyntaxKind(this AutoPropertyKind value)
 		{
@@ -1733,6 +1781,20 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SymbolKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="BackingFieldKind"/> to convert.</param>
+		public static SymbolKind GetSymbolKind(this BackingFieldKind value)
+		{
+			return value switch
+			{
+				BackingFieldKind.Property => SymbolKind.Property,
+				BackingFieldKind.Event => SymbolKind.Event,
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Returns the name of system type the specified <see cref="TypeKeyword"/> represents.
 		/// </summary>
 		/// <param name="value"><see cref="TypeKeyword"/> to return the name of system type represented by.</param>
@@ -1788,6 +1850,20 @@ namespace Durian.Analysis.Extensions
 				UsingKind.Ordinary => "using",
 				UsingKind.Static => "using static",
 				UsingKind.Alias => "using",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="BackingFieldKind"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="BackingFieldKind"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this BackingFieldKind value)
+		{
+			return value switch
+			{
+				BackingFieldKind.Property => "property",
+				BackingFieldKind.Event => "event",
 				_ => default
 			};
 		}

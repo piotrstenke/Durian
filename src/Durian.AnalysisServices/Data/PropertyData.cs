@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Durian.Analysis.Extensions;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -25,6 +26,26 @@ namespace Durian.Analysis.Data
 
 			/// <inheritdoc cref="PropertyData.BackingField"/>
 			public DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> BackingField { get; set; }
+
+			/// <inheritdoc cref="MemberData.Properties.OverriddenSymbols"/>
+			public new DefaultedValue<ISymbolContainer<IPropertySymbol, IPropertyData>> OverriddenSymbols
+			{
+				get
+				{
+					DefaultedValue<ISymbolContainer<ISymbol, IMemberData>> baseValue = base.OverriddenSymbols;
+
+					if(baseValue.IsDefault)
+					{
+						return default;
+					}
+
+					return new(DataHelpers.GetPropertyOverriddenSymbols(baseValue.Value));
+				}
+				set
+				{
+					base.OverriddenSymbols = new DefaultedValue<ISymbolContainer<ISymbol, IMemberData>>(value.Value);
+				}
+			}
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -73,17 +94,17 @@ namespace Durian.Analysis.Data
 			}
 
 			/// <inheritdoc/>
-			protected override void FillWithDefaultData()
-			{
-				IsPartial = false;
-			}
-
-			/// <inheritdoc/>
 			protected override MemberData.Properties CloneCore()
 			{
 				Properties properties = new();
 				Map(properties);
 				return properties;
+			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				IsPartial = false;
 			}
 		}
 
@@ -125,6 +146,15 @@ namespace Durian.Analysis.Data
 		/// <see cref="IPropertySymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		public new IPropertySymbol Symbol => (base.Symbol as IPropertySymbol)!;
+
+		/// <inheritdoc cref="MemberData.OverriddenSymbols"/>
+		public new ISymbolContainer<IPropertySymbol, IPropertyData> OverriddenSymbols
+		{
+			get
+			{
+				return DataHelpers.GetPropertyOverriddenSymbols(base.OverriddenSymbols)!;
+			}
+		}
 
 		BasePropertyDeclarationSyntax IPropertyData.Declaration => Declaration;
 

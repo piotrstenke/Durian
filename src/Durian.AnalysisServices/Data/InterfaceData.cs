@@ -73,6 +73,7 @@ namespace Durian.Analysis.Data
 			{
 				Virtuality = Analysis.Virtuality.NotVirtual;
 				ParameterlessConstructor = null;
+				OverriddenSymbols = null;
 			}
 
 			/// <inheritdoc/>
