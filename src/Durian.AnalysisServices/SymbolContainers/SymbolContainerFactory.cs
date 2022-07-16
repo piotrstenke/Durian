@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers.Specialized;
 using Microsoft.CodeAnalysis;
 
@@ -19,126 +20,17 @@ namespace Durian.Analysis.SymbolContainers
 	/// </summary>
 	public static partial class SymbolContainerFactory
 	{
-		private class EmptyLeveledContainer<TSymbol, TData> : EmptyContainer<TSymbol, TData>, IMappedSymbolContainer<TSymbol, TData, IncludedMembers>
-			where TSymbol : class, ISymbol
-			where TData : class, IMemberData
-		{
-			public int CurrentLevelInt { get; private set; }
-
-			public IncludedMembers CurrentLevel => (IncludedMembers)CurrentLevelInt + 1;
-
-			public int NumLevels { get; private set; }
-
-			bool ISealable.IsSealed => false;
-			bool ISealable.CanBeSealed => false;
-			bool ISealable.CanBeUnsealed => false;
-
-			int ILeveledSymbolContainer.CurrentLevel => CurrentLevelInt;
-
-			public void RegisterLevel(Func<TSymbol, IEnumerable<TSymbol>> function)
-			{
-				NumLevels++;
-
-				// Do nothing.
-			}
-
-			public void RegisterLevel(Func<TSymbol, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
-			{
-				NumLevels++;
-
-				// Do nothing.
-			}
-
-			public void RegisterLevel(Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
-			{
-				NumLevels++;
-
-				// Do nothing.
-			}
-
-			public ISymbolContainer<TSymbol, TData> ResolveLevel(int level)
-			{
-				ValidateLevel(level, NumLevels);
-
-				if(level > CurrentLevelInt)
-				{
-					CurrentLevelInt = level;
-				}
-
-				return this;
-			}
-
-			public IMappedSymbolContainer<TSymbol, TData, IncludedMembers> ResolveLevel(IncludedMembers level)
-			{
-				return (ResolveLevel((int)level - 1) as IMappedSymbolContainer<TSymbol, TData, IncludedMembers>)!;
-			}
-
-			public void ClearLevel(IncludedMembers level)
-			{
-				ClearLevel((int)level - 1);
-			}
-
-			public void ClearLevel(int level)
-			{
-				ValidateLevel(level, NumLevels);
-
-				int levelsToDelete = NumLevels - level;
-
-				NumLevels -= levelsToDelete;
-
-				if(CurrentLevelInt >= NumLevels)
-				{
-					CurrentLevelInt = NumLevels - 1;
-				}
-			}
-
-			bool ISealable.Seal()
-			{
-				return false;
-			}
-
-			bool ISealable.Unseal()
-			{
-				return false;
-			}
-
-			IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>.Reverse()
-			{
-				return this;
-			}
-
-			IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
-			{
-				return this;
-			}
-
-			ISymbolContainer ILeveledSymbolContainer.ResolveLevel(int level)
-			{
-				return ResolveLevel(level);
-			}
-
-			ISymbolContainer IMappedSymbolContainer<IncludedMembers>.ResolveLevel(IncludedMembers level)
-			{
-				return ResolveLevel(level);
-			}
-
-			ISymbolContainer<TSymbol, TData> IMappedSymbolContainer<TSymbol, TData, IncludedMembers>.ResolveLevel(IncludedMembers level)
-			{
-				return ResolveLevel(level);
-			}
-		}
-
 		private class EmptyContainer<TSymbol, TData> : IWritableSymbolContainer<TSymbol, TData>
 			where TSymbol : class, ISymbol
 			where TData : class, IMemberData
 		{
-			private readonly List<ISymbolOrMember<TSymbol, TData>> _list = new();
+			private readonly List<ISymbolOrMember<TSymbol, TData>> _list = new(1);
 
 			public static EmptyContainer<TSymbol, TData> Instance { get; } = new();
 
 			public int Count => 0;
 
-			public ReturnOrder Order => default;
+			public ReturnOrder Order { get; private set; }
 
 			public ICompilationData? ParentCompilation => null;
 
@@ -184,7 +76,7 @@ namespace Durian.Analysis.SymbolContainers
 
 			public void Reverse()
 			{
-				// Do nothing.
+				Order = Order.Reverse();
 			}
 
 			public void WriteTo(StringBuilder builder)
@@ -198,7 +90,118 @@ namespace Durian.Analysis.SymbolContainers
 			}
 		}
 
-		private class GenericMemberWrapper<TSymbol, TData> : ISymbolOrMember<TSymbol, TData>
+		private sealed class EmptyLeveledContainer<TSymbol, TData> : EmptyContainer<TSymbol, TData>, IMappedSymbolContainer<TSymbol, TData, IncludedMembers>
+					where TSymbol : class, ISymbol
+			where TData : class, IMemberData
+		{
+			public IncludedMembers CurrentLevel => (IncludedMembers)CurrentLevelInt + 1;
+
+			public int CurrentLevelInt { get; private set; }
+
+			public int NumLevels { get; private set; }
+
+			bool ISealable.CanBeSealed => false;
+
+			bool ISealable.CanBeUnsealed => false;
+
+			int ILeveledSymbolContainer.CurrentLevel => CurrentLevelInt;
+
+			bool ISealable.IsSealed => false;
+
+			public void ClearLevel(IncludedMembers level)
+			{
+				ClearLevel((int)level - 1);
+			}
+
+			public void ClearLevel(int level)
+			{
+				ValidateLevel(level, NumLevels);
+
+				int levelsToDelete = NumLevels - level;
+
+				NumLevels -= levelsToDelete;
+
+				if (CurrentLevelInt >= NumLevels)
+				{
+					CurrentLevelInt = NumLevels - 1;
+				}
+			}
+
+			public void RegisterLevel(Func<TSymbol, IEnumerable<TSymbol>> function)
+			{
+				NumLevels++;
+
+				// Do nothing.
+			}
+
+			public void RegisterLevel(Func<TSymbol, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
+			{
+				NumLevels++;
+
+				// Do nothing.
+			}
+
+			public void RegisterLevel(Func<ISymbolOrMember<TSymbol, TData>, IEnumerable<ISymbolOrMember<TSymbol, TData>>> function)
+			{
+				NumLevels++;
+
+				// Do nothing.
+			}
+
+			public ISymbolContainer<TSymbol, TData> ResolveLevel(int level)
+			{
+				ValidateLevel(level, NumLevels);
+
+				if (level > CurrentLevelInt)
+				{
+					CurrentLevelInt = level;
+				}
+
+				return this;
+			}
+
+			public IMappedSymbolContainer<TSymbol, TData, IncludedMembers> ResolveLevel(IncludedMembers level)
+			{
+				return (ResolveLevel((int)level - 1) as IMappedSymbolContainer<TSymbol, TData, IncludedMembers>)!;
+			}
+
+			ISymbolContainer ILeveledSymbolContainer.ResolveLevel(int level)
+			{
+				return ResolveLevel(level);
+			}
+
+			ISymbolContainer IMappedSymbolContainer<IncludedMembers>.ResolveLevel(IncludedMembers level)
+			{
+				return ResolveLevel(level);
+			}
+
+			ISymbolContainer<TSymbol, TData> IMappedSymbolContainer<TSymbol, TData, IncludedMembers>.ResolveLevel(IncludedMembers level)
+			{
+				return ResolveLevel(level);
+			}
+
+			IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>.Reverse()
+			{
+				return this;
+			}
+
+			IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
+			{
+				return this;
+			}
+
+			bool ISealable.Seal()
+			{
+				return false;
+			}
+
+			bool ISealable.Unseal()
+			{
+				return false;
+			}
+		}
+
+		private sealed class GenericMemberWrapper<TSymbol, TData> : ISymbolOrMember<TSymbol, TData>
 			where TSymbol : class, ISymbol
 			where TData : class, IMemberData
 		{
@@ -224,6 +227,82 @@ namespace Durian.Analysis.SymbolContainers
 			public GenericMemberWrapper(ISymbolOrMember underlaying)
 			{
 				_underlaying = underlaying;
+			}
+		}
+
+		private class SingleElementContainer<TSymbol, TData> : ISymbolContainer<TSymbol, TData>
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData
+		{
+			private readonly List<ISymbolOrMember<TSymbol, TData>> _list;
+
+			public int Count => 1;
+
+			public ISymbolOrMember<TSymbol, TData> Element => _list[0];
+
+			public ReturnOrder Order { get; private set; }
+
+			public ICompilationData? ParentCompilation { get; }
+
+			public SingleElementContainer(ISymbolOrMember<TSymbol, TData> element, ICompilationData? parentCompilation = default)
+			{
+				ParentCompilation = parentCompilation;
+				_list = new(1) { element };
+			}
+
+			public ISymbolOrMember<TSymbol, TData> First()
+			{
+				return Element;
+			}
+
+			public ISymbolOrMember<TSymbol, TData> First(ReturnOrder order)
+			{
+				return Element;
+			}
+
+			public ImmutableArray<TData> GetData()
+			{
+				return ImmutableArray.Create(Element.Member);
+			}
+
+			public IEnumerator GetEnumerator()
+			{
+				return _list.GetEnumerator();
+			}
+
+			public ImmutableArray<string> GetNames()
+			{
+				return ImmutableArray.Create(Element.Symbol.Name);
+			}
+
+			public ImmutableArray<TSymbol> GetSymbols()
+			{
+				return ImmutableArray.Create(Element.Symbol);
+			}
+
+			public ISymbolOrMember<TSymbol, TData> Last()
+			{
+				return Element;
+			}
+
+			public ISymbolOrMember<TSymbol, TData> Last(ReturnOrder order)
+			{
+				return Element;
+			}
+
+			public void Reverse()
+			{
+				Order = Order.Reverse();
+			}
+
+			ImmutableArray<IMemberData> ISymbolContainer.GetData()
+			{
+				return GetData().CastArray<IMemberData>();
+			}
+
+			ImmutableArray<ISymbol> ISymbolContainer.GetSymbols()
+			{
+				return GetSymbols().CastArray<ISymbol>();
 			}
 		}
 
@@ -313,6 +392,50 @@ namespace Durian.Analysis.SymbolContainers
 			where TData : class, IMemberData
 		{
 			return EmptyContainer<TSymbol, TData>.Instance;
+		}
+
+		/// <summary>
+		/// Returns a new <see cref="ISymbolContainer{TSymbol, TData}"/> that can only hold a single element.
+		/// </summary>
+		/// <param name="element"><see cref="ISymbolOrMember{TSymbol, TData}"/> to add to the container.</param>
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		public static ISymbolContainer<ISymbol, IMemberData> Single(ISymbolOrMember<ISymbol, IMemberData> element, ICompilationData? parentCompilation = default)
+		{
+			return new SingleElementContainer<ISymbol, IMemberData>(element, parentCompilation);
+		}
+
+		/// <summary>
+		/// Returns a new <see cref="ISymbolContainer{TSymbol, TData}"/> that can only hold a single element.
+		/// </summary>
+		/// <param name="element"><see cref="ISymbolOrMember{TSymbol, TData}"/> to add to the container.</param>
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/>s stored in the container.</typeparam>
+		public static ISymbolContainer<TSymbol, IMemberData> Single<TSymbol>(ISymbolOrMember<TSymbol, IMemberData> element, ICompilationData? parentCompilation = default) where TSymbol : class, ISymbol
+		{
+			return new SingleElementContainer<TSymbol, IMemberData>(element, parentCompilation);
+		}
+
+		/// <summary>
+		/// Returns a new <see cref="ISymbolContainer{TSymbol, TData}"/> that can only hold a single element.
+		/// </summary>
+		/// <param name="element"><see cref="ISymbolOrMember{TSymbol, TData}"/> to add to the container.</param>
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		/// <typeparam name="TSymbol">Type of <see cref="ISymbol"/>s stored in the container.</typeparam>
+		/// <typeparam name="TData">Type of <see cref="IMemberData"/>s stored in the container.</typeparam>
+		public static ISymbolContainer<TSymbol, TData> Single<TSymbol, TData>(ISymbolOrMember<TSymbol, TData> element, ICompilationData? parentCompilation = default)
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData
+		{
+			return new SingleElementContainer<TSymbol, TData>(element, parentCompilation);
 		}
 
 		/// <summary>

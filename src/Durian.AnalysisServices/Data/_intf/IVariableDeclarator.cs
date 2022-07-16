@@ -11,7 +11,7 @@ namespace Durian.Analysis.Data
 	/// Provides a <see cref="VariableDeclaratorSyntax"/> and an actual <see cref="Declaration"/> of a <see cref="ISymbol"/>.
 	/// </summary>
 	/// <typeparam name="TSyntax">Type of declaration.</typeparam>
-	public interface IDeclarator<TSyntax> where TSyntax : CSharpSyntaxNode
+	public interface IVariableDeclarator<TSyntax> where TSyntax : CSharpSyntaxNode
 	{
 		/// <summary>
 		/// Target <typeparamref name="TSyntax"/>.
@@ -27,5 +27,10 @@ namespace Durian.Analysis.Data
 		/// <see cref="VariableDeclaratorSyntax"/> of the member.
 		/// </summary>
 		VariableDeclaratorSyntax Variable { get; }
+	}
+
+	internal interface IVariableDeclarator
+	{
+		IVariableDeclaratorProperties GetProperties();
 	}
 }

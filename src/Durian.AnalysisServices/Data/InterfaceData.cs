@@ -21,7 +21,7 @@ namespace Durian.Analysis.Data
 		public new class Properties : TypeData<InterfaceDeclarationSyntax>.Properties
 		{
 			/// <inheritdoc cref="InterfaceData.DefaultImplementations"/>
-			public ISymbolContainer<ISymbol, IMemberData>? DefaultImplementations { get; set; }
+			public DefaultedValue<ISymbolContainer<ISymbol, IMemberData>> DefaultImplementations { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -55,7 +55,7 @@ namespace Durian.Analysis.Data
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 			[Obsolete("Use Map(Properties) instead")]
 			[EditorBrowsable(EditorBrowsableState.Never)]
-			public override void Map(TypeData<InterfaceDeclarationSyntax>.Properties properties)
+			public sealed override void Map(TypeData<InterfaceDeclarationSyntax>.Properties properties)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 			{
 				if (properties is Properties props)
@@ -71,9 +71,10 @@ namespace Durian.Analysis.Data
 			/// <inheritdoc/>
 			protected override void FillWithDefaultData()
 			{
-				Virtuality = Analysis.Virtuality.NotVirtual;
+				Virtuality = Analysis.Virtuality.Abstract;
 				ParameterlessConstructor = null;
 				OverriddenSymbols = null;
+				CompilerCondition = null;
 			}
 
 			/// <inheritdoc/>
@@ -109,10 +110,6 @@ namespace Durian.Analysis.Data
 		/// </exception>
 		public InterfaceData(InterfaceDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
-			if(properties is not null)
-			{
-				_defaultImplementations = properties.DefaultImplementations;
-			}
 		}
 
 		internal InterfaceData(INamedTypeSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
@@ -135,7 +132,7 @@ namespace Durian.Analysis.Data
 		public virtual void Map(Properties properties)
 		{
 			base.Map(properties);
-			properties.DefaultImplementations = DefaultImplementations;
+			properties.DefaultImplementations = DataHelpers.ToDefaultedValue(_defaultImplementations);
 		}
 
 		/// <inheritdoc/>
@@ -182,7 +179,7 @@ namespace Durian.Analysis.Data
 
 			if (properties is Properties props)
 			{
-				_defaultImplementations = props.DefaultImplementations;
+				_defaultImplementations = DataHelpers.FromDefaultedOrEmpty(props.DefaultImplementations);
 			}
 		}
 	}

@@ -2,13 +2,12 @@
 // Licensed under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis;
-using Durian.Analysis.Extensions;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Durian.Analysis.SymbolContainers;
 using System.ComponentModel;
+using Durian.Analysis.Extensions;
+using Durian.Analysis.SymbolContainers;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
 {
@@ -22,14 +21,17 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new class Properties : Properties<INamedTypeSymbol>
 		{
-			/// <inheritdoc cref="EnumData.IsFlags"/>
-			public bool? IsFlags { get; set; }
-
 			/// <inheritdoc cref="EnumData.BaseType"/>
-			public INamedTypeSymbol? BaseType { get; set; }
+			public ISymbolOrMember<INamedTypeSymbol, ITypeData>? BaseType { get; set; }
+
+			/// <inheritdoc cref="EnumData.BaseTypeKeyword"/>
+			public TypeKeyword? BaseTypeKeyword { get; set; }
 
 			/// <inheritdoc cref="EnumData.Fields"/>
-			public ISymbolContainer<IFieldSymbol>? Fields { get; set; }
+			public DefaultedValue<ISymbolContainer<IFieldSymbol, IFieldData>> Fields { get; set; }
+
+			/// <inheritdoc cref="EnumData.IsFlags"/>
+			public bool? IsFlags { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -37,12 +39,93 @@ namespace Durian.Analysis.Data
 			public Properties()
 			{
 			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			/// <param name="fillWithDefault">Determines whether to fill the current properties with default data.</param>
+			public Properties(bool fillWithDefault) : base(fillWithDefault)
+			{
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Clone"/>
+			public new Properties Clone()
+			{
+				return (CloneCore() as Properties)!;
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Map(MemberData.Properties)"/>
+			public virtual void Map(Properties properties)
+			{
+				base.Map(properties);
+				properties.IsFlags = IsFlags;
+				properties.BaseType = BaseType;
+				properties.BaseTypeKeyword = BaseTypeKeyword;
+				properties.Fields = Fields;
+			}
+
+			/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+			[Obsolete("Use Map(Properties) instead")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
+			public sealed override void Map(Properties<INamedTypeSymbol> properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+			{
+				if (properties is Properties props)
+				{
+					Map(props);
+				}
+				else
+				{
+					base.Map(properties);
+				}
+			}
+
+			/// <inheritdoc/>
+			protected override MemberData.Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
+			}
+
+			/// <inheritdoc/>
+			protected override void FillWithDefaultData()
+			{
+				Virtuality = Analysis.Virtuality.NotVirtual;
+				IsPartial = false;
+				IsUnsafe = false;
+				OverriddenSymbols = null;
+			}
 		}
 
+		private ISymbolOrMember<INamedTypeSymbol, ITypeData>? _baseType;
+		private ISymbolContainer<INamedTypeSymbol, ITypeData>? _baseTypes;
+		private ISymbolContainer<IFieldSymbol, IFieldData>? _fields;
 		private bool? _isFlags;
 		private TypeKeyword? _typeKeyword;
-		private INamedTypeSymbol? _baseType;
-		private ISymbolContainer<IFieldSymbol>? _fields;
+
+		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> associated with the enum's underlaying type.
+		/// </summary>
+		public ISymbolOrMember<INamedTypeSymbol, ITypeData> BaseType
+		{
+			get
+			{
+				return _baseType ??= Symbol.EnumUnderlyingType!.ToDataOrSymbol();
+			}
+		}
+
+		/// <summary>
+		/// <see cref="TypeKeyword"/> associated with the enum's underlaying type.
+		/// </summary>
+		public TypeKeyword BaseTypeKeyword
+		{
+			get
+			{
+				return _typeKeyword ??= BaseType.Symbol.GetEnumUnderlayingTypeKeyword();
+			}
+		}
 
 		/// <summary>
 		/// Target <see cref="EnumDeclarationSyntax"/>.
@@ -50,14 +133,9 @@ namespace Durian.Analysis.Data
 		public new EnumDeclarationSyntax Declaration => (base.Declaration as EnumDeclarationSyntax)!;
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="TypeData{TDeclaration}.Declaration"/>.
+		/// All fields of the of the enum.
 		/// </summary>
-		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
-
-		/// <summary>
-		/// All fields of the
-		/// </summary>
-		public ISymbolContainer<IFieldSymbol> Fields
+		public ISymbolContainer<IFieldSymbol, IFieldData> Fields
 		{
 			get
 			{
@@ -77,76 +155,182 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <summary>
-		/// <see cref="INamedTypeSymbol"/> associated with the enum's underlaying type.
+		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="TypeData{TDeclaration}.Declaration"/>.
 		/// </summary>
-		public INamedTypeSymbol BaseType
+		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
+
+		ISymbolContainer<INamedTypeSymbol, ITypeData> ITypeData.BaseTypes
 		{
 			get
 			{
-				return _baseType ??= Symbol.EnumUnderlyingType!;
+				return _baseTypes ??= SymbolContainerFactory.Single(BaseType, ParentCompilation);
 			}
 		}
 
-		/// <summary>
-		/// <see cref="TypeKeyword"/> associated with the enum's underlaying type.
-		/// </summary>
-		public TypeKeyword BaseTypeKeyword
-		{
-			get
-			{
-				return _typeKeyword ??= BaseType.GetEnumUnderlayingTypeKeyword();
-			}
-		}
+		string? ITypeData.CompilerCondition => default;
 
-		BaseTypeDeclarationSyntax ITypeData.Declaration => throw new NotImplementedException();
+		INamespaceOrTypeData ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>.Member => this;
 
-		ITypeSymbol ITypeData.Symbol => Symbol;
+		ITypeData ISymbolOrMember<INamedTypeSymbol, ITypeData>.Member => this;
 
-		ImmutableArray<BaseTypeDeclarationSyntax> ITypeData.PartialDeclarations => ImmutableArray<BaseTypeDeclarationSyntax>.Empty;
+		ISymbolOrMember<IMethodSymbol, IMethodData>? ITypeData.ParameterlessConstructor => default;
 
-		ISymbolContainer<ISymbol> ITypeData.AllMembers => throw new NotImplementedException();
+		ImmutableArray<TypeDeclarationSyntax> ITypeData.PartialDeclarations => ImmutableArray<TypeDeclarationSyntax>.Empty;
 
-		ISymbolContainer<ISymbol> ITypeData.Members => throw new NotImplementedException();
+		INamespaceOrTypeSymbol INamespaceOrTypeData.Symbol => Symbol;
 
-		ISymbolContainer<INamedTypeSymbol> ITypeData.BaseTypes => throw new NotImplementedException();
+		INamespaceOrTypeSymbol ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>.Symbol => Symbol;
 
-		ISymbolContainer<INamedTypeSymbol> ITypeData.AllInnerTypes => throw new NotImplementedException();
+		ISymbolContainer<ITypeSymbol, ITypeData> IGenericMemberData.TypeArguments => SymbolContainerFactory.Empty<ITypeSymbol, ITypeData>();
 
-		ISymbolContainer<INamedTypeSymbol> ITypeData.InnerTypes => throw new NotImplementedException();
-
-		ISymbolOrMember<IMethodSymbol, IMethodData>? ITypeData.ParameterlessConstructor => throw new NotImplementedException();
-
-		ISymbolContainer<ITypeParameterSymbol> ITypeData.TypeParameters => throw new NotImplementedException();
-
-		ISymbolContainer<ITypeSymbol> ITypeData.TypeArguments => throw new NotImplementedException();
+		ISymbolContainer<ITypeParameterSymbol, ITypeParameterData> IGenericMemberData.TypeParameters => SymbolContainerFactory.Empty<ITypeParameterSymbol, ITypeParameterData>();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EnumData"/> class.
 		/// </summary>
 		/// <param name="declaration"><see cref="EnumDeclarationSyntax"/> this <see cref="EnumData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EnumData"/>.</param>
-		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
-		public EnumData(EnumDeclarationSyntax declaration, ICompilationData compilation, MemberData.Properties? properties = default) : base(declaration, compilation, properties)
+		public EnumData(EnumDeclarationSyntax declaration, ICompilationData compilation, Properties? properties = default) : base(declaration, compilation, properties)
 		{
-			if(properties is Properties props)
+		}
+
+		internal EnumData(INamedTypeSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
+		{
+		}
+
+		/// <inheritdoc cref="MemberData.Clone"/>
+		public new EnumData Clone()
+		{
+			return (CloneCore() as EnumData)!;
+		}
+
+		/// <inheritdoc cref="MemberData.GetProperties"/>
+		public new Properties GetProperties()
+		{
+			return (GetPropertiesCore() as Properties)!;
+		}
+
+		/// <inheritdoc cref="MemberData.Map(MemberData.Properties)"/>
+		public virtual void Map(Properties properties)
+		{
+			base.Map(properties);
+			properties.IsFlags = _isFlags;
+			properties.BaseType = _baseType;
+			properties.BaseTypeKeyword = _typeKeyword;
+			properties.Fields = DataHelpers.ToDefaultedValue(_fields);
+		}
+
+		/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		[Obsolete("Use Map(Properties) instead")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public sealed override void Map(MemberData.Properties properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			if (properties is Properties props)
 			{
-				_isFlags = props.IsFlags;
-				_fields = props.Fields;
-				_baseType = props.BaseType;
+				Map(props);
+			}
+			else
+			{
+				base.Map(properties);
 			}
 		}
 
-		internal EnumData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation, true)
+		/// <inheritdoc cref="ITypeData.ToNamespaceOrType"/>
+		public NamespaceOrTypeData ToNamespaceOrType()
 		{
+			NamespaceOrTypeData.Properties properties = new();
+			base.Map(properties);
+			return new(Declaration, ParentCompilation, properties);
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData CloneCore()
+		{
+			return new EnumData(Declaration, ParentCompilation, GetProperties());
 		}
 
 		/// <inheritdoc/>
 		protected override MemberData.Properties? GetDefaultProperties()
 		{
-			return base.GetDefaultProperties();
+			return new Properties(true);
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties GetPropertiesCore()
+		{
+			Properties properties = new();
+			Map(properties);
+			return properties;
+		}
+
+		/// <inheritdoc/>
+		protected override void SetProperties(MemberData.Properties properties)
+		{
+			base.SetProperties(properties);
+
+			if (properties is Properties props)
+			{
+				_isFlags = props.IsFlags;
+				_fields = DataHelpers.FromDefaultedOrEmpty(props.Fields);
+				_baseType = props.BaseType;
+				_typeKeyword = props.BaseTypeKeyword;
+			}
+		}
+
+		ISymbolContainer<IEventSymbol, IEventData> ITypeData.GetEvents(IncludedMembers members)
+		{
+			return SymbolContainerFactory.Empty<IEventSymbol, IEventData>();
+		}
+
+		ISymbolContainer<IFieldSymbol, IFieldData> ITypeData.GetFields(IncludedMembers members)
+		{
+			if (members != IncludedMembers.Direct)
+			{
+				return SymbolContainerFactory.Empty<IFieldSymbol, IFieldData>();
+			}
+
+			return Fields;
+		}
+
+		ISymbolContainer<ISymbol, IMemberData> ITypeData.GetMembers(IncludedMembers members)
+		{
+			return Fields;
+		}
+
+		ISymbolContainer<IMethodSymbol, IMethodData> ITypeData.GetMethods(IncludedMembers members)
+		{
+			return SymbolContainerFactory.Empty<IMethodSymbol, IMethodData>();
+		}
+
+		ISymbolContainer<IPropertySymbol, IPropertyData> ITypeData.GetProperties(IncludedMembers members)
+		{
+			return SymbolContainerFactory.Empty<IPropertySymbol, IPropertyData>();
+		}
+
+		ISymbolContainer<INamedTypeSymbol, ITypeData> INamespaceOrTypeData.GetTypes(IncludedMembers members)
+		{
+			return SymbolContainerFactory.Empty<INamedTypeSymbol, ITypeData>();
+		}
+
+		INamespaceData INamespaceOrTypeData.ToNamespace()
+		{
+			throw new InvalidOperationException("Current symbol is not a namespace");
+		}
+
+		INamespaceOrTypeData ITypeData.ToNamespaceOrType()
+		{
+			return ToNamespaceOrType();
+		}
+
+		ITypeData INamespaceOrTypeData.ToType()
+		{
+			return this;
 		}
 	}
 }

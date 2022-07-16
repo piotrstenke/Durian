@@ -127,6 +127,9 @@ namespace Durian.Analysis.Data
 			/// <inheritdoc cref="IMemberData.IsNew"/>
 			public bool? IsNew { get; set; }
 
+			/// <inheritdoc cref="IMemberData.IsObsolete"/>
+			public bool? IsObsolete { get; set; }
+
 			/// <inheritdoc cref="IMemberData.IsPartial"/>
 			public bool? IsPartial { get; set; }
 
@@ -206,6 +209,7 @@ namespace Durian.Analysis.Data
 				properties.GenericName = GenericName;
 				properties.HiddenSymbol = HiddenSymbol;
 				properties.IsNew = IsNew;
+				properties.IsObsolete = IsObsolete;
 				properties.IsPartial = IsPartial;
 				properties.IsUnsafe = IsUnsafe;
 				properties.Location = Location;
@@ -245,6 +249,7 @@ namespace Durian.Analysis.Data
 			private protected void SetDefaultData()
 			{
 				IsPartial = false;
+				IsObsolete = false;
 				IsNew = false;
 				IsUnsafe = false;
 				Virtuality = Analysis.Virtuality.NotVirtual;
@@ -267,6 +272,7 @@ namespace Durian.Analysis.Data
 		private bool? _isNew;
 		private bool? _isPartial;
 		private bool? _isUnsafe;
+		private bool? _isObsolete;
 		private Location? _location;
 		private ImmutableArray<string> _modifiers;
 		private string? _substitutedName;
@@ -320,6 +326,9 @@ namespace Durian.Analysis.Data
 
 		/// <inheritdoc/>
 		public bool IsNew => _isNew ??= Symbol.IsNew();
+
+		/// <inheritdoc/>
+		public bool IsObsolete => _isObsolete ??= Attributes.Any(attr => attr.GetSpecialAttributeKind() == SpecialAttribute.Obsolete);
 
 		/// <inheritdoc/>
 		public bool IsPartial => _isPartial ??= Symbol.IsPartial();
@@ -426,18 +435,18 @@ namespace Durian.Analysis.Data
 		{
 			if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not SyntaxNode decl)
 			{
-				throw DataHelpers.Exc_NoSyntaxReference(symbol);
+				throw new InvalidOperationException($"Symbol '{symbol}' doesn't define any syntax reference, thus can't be used in a {nameof(MemberData)}!");
 			}
 
 			Symbol = symbol;
 			Declaration = decl;
-			SemanticModel = compilation.Compilation.GetSemanticModel(decl.SyntaxTree);
 			ParentCompilation = compilation;
 
 			properties ??= GetDefaultProperties();
 
 			if (properties is not null)
 			{
+				SemanticModel = properties.SemanticModel ?? compilation.Compilation.GetSemanticModel(decl.SyntaxTree);
 				Name = properties.Name ?? Symbol.GetVerbatimName();
 				Virtuality = properties.Virtuality ?? Symbol.GetVirtuality();
 
@@ -445,6 +454,7 @@ namespace Durian.Analysis.Data
 			}
 			else
 			{
+				SemanticModel = compilation.Compilation.GetSemanticModel(decl.SyntaxTree);
 				Name = Symbol.GetVerbatimName();
 				Virtuality = Symbol.GetVirtuality();
 			}
@@ -479,6 +489,7 @@ namespace Durian.Analysis.Data
 			properties.GenericName = _genericName;
 			properties.HiddenSymbol = _hiddenMember;
 			properties.IsNew = _isNew;
+			properties.IsObsolete = _isObsolete;
 			properties.IsPartial = _isPartial;
 			properties.IsUnsafe = _isUnsafe;
 			properties.Location = _location;
@@ -528,6 +539,7 @@ namespace Durian.Analysis.Data
 			_containingTypes = DataHelpers.FromDefaultedOrEmpty(properties.ContainingTypes);
 			_overriddenSymbols = DataHelpers.FromDefaultedOrEmpty(properties.OverriddenSymbols);
 			_isNew = properties.IsNew;
+			_isObsolete = properties.IsObsolete;
 			_isPartial = properties.IsPartial;
 			_isUnsafe = properties.IsUnsafe;
 			_location = properties.Location;

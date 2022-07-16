@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
@@ -814,6 +816,26 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the compiler condition applied to the <paramref name="method"/> through the <see cref="ConditionalAttribute"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the compiler condition of.</param>
+		public static string? GetCompilerCondition(this IMethodSymbol method)
+		{
+			AttributeData? attribute = method.GetSpecialAttribute(SpecialAttribute.Conditional);
+			return attribute?.GetConstructorArgumentValue<string>(0);
+		}
+
+		/// <summary>
+		/// Returns the compiler condition applied to the <paramref name="type"/> through the <see cref="ConditionalAttribute"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the compiler condition of.</param>
+		public static string? GetCompilerCondition(this INamedTypeSymbol type)
+		{
+			AttributeData? attribute = type.GetSpecialAttribute(SpecialAttribute.Conditional);
+			return attribute?.GetConstructorArgumentValue<string>(0);
+		}
+
+		/// <summary>
 		/// Returns generic constraints applied to type parameters of the specified <paramref name="method"/>.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the generic constraints of.</param>
@@ -1015,6 +1037,22 @@ namespace Durian.Analysis.Extensions
 					}
 				}
 			}
+		}
+
+		/// <summary>
+		/// Returns the custom offset applied to the field through a <see cref="FieldOffsetAttribute"/> or <c>-1</c> if no custom offset applied.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to get the custom offset of.</param>
+		public static int GetCustomOffset(this IFieldSymbol field)
+		{
+			AttributeData? attribute = field.GetSpecialAttribute(SpecialAttribute.FieldOffset);
+
+			if (attribute is null)
+			{
+				return -1;
+			}
+
+			return attribute.TryGetConstructorArgumentValue(0, out int value) ? value : -1;
 		}
 
 		/// <summary>
@@ -1588,7 +1626,7 @@ namespace Durian.Analysis.Extensions
 				collection = GetNested();
 			}
 
-			if(includeSelf)
+			if (includeSelf)
 			{
 				collection = new[] { method }.Concat(collection);
 			}
@@ -1895,6 +1933,59 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return modifiers.ToArray();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="AttributeData"/> defined on the specified <paramref name="symbol"/> that is of the given <paramref name="attributeKind"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="AttributeData"/> of.</param>
+		/// <param name="attributeKind"><see cref="NullableAnnotationAttribute"/> to check for.</param>
+		public static AttributeData? GetNullableAnnotationAttribute(this ISymbol symbol, NullableAnnotationAttribute attributeKind)
+		{
+			string? name = attributeKind.GetAttributeName();
+
+			if (name is null)
+			{
+				return default;
+			}
+
+			string? @namespace = attributeKind.GetNamespaceName();
+
+			if (@namespace is null)
+			{
+				return default;
+			}
+
+			return symbol.GetAttributes().FirstOrDefault(attr =>
+				attr.AttributeClass is not null &&
+				attr.AttributeClass.Name == name &&
+				attr.AttributeClass.IsWithinNamespace(@namespace, @namespace != "System")
+			);
+		}
+
+		/// <summary>
+		/// Returns the kind of <see cref="NullableAnnotationAttribute"/> this <paramref name="type"/> represents.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the <see cref="NullableAnnotationAttribute"/> kind of.</param>
+		public static NullableAnnotationAttribute GetNullableAnnotationAttributeKind(this INamedTypeSymbol type)
+		{
+			return type.Name switch
+			{
+				"AllowNullAttribute" => CheckNamespace(NullableAnnotationAttribute.AllowNull),
+				"DisallowNullAttribute" => CheckNamespace(NullableAnnotationAttribute.DisallowNull),
+				"MaybeNullAttribute" => CheckNamespace(NullableAnnotationAttribute.MaybeNull),
+				"NotNullAttribute" => CheckNamespace(NullableAnnotationAttribute.NotNull),
+				"NotNullWhenAttribute" => CheckNamespace(NullableAnnotationAttribute.NotNullWhen),
+				"NotNullIfNotNullAttribute" => CheckNamespace(NullableAnnotationAttribute.NotNullIfNotNull),
+				"MemberNotNullAttribute" => CheckNamespace(NullableAnnotationAttribute.MemberNotNull),
+				"MemberNotNullWhenAttribute" => CheckNamespace(NullableAnnotationAttribute.MemberNotNullWhen),
+				_ => default
+			};
+
+			NullableAnnotationAttribute CheckNamespace(NullableAnnotationAttribute toReturn)
+			{
+				return type.IsWithinNamespace("System.Diagnostics.CodeAnalysis", true) ? toReturn : default;
+			}
 		}
 
 		/// <summary>
@@ -2213,6 +2304,76 @@ namespace Durian.Analysis.Extensions
 		public static INamespaceSymbol? GetRootNamespace(this ISymbol symbol, bool includeGlobal = false)
 		{
 			return GetContainingNamespaces(symbol, includeGlobal).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Returns the <see cref="AttributeData"/> defined on the specified <paramref name="symbol"/> that is of the given <paramref name="attributeKind"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="AttributeData"/> of.</param>
+		/// <param name="attributeKind"><see cref="SpecialAttribute"/> to check for.</param>
+		public static AttributeData? GetSpecialAttribute(this ISymbol symbol, SpecialAttribute attributeKind)
+		{
+			string? name = attributeKind.GetAttributeName();
+
+			if (name is null)
+			{
+				return default;
+			}
+
+			string? @namespace = attributeKind.GetNamespaceName();
+
+			if (@namespace is null)
+			{
+				return default;
+			}
+
+			return symbol.GetAttributes().FirstOrDefault(attr =>
+				attr.AttributeClass is not null &&
+				attr.AttributeClass.Name == name &&
+				attr.AttributeClass.IsWithinNamespace(@namespace, @namespace != "System")
+			);
+		}
+
+		/// <summary>
+		/// Returns the kind of <see cref="SpecialAttribute"/> this <paramref name="type"/> represents.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the <see cref="SpecialAttribute"/> kind of.</param>
+		public static SpecialAttribute GetSpecialAttributeKind(this INamedTypeSymbol type)
+		{
+			if (!type.Name.EndsWith("Attribute"))
+			{
+				return default;
+			}
+
+			return type.Name switch
+			{
+				"ObsoleteAttribute" => RequireNamespace("System", SpecialAttribute.Obsolete),
+				"AttributeUsageAttribute" => RequireNamespace("System", SpecialAttribute.AttributeUsage),
+				"FlagsAttribute" => RequireNamespace("System", SpecialAttribute.Flags),
+				"CLSCompliantAttribute" => RequireNamespace("System", SpecialAttribute.CLSCompliant),
+				"ThreadStaticAttribute" => RequireNamespace("System", SpecialAttribute.ThreadStatic),
+				"ConditionalAttribute" => RequireNamespace("System.Diagnostics", SpecialAttribute.Conditional),
+				"StructLayoutAttribute" => RequireNamespace("System.Runtime.InteropServices", SpecialAttribute.StructLayout),
+				"MarhsalAsAttribute" => RequireNamespace("System.Runtime.InteropServices", SpecialAttribute.MarshalAs),
+				"DllImportAttribute" => RequireNamespace("System.Runtime.InteropServices", SpecialAttribute.DllImport),
+				"FieldOffsetAttribute" => RequireNamespace("System.Runtime.InteropServices", SpecialAttribute.FieldOffset),
+				"MethodImplAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.MethodImpl),
+				"SkipLocalsInitAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.SkipLocalsInit),
+				"CallerFilePathAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.CallerFilePath),
+				"CallerLineNumberAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.CallerLineNumber),
+				"CallerMemberNameAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.CallerMemberName),
+				"CallerArgumentExpressionAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.CallerArgumentExpression),
+				"ModuleInitializerAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.ModuleInitializer),
+				"DoesNotReturnAttribute" => RequireNamespace("System.Diagnostics.CodeAnalysis", SpecialAttribute.DoesNotReturn),
+				"DoesNotReturnIfAttribute" => RequireNamespace("System.Diagnostics.CodeAnalysis", SpecialAttribute.DoesNotReturnIf),
+				"GeneratedCodeAttribute" => RequireNamespace("System.CodeDom.Compiler", SpecialAttribute.GeneratedCode),
+				_ => default
+			};
+
+			SpecialAttribute RequireNamespace(string @namespace, SpecialAttribute toReturn)
+			{
+				return type.IsWithinNamespace(@namespace, @namespace.Length > 6) ? toReturn : default;
+			}
 		}
 
 		/// <summary>

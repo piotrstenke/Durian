@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Extensions
@@ -195,6 +195,54 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the <see cref="INamedTypeSymbol"/> represented by the specified <see cref="SpecialAttribute"/>.
+		/// </summary>
+		/// <param name="compilation"><see cref="Compilation"/> to get the <see cref="INamedTypeSymbol"/> from.</param>
+		/// <param name="type"><see cref="SpecialAttribute"/> to get.</param>
+		public static INamedTypeSymbol? GetSpecialType(this Compilation compilation, SpecialAttribute type)
+		{
+			string? @namespace = type.GetNamespaceName();
+
+			if (@namespace is null)
+			{
+				return null;
+			}
+
+			string? name = type.GetAttributeName();
+
+			if (name is null)
+			{
+				return null;
+			}
+
+			return compilation.GetTypeByMetadataName($"{@namespace}.{name}");
+		}
+
+		/// <summary>
+		/// Returns the <see cref="INamedTypeSymbol"/> represented by the specified <see cref="NullableAnnotationAttribute"/>.
+		/// </summary>
+		/// <param name="compilation"><see cref="Compilation"/> to get the <see cref="INamedTypeSymbol"/> from.</param>
+		/// <param name="type"><see cref="NullableAnnotationAttribute"/> to get.</param>
+		public static INamedTypeSymbol? GetSpecialType(this Compilation compilation, NullableAnnotationAttribute type)
+		{
+			string? @namespace = type.GetNamespaceName();
+
+			if(@namespace is null)
+			{
+				return null;
+			}
+
+			string? name = type.GetAttributeName();
+
+			if(name is null)
+			{
+				return null;
+			}
+
+			return compilation.GetTypeByMetadataName($"{@namespace}.{name}");
+		}
+
+		/// <summary>
 		/// Returns the <see cref="INamedTypeSymbol"/> represented by the specified <see cref="DecimalValueType"/>.
 		/// </summary>
 		/// <param name="compilation"><see cref="Compilation"/> to get the <see cref="INamedTypeSymbol"/> from.</param>
@@ -242,6 +290,7 @@ namespace Durian.Analysis.Extensions
 			}
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static T InitSymbol<T>(ISymbol symbol)
 		{
 			if (symbol is not T t)

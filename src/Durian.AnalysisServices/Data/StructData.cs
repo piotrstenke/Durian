@@ -75,8 +75,9 @@ namespace Durian.Analysis.Data
 			/// <inheritdoc/>
 			protected override void FillWithDefaultData()
 			{
-				BaseTypes = SymbolContainerFactory.Empty<INamedTypeSymbol, ITypeData>();
+				BaseTypes = null;
 				Virtuality = Analysis.Virtuality.NotVirtual;
+				CompilerCondition = null;
 			}
 		}
 

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Durian.Analysis.CodeGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -190,6 +189,24 @@ namespace Durian.Analysis.Extensions
 		{
 			TryGetNamedArgumentValue(attribute, argumentName, out T? value);
 			return value;
+		}
+
+		/// <summary>
+		/// Returns the kind of <see cref="NullableAnnotationAttribute"/> this <paramref name="attribute"/> represents.
+		/// </summary>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the <see cref="NullableAnnotationAttribute"/> kind of.</param>
+		public static NullableAnnotationAttribute GetNullableAnnotationAttributeKind(this AttributeData attribute)
+		{
+			return attribute.AttributeClass?.GetNullableAnnotationAttributeKind() ?? default;
+		}
+
+		/// <summary>
+		/// Returns the kind of <see cref="SpecialAttribute"/> this <paramref name="attribute"/> represents.
+		/// </summary>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the <see cref="SpecialAttribute"/> kind of.</param>
+		public static SpecialAttribute GetSpecialAttributeKind(this AttributeData attribute)
+		{
+			return attribute.AttributeClass?.GetSpecialAttributeKind() ?? default;
 		}
 
 		/// <summary>

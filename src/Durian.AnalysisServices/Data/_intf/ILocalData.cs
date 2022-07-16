@@ -10,7 +10,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="ILocalSymbol"/>.
 	/// </summary>
-	public interface ILocalData : IMemberData, IDeclarator<LocalDeclarationStatementSyntax>, ISymbolOrMember<ILocalSymbol, ILocalData>
+	public interface ILocalData : IMemberData, IVariableDeclarator<LocalDeclarationStatementSyntax>, ISymbolOrMember<ILocalSymbol, ILocalData>
 	{
 		/// <summary>
 		/// <see cref="ILocalSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.
@@ -18,8 +18,8 @@ namespace Durian.Analysis.Data
 		new ILocalSymbol Symbol { get; }
 
 		/// <summary>
-		/// Returns a collection of <see cref="ILocalData"/>s of all variables defined in the <see cref="IDeclarator{T}.Declaration"/>.
+		/// Returns a collection of <see cref="ILocalSymbol"/>s of all variables defined in the <see cref="IVariableDeclarator{T}.Declaration"/>.
 		/// </summary>
-		IEnumerable<ILocalData> GetUnderlayingLocals();
+		IEnumerable<ISymbolOrMember<ILocalSymbol, ILocalData>> GetUnderlayingLocals();
 	}
 }

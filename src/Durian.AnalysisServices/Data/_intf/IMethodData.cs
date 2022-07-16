@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Diagnostics;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
@@ -22,6 +23,16 @@ namespace Durian.Analysis.Data
 		/// Type of body of the method.
 		/// </summary>
 		MethodStyle BodyType { get; }
+
+		/// <summary>
+		/// Value applied to the <see cref="ConditionalAttribute"/> of this method.
+		/// </summary>
+		string? CompilerCondition { get; }
+
+		/// <summary>
+		/// Determines whether this method is a module initializer.
+		/// </summary>
+		bool IsModuleInitializer { get; }
 
 		/// <summary>
 		/// Overloads of this method.

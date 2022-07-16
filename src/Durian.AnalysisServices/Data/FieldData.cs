@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -14,15 +13,21 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="FieldDeclarationSyntax"/>.
 	/// </summary>
-	public class FieldData : MemberData, IFieldData
+	public class FieldData : MemberData, IFieldData, IVariableDeclarator
 	{
 		/// <summary>
 		/// Contains optional data that can be passed to a <see cref="FieldData"/>.
 		/// </summary>
-		public new class Properties : Properties<IFieldSymbol>, IDeclaratorProperties
+		public new class Properties : Properties<IFieldSymbol>, IVariableDeclaratorProperties
 		{
 			/// <inheritdoc cref="FieldData.BackingFieldKind"/>
 			public BackingFieldKind? BackingFieldKind { get; set; }
+
+			/// <inheritdoc cref="FieldData.CustomOffset"/>
+			public int? CustomOffset { get; set; }
+
+			/// <inheritdoc cref="FieldData.IsThreadStatic"/>
+			public bool? IsThreadStatic { get; set; }
 
 			/// <inheritdoc cref="FieldData.Index"/>
 			public int? Index { get; set; }
@@ -58,6 +63,8 @@ namespace Durian.Analysis.Data
 				properties.Index = Index;
 				properties.Variable = Variable;
 				properties.BackingFieldKind = BackingFieldKind;
+				properties.IsThreadStatic = IsThreadStatic;
+				properties.CustomOffset = CustomOffset;
 			}
 
 			/// <inheritdoc/>
@@ -85,7 +92,7 @@ namespace Durian.Analysis.Data
 				return properties;
 			}
 
-			void IDeclaratorProperties.FillWithDefaultData()
+			void IVariableDeclaratorProperties.FillWithDefaultData()
 			{
 				FillWithDefaultData();
 			}
@@ -99,8 +106,37 @@ namespace Durian.Analysis.Data
 			}
 		}
 
+		private sealed class FieldDataWrapper : DataHelpers.VariableDataWrapper<IFieldSymbol, FieldData>
+		{
+			public FieldDataWrapper(FieldData parentField, int index) : base(parentField, index)
+			{
+			}
+
+			protected override FieldData CreateData(IVariableDeclaratorProperties props)
+			{
+				return new FieldData(Parent.Declaration, Parent.ParentCompilation, props as Properties);
+			}
+
+			protected override VariableDeclarationSyntax GetVariableDeclaration()
+			{
+				return Parent.Declaration.Declaration;
+			}
+		}
+
+		private bool? _isThreadStatic;
+		private int? _customOffset;
+
 		/// <inheritdoc cref="IFieldData.BackingFieldKind"/>
 		public BackingFieldKind BackingFieldKind { get; private set; }
+
+		/// <inheritdoc/>
+		public int CustomOffset
+		{
+			get
+			{
+				return _customOffset ??= this.GetCustomOffset();
+			}
+		}
 
 		/// <summary>
 		/// Target <see cref="FieldDeclarationSyntax"/>.
@@ -111,6 +147,15 @@ namespace Durian.Analysis.Data
 		/// Index of this field in the <see cref="Declaration"/>.
 		/// </summary>
 		public int Index { get; private set; }
+
+		/// <inheritdoc/>
+		public bool IsThreadStatic
+		{
+			get
+			{
+				return _isThreadStatic ??= this.IsThreadStatic();
+			}
+		}
 
 		/// <summary>
 		/// <see cref="IFieldSymbol"/> associated with the <see cref="Declaration"/>.
@@ -136,7 +181,8 @@ namespace Durian.Analysis.Data
 		/// <exception cref="IndexOutOfRangeException">
 		/// <paramref name="index"/> was out of range.
 		/// </exception>
-		public FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, int index) : this(declaration, compilation, new Properties { Index = index })
+		public FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, int index)
+			: this(declaration, compilation, new Properties { Index = index })
 		{
 		}
 
@@ -152,7 +198,8 @@ namespace Durian.Analysis.Data
 		/// <exception cref="IndexOutOfRangeException">
 		/// <see cref="Properties.Index"/> was out of range.
 		/// </exception>
-		public FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, Properties? properties) : base(declaration, compilation, DataHelpers.EnsureValidDeclaratorProperties<Properties>(declaration, compilation, properties))
+		public FieldData(FieldDeclarationSyntax declaration, ICompilationData compilation, Properties? properties)
+			: base(declaration, compilation, DataHelpers.EnsureValidDeclaratorProperties<Properties>(declaration, compilation, properties))
 		{
 		}
 
@@ -173,36 +220,21 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <summary>
-		/// Returns a collection of new <see cref="FieldData"/>s of all variables defined in the <see cref="Declaration"/>.
+		/// Returns a collection of <see cref="IFieldSymbol"/>s of all variables defined in the <see cref="Declaration"/>.
 		/// </summary>
-		public IEnumerable<FieldData> GetUnderlayingFields()
+		public IEnumerable<ISymbolOrMember<IFieldSymbol, FieldData>> GetUnderlayingFields()
 		{
 			int index = Index;
 			int length = Declaration.Declaration.Variables.Count;
 
 			for (int i = 0; i < index; i++)
 			{
-				yield return GetData(i);
+				yield return new FieldDataWrapper(this, i);
 			}
 
 			for (int i = index + 1; i < length; i++)
 			{
-				yield return GetData(i);
-			}
-
-			FieldData GetData(int index)
-			{
-				VariableDeclaratorSyntax variable = Declaration.Declaration.Variables[index];
-
-				Properties props = GetProperties();
-				props.Symbol = (IFieldSymbol)SemanticModel.GetDeclaredSymbol(variable)!;
-				props.Variable = variable;
-
-				return new FieldData(
-					Declaration,
-					ParentCompilation,
-					props
-				);
+				yield return new FieldDataWrapper(this, i);
 			}
 		}
 
@@ -212,6 +244,9 @@ namespace Durian.Analysis.Data
 			base.Map(properties);
 			properties.Variable = Variable;
 			properties.Index = Index;
+			properties.CustomOffset = _customOffset;
+			properties.BackingFieldKind = BackingFieldKind;
+			properties.IsThreadStatic = _isThreadStatic;
 		}
 
 		/// <inheritdoc/>
@@ -271,10 +306,17 @@ namespace Durian.Analysis.Data
 				Index = props.Index ?? default;
 				Variable = props.Variable ?? Declaration.Declaration.Variables[Index];
 				BackingFieldKind = props.BackingFieldKind ?? Symbol.GetBackingFieldKind();
+				_isThreadStatic = props.IsThreadStatic;
+				_customOffset = props.CustomOffset;
 			}
 		}
 
-		IEnumerable<IFieldData> IFieldData.GetUnderlayingFields()
+		IVariableDeclaratorProperties IVariableDeclarator.GetProperties()
+		{
+			return GetProperties();
+		}
+
+		IEnumerable<ISymbolOrMember<IFieldSymbol, IFieldData>> IFieldData.GetUnderlayingFields()
 		{
 			return GetUnderlayingFields();
 		}

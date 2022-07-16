@@ -3,13 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel;
-using System.Linq;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -17,21 +14,18 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="EventFieldDeclarationSyntax"/> or <see cref="EventDeclarationSyntax"/>.
 	/// </summary>
-	public class EventData : MemberData, IEventData
+	public class EventData : MemberData, IEventData, IVariableDeclarator
 	{
 		/// <summary>
 		/// Contains optional data that can be passed to a <see cref="FieldData"/>.
 		/// </summary>
-		public new class Properties : Properties<ILocalSymbol>, IDeclaratorProperties
+		public new class Properties : Properties<ILocalSymbol>, IVariableDeclaratorProperties
 		{
 			/// <inheritdoc cref="PropertyData.BackingField"/>
 			public DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> BackingField { get; set; }
 
 			/// <inheritdoc cref="LocalData.Index"/>
 			public int? Index { get; set; }
-
-			/// <inheritdoc cref="LocalData.Variable"/>
-			public VariableDeclaratorSyntax? Variable { get; set; }
 
 			/// <inheritdoc cref="MemberData.Properties.OverriddenSymbols"/>
 			public new DefaultedValue<ISymbolContainer<IEventSymbol, IEventData>> OverriddenSymbols
@@ -51,6 +45,15 @@ namespace Durian.Analysis.Data
 				{
 					base.OverriddenSymbols = new DefaultedValue<ISymbolContainer<ISymbol, IMemberData>>(value.Value);
 				}
+			}
+
+			/// <inheritdoc cref="LocalData.Variable"/>
+			public DefaultedValue<VariableDeclaratorSyntax> Variable { get; set; }
+
+			VariableDeclaratorSyntax? IVariableDeclaratorProperties.Variable
+			{
+				get => Variable.Value;
+				set => Variable = value;
 			}
 
 			/// <summary>
@@ -100,6 +103,11 @@ namespace Durian.Analysis.Data
 				}
 			}
 
+			void IVariableDeclaratorProperties.FillWithDefaultData()
+			{
+				FillWithDefaultData();
+			}
+
 			/// <inheritdoc/>
 			protected override MemberData.Properties CloneCore()
 			{
@@ -108,15 +116,32 @@ namespace Durian.Analysis.Data
 				return properties;
 			}
 
-			void IDeclaratorProperties.FillWithDefaultData()
-			{
-				FillWithDefaultData();
-			}
-
 			/// <inheritdoc/>
 			protected override void FillWithDefaultData()
 			{
 				IsPartial = false;
+			}
+		}
+
+		private sealed class EventDataWrapper : DataHelpers.VariableDataWrapper<IEventSymbol, EventData>
+		{
+			public EventDataWrapper(EventData parentEvent, int index) : base(parentEvent, index)
+			{
+			}
+
+			protected override EventData CreateData(IVariableDeclaratorProperties props)
+			{
+				if (Parent.AsField is not null)
+				{
+					return new EventData(Parent.AsField, Parent.ParentCompilation, props as Properties);
+				}
+
+				return new EventData(Parent.AsProperty!, Parent.ParentCompilation, props as Properties);
+			}
+
+			protected override VariableDeclarationSyntax GetVariableDeclaration()
+			{
+				return Parent.AsField!.Declaration;
 			}
 		}
 
@@ -139,7 +164,7 @@ namespace Durian.Analysis.Data
 			{
 				if (_backingField.IsDefault)
 				{
-					_backingField = new(Symbol.GetBackingField()?.ToDataOrSymbol(ParentCompilation));
+					_backingField = AsField is null ? new(null) : new(Symbol.GetBackingField()?.ToDataOrSymbol(ParentCompilation));
 				}
 
 				return _backingField.Value;
@@ -152,9 +177,18 @@ namespace Durian.Analysis.Data
 		public new MemberDeclarationSyntax Declaration => (base.Declaration as MemberDeclarationSyntax)!;
 
 		/// <summary>
-		/// Index of this field in the <see cref="MemberData.Declaration"/>. Returns <c>0</c> if the event is defined as a property.
+		/// Index of this field in the <see cref="Declaration"/>.
 		/// </summary>
 		public int Index { get; private set; }
+
+		/// <inheritdoc cref="MemberData.OverriddenSymbols"/>
+		public new ISymbolContainer<IEventSymbol, IEventData> OverriddenSymbols
+		{
+			get
+			{
+				return DataHelpers.GetEventOverriddenSymbols(base.OverriddenSymbols)!;
+			}
+		}
 
 		/// <summary>
 		/// <see cref="IEventSymbol"/> associated with the <see cref="EventFieldDeclarationSyntax"/> or <see cref="EventDeclarationSyntax"/>.
@@ -164,13 +198,41 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// <see cref="VariableDeclaratorSyntax"/> used to declare this event field. Equivalent to using <c>AsField.Declaration.Variables[Index]</c>.
 		/// </summary>
-		public VariableDeclaratorSyntax? Variable { get; private set; } = null!;
+		public VariableDeclaratorSyntax? Variable { get; private set; }
+
+		EventFieldDeclarationSyntax IVariableDeclarator<EventFieldDeclarationSyntax>.Declaration
+		{
+			get
+			{
+				if (AsField is null)
+				{
+					throw new InvalidOperationException("Current instance does not represent a field-line event");
+				}
+
+				return AsField;
+			}
+		}
+
+		IEventData ISymbolOrMember<IEventSymbol, IEventData>.Member => this;
+
+		VariableDeclaratorSyntax IVariableDeclarator<EventFieldDeclarationSyntax>.Variable
+		{
+			get
+			{
+				if (Variable is null)
+				{
+					throw new InvalidOperationException("Current instance does not represent a field-line event");
+				}
+
+				return Variable;
+			}
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EventData"/> class.
 		/// </summary>
-		/// <param name="declaration"><see cref="EventDeclarationSyntax"/> this <see cref="DelegateData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="DelegateData"/>.</param>
+		/// <param name="declaration"><see cref="EventDeclarationSyntax"/> this <see cref="EventData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
@@ -181,40 +243,14 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EventData"/> class.
 		/// </summary>
-		/// <param name="declaration"><see cref="EventFieldDeclarationSyntax"/> this <see cref="DelegateData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="DelegateData"/>.</param>
-		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
+		/// <param name="declaration"><see cref="EventDeclarationSyntax"/> this <see cref="EventData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
-		/// <exception cref="IndexOutOfRangeException">
-		/// <paramref name="index"/> was out of range.
-		/// </exception>
-		public EventData(EventFieldDeclarationSyntax declaration, ICompilationData compilation, int index = 0)
-			: this(declaration, compilation, GetSemanticModel(compilation, declaration), GetVariable(declaration, index))
+		public EventData(EventDeclarationSyntax declaration, ICompilationData compilation, Properties? properties) : base(declaration, compilation, properties)
 		{
-			Index = index;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="EventData"/> class.
-		/// </summary>
-		/// <param name="symbol"><see cref="IEventSymbol"/> this <see cref="EventData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
-		internal EventData(IEventSymbol symbol, ICompilationData compilation) : base(
-			GetFieldOrProperty(
-				symbol,
-				compilation,
-				out SemanticModel semanticModel,
-				out VariableDeclaratorSyntax? variable,
-				out int index),
-			compilation,
-			symbol,
-			semanticModel
-		)
-		{
-			Index = index;
-			Variable = variable;
 		}
 
 		/// <summary>
@@ -222,190 +258,170 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="declaration"><see cref="EventFieldDeclarationSyntax"/> this <see cref="EventData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
-		/// <param name="symbol"><see cref="IEventSymbol"/> this <see cref="EventData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="variable"><see cref="VariableDeclaratorSyntax"/> that represents the target variable.</param>
 		/// <param name="index">Index of this field in the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="IEventSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal EventData(
-			EventFieldDeclarationSyntax declaration,
-			ICompilationData compilation,
-			IEventSymbol symbol,
-			SemanticModel semanticModel,
-			VariableDeclaratorSyntax variable,
-			int index,
-			string[]? modifiers = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
+		/// </exception>
+		/// <exception cref="IndexOutOfRangeException">
+		/// <paramref name="index"/> was out of range.
+		/// </exception>
+		public EventData(EventFieldDeclarationSyntax declaration, ICompilationData compilation, int index)
+			: this(declaration, compilation, new Properties { Index = index })
 		{
-			Index = index;
-			Variable = variable;
-		}
-
-		/// <inheritdoc cref="EventData(EventFieldDeclarationSyntax, ICompilationData, IEventSymbol, SemanticModel, VariableDeclaratorSyntax, int, string[], IEnumerable{ITypeData}?, IEnumerable{INamespaceSymbol}?, IEnumerable{AttributeData}?)"/>
-		protected internal EventData(
-			EventDeclarationSyntax declaration,
-			ICompilationData compilation,
-			IEventSymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(declaration, compilation, symbol, semanticModel, modifiers, containingTypes, containingNamespaces, attributes)
-		{
-		}
-
-		private EventData(
-			EventFieldDeclarationSyntax declaration,
-			ICompilationData compilation,
-			IEventSymbol symbol,
-			SemanticModel semanticModel,
-			VariableDeclaratorSyntax variable,
-			int index
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel
-		)
-		{
-			Variable = variable;
-			Index = index;
-		}
-
-		private EventData(
-			EventFieldDeclarationSyntax declaration,
-			ICompilationData compilation,
-			SemanticModel semanticModel,
-			VariableDeclaratorSyntax variable
-		) : base(
-			declaration,
-			compilation,
-			(semanticModel.GetDeclaredSymbol(variable) as IEventSymbol)!,
-			semanticModel
-		)
-		{
-			Variable = variable;
 		}
 
 		/// <summary>
-		/// Returns a collection of new <see cref="EventData"/>s of all variables defined in the <see cref="MemberData.Declaration"/>.
+		/// Initializes a new instance of the <see cref="EventData"/> class.
 		/// </summary>
-		public IEnumerable<EventData> GetUnderlayingEvents()
+		/// <param name="declaration"><see cref="EventFieldDeclarationSyntax"/> this <see cref="EventData"/> represents.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="EventData"/>.</param>
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
+		/// </exception>
+		/// <exception cref="IndexOutOfRangeException">
+		/// <see cref="Properties.Index"/> was out of range.
+		/// </exception>
+		public EventData(EventFieldDeclarationSyntax declaration, ICompilationData compilation, Properties? properties)
+			: base(declaration, compilation, DataHelpers.EnsureValidDeclaratorProperties<Properties>(declaration, compilation, properties))
 		{
-			EventFieldDeclarationSyntax? field = AsField;
+		}
 
-			if (field is null)
+		internal EventData(IEventSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
+		{
+		}
+
+		/// <inheritdoc cref="MemberData.Clone"/>
+		public new EventData Clone()
+		{
+			return (CloneCore() as EventData)!;
+		}
+
+		/// <inheritdoc cref="MemberData.GetProperties"/>
+		public new Properties GetProperties()
+		{
+			return (GetPropertiesCore() as Properties)!;
+		}
+
+		/// <summary>
+		/// Returns a collection of <see cref="IEventSymbol"/>s of all variables defined in the <see cref="Declaration"/>.
+		/// </summary>
+		public IEnumerable<ISymbolOrMember<IEventSymbol, IEventData>> GetUnderlayingEvents()
+		{
+			if (AsField is null)
 			{
-				yield break;
+				return Array.Empty<ISymbolOrMember<IEventSymbol, IEventData>>();
 			}
 
-			int index = Index;
-			int length = field.Declaration.Variables.Count;
+			return Yield();
 
-			for (int i = 0; i < length; i++)
+			IEnumerable<ISymbolOrMember<IEventSymbol, IEventData>> Yield()
 			{
-				if (i == index)
+				int index = Index;
+				int length = AsField.Declaration.Variables.Count;
+
+				for (int i = 0; i < index; i++)
 				{
-					yield return this;
-					continue;
+					yield return new EventDataWrapper(this, i);
 				}
 
-				VariableDeclaratorSyntax variable = field.Declaration.Variables[i];
-
-				yield return new EventData(
-					field,
-					ParentCompilation,
-					(IEventSymbol)SemanticModel.GetDeclaredSymbol(variable)!,
-					SemanticModel,
-					variable,
-					index
-				);
+				for (int i = index + 1; i < length; i++)
+				{
+					yield return new EventDataWrapper(this, i);
+				}
 			}
 		}
 
-		private static MemberDeclarationSyntax GetFieldOrProperty(
-			IEventSymbol symbol,
-			ICompilationData compilation,
-			out SemanticModel semanticModel,
-			out VariableDeclaratorSyntax? variable,
-			out int index
-		)
+		/// <inheritdoc cref="MemberData.Map(MemberData.Properties)"/>
+		public virtual void Map(Properties properties)
 		{
-			SyntaxNode? node = symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
-
-			if (node is VariableDeclaratorSyntax var)
-			{
-				EventFieldDeclarationSyntax? field = (node.Parent?.Parent as EventFieldDeclarationSyntax)!;
-
-				if (field is null)
-				{
-					throw Exc_NoSyntaxReference(symbol);
-				}
-
-				SeparatedSyntaxList<VariableDeclaratorSyntax> variables = field.Declaration.Variables;
-				int length = variables.Count;
-
-				for (int i = 0; i < length; i++)
-				{
-					if (variables[i].IsEquivalentTo(var))
-					{
-						index = i;
-						semanticModel = compilation.Compilation.GetSemanticModel(field.SyntaxTree);
-						variable = var;
-						return field;
-					}
-				}
-			}
-			else if (node is EventDeclarationSyntax prop)
-			{
-				semanticModel = compilation.Compilation.GetSemanticModel(node.SyntaxTree);
-				index = 0;
-				variable = null;
-				return prop;
-			}
-
-			throw Exc_NoSyntaxReference(symbol);
+			base.Map(properties);
+			properties.Variable = Variable;
+			properties.Index = Index;
+			properties.BackingField = _backingField;
 		}
 
-		private static SemanticModel GetSemanticModel(ICompilationData compilation, EventFieldDeclarationSyntax declaration)
+		/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		[Obsolete("Use Map(Properties) instead")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public sealed override void Map(MemberData.Properties properties)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 		{
-			if (declaration is null)
+			if (properties is Properties props)
 			{
-				throw new ArgumentNullException(nameof(declaration));
+				Map(props);
 			}
-
-			if (compilation is null)
+			else
 			{
-				throw new ArgumentNullException(nameof(compilation));
+				base.Map(properties);
 			}
-
-			return compilation.Compilation.GetSemanticModel(declaration.SyntaxTree);
 		}
 
-		private static VariableDeclaratorSyntax GetVariable(EventFieldDeclarationSyntax declaration, int index)
+		IVariableDeclaratorProperties IVariableDeclarator.GetProperties()
 		{
-			if (index < 0 || index >= declaration.Declaration.Variables.Count)
+			return GetProperties();
+		}
+
+		IEnumerable<ISymbolOrMember<IEventSymbol, IEventData>> IEventData.GetUnderlayingEvents()
+		{
+			return GetUnderlayingEvents();
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData CloneCore()
+		{
+			if (AsField is not null)
 			{
-				throw new IndexOutOfRangeException(nameof(index));
+				return new EventData(AsField, ParentCompilation, GetProperties());
 			}
 
-			return declaration.Declaration.Variables[index];
+			return new EventData(AsProperty!, ParentCompilation, GetProperties());
+		}
+
+		/// <inheritdoc/>
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use GetDefaultPropertiesCore() instead")]
+		protected sealed override MemberData.Properties? GetDefaultProperties()
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+		{
+			return GetDefaultPropertiesCore();
+		}
+
+		/// <inheritdoc cref="MemberData.GetDefaultProperties()"/>
+		protected virtual Properties? GetDefaultPropertiesCore()
+		{
+			return new Properties(true);
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties GetPropertiesCore()
+		{
+			Properties properties = new();
+			Map(properties);
+			return properties;
+		}
+
+		/// <inheritdoc/>
+		protected override void SetProperties(MemberData.Properties properties)
+		{
+			base.SetProperties(properties);
+
+			if (properties is Properties props)
+			{
+				Index = props.Index ?? default;
+				_backingField = props.BackingField;
+
+				if (props.Variable.IsDefault && AsField is not null)
+				{
+					Variable = AsField.GetVariable(Index);
+				}
+				else
+				{
+					Variable = props.Variable.Value;
+				}
+			}
 		}
 	}
 }

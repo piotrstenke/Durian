@@ -120,6 +120,34 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the full name of the attribute represented by the specified <see cref="NullableAnnotationAttribute"/> <paramref name="value"/>.
+		/// </summary>
+		/// <param name="value"><see cref="NullableAnnotationAttribute"/> to get the full attribute name of.</param>
+		public static string? GetAttributeName(this NullableAnnotationAttribute value)
+		{
+			if (value.GetText() is string name)
+			{
+				return name + "Attribute";
+			}
+
+			return default;
+		}
+
+		/// <summary>
+		/// Returns the full name of the attribute represented by the specified <see cref="SpecialAttribute"/> <paramref name="value"/>.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialAttribute"/> to get the full attribute name of.</param>
+		public static string? GetAttributeName(this SpecialAttribute value)
+		{
+			if (value.GetText() is string name)
+			{
+				return name + "Attribute";
+			}
+
+			return default;
+		}
+
+		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="AttributeTarget"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
@@ -420,6 +448,7 @@ namespace Durian.Analysis.Extensions
 				TypeKeyword.NUInt => default(nuint),
 				TypeKeyword.Object => default(object),
 				TypeKeyword.Dynamic => default(dynamic),
+
 				// TypeKeyword.Void => default,
 				_ => default
 			};
@@ -1048,6 +1077,61 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns the fully qualified name of the namespace the attribute represented by the specified <see cref="SpecialAttribute"/> <paramref name="value"/> is contained within.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialAttribute"/> to get the fully qualified namespace name of.</param>
+		public static string? GetNamespaceName(this SpecialAttribute value)
+		{
+			return value switch
+			{
+				SpecialAttribute.Obsolete or
+				SpecialAttribute.ThreadStatic or
+				SpecialAttribute.Flags or
+				SpecialAttribute.CLSCompliant or
+				SpecialAttribute.AttributeUsage
+					=> "System",
+
+				SpecialAttribute.Conditional
+					=> "System.Diagnostics",
+
+				SpecialAttribute.CallerArgumentExpression or
+				SpecialAttribute.CallerFilePath or
+				SpecialAttribute.CallerLineNumber or
+				SpecialAttribute.CallerMemberName or
+				SpecialAttribute.SkipLocalsInit or
+				SpecialAttribute.ModuleInitializer or
+				SpecialAttribute.MethodImpl
+					=> "System.Runtime.CompilerServices",
+
+				SpecialAttribute.GeneratedCode
+					=> "System.CodeDom.Compiler",
+
+				SpecialAttribute.DoesNotReturn or
+				SpecialAttribute.DoesNotReturnIf
+					=> "System.Diagnostics.CodeAnalysis",
+
+				SpecialAttribute.StructLayout or
+				SpecialAttribute.MarshalAs or
+				SpecialAttribute.DllImport or
+				SpecialAttribute.FieldOffset
+					=> "System.Runtime.InteropServices",
+
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Returns the fully qualified name of the namespace the attribute represented by the specified <see cref="NullableAnnotationAttribute"/> <paramref name="value"/> is contained within.
+		/// </summary>
+		/// <param name="value"><see cref="NullableAnnotationAttribute"/> to get the fully qualified namespace name of.</param>
+		public static string? GetNamespaceName(this NullableAnnotationAttribute value)
+		{
+			return value >= NullableAnnotationAttribute.None && value <= NullableAnnotationAttribute.MemberNotNullWhen
+				? "System.Diagnostics.CodeAnalysis"
+				: default;
+		}
+
+		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="NamespaceStyle"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="SyntaxKind"/> to convert.</param>
@@ -1442,6 +1526,20 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Converts the specified <paramref name="value"/> to an associated <see cref="SymbolKind"/> value.
+		/// </summary>
+		/// <param name="value"><see cref="BackingFieldKind"/> to convert.</param>
+		public static SymbolKind GetSymbolKind(this BackingFieldKind value)
+		{
+			return value switch
+			{
+				BackingFieldKind.Property => SymbolKind.Property,
+				BackingFieldKind.Event => SymbolKind.Event,
+				_ => default
+			};
+		}
+
+		/// <summary>
 		/// Converts the specified <paramref name="value"/> to an associated <see cref="SyntaxKind"/> value.
 		/// </summary>
 		/// <param name="value"><see cref="Virtuality"/> to convert.</param>
@@ -1781,20 +1879,6 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Converts the specified <paramref name="value"/> to an associated <see cref="SymbolKind"/> value.
-		/// </summary>
-		/// <param name="value"><see cref="BackingFieldKind"/> to convert.</param>
-		public static SymbolKind GetSymbolKind(this BackingFieldKind value)
-		{
-			return value switch
-			{
-				BackingFieldKind.Property => SymbolKind.Property,
-				BackingFieldKind.Event => SymbolKind.Event,
-				_ => default
-			};
-		}
-
-		/// <summary>
 		/// Returns the name of system type the specified <see cref="TypeKeyword"/> represents.
 		/// </summary>
 		/// <param name="value"><see cref="TypeKeyword"/> to return the name of system type represented by.</param>
@@ -1820,6 +1904,58 @@ namespace Durian.Analysis.Extensions
 				TypeKeyword.String => "String",
 				TypeKeyword.Void => "Void",
 				TypeKeyword.Object or TypeKeyword.Dynamic => "Object",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="SpecialAttribute"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="SpecialAttribute"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this SpecialAttribute value)
+		{
+			return value switch
+			{
+				SpecialAttribute.Obsolete => "Obsolete",
+				SpecialAttribute.Conditional => "Conditional",
+				SpecialAttribute.CLSCompliant => "CLSCompliant",
+				SpecialAttribute.AttributeUsage => "AttributeUsage",
+				SpecialAttribute.MethodImpl => "MethodImpl",
+				SpecialAttribute.Flags => "Flags",
+				SpecialAttribute.ThreadStatic => "ThreadStatic",
+				SpecialAttribute.GeneratedCode => "GeneratedCode",
+				SpecialAttribute.DoesNotReturn => "DoesNotReturn",
+				SpecialAttribute.DoesNotReturnIf => "DoesNotReturnIf",
+				SpecialAttribute.CallerArgumentExpression => "CallerArgumentExpression",
+				SpecialAttribute.CallerFilePath => "CallerFilePath",
+				SpecialAttribute.CallerLineNumber => "CallerLineNumber",
+				SpecialAttribute.CallerMemberName => "CallerMemberName",
+				SpecialAttribute.StructLayout => "StructLayout",
+				SpecialAttribute.MarshalAs => "MarshalAs",
+				SpecialAttribute.SkipLocalsInit => "SkipLocalsInit",
+				SpecialAttribute.ModuleInitializer => "ModuleInitializer",
+				SpecialAttribute.DllImport => "DllImport",
+				SpecialAttribute.FieldOffset => "FieldOffset",
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Converts the specified <see cref="NullableAnnotationAttribute"/> <paramref name="value"/> to its <see cref="string"/> representation.
+		/// </summary>
+		/// <param name="value"><see cref="NullableAnnotationAttribute"/> to convert to a <see cref="string"/> representation.</param>
+		public static string? GetText(this NullableAnnotationAttribute value)
+		{
+			return value switch
+			{
+				NullableAnnotationAttribute.AllowNull => "AllowNull",
+				NullableAnnotationAttribute.DisallowNull => "DisallowNull",
+				NullableAnnotationAttribute.MaybeNull => "MaybeNull",
+				NullableAnnotationAttribute.NotNull => "NotNull",
+				NullableAnnotationAttribute.NotNullWhen => "NotNullWhen",
+				NullableAnnotationAttribute.NotNullIfNotNull => "NotNullIfNotNull",
+				NullableAnnotationAttribute.MemberNotNull => "MemberNotNull",
+				NullableAnnotationAttribute.MemberNotNullWhen => "MemberNotNullWhen",
 				_ => default
 			};
 		}

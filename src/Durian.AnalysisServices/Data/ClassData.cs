@@ -95,7 +95,7 @@ namespace Durian.Analysis.Data
 		{
 		}
 
-		internal ClassData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
+		internal ClassData(INamedTypeSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
 		{
 		}
 

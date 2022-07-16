@@ -72,7 +72,7 @@ namespace Durian.Analysis.SymbolContainers
 		{
 		}
 
-		/// <inheritdoc cref="IWritableSymbolContainer.ToString"/>
+		/// <inheritdoc/>
 		public override string ToString()
 		{
 			StringBuilder builder = new();

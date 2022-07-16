@@ -26,6 +26,9 @@ namespace Durian.Analysis.Data
 			/// <inheritdoc cref="ITypeData.BaseTypes"/>
 			public DefaultedValue<ISymbolContainer<INamedTypeSymbol, ITypeData>> BaseTypes { get; set; }
 
+			/// <inheritdoc cref="ITypeData.CompilerCondition"/>
+			public DefaultedValue<string> CompilerCondition { get; set; }
+
 			/// <summary>
 			/// Container of child <see cref="ISymbol"/>s of this type.
 			/// </summary>
@@ -74,6 +77,7 @@ namespace Durian.Analysis.Data
 				properties.TypeArguments = TypeArguments;
 				properties.TypeParameters = TypeParameters;
 				properties.BaseTypes = BaseTypes;
+				properties.CompilerCondition = CompilerCondition;
 			}
 
 			/// <inheritdoc/>
@@ -110,6 +114,7 @@ namespace Durian.Analysis.Data
 		}
 
 		private ISymbolContainer<INamedTypeSymbol, ITypeData>? _baseTypes;
+		private DefaultedValue<string> _compilerCondition;
 		private ILeveledSymbolContainer<ISymbol, IMemberData>? _members;
 		private DefaultedValue<ISymbolOrMember<IMethodSymbol, IMethodData>> _parameterlessConstructor;
 		private ImmutableArray<TDeclaration> _partialDeclarations;
@@ -122,6 +127,15 @@ namespace Durian.Analysis.Data
 			get
 			{
 				return _baseTypes ??= Symbol.GetBaseTypes().ToContainer(ParentCompilation);
+			}
+		}
+
+		/// <inheritdoc/>
+		public string? CompilerCondition
+		{
+			get
+			{
+				return _compilerCondition ??= this.GetCompilerCondition();
 			}
 		}
 
@@ -371,6 +385,7 @@ namespace Durian.Analysis.Data
 			properties.PartialDeclarations = _partialDeclarations;
 			properties.ParameterlessConstructor = _parameterlessConstructor;
 			properties.BaseTypes = DataHelpers.ToDefaultedValue(_baseTypes);
+			properties.CompilerCondition = _compilerCondition;
 		}
 
 		/// <inheritdoc/>
@@ -428,6 +443,7 @@ namespace Durian.Analysis.Data
 				_partialDeclarations = props.PartialDeclarations;
 				_typeArguments = DataHelpers.FromDefaultedOrEmpty(props.TypeArguments);
 				_typeParameters = DataHelpers.FromDefaultedOrEmpty(props.TypeParameters);
+				_compilerCondition = props.CompilerCondition;
 			}
 		}
 

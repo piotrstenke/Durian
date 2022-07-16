@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -17,6 +18,11 @@ namespace Durian.Analysis.Data
 		/// Base types of the current type.
 		/// </summary>
 		ISymbolContainer<INamedTypeSymbol, ITypeData> BaseTypes { get; }
+
+		/// <summary>
+		/// Value applied to the <see cref="ConditionalAttribute"/> of this type.
+		/// </summary>
+		string? CompilerCondition { get; }
 
 		/// <summary>
 		/// Parameterless constructor of this type.

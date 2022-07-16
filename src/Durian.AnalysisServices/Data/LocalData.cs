@@ -13,12 +13,12 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="LocalDeclarationStatementSyntax"/>.
 	/// </summary>
-	public class LocalData : MemberData, ILocalData
+	public class LocalData : MemberData, ILocalData, IVariableDeclarator
 	{
 		/// <summary>
 		/// Contains optional data that can be passed to a <see cref="FieldData"/>.
 		/// </summary>
-		public new class Properties : Properties<ILocalSymbol>, IDeclaratorProperties
+		public new class Properties : Properties<ILocalSymbol>, IVariableDeclaratorProperties
 		{
 			/// <inheritdoc cref="LocalData.Index"/>
 			public int? Index { get; set; }
@@ -80,7 +80,7 @@ namespace Durian.Analysis.Data
 				return properties;
 			}
 
-			void IDeclaratorProperties.FillWithDefaultData()
+			void IVariableDeclaratorProperties.FillWithDefaultData()
 			{
 				FillWithDefaultData();
 			}
@@ -91,6 +91,23 @@ namespace Durian.Analysis.Data
 				SetDefaultData();
 
 				Attributes = ImmutableArray<AttributeData>.Empty;
+			}
+		}
+
+		private sealed class LocalDataWrapper : DataHelpers.VariableDataWrapper<ILocalSymbol, LocalData>
+		{
+			public LocalDataWrapper(LocalData parentLocal, int index) : base(parentLocal, index)
+			{
+			}
+
+			protected override LocalData CreateData(IVariableDeclaratorProperties props)
+			{
+				return new LocalData(Parent.Declaration, Parent.ParentCompilation, props as Properties);
+			}
+
+			protected override VariableDeclarationSyntax GetVariableDeclaration()
+			{
+				return Parent.Declaration.Declaration;
 			}
 		}
 
@@ -128,7 +145,8 @@ namespace Durian.Analysis.Data
 		/// <exception cref="IndexOutOfRangeException">
 		/// <paramref name="index"/> was out of range.
 		/// </exception>
-		public LocalData(LocalDeclarationStatementSyntax declaration, ICompilationData compilation, int index) : this(declaration, compilation, new Properties { Index = index })
+		public LocalData(LocalDeclarationStatementSyntax declaration, ICompilationData compilation, int index)
+			: this(declaration, compilation, new Properties { Index = index })
 		{
 		}
 
@@ -144,7 +162,8 @@ namespace Durian.Analysis.Data
 		/// <exception cref="IndexOutOfRangeException">
 		/// <see cref="Properties.Index"/> was out of range.
 		/// </exception>
-		public LocalData(LocalDeclarationStatementSyntax declaration, ICompilationData compilation, Properties? properties) : base(declaration, compilation, DataHelpers.EnsureValidDeclaratorProperties<Properties>(declaration, compilation, properties))
+		public LocalData(LocalDeclarationStatementSyntax declaration, ICompilationData compilation, Properties? properties)
+			: base(declaration, compilation, DataHelpers.EnsureValidDeclaratorProperties<Properties>(declaration, compilation, properties))
 		{
 		}
 
@@ -153,36 +172,21 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <summary>
-		/// Returns a collection of new <see cref="LocalData"/>s of all variables defined in the <see cref="Declaration"/>.
+		/// Returns a collection of <see cref="ILocalSymbol"/>s of all variables defined in the <see cref="Declaration"/>.
 		/// </summary>
-		public IEnumerable<LocalData> GetUnderlayingLocals()
+		public IEnumerable<ISymbolOrMember<ILocalSymbol, LocalData>> GetUnderlayingLocals()
 		{
 			int index = Index;
 			int length = Declaration.Declaration.Variables.Count;
 
 			for (int i = 0; i < index; i++)
 			{
-				yield return GetData(i);
+				yield return new LocalDataWrapper(this, i);
 			}
 
 			for (int i = index + 1; i < length; i++)
 			{
-				yield return GetData(i);
-			}
-
-			LocalData GetData(int index)
-			{
-				VariableDeclaratorSyntax variable = Declaration.Declaration.Variables[index];
-
-				Properties props = GetProperties();
-				props.Symbol = (ILocalSymbol)SemanticModel.GetDeclaredSymbol(variable)!;
-				props.Variable = variable;
-
-				return new LocalData(
-					Declaration,
-					ParentCompilation,
-					props
-				);
+				yield return new LocalDataWrapper(this, i);
 			}
 		}
 
@@ -265,7 +269,12 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		IEnumerable<ILocalData> ILocalData.GetUnderlayingLocals()
+		IVariableDeclaratorProperties IVariableDeclarator.GetProperties()
+		{
+			return GetProperties();
+		}
+
+		IEnumerable<ISymbolOrMember<ILocalSymbol, ILocalData>> ILocalData.GetUnderlayingLocals()
 		{
 			return GetUnderlayingLocals();
 		}

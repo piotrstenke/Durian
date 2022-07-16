@@ -1,6 +1,7 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.SymbolContainers;
@@ -53,6 +54,11 @@ namespace Durian.Analysis.Data
 		/// Determines whether the current member is declared using the <see langword="new"/> keyword.
 		/// </summary>
 		bool IsNew { get; }
+
+		/// <summary>
+		/// Determines whether the current member has the <see cref="ObsoleteAttribute"/> defined.
+		/// </summary>
+		bool IsObsolete { get; }
 
 		/// <summary>
 		/// Determines whether the current member is declared using the <see langword="partial"/> keyword.

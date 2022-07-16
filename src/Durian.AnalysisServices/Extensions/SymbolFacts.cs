@@ -1564,9 +1564,9 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Determines whether the specified <paramref name="symbol"/> is obsolete.
 		/// </summary>
-		/// <param name="symbol">Determines whether the specified <paramref name="symbol"/> is obsolete.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether is obsolete.</param>
 		/// <param name="checkParent">Determines whether to also check all the containing types of the <paramref name="symbol"/>.</param>
-		public static bool IsObsolete(this ISymbol symbol, bool checkParent = true)
+		public static bool IsObsolete(this ISymbol symbol, bool checkParent = false)
 		{
 			bool isObsolete = HasObsoleteAttribute(symbol);
 
@@ -1630,7 +1630,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check if is parameterless.</param>
 		public static bool IsParameterless(this INamedTypeSymbol type)
 		{
-			return type.DelegateInvokeMethod is not null && type.DelegateInvokeMethod.IsParameterless();
+			return type.DelegateInvokeMethod?.IsParameterless() ?? false;
 		}
 
 		/// <summary>
@@ -2105,6 +2105,15 @@ namespace Durian.Analysis.Extensions
 				IFieldSymbol field => field.IsReadOnly,
 				_ => false
 			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="field"/> is thread static.
+		/// </summary>
+		/// <param name="field"><see cref="IFieldSymbol"/> to determine whether is thread static.</param>
+		public static bool IsThreadStatic(this IFieldSymbol field)
+		{
+			return field.GetAttributes().Any(attr => attr.GetSpecialAttributeKind() == SpecialAttribute.ThreadStatic);
 		}
 
 		/// <summary>

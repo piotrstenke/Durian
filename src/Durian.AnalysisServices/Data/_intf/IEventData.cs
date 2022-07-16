@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,7 +11,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="IEventSymbol"/>.
 	/// </summary>
-	public interface IEventData : IMemberData, IDeclarator<EventFieldDeclarationSyntax>, ISymbolOrMember<IEventSymbol, IEventData>
+	public interface IEventData : IMemberData, IVariableDeclarator<EventFieldDeclarationSyntax>, ISymbolOrMember<IEventSymbol, IEventData>
 	{
 		/// <summary>
 		/// Returns the <see cref="Declaration"/> as a <see cref="EventFieldDeclarationSyntax"/>.
@@ -39,5 +40,10 @@ namespace Durian.Analysis.Data
 		/// <see cref="IEventSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		new IEventSymbol Symbol { get; }
+
+		/// <summary>
+		/// Returns a collection of <see cref="IEventData"/>s of all variables defined in the <see cref="IVariableDeclarator{T}.Declaration"/>.
+		/// </summary>
+		IEnumerable<ISymbolOrMember<IEventSymbol, IEventData>> GetUnderlayingEvents();
 	}
 }

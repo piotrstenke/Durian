@@ -35,40 +35,7 @@ namespace Durian.Analysis.Data
 		{
 		}
 
-		internal DelegateData(INamedTypeSymbol symbol, ICompilationData compilation) : base(symbol, compilation)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="DelegateData"/> class.
-		/// </summary>
-		/// <param name="declaration"><see cref="DelegateDeclarationSyntax"/> this <see cref="DelegateData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="DelegateData"/>.</param>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> this <see cref="DelegateData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
-		protected internal DelegateData(
-			DelegateDeclarationSyntax declaration,
-			ICompilationData compilation,
-			INamedTypeSymbol symbol,
-			SemanticModel semanticModel,
-			string[]? modifiers = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
+		internal DelegateData(INamedTypeSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
 		{
 		}
 	}

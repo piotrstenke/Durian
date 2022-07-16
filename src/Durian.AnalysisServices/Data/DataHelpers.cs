@@ -12,6 +12,66 @@ namespace Durian.Analysis.Data
 {
 	internal static class DataHelpers
 	{
+		public abstract class VariableDataWrapper<TSymbol, TData> : ISymbolOrMember<TSymbol, TData>
+			where TSymbol : class, ISymbol
+			where TData : class, IMemberData, IVariableDeclarator
+		{
+			private TSymbol? _symbol;
+			private TData? _data;
+
+			public bool HasMember => _data is not null;
+
+			public int Index { get; }
+
+			public TData Member
+			{
+				get
+				{
+					if (_data is not null)
+					{
+						return _data;
+					}
+
+					VariableDeclaratorSyntax variable = Variable;
+
+					IVariableDeclaratorProperties props = Parent.GetProperties();
+					props.Symbol = Symbol;
+					props.Variable = variable;
+					props.Index = Index;
+
+					_data = CreateData(props);
+
+					return _data;
+				}
+			}
+
+			public TData Parent { get; }
+
+			public TSymbol Symbol
+			{
+				get
+				{
+					return _symbol ??= (TSymbol)Parent.SemanticModel.GetDeclaredSymbol(Variable)!;
+				}
+			}
+
+			public VariableDeclaratorSyntax Variable => GetVariableDeclaration().Variables[Index];
+
+			ISymbol ISymbolOrMember.Symbol => Symbol;
+
+			IMemberData ISymbolOrMember.Member => Member;
+
+			protected VariableDataWrapper(TData parent, int index)
+			{
+				Parent = parent;
+				Index = index;
+			}
+
+			protected abstract TData CreateData(IVariableDeclaratorProperties props);
+
+			protected abstract VariableDeclarationSyntax GetVariableDeclaration();
+		}
+
 		public static ISymbolContainer<IPropertySymbol, IPropertyData>? GetPropertyOverriddenSymbols(ISymbolContainer? baseContainer)
 		{
 			if (baseContainer is null)
@@ -51,16 +111,10 @@ namespace Durian.Analysis.Data
 
 			if (baseContainer is not ISymbolContainer<IMethodSymbol, IMethodData> container)
 			{
-				throw new InvalidOperationException($"Base value of 'OverriddenSymbols' is not a 'ISymbolContainer<IMethodSymbol, IMethodData>");
+				throw new InvalidOperationException("Base value of 'OverriddenSymbols' is not a 'ISymbolContainer<IMethodSymbol, IMethodData>");
 			}
 
 			return container;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static InvalidOperationException Exc_NoSyntaxReference(ISymbol symbol)
-		{
-			return new InvalidOperationException($"Symbol '{symbol}' doesn't define any syntax reference, thus can't be used in a {nameof(MemberData)}!");
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -124,7 +178,7 @@ namespace Durian.Analysis.Data
 			BaseFieldDeclarationSyntax declaration,
 			ICompilationData compilation,
 			MemberData.Properties? properties
-		) where TProps : MemberData.Properties, IDeclaratorProperties, new()
+		) where TProps : MemberData.Properties, IVariableDeclaratorProperties, new()
 		{
 			if(declaration is null)
 			{
@@ -138,7 +192,7 @@ namespace Durian.Analysis.Data
 			LocalDeclarationStatementSyntax declaration,
 			ICompilationData compilation,
 			MemberData.Properties? properties
-		) where TProps : MemberData.Properties, IDeclaratorProperties, new()
+		) where TProps : MemberData.Properties, IVariableDeclaratorProperties, new()
 		{
 			if (declaration is null)
 			{
@@ -152,7 +206,7 @@ namespace Durian.Analysis.Data
 			VariableDeclarationSyntax declaration,
 			ICompilationData compilation,
 			MemberData.Properties? properties
-		) where TProps : MemberData.Properties, IDeclaratorProperties, new()
+		) where TProps : MemberData.Properties, IVariableDeclaratorProperties, new()
 		{
 			TProps target;
 
@@ -222,7 +276,7 @@ namespace Durian.Analysis.Data
 			return compilation.Compilation.GetSemanticModel(variable);
 		}
 
-		private static VariableDeclaratorSyntax RetrieveVariableFromProperties(VariableDeclarationSyntax declaration, IDeclaratorProperties properties, ref bool isChanged)
+		private static VariableDeclaratorSyntax RetrieveVariableFromProperties(VariableDeclarationSyntax declaration, IVariableDeclaratorProperties properties, ref bool isChanged)
 		{
 			if (properties.Variable is not null)
 			{
