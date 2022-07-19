@@ -251,6 +251,11 @@ namespace Durian.Analysis.SymbolContainers
 			return Reverse();
 		}
 
+		IEnumerable<ISymbolOrMember<TSymbol, TData>> ISymbolContainer<TSymbol, TData>.AsEnumerable()
+		{
+			return this;
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static ReturnOrder GetInitialOrder(IEnumerable collection)
 		{

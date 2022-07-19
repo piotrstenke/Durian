@@ -20,9 +20,24 @@ namespace Durian.Analysis.Data
 		ImmutableArray<AttributeData> Attributes { get; }
 
 		/// <summary>
-		/// All <see cref="INamespaceSymbol"/>s that contain the <see cref="Symbol"/>.
+		/// <see cref="ISymbol"/> that contains this member.
+		/// </summary>
+		ISymbolOrMember<ISymbol, IMemberData>? ContainingMember { get; }
+
+		/// <summary>
+		/// <see cref="INamespaceSymbol"/> that contains this member (including the global namespace).
+		/// </summary>
+		ISymbolOrMember<INamespaceSymbol, INamespaceData>? ContainingNamespace { get; }
+
+		/// <summary>
+		/// All <see cref="INamespaceSymbol"/>s that contain the <see cref="Symbol"/> (excluding the global namespace).
 		/// </summary>
 		IWritableSymbolContainer<INamespaceSymbol, INamespaceData> ContainingNamespaces { get; }
+
+		/// <summary>
+		/// <see cref="INamedTypeSymbol"/> that contains this member.
+		/// </summary>
+		ISymbolOrMember<INamedTypeSymbol, ITypeData>? ContainingType { get; }
 
 		/// <summary>
 		/// All <see cref="INamedTypeSymbol"/>s that contain the <see cref="Symbol"/>.
@@ -84,11 +99,6 @@ namespace Durian.Analysis.Data
 		/// Name of the underlaying symbol including the verbatim identifier '@' token.
 		/// </summary>
 		string Name { get; }
-
-		/// <summary>
-		/// All <see cref="ISymbol"/>s overridden by this symbol.
-		/// </summary>
-		ISymbolContainer<ISymbol, IMemberData> OverriddenSymbols { get; }
 
 		/// <summary>
 		/// Parent compilation of this <see cref="IMemberData"/>.

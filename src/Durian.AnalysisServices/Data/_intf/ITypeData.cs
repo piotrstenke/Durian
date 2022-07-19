@@ -25,6 +25,16 @@ namespace Durian.Analysis.Data
 		string? CompilerCondition { get; }
 
 		/// <summary>
+		/// Determines whether the type is an attribute.
+		/// </summary>
+		bool IsAttribute { get; }
+
+		/// <summary>
+		/// Determines whether the type is an exception.
+		/// </summary>
+		bool IsException { get; }
+
+		/// <summary>
 		/// Parameterless constructor of this type.
 		/// </summary>
 		ISymbolOrMember<IMethodSymbol, IMethodData>? ParameterlessConstructor { get; }

@@ -108,10 +108,19 @@ namespace Durian.Analysis.Data
 			/// </summary>
 			public ImmutableArray<AttributeData> Attributes { get; set; }
 
+			/// <inheritdoc cref="IMemberData.ContainingMember"/>
+			public DefaultedValue<ISymbolOrMember<ISymbol, IMemberData>> ContainingMember { get; set; }
+
+			/// <inheritdoc cref="IMemberData.ContainingNamespace"/>
+			public DefaultedValue<ISymbolOrMember<INamespaceSymbol, INamespaceData>> ContainingNamespace { get; set; }
+
 			/// <summary>
 			/// All containing namespaces of the current symbol.
 			/// </summary>
 			public DefaultedValue<IWritableSymbolContainer<INamespaceSymbol, INamespaceData>> ContainingNamespaces { get; set; }
+
+			/// <inheritdoc cref="IMemberData.ContainingType"/>
+			public DefaultedValue<ISymbolOrMember<INamedTypeSymbol, ITypeData>> ContainingType { get; set; }
 
 			/// <summary>
 			/// All containing types of the current symbol.
@@ -146,9 +155,6 @@ namespace Durian.Analysis.Data
 
 			/// <inheritdoc cref="IMemberData.Name"/>
 			public string? Name { get; set; }
-
-			/// <inheritdoc cref="IMemberData.OverriddenSymbols"/>
-			public DefaultedValue<ISymbolContainer<ISymbol, IMemberData>> OverriddenSymbols { get; set; }
 
 			/// <inheritdoc cref="IMemberData.SemanticModel"/>
 			public SemanticModel? SemanticModel { get; set; }
@@ -204,7 +210,10 @@ namespace Durian.Analysis.Data
 			public virtual void Map(Properties properties)
 			{
 				properties.Attributes = Attributes;
+				properties.ContainingMember = ContainingMember;
+				properties.ContainingNamespace = ContainingNamespace;
 				properties.ContainingNamespaces = ContainingNamespaces;
+				properties.ContainingType = ContainingType;
 				properties.ContainingTypes = ContainingTypes;
 				properties.GenericName = GenericName;
 				properties.HiddenSymbol = HiddenSymbol;
@@ -219,7 +228,6 @@ namespace Durian.Analysis.Data
 				properties.SubstitutedName = SubstitutedName;
 				properties.Symbol = Symbol;
 				properties.Virtuality = Virtuality;
-				properties.OverriddenSymbols = OverriddenSymbols;
 			}
 
 			/// <summary>
@@ -254,7 +262,6 @@ namespace Durian.Analysis.Data
 				IsUnsafe = false;
 				Virtuality = Analysis.Virtuality.NotVirtual;
 				HiddenSymbol = null;
-				OverriddenSymbols = null;
 			}
 
 			private protected virtual void ValidateSymbol(ISymbol? symbol)
@@ -264,9 +271,11 @@ namespace Durian.Analysis.Data
 		}
 
 		private ImmutableArray<AttributeData> _attributes;
+		private DefaultedValue<ISymbolOrMember<INamespaceSymbol, INamespaceData>> _containingNamespace;
 		private IWritableSymbolContainer<INamespaceSymbol, INamespaceData>? _containingNamespaces;
+		private DefaultedValue<ISymbolOrMember<INamedTypeSymbol, ITypeData>> _containingType;
 		private IWritableSymbolContainer<INamedTypeSymbol, ITypeData>? _containingTypes;
-		private ISymbolContainer<ISymbol, IMemberData>? _overriddenSymbols;
+		private DefaultedValue<ISymbolOrMember<ISymbol, IMemberData>> _containingMember;
 		private string? _genericName;
 		private DefaultedValue<ISymbolOrMember<ISymbol, IMemberData>> _hiddenMember;
 		private bool? _isNew;
@@ -286,12 +295,95 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		/// <inheritdoc cref="IMemberData.ContainingNamespaces"/>
+		/// <inheritdoc/>
+		public ISymbolOrMember<ISymbol, IMemberData>? ContainingMember
+		{
+			get
+			{
+				if(_containingMember.IsDefault)
+				{
+					switch (Symbol.ContainingSymbol)
+					{
+						case null:
+							_containingMember = null;
+							_containingType = null;
+							_containingNamespace = null;
+							break;
+
+						case INamedTypeSymbol:
+							_containingMember = new(ContainingType);
+							break;
+
+						case INamespaceSymbol:
+							_containingMember = new(ContainingNamespace);
+							break;
+
+						default:
+							_containingMember = new(Symbol.ContainingSymbol.ToDataOrSymbol(ParentCompilation));
+							break;
+					}
+				}
+
+				return _containingMember.Value;
+			}
+		}
+
+		/// <inheritdoc/>
+		public ISymbolOrMember<INamespaceSymbol, INamespaceData>? ContainingNamespace
+		{
+			get
+			{
+				if(_containingNamespace.IsDefault)
+				{
+					if(Symbol.ContainingNamespace is null)
+					{
+						_containingNamespace = null;
+					}
+					else if(_containingNamespaces is not null && !Symbol.ContainingNamespace.IsGlobalNamespace)
+					{
+						_containingNamespace = new(_containingNamespaces.First(ReturnOrder.ChildToParent));
+					}
+					else
+					{
+						_containingNamespace = new(Symbol.ContainingNamespace.ToDataOrSymbol(ParentCompilation));
+					}
+				}
+
+				return _containingNamespace.Value;
+			}
+		}
+
+		/// <inheritdoc/>
 		public IWritableSymbolContainer<INamespaceSymbol, INamespaceData> ContainingNamespaces
 		{
 			get
 			{
 				return _containingNamespaces ??= Symbol.GetContainingNamespaces().ToWritableContainer(ParentCompilation);
+			}
+		}
+
+		/// <inheritdoc/>
+		public ISymbolOrMember<INamedTypeSymbol, ITypeData>? ContainingType
+		{
+			get
+			{
+				if (_containingType.IsDefault)
+				{
+					if(Symbol.ContainingType is null)
+					{
+						_containingType = null;
+					}
+					else if (_containingTypes is not null && Symbol.ContainingNamespace.IsGlobalNamespace)
+					{
+						_containingType = new(_containingTypes.First(ReturnOrder.ChildToParent));
+					}
+					else
+					{
+						_containingType = new(Symbol.ContainingType.ToDataOrSymbol(ParentCompilation));
+					}
+				}
+
+				return _containingType.Value;
 			}
 		}
 
@@ -308,7 +400,20 @@ namespace Durian.Analysis.Data
 		public SyntaxNode Declaration { get; }
 
 		/// <inheritdoc/>
-		public string GenericName => _genericName ??= Symbol.GetGenericName();
+		public string GenericName
+		{
+			get
+			{
+				if(_genericName is null)
+				{
+					CodeBuilder builder = new(false);
+					builder.Name(this, SymbolName.Generic);
+					_genericName = builder.ToString();
+				}
+
+				return _genericName;
+			}
+		}
 
 		/// <inheritdoc/>
 		public ISymbolOrMember<ISymbol, IMemberData>? HiddenSymbol
@@ -352,15 +457,6 @@ namespace Durian.Analysis.Data
 		public string Name { get; }
 
 		/// <inheritdoc/>
-		public ISymbolContainer<ISymbol, IMemberData> OverriddenSymbols
-		{
-			get
-			{
-				return _overriddenSymbols ??= Symbol.GetOverriddenSymbols().ToContainer(ParentCompilation);
-			}
-		}
-
-		/// <inheritdoc/>
 		public ICompilationData ParentCompilation { get; }
 
 		/// <summary>
@@ -372,7 +468,20 @@ namespace Durian.Analysis.Data
 		public SemanticModel SemanticModel { get; }
 
 		/// <inheritdoc/>
-		public string SubstitutedName => _substitutedName ??= Symbol.GetGenericName(true);
+		public string SubstitutedName
+		{
+			get
+			{
+				if (_substitutedName is null)
+				{
+					CodeBuilder builder = new(false);
+					builder.Name(this, SymbolName.Substituted);
+					_substitutedName = builder.ToString();
+				}
+
+				return _substitutedName;
+			}
+		}
 
 		/// <inheritdoc/>
 		public ISymbol Symbol { get; }
@@ -483,9 +592,11 @@ namespace Durian.Analysis.Data
 		public virtual void Map(Properties properties)
 		{
 			properties.Attributes = _attributes;
+			properties.ContainingMember = _containingMember;
+			properties.ContainingNamespace = _containingNamespace;
 			properties.ContainingNamespaces = DataHelpers.ToDefaultedValue(_containingNamespaces);
+			properties.ContainingType = _containingType;
 			properties.ContainingTypes = DataHelpers.ToDefaultedValue(_containingTypes);
-			properties.OverriddenSymbols = DataHelpers.ToDefaultedValue(_overriddenSymbols);
 			properties.GenericName = _genericName;
 			properties.HiddenSymbol = _hiddenMember;
 			properties.IsNew = _isNew;
@@ -535,9 +646,11 @@ namespace Durian.Analysis.Data
 		protected virtual void SetProperties(Properties properties)
 		{
 			_attributes = properties.Attributes;
+			_containingMember = properties.ContainingMember;
+			_containingNamespace = properties.ContainingNamespace;
 			_containingNamespaces = DataHelpers.FromDefaultedOrEmpty(properties.ContainingNamespaces);
+			_containingType = properties.ContainingType;
 			_containingTypes = DataHelpers.FromDefaultedOrEmpty(properties.ContainingTypes);
-			_overriddenSymbols = DataHelpers.FromDefaultedOrEmpty(properties.OverriddenSymbols);
 			_isNew = properties.IsNew;
 			_isObsolete = properties.IsObsolete;
 			_isPartial = properties.IsPartial;

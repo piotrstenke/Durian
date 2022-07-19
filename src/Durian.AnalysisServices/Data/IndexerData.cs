@@ -27,25 +27,11 @@ namespace Durian.Analysis.Data
 			/// <inheritdoc cref="IndexerData.Parameters"/>
 			public DefaultedValue<ISymbolContainer<IParameterSymbol, IParameterData>> Parameters { get; set; }
 
-			/// <inheritdoc cref="MemberData.Properties.OverriddenSymbols"/>
-			public new DefaultedValue<ISymbolContainer<IPropertySymbol, IPropertyData>> OverriddenSymbols
-			{
-				get
-				{
-					DefaultedValue<ISymbolContainer<ISymbol, IMemberData>> baseValue = base.OverriddenSymbols;
+			/// <inheritdoc cref="IndexerData.OverriddenIndexer"/>
+			public DefaultedValue<ISymbolOrMember<IPropertySymbol, IPropertyData>> OverriddenIndexer { get; set; }
 
-					if (baseValue.IsDefault)
-					{
-						return default;
-					}
-
-					return new(DataHelpers.GetPropertyOverriddenSymbols(baseValue.Value));
-				}
-				set
-				{
-					base.OverriddenSymbols = new DefaultedValue<ISymbolContainer<ISymbol, IMemberData>>(value.Value);
-				}
-			}
+			/// <inheritdoc cref="IndexerData.OverriddenIndexers"/>
+			public DefaultedValue<ISymbolContainer<IPropertySymbol, IPropertyData>> OverriddenIndexers { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -74,6 +60,8 @@ namespace Durian.Analysis.Data
 				base.Map(properties);
 				properties.AutoPropertyKind = AutoPropertyKind;
 				properties.Parameters = Parameters;
+				properties.OverriddenIndexer = OverriddenIndexer;
+				properties.OverriddenIndexers = OverriddenIndexers;
 			}
 
 			/// <inheritdoc/>
@@ -110,6 +98,8 @@ namespace Durian.Analysis.Data
 
 		private AutoPropertyKind? _autoPropertyKind;
 		private ISymbolContainer<IParameterSymbol, IParameterData>? _parameters;
+		private DefaultedValue<ISymbolOrMember<IPropertySymbol, IPropertyData>> _overriddenIndexer;
+		private ISymbolContainer<IPropertySymbol, IPropertyData>? _overriddenIndexers;
 
 		/// <summary>
 		/// Kind of the auto-property.
@@ -126,12 +116,45 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public bool IsAutoProperty => AutoPropertyKind != AutoPropertyKind.None;
 
-		/// <inheritdoc cref="MemberData.OverriddenSymbols"/>
-		public new ISymbolContainer<IPropertySymbol, IPropertyData> OverriddenSymbols
+		/// <summary>
+		/// Indexer overridden by this indexer.
+		/// </summary>
+		public ISymbolOrMember<IPropertySymbol, IPropertyData>? OverriddenIndexer
 		{
 			get
 			{
-				return DataHelpers.GetPropertyOverriddenSymbols(base.OverriddenSymbols)!;
+				if (_overriddenIndexer.IsDefault)
+				{
+					if (Symbol.OverriddenProperty is null)
+					{
+						_overriddenIndexer = null;
+					}
+					else if (_overriddenIndexers is null)
+					{
+						_overriddenIndexer = new(Symbol.OverriddenProperty.ToDataOrSymbol(ParentCompilation));
+					}
+					else if (_overriddenIndexers.Count > 0)
+					{
+						_overriddenIndexer = new(_overriddenIndexers.First(ReturnOrder.ChildToParent));
+					}
+					else
+					{
+						_overriddenIndexer = null;
+					}
+				}
+
+				return _overriddenIndexer.Value;
+			}
+		}
+
+		/// <summary>
+		/// All indexers overridden by this indexer.
+		/// </summary>
+		public ISymbolContainer<IPropertySymbol, IPropertyData> OverriddenIndexers
+		{
+			get
+			{
+				return _overriddenIndexers ??= Symbol.GetOverriddenSymbols().ToContainer(ParentCompilation);
 			}
 		}
 
@@ -151,6 +174,8 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new IPropertySymbol Symbol => (base.Symbol as IPropertySymbol)!;
 
+		ISymbolOrMember<IPropertySymbol, IPropertyData>? IPropertyData.OverriddenProperty => OverriddenIndexer;
+		ISymbolContainer<IPropertySymbol, IPropertyData> IPropertyData.OverriddenProperties => OverriddenIndexers;
 		ISymbolOrMember<IFieldSymbol, IFieldData>? IPropertyData.BackingField => null;
 		BasePropertyDeclarationSyntax IPropertyData.Declaration => Declaration;
 		IPropertyData ISymbolOrMember<IPropertySymbol, IPropertyData>.Member => this;
@@ -192,6 +217,8 @@ namespace Durian.Analysis.Data
 			base.Map(properties);
 			properties.AutoPropertyKind = _autoPropertyKind;
 			properties.Parameters = DataHelpers.ToDefaultedValue(_parameters);
+			properties.OverriddenIndexer = _overriddenIndexer;
+			properties.OverriddenIndexers = DataHelpers.ToDefaultedValue(_overriddenIndexers);
 		}
 
 		/// <inheritdoc/>
@@ -240,6 +267,8 @@ namespace Durian.Analysis.Data
 			{
 				_autoPropertyKind = props.AutoPropertyKind;
 				_parameters = DataHelpers.FromDefaultedOrEmpty(props.Parameters);
+				_overriddenIndexer = props.OverriddenIndexer;
+				_overriddenIndexers = DataHelpers.FromDefaultedOrEmpty(props.OverriddenIndexers);
 			}
 		}
 

@@ -21,31 +21,17 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new class Properties : Properties<ILocalSymbol>, IVariableDeclaratorProperties
 		{
-			/// <inheritdoc cref="PropertyData.BackingField"/>
+			/// <inheritdoc cref="EventData.BackingField"/>
 			public DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> BackingField { get; set; }
 
-			/// <inheritdoc cref="LocalData.Index"/>
+			/// <inheritdoc cref="EventData.Index"/>
 			public int? Index { get; set; }
 
-			/// <inheritdoc cref="MemberData.Properties.OverriddenSymbols"/>
-			public new DefaultedValue<ISymbolContainer<IEventSymbol, IEventData>> OverriddenSymbols
-			{
-				get
-				{
-					DefaultedValue<ISymbolContainer<ISymbol, IMemberData>> baseValue = base.OverriddenSymbols;
+			/// <inheritdoc cref="EventData.OverriddenEvent"/>
+			public DefaultedValue<ISymbolOrMember<IEventSymbol, IEventData>> OverriddenEvent { get; set; }
 
-					if (baseValue.IsDefault)
-					{
-						return default;
-					}
-
-					return new(DataHelpers.GetEventOverriddenSymbols(baseValue.Value));
-				}
-				set
-				{
-					base.OverriddenSymbols = new DefaultedValue<ISymbolContainer<ISymbol, IMemberData>>(value.Value);
-				}
-			}
+			/// <inheritdoc cref="EventData.OverriddenEvents"/>
+			public DefaultedValue<ISymbolContainer<IEventSymbol, IEventData>> OverriddenEvents { get; set; }
 
 			/// <inheritdoc cref="LocalData.Variable"/>
 			public DefaultedValue<VariableDeclaratorSyntax> Variable { get; set; }
@@ -84,6 +70,8 @@ namespace Durian.Analysis.Data
 				properties.Index = Index;
 				properties.Variable = Variable;
 				properties.BackingField = BackingField;
+				properties.OverriddenEvent = OverriddenEvent;
+				properties.OverriddenEvents = OverriddenEvents;
 			}
 
 			/// <inheritdoc/>
@@ -146,6 +134,8 @@ namespace Durian.Analysis.Data
 		}
 
 		private DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> _backingField;
+		private DefaultedValue<ISymbolOrMember<IEventSymbol, IEventData>> _overriddenEvent;
+		private ISymbolContainer<IEventSymbol, IEventData>? _overriddenEvents;
 
 		/// <summary>
 		/// Returns the <see cref="Declaration"/> as a <see cref="EventFieldDeclarationSyntax"/>.
@@ -181,12 +171,41 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public int Index { get; private set; }
 
-		/// <inheritdoc cref="MemberData.OverriddenSymbols"/>
-		public new ISymbolContainer<IEventSymbol, IEventData> OverriddenSymbols
+		/// <inheritdoc/>
+		public ISymbolOrMember<IEventSymbol, IEventData>? OverriddenEvent
 		{
 			get
 			{
-				return DataHelpers.GetEventOverriddenSymbols(base.OverriddenSymbols)!;
+				if (_overriddenEvent.IsDefault)
+				{
+					if (Symbol.OverriddenEvent is null)
+					{
+						_overriddenEvent = null;
+					}
+					else if(_overriddenEvents is null)
+					{
+						_overriddenEvent = new(Symbol.OverriddenEvent.ToDataOrSymbol(ParentCompilation));
+					}
+					else if(_overriddenEvents.Count > 0)
+					{
+						_overriddenEvent = new(_overriddenEvents.First(ReturnOrder.ChildToParent));
+					}
+					else
+					{
+						_overriddenEvent = null;
+					}
+				}
+
+				return _overriddenEvent.Value;
+			}
+		}
+
+		/// <inheritdoc/>
+		public ISymbolContainer<IEventSymbol, IEventData> OverriddenEvents
+		{
+			get
+			{
+				return _overriddenEvents ??= Symbol.GetOverriddenSymbols().ToContainer(ParentCompilation);
 			}
 		}
 
@@ -339,6 +358,8 @@ namespace Durian.Analysis.Data
 			properties.Variable = Variable;
 			properties.Index = Index;
 			properties.BackingField = _backingField;
+			properties.OverriddenEvent = _overriddenEvent;
+			properties.OverriddenEvents = DataHelpers.ToDefaultedValue(_overriddenEvents);
 		}
 
 		/// <inheritdoc/>
@@ -412,6 +433,8 @@ namespace Durian.Analysis.Data
 			{
 				Index = props.Index ?? default;
 				_backingField = props.BackingField;
+				_overriddenEvent = props.OverriddenEvent;
+				_overriddenEvents = DataHelpers.FromDefaultedOrEmpty(props.OverriddenEvents);
 
 				if (props.Variable.IsDefault && AsField is not null)
 				{

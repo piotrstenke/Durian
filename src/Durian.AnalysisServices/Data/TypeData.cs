@@ -29,6 +29,12 @@ namespace Durian.Analysis.Data
 			/// <inheritdoc cref="ITypeData.CompilerCondition"/>
 			public DefaultedValue<string> CompilerCondition { get; set; }
 
+			/// <inheritdoc cref="ITypeData.IsAttribute"/>
+			public bool? IsAttribute { get; set; }
+
+			/// <inheritdoc cref="ITypeData.IsException"/>
+			public bool? IsException { get; set; }
+
 			/// <summary>
 			/// Container of child <see cref="ISymbol"/>s of this type.
 			/// </summary>
@@ -71,6 +77,8 @@ namespace Durian.Analysis.Data
 			public virtual void Map(Properties properties)
 			{
 				base.Map(properties);
+				properties.IsException = properties.IsException;
+				properties.IsAttribute = properties.IsAttribute;
 				properties.Members = Members;
 				properties.ParameterlessConstructor = ParameterlessConstructor;
 				properties.PartialDeclarations = PartialDeclarations;
@@ -105,16 +113,12 @@ namespace Durian.Analysis.Data
 				Map(properties);
 				return properties;
 			}
-
-			/// <inheritdoc/>
-			protected override void FillWithDefaultData()
-			{
-				OverriddenSymbols = new(null);
-			}
 		}
 
 		private ISymbolContainer<INamedTypeSymbol, ITypeData>? _baseTypes;
 		private DefaultedValue<string> _compilerCondition;
+		private bool? _isAttribute;
+		private bool? _isException;
 		private ILeveledSymbolContainer<ISymbol, IMemberData>? _members;
 		private DefaultedValue<ISymbolOrMember<IMethodSymbol, IMethodData>> _parameterlessConstructor;
 		private ImmutableArray<TDeclaration> _partialDeclarations;
@@ -135,7 +139,13 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-				return _compilerCondition ??= this.GetCompilerCondition();
+				if(_compilerCondition.IsDefault)
+				{
+					AttributeData? attribute = this.GetSpecialAttribute(SpecialAttribute.Conditional);
+					_compilerCondition = attribute?.GetConstructorArgumentValue<string>(0);
+				}
+
+				return _compilerCondition;
 			}
 		}
 
@@ -143,6 +153,12 @@ namespace Durian.Analysis.Data
 		/// Target <see cref="TypeDeclarationSyntax"/>.
 		/// </summary>
 		public new TDeclaration Declaration => (base.Declaration as TDeclaration)!;
+
+		/// <inheritdoc/>
+		public bool IsAttribute => _isAttribute ??= Symbol.IsAttribute();
+
+		/// <inheritdoc/>
+		public bool IsException => _isException ??= Symbol.IsException();
 
 		/// <inheritdoc/>
 		public ISymbolOrMember<IMethodSymbol, IMethodData>? ParameterlessConstructor
@@ -379,6 +395,8 @@ namespace Durian.Analysis.Data
 		public virtual void Map(Properties properties)
 		{
 			base.Map(properties);
+			properties.IsAttribute = _isAttribute;
+			properties.IsException = _isException;
 			properties.Members = DataHelpers.ToDefaultedValue(_members);
 			properties.TypeParameters = DataHelpers.ToDefaultedValue(_typeParameters);
 			properties.TypeArguments = DataHelpers.ToDefaultedValue(_typeArguments);
@@ -436,7 +454,9 @@ namespace Durian.Analysis.Data
 			base.SetProperties(properties);
 
 			if (properties is Properties props)
-			{
+{
+				_isAttribute = props.IsAttribute;
+				_isException = props.IsException;
 				_members = DataHelpers.FromDefaultedOrEmpty(props.Members);
 				_baseTypes = DataHelpers.FromDefaultedOrEmpty(props.BaseTypes);
 				_parameterlessConstructor = props.ParameterlessConstructor;

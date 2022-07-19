@@ -668,5 +668,13 @@ namespace Durian.Analysis.SymbolContainers
 		{
 			return ResolveLevel(level);
 		}
+
+		IEnumerable<ISymbolOrMember<TSymbol, TData>> ISymbolContainer<TSymbol, TData>.AsEnumerable()
+		{
+			foreach (ISymbolOrMember<TSymbol, TData> member in _data)
+			{
+				yield return member;
+			}
+		}
 	}
 }

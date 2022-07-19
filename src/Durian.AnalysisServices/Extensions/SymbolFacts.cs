@@ -1498,6 +1498,15 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is a module initializer method.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether is a module initializer.</param>
+		public static bool IsModuleInitializer(this IMethodSymbol method)
+		{
+			return method.GetSpecialAttribute(SpecialAttribute.ModuleInitializer) is not null;
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="symbol"/> is declared using the <see langword="new"/> keyword.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to check whether is declared using the <see langword="new"/> keyword.</param>

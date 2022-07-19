@@ -33,8 +33,15 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		new MemberDeclarationSyntax Declaration { get; }
 
-		/// <inheritdoc cref="IMemberData.OverriddenSymbols"/>
-		new ISymbolContainer<IEventSymbol, IEventData> OverriddenSymbols { get; }
+		/// <summary>
+		/// Event overridden by this event.
+		/// </summary>
+		ISymbolOrMember<IEventSymbol, IEventData>? OverriddenEvent { get; }
+
+		/// <summary>
+		/// All events overridden by this event.
+		/// </summary>
+		ISymbolContainer<IEventSymbol, IEventData> OverriddenEvents { get; }
 
 		/// <summary>
 		/// <see cref="IEventSymbol"/> associated with the <see cref="Declaration"/>.

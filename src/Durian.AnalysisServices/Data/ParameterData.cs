@@ -104,7 +104,7 @@ namespace Durian.Analysis.Data
 		{
 		}
 
-		internal ParameterData(IParameterSymbol symbol, ICompilationData compilation, Properties? properties = default) : base(symbol, compilation, properties)
+		internal ParameterData(IParameterSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default) : base(symbol, compilation, properties)
 		{
 		}
 

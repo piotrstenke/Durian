@@ -20,7 +20,7 @@ namespace Durian.Analysis.SymbolContainers
 	/// </summary>
 	public static partial class SymbolContainerFactory
 	{
-		private class EmptyContainer<TSymbol, TData> : IWritableSymbolContainer<TSymbol, TData>
+		private class EmptyContainer<TSymbol, TData> : IWritableSymbolContainer<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>
 			where TSymbol : class, ISymbol
 			where TData : class, IMemberData
 		{
@@ -84,9 +84,26 @@ namespace Durian.Analysis.SymbolContainers
 				// Do nothing.
 			}
 
+			IEnumerable<ISymbolOrMember<TSymbol, TData>> ISymbolContainer<TSymbol, TData>.AsEnumerable()
+			{
+				return this;
+			}
+
 			IEnumerator IEnumerable.GetEnumerator()
 			{
 				return GetEnumerator();
+			}
+
+			IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>.Reverse()
+			{
+				Reverse();
+				return this;
+			}
+
+			IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
+			{
+				Reverse();
+				return this;
 			}
 		}
 
@@ -230,7 +247,7 @@ namespace Durian.Analysis.SymbolContainers
 			}
 		}
 
-		private class SingleElementContainer<TSymbol, TData> : ISymbolContainer<TSymbol, TData>
+		private class SingleElementContainer<TSymbol, TData> : ISymbolContainer<TSymbol, TData>, IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>
 			where TSymbol : class, ISymbol
 			where TData : class, IMemberData
 		{
@@ -265,7 +282,7 @@ namespace Durian.Analysis.SymbolContainers
 				return ImmutableArray.Create(Element.Member);
 			}
 
-			public IEnumerator GetEnumerator()
+			public IEnumerator<ISymbolOrMember<TSymbol, TData>> GetEnumerator()
 			{
 				return _list.GetEnumerator();
 			}
@@ -303,6 +320,28 @@ namespace Durian.Analysis.SymbolContainers
 			ImmutableArray<ISymbol> ISymbolContainer.GetSymbols()
 			{
 				return GetSymbols().CastArray<ISymbol>();
+			}
+
+			IEnumerable<ISymbolOrMember<TSymbol, TData>> ISymbolContainer<TSymbol, TData>.AsEnumerable()
+			{
+				return this;
+			}
+
+			IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>> IReturnOrderEnumerable<ISymbolOrMember<TSymbol, TData>>.Reverse()
+			{
+				Reverse();
+				return this;
+			}
+
+			IReturnOrderEnumerable IReturnOrderEnumerable.Reverse()
+			{
+				Reverse();
+				return this;
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
 			}
 		}
 

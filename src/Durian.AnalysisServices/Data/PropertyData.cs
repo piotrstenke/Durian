@@ -27,25 +27,11 @@ namespace Durian.Analysis.Data
 			/// <inheritdoc cref="PropertyData.BackingField"/>
 			public DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> BackingField { get; set; }
 
-			/// <inheritdoc cref="MemberData.Properties.OverriddenSymbols"/>
-			public new DefaultedValue<ISymbolContainer<IPropertySymbol, IPropertyData>> OverriddenSymbols
-			{
-				get
-				{
-					DefaultedValue<ISymbolContainer<ISymbol, IMemberData>> baseValue = base.OverriddenSymbols;
+			/// <inheritdoc cref="PropertyData.OverriddenProperty"/>
+			public DefaultedValue<ISymbolOrMember<IPropertySymbol, IPropertyData>> OverriddenProperty { get; set; }
 
-					if(baseValue.IsDefault)
-					{
-						return default;
-					}
-
-					return new(DataHelpers.GetPropertyOverriddenSymbols(baseValue.Value));
-				}
-				set
-				{
-					base.OverriddenSymbols = new DefaultedValue<ISymbolContainer<ISymbol, IMemberData>>(value.Value);
-				}
-			}
+			/// <inheritdoc cref="PropertyData.OverriddenProperties"/>
+			public DefaultedValue<ISymbolContainer<IPropertySymbol, IPropertyData>> OverriddenProperties { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -74,6 +60,8 @@ namespace Durian.Analysis.Data
 				base.Map(properties);
 				properties.AutoPropertyKind = AutoPropertyKind;
 				properties.BackingField = BackingField;
+				properties.OverriddenProperties = OverriddenProperties;
+				properties.OverriddenProperty = OverriddenProperty;
 			}
 
 			/// <inheritdoc/>
@@ -110,6 +98,8 @@ namespace Durian.Analysis.Data
 
 		private AutoPropertyKind? _autoPropertyKind;
 		private DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> _backingField;
+		private DefaultedValue<ISymbolOrMember<IPropertySymbol, IPropertyData>> _overriddenProperty;
+		private ISymbolContainer<IPropertySymbol, IPropertyData>? _overriddenProperties;
 
 		/// <summary>
 		/// Kind of the auto-property.
@@ -147,12 +137,41 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new IPropertySymbol Symbol => (base.Symbol as IPropertySymbol)!;
 
-		/// <inheritdoc cref="MemberData.OverriddenSymbols"/>
-		public new ISymbolContainer<IPropertySymbol, IPropertyData> OverriddenSymbols
+		/// <inheritdoc/>
+		public ISymbolOrMember<IPropertySymbol, IPropertyData>? OverriddenProperty
 		{
 			get
 			{
-				return DataHelpers.GetPropertyOverriddenSymbols(base.OverriddenSymbols)!;
+				if (_overriddenProperty.IsDefault)
+				{
+					if (Symbol.OverriddenProperty is null)
+					{
+						_overriddenProperty = null;
+					}
+					else if (_overriddenProperties is null)
+					{
+						_overriddenProperty = new(Symbol.OverriddenProperty.ToDataOrSymbol(ParentCompilation));
+					}
+					else if (_overriddenProperties.Count > 0)
+					{
+						_overriddenProperty = new(_overriddenProperties.First(ReturnOrder.ChildToParent));
+					}
+					else
+					{
+						_overriddenProperty = null;
+					}
+				}
+
+				return _overriddenProperty.Value;
+			}
+		}
+
+		/// <inheritdoc/>
+		public ISymbolContainer<IPropertySymbol, IPropertyData> OverriddenProperties
+		{
+			get
+			{
+				return _overriddenProperties ??= Symbol.GetOverriddenSymbols().ToContainer(ParentCompilation);
 			}
 		}
 
@@ -197,6 +216,8 @@ namespace Durian.Analysis.Data
 			base.Map(properties);
 			properties.AutoPropertyKind = _autoPropertyKind;
 			properties.BackingField = _backingField;
+			properties.OverriddenProperties = DataHelpers.ToDefaultedValue(_overriddenProperties);
+			properties.OverriddenProperty = _overriddenProperty;
 		}
 
 		/// <inheritdoc/>
@@ -245,6 +266,8 @@ namespace Durian.Analysis.Data
 			{
 				_backingField = props.BackingField;
 				_autoPropertyKind = props.AutoPropertyKind ?? Symbol.GetAutoPropertyKind();
+				_overriddenProperty = props.OverriddenProperty;
+				_overriddenProperties = DataHelpers.FromDefaultedOrEmpty(props.OverriddenProperties);
 			}
 		}
 

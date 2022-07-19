@@ -72,51 +72,6 @@ namespace Durian.Analysis.Data
 			protected abstract VariableDeclarationSyntax GetVariableDeclaration();
 		}
 
-		public static ISymbolContainer<IPropertySymbol, IPropertyData>? GetPropertyOverriddenSymbols(ISymbolContainer? baseContainer)
-		{
-			if (baseContainer is null)
-			{
-				return null;
-			}
-
-			if (baseContainer is not ISymbolContainer<IPropertySymbol, IPropertyData> container)
-			{
-				throw new InvalidOperationException("Base value of 'OverriddenSymbols' is not a 'ISymbolContainer<IPropertySymbol, IPropertyData>");
-			}
-
-			return container;
-		}
-
-		public static ISymbolContainer<IEventSymbol, IEventData>? GetEventOverriddenSymbols(ISymbolContainer? baseContainer)
-		{
-			if (baseContainer is null)
-			{
-				return null;
-			}
-
-			if (baseContainer is not ISymbolContainer<IEventSymbol, IEventData> container)
-			{
-				throw new InvalidOperationException("Base value of 'OverriddenSymbols' is not a 'ISymbolContainer<IEventSymbol, IEventData>");
-			}
-
-			return container;
-		}
-
-		public static ISymbolContainer<IMethodSymbol, IMethodData>? GetMethodOverriddenSymbols(ISymbolContainer? baseContainer)
-		{
-			if (baseContainer is null)
-			{
-				return null;
-			}
-
-			if (baseContainer is not ISymbolContainer<IMethodSymbol, IMethodData> container)
-			{
-				throw new InvalidOperationException("Base value of 'OverriddenSymbols' is not a 'ISymbolContainer<IMethodSymbol, IMethodData>");
-			}
-
-			return container;
-		}
-
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static DefaultedValue<T> ToDefaultedValue<T>(T? value) where T : class
 		{

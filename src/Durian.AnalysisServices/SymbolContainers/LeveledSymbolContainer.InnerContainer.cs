@@ -139,6 +139,11 @@ namespace Durian.Analysis.SymbolContainers
 
 				return _parentContainer.GetEnumerator(EndIndex);
 			}
+
+			IEnumerable<ISymbolOrMember<TSymbol, TData>> ISymbolContainer<TSymbol, TData>.AsEnumerable()
+			{
+				return this;
+			}
 		}
 	}
 }

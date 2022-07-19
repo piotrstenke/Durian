@@ -30,19 +30,24 @@ namespace Durian.Analysis.Data
 		string? CompilerCondition { get; }
 
 		/// <summary>
+		/// Determines whether this method is parameterless.
+		/// </summary>
+		bool IsParameterless { get; }
+
+		/// <summary>
 		/// Determines whether this method is a module initializer.
 		/// </summary>
 		bool IsModuleInitializer { get; }
 
 		/// <summary>
-		/// Overloads of this method.
+		/// Method overridden by this method.
 		/// </summary>
-		ISymbolContainer<IMethodSymbol, IMethodData> Overloads { get; }
+		ISymbolOrMember<IMethodSymbol, IMethodData>? OverriddenMethod { get; }
 
 		/// <summary>
 		/// Methods overridden by this method.
 		/// </summary>
-		ISymbolContainer<IMethodSymbol, IMethodData> OverridenMethods { get; }
+		ISymbolContainer<IMethodSymbol, IMethodData> OverriddenMethods { get; }
 
 		/// <summary>
 		/// Parameters of this method.
@@ -50,8 +55,20 @@ namespace Durian.Analysis.Data
 		ISymbolContainer<IParameterSymbol, IParameterData> Parameters { get; }
 
 		/// <summary>
-		/// <see cref="IMethodSymbol"/> associated with the <see cref="Declaration"/>.
+		/// <see cref="IMethodSymbol"/> associated with the <see cref="IMemberData.Declaration"/>.
 		/// </summary>
 		new IMethodSymbol Symbol { get; }
+
+		/// <summary>
+		/// Returns all overloads of this method.
+		/// </summary>
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<IMethodSymbol, IMethodData> GetOverloads(IncludedMembers members);
+
+		/// <summary>
+		/// Returns all local function declared inside this method.
+		/// </summary>
+		/// <param name="members">Range of members to include.</param>
+		ISymbolContainer<IMethodSymbol, IMethodData> GetLocalFunctions(IncludedMembers members);
 	}
 }

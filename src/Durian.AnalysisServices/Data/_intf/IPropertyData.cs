@@ -27,8 +27,15 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		new BasePropertyDeclarationSyntax Declaration { get; }
 
-		/// <inheritdoc cref="IMemberData.OverriddenSymbols"/>
-		new ISymbolContainer<IPropertySymbol, IPropertyData> OverriddenSymbols { get; }
+		/// <summary>
+		/// Property overridden by this property.
+		/// </summary>
+		ISymbolOrMember<IPropertySymbol, IPropertyData>? OverriddenProperty { get; }
+
+		/// <summary>
+		/// All properties overridden by this property.
+		/// </summary>
+		ISymbolContainer<IPropertySymbol, IPropertyData> OverriddenProperties { get; }
 
 		/// <summary>
 		/// <see cref="ISymbol"/> associated with the <see cref="Declaration"/>.

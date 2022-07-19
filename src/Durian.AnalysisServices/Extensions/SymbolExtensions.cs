@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
@@ -297,7 +298,7 @@ namespace Durian.Analysis.Extensions
 		/// <inheritdoc cref="GetAllMembers(INamedTypeSymbol, string, ReturnOrder)"/>
 		public static IReturnOrderEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, ReturnOrder order = ReturnOrder.ChildToParent)
 		{
-			return type.GetBaseTypes_Internal(true).SelectMany(t => t.GetMembers()).OrderBy(order);
+			return GetBaseTypes_Internal(type, true).SelectMany(t => t.GetMembers()).OrderBy(order);
 		}
 
 		/// <summary>
@@ -308,7 +309,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IReturnOrderEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, string name, ReturnOrder order = ReturnOrder.ChildToParent)
 		{
-			return type.GetBaseTypes_Internal(true).SelectMany(t => t.GetMembers(name)).OrderBy(order);
+			return GetBaseTypes_Internal(type, true).SelectMany(t => t.GetMembers(name)).OrderBy(order);
 		}
 
 		/// <summary>
@@ -812,7 +813,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IReturnOrderEnumerable<INamedTypeSymbol> GetBaseTypes(this INamedTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.ChildToParent)
 		{
-			return type.GetBaseTypes_Internal(includeSelf).OrderBy(order);
+			return GetBaseTypes_Internal(type, includeSelf).OrderBy(order);
 		}
 
 		/// <summary>
@@ -1379,7 +1380,7 @@ namespace Durian.Analysis.Extensions
 		/// <exception cref="InvalidOperationException">Pointers can't be used as generic arguments.</exception>
 		public static string GetGenericName(this IEnumerable<ITypeParameterSymbol> typeParameters, bool includeVariance = false)
 		{
-			return GetGenericName(typeParameters, null, includeVariance);
+			return typeParameters.GetGenericName(null, includeVariance);
 		}
 
 		/// <summary>
@@ -1969,23 +1970,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the <see cref="NullableAnnotationAttribute"/> kind of.</param>
 		public static NullableAnnotationAttribute GetNullableAnnotationAttributeKind(this INamedTypeSymbol type)
 		{
-			return type.Name switch
-			{
-				"AllowNullAttribute" => CheckNamespace(NullableAnnotationAttribute.AllowNull),
-				"DisallowNullAttribute" => CheckNamespace(NullableAnnotationAttribute.DisallowNull),
-				"MaybeNullAttribute" => CheckNamespace(NullableAnnotationAttribute.MaybeNull),
-				"NotNullAttribute" => CheckNamespace(NullableAnnotationAttribute.NotNull),
-				"NotNullWhenAttribute" => CheckNamespace(NullableAnnotationAttribute.NotNullWhen),
-				"NotNullIfNotNullAttribute" => CheckNamespace(NullableAnnotationAttribute.NotNullIfNotNull),
-				"MemberNotNullAttribute" => CheckNamespace(NullableAnnotationAttribute.MemberNotNull),
-				"MemberNotNullWhenAttribute" => CheckNamespace(NullableAnnotationAttribute.MemberNotNullWhen),
-				_ => default
-			};
-
-			NullableAnnotationAttribute CheckNamespace(NullableAnnotationAttribute toReturn)
-			{
-				return type.IsWithinNamespace("System.Diagnostics.CodeAnalysis", true) ? toReturn : default;
-			}
+			return MapToNullableAnnotationAttribute(type.Name, toReturn => type.IsWithinNamespace("System.Diagnostics.CodeAnalysis", true) ? toReturn : default);
 		}
 
 		/// <summary>
@@ -2296,14 +2281,13 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns root namespace of the <paramref name="symbol"/>.
+		/// Returns root namespace of the <paramref name="symbol"/> (excluding the global namespace).
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the root namespaces of.</param>
-		/// <param name="includeGlobal">Determines whether to return the global namespace as well.</param>
 		/// <returns>The root <see cref="INamespaceSymbol"/> -or- <see langword="null"/> if root <see cref="INamespaceSymbol"/> was not found.</returns>
-		public static INamespaceSymbol? GetRootNamespace(this ISymbol symbol, bool includeGlobal = false)
+		public static INamespaceSymbol? GetRootNamespace(this ISymbol symbol)
 		{
-			return GetContainingNamespaces(symbol, includeGlobal).FirstOrDefault();
+			return GetContainingNamespaces(symbol).FirstOrDefault();
 		}
 
 		/// <summary>
@@ -2345,35 +2329,7 @@ namespace Durian.Analysis.Extensions
 				return default;
 			}
 
-			return type.Name switch
-			{
-				"ObsoleteAttribute" => RequireNamespace("System", SpecialAttribute.Obsolete),
-				"AttributeUsageAttribute" => RequireNamespace("System", SpecialAttribute.AttributeUsage),
-				"FlagsAttribute" => RequireNamespace("System", SpecialAttribute.Flags),
-				"CLSCompliantAttribute" => RequireNamespace("System", SpecialAttribute.CLSCompliant),
-				"ThreadStaticAttribute" => RequireNamespace("System", SpecialAttribute.ThreadStatic),
-				"ConditionalAttribute" => RequireNamespace("System.Diagnostics", SpecialAttribute.Conditional),
-				"StructLayoutAttribute" => RequireNamespace("System.Runtime.InteropServices", SpecialAttribute.StructLayout),
-				"MarhsalAsAttribute" => RequireNamespace("System.Runtime.InteropServices", SpecialAttribute.MarshalAs),
-				"DllImportAttribute" => RequireNamespace("System.Runtime.InteropServices", SpecialAttribute.DllImport),
-				"FieldOffsetAttribute" => RequireNamespace("System.Runtime.InteropServices", SpecialAttribute.FieldOffset),
-				"MethodImplAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.MethodImpl),
-				"SkipLocalsInitAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.SkipLocalsInit),
-				"CallerFilePathAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.CallerFilePath),
-				"CallerLineNumberAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.CallerLineNumber),
-				"CallerMemberNameAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.CallerMemberName),
-				"CallerArgumentExpressionAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.CallerArgumentExpression),
-				"ModuleInitializerAttribute" => RequireNamespace("System.Runtime.CompilerServices", SpecialAttribute.ModuleInitializer),
-				"DoesNotReturnAttribute" => RequireNamespace("System.Diagnostics.CodeAnalysis", SpecialAttribute.DoesNotReturn),
-				"DoesNotReturnIfAttribute" => RequireNamespace("System.Diagnostics.CodeAnalysis", SpecialAttribute.DoesNotReturnIf),
-				"GeneratedCodeAttribute" => RequireNamespace("System.CodeDom.Compiler", SpecialAttribute.GeneratedCode),
-				_ => default
-			};
-
-			SpecialAttribute RequireNamespace(string @namespace, SpecialAttribute toReturn)
-			{
-				return type.IsWithinNamespace(@namespace, @namespace.Length > 6) ? toReturn : default;
-			}
+			return MapToSpecialAttribute(type.Name, (@namespace, toReturn) => type.IsWithinNamespace(@namespace, @namespace.Length > 6) ? toReturn : default);
 		}
 
 		/// <summary>
@@ -3430,6 +3386,52 @@ namespace Durian.Analysis.Extensions
 			return syntax is not null;
 		}
 
+		[SuppressMessage("Roslynator", "RCS1224:Make method an extension method.")]
+		internal static NullableAnnotationAttribute MapToNullableAnnotationAttribute(string name, Func<NullableAnnotationAttribute, NullableAnnotationAttribute> function)
+		{
+			return name switch
+			{
+				"AllowNullAttribute" => function(NullableAnnotationAttribute.AllowNull),
+				"DisallowNullAttribute" => function(NullableAnnotationAttribute.DisallowNull),
+				"MaybeNullAttribute" => function(NullableAnnotationAttribute.MaybeNull),
+				"NotNullAttribute" => function(NullableAnnotationAttribute.NotNull),
+				"NotNullWhenAttribute" => function(NullableAnnotationAttribute.NotNullWhen),
+				"NotNullIfNotNullAttribute" => function(NullableAnnotationAttribute.NotNullIfNotNull),
+				"MemberNotNullAttribute" => function(NullableAnnotationAttribute.MemberNotNull),
+				"MemberNotNullWhenAttribute" => function(NullableAnnotationAttribute.MemberNotNullWhen),
+				_ => default
+			};
+		}
+
+		[SuppressMessage("Roslynator", "RCS1224:Make method an extension method.")]
+		internal static SpecialAttribute MapToSpecialAttribute(string name, Func<string, SpecialAttribute, SpecialAttribute> function)
+		{
+			return name switch
+			{
+				"ObsoleteAttribute" => function("System", SpecialAttribute.Obsolete),
+				"AttributeUsageAttribute" => function("System", SpecialAttribute.AttributeUsage),
+				"FlagsAttribute" => function("System", SpecialAttribute.Flags),
+				"CLSCompliantAttribute" => function("System", SpecialAttribute.CLSCompliant),
+				"ThreadStaticAttribute" => function("System", SpecialAttribute.ThreadStatic),
+				"ConditionalAttribute" => function("System.Diagnostics", SpecialAttribute.Conditional),
+				"StructLayoutAttribute" => function("System.Runtime.InteropServices", SpecialAttribute.StructLayout),
+				"MarhsalAsAttribute" => function("System.Runtime.InteropServices", SpecialAttribute.MarshalAs),
+				"DllImportAttribute" => function("System.Runtime.InteropServices", SpecialAttribute.DllImport),
+				"FieldOffsetAttribute" => function("System.Runtime.InteropServices", SpecialAttribute.FieldOffset),
+				"MethodImplAttribute" => function("System.Runtime.CompilerServices", SpecialAttribute.MethodImpl),
+				"SkipLocalsInitAttribute" => function("System.Runtime.CompilerServices", SpecialAttribute.SkipLocalsInit),
+				"CallerFilePathAttribute" => function("System.Runtime.CompilerServices", SpecialAttribute.CallerFilePath),
+				"CallerLineNumberAttribute" => function("System.Runtime.CompilerServices", SpecialAttribute.CallerLineNumber),
+				"CallerMemberNameAttribute" => function("System.Runtime.CompilerServices", SpecialAttribute.CallerMemberName),
+				"CallerArgumentExpressionAttribute" => function("System.Runtime.CompilerServices", SpecialAttribute.CallerArgumentExpression),
+				"ModuleInitializerAttribute" => function("System.Runtime.CompilerServices", SpecialAttribute.ModuleInitializer),
+				"DoesNotReturnAttribute" => function("System.Diagnostics.CodeAnalysis", SpecialAttribute.DoesNotReturn),
+				"DoesNotReturnIfAttribute" => function("System.Diagnostics.CodeAnalysis", SpecialAttribute.DoesNotReturnIf),
+				"GeneratedCodeAttribute" => function("System.CodeDom.Compiler", SpecialAttribute.GeneratedCode),
+				_ => default
+			};
+		}
+
 		internal static IReturnOrderEnumerable<T> OrderBy<T>(this IEnumerable<T> collection, ReturnOrder order, bool reverse = true)
 		{
 			if (reverse && order == ReturnOrder.ParentToChild)
@@ -3524,7 +3526,7 @@ namespace Durian.Analysis.Extensions
 			return new InvalidOperationException($"Method '{symbol}' is not associated with a syntax node of type '{type.Name}'");
 		}
 
-		private static IEnumerable<INamedTypeSymbol> GetBaseTypes_Internal(this INamedTypeSymbol type, bool includeSelf)
+		private static IEnumerable<INamedTypeSymbol> GetBaseTypes_Internal(INamedTypeSymbol type, bool includeSelf)
 		{
 			if (includeSelf)
 			{

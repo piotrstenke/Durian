@@ -95,7 +95,6 @@ namespace Durian.Analysis.Data
 				Virtuality = Analysis.Virtuality.NotVirtual;
 				IsPartial = false;
 				IsUnsafe = false;
-				OverriddenSymbols = null;
 			}
 		}
 
@@ -184,6 +183,9 @@ namespace Durian.Analysis.Data
 		ISymbolContainer<ITypeSymbol, ITypeData> IGenericMemberData.TypeArguments => SymbolContainerFactory.Empty<ITypeSymbol, ITypeData>();
 
 		ISymbolContainer<ITypeParameterSymbol, ITypeParameterData> IGenericMemberData.TypeParameters => SymbolContainerFactory.Empty<ITypeParameterSymbol, ITypeParameterData>();
+
+		bool ITypeData.IsAttribute => false;
+		bool ITypeData.IsException => false;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EnumData"/> class.
