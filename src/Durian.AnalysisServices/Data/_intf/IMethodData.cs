@@ -30,6 +30,21 @@ namespace Durian.Analysis.Data
 		string? CompilerCondition { get; }
 
 		/// <summary>
+		/// Interface methods this <see cref="IMethodSymbol"/> explicily implements.
+		/// </summary>
+		ISymbolOrMember<IMethodSymbol, IMethodData>? ExplicitInterfaceImplementation { get; }
+
+		/// <summary>
+		/// Interface methods this <see cref="IMethodSymbol"/> implicitly implements
+		/// </summary>
+		ISymbolContainer<IMethodSymbol, IMethodData> ImplicitInterfaceImplementations { get; }
+
+		/// <summary>
+		/// Determines whether this method is a default interface implementation.
+		/// </summary>
+		bool IsDefaultImplementation { get; }
+
+		/// <summary>
 		/// Determines whether this method is parameterless.
 		/// </summary>
 		bool IsParameterless { get; }

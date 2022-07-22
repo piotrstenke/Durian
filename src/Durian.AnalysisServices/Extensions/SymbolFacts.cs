@@ -1450,6 +1450,61 @@ namespace Durian.Analysis.Extensions
 			};
 		}
 
+		public static bool IsImplicitlyImplemented(this ISymbol symbol)
+		{
+
+		}
+
+		public static bool IsImplicitlyImplemented(this IPropertySymbol property)
+		{
+
+		}
+
+		public static bool IsImplicitlyImplemented(this IEventSymbol @event)
+		{
+
+		}
+
+		public static bool IsImplicitlyImplemented(this IMethodSymbol method)
+		{
+
+		}
+
+		public static bool IsImplicitlyImplementedBy(this ISymbol symbol, ISymbol other)
+		{
+
+		}
+
+		public static bool IsImplicitlyImplementedBy(this IMethodSymbol method, IMethodSymbol other)
+		{
+
+		}
+
+		public static bool IsImplicitlyImplementedBy(this IMethodSymbol method, INamedTypeSymbol type)
+		{
+
+		}
+
+		public static bool IsImplicitlyImplementedBy(this IPropertySymbol property, IPropertySymbol other)
+		{
+
+		}
+
+		public static bool IsImplicitlyImplementedBy(this IPropertySymbol property, INamedTypeSymbol type)
+		{
+
+		}
+
+		public static bool IsImplicitlyImplementedBy(this IEventSymbol @event, IEventSymbol other)
+		{
+
+		}
+
+		public static bool IsImplicitlyImplementedBy(this IEventSymbol @event, INamedTypeSymbol type)
+		{
+
+		}
+
 		/// <summary>
 		/// Determines whether the specified <paramref name="method"/> is an implicit conversion operator.
 		/// </summary>

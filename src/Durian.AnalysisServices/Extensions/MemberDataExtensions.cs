@@ -299,7 +299,7 @@ namespace Durian.Analysis.Extensions
 			{
 				if (topLevel)
 				{
-					INamespaceSymbol? root = member.ContainingNamespace.Symbol.ContainingNamespace;
+					INamespaceSymbol? root = member.ContainingNamespace?.Symbol.ContainingNamespace;
 					return root is null || root.IsGlobalNamespace;
 				}
 

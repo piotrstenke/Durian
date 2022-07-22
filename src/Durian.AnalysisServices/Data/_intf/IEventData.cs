@@ -14,6 +14,11 @@ namespace Durian.Analysis.Data
 	public interface IEventData : IMemberData, IVariableDeclarator<EventFieldDeclarationSyntax>, ISymbolOrMember<IEventSymbol, IEventData>
 	{
 		/// <summary>
+		/// The <see langword="add"/> accessor of the event.
+		/// </summary>
+		ISymbolOrMember<IMethodSymbol, IMethodData>? AddMethod { get; }
+
+		/// <summary>
 		/// Returns the <see cref="Declaration"/> as a <see cref="EventFieldDeclarationSyntax"/>.
 		/// </summary>
 		EventFieldDeclarationSyntax? AsField { get; }
@@ -34,6 +39,21 @@ namespace Durian.Analysis.Data
 		new MemberDeclarationSyntax Declaration { get; }
 
 		/// <summary>
+		/// Interface methods this <see cref="IEventSymbol"/> explicily implements.
+		/// </summary>
+		ISymbolOrMember<IEventSymbol, IEventData>? ExplicitInterfaceImplementation { get; }
+
+		/// <summary>
+		/// Interface methods this <see cref="IEventSymbol"/> implicitly implements
+		/// </summary>
+		ISymbolContainer<IEventSymbol, IEventData> ImplicitInterfaceImplementations { get; }
+
+		/// <summary>
+		/// Determines whether this event is a default interface implementation.
+		/// </summary>
+		bool IsDefaultImplementation { get; }
+
+		/// <summary>
 		/// Event overridden by this event.
 		/// </summary>
 		ISymbolOrMember<IEventSymbol, IEventData>? OverriddenEvent { get; }
@@ -42,6 +62,11 @@ namespace Durian.Analysis.Data
 		/// All events overridden by this event.
 		/// </summary>
 		ISymbolContainer<IEventSymbol, IEventData> OverriddenEvents { get; }
+
+		/// <summary>
+		/// The <see langword="remove"/> accessor of the event.
+		/// </summary>
+		ISymbolOrMember<IMethodSymbol, IMethodData>? RemoveMethod { get; }
 
 		/// <summary>
 		/// <see cref="IEventSymbol"/> associated with the <see cref="Declaration"/>.

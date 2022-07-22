@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -102,7 +103,6 @@ namespace Durian.Analysis.Data
 			{
 				IsPartial = false;
 				Virtuality = Analysis.Virtuality.NotVirtual;
-				OverriddenSymbols = null;
 			}
 		}
 
@@ -134,7 +134,21 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-				return _customOffset ??= this.GetCustomOffset();
+				if(!_customOffset.HasValue)
+				{
+					AttributeData? attribute = this.GetSpecialAttribute(SpecialAttribute.FieldOffset);
+
+					if (attribute is null)
+					{
+						_customOffset = -1;
+					}
+					else
+					{
+						_customOffset = attribute.TryGetConstructorArgumentValue(0, out int value) ? value : -1;
+					}
+				}
+
+				return _customOffset.Value;
 			}
 		}
 
@@ -153,7 +167,7 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-				return _isThreadStatic ??= this.IsThreadStatic();
+				return _isThreadStatic ??= Attributes.Any(attr => attr.GetSpecialAttributeKind() == SpecialAttribute.ThreadStatic);
 			}
 		}
 

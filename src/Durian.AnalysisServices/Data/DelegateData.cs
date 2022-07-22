@@ -11,7 +11,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="DelegateDeclarationSyntax"/>.
 	/// </summary>
-	public class DelegateData : MemberData
+	public class DelegateData : MemberData, ITypeData
 	{
 		/// <summary>
 		/// Target <see cref="DelegateDeclarationSyntax"/>.

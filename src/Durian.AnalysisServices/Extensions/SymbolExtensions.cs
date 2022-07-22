@@ -1575,6 +1575,78 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns a collection of all <see cref="ISymbol"/>s implicitly implemented by the specified <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		public static IEnumerable<ISymbol> GetImplicitImplementations(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				IMethodSymbol method => method.GetImplicitImplementations(),
+				IPropertySymbol property => property.GetImplicitImplementations(),
+				IEventSymbol @event => @event.GetImplicitImplementations(),
+				INamedTypeSymbol type => type.GetImplicitImplementations(),
+				_ => Array.Empty<ISymbol>()
+			};
+		}
+
+		/// <summary>
+		/// Returns a collection of all <see cref="IPropertySymbol"/>s implicitly implemented by the specified <paramref name="property"/>.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		public static IEnumerable<IPropertySymbol> GetImplicitImplementations(this IPropertySymbol property)
+		{
+
+		}
+
+		/// <summary>
+		/// Returns a collection of all <see cref="IMethodSymbol"/>s implicitly implemented by the specified <paramref name="method"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		public static IEnumerable<IMethodSymbol> GetImplicitImplementations(this IMethodSymbol method)
+		{
+
+		}
+
+		/// <summary>
+		/// Returns a collection of all <see cref="IEventSymbol"/>s implicitly implemented by the specified <paramref name="event"/>.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		public static IEnumerable<IEventSymbol> GetImplicitImplementations(this IEventSymbol @event)
+		{
+
+		}
+
+		/// <summary>
+		/// Returns a collection of all <see cref="ISymbol"/>s implicitly implemented by the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		public static IEnumerable<ISymbol> GetImplicitImplementations(this INamedTypeSymbol type)
+		{
+
+		}
+
+		/// <summary>
+		/// Returns a collection of all <see cref="ISymbol"/>s of the given <paramref name="interface"/> implicilty implemented by the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		/// <param name="interface"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s in the <paramref name="type"/> of.</param>
+		public static IEnumerable<ISymbol> GetImplicitImplementationsOf(this INamedTypeSymbol type, INamedTypeSymbol @interface)
+		{
+
+		}
+
+		/// <summary>
+		/// Returns a collection of all <see cref="ISymbol"/>s of the given <paramref name="interface"/> implicilty implemented by the specified <paramref name="property"/>.
+		/// </summary>
+		/// <param name="property"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		/// <param name="interface"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s in the <paramref name="type"/> of.</param>
+		public static IEnumerable<ISymbol> GetImplicitImplementationsOf(this IPropertySymbol property, INamedTypeSymbol @interface)
+		{
+
+		}
+
+		/// <summary>
 		/// Creates an <c>&lt;inheritdoc/&gt;</c> tag from the specified <paramref name="symbol"/>.
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to get the <c>&lt;inheritdoc/&gt;</c> tag from.</param>
