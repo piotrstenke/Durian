@@ -28,7 +28,7 @@ namespace Durian.Analysis.Data
 		new BasePropertyDeclarationSyntax Declaration { get; }
 
 		/// <summary>
-		/// Interface methods this <see cref="IPropertySymbol"/> explicily implements.
+		/// Interface methods this <see cref="IPropertySymbol"/> explicitly implements.
 		/// </summary>
 		ISymbolOrMember<IPropertySymbol, IPropertyData>? ExplicitInterfaceImplementation { get; }
 

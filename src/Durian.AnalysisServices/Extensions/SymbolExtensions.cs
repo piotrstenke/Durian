@@ -1593,57 +1593,65 @@ namespace Durian.Analysis.Extensions
 		/// <summary>
 		/// Returns a collection of all <see cref="IPropertySymbol"/>s implicitly implemented by the specified <paramref name="property"/>.
 		/// </summary>
-		/// <param name="property"><see cref="IPropertySymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		/// <param name="property"><see cref="IPropertySymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s by.</param>
 		public static IEnumerable<IPropertySymbol> GetImplicitImplementations(this IPropertySymbol property)
 		{
+			if(property.IsImplementedExplicitly())
+			{
+				return Array.Empty<IPropertySymbol>();
+			}
 
+			return GetImplicitImplementations_Internal(property);
 		}
 
 		/// <summary>
 		/// Returns a collection of all <see cref="IMethodSymbol"/>s implicitly implemented by the specified <paramref name="method"/>.
 		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s by.</param>
 		public static IEnumerable<IMethodSymbol> GetImplicitImplementations(this IMethodSymbol method)
 		{
+			if (method.IsImplementedExplicitly())
+			{
+				return Array.Empty<IMethodSymbol>();
+			}
 
+			return GetImplicitImplementations_Internal(method);
 		}
 
 		/// <summary>
 		/// Returns a collection of all <see cref="IEventSymbol"/>s implicitly implemented by the specified <paramref name="event"/>.
 		/// </summary>
-		/// <param name="event"><see cref="IEventSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		/// <param name="event"><see cref="IEventSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s by.</param>
 		public static IEnumerable<IEventSymbol> GetImplicitImplementations(this IEventSymbol @event)
 		{
+			if (@event.IsImplementedExplicitly())
+			{
+				return Array.Empty<IEventSymbol>();
+			}
 
+			return GetImplicitImplementations_Internal(@event);
 		}
 
 		/// <summary>
 		/// Returns a collection of all <see cref="ISymbol"/>s implicitly implemented by the specified <paramref name="type"/>.
 		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s by.</param>
 		public static IEnumerable<ISymbol> GetImplicitImplementations(this INamedTypeSymbol type)
 		{
-
+			return type.AllInterfaces
+				.SelectMany(m => m.GetMembers())
+				.Where(m => type.FindImplementationForInterfaceMember(m) is not null);
 		}
 
 		/// <summary>
-		/// Returns a collection of all <see cref="ISymbol"/>s of the given <paramref name="interface"/> implicilty implemented by the specified <paramref name="type"/>.
+		/// Returns a collection of all <see cref="ISymbol"/>s of the given <paramref name="interface"/> implicitly implemented by the specified <paramref name="type"/>.
 		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
-		/// <param name="interface"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s in the <paramref name="type"/> of.</param>
-		public static IEnumerable<ISymbol> GetImplicitImplementationsOf(this INamedTypeSymbol type, INamedTypeSymbol @interface)
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s by.</param>
+		/// <param name="interface"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
+		public static IEnumerable<ISymbol> GetImplicitImplementations(this INamedTypeSymbol type, INamedTypeSymbol @interface)
 		{
-
-		}
-
-		/// <summary>
-		/// Returns a collection of all <see cref="ISymbol"/>s of the given <paramref name="interface"/> implicilty implemented by the specified <paramref name="property"/>.
-		/// </summary>
-		/// <param name="property"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s of.</param>
-		/// <param name="interface"><see cref="INamedTypeSymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s in the <paramref name="type"/> of.</param>
-		public static IEnumerable<ISymbol> GetImplicitImplementationsOf(this IPropertySymbol property, INamedTypeSymbol @interface)
-		{
-
+			return @interface.GetMembers()
+				.Where(m => type.FindImplementationForInterfaceMember(m) is not null);
 		}
 
 		/// <summary>
@@ -3639,6 +3647,29 @@ namespace Durian.Analysis.Extensions
 					IPropertySymbol property => !property.IsIndexer,
 					IFieldSymbol or IFieldSymbol => true,
 					_ => false
+				});
+		}
+
+		private static IEnumerable<T> GetImplicitImplementations_Internal<T>(T symbol) where T : ISymbol
+		{
+			if (symbol.DeclaredAccessibility != Accessibility.Public)
+			{
+				return Array.Empty<T>();
+			}
+
+			return symbol.ContainingType.AllInterfaces
+				.SelectMany(intf => intf.GetMembers(symbol.Name))
+				.OfType<T>()
+				.Where(m =>
+				{
+					ISymbol? s = symbol.ContainingType.FindImplementationForInterfaceMember(m);
+
+					if (s is not T t)
+					{
+						return false;
+					}
+
+					return SymbolEqualityComparer.Default.Equals(t, symbol);
 				});
 		}
 

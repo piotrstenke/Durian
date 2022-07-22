@@ -735,46 +735,333 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> implements the given <paramref name="other"/> symbol.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether implements the <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="ISymbol"/> to determine whether is implemented by the specified <paramref name="symbol"/>.</param>
+		public static bool Implements(this ISymbol symbol, ISymbol other)
+		{
+			if (symbol is ITypeSymbol type)
+			{
+				return type.Implements(other);
+			}
+
+			return symbol.ContainingType.Implements(other);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> implements the given <paramref name="interface"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to determine whether implements the given <paramref name="interface"/>.</param>
+		/// <param name="interface"><see cref="INamedTypeSymbol"/> to determine whether is implemented by the specified <paramref name="type"/>.</param>
+		public static bool Implements(this ITypeSymbol type, INamedTypeSymbol @interface)
+		{
+			if (@interface.TypeKind != TypeKind.Interface)
+			{
+				return false;
+			}
+
+			return type.AllInterfaces.Any(intf => SymbolEqualityComparer.Default.Equals(intf, @interface));
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> implements the given <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeSymbol"/> to determine whether implements the given <paramref name="symbol"/>.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether is implemented by the <paramref name="type"/>.</param>
+		public static bool Implements(this ITypeSymbol type, ISymbol symbol)
+		{
+			if (symbol is INamedTypeSymbol @interface)
+			{
+				return type.Implements(@interface);
+			}
+
+			if (symbol.ContainingType.TypeKind != TypeKind.Interface)
+			{
+				return false;
+			}
+
+			return type.AllInterfaces.Any(intf => SymbolEqualityComparer.Default.Equals(intf, symbol.ContainingType));
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> explicitly implements the given <paramref name="other"/> symbol.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether explicitly implements the given <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="ISymbol"/> to determine whether is explicitly implemented by the <paramref name="symbol"/>.</param>
+		public static bool ImplementsExplicitly(this ISymbol symbol, ISymbol other)
+		{
+			return symbol switch
+			{
+				INamedTypeSymbol type => type.ImplementsExplicitly(other),
+				IMethodSymbol method => other is IMethodSymbol otherMethod && method.ImplementsExplicitly(otherMethod),
+				IPropertySymbol property => other is IPropertySymbol otherProperty && property.ImplementsExplicitly(otherProperty),
+				IEventSymbol @event => other is IEventSymbol otherEvent && @event.ImplementsExplicitly(otherEvent),
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> explicitly implements the given <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether explicitly implements the given <paramref name="symbol"/>.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether is explicitly implemented by the <paramref name="type"/>.</param>
+		public static bool ImplementsExplicitly(this INamedTypeSymbol type, ISymbol symbol)
+		{
+			return symbol switch
+			{
+				IMethodSymbol method => type.ImplementsExplicitly(method),
+				IPropertySymbol property => type.ImplementsExplicitly(property),
+				IEventSymbol @event => @event.ImplementsExplicitly(@event),
+				_ => false
+			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> explicitly implements the given <paramref name="other"/> symbol.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether explicitly implements the given <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="IMethodSymbol"/> to determine whether is explicitly implemented by the <paramref name="method"/>.</param>
+		public static bool ImplementsExplicitly(this IMethodSymbol method, IMethodSymbol other)
+		{
+			return method.ExplicitInterfaceImplementations.Any(ex => SymbolEqualityComparer.Default.Equals(ex, other));
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> explicitly implements the given <paramref name="method"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether explicitly implements the given <paramref name="method"/>.</param>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether is explicitly implemented by the <paramref name="type"/>.</param>
+		public static bool ImplementsExplicitly(this INamedTypeSymbol type, IMethodSymbol method)
+		{
+			if (method.ContainingType.TypeKind != TypeKind.Interface)
+			{
+				return false;
+			}
+
+			return type
+				.GetAllMembers()
+				.OfType<IMethodSymbol>()
+				.Any(m => m.ImplementsExplicitly(method));
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> explicitly implements the given <paramref name="other"/> symbol.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to determine whether explicitly implements the given <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="IPropertySymbol"/> to determine whether is explicitly implemented by the <paramref name="property"/>.</param>
+		public static bool ImplementsExplicitly(this IPropertySymbol property, IPropertySymbol other)
+		{
+			return property.ExplicitInterfaceImplementations.Any(ex => SymbolEqualityComparer.Default.Equals(ex, other));
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> explicitly implements the given <paramref name="property"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether explicitly implements the given <paramref name="property"/>.</param>
+		/// <param name="property"><see cref="IPropertySymbol"/> to determine whether is explicitly implemented by the <paramref name="type"/>.</param>
+		public static bool ImplementsExplicitly(this INamedTypeSymbol type, IPropertySymbol property)
+		{
+			if (property.ContainingType.TypeKind != TypeKind.Interface)
+			{
+				return false;
+			}
+
+			return type
+				.GetAllMembers()
+				.OfType<IPropertySymbol>()
+				.Any(m => m.ImplementsExplicitly(property));
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> explicitly implements the given <paramref name="other"/> symbol.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to determine whether explicitly implements the given <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="IEventSymbol"/> to determine whether is explicitly implemented by the <paramref name="event"/>.</param>
+		public static bool ImplementsExplicitly(this IEventSymbol @event, IEventSymbol other)
+		{
+			return @event.ExplicitInterfaceImplementations.Any(ex => SymbolEqualityComparer.Default.Equals(ex, other));
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> explicitly implements the given <paramref name="event"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether explicitly implements the given <paramref name="event"/>.</param>
+		/// <param name="event"><see cref="IEventSymbol"/> to determine whether is explicitly implemented by the <paramref name="type"/>.</param>
+		public static bool ImplementsExplicitly(this INamedTypeSymbol type, IEventSymbol @event)
+		{
+			if (@event.ContainingType.TypeKind != TypeKind.Interface)
+			{
+				return false;
+			}
+
+			return type
+				.GetAllMembers()
+				.OfType<IEventSymbol>()
+				.Any(m => m.ImplementsExplicitly(@event));
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> implicitly implements the given <paramref name="other"/> symbol.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether implicitly implements the given <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="ISymbol"/> to determine whether is implicitly implemented by the <paramref name="symbol"/>.</param>
+		public static bool ImplementsImplicitly(this ISymbol symbol, ISymbol other)
+		{
+			return symbol switch
+			{
+				INamedTypeSymbol type => type.ImplementsImplicitly(other),
+				IMethodSymbol method => other is IMethodSymbol otherMethod && method.ImplementsImplicitly(otherMethod),
+				IPropertySymbol property => other is IPropertySymbol otherProperty && property.ImplementsImplicitly(otherProperty),
+				IEventSymbol @event => other is IEventSymbol otherEvent && @event.ImplementsImplicitly(otherEvent),
+				_ => default
+			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> implicitly implements the given <paramref name="symbol"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether implicitly implements the given <paramref name="symbol"/>.</param>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether is implicitly implemented by the <paramref name="type"/>.</param>
+		public static bool ImplementsImplicitly(this INamedTypeSymbol type, ISymbol symbol)
+		{
+			return symbol switch
+			{
+				IMethodSymbol method => type.ImplementsImplicitly(method),
+				IPropertySymbol property => type.ImplementsImplicitly(property),
+				IEventSymbol @event => @event.ImplementsImplicitly(@event),
+				_ => false
+			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> implicitly implements the given <paramref name="other"/> symbol.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether implicitly implements the given <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="IMethodSymbol"/> to determine whether is implicitly implemented by the <paramref name="method"/>.</param>
+		public static bool ImplementsImplicitly(this IMethodSymbol method, IMethodSymbol other)
+		{
+			if (method.IsImplementedExplicitly())
+			{
+				return false;
+			}
+
+			ISymbol? symbol = method.ContainingType.FindImplementationForInterfaceMember(other);
+
+			if (symbol is not IMethodSymbol m)
+			{
+				return false;
+			}
+
+			return SymbolEqualityComparer.Default.Equals(method, m);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> implicitly implements the given <paramref name="method"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether implicitly implements the given <paramref name="method"/>.</param>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether is implicitly implemented by the <paramref name="type"/>.</param>
+		public static bool ImplementsImplicitly(this INamedTypeSymbol type, IMethodSymbol method)
+		{
+			if (method.IsImplementedExplicitly())
+			{
+				return false;
+			}
+
+			return type.FindImplementationForInterfaceMember(method) is not null;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> implicitly implements the given <paramref name="other"/> symbol.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to determine whether implicitly implements the given <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="IPropertySymbol"/> to determine whether is implicitly implemented by the <paramref name="property"/>.</param>
+		public static bool ImplementsImplicitly(this IPropertySymbol property, IPropertySymbol other)
+		{
+			if (property.IsImplementedExplicitly())
+			{
+				return false;
+			}
+
+			ISymbol? symbol = property.ContainingType.FindImplementationForInterfaceMember(other);
+
+			if (symbol is not IPropertySymbol prop)
+			{
+				return false;
+			}
+
+			return SymbolEqualityComparer.Default.Equals(property, prop);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> implicitly implements the given <paramref name="property"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether implicitly implements the given <paramref name="property"/>.</param>
+		/// <param name="property"><see cref="IPropertySymbol"/> to determine whether is implicitly implemented by the <paramref name="type"/>.</param>
+		public static bool ImplementsImplicitly(this INamedTypeSymbol type, IPropertySymbol property)
+		{
+			if (property.IsImplementedExplicitly())
+			{
+				return false;
+			}
+
+			return type.FindImplementationForInterfaceMember(property) is not null;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> implicitly implements the given <paramref name="other"/> symbol.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to determine whether implicitly implements the given <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="IEventSymbol"/> to determine whether is implicitly implemented by the <paramref name="event"/>.</param>
+		public static bool ImplementsImplicitly(this IEventSymbol @event, IEventSymbol other)
+		{
+			if (@event.IsImplementedExplicitly())
+			{
+				return false;
+			}
+
+			ISymbol? symbol = @event.ContainingType.FindImplementationForInterfaceMember(other);
+
+			if(symbol is not IEventSymbol e)
+			{
+				return false;
+			}
+
+			return SymbolEqualityComparer.Default.Equals(@event, e);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> implicitly implements the given <paramref name="event"/>.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether implicitly implements the given <paramref name="event"/>.</param>
+		/// <param name="event"><see cref="IEventSymbol"/> to determine whether is implicitly implemented by the <paramref name="type"/>.</param>
+		public static bool ImplementsImplicitly(this INamedTypeSymbol type, IEventSymbol @event)
+		{
+			if (@event.IsImplementedExplicitly())
+			{
+				return false;
+			}
+
+			return type.FindImplementationForInterfaceMember(@event) is not null;
+		}
+
+		/// <summary>
 		/// Determines whether the target <paramref name="type"/> inherits the <paramref name="baseType"/>.
 		/// </summary>
 		/// <param name="type">Type to check if inherits the <paramref name="baseType"/>.</param>
 		/// <param name="baseType">Base type to check if is inherited by the target <paramref name="type"/>.</param>
-		/// <param name="toReturnIfSame">Determines what to return when the <paramref name="type"/> and <paramref name="baseType"/> are the same.</param>
-		public static bool InheritsFrom(this ITypeSymbol type, ITypeSymbol baseType, bool toReturnIfSame = true)
+		public static bool Inherits(this ITypeSymbol type, ITypeSymbol baseType)
 		{
-			if (SymbolEqualityComparer.Default.Equals(type, baseType))
-			{
-				return toReturnIfSame;
-			}
+			INamedTypeSymbol? current = type.BaseType;
 
-			if (baseType.TypeKind == TypeKind.Interface)
+			while (current is not null)
 			{
-				if (type.AllInterfaces.IsDefaultOrEmpty)
+				if (SymbolEqualityComparer.Default.Equals(current, baseType))
 				{
-					return false;
+					return true;
 				}
 
-				foreach (INamedTypeSymbol intf in type.AllInterfaces)
-				{
-					if (SymbolEqualityComparer.Default.Equals(baseType, intf))
-					{
-						return true;
-					}
-				}
-			}
-			else
-			{
-				INamedTypeSymbol? current = type.BaseType;
-
-				while (current is not null)
-				{
-					if (SymbolEqualityComparer.Default.Equals(current, baseType))
-					{
-						return true;
-					}
-
-					current = current.BaseType;
-				}
+				current = current.BaseType;
 			}
 
 			return false;
@@ -1450,59 +1737,188 @@ namespace Durian.Analysis.Extensions
 			};
 		}
 
-		public static bool IsImplicitlyImplemented(this ISymbol symbol)
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> is a variant of the <paramref name="other"/> symbol.
+		/// </summary>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether is a variant of the <paramref name="other"/> symbol.</param>
+		/// <param name="other"><see cref="INamedTypeSymbol"/> representing either an interface or a delegate to check whether the <paramref name="type"/> is a variant of.</param>
+		public static bool IsVariantOf(this INamedTypeSymbol type, INamedTypeSymbol other)
 		{
+			if(other.TypeKind != TypeKind.Interface && other.TypeKind != TypeKind.Delegate)
+			{
+				return false;
+			}
 
+			if(IsSameOrConstructed(type))
+			{
+				return true;
+			}
+
+			// type:  IA<in T>
+			// other: IB<in T> : IA<T>
+
+			if (SymbolEqualityComparer.Default.Equals(other, other.ConstructedFrom))
+			{
+				return type.AllInterfaces.Any(intf => SymbolEqualityComparer.Default.Equals(intf.ConstructedFrom, other));
+			}
+
+			return type.Interfaces.Any(intf => IsVariant(intf));
+
+			bool IsSameOrConstructed(INamedTypeSymbol type)
+			{
+				// type:  IA<in T>
+				// other: IA<in T>
+
+				if (SymbolEqualityComparer.Default.Equals(type, other))
+				{
+					return true;
+				}
+
+				// type:  IA<string>
+				// other: IA<object>
+
+				if (SymbolEqualityComparer.Default.Equals(type.ConstructedFrom, other.ConstructedFrom))
+				{
+					ImmutableArray<ITypeSymbol> typeArgs = type.TypeArguments;
+					ImmutableArray<ITypeSymbol> otherArgs = other.TypeArguments;
+
+					ImmutableArray<ITypeParameterSymbol> typeParameters = type.ConstructedFrom.TypeParameters;
+
+					for (int i = 0; i < typeParameters.Length; i++)
+					{
+						ITypeSymbol t = typeArgs[i];
+						ITypeSymbol o = otherArgs[i];
+
+						switch (typeParameters[i].Variance)
+						{
+							case VarianceKind.Out:
+
+								if (!t.Inherits(o))
+								{
+									return false;
+								}
+
+								break;
+
+							case VarianceKind.In:
+
+								if (!o.Inherits(t))
+								{
+									return false;
+								}
+
+								break;
+
+							default:
+
+								if (!SymbolEqualityComparer.Default.Equals(t, o))
+								{
+									return false;
+								}
+
+								break;
+						}
+					}
+
+					return true;
+				}
+
+				return false;
+			}
+
+			bool IsVariant(INamedTypeSymbol type)
+			{
+				if(IsSameOrConstructed(type))
+				{
+					return true;
+				}
+
+				return type.Interfaces.Any(intf => IsVariant(intf));
+			}
 		}
 
-		public static bool IsImplicitlyImplemented(this IPropertySymbol property)
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> is implemented explicitly.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether is implemented explicitly.</param>
+		public static bool IsImplementedExplicitly(this ISymbol symbol)
 		{
-
+			return symbol switch
+			{
+				IMethodSymbol method => method.IsImplementedExplicitly(),
+				IPropertySymbol property => property.IsImplementedExplicitly(),
+				IEventSymbol @event => @event.IsImplementedExplicitly(),
+				_ => false
+			};
 		}
 
-		public static bool IsImplicitlyImplemented(this IEventSymbol @event)
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> is implemented explicitly.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to determine whether is implemented explicitly.</param>
+		public static bool IsImplementedExplicitly(this IPropertySymbol property)
 		{
-
+			return property.ExplicitInterfaceImplementations.Length > 0;
 		}
 
-		public static bool IsImplicitlyImplemented(this IMethodSymbol method)
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> is implemented explicitly.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to determine whether is implemented explicitly.</param>
+		public static bool IsImplementedExplicitly(this IEventSymbol @event)
 		{
-
+			return @event.ExplicitInterfaceImplementations.Length > 0;
 		}
 
-		public static bool IsImplicitlyImplementedBy(this ISymbol symbol, ISymbol other)
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is implemented explicitly.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether is implemented explicitly.</param>
+		public static bool IsImplementedExplicitly(this IMethodSymbol method)
 		{
-
+			return method.ExplicitInterfaceImplementations.Length > 0;
 		}
 
-		public static bool IsImplicitlyImplementedBy(this IMethodSymbol method, IMethodSymbol other)
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> is implemented implicitly.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to determine whether is implemented implicitly.</param>
+		public static bool IsImplementedImplicitly(this ISymbol symbol)
 		{
-
+			return symbol switch
+			{
+				IMethodSymbol method => method.IsImplementedImplicitly(),
+				IPropertySymbol property => property.IsImplementedImplicitly(),
+				IEventSymbol @event => @event.IsImplementedImplicitly(),
+				_ => false
+			};
 		}
 
-		public static bool IsImplicitlyImplementedBy(this IMethodSymbol method, INamedTypeSymbol type)
+		/// <summary>
+		/// Determines whether the specified <paramref name="property"/> is implemented implicitly.
+		/// </summary>
+		/// <param name="property"><see cref="IPropertySymbol"/> to determine whether is implemented implicitly.</param>
+		public static bool IsImplementedImplicitly(this IPropertySymbol property)
 		{
-
+			return property.GetImplicitImplementations().Any();
 		}
 
-		public static bool IsImplicitlyImplementedBy(this IPropertySymbol property, IPropertySymbol other)
+		/// <summary>
+		/// Determines whether the specified <paramref name="event"/> is implemented implicitly.
+		/// </summary>
+		/// <param name="event"><see cref="IEventSymbol"/> to determine whether is implemented implicitly.</param>
+		public static bool IsImplementedImplicitly(this IEventSymbol @event)
 		{
-
+			return @event.GetImplicitImplementations().Any();
 		}
 
-		public static bool IsImplicitlyImplementedBy(this IPropertySymbol property, INamedTypeSymbol type)
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is implemented implicitly.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to determine whether is implemented implicitly.</param>
+		public static bool IsImplementedImplicitly(this IMethodSymbol method)
 		{
-
-		}
-
-		public static bool IsImplicitlyImplementedBy(this IEventSymbol @event, IEventSymbol other)
-		{
-
-		}
-
-		public static bool IsImplicitlyImplementedBy(this IEventSymbol @event, INamedTypeSymbol type)
-		{
-
+			return method.GetImplicitImplementations().Any();
 		}
 
 		/// <summary>
@@ -2303,7 +2719,7 @@ namespace Durian.Analysis.Extensions
 						return false;
 					}
 				}
-				else if (!InheritsFrom(type, t))
+				else if (!Inherits(type, t))
 				{
 					return false;
 				}

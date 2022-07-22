@@ -177,7 +177,7 @@ namespace Durian.Analysis.CopyFrom
 				return true;
 			}
 
-			if (type.InheritsFrom(target) || target.InheritsFrom(type))
+			if (type.Inherits(target) || target.Inherits(type))
 			{
 				return true;
 			}
