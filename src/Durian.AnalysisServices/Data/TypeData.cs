@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Durian.Analysis.SymbolContainers.Specialized;
@@ -423,14 +424,6 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		/// <inheritdoc cref="ITypeData.ToNamespaceOrType"/>
-		public NamespaceOrTypeData ToNamespaceOrType()
-		{
-			NamespaceOrTypeData.Properties properties = new();
-			base.Map(properties);
-			return new(Declaration, ParentCompilation, properties);
-		}
-
 		/// <inheritdoc/>
 		protected abstract override MemberData CloneCore();
 
@@ -454,7 +447,7 @@ namespace Durian.Analysis.Data
 			base.SetProperties(properties);
 
 			if (properties is Properties props)
-{
+			{
 				_isAttribute = props.IsAttribute;
 				_isException = props.IsException;
 				_members = DataHelpers.FromDefaultedOrEmpty(props.Members);
@@ -472,17 +465,13 @@ namespace Durian.Analysis.Data
 			throw new InvalidOperationException("Current symbol is not a namespace");
 		}
 
-		INamespaceOrTypeData ITypeData.ToNamespaceOrType()
-		{
-			return ToNamespaceOrType();
-		}
-
 		ITypeData INamespaceOrTypeData.ToType()
 		{
 			return this;
 		}
 
 		[MemberNotNull(nameof(_members))]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void InitMembers()
 		{
 			if (_members is null)

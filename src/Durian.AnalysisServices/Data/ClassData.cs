@@ -81,7 +81,7 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="declaration"><see cref="ClassDeclarationSyntax"/> this <see cref="ClassData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="ClassData"/>.</param>
-		/// <param name="properties"><see cref="TypeData{TDeclaration}.Properties"/> to use for the current instance.</param>
+		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
@@ -94,9 +94,9 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc cref="MemberData.Clone"/>
-		public new RecordData Clone()
+		public new ClassData Clone()
 		{
-			return (CloneCore() as RecordData)!;
+			return (CloneCore() as ClassData)!;
 		}
 
 		/// <inheritdoc cref="MemberData.GetProperties"/>

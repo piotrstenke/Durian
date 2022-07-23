@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
@@ -3466,6 +3465,29 @@ namespace Durian.Analysis.Extensions
 			return syntax is not null;
 		}
 
+		internal static IEnumerable<T> GetImplicitImplementations_Internal<T>(T symbol, Func<INamedTypeSymbol, IEnumerable<ISymbol>> memberFunction) where T : ISymbol
+		{
+			if (symbol.DeclaredAccessibility != Accessibility.Public)
+			{
+				return Array.Empty<T>();
+			}
+
+			return symbol.ContainingType.AllInterfaces
+				.SelectMany(memberFunction)
+				.OfType<T>()
+				.Where(m =>
+				{
+					ISymbol? s = symbol.ContainingType.FindImplementationForInterfaceMember(m);
+
+					if (s is not T t)
+					{
+						return false;
+					}
+
+					return SymbolEqualityComparer.Default.Equals(t, symbol);
+				});
+		}
+
 		[SuppressMessage("Roslynator", "RCS1224:Make method an extension method.")]
 		internal static NullableAnnotationAttribute MapToNullableAnnotationAttribute(string name, Func<NullableAnnotationAttribute, NullableAnnotationAttribute> function)
 		{
@@ -3652,25 +3674,7 @@ namespace Durian.Analysis.Extensions
 
 		private static IEnumerable<T> GetImplicitImplementations_Internal<T>(T symbol) where T : ISymbol
 		{
-			if (symbol.DeclaredAccessibility != Accessibility.Public)
-			{
-				return Array.Empty<T>();
-			}
-
-			return symbol.ContainingType.AllInterfaces
-				.SelectMany(intf => intf.GetMembers(symbol.Name))
-				.OfType<T>()
-				.Where(m =>
-				{
-					ISymbol? s = symbol.ContainingType.FindImplementationForInterfaceMember(m);
-
-					if (s is not T t)
-					{
-						return false;
-					}
-
-					return SymbolEqualityComparer.Default.Equals(t, symbol);
-				});
+			return GetImplicitImplementations_Internal(symbol, intf => intf.GetMembers(symbol.Name));
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

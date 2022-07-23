@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
@@ -26,6 +27,15 @@ namespace Durian.Analysis.Data
 
 			/// <inheritdoc cref="EventData.Index"/>
 			public int? Index { get; set; }
+
+			/// <inheritdoc cref="EventData.IsDefaultImplementation"/>
+			public bool? IsDefaultImplementation { get; set; }
+
+			/// <inheritdoc cref="EventData.ExplicitInterfaceImplementation"/>
+			public DefaultedValue<ISymbolOrMember<IEventSymbol, IEventData>> ExplicitInterfaceImplementation { get; set; }
+
+			/// <inheritdoc cref="EventData.ImplicitInterfaceImplementations"/>
+			public DefaultedValue<ISymbolContainer<IEventSymbol, IEventData>> ImplicitInterfaceImplementations { get; set; }
 
 			/// <inheritdoc cref="EventData.OverriddenEvent"/>
 			public DefaultedValue<ISymbolOrMember<IEventSymbol, IEventData>> OverriddenEvent { get; set; }
@@ -72,6 +82,9 @@ namespace Durian.Analysis.Data
 				properties.BackingField = BackingField;
 				properties.OverriddenEvent = OverriddenEvent;
 				properties.OverriddenEvents = OverriddenEvents;
+				properties.IsDefaultImplementation = IsDefaultImplementation;
+				properties.ImplicitInterfaceImplementations = ImplicitInterfaceImplementations;
+				properties.ExplicitInterfaceImplementation = ExplicitInterfaceImplementation;
 			}
 
 			/// <inheritdoc/>
@@ -136,6 +149,9 @@ namespace Durian.Analysis.Data
 		private DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> _backingField;
 		private DefaultedValue<ISymbolOrMember<IEventSymbol, IEventData>> _overriddenEvent;
 		private ISymbolContainer<IEventSymbol, IEventData>? _overriddenEvents;
+		private bool? _isDefaultImplementation;
+		private DefaultedValue<ISymbolOrMember<IEventSymbol, IEventData>> _explicitImplementation;
+		private ISymbolContainer<IEventSymbol, IEventData>? _implicitImplementations;
 
 		/// <summary>
 		/// Returns the <see cref="Declaration"/> as a <see cref="EventFieldDeclarationSyntax"/>.
@@ -166,10 +182,47 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new MemberDeclarationSyntax Declaration => (base.Declaration as MemberDeclarationSyntax)!;
 
+		/// <inheritdoc/>
+		public ISymbolOrMember<IEventSymbol, IEventData>? ExplicitInterfaceImplementation
+		{
+			get
+			{
+				if (_explicitImplementation.IsDefault)
+				{
+					_explicitImplementation = new(Symbol.ExplicitInterfaceImplementations.FirstOrDefault()?.ToDataOrSymbol(ParentCompilation));
+				}
+
+				return _explicitImplementation.Value;
+			}
+		}
+
+		/// <inheritdoc/>
+		public ISymbolContainer<IEventSymbol, IEventData> ImplicitInterfaceImplementations
+		{
+			get
+			{
+				return _implicitImplementations ??= SymbolExtensions.GetImplicitImplementations_Internal(Symbol, intf =>
+				{
+					return intf
+						.ToDataOrSymbol(ParentCompilation)
+						.Member
+						.GetMembers(IncludedMembers.Direct)
+						.AsEnumerable()
+						.Select(s => s.Symbol)
+						.OfType<IEventSymbol>()
+						.Where(m => m.Name == Symbol.Name);
+				})
+				.ToContainer(ParentCompilation);
+			}
+		}
+
 		/// <summary>
 		/// Index of this field in the <see cref="Declaration"/>.
 		/// </summary>
 		public int Index { get; private set; }
+
+		/// <inheritdoc/>
+		public bool IsDefaultImplementation => _isDefaultImplementation ??= Symbol.IsDefaultImplementation();
 
 		/// <inheritdoc/>
 		public ISymbolOrMember<IEventSymbol, IEventData>? OverriddenEvent
@@ -360,6 +413,9 @@ namespace Durian.Analysis.Data
 			properties.BackingField = _backingField;
 			properties.OverriddenEvent = _overriddenEvent;
 			properties.OverriddenEvents = DataHelpers.ToDefaultedValue(_overriddenEvents);
+			properties.ImplicitInterfaceImplementations = DataHelpers.ToDefaultedValue(_implicitImplementations);
+			properties.ExplicitInterfaceImplementation = _explicitImplementation;
+			properties.IsDefaultImplementation = _isDefaultImplementation;
 		}
 
 		/// <inheritdoc/>
@@ -435,6 +491,9 @@ namespace Durian.Analysis.Data
 				_backingField = props.BackingField;
 				_overriddenEvent = props.OverriddenEvent;
 				_overriddenEvents = DataHelpers.FromDefaultedOrEmpty(props.OverriddenEvents);
+				_isDefaultImplementation = props.IsDefaultImplementation;
+				_explicitImplementation = props.ExplicitInterfaceImplementation;
+				_implicitImplementations = DataHelpers.FromDefaultedOrEmpty(props.ImplicitInterfaceImplementations);
 
 				if (props.Variable.IsDefault && AsField is not null)
 				{

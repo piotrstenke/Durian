@@ -7,6 +7,7 @@ using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Durian.Analysis.Data
 {
@@ -73,7 +74,6 @@ namespace Durian.Analysis.Data
 			{
 				Virtuality = Analysis.Virtuality.Abstract;
 				ParameterlessConstructor = null;
-				OverriddenSymbols = null;
 				CompilerCondition = null;
 			}
 
@@ -95,7 +95,10 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-				return _defaultImplementations ??= Symbol.GetDefaultImplementations(true).ToContainer(ParentCompilation);
+				return _defaultImplementations ??= GetMembers(IncludedMembers.Inherited)
+					.AsEnumerable()
+					.Where(m => m.Symbol.IsDefaultImplementation())
+					.ToContainer(ParentCompilation);
 			}
 		}
 

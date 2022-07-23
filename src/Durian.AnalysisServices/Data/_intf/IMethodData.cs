@@ -30,7 +30,7 @@ namespace Durian.Analysis.Data
 		string? CompilerCondition { get; }
 
 		/// <summary>
-		/// Interface methods this <see cref="IMethodSymbol"/> explicily implements.
+		/// Interface methods this <see cref="IMethodSymbol"/> explicitly implements.
 		/// </summary>
 		ISymbolOrMember<IMethodSymbol, IMethodData>? ExplicitInterfaceImplementation { get; }
 

@@ -21,13 +21,13 @@ namespace Durian.Analysis.Data
 		public new class Properties : TypeData<RecordDeclarationSyntax>.Properties
 		{
 			/// <inheritdoc cref="RecordData.CopyConstructor"/>
-			public DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> CopyConstructor { get; set; }
+			public DefaultedValue<ISymbolOrMember<IMethodSymbol, IMethodData>> CopyConstructor { get; set; }
 
 			/// <inheritdoc cref="RecordData.ParameterList"/>
 			public DefaultedValue<ParameterListSyntax> ParameterList { get; set; }
 
 			/// <inheritdoc cref="RecordData.PrimaryConstructor"/>
-			public DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> PrimaryConstructor { get; set; }
+			public DefaultedValue<ISymbolOrMember<IMethodSymbol, IMethodData>> PrimaryConstructor { get; set; }
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Properties"/> class.
@@ -85,14 +85,14 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		private DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> _copyConstructor;
+		private DefaultedValue<ISymbolOrMember<IMethodSymbol, IMethodData>> _copyConstructor;
 		private DefaultedValue<ParameterListSyntax> _parameterList;
-		private DefaultedValue<ISymbolOrMember<IMethodSymbol, ConstructorData>> _primaryConstructor;
+		private DefaultedValue<ISymbolOrMember<IMethodSymbol, IMethodData>> _primaryConstructor;
 
 		/// <summary>
 		/// Copy constructor of the record.
 		/// </summary>
-		public ISymbolOrMember<IMethodSymbol, ConstructorData>? CopyConstructor
+		public ISymbolOrMember<IMethodSymbol, IMethodData>? CopyConstructor
 		{
 			get
 			{
@@ -141,7 +141,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Primary constructor of the record.
 		/// </summary>
-		public ISymbolOrMember<IMethodSymbol, ConstructorData>? PrimaryConstructor
+		public ISymbolOrMember<IMethodSymbol, IMethodData>? PrimaryConstructor
 		{
 			get
 			{

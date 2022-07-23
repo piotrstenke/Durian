@@ -235,16 +235,6 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		/// <summary>
-		/// Converts the current <see cref="NamespaceData"/> to a <see cref="NamespaceOrTypeData"/>
-		/// </summary>
-		public NamespaceOrTypeData ToNamespaceOrType()
-		{
-			NamespaceOrTypeData.Properties properties = new();
-			base.Map(properties);
-			return new(Declaration, ParentCompilation, properties);
-		}
-
 		/// <inheritdoc/>
 		protected override MemberData CloneCore()
 		{
@@ -279,11 +269,6 @@ namespace Durian.Analysis.Data
 		INamespaceData INamespaceOrTypeData.ToNamespace()
 		{
 			return this;
-		}
-
-		INamespaceOrTypeData INamespaceData.ToNamespaceOrType()
-		{
-			return ToNamespaceOrType();
 		}
 
 		ITypeData INamespaceOrTypeData.ToType()

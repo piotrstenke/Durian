@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
@@ -23,6 +24,15 @@ namespace Durian.Analysis.Data
 		{
 			/// <inheritdoc cref="IndexerData.AutoPropertyKind"/>
 			public AutoPropertyKind? AutoPropertyKind { get; set; }
+
+			/// <inheritdoc cref="IndexerData.IsDefaultImplementation"/>
+			public bool? IsDefaultImplementation { get; set; }
+
+			/// <inheritdoc cref="IndexerData.ExplicitInterfaceImplementation"/>
+			public DefaultedValue<ISymbolOrMember<IPropertySymbol, IPropertyData>> ExplicitInterfaceImplementation { get; set; }
+
+			/// <inheritdoc cref="IndexerData.ImplicitInterfaceImplementations"/>
+			public DefaultedValue<ISymbolContainer<IPropertySymbol, IPropertyData>> ImplicitInterfaceImplementations { get; set; }
 
 			/// <inheritdoc cref="IndexerData.Parameters"/>
 			public DefaultedValue<ISymbolContainer<IParameterSymbol, IParameterData>> Parameters { get; set; }
@@ -62,6 +72,9 @@ namespace Durian.Analysis.Data
 				properties.Parameters = Parameters;
 				properties.OverriddenIndexer = OverriddenIndexer;
 				properties.OverriddenIndexers = OverriddenIndexers;
+				properties.IsDefaultImplementation = IsDefaultImplementation;
+				properties.ImplicitInterfaceImplementations = ImplicitInterfaceImplementations;
+				properties.ExplicitInterfaceImplementation = ExplicitInterfaceImplementation;
 			}
 
 			/// <inheritdoc/>
@@ -100,6 +113,9 @@ namespace Durian.Analysis.Data
 		private ISymbolContainer<IParameterSymbol, IParameterData>? _parameters;
 		private DefaultedValue<ISymbolOrMember<IPropertySymbol, IPropertyData>> _overriddenIndexer;
 		private ISymbolContainer<IPropertySymbol, IPropertyData>? _overriddenIndexers;
+		private bool? _isDefaultImplementation;
+		private DefaultedValue<ISymbolOrMember<IPropertySymbol, IPropertyData>> _explicitImplementation;
+		private ISymbolContainer<IPropertySymbol, IPropertyData>? _implicitImplementations;
 
 		/// <summary>
 		/// Kind of the auto-property.
@@ -115,6 +131,43 @@ namespace Durian.Analysis.Data
 		/// Determines whether this property is an auto-property.
 		/// </summary>
 		public bool IsAutoProperty => AutoPropertyKind != AutoPropertyKind.None;
+
+		/// <inheritdoc/>
+		public bool IsDefaultImplementation => _isDefaultImplementation ??= Symbol.IsDefaultImplementation();
+
+		/// <inheritdoc/>
+		public ISymbolOrMember<IPropertySymbol, IPropertyData>? ExplicitInterfaceImplementation
+		{
+			get
+			{
+				if (_explicitImplementation.IsDefault)
+				{
+					_explicitImplementation = new(Symbol.ExplicitInterfaceImplementations.FirstOrDefault()?.ToDataOrSymbol(ParentCompilation));
+				}
+
+				return _explicitImplementation.Value;
+			}
+		}
+
+		/// <inheritdoc/>
+		public ISymbolContainer<IPropertySymbol, IPropertyData> ImplicitInterfaceImplementations
+		{
+			get
+			{
+				return _implicitImplementations ??= SymbolExtensions.GetImplicitImplementations_Internal(Symbol, intf =>
+				{
+					return intf
+						.ToDataOrSymbol(ParentCompilation)
+						.Member
+						.GetMembers(IncludedMembers.Direct)
+						.AsEnumerable()
+						.Select(s => s.Symbol)
+						.OfType<IPropertySymbol>()
+						.Where(m => m.Name == Symbol.Name);
+				})
+				.ToContainer(ParentCompilation);
+			}
+		}
 
 		/// <summary>
 		/// Indexer overridden by this indexer.
@@ -219,6 +272,9 @@ namespace Durian.Analysis.Data
 			properties.Parameters = DataHelpers.ToDefaultedValue(_parameters);
 			properties.OverriddenIndexer = _overriddenIndexer;
 			properties.OverriddenIndexers = DataHelpers.ToDefaultedValue(_overriddenIndexers);
+			properties.ImplicitInterfaceImplementations = DataHelpers.ToDefaultedValue(_implicitImplementations);
+			properties.ExplicitInterfaceImplementation = _explicitImplementation;
+			properties.IsDefaultImplementation = _isDefaultImplementation;
 		}
 
 		/// <inheritdoc/>
@@ -269,6 +325,9 @@ namespace Durian.Analysis.Data
 				_parameters = DataHelpers.FromDefaultedOrEmpty(props.Parameters);
 				_overriddenIndexer = props.OverriddenIndexer;
 				_overriddenIndexers = DataHelpers.FromDefaultedOrEmpty(props.OverriddenIndexers);
+				_isDefaultImplementation = props.IsDefaultImplementation;
+				_explicitImplementation = props.ExplicitInterfaceImplementation;
+				_implicitImplementations = DataHelpers.FromDefaultedOrEmpty(props.ImplicitInterfaceImplementations);
 			}
 		}
 

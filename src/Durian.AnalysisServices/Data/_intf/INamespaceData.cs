@@ -39,10 +39,5 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="members">Range of members to include.</param>
 		ISymbolContainer<INamespaceSymbol, INamespaceData> GetNamespaces(IncludedMembers members);
-
-		/// <summary>
-		/// Converts the current <see cref="INamespaceData"/> to a <see cref="INamespaceOrTypeData"/>.
-		/// </summary>
-		INamespaceOrTypeData ToNamespaceOrType();
 	}
 }

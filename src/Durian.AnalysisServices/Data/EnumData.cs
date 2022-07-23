@@ -243,14 +243,6 @@ namespace Durian.Analysis.Data
 			}
 		}
 
-		/// <inheritdoc cref="ITypeData.ToNamespaceOrType"/>
-		public NamespaceOrTypeData ToNamespaceOrType()
-		{
-			NamespaceOrTypeData.Properties properties = new();
-			base.Map(properties);
-			return new(Declaration, ParentCompilation, properties);
-		}
-
 		/// <inheritdoc/>
 		protected override MemberData CloneCore()
 		{
@@ -323,11 +315,6 @@ namespace Durian.Analysis.Data
 		INamespaceData INamespaceOrTypeData.ToNamespace()
 		{
 			throw new InvalidOperationException("Current symbol is not a namespace");
-		}
-
-		INamespaceOrTypeData ITypeData.ToNamespaceOrType()
-		{
-			return ToNamespaceOrType();
 		}
 
 		ITypeData INamespaceOrTypeData.ToType()

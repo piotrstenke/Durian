@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
@@ -26,6 +27,15 @@ namespace Durian.Analysis.Data
 
 			/// <inheritdoc cref="PropertyData.BackingField"/>
 			public DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> BackingField { get; set; }
+
+			/// <inheritdoc cref="PropertyData.IsDefaultImplementation"/>
+			public bool? IsDefaultImplementation { get; set; }
+
+			/// <inheritdoc cref="PropertyData.ExplicitInterfaceImplementation"/>
+			public DefaultedValue<ISymbolOrMember<IPropertySymbol, IPropertyData>> ExplicitInterfaceImplementation { get; set; }
+
+			/// <inheritdoc cref="PropertyData.ImplicitInterfaceImplementations"/>
+			public DefaultedValue<ISymbolContainer<IPropertySymbol, IPropertyData>> ImplicitInterfaceImplementations { get; set; }
 
 			/// <inheritdoc cref="PropertyData.OverriddenProperty"/>
 			public DefaultedValue<ISymbolOrMember<IPropertySymbol, IPropertyData>> OverriddenProperty { get; set; }
@@ -60,8 +70,11 @@ namespace Durian.Analysis.Data
 				base.Map(properties);
 				properties.AutoPropertyKind = AutoPropertyKind;
 				properties.BackingField = BackingField;
-				properties.OverriddenProperties = OverriddenProperties;
 				properties.OverriddenProperty = OverriddenProperty;
+				properties.OverriddenProperties = OverriddenProperties;
+				properties.IsDefaultImplementation = IsDefaultImplementation;
+				properties.ImplicitInterfaceImplementations = ImplicitInterfaceImplementations;
+				properties.ExplicitInterfaceImplementation = ExplicitInterfaceImplementation;
 			}
 
 			/// <inheritdoc/>
@@ -100,6 +113,9 @@ namespace Durian.Analysis.Data
 		private DefaultedValue<ISymbolOrMember<IFieldSymbol, IFieldData>> _backingField;
 		private DefaultedValue<ISymbolOrMember<IPropertySymbol, IPropertyData>> _overriddenProperty;
 		private ISymbolContainer<IPropertySymbol, IPropertyData>? _overriddenProperties;
+		private bool? _isDefaultImplementation;
+		private DefaultedValue<ISymbolOrMember<IPropertySymbol, IPropertyData>> _explicitImplementation;
+		private ISymbolContainer<IPropertySymbol, IPropertyData>? _implicitImplementations;
 
 		/// <summary>
 		/// Kind of the auto-property.
@@ -127,15 +143,47 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		public new PropertyDeclarationSyntax Declaration => (base.Declaration as PropertyDeclarationSyntax)!;
 
+		/// <inheritdoc/>
+		public ISymbolOrMember<IPropertySymbol, IPropertyData>? ExplicitInterfaceImplementation
+		{
+			get
+			{
+				if(_explicitImplementation.IsDefault)
+				{
+					_explicitImplementation = new(Symbol.ExplicitInterfaceImplementations.FirstOrDefault()?.ToDataOrSymbol(ParentCompilation));
+				}
+
+				return _explicitImplementation.Value;
+			}
+		}
+
+		/// <inheritdoc/>
+		public ISymbolContainer<IPropertySymbol, IPropertyData> ImplicitInterfaceImplementations
+		{
+			get
+			{
+				return _implicitImplementations ??= SymbolExtensions.GetImplicitImplementations_Internal(Symbol, intf =>
+				{
+					return intf
+						.ToDataOrSymbol(ParentCompilation)
+						.Member
+						.GetMembers(IncludedMembers.Direct)
+						.AsEnumerable()
+						.Select(s => s.Symbol)
+						.OfType<IPropertySymbol>()
+						.Where(m => m.Name == Symbol.Name);
+				})
+				.ToContainer(ParentCompilation);
+			}
+		}
+
 		/// <summary>
 		/// Determines whether this property is an auto-property.
 		/// </summary>
 		public bool IsAutoProperty => AutoPropertyKind != AutoPropertyKind.None;
 
-		/// <summary>
-		/// <see cref="IPropertySymbol"/> associated with the <see cref="Declaration"/>.
-		/// </summary>
-		public new IPropertySymbol Symbol => (base.Symbol as IPropertySymbol)!;
+		/// <inheritdoc/>
+		public bool IsDefaultImplementation => _isDefaultImplementation ??= Symbol.IsDefaultImplementation();
 
 		/// <inheritdoc/>
 		public ISymbolOrMember<IPropertySymbol, IPropertyData>? OverriddenProperty
@@ -174,6 +222,11 @@ namespace Durian.Analysis.Data
 				return _overriddenProperties ??= Symbol.GetOverriddenSymbols().ToContainer(ParentCompilation);
 			}
 		}
+
+		/// <summary>
+		/// <see cref="IPropertySymbol"/> associated with the <see cref="Declaration"/>.
+		/// </summary>
+		public new IPropertySymbol Symbol => (base.Symbol as IPropertySymbol)!;
 
 		BasePropertyDeclarationSyntax IPropertyData.Declaration => Declaration;
 
@@ -216,8 +269,11 @@ namespace Durian.Analysis.Data
 			base.Map(properties);
 			properties.AutoPropertyKind = _autoPropertyKind;
 			properties.BackingField = _backingField;
-			properties.OverriddenProperties = DataHelpers.ToDefaultedValue(_overriddenProperties);
 			properties.OverriddenProperty = _overriddenProperty;
+			properties.OverriddenProperties = DataHelpers.ToDefaultedValue(_overriddenProperties);
+			properties.ImplicitInterfaceImplementations = DataHelpers.ToDefaultedValue(_implicitImplementations);
+			properties.ExplicitInterfaceImplementation = _explicitImplementation;
+			properties.IsDefaultImplementation = _isDefaultImplementation;
 		}
 
 		/// <inheritdoc/>
@@ -266,8 +322,11 @@ namespace Durian.Analysis.Data
 			{
 				_backingField = props.BackingField;
 				_autoPropertyKind = props.AutoPropertyKind ?? Symbol.GetAutoPropertyKind();
-				_overriddenProperty = props.OverriddenProperty;
+				_isDefaultImplementation = props.IsDefaultImplementation;
+				_explicitImplementation = props.ExplicitInterfaceImplementation;
+				_implicitImplementations = DataHelpers.FromDefaultedOrEmpty(props.ImplicitInterfaceImplementations);
 				_overriddenProperties = DataHelpers.FromDefaultedOrEmpty(props.OverriddenProperties);
+				_overriddenProperty = props.OverriddenProperty;
 			}
 		}
 
