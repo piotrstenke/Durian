@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using System.Diagnostics;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
 {
@@ -18,6 +20,17 @@ namespace Durian.Analysis.Data
 		/// Body of the method.
 		/// </summary>
 		CSharpSyntaxNode? Body { get; }
+
+		/// <summary>
+		/// Target <see cref="BaseMethodDeclarationSyntax"/>.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Current symbol cannot be represented using a <see cref="BaseMethodDeclarationSyntax"/>.</exception>
+		new BaseMethodDeclarationSyntax Declaration { get; }
+
+		/// <summary>
+		/// Equivalent to <see cref="Declaration"/>, but will never throw an exception. Used when a <see cref="IMethodSymbol"/> resolves to different node kind than <see cref="BaseMethodDeclarationSyntax"/>.
+		/// </summary>
+		CSharpSyntaxNode SafeDeclaration { get; }
 
 		/// <summary>
 		/// Type of body of the method.
@@ -84,6 +97,11 @@ namespace Durian.Analysis.Data
 		/// Returns all local function declared inside this method.
 		/// </summary>
 		/// <param name="members">Range of members to include.</param>
-		ISymbolContainer<IMethodSymbol, IMethodData> GetLocalFunctions(IncludedMembers members);
+		ISymbolContainer<IMethodSymbol, ILocalFunctionData> GetLocalFunctions(IncludedMembers members);
+
+		/// <summary>
+		/// Creates a shallow copy of the current data.
+		/// </summary>
+		new IMethodData Clone();
 	}
 }

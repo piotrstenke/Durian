@@ -89,12 +89,15 @@ namespace Durian.Analysis.CopyFrom.Methods
 			data = new CopyFromMethodData(
 				newContext.AsMethod!,
 				newContext.Compilation,
-				newContext.Symbol,
-				newContext.SemanticModel,
 				targetMethod!,
-				dependencies?.ToArray(),
-				patterns,
-				attributes: attributes
+				new CopyFromMethodData.Properties
+				{
+					Patterns = patterns,
+					Dependencies = dependencies?.ToArray(),
+					Attributes = attributes,
+					SemanticModel = newContext.SemanticModel,
+					Symbol = newContext.Symbol
+				}
 			);
 
 			return true;
@@ -142,12 +145,15 @@ namespace Durian.Analysis.CopyFrom.Methods
 			data = new CopyFromMethodData(
 				newContext.AsMethod!,
 				newContext.Compilation,
-				newContext.Symbol,
-				newContext.SemanticModel,
 				targetMethod!,
-				dependencies?.ToArray(),
-				patterns,
-				attributes: attributes
+				new CopyFromMethodData.Properties
+				{
+					Patterns = patterns,
+					Dependencies = dependencies?.ToArray(),
+					Attributes = attributes,
+					SemanticModel = newContext.SemanticModel,
+					Symbol = newContext.Symbol
+				}
 			);
 
 			return true;

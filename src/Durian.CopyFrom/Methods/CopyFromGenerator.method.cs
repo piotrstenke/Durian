@@ -64,7 +64,7 @@ namespace Durian.Analysis.CopyFrom
 			}
 		}
 
-		private static void HandleGenericMethod(IMethodSymbol target, ref CSharpSyntaxNode currentNode)
+		private static void HandleGenericMethod(IMethodSymbol target, ref SyntaxNode currentNode)
 		{
 			if(!target.IsGenericMethod)
 			{
@@ -80,7 +80,7 @@ namespace Durian.Analysis.CopyFrom
 			ReplaceTypeParameters(ref currentNode, replacer, replacements);
 		}
 
-		private static CSharpSyntaxNode WriteMethodHead(CopyFromMethodData method, CopyFromPassContext context, SyntaxTokenList modifiers, CSharpSyntaxNode currentNode)
+		private static SyntaxNode WriteMethodHead(CopyFromMethodData method, CopyFromPassContext context, SyntaxTokenList modifiers, SyntaxNode currentNode)
 		{
 			context.CodeBuilder.Indent();
 

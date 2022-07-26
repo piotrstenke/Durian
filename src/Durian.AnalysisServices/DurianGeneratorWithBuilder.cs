@@ -61,10 +61,10 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Adds the source created using the <see cref="CodeBuilder"/> to the <paramref name="context"/>.
 		/// </summary>
-		/// <param name="original">The <see cref="CSharpSyntaxNode"/> the source was generated from.</param>
+		/// <param name="original">The <see cref="SyntaxNode"/> the source was generated from.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-		protected void AddSourceWithOriginal(CSharpSyntaxNode original, string hintName, TContext context)
+		protected void AddSourceWithOriginal(SyntaxNode original, string hintName, TContext context)
 		{
 			CSharpSyntaxTree tree = ParseSyntaxTree(context);
 			context.CodeBuilder.Clear();
@@ -259,20 +259,20 @@ namespace Durian.Analysis
 				builder.Namespace(member.Symbol.ContainingNamespace);
 			}
 
-			foreach (INamedTypeSymbol type in member.GetContainingTypes().GetSymbols())
+			foreach (INamedTypeSymbol type in member.ContainingTypes.GetSymbols())
 			{
 				builder.Declaration(type);
 			}
 		}
 
 		/// <summary>
-		/// Writes the <paramref name="generated"/> <see cref="CSharpSyntaxNode"/> and applies all needed code generation attributes.
+		/// Writes the <paramref name="generated"/> <see cref="SyntaxNode"/> and applies all needed code generation attributes.
 		/// </summary>
-		/// <param name="generated"><see cref="CSharpSyntaxNode"/> that was generated during the current generation pass.</param>
-		/// <param name="original"><see cref="IMemberData"/> this <see cref="CSharpSyntaxNode"/> was generated from.</param>
+		/// <param name="generated"><see cref="SyntaxNode"/> that was generated during the current generation pass.</param>
+		/// <param name="original"><see cref="IMemberData"/> this <see cref="SyntaxNode"/> was generated from.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
 		/// <param name="applyInheritdoc">Determines when to apply the <c>&lt;inheritdoc/&gt;</c> tag.</param>
-		protected void WriteGeneratedMember(CSharpSyntaxNode generated, IMemberData original, TContext context, GenerateDocumentation applyInheritdoc = GenerateDocumentation.WhenPossible)
+		protected void WriteGeneratedMember(SyntaxNode generated, IMemberData original, TContext context, GenerateDocumentation applyInheritdoc = GenerateDocumentation.WhenPossible)
 		{
 			WriteGeneratedMember(NodeToString(generated), original, context, applyInheritdoc);
 		}
@@ -299,13 +299,13 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Writes the <paramref name="generated"/> <see cref="CSharpSyntaxNode"/> and applies all needed code generation attributes.
+		/// Writes the <paramref name="generated"/> <see cref="SyntaxNode"/> and applies all needed code generation attributes.
 		/// </summary>
-		/// <param name="generated"><see cref="CSharpSyntaxNode"/> that was generated during the current generation pass.</param>
-		/// <param name="original"><see cref="ISymbol"/> this <see cref="CSharpSyntaxNode"/> was generated from.</param>
+		/// <param name="generated"><see cref="SyntaxNode"/> that was generated during the current generation pass.</param>
+		/// <param name="original"><see cref="ISymbol"/> this <see cref="SyntaxNode"/> was generated from.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
 		/// <param name="applyInheritdoc">Determines when to apply the <c>&lt;inheritdoc/&gt;</c> tag.</param>
-		protected void WriteGeneratedMember(CSharpSyntaxNode generated, ISymbol original, TContext context, GenerateDocumentation applyInheritdoc = GenerateDocumentation.WhenPossible)
+		protected void WriteGeneratedMember(SyntaxNode generated, ISymbol original, TContext context, GenerateDocumentation applyInheritdoc = GenerateDocumentation.WhenPossible)
 		{
 			WriteGeneratedMember(NodeToString(generated), original, context, applyInheritdoc);
 		}
@@ -332,11 +332,11 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Writes the <paramref name="generated"/> <see cref="CSharpSyntaxNode"/> and applies all needed code generation attributes.
+		/// Writes the <paramref name="generated"/> <see cref="SyntaxNode"/> and applies all needed code generation attributes.
 		/// </summary>
-		/// <param name="generated"><see cref="CSharpSyntaxNode"/> that was generated during the current generation pass.</param>
+		/// <param name="generated"><see cref="SyntaxNode"/> that was generated during the current generation pass.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected void WriteGeneratedMember(CSharpSyntaxNode generated, TContext context)
+		protected void WriteGeneratedMember(SyntaxNode generated, TContext context)
 		{
 			WriteGeneratedMember(NodeToString(generated), context);
 		}
@@ -352,12 +352,12 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Writes the <paramref name="generated"/> <see cref="CSharpSyntaxNode"/> and applies all needed code generation attributes.
+		/// Writes the <paramref name="generated"/> <see cref="SyntaxNode"/> and applies all needed code generation attributes.
 		/// </summary>
-		/// <param name="generated"><see cref="CSharpSyntaxNode"/> that was generated during the current generation pass.</param>
-		/// <param name="generatedFrom">Name of member this <see cref="CSharpSyntaxNode"/> was generated from.</param>
+		/// <param name="generated"><see cref="SyntaxNode"/> that was generated during the current generation pass.</param>
+		/// <param name="generatedFrom">Name of member this <see cref="SyntaxNode"/> was generated from.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected void WriteGeneratedMember(CSharpSyntaxNode generated, string? generatedFrom, TContext context)
+		protected void WriteGeneratedMember(SyntaxNode generated, string? generatedFrom, TContext context)
 		{
 			WriteGeneratedMember(NodeToString(generated), generatedFrom, context);
 		}
@@ -374,13 +374,13 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Writes the <paramref name="generated"/> <see cref="CSharpSyntaxNode"/> and applies all needed code generation attributes.
+		/// Writes the <paramref name="generated"/> <see cref="SyntaxNode"/> and applies all needed code generation attributes.
 		/// </summary>
-		/// <param name="generated"><see cref="CSharpSyntaxNode"/> that was generated during the current generation pass.</param>
-		/// <param name="generatedFrom">Name of member this <see cref="CSharpSyntaxNode"/> was generated from.</param>
+		/// <param name="generated"><see cref="SyntaxNode"/> that was generated during the current generation pass.</param>
+		/// <param name="generatedFrom">Name of member this <see cref="SyntaxNode"/> was generated from.</param>
 		/// <param name="inheritdoc">Text to put in the 'inheritdoc' tag.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected void WriteGeneratedMember(CSharpSyntaxNode generated, string? generatedFrom, string? inheritdoc, TContext context)
+		protected void WriteGeneratedMember(SyntaxNode generated, string? generatedFrom, string? inheritdoc, TContext context)
 		{
 			WriteGeneratedMember(NodeToString(generated), generatedFrom, inheritdoc, context);
 		}
@@ -398,11 +398,11 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Writes all the <paramref name="generated"/> <see cref="CSharpSyntaxNode"/>s and applies all needed code generation attributes.
+		/// Writes all the <paramref name="generated"/> <see cref="SyntaxNode"/>s and applies all needed code generation attributes.
 		/// </summary>
-		/// <param name="generated"><see cref="CSharpSyntaxNode"/>s that were generated during the current generation pass.</param>
+		/// <param name="generated"><see cref="SyntaxNode"/>s that were generated during the current generation pass.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-		protected void WriteGeneratedMembers(CSharpSyntaxNode[] generated, TContext context)
+		protected void WriteGeneratedMembers(SyntaxNode[] generated, TContext context)
 		{
 			WriteGeneratedMembers(ConvertString(generated), context);
 		}
@@ -425,13 +425,13 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Writes all the <paramref name="generated"/> <see cref="CSharpSyntaxNode"/>s and applies all needed code generation attributes.
+		/// Writes all the <paramref name="generated"/> <see cref="SyntaxNode"/>s and applies all needed code generation attributes.
 		/// </summary>
-		/// <param name="generated"><see cref="CSharpSyntaxNode"/>s that were generated during the current generation pass.</param>
-		/// <param name="original"><see cref="IMemberData"/> this <see cref="CSharpSyntaxNode"/>s were generated from.</param>
+		/// <param name="generated"><see cref="SyntaxNode"/>s that were generated during the current generation pass.</param>
+		/// <param name="original"><see cref="IMemberData"/> this <see cref="SyntaxNode"/>s were generated from.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
 		/// <param name="applyInheritdoc">Determines when to apply the <c>&lt;inheritdoc/&gt;</c> tag.</param>
-		protected void WriteGeneratedMembers(CSharpSyntaxNode[] generated, IMemberData original, TContext context, GenerateDocumentation applyInheritdoc = GenerateDocumentation.WhenPossible)
+		protected void WriteGeneratedMembers(SyntaxNode[] generated, IMemberData original, TContext context, GenerateDocumentation applyInheritdoc = GenerateDocumentation.WhenPossible)
 		{
 			WriteGeneratedMembers(ConvertString(generated), original, context, applyInheritdoc);
 		}
@@ -476,13 +476,13 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Writes all the <paramref name="generated"/> <see cref="CSharpSyntaxNode"/>s and applies all needed code generation attributes.
+		/// Writes all the <paramref name="generated"/> <see cref="SyntaxNode"/>s and applies all needed code generation attributes.
 		/// </summary>
-		/// <param name="generated"><see cref="CSharpSyntaxNode"/>s that were generated during the current generation pass.</param>
-		/// <param name="original"><see cref="ISymbol"/> this <see cref="CSharpSyntaxNode"/>s were generated from.</param>
+		/// <param name="generated"><see cref="SyntaxNode"/>s that were generated during the current generation pass.</param>
+		/// <param name="original"><see cref="ISymbol"/> this <see cref="SyntaxNode"/>s were generated from.</param>
 		/// <param name="context">Current <typeparamref name="TContext"/>.</param>
 		/// <param name="applyInheritdoc">Determines when to apply the <c>&lt;inheritdoc/&gt;</c> tag.</param>
-		protected void WriteGeneratedMembers(CSharpSyntaxNode[] generated, ISymbol original, TContext context, GenerateDocumentation applyInheritdoc = GenerateDocumentation.WhenPossible)
+		protected void WriteGeneratedMembers(SyntaxNode[] generated, ISymbol original, TContext context, GenerateDocumentation applyInheritdoc = GenerateDocumentation.WhenPossible)
 		{
 			WriteGeneratedMembers(ConvertString(generated), original, context, applyInheritdoc);
 		}
@@ -539,7 +539,7 @@ namespace Durian.Analysis
 			context.CodeBuilder.WriteLine(AutoGenerated.GetDurianGeneratedAttribute(SymbolToString(symbol)));
 		}
 
-		private protected static string NodeToString(CSharpSyntaxNode node)
+		private protected static string NodeToString(SyntaxNode node)
 		{
 			return node.WithoutTrivia().ToFullString();
 		}
@@ -612,7 +612,7 @@ namespace Durian.Analysis
 			WriteGeneratedMember_Internal(generated, generatedFrom, context);
 		}
 
-		private static string[] ConvertString(CSharpSyntaxNode[] nodes)
+		private static string[] ConvertString(SyntaxNode[] nodes)
 		{
 			return nodes.Select(n => NodeToString(n)).ToArray();
 		}

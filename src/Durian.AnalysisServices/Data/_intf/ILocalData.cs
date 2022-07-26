@@ -18,6 +18,11 @@ namespace Durian.Analysis.Data
 		new ILocalSymbol Symbol { get; }
 
 		/// <summary>
+		/// Creates a shallow copy of the current data.
+		/// </summary>
+		new ILocalData Clone();
+
+		/// <summary>
 		/// Returns a collection of <see cref="ILocalSymbol"/>s of all variables defined in the <see cref="IVariableDeclarator{T}.Declaration"/>.
 		/// </summary>
 		IEnumerable<ISymbolOrMember<ILocalSymbol, ILocalData>> GetUnderlayingLocals();

@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
+using Durian.Analysis.Data.FromSource;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -2079,6 +2080,20 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Returns kind of operator this <paramref name="method"/> overloads.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the kind of the overloaded operator.</param>
+		public static OverloadableOperator GetOperatorKind(this IMethodSymbol method)
+		{
+			if (method.MethodKind != MethodKind.UserDefinedOperator && method.MethodKind != MethodKind.BuiltinOperator)
+			{
+				return default;
+			}
+
+			return AnalysisUtilities.GetOperatorType(method.Name);
+		}
+
+		/// <summary>
 		/// Returns text of operator this <paramref name="method"/> overloads.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the kind of the overloaded operator.</param>
@@ -2090,20 +2105,6 @@ namespace Durian.Analysis.Extensions
 			}
 
 			return AnalysisUtilities.GetOperatorText(method.Name);
-		}
-
-		/// <summary>
-		/// Returns kind of operator this <paramref name="method"/> overloads.
-		/// </summary>
-		/// <param name="method"><see cref="IMethodSymbol"/> to get the kind of the overloaded operator.</param>
-		public static OverloadableOperator GetOperatorType(this IMethodSymbol method)
-		{
-			if (method.MethodKind != MethodKind.UserDefinedOperator && method.MethodKind != MethodKind.BuiltinOperator)
-			{
-				return default;
-			}
-
-			return AnalysisUtilities.GetOperatorType(method.Name);
 		}
 
 		/// <summary>
@@ -2495,13 +2496,13 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Returns a <see cref="CSharpSyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="symbol"/>.
+		/// Returns a <see cref="SyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="symbol"/>.
 		/// </summary>
-		/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to return.</typeparam>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="CSharpSyntaxNode"/> associated with.</param>
+		/// <typeparam name="T">Type of <see cref="SyntaxNode"/> to return.</typeparam>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="SyntaxNode"/> associated with.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		/// <exception cref="InvalidOperationException"><paramref name="symbol"/> is not associated with a syntax node of type <typeparamref name="T"/>.</exception>
-		public static T GetSyntax<T>(this ISymbol symbol, CancellationToken cancellationToken = default) where T : CSharpSyntaxNode
+		public static T GetSyntax<T>(this ISymbol symbol, CancellationToken cancellationToken = default) where T : SyntaxNode
 		{
 			if (!symbol.TryGetSyntax(out T? declaration, cancellationToken))
 			{
@@ -2744,16 +2745,17 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="ITypeSymbol"/> to create the <see cref="IMemberData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
 		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentException">Invalid type kind.</exception>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static IMemberData ToData(this ITypeSymbol type, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			switch (type)
 			{
 				case INamedTypeSymbol named:
-					return named.ToData(compilation);
+					return named.ToData(compilation, properties);
 
 				case ITypeParameterSymbol typeParameter:
-					return typeParameter.ToData(compilation);
+					return typeParameter.ToData(compilation, properties);
 
 				default:
 
@@ -2767,7 +2769,7 @@ namespace Durian.Analysis.Extensions
 						throw new ArgumentNullException(nameof(compilation));
 					}
 
-					return new UnknownTypeData(type, compilation, properties);
+					throw new ArgumentException($"Invalid type kind: '{type.TypeKind}'", nameof(type));
 			}
 		}
 
@@ -2777,6 +2779,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to create the <see cref="ITypeData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ITypeData"/> from.</param>
 		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentException">Invalid type kind.</exception>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static ITypeData ToData(this INamedTypeSymbol type, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
@@ -2802,7 +2805,7 @@ namespace Durian.Analysis.Extensions
 				TypeKind.Interface => new InterfaceData(type, compilation, properties),
 				TypeKind.Delegate => new DelegateData(type, compilation, properties),
 				TypeKind.Enum => new EnumData(type, compilation, properties),
-				_ => new UnknownTypeData(type, compilation, properties)
+				_ => throw new ArgumentException($"Unknown type kind: '{type.TypeKind}'", nameof(type))
 			};
 		}
 
@@ -2812,6 +2815,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="method"><see cref="IMethodSymbol"/> to create the <see cref="IMethodData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMethodData"/> from.</param>
 		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentException">Invalid method kind.</exception>
 		/// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static IMethodData ToData(this IMethodSymbol method, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
@@ -2836,7 +2840,7 @@ namespace Durian.Analysis.Extensions
 				MethodKind.AnonymousFunction => new LambdaData(method, compilation, properties),
 				_ => method.IsAccessor()
 					? new AccessorData(method, compilation, properties)
-					: new UnknownMethodData(method, compilation, properties)
+					: throw new ArgumentException($"Unknown method kind: '{method.MethodKind}'", nameof(method))
 			};
 		}
 
@@ -2983,6 +2987,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="symbol"><see cref="INamespaceOrTypeSymbol"/> to create the <see cref="INamespaceOrTypeData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="INamespaceOrTypeData"/> from.</param>
 		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentException">Invalid type kind.</exception>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static INamespaceOrTypeData ToData(this INamespaceOrTypeSymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
@@ -3006,6 +3011,11 @@ namespace Durian.Analysis.Extensions
 						throw new ArgumentNullException(nameof(compilation));
 					}
 
+					if(symbol is not ITypeParameterSymbol)
+					{
+						throw new ArgumentException("Invalid type kind", nameof(symbol));
+					}
+
 					return new NamespaceOrTypeData(symbol, compilation, properties);
 			}
 		}
@@ -3016,6 +3026,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="IMemberData"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="IMemberData"/> from.</param>
 		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
+		/// <exception cref="ArgumentException">Invalid type kind.</exception>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 		public static IMemberData ToData(this ISymbol symbol, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
@@ -3035,7 +3046,7 @@ namespace Durian.Analysis.Extensions
 				IParameterSymbol parameter => parameter.ToData(compilation, properties),
 				INamespaceSymbol @namespace => @namespace.ToData(compilation, properties),
 				ILocalSymbol local => local.ToData(compilation, properties),
-				ITypeSymbol unknownType => new UnknownTypeData(unknownType, compilation, properties),
+				ITypeSymbol unknownType => throw new ArgumentException($"Invalid type kind: '{unknownType.TypeKind}'", nameof(symbol)),
 				INamespaceOrTypeSymbol namespaceOrType => namespaceOrType.ToData(compilation, properties),
 				null => throw new ArgumentNullException(nameof(symbol)),
 				_ => new MemberData(symbol, compilation, properties)
@@ -3049,7 +3060,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="INamespaceData"/> from.</param>
 		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-		public static NamespaceData ToData(this INamespaceSymbol @namespace, ICompilationData compilation, MemberData.Properties? properties = default)
+		public static INamespaceData ToData(this INamespaceSymbol @namespace, ICompilationData compilation, MemberData.Properties? properties = default)
 		{
 			if (@namespace is null)
 			{
@@ -3069,6 +3080,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="symbol"><see cref="ISymbol"/> to create the <see cref="ISymbolOrMember"/> for.</param>
 		/// <param name="compilation"><see cref="ICompilationData"/> to create the <see cref="ISymbolOrMember"/> from.</param>
+		/// <exception cref="ArgumentException">Invalid type kind.</exception>
 		/// <exception cref="ArgumentNullException"><paramref name="symbol"/> is <see langword="null"/>.</exception>
 		public static ISymbolOrMember<ISymbol, IMemberData> ToDataOrSymbol(this ISymbol symbol, ICompilationData? compilation = default)
 		{
@@ -3083,7 +3095,8 @@ namespace Durian.Analysis.Extensions
 				IParameterSymbol parameter => parameter.ToDataOrSymbol(compilation),
 				INamespaceSymbol @namespace => @namespace.ToDataOrSymbol(compilation),
 				ILocalSymbol local => local.ToDataOrSymbol(compilation),
-				ITypeSymbol unknownType => new SymbolOrMemberWrapper<ITypeSymbol, IMemberData>(unknownType, compilation),
+				ITypeSymbol unknownType => throw new ArgumentException($"Invalid type kind: '{unknownType.TypeKind}'", nameof(symbol)),
+				INamespaceOrTypeSymbol namespaceOrType => namespaceOrType.ToDataOrSymbol(compilation),
 				null => throw new ArgumentNullException(nameof(symbol)),
 				_ => new SymbolOrMemberWrapper<ISymbol, IMemberData>(symbol, compilation)
 			};
@@ -3453,18 +3466,19 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
-		/// Attempts to return a <see cref="CSharpSyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="symbol"/>.
+		/// Attempts to return a <see cref="SyntaxNode"/> of type <typeparamref name="T"/> associated with the specified <paramref name="symbol"/>.
 		/// </summary>
-		/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to return.</typeparam>
-		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="CSharpSyntaxNode"/> associated with.</param>
-		/// <param name="syntax"><see cref="CSharpSyntaxNode"/> associated with the specified <paramref name="symbol"/>.</param>
+		/// <typeparam name="T">Type of <see cref="SyntaxNode"/> to return.</typeparam>
+		/// <param name="symbol"><see cref="ISymbol"/> to get the <see cref="SyntaxNode"/> associated with.</param>
+		/// <param name="syntax"><see cref="SyntaxNode"/> associated with the specified <paramref name="symbol"/>.</param>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public static bool TryGetSyntax<T>(this ISymbol symbol, [NotNullWhen(true)] out T? syntax, CancellationToken cancellationToken = default) where T : CSharpSyntaxNode
+		public static bool TryGetSyntax<T>(this ISymbol symbol, [NotNullWhen(true)] out T? syntax, CancellationToken cancellationToken = default) where T : SyntaxNode
 		{
 			syntax = symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as T;
 			return syntax is not null;
 		}
 
+		[SuppressMessage("Roslynator", "RCS1224:Make method an extension method.", Justification = "<Pending>")]
 		internal static IEnumerable<T> GetImplicitImplementations_Internal<T>(T symbol, Func<INamedTypeSymbol, IEnumerable<ISymbol>> memberFunction) where T : ISymbol
 		{
 			if (symbol.DeclaredAccessibility != Accessibility.Public)
@@ -3479,7 +3493,7 @@ namespace Durian.Analysis.Extensions
 				{
 					ISymbol? s = symbol.ContainingType.FindImplementationForInterfaceMember(m);
 
-					if (s is not T t)
+					if (s is not T t || t.IsImplementedExplicitly())
 					{
 						return false;
 					}
@@ -3661,7 +3675,7 @@ namespace Durian.Analysis.Extensions
 		private static ISymbol? GetHiddenSymbol_Internal(ISymbol symbol)
 		{
 			return symbol.ContainingType
-				.GetAllMembers(symbol.GetVerbatimName())
+				.GetAllMembers(symbol.Name)
 				.FirstOrDefault(member => member switch
 				{
 					INamedTypeSymbol type => type.Arity == 0,

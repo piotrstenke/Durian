@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Durian.Analysis.Data;
+using Durian.Analysis.Data.FromSource;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -34,10 +35,10 @@ namespace Durian.Analysis.DefaultParam.Methods
 		public new DefaultParamCompilationData ParentCompilation => (DefaultParamCompilationData)base.ParentCompilation;
 
 		/// <inheritdoc cref="Types.DefaultParamTypeData.TargetNamespace"/>
-		public string TargetNamespace => _targetNamespace ??= GetContainingNamespaces().ToString();
+		public string TargetNamespace => _targetNamespace ??= ContainingNamespaces.ToString();
 
 		/// <inheritdoc/>
-		public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
+		public new ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamMethodData"/> class.
@@ -99,7 +100,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		}
 
 		/// <summary>
-		/// Returns a new instance of <see cref="MethodDeclarationBuilder"/> with <see cref="MethodDeclarationBuilder.OriginalDeclaration"/> set to this member's <see cref="MethodData{TDeclaration}.Declaration"/>.
+		/// Returns a new instance of <see cref="MethodDeclarationBuilder"/> with <see cref="MethodDeclarationBuilder.OriginalDeclaration"/> set to this member's <see cref="MethodData.Declaration"/>.
 		/// </summary>
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public MethodDeclarationBuilder GetDeclarationBuilder(CancellationToken cancellationToken = default)

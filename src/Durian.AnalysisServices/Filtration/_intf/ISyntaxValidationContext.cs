@@ -21,7 +21,7 @@ namespace Durian.Analysis.Filtration
 		/// <summary>
 		/// <see cref="CSharpSyntaxNode"/> to validate.
 		/// </summary>
-		CSharpSyntaxNode Node { get; }
+		SyntaxNode Node { get; }
 
 		/// <summary>
 		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="Node"/>.

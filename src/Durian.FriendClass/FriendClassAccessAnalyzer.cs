@@ -397,7 +397,7 @@ namespace Durian.Analysis.FriendClass
 		{
 			if (node.Parent is MemberAccessExpressionSyntax memberAccess && memberAccess.Expression is not ThisExpressionSyntax)
 			{
-				if (semanticModel.GetSymbolInfo(memberAccess.Expression).Symbol is INamedTypeSymbol targetType && targetType.Inherits(accessedType, false))
+				if (semanticModel.GetSymbolInfo(memberAccess.Expression).Symbol is INamedTypeSymbol targetType && targetType.Inherits(accessedType))
 				{
 					accessedType = targetType;
 					reportStaticAccess = true;
@@ -406,7 +406,7 @@ namespace Durian.Analysis.FriendClass
 
 					return;
 				}
-				else if (semanticModel.GetTypeInfo(memberAccess.Expression).Type is INamedTypeSymbol type && type.Inherits(accessedType, false))
+				else if (semanticModel.GetTypeInfo(memberAccess.Expression).Type is INamedTypeSymbol type && type.Inherits(accessedType))
 				{
 					CheckIncludeInherited(type, ref accessedType, out configurationAttribute, out accessedConfigurationAttribute);
 

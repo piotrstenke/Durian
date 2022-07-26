@@ -14,7 +14,7 @@ using Durian.Analysis.SyntaxVisitors;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using GenerateAction = System.Action<Microsoft.CodeAnalysis.CSharp.CSharpSyntaxNode, Microsoft.CodeAnalysis.ISymbol, Durian.Analysis.CopyFrom.CopyFromPassContext, Durian.Analysis.CodeGeneration.GenerateDocumentation>;
+using GenerateAction = System.Action<Microsoft.CodeAnalysis.SyntaxNode, Microsoft.CodeAnalysis.ISymbol, Durian.Analysis.CopyFrom.CopyFromPassContext, Durian.Analysis.CodeGeneration.GenerateDocumentation>;
 
 namespace Durian.Analysis.CopyFrom
 {
@@ -97,7 +97,7 @@ namespace Durian.Analysis.CopyFrom
 			return target.Symbol.GetPartialDeclarations<TypeDeclarationSyntax>().ToArray();
 		}
 
-		private static void HandleSpecialMemberTypes(ref CSharpSyntaxNode member, CopyFromTypeData type, INamedTypeSymbol target)
+		private static void HandleSpecialMemberTypes(ref SyntaxNode member, CopyFromTypeData type, INamedTypeSymbol target)
 		{
 			switch (member)
 			{

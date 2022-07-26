@@ -1,10 +1,12 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -23,6 +25,17 @@ namespace Durian.Analysis.Data
 		/// Value applied to the <see cref="ConditionalAttribute"/> of this type.
 		/// </summary>
 		string? CompilerCondition { get; }
+
+		/// <summary>
+		/// Target <see cref="BaseTypeDeclarationSyntax"/>.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Current symbol cannot be represented using a <see cref="BaseTypeDeclarationSyntax"/>.</exception>
+		new BaseTypeDeclarationSyntax Declaration { get; }
+
+		/// <summary>
+		/// Equivalent to <see cref="Declaration"/>, but will never throw an exception. Used when a <see cref="INamedTypeSymbol"/> resolves to different node kind than <see cref="BaseTypeDeclarationSyntax"/>.
+		/// </summary>
+		CSharpSyntaxNode SafeDeclaration { get; }
 
 		/// <summary>
 		/// Determines whether the type is an attribute.
@@ -78,5 +91,10 @@ namespace Durian.Analysis.Data
 		/// </summary>
 		/// <param name="members">Range of members to include.</param>
 		ISymbolContainer<IPropertySymbol, IPropertyData> GetProperties(IncludedMembers members);
+
+		/// <summary>
+		/// Creates a shallow copy of the current data.
+		/// </summary>
+		new ITypeData Clone();
 	}
 }

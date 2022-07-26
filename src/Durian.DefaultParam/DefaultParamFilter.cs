@@ -54,8 +54,8 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Returns a <see cref="TypeParameterListSyntax"/> associated with the specified <paramref name="node"/>.
 		/// </summary>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to get the <see cref="TypeParameterListSyntax"/> associated with.</param>
-		protected abstract TypeParameterListSyntax? GetTypeParameterList(CSharpSyntaxNode node);
+		/// <param name="node"><see cref="SyntaxNode"/> to get the <see cref="TypeParameterListSyntax"/> associated with.</param>
+		protected abstract TypeParameterListSyntax? GetTypeParameterList(SyntaxNode node);
 
 		/// <summary>
 		/// Attempts to create a new <typeparamref name="TContext"/> from the specified <paramref name="validationContext"/>.
@@ -101,8 +101,8 @@ namespace Durian.Analysis.DefaultParam
 		/// Determines whether the collected <see cref="TypeParameterContainer"/> is valid for analysis.
 		/// </summary>
 		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> to check if is valid for analysis.</param>
-		/// <param name="node">Current <see cref="CSharpSyntaxNode"/>.</param>
-		protected virtual bool TypeParametersAreValid(in TypeParameterContainer typeParameters, CSharpSyntaxNode node)
+		/// <param name="node">Current <see cref="SyntaxNode"/>.</param>
+		protected virtual bool TypeParametersAreValid(in TypeParameterContainer typeParameters, SyntaxNode node)
 		{
 			return typeParameters.HasDefaultParams;
 		}

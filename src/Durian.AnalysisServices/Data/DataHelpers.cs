@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using Durian.Analysis.Data.FromSource;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;

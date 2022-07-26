@@ -12,7 +12,7 @@ namespace Durian.Analysis.Data
 	/// <summary>
 	/// Encapsulates data associated with a single <see cref="ISymbol"/>.
 	/// </summary>
-	public interface IMemberData : ISymbolOrMember
+	public interface IMemberData : ISymbolOrMember, ICloneable
 	{
 		/// <summary>
 		/// Data of all attributes applied to the <see cref="Symbol"/>.
@@ -124,5 +124,10 @@ namespace Durian.Analysis.Data
 		/// <see cref="Analysis.Virtuality"/> of the member.
 		/// </summary>
 		Virtuality Virtuality { get; }
+
+		/// <summary>
+		/// Creates a shallow copy of the current data.
+		/// </summary>
+		new IMemberData Clone();
 	}
 }

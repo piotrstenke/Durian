@@ -49,6 +49,10 @@ namespace Durian.Analysis.Filtration
 
 		bool ICollection<FilterGroup<TFilter>>.IsReadOnly => IsSealed;
 
+		bool ISealable.CanBeSealed => !IsSealed;
+
+		bool ISealable.CanBeUnsealed =>IsSealed;
+
 		/// <inheritdoc cref="GetGroup(int)"/>
 		public FilterGroup<TFilter> this[int index] => GetGroup(index);
 
@@ -394,9 +398,15 @@ namespace Durian.Analysis.Filtration
 		}
 
 		/// <inheritdoc/>
-		public void Seal()
+		public bool Seal()
 		{
+			if(IsSealed)
+			{
+				return false;
+			}
+
 			IsSealed = true;
+			return true;
 		}
 
 		/// <inheritdoc/>
@@ -473,9 +483,15 @@ namespace Durian.Analysis.Filtration
 		}
 
 		/// <inheritdoc/>
-		public void Unseal()
+		public bool Unseal()
 		{
+			if(!IsSealed)
+			{
+				return false;
+			}
+
 			IsSealed = false;
+			return true;
 		}
 
 		void ICollection<FilterGroup<TFilter>>.Add(FilterGroup<TFilter> item)

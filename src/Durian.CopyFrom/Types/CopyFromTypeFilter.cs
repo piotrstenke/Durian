@@ -74,12 +74,15 @@ namespace Durian.Analysis.CopyFrom.Types
 			data = new CopyFromTypeData(
 				context.Node!,
 				context.Compilation,
-				context.Symbol,
-				context.SemanticModel,
 				targetTypes!.ToArray(),
-				dependencies?.ToArray(),
-				patterns,
-				attributes: attributes
+				new CopyFromTypeData.Properties
+				{
+					Attributes = attributes,
+					Patterns = patterns,
+					Dependencies = dependencies?.ToArray(),
+					SemanticModel = context.SemanticModel,
+					Symbol = context.Symbol
+				}
 			);
 
 			return true;
@@ -148,12 +151,15 @@ namespace Durian.Analysis.CopyFrom.Types
 			data = new CopyFromTypeData(
 				context.Node!,
 				context.Compilation,
-				context.Symbol,
-				context.SemanticModel,
 				targetTypes!.ToArray(),
-				dependencies?.ToArray(),
-				patterns,
-				attributes: attributes
+				new CopyFromTypeData.Properties
+				{
+					Attributes = attributes,
+					Patterns = patterns,
+					Dependencies = dependencies?.ToArray(),
+					SemanticModel = context.SemanticModel,
+					Symbol = context.Symbol
+				}
 			);
 
 			return true;

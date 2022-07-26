@@ -130,6 +130,16 @@ namespace Durian.Analysis.SymbolContainers
 				return this;
 			}
 
+			IEnumerable<ISymbolOrMember<TSymbol, TData>> ISymbolContainer<TSymbol, TData>.AsEnumerable()
+			{
+				return this;
+			}
+
+			IEnumerator<ISymbolOrMember<TSymbol, TData>> ISymbolContainer<TSymbol, TData>.GetEnumerator()
+			{
+				return GetEnumeratorAsInterface();
+			}
+
 			private IEnumerator<ISymbolOrMember<TSymbol, TData>> GetEnumeratorAsInterface()
 			{
 				if (Order == ReturnOrder.ChildToParent)
@@ -138,11 +148,6 @@ namespace Durian.Analysis.SymbolContainers
 				}
 
 				return _parentContainer.GetEnumerator(EndIndex);
-			}
-
-			IEnumerable<ISymbolOrMember<TSymbol, TData>> ISymbolContainer<TSymbol, TData>.AsEnumerable()
-			{
-				return this;
 			}
 		}
 	}

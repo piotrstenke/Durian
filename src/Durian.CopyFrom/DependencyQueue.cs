@@ -30,9 +30,9 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <summary>
-		/// Attempts to dequeue a <see cref="SyntaxReference"/> to an enqueued <see cref="CSharpSyntaxNode"/>.
+		/// Attempts to dequeue a <see cref="SyntaxReference"/> to an enqueued <see cref="SyntaxNode"/>.
 		/// </summary>
-		/// <param name="reference"><see cref="SyntaxReference"/> to an enqueued <see cref="CSharpSyntaxNode"/>.</param>
+		/// <param name="reference"><see cref="SyntaxReference"/> to an enqueued <see cref="SyntaxNode"/>.</param>
 		/// <param name="hintName">Name associated with the <paramref name="reference"/>.</param>
 		public bool Dequeue([NotNullWhen(true)] out SyntaxReference? reference, [NotNullWhen(true)] out string? hintName)
 		{
@@ -51,9 +51,9 @@ namespace Durian.Analysis.CopyFrom
 		/// <summary>
 		/// Enqueues the specified <paramref name="node"/>.
 		/// </summary>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to enqueue.</param>
+		/// <param name="node"><see cref="SyntaxNode"/> to enqueue.</param>
 		/// <param name="hintName">Name associated with the <paramref name="node"/>.</param>
-		public void Enqueue(CSharpSyntaxNode node, string hintName)
+		public void Enqueue(SyntaxNode node, string hintName)
 		{
 			_queue.Enqueue((node.GetReference(), hintName));
 		}
@@ -61,7 +61,7 @@ namespace Durian.Analysis.CopyFrom
 		/// <summary>
 		/// Enqueues the specified <paramref name="reference"/>.
 		/// </summary>
-		/// <param name="reference"><see cref="SyntaxReference"/> to a <see cref="CSharpSyntaxNode"/> to enqueue.</param>
+		/// <param name="reference"><see cref="SyntaxReference"/> to a <see cref="SyntaxNode"/> to enqueue.</param>
 		/// <param name="hintName">Name associated with the <paramref name="reference"/>.</param>
 		public void Enqueue(SyntaxReference reference, string hintName)
 		{

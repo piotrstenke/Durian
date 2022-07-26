@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.Analysis.Data
 {
 	/// <summary>
-	/// Encapsulates data associated with a single <see cref="BasePropertyDeclarationSyntax"/>.
+	/// Encapsulates data associated with a single <see cref="IPropertySymbol"/>.
 	/// </summary>
 	public interface IPropertyData : IMemberData, ISymbolOrMember<IPropertySymbol, IPropertyData>
 	{
@@ -53,8 +53,18 @@ namespace Durian.Analysis.Data
 		ISymbolContainer<IPropertySymbol, IPropertyData> OverriddenProperties { get; }
 
 		/// <summary>
+		/// Parameters of this property.
+		/// </summary>
+		ISymbolContainer<IParameterSymbol, IParameterData> Parameters { get; }
+
+		/// <summary>
 		/// <see cref="ISymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		new IPropertySymbol Symbol { get; }
+
+		/// <summary>
+		/// Creates a shallow copy of the current data.
+		/// </summary>
+		new IPropertyData Clone();
 	}
 }

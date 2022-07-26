@@ -513,7 +513,7 @@ namespace Durian.Analysis.DefaultParam
 		private static List<string> GetUsedNamespacesList(IDefaultParamTarget target, int defaultParamCount, CancellationToken cancellationToken)
 		{
 			INamespaceSymbol globalNamespace = target.ParentCompilation.Compilation.Assembly.GlobalNamespace;
-			string[] namespaces = target.SemanticModel.GetUsedNamespacesWithoutDistinct(target.Declaration, globalNamespace, true, cancellationToken).ToArray();
+			string[] namespaces = target.SemanticModel.GetUsedNamespacesWithoutDistinct(target.Declaration!, globalNamespace, true, cancellationToken).ToArray();
 
 			int count = 0;
 			int length = namespaces.Length;

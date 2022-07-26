@@ -226,6 +226,11 @@ namespace Durian.Analysis.SymbolContainers
 			return GetEnumeratorCore();
 		}
 
+		IEnumerator<ISymbolOrMember<TSymbol, TData>> ISymbolContainer<TSymbol, TData>.GetEnumerator()
+		{
+			return GetEnumeratorCore();
+		}
+
 		IEnumerator<ISymbolOrMember<TSymbol, TData>> IEnumerable<ISymbolOrMember<TSymbol, TData>>.GetEnumerator()
 		{
 			return GetEnumeratorCore();

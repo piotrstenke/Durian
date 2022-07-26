@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
+using Durian.Analysis.Data.FromSource;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -1336,11 +1337,18 @@ namespace Durian.Analysis.Extensions
 				RecordDeclarationSyntax => new RecordData((RecordDeclarationSyntax)member, compilation),
 				EnumDeclarationSyntax => new EnumData((EnumDeclarationSyntax)member, compilation),
 				MethodDeclarationSyntax => new MethodData((MethodDeclarationSyntax)member, compilation),
-				FieldDeclarationSyntax => new FieldData((FieldDeclarationSyntax)member, compilation),
+				FieldDeclarationSyntax => new FieldData((FieldDeclarationSyntax)member, compilation, 0),
 				PropertyDeclarationSyntax => new PropertyData((PropertyDeclarationSyntax)member, compilation),
 				BaseNamespaceDeclarationSyntax => new NamespaceData((BaseNamespaceDeclarationSyntax)member, compilation),
+				VariableDeclaratorSyntax variable => variable.Parent?.Parent switch
+				{
+					FieldDeclarationSyntax field => new FieldData(field, compilation, new FieldData.Properties() { Variable = variable }),
+					EventFieldDeclarationSyntax @event => new EventData(@event, compilation, new EventData.Properties() { Variable = variable }),
+					LocalDeclarationStatementSyntax local => new LocalData(local, compilation, new LocalData.Properties() { Variable = variable }),
+					_ => new MemberData(variable, compilation)
+				},
 				EventDeclarationSyntax => new EventData((EventDeclarationSyntax)member, compilation),
-				EventFieldDeclarationSyntax => new EventData((EventFieldDeclarationSyntax)member, compilation),
+				EventFieldDeclarationSyntax => new EventData((EventFieldDeclarationSyntax)member, compilation, 0),
 				DelegateDeclarationSyntax => new DelegateData((DelegateDeclarationSyntax)member, compilation),
 				ParameterSyntax => new ParameterData((ParameterSyntax)member, compilation),
 				TypeParameterSyntax => new TypeParameterData((TypeParameterSyntax)member, compilation),
@@ -1350,7 +1358,7 @@ namespace Durian.Analysis.Extensions
 				OperatorDeclarationSyntax => new OperatorData((OperatorDeclarationSyntax)member, compilation),
 				ConversionOperatorDeclarationSyntax => new ConversionOperatorData((ConversionOperatorDeclarationSyntax)member, compilation),
 				LocalFunctionStatementSyntax => new LocalFunctionData((LocalFunctionStatementSyntax)member, compilation),
-				LocalDeclarationStatementSyntax => new LocalData((LocalDeclarationStatementSyntax)member, compilation),
+				LocalDeclarationStatementSyntax => new LocalData((LocalDeclarationStatementSyntax)member, compilation, 0),
 
 				_ => new MemberData((CSharpSyntaxNode)member, compilation),
 			};

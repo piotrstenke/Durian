@@ -153,7 +153,7 @@ namespace Durian.Analysis.CopyFrom
 
 			if (!HasAllDependencies(target.Dependencies, context))
 			{
-				context.DependencyQueue.Enqueue(target.Declaration, hintName);
+				context.DependencyQueue.Enqueue(target.Declaration!, hintName);
 				return false;
 			}
 
@@ -205,7 +205,7 @@ namespace Durian.Analysis.CopyFrom
 			return current;
 		}
 
-		private static bool CanCache(Queue<(CSharpSyntaxNode, string)> cache)
+		private static bool CanCache(Queue<(SyntaxNode, string)> cache)
 		{
 			return cache.Count < 32;
 		}
@@ -213,7 +213,7 @@ namespace Durian.Analysis.CopyFrom
 		private static Queue<(SyntaxReference, string)> GetDependenciesFromQueue(
 			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
 			CopyFromPassContext context,
-			out Queue<(CSharpSyntaxNode, string)> cache
+			out Queue<(SyntaxNode, string)> cache
 		)
 		{
 			Queue<(SyntaxReference, string)> dependencies = context.DependencyQueue.ToSystemQueue();
@@ -226,7 +226,7 @@ namespace Durian.Analysis.CopyFrom
 				_ => dependencies,
 			};
 
-			Queue<(SyntaxReference, string)> CreateQueue<T>(Queue<(CSharpSyntaxNode, string)> cache) where T : CSharpSyntaxNode
+			Queue<(SyntaxReference, string)> CreateQueue<T>(Queue<(SyntaxNode, string)> cache) where T : SyntaxNode
 			{
 				Queue<(SyntaxReference, string)> queue = new(dependencies.Count);
 
@@ -255,7 +255,7 @@ namespace Durian.Analysis.CopyFrom
 			}
 		}
 
-		private static DocumentationCommentTriviaSyntax? GetDocumentationTrivia(CSharpSyntaxNode node)
+		private static DocumentationCommentTriviaSyntax? GetDocumentationTrivia(SyntaxNode node)
 		{
 			return node
 				.GetLeadingTrivia()
@@ -398,7 +398,7 @@ namespace Durian.Analysis.CopyFrom
 			string hintName,
 			CopyFromPassContext context,
 			Queue<(SyntaxReference, string)> dependencies,
-			Queue<(CSharpSyntaxNode, string)> cache
+			Queue<(SyntaxNode, string)> cache
 		)
 		{
 			if (data is not ICopyFromMember target)
@@ -415,11 +415,11 @@ namespace Durian.Analysis.CopyFrom
 			{
 				if (CanCache(cache))
 				{
-					cache.Enqueue((target.Declaration, hintName));
+					cache.Enqueue((target.Declaration!, hintName));
 				}
 				else
 				{
-					dependencies.Enqueue((target.Declaration.GetReference(), hintName));
+					dependencies.Enqueue((target.Declaration!.GetReference(), hintName));
 				}
 
 				return false;
@@ -451,7 +451,7 @@ namespace Durian.Analysis.CopyFrom
 
 		private bool GenerateFromDependencyQueue(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, CopyFromPassContext context)
 		{
-			Queue<(SyntaxReference, string)> dependencies = GetDependenciesFromQueue(filterGroup, context, out Queue<(CSharpSyntaxNode, string)> cache);
+			Queue<(SyntaxReference, string)> dependencies = GetDependenciesFromQueue(filterGroup, context, out Queue<(SyntaxNode, string)> cache);
 
 			if (dependencies.Count == 0 && cache.Count == 0)
 			{
@@ -477,7 +477,7 @@ namespace Durian.Analysis.CopyFrom
 				}
 			}
 
-			IEnumerable<(CSharpSyntaxNode, string)> GetNodesFromQueue()
+			IEnumerable<(SyntaxNode, string)> GetNodesFromQueue()
 			{
 				int cacheLength = cache.Count;
 				int depLength = dependencies.Count;
@@ -491,7 +491,7 @@ namespace Durian.Analysis.CopyFrom
 				{
 					(SyntaxReference reference, string hintName) = dependencies.Dequeue();
 
-					CSharpSyntaxNode node = (CSharpSyntaxNode)reference.GetSyntax();
+					SyntaxNode node = (SyntaxNode)reference.GetSyntax();
 
 					yield return (node, hintName);
 				}
@@ -503,8 +503,8 @@ namespace Durian.Analysis.CopyFrom
 			List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols,
 			CopyFromPassContext context,
 			Queue<(SyntaxReference, string)> dependencies,
-			Queue<(CSharpSyntaxNode, string)> cache,
-			IEnumerable<(CSharpSyntaxNode node, string hintName)> nodes
+			Queue<(SyntaxNode, string)> cache,
+			IEnumerable<(SyntaxNode node, string hintName)> nodes
 		)
 		{
 			BeforeFiltersWithGeneratedSymbols(context);
@@ -520,8 +520,8 @@ namespace Durian.Analysis.CopyFrom
 			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
 			CopyFromPassContext context,
 			Queue<(SyntaxReference, string)> dependencies,
-			Queue<(CSharpSyntaxNode, string)> cache,
-			IEnumerable<(CSharpSyntaxNode node, string hintName)> nodes
+			Queue<(SyntaxNode, string)> cache,
+			IEnumerable<(SyntaxNode node, string hintName)> nodes
 		)
 		{
 			int numFilters = filterGroup.Count;
@@ -561,8 +561,8 @@ namespace Durian.Analysis.CopyFrom
 			IGeneratorSyntaxFilter filter,
 			CopyFromPassContext context,
 			Queue<(SyntaxReference, string)> dependencies,
-			Queue<(CSharpSyntaxNode, string)> cache,
-			IEnumerable<(CSharpSyntaxNode node, string hintName)> nodes
+			Queue<(SyntaxNode, string)> cache,
+			IEnumerable<(SyntaxNode node, string hintName)> nodes
 		)
 		{
 			if (filter is not ISyntaxValidator single)
@@ -570,7 +570,7 @@ namespace Durian.Analysis.CopyFrom
 				throw new InvalidOperationException($"Filter in group '{filterGroup.Name}' does not implement the '{nameof(ISyntaxValidator)}' interface");
 			}
 
-			foreach ((CSharpSyntaxNode node, string hintName) in nodes)
+			foreach ((SyntaxNode node, string hintName) in nodes)
 			{
 				PreValidationContext validation = new(node, context.TargetCompilation, context.CancellationToken);
 
@@ -582,7 +582,7 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		private static void ReplaceTypeParameters(
-			ref CSharpSyntaxNode currentNode,
+			ref SyntaxNode currentNode,
 			TypeParameterReplacer replacer,
 			List<(string identifier, string replacement)> replacements
 		)
@@ -592,13 +592,13 @@ namespace Durian.Analysis.CopyFrom
 				replacer.Identifier = identifier;
 				replacer.Replacement = replacement;
 
-				currentNode = (CSharpSyntaxNode)replacer.Visit(currentNode);
+				currentNode = replacer.Visit(currentNode);
 			}
 		}
 
 		private void WriteGeneratedMember(
 			ICopyFromMember member,
-			CSharpSyntaxNode node,
+			SyntaxNode node,
 			ISymbol original,
 			CopyFromPassContext context,
 			GenerateDocumentation applyInheritdoc,
@@ -642,7 +642,7 @@ namespace Durian.Analysis.CopyFrom
 
 		private void WriteGeneratedMember(
 			ICopyFromMember member,
-			CSharpSyntaxNode node,
+			SyntaxNode node,
 			ISymbol original,
 			CopyFromPassContext context,
 			GenerateDocumentation applyInheritdoc

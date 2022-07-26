@@ -64,6 +64,11 @@ namespace Durian.Analysis.Data
 		new IEventSymbol Symbol { get; }
 
 		/// <summary>
+		/// Creates a shallow copy of the current data.
+		/// </summary>
+		new IEventData Clone();
+
+		/// <summary>
 		/// Returns a collection of <see cref="IEventData"/>s of all variables defined in the <see cref="IVariableDeclarator{T}.Declaration"/>.
 		/// </summary>
 		IEnumerable<ISymbolOrMember<IEventSymbol, IEventData>> GetUnderlayingEvents();

@@ -30,5 +30,10 @@ namespace Durian.Analysis.Data
 		/// <see cref="ITypeParameterSymbol"/> associated with the <see cref="Declaration"/>.
 		/// </summary>
 		new ITypeParameterSymbol Symbol { get; }
+
+		/// <summary>
+		/// Creates a shallow copy of the current data.
+		/// </summary>
+		new ITypeParameterData Clone();
 	}
 }

@@ -456,11 +456,11 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Adds the generated <paramref name="text"/> to the <paramref name="context"/>.
 		/// </summary>
-		/// <param name="original">The <see cref="CSharpSyntaxNode"/> the source was generated from.</param>
+		/// <param name="original">The <see cref="SyntaxNode"/> the source was generated from.</param>
 		/// <param name="text">The generated text.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-		protected void AddSourceWithOriginal(CSharpSyntaxNode original, string text, string hintName, TContext context)
+		protected void AddSourceWithOriginal(SyntaxNode original, string text, string hintName, TContext context)
 		{
 			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, context.ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
 			AddSource_Internal(original, tree, hintName, context);
@@ -469,11 +469,11 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Adds the generated <paramref name="tree"/> to the <paramref name="context"/>.
 		/// </summary>
-		/// <param name="original">The <see cref="CSharpSyntaxNode"/> the source was generated from.</param>
+		/// <param name="original">The <see cref="SyntaxNode"/> the source was generated from.</param>
 		/// <param name="tree">The generated <see cref="CSharpSyntaxTree"/>.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-		protected void AddSourceWithOriginal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, TContext context)
+		protected void AddSourceWithOriginal(SyntaxNode original, CSharpSyntaxTree tree, string hintName, TContext context)
 		{
 			AddSource_Internal(original, tree, hintName, context);
 		}
@@ -481,11 +481,11 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Adds the generated <paramref name="text"/> to the <paramref name="context"/>.
 		/// </summary>
-		/// <param name="original">The <see cref="CSharpSyntaxNode"/> the source was generated from.</param>
+		/// <param name="original">The <see cref="SyntaxNode"/> the source was generated from.</param>
 		/// <param name="text">The generated text.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-		protected void AddSourceWithOriginal(CSharpSyntaxNode original, string text, string hintName, in GeneratorExecutionContext context)
+		protected void AddSourceWithOriginal(SyntaxNode original, string text, string hintName, in GeneratorExecutionContext context)
 		{
 			CSharpSyntaxTree tree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, (CSharpParseOptions)context.ParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
 			AddSource_Internal(original, tree, hintName, in context);
@@ -494,11 +494,11 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Adds the generated <paramref name="tree"/> to the <paramref name="context"/>.
 		/// </summary>
-		/// <param name="original">The <see cref="CSharpSyntaxNode"/> the source was generated from.</param>
+		/// <param name="original">The <see cref="SyntaxNode"/> the source was generated from.</param>
 		/// <param name="tree">The generated <see cref="CSharpSyntaxTree"/>.</param>
 		/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 		/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-		protected void AddSourceWithOriginal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+		protected void AddSourceWithOriginal(SyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
 			AddSource_Internal(original, tree, hintName, in context);
 		}
@@ -538,7 +538,7 @@ namespace Durian.Analysis
 			LogHandler.LogNode(tree.GetRoot(context.CancellationToken), hintName, NodeOutput.Node);
 		}
 
-		private protected void AddSource_Internal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, TContext context)
+		private protected void AddSource_Internal(SyntaxNode original, CSharpSyntaxTree tree, string hintName, TContext context)
 		{
 			AddSourceCore(tree, hintName, context);
 
@@ -552,7 +552,7 @@ namespace Durian.Analysis
 			LogHandler.LogNode(tree.GetRoot(context.CancellationToken), hintName, NodeOutput.Node);
 		}
 
-		private protected void AddSource_Internal(CSharpSyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+		private protected void AddSource_Internal(SyntaxNode original, CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
 			AddSourceCore(tree, hintName, in context);
 

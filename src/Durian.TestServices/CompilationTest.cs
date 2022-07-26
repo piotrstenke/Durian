@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using Durian.Analysis;
 using Durian.Analysis.Data;
+using Durian.Analysis.Data.FromSource;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -255,20 +256,6 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="MethodData{TDeclaration}"/> from the specified <paramref name="source"/>.
-		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="index">Index at which the <see cref="MethodData{TDeclaration}"/> should be returned. Can be thought of as a number of <see cref="CSharpSyntaxNode"/>es of type <typeparamref name="TDeclaration"/> to skip before creating a valid <see cref="IMemberData"/>.</param>
-		/// <returns>
-		/// A new <see cref="MethodData{TDeclaration}"/> created from a <see cref="CSharpSyntaxNode"/>es of type <typeparamref name="TDeclaration"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
-		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> of type <typeparamref name="TDeclaration"/> exists.
-		/// </returns>
-		protected MethodData<TDeclaration>? GetMethod<TDeclaration>(string? source, int index = 0) where TDeclaration : BaseMethodDeclarationSyntax
-		{
-			return Compilation.GetMemberData<TDeclaration>(source, index) as MethodData<TDeclaration>;
-		}
-
-		/// <summary>
 		/// Creates a new <see cref="MethodData"/> from the specified <paramref name="source"/>.
 		/// </summary>
 		/// <param name="source"></param>
@@ -377,7 +364,7 @@ namespace Durian.TestServices
 		/// A new <see cref="TypeData{TDeclaration}"/> created from a <see cref="CSharpSyntaxNode"/>es of type <typeparamref name="TDeclaration"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> of type <typeparamref name="TDeclaration"/> exists.
 		/// </returns>
-		protected TypeData<TDeclaration>? GetType<TDeclaration>(string? source, int index = 0) where TDeclaration : BaseTypeDeclarationSyntax
+		protected TypeData<TDeclaration>? GetType<TDeclaration>(string? source, int index = 0) where TDeclaration : TypeDeclarationSyntax
 		{
 			return Compilation.GetMemberData<TDeclaration>(source, index) as TypeData<TDeclaration>;
 		}

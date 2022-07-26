@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Durian.Analysis.Data;
+using Durian.Analysis.Data.FromSource;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -34,10 +35,10 @@ namespace Durian.Analysis.DefaultParam.Types
 		/// <summary>
 		/// Specifies the namespace where the target member should be generated in.
 		/// </summary>
-		public string TargetNamespace => _targetNamespace ??= GetContainingNamespaces().ToString();
+		public string TargetNamespace => _targetNamespace ??= ContainingNamespaces.ToString();
 
 		/// <inheritdoc/>
-		public ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
+		public new ref readonly TypeParameterContainer TypeParameters => ref _typeParameters;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefaultParamTypeData"/> class.

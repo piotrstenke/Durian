@@ -6,7 +6,6 @@ using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.CopyFrom.Types
@@ -31,7 +30,7 @@ namespace Durian.Analysis.CopyFrom.Types
 		/// <inheritdoc cref="ISyntaxValidationContext.Symbol"/>
 		public INamedTypeSymbol Symbol { get; }
 
-		CSharpSyntaxNode ISyntaxValidationContext.Node => Node!;
+		SyntaxNode ISyntaxValidationContext.Node => Node!;
 		ISymbol ISyntaxValidationContext.Symbol => Symbol;
 		ICompilationData ISyntaxValidationContext.TargetCompilation => Compilation;
 

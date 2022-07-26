@@ -29,6 +29,11 @@ namespace Durian.Analysis.Data
 		new INamespaceSymbol Symbol { get; }
 
 		/// <summary>
+		/// Creates a shallow copy of the current data.
+		/// </summary>
+		new INamespaceData Clone();
+
+		/// <summary>
 		/// Returns all <see cref="INamespaceOrTypeSymbol"/>s contained within this namespace.
 		/// </summary>
 		/// <param name="members">Range of members to include.</param>

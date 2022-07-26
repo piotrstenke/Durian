@@ -16,7 +16,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for property or event accessors.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, AccessorData>> Accessors()
+			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, IAccessorData>> Accessors()
 			{
 				return new();
 			}
@@ -29,7 +29,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IMethodSymbol, AccessorData> Accessors(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IMethodSymbol, IAccessorData> Accessors(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -100,7 +100,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for classes.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, ClassData>> Classes()
+			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, IClassData>> Classes()
 			{
 				return new();
 			}
@@ -113,7 +113,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<INamedTypeSymbol, ClassData> Classes(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<INamedTypeSymbol, IClassData> Classes(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -121,7 +121,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for constructors.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, ConstructorData>> Constructors()
+			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, IConstructorData>> Constructors()
 			{
 				return new();
 			}
@@ -134,7 +134,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IMethodSymbol, ConstructorData> Constructors(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IMethodSymbol, IConstructorData> Constructors(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -142,7 +142,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for conversion operators.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, ConversionOperatorData>> ConversionOperators()
+			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, IConversionOperatorData>> ConversionOperators()
 			{
 				return new();
 			}
@@ -155,7 +155,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IMethodSymbol, ConversionOperatorData> ConversionOperators(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IMethodSymbol, IConversionOperatorData> ConversionOperators(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -163,7 +163,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for delegates.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, DelegateData>> Delegates()
+			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, IDelegateData>> Delegates()
 			{
 				return new();
 			}
@@ -176,7 +176,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<INamedTypeSymbol, DelegateData> Delegates(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<INamedTypeSymbol, IDelegateData> Delegates(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -184,7 +184,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for destructors.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, DestructorData>> Destructors()
+			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, IDestructorData>> Destructors()
 			{
 				return new();
 			}
@@ -197,7 +197,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IMethodSymbol, DestructorData> Destructors(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IMethodSymbol, IDestructorData> Destructors(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -205,7 +205,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for enums.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, EnumData>> Enums()
+			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, IEnumData>> Enums()
 			{
 				return new();
 			}
@@ -218,7 +218,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<INamedTypeSymbol, EnumData> Enums(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<INamedTypeSymbol, IEnumData> Enums(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -226,7 +226,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for events.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IEventSymbol, EventData>> Events()
+			public static SymbolContainerBuilder<SymbolContainer<IEventSymbol, IEventData>> Events()
 			{
 				return new();
 			}
@@ -239,7 +239,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IEventSymbol, EventData> Events(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IEventSymbol, IEventData> Events(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -247,7 +247,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for fields.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IFieldSymbol, FieldData>> Fields()
+			public static SymbolContainerBuilder<SymbolContainer<IFieldSymbol, IFieldData>> Fields()
 			{
 				return new();
 			}
@@ -260,7 +260,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IFieldSymbol, FieldData> Fields(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IFieldSymbol, IFieldData> Fields(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -268,7 +268,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for indexers.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IPropertySymbol, IndexerData>> Indexers()
+			public static SymbolContainerBuilder<SymbolContainer<IPropertySymbol, IIndexerData>> Indexers()
 			{
 				return new();
 			}
@@ -281,7 +281,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IPropertySymbol, IndexerData> Indexers(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IPropertySymbol, IIndexerData> Indexers(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -289,7 +289,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for interfaces.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, InterfaceData>> Interfaces()
+			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, IInterfaceData>> Interfaces()
 			{
 				return new();
 			}
@@ -302,7 +302,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<INamedTypeSymbol, InterfaceData> Interfaces(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<INamedTypeSymbol, IInterfaceData> Interfaces(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -310,7 +310,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for lambdas.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, LambdaData>> Lambdas()
+			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, ILambdaData>> Lambdas()
 			{
 				return new();
 			}
@@ -323,7 +323,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IMethodSymbol, LambdaData> Lambdas(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IMethodSymbol, ILambdaData> Lambdas(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -331,7 +331,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for local functions.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, LocalFunctionData>> LocalFunctions()
+			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, ILocalFunctionData>> LocalFunctions()
 			{
 				return new();
 			}
@@ -344,7 +344,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IMethodSymbol, LocalFunctionData> LocalFunctions(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IMethodSymbol, ILocalFunctionData> LocalFunctions(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -352,7 +352,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for locals.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<ILocalSymbol, LocalData>> Locals()
+			public static SymbolContainerBuilder<SymbolContainer<ILocalSymbol, ILocalData>> Locals()
 			{
 				return new();
 			}
@@ -365,7 +365,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<ILocalSymbol, LocalData> Locals(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<ILocalSymbol, ILocalData> Locals(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -373,7 +373,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for methods.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, MethodData>> Methods()
+			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, IMethodData>> Methods()
 			{
 				return new();
 			}
@@ -386,7 +386,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IMethodSymbol, MethodData> Methods(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IMethodSymbol, IMethodData> Methods(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -394,7 +394,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for namespaces.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<INamespaceSymbol, NamespaceData>> Namespaces()
+			public static SymbolContainerBuilder<SymbolContainer<INamespaceSymbol, INamespaceData>> Namespaces()
 			{
 				return new();
 			}
@@ -407,7 +407,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<INamespaceSymbol, NamespaceData> Namespaces(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<INamespaceSymbol, INamespaceData> Namespaces(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -415,7 +415,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for namespaces or types.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<INamespaceOrTypeSymbol, NamespaceOrTypeData>> NamespacesOrTypes()
+			public static SymbolContainerBuilder<SymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>> NamespacesOrTypes()
 			{
 				return new();
 			}
@@ -428,7 +428,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<INamespaceOrTypeSymbol, NamespaceOrTypeData> NamespacesOrTypes(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData> NamespacesOrTypes(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -436,7 +436,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for operators.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, OperatorData>> Operators()
+			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol,IOperatorData>> Operators()
 			{
 				return new();
 			}
@@ -449,7 +449,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IMethodSymbol, OperatorData> Operators(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IMethodSymbol, IOperatorData> Operators(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -457,7 +457,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for parameters.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IParameterSymbol, ParameterData>> Parameters()
+			public static SymbolContainerBuilder<SymbolContainer<IParameterSymbol, IParameterData>> Parameters()
 			{
 				return new();
 			}
@@ -470,7 +470,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IParameterSymbol, ParameterData> Parameters(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IParameterSymbol, IParameterData> Parameters(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -478,7 +478,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for properties.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IPropertySymbol, PropertyData>> Properties()
+			public static SymbolContainerBuilder<SymbolContainer<IPropertySymbol, IPropertyData>> Properties()
 			{
 				return new();
 			}
@@ -491,7 +491,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IPropertySymbol, PropertyData> Properties(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<IPropertySymbol, IPropertyData> Properties(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -499,7 +499,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for records.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, RecordData>> Records()
+			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, IRecordData>> Records()
 			{
 				return new();
 			}
@@ -512,7 +512,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<INamedTypeSymbol, RecordData> Records(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<INamedTypeSymbol, IRecordData> Records(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -520,7 +520,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for structs.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, StructData>> Structs()
+			public static SymbolContainerBuilder<SymbolContainer<INamedTypeSymbol, IStructData>> Structs()
 			{
 				return new();
 			}
@@ -533,7 +533,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<INamedTypeSymbol, StructData> Structs(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<INamedTypeSymbol, IStructData> Structs(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}
@@ -541,7 +541,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for type parameters.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<ITypeParameterSymbol, TypeParameterData>> TypeParameters()
+			public static SymbolContainerBuilder<SymbolContainer<ITypeParameterSymbol, ITypeParameterData>> TypeParameters()
 			{
 				return new();
 			}
@@ -554,49 +554,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 			/// </param>
 			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<ITypeParameterSymbol, TypeParameterData> TypeParameters(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
-			{
-				return new(parentCompilation, nameResolver);
-			}
-
-			/// <summary>
-			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for methods of unknown kind.
-			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, UnknownMethodData>> UnknownMethods()
-			{
-				return new();
-			}
-
-			/// <summary>
-			/// Returns a new <see cref="SymbolContainer{TSymbol, TData}"/> for methods of unknown kind.
-			/// </summary>
-			/// <param name="parentCompilation">
-			/// Parent <see cref="ICompilationData"/> of the current container.
-			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
-			/// </param>
-			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<IMethodSymbol, UnknownMethodData> UnknownMethods(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
-			{
-				return new(parentCompilation, nameResolver);
-			}
-
-			/// <summary>
-			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for types of unknown kind.
-			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<ITypeSymbol, UnknownTypeData>> UnknownTypes()
-			{
-				return new();
-			}
-
-			/// <summary>
-			/// Returns a new <see cref="SymbolContainer{TSymbol, TData}"/> for types of unknown kind.
-			/// </summary>
-			/// <param name="parentCompilation">
-			/// Parent <see cref="ICompilationData"/> of the current container.
-			/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
-			/// </param>
-			/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-			public static SymbolContainer<ITypeSymbol, UnknownTypeData> UnknownTypes(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+			public static SymbolContainer<ITypeParameterSymbol, ITypeParameterData> TypeParameters(ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 			{
 				return new(parentCompilation, nameResolver);
 			}

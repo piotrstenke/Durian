@@ -80,7 +80,7 @@ namespace Durian.Analysis
 			{
 				if (type == NamespaceStyle.Nested)
 				{
-					foreach (INamespaceSymbol parent in @namespace.GetContainingNamespaces())
+					foreach (INamespaceSymbol parent in @namespace.ContainingNamespaces.GetSymbols())
 					{
 						SimpleName_Internal(parent);
 						BeginBlock();
@@ -90,7 +90,7 @@ namespace Durian.Analysis
 				}
 				else
 				{
-					foreach (INamespaceSymbol parent in @namespace.GetContainingNamespaces())
+					foreach (INamespaceSymbol parent in @namespace.ContainingNamespaces.GetSymbols())
 					{
 						SimpleName_Internal(parent);
 						TextBuilder.Append('.');
@@ -121,7 +121,7 @@ namespace Durian.Analysis
 		{
 			InitBuilder();
 
-			foreach (INamespaceSymbol @namespace in member.GetContainingNamespaces())
+			foreach (INamespaceSymbol @namespace in member.ContainingNamespaces.GetSymbols())
 			{
 				SimpleName_Internal(@namespace);
 				TextBuilder.Append('.');
@@ -131,7 +131,7 @@ namespace Durian.Analysis
 			{
 				if (useArguments)
 				{
-					foreach (INamedTypeSymbol type in member.GetContainingTypes())
+					foreach (INamedTypeSymbol type in member.ContainingTypes.GetSymbols())
 					{
 						SimpleName_Internal(type);
 						TypeArgumentList(type.TypeArguments);
@@ -140,7 +140,7 @@ namespace Durian.Analysis
 				}
 				else
 				{
-					foreach (INamedTypeSymbol type in member.GetContainingTypes())
+					foreach (INamedTypeSymbol type in member.ContainingTypes.GetSymbols())
 					{
 						SimpleName_Internal(type);
 						TypeParameterList(type.TypeParameters);

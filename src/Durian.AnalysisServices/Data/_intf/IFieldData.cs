@@ -33,6 +33,11 @@ namespace Durian.Analysis.Data
 		new IFieldSymbol Symbol { get; }
 
 		/// <summary>
+		/// Creates a shallow copy of the current data.
+		/// </summary>
+		new IFieldData Clone();
+
+		/// <summary>
 		/// Returns a collection of <see cref="IFieldSymbol"/>s of all variables defined in the <see cref="IVariableDeclarator{T}.Declaration"/>.
 		/// </summary>
 		IEnumerable<ISymbolOrMember<IFieldSymbol, IFieldData>> GetUnderlayingFields();

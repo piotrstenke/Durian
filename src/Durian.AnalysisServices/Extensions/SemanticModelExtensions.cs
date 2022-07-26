@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Analysis.Data;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -118,6 +119,204 @@ namespace Durian.Analysis.Extensions
 		)
 		{
 			return GetAllAttributes_Internal(semanticModel, attrSymbol, () => syntaxNode.AttributeLists, cancellationToken);
+		}
+
+		/// <summary>
+		/// Returns the base constructor of the specified <paramref name="ctor"/>.
+		/// </summary>
+		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
+		/// <param name="ctor">Constructor to get the base contructor of.</param>
+		public static IMethodSymbol? GetBaseConstructor(this SemanticModel semanticModel, IMethodSymbol ctor)
+		{
+			if (ctor.MethodKind != MethodKind.Constructor || ctor.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not ConstructorDeclarationSyntax decl)
+			{
+				return null;
+			}
+
+			return semanticModel.GetBaseConstructor(decl);
+		}
+
+		/// <summary>
+		/// Returns the base constructor of the specified <paramref name="ctor"/>.
+		/// </summary>
+		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
+		/// <param name="ctor">Constructor to get the base contructor of.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static IMethodSymbol? GetBaseConstructor(this SemanticModel semanticModel, ConstructorDeclarationSyntax ctor, CancellationToken cancellationToken = default)
+		{
+			if(ctor.Initializer is null)
+			{
+				if(ctor.Parent is null || semanticModel.GetDeclaredSymbol(ctor.Parent, cancellationToken) is not INamedTypeSymbol type)
+				{
+					return null;
+				}
+
+				return GetVisibleDefaultConstructor(type);
+			}
+
+			return semanticModel.GetSymbolInfo(ctor.Initializer, cancellationToken).Symbol as IMethodSymbol;
+		}
+
+		/// <summary>
+		/// Returns the base constructor of the specified <paramref name="ctor"/>.
+		/// </summary>
+		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
+		/// <param name="ctor">Constructor to get the base contructor of.</param>
+		/// <param name="parentType">Parent type of the <paramref name="ctor"/>.</param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
+		public static IMethodSymbol? GetBaseConstructor(this SemanticModel semanticModel, ConstructorDeclarationSyntax ctor, INamedTypeSymbol parentType, CancellationToken cancellationToken = default)
+		{
+			if(ctor.Initializer is null)
+			{
+				return GetVisibleDefaultConstructor(parentType);
+			}
+
+			return semanticModel.GetSymbolInfo(ctor.Initializer, cancellationToken).Symbol as IMethodSymbol;
+		}
+
+		/// <summary>
+		/// Returns all the base constructor of the specified <paramref name="ctor"/>.
+		/// </summary>
+		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
+		/// <param name="ctor">Constructor to get the base contructors of.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="ctor"/> in the returned collection.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static IReturnOrderEnumerable<IMethodSymbol> GetBaseConstructors(this SemanticModel semanticModel, IMethodSymbol ctor, bool includeSelf = false, ReturnOrder order = ReturnOrder.ChildToParent)
+		{
+			return Yield().OrderBy(order);
+
+			IEnumerable<IMethodSymbol> Yield()
+			{
+				if(includeSelf)
+				{
+					yield return ctor;
+				}
+
+				IMethodSymbol current = ctor;
+
+				while(semanticModel.GetBaseConstructor(current) is IMethodSymbol c)
+				{
+					yield return c;
+					current = c;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns all the base constructor of the specified <paramref name="ctor"/>.
+		/// </summary>
+		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
+		/// <param name="ctor">Constructor to get the base contructors of.</param>
+		/// <param name="includeSelf">Determines whether to include the <paramref name="ctor"/> in the returned collection.</param>
+		/// <param name="order">Specifies ordering of the returned members.</param>
+		public static IReturnOrderEnumerable<IMethodSymbol> GetBaseConstructors(this SemanticModel semanticModel, ConstructorDeclarationSyntax ctor, bool includeSelf = false, ReturnOrder order = ReturnOrder.ChildToParent)
+		{
+			return Yield().OrderBy(order);
+
+			IEnumerable<IMethodSymbol> Yield()
+			{
+				IMethodSymbol? current;
+
+				if (includeSelf)
+				{
+					if(semanticModel.GetDeclaredSymbol(ctor) is IMethodSymbol symbol)
+					{
+						yield return symbol;
+					}
+					else
+					{
+						yield break;
+					}
+
+					current = GetFirstCtor(symbol.ContainingType);
+				}
+				else
+				{
+					current = GetFirstCtor(null);
+				}
+
+				if(current is null)
+				{
+					yield break;
+				}
+
+				yield return current;
+
+				while (semanticModel.GetBaseConstructor(current) is IMethodSymbol c)
+				{
+					yield return c;
+					current = c;
+				}
+
+				IMethodSymbol? GetFirstCtor(INamedTypeSymbol? containingType)
+				{
+					if(containingType is null)
+					{
+						return semanticModel.GetBaseConstructor(ctor);
+					}
+
+					return semanticModel.GetBaseConstructor(ctor, containingType);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns <see cref="ISymbol"/>s of all varialbes captured by the specified <paramref name="method"/> representing an anonymous or local function.
+		/// </summary>
+		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
+		/// <param name="method"><see cref="IMethodSymbol"/> to get the captured variables of.</param>
+		public static IEnumerable<ISymbol> GetCapturedVariables(this SemanticModel semanticModel, IMethodSymbol method)
+		{
+			if(method.MethodKind is not
+				MethodKind.LambdaMethod and not
+				MethodKind.AnonymousFunction and not
+				MethodKind.LocalFunction)
+			{
+				return Array.Empty<ISymbol>();
+			}
+
+			SyntaxNode? node = method.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
+
+			return node switch
+			{
+				AnonymousFunctionExpressionSyntax lambda => semanticModel.GetCapturedVariables(lambda),
+				LocalFunctionStatementSyntax local => semanticModel.GetCapturedVariables(local),
+				_ => Array.Empty<ISymbol>()
+			};
+		}
+
+		/// <summary>
+		/// Returns <see cref="ISymbol"/>s of all varialbes captured by the specified <see cref="AnonymousFunctionExpressionSyntax"/>.
+		/// </summary>
+		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
+		/// <param name="node"><see cref="AnonymousFunctionExpressionSyntax"/> to get the captured variables of.</param>
+		public static IEnumerable<ISymbol> GetCapturedVariables(this SemanticModel semanticModel, AnonymousFunctionExpressionSyntax node)
+		{
+			DataFlowAnalysis? dataFlow = semanticModel.AnalyzeDataFlow(node);
+
+			if(dataFlow is null)
+			{
+				return Array.Empty<ISymbol>();
+			}
+
+			return dataFlow.Captured;
+		}
+
+		/// <summary>
+		/// Returns <see cref="ISymbol"/>s of all varialbes captured by the specified <see cref="LocalFunctionStatementSyntax"/>.
+		/// </summary>
+		/// <param name="semanticModel">Parent <see cref="SemanticModel"/>.</param>
+		/// <param name="node"><see cref="LocalFunctionStatementSyntax"/> to get the captured variables of.</param>
+		public static IEnumerable<ISymbol> GetCapturedVariables(this SemanticModel semanticModel, LocalFunctionStatementSyntax node)
+		{
+			DataFlowAnalysis? dataFlow = semanticModel.AnalyzeDataFlow(node);
+
+			if (dataFlow is null)
+			{
+				return Array.Empty<ISymbol>();
+			}
+
+			return dataFlow.Captured;
 		}
 
 		/// <summary>
@@ -697,6 +896,23 @@ namespace Durian.Analysis.Extensions
 					}
 				}
 			}
+		}
+
+		private static IMethodSymbol? GetVisibleDefaultConstructor(INamedTypeSymbol parentType)
+		{
+			if (!parentType.HasExplicitBaseType())
+			{
+				return null;
+			}
+
+			IMethodSymbol? parentCtor = parentType.ContainingType!.InstanceConstructors.FirstOrDefault(ctor => ctor.IsParameterlessConstructor());
+
+			if (parentCtor is null || parentCtor.DeclaredAccessibility == Accessibility.Private)
+			{
+				return null;
+			}
+
+			return parentCtor;
 		}
 	}
 }

@@ -5,7 +5,6 @@ using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.DefaultParam.Types
@@ -32,7 +31,7 @@ namespace Durian.Analysis.DefaultParam.Types
 		/// <inheritdoc cref="ISyntaxValidationContext.TargetCompilation"/>
 		public DefaultParamCompilationData TargetCompilation { get; }
 
-		CSharpSyntaxNode ISyntaxValidationContext.Node => Node!;
+		SyntaxNode ISyntaxValidationContext.Node => Node!;
 		ISymbol ISyntaxValidationContext.Symbol => Symbol;
 		ICompilationData ISyntaxValidationContext.TargetCompilation => TargetCompilation;
 

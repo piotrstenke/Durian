@@ -19,9 +19,9 @@ namespace Durian.Analysis.Filtration
 		public CancellationToken CancellationToken { get; }
 
 		/// <summary>
-		/// <see cref="CSharpSyntaxNode"/> to get the data of.
+		/// <see cref="SyntaxNode"/> to get the data of.
 		/// </summary>
-		public CSharpSyntaxNode Node { get; }
+		public SyntaxNode Node { get; }
 
 		/// <summary>
 		/// Parent <see cref="ICompilationData"/> of the target <see cref="Node"/>.
@@ -31,10 +31,10 @@ namespace Durian.Analysis.Filtration
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PreValidationContext"/> structure.
 		/// </summary>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> to get the data of.</param>
+		/// <param name="node"><see cref="SyntaxNode"/> to get the data of.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the target <paramref name="node"/>.</param>
 		/// <param name="cancellationToken"><see cref="System.Threading.CancellationToken"/> that specifies if the operation should be canceled.</param>
-		public PreValidationContext(CSharpSyntaxNode node, ICompilationData compilation, CancellationToken cancellationToken = default)
+		public PreValidationContext(SyntaxNode node, ICompilationData compilation, CancellationToken cancellationToken = default)
 		{
 			Node = node;
 			TargetCompilation = compilation;
