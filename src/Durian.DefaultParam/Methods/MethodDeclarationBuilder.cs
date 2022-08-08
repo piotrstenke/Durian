@@ -144,7 +144,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 
 			_symbol = data.Symbol;
 			_indentLevel = DefaultParamUtilities.GetIndent(data.Declaration);
-			_newModifierIndexes = data.NewModifierIndexes;
+			_newModifierIndexes = data.NewModifierIndices;
 			_numNonDefaultParam = data.TypeParameters.NumNonDefaultParam;
 
 			InitializeDeclaration(data, cancellationToken);

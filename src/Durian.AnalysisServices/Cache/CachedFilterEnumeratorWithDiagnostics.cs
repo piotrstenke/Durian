@@ -10,8 +10,6 @@ using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
 namespace Durian.Analysis.Cache
 {
 	/// <summary>
@@ -26,7 +24,7 @@ namespace Durian.Analysis.Cache
 	{
 		internal readonly CachedData<TData> _cache;
 
-		private readonly IEnumerator<CSharpSyntaxNode> _nodes;
+		private readonly IEnumerator<SyntaxNode> _nodes;
 
 		/// <inheritdoc/>
 		public readonly ICompilationData Compilation { get; }
@@ -53,13 +51,13 @@ namespace Durian.Analysis.Cache
 		/// Initializes a new instance of the <see cref="CachedFilterEnumeratorWithDiagnostics{TData, TContext}"/> struct.
 		/// </summary>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
-		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="nodes">A collection of <see cref="SyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
 		public CachedFilterEnumeratorWithDiagnostics(
 			ICompilationData compilation,
-			IEnumerable<CSharpSyntaxNode> nodes,
+			IEnumerable<SyntaxNode> nodes,
 			ISyntaxValidatorWithDiagnostics<TContext> validator,
 			IDiagnosticReceiver diagnosticReceiver,
 			in CachedData<TData> cache
@@ -70,8 +68,8 @@ namespace Durian.Analysis.Cache
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CachedFilterEnumeratorWithDiagnostics{TData, TContext}"/> struct.
 		/// </summary>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
-		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="SyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
+		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="SyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
 		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
@@ -89,13 +87,13 @@ namespace Durian.Analysis.Cache
 		/// Initializes a new instance of the <see cref="CachedFilterEnumeratorWithDiagnostics{TData, TContext}"/> struct.
 		/// </summary>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
-		/// <param name="nodes">An enumerator that iterates through a collection of <see cref="CSharpSyntaxNode"/>s.</param>
+		/// <param name="nodes">An enumerator that iterates through a collection of <see cref="SyntaxNode"/>s.</param>
 		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
 		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
 		public CachedFilterEnumeratorWithDiagnostics(
 			ICompilationData compilation,
-			IEnumerator<CSharpSyntaxNode> nodes,
+			IEnumerator<SyntaxNode> nodes,
 			ISyntaxValidatorWithDiagnostics<TContext> validator,
 			IDiagnosticReceiver diagnosticReceiver,
 			in CachedData<TData> cache
@@ -131,7 +129,7 @@ namespace Durian.Analysis.Cache
 		{
 			while (_nodes.MoveNext())
 			{
-				CSharpSyntaxNode node = _nodes.Current;
+				SyntaxNode node = _nodes.Current;
 
 				if (node is null)
 				{

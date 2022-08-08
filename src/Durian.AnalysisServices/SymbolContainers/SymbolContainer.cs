@@ -2,9 +2,11 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 
@@ -88,7 +90,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public SymbolContainer(IEnumerable<TSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(collection, parentCompilation)
+		public SymbolContainer(IEnumerable<TSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(parentCompilation, GetInitialOrder(collection))
 		{
 			Content = new();
 			NameResolver = nameResolver ?? GetDefaultNameResolver();
@@ -105,7 +107,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
-		public SymbolContainer(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(collection, parentCompilation)
+		public SymbolContainer(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) : base(parentCompilation, GetInitialOrder(collection))
 		{
 			Content = new();
 			NameResolver = nameResolver ?? GetDefaultNameResolver();
@@ -251,6 +253,17 @@ namespace Durian.Analysis.SymbolContainers
 			{
 				_builderState = BuilderState.Missed;
 			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static ReturnOrder GetInitialOrder(IEnumerable collection)
+		{
+			return collection switch
+			{
+				IReturnOrderEnumerable<TSymbol> symbol => symbol.Order,
+				IReturnOrderEnumerable<ISymbolOrMember> member => member.Order,
+				_ => default
+			};
 		}
 	}
 }

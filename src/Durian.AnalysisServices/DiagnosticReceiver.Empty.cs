@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis
 {
@@ -48,7 +47,7 @@ namespace Durian.Analysis
 			}
 
 			/// <inheritdoc/>
-			public void SetTargetNode(CSharpSyntaxNode node, string hintName)
+			public void SetTargetNode(SyntaxNode node, string hintName)
 			{
 				// Do nothing.
 			}

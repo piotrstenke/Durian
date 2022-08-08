@@ -4,12 +4,12 @@
 using System.Collections.Generic;
 using System.Threading;
 using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Filtration
 {
 	/// <summary>
-	/// Filtrates <see cref="CSharpSyntaxNode"/>s collected by a <see cref="IDurianSyntaxReceiver"/>.
+	/// Filtrates <see cref="SyntaxNode"/>s collected by a <see cref="IDurianSyntaxReceiver"/>.
 	/// </summary>
 	public abstract class SyntaxFilter : ISyntaxFilterWithDiagnostics
 	{
@@ -34,7 +34,7 @@ namespace Durian.Analysis.Filtration
 		/// <inheritdoc/>
 		public virtual IEnumerable<IMemberData> Filtrate(
 			ICompilationData compilation,
-			IEnumerable<CSharpSyntaxNode> collectedNodes,
+			IEnumerable<SyntaxNode> collectedNodes,
 			IDiagnosticReceiver diagnosticReceiver,
 			CancellationToken cancellationToken = default
 		)
@@ -55,7 +55,7 @@ namespace Durian.Analysis.Filtration
 		/// <inheritdoc/>
 		public abstract IEnumerable<IMemberData> Filtrate(
 			ICompilationData compilation,
-			IEnumerable<CSharpSyntaxNode> collectedNodes,
+			IEnumerable<SyntaxNode> collectedNodes,
 			CancellationToken cancellationToken = default
 		);
 	}

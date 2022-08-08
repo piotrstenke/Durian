@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Durian.Analysis.Data;
 using Durian.Analysis.Data.FromSource;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.DefaultParam.Types
@@ -16,16 +14,69 @@ namespace Durian.Analysis.DefaultParam.Types
 	/// </summary>
 	public class DefaultParamTypeData : TypeData<TypeDeclarationSyntax>, IDefaultParamTarget
 	{
-		private readonly TypeParameterContainer _typeParameters;
+		/// <summary>
+		/// Contains data that can be passed to a <see cref="DefaultParamTypeData"/>.
+		/// </summary>
+		public new sealed class Properties : TypeData<TypeDeclarationSyntax>.Properties
+		{
+			/// <inheritdoc cref="DefaultParamTypeData.Inherit"/>
+			public bool Inherit { get; set; }
+
+			/// <inheritdoc cref="DefaultParamTypeData.NewModifierIndices"/>
+			public HashSet<int>? NewModifierIndices { get; set; }
+
+			/// <inheritdoc cref="DefaultParamTypeData.TargetNamespace"/>
+			public string? TargetNamespace { get; set; }
+
+			/// <inheritdoc cref="DefaultParamTypeData.TypeParameters"/>
+			public new TypeParameterContainer TypeParameters { get; set; }
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Clone"/>
+			public new Properties Clone()
+			{
+				return (CloneCore() as Properties)!;
+			}
+
+			/// <inheritdoc/>
+			public override void Map(TypeData<TypeDeclarationSyntax>.Properties properties)
+			{
+				base.Map(properties);
+
+				if (properties is Properties props)
+				{
+					props.Inherit = Inherit;
+					props.NewModifierIndices = NewModifierIndices;
+					props.TargetNamespace = TargetNamespace;
+					props.TypeParameters = TypeParameters;
+				}
+			}
+
+			/// <inheritdoc/>
+			protected override MemberData.Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
+			}
+		}
+
+		private TypeParameterContainer _typeParameters;
 		private string? _targetNamespace;
 
 		/// <summary>
 		/// Determines whether the generated members should inherit the original type.
 		/// </summary>
-		public bool Inherit { get; }
+		public bool Inherit { get; private set; }
 
-		/// <inheritdoc cref="Delegates.DefaultParamDelegateData.NewModifierIndexes"/>
-		public HashSet<int>? NewModifierIndexes { get; }
+		/// <inheritdoc cref="Delegates.DefaultParamDelegateData.NewModifierIndices"/>
+		public HashSet<int>? NewModifierIndices { get; private set; }
 
 		/// <summary>
 		/// Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamTypeData"/>.
@@ -45,61 +96,22 @@ namespace Durian.Analysis.DefaultParam.Types
 		/// </summary>
 		/// <param name="declaration"><see cref="TypeDeclarationSyntax"/> this <see cref="DefaultParamTypeData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamTypeData"/>.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
-		public DefaultParamTypeData(TypeDeclarationSyntax declaration, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters) : base(declaration, compilation)
-		{
-			_typeParameters = typeParameters;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="DefaultParamTypeData"/> class.
-		/// </summary>
-		/// <param name="declaration"><see cref="TypeDeclarationSyntax"/> this <see cref="DefaultParamTypeData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamTypeData"/>.</param>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> this <see cref="DefaultParamTypeData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
-		/// <param name="inherit">Determines whether the generated members should inherit the original type.</param>
-		/// <param name="targetNamespace">Specifies the namespace where the target member should be generated in.</param>
-		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="partialDeclarations">A collection of <see cref="TypeDeclarationSyntax"/> that represent the partial declarations of the target <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
 		public DefaultParamTypeData(
 			TypeDeclarationSyntax declaration,
 			DefaultParamCompilationData compilation,
-			INamedTypeSymbol symbol,
-			SemanticModel semanticModel,
-			in TypeParameterContainer typeParameters,
-			bool inherit,
-			string targetNamespace,
-			HashSet<int>? newModifierIndexes = null,
-			string[]? modifiers = null,
-			IEnumerable<TypeDeclarationSyntax>? partialDeclarations = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			partialDeclarations,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
+			Properties properties
+		) : base(declaration, compilation, properties)
 		{
-			_typeParameters = typeParameters;
-			NewModifierIndexes = newModifierIndexes;
-			Inherit = inherit;
-			_targetNamespace = targetNamespace;
+		}
+
+		/// <inheritdoc cref="MemberData.Clone"/>
+		public new DefaultParamTypeData Clone()
+		{
+			return (CloneCore() as DefaultParamTypeData)!;
 		}
 
 		/// <summary>
@@ -111,10 +123,58 @@ namespace Durian.Analysis.DefaultParam.Types
 			return new TypeDeclarationBuilder(this, cancellationToken);
 		}
 
+		/// <inheritdoc cref="MemberData.GetProperties"/>
+		public new Properties GetProperties()
+		{
+			return (GetPropertiesCore() as Properties)!;
+		}
+
 		/// <inheritdoc/>
 		public IEnumerable<string> GetUsedNamespaces(CancellationToken cancellationToken = default)
 		{
 			return DefaultParamUtilities.GetUsedNamespaces(this, in _typeParameters, cancellationToken);
+		}
+
+		/// <inheritdoc/>
+		public override void Map(TypeData<TypeDeclarationSyntax>.Properties properties)
+		{
+			base.Map(properties);
+
+			if (properties is Properties props)
+			{
+				props.Inherit = Inherit;
+				props.NewModifierIndices = NewModifierIndices;
+				props.TargetNamespace = TargetNamespace;
+				props.TypeParameters = TypeParameters;
+			}
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData CloneCore()
+		{
+			return new DefaultParamTypeData(Declaration, ParentCompilation, GetProperties());
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties GetPropertiesCore()
+		{
+			Properties properties = new();
+			Map(properties);
+			return properties;
+		}
+
+		/// <inheritdoc/>
+		protected override void SetProperties(MemberData.Properties properties)
+		{
+			base.SetProperties(properties);
+
+			if (properties is Properties props)
+			{
+				_targetNamespace = props.TargetNamespace;
+				_typeParameters = props.TypeParameters;
+				Inherit = props.Inherit;
+				NewModifierIndices = props.NewModifierIndices;
+			}
 		}
 
 		IDefaultParamDeclarationBuilder IDefaultParamTarget.GetDeclarationBuilder(CancellationToken cancellationToken)

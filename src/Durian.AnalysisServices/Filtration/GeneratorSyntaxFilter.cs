@@ -3,12 +3,12 @@
 
 using System.Collections.Generic;
 using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Filtration
 {
 	/// <summary>
-	/// <see cref="ISyntaxFilter"/> that filtrates <see cref="CSharpSyntaxNode"/>s for the specified <see cref="IDurianGenerator"/>.
+	/// <see cref="ISyntaxFilter"/> that filtrates <see cref="SyntaxNode"/>s for the specified <see cref="IDurianGenerator"/>.
 	/// </summary>
 	public abstract class GeneratorSyntaxFilter : SyntaxFilter, IGeneratorSyntaxFilterWithDiagnostics
 	{

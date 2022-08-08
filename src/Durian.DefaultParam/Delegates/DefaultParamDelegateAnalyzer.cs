@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Durian.Analysis.Extensions;
@@ -47,7 +48,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 			}
 
 			if (AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
-				AnalyzeContainingTypes(symbol, compilation, out INamedTypeSymbol[]? containingTypes) &&
+				AnalyzeContainingTypes(symbol, compilation, out ImmutableArray<INamedTypeSymbol> containingTypes) &&
 				AnalyzeTypeParameters(symbol, in typeParameters))
 			{
 				string targetNamespace = GetTargetNamespace(symbol, compilation, attributes, containingTypes);
@@ -83,7 +84,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 			}
 
 			bool isValid = AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes, diagnosticReceiver);
-			isValid &= AnalyzeContainingTypes(symbol, compilation, out INamedTypeSymbol[]? containingTypes, diagnosticReceiver);
+			isValid &= AnalyzeContainingTypes(symbol, compilation, out ImmutableArray<INamedTypeSymbol> containingTypes, diagnosticReceiver);
 			isValid &= AnalyzeTypeParameters(symbol, in typeParameters, diagnosticReceiver);
 
 			if (isValid)
@@ -121,7 +122,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 			out HashSet<int>? applyNew,
 			IDiagnosticReceiver diagnosticReceiver,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null,
+			ImmutableArray<INamedTypeSymbol> containingTypes = default,
 			CancellationToken cancellationToken = default
 		)
 		{
@@ -210,7 +211,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 			string targetNamespace,
 			out HashSet<int>? applyNew,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null,
+			ImmutableArray<INamedTypeSymbol> containingTypes = default,
 			CancellationToken cancellationToken = default
 		)
 		{

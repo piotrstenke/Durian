@@ -551,7 +551,7 @@ $@"using {DurianStrings.MainNamespace};
 using static System.Int32;
 using Ta = Target;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -586,7 +586,7 @@ class Target
 $@"using {DurianStrings.MainNamespace};
 using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -622,7 +622,7 @@ class Target
 $@"using {DurianStrings.MainNamespace};
 using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -667,7 +667,7 @@ partial class Target
 			string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.B()")}
 	void B()
@@ -679,7 +679,7 @@ partial class Test
 			string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.A()")}
 	void A()
@@ -723,7 +723,7 @@ class Other
 			string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Other.B()")}
 	void B()
@@ -735,7 +735,7 @@ partial class Test
 			string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.A()")}
 	void A()
@@ -753,6 +753,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
 partial class Test
@@ -772,7 +773,7 @@ class Target : System.Exception, System.IDisposable
 }}
 ";
 			string expected =
-$@"partial class Test : System.Exception
+$@"internal partial class Test : System.Exception
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -797,6 +798,7 @@ $@"partial class Test : System.Exception
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
 [{PatternAttributeProvider.TypeName}(""System\.Exception"", ""System.Attribute"")]
@@ -817,7 +819,7 @@ class Target : System.Exception, System.IDisposable
 }}
 ";
 			string expected =
-$@"partial class Test : System.Attribute
+$@"internal partial class Test : System.Attribute
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -842,6 +844,7 @@ $@"partial class Test : System.Attribute
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
 partial class Test
@@ -857,7 +860,7 @@ class Target
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -877,6 +880,7 @@ $@"partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target<TType>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 [{PatternAttributeProvider.TypeName}(""TType"", ""T"")]
@@ -893,7 +897,7 @@ class Target<TType> where TType : struct
 }}
 ";
 			string expected =
-$@"partial class Test<T> where T : struct
+$@"internal partial class Test<T> where T : struct
 {{
 	{GetCodeGenerationAttributes("Target<TType>.Method()")}
 	void Method()
@@ -910,6 +914,7 @@ $@"partial class Test<T> where T : struct
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 partial class Test<T>
@@ -925,7 +930,7 @@ class Target<T> where T : struct
 }}
 ";
 			string expected =
-$@"partial class Test<T> where T : struct
+$@"internal partial class Test<T> where T : struct
 {{
 	{GetCodeGenerationAttributes("Target<T>.Method()")}
 	void Method()
@@ -942,6 +947,7 @@ $@"partial class Test<T> where T : struct
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 partial class Test<T>
@@ -957,7 +963,7 @@ class Target<T>
 }}
 ";
 			string expected =
-$@"partial class Test<T>
+$@"internal partial class Test<T>
 {{
 	{GetCodeGenerationAttributes("Target<T>.Method()")}
 	void Method()
@@ -974,6 +980,7 @@ $@"partial class Test<T>
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 partial class Test<T>
@@ -989,7 +996,7 @@ class Target
 }}
 ";
 			string expected =
-$@"partial class Test<T>
+$@"internal partial class Test<T>
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1006,6 +1013,7 @@ $@"partial class Test<T>
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Documentation})]
 partial class Test
@@ -1027,7 +1035,7 @@ class Target
 $@"/// <summary>
 /// Hello there
 /// </summary>
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1044,6 +1052,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Documentation})]
 [{PatternAttributeProvider.TypeName}(""Hello"", ""No"")]
@@ -1066,7 +1075,7 @@ class Target
 $@"/// <summary>
 /// No there
 /// </summary>
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1083,6 +1092,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
 [{PatternAttributeProvider.TypeName}(""DEBUG"", ""RELEASE"")]
@@ -1101,7 +1111,7 @@ class Target
 ";
 			string expected =
 $@"[System.Diagnostics.Conditional(""RELEASE"")]
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1136,7 +1146,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1153,6 +1163,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
 partial class Test
@@ -1170,7 +1181,7 @@ class Target
 ";
 			string expected =
 $@"[System.Diagnostics.Conditional(""DEBUG"")]
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1209,7 +1220,7 @@ class Other
 			string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Target
+internal partial class Target
 {{
 	{GetCodeGenerationAttributes("Other.A()")}
 	void A()
@@ -1221,7 +1232,7 @@ partial class Target
 			string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.A()")}
 	void A()
@@ -1260,7 +1271,7 @@ class Other
 			string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Target
+internal partial class Target
 {{
 	{GetCodeGenerationAttributes("Other.A()")}
 	void A()
@@ -1272,7 +1283,7 @@ partial class Target
 			string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.A()")}
 	void A()
@@ -1289,6 +1300,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseInterfaces})]
 partial class Test
@@ -1308,7 +1320,7 @@ class Target : System.Exception, System.IDisposable
 }}
 ";
 			string expected =
-$@"partial class Test : System.IDisposable
+$@"internal partial class Test : System.IDisposable
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1333,6 +1345,7 @@ $@"partial class Test : System.IDisposable
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseInterfaces})]
 [{PatternAttributeProvider.TypeName}(""System.IDisposable"", ""System.ICloneable"")]
@@ -1357,7 +1370,7 @@ class Target : System.Exception, System.IDisposable
 }}
 ";
 			string expected =
-$@"partial class Test : System.ICloneable
+$@"internal partial class Test : System.ICloneable
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1382,6 +1395,7 @@ $@"partial class Test : System.ICloneable
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseInterfaces})]
 partial class Test
@@ -1397,7 +1411,7 @@ class Target
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1417,6 +1431,7 @@ $@"partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
 partial class Test
@@ -1443,7 +1458,7 @@ partial class Target
 ";
 			string expected1 =
 $@"[System.Diagnostics.Conditional(""DEBUG"")]
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method1()")}
 	void Method1()
@@ -1454,7 +1469,7 @@ partial class Test
 ";
 			string expected2 =
 $@"[System.Serializable]
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method2()")}
 	void Method2()
@@ -1471,6 +1486,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = default)]
 partial class Test
@@ -1486,7 +1502,7 @@ class Target
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1503,6 +1519,7 @@ $@"partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = default, {CopyFromTypeAttributeProvider.AddUsings} = new string[] {{ ""System"" }})]
 partial class Test
@@ -1520,7 +1537,7 @@ class Target
 			string expected =
 $@"using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1561,7 +1578,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Target()")}
 	Target()
@@ -1606,7 +1623,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.A()")}
 	void C()
@@ -1641,7 +1658,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.A()")}
 	void B()
@@ -1684,7 +1701,7 @@ class Other
 			string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.A1()")}
 	void A1()
@@ -1696,7 +1713,7 @@ partial class Test
 			string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Other.A2()")}
 	void A2()
@@ -1731,7 +1748,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.A()")}
 	void B()
@@ -1777,7 +1794,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	/// <summary>
 	/// <see cref=""int""/>.
@@ -1833,7 +1850,7 @@ class Other
 			string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.A1()")}
 	void B1()
@@ -1845,7 +1862,7 @@ partial class Test
 			string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Other.A2()")}
 	void B2()
@@ -1889,7 +1906,7 @@ partial class Target
 			string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method1()")}
 	void Method1()
@@ -1901,7 +1918,7 @@ partial class Test
 			string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method2()")}
 	void Method2()
@@ -1918,6 +1935,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 /// <summary>
 /// ABC
@@ -1940,8 +1958,9 @@ class Target
 ";
 			string expected =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -1958,6 +1977,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 partial class Test<T> where T : class
@@ -1974,8 +1994,9 @@ class Target<T> where T : struct
 ";
 			string expected =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
-partial class Test<T>
+internal partial class Test<T>
 {{
 	{GetCodeGenerationAttributes("Target<T>.Method()")}
 	void Method()
@@ -1992,6 +2013,7 @@ partial class Test<T>
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 partial class Test
@@ -2008,8 +2030,9 @@ class Target<T> where T : struct
 ";
 			string expected =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target<T>.Method()")}
 	void Method()
@@ -2026,6 +2049,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 partial class Test : System.Attribute
@@ -2042,8 +2066,9 @@ class Target : System.Exception
 ";
 			string expected =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2063,6 +2088,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 partial interface ITest
@@ -2079,45 +2105,9 @@ class Target : System.Exception
 ";
 			string expected =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
-partial interface ITest
-{{
-	{GetCodeGenerationAttributes("Target.Method()")}
-	void Method()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			SingleGeneratorTestResult runResult = RunGenerator(input);
-
-			Assert.True(runResult.SucceededAndDoesNotContainDiagnostics(DUR0226_CannotApplyBaseType));
-			Assert.True(runResult.Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_IncludesAllNonStandardNodes_And_TargetHasBaseType_And_IsSealed()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
-sealed partial class Test
-{{
-}}
-
-class Target : System.Exception
-{{
-	void Method()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			string expected =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
+internal partial interface ITest
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2137,6 +2127,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 static partial class Test
@@ -2153,8 +2144,9 @@ class Target : System.Exception
 ";
 			string expected =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
-partial class Test
+internal static partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2174,6 +2166,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.All})]
 partial struct Test
@@ -2190,8 +2183,9 @@ class Target : System.Exception
 ";
 			string expected =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
-partial struct Test
+internal partial struct Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2243,7 +2237,7 @@ partial class Target
 			string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2255,7 +2249,7 @@ partial class Test
 			string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Other()")}
 	void Other()
@@ -2297,7 +2291,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	/// <inheritdoc cref=""Target.Method()""/>
 	{ GetCodeGenerationAttributes("Target.Method()")}
@@ -2349,7 +2343,7 @@ partial class Target
 			string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2361,7 +2355,7 @@ partial class Test
 			string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Other()")}
 	void Other()
@@ -2405,7 +2399,7 @@ partial class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Other()")}
 	void Other()
@@ -2441,7 +2435,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{ GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2474,7 +2468,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -2520,7 +2514,7 @@ using T = N2.Target;
 
 namespace N1
 {{
-	partial class Test
+	internal partial class Test
 	{{
 		{GetCodeGenerationAttributes("N2.Target.Method()", 2)}
 		void Method()
@@ -2555,7 +2549,7 @@ class Target<T>
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target<T>.Method(T)")}
 	void Method(int value)
@@ -2594,7 +2588,7 @@ class Outer<T, U>
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Outer<T, U>.Target<X>.Method(T, U, X)")}
 	void Method(T a, U b, int c)
@@ -2633,7 +2627,7 @@ class Target<T, U>
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target<T, U>.Method(T)")}
 	void Method(T t)
@@ -2677,7 +2671,7 @@ $@"using {DurianStrings.MainNamespace};
 
 namespace N1
 {{
-	partial class Test
+	internal partial class Test
 	{{
 		{GetCodeGenerationAttributes("Target.Method()", 2)}
 		void Method()
@@ -2712,7 +2706,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()", 2)}
 	void Method()
@@ -2751,7 +2745,7 @@ $@"using {DurianStrings.MainNamespace};
 
 namespace N1
 {{
-	partial class Test
+	internal partial class Test
 	{{
 		{GetCodeGenerationAttributes("Target.Method()", 2)}
 		void Method()
@@ -2796,7 +2790,7 @@ using N2;
 
 namespace N1
 {{
-	partial class Test
+	internal partial class Test
 	{{
 		{GetCodeGenerationAttributes("N2.Target.Method()", 2)}
 		void Method()
@@ -2840,7 +2834,7 @@ $@"using {DurianStrings.MainNamespace};
 
 namespace N1
 {{
-	partial class Test
+	internal partial class Test
 	{{
 		{GetCodeGenerationAttributes("N1.N2.Target.Method()", 2)}
 		void Method()
@@ -2878,7 +2872,7 @@ class Outer
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Outer.Target.Method()")}
 	void Method()
@@ -2924,7 +2918,7 @@ using static Outer;
 
 namespace N1
 {{
-	partial class Test
+	internal partial class Test
 	{{
 		{GetCodeGenerationAttributes("Outer.Target.Method()", 2)}
 		void Method()
@@ -2966,7 +2960,7 @@ $@"using {DurianStrings.MainNamespace};
 
 using O = Outer;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Outer.Target.Method()")}
 	void Method()
@@ -2999,7 +2993,7 @@ partial class Test
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Inner.Method()")}
 	void Method()
@@ -3041,7 +3035,7 @@ $@"using {DurianStrings.MainNamespace};
 
 namespace N1
 {{
-	partial class Test
+	internal partial class Test
 	{{
 		{GetCodeGenerationAttributes("N1.Target.Method()", 2)}
 		void Method()
@@ -3080,7 +3074,7 @@ class Outer<T, U>
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Outer<T, U>.Target.Method(T, U)")}
 	void Method(int t, string u)
@@ -3119,7 +3113,7 @@ class Outer<T, U>
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Outer<T, U>.Target.Method(T, U)")}
 	void Method(T t, U u)
@@ -3154,7 +3148,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -3200,7 +3194,7 @@ partial class Target
 			string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -3212,7 +3206,7 @@ partial class Test
 			string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method(string)")}
 	void Method(string a)
@@ -3252,7 +3246,7 @@ class Outer
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Outer.Target.Method()")}
 	void Method()
@@ -3289,7 +3283,7 @@ namespace N1.N2
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("N1.N2.Target.Method()")}
 	void Method()
@@ -3326,7 +3320,7 @@ namespace N1.N2
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("N1.N2.Target.Method()")}
 	void Method()
@@ -3361,7 +3355,7 @@ class Target<T, U>
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target<T, U>.Method(T, U)")}
 	void Method(T t, U u)
@@ -3445,7 +3439,7 @@ class Target : System.IDisposable
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Target()")}
 	public Test()
@@ -3552,7 +3546,7 @@ class Target
 $@"using {DurianStrings.MainNamespace};
 using System;
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -3572,6 +3566,7 @@ partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
 partial class Test : System.Attribute
@@ -3587,7 +3582,7 @@ class Target : System.Exception
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -3607,6 +3602,7 @@ $@"partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
 partial interface ITest
@@ -3622,42 +3618,7 @@ class Target : System.Exception
 }}
 ";
 			string expected =
-$@"partial interface ITest
-{{
-	{GetCodeGenerationAttributes("Target.Method()")}
-	void Method()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			SingleGeneratorTestResult runResult = RunGenerator(input);
-
-			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0226_CannotApplyBaseType.Id));
-			Assert.True(runResult.Compare(expected));
-		}
-
-		[Fact]
-		public void Warning_When_CopiesBaseType_And_IsSealed()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-[{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
-sealed partial class Test
-{{
-}}
-
-class Target : System.Exception
-{{
-	void Method()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			string expected =
-$@"partial class Test
+$@"internal partial interface ITest
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -3677,6 +3638,7 @@ $@"partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
 static partial class Test
@@ -3692,7 +3654,7 @@ class Target : System.Exception
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal static partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	static void Method()
@@ -3712,6 +3674,7 @@ $@"partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.BaseType})]
 partial struct Test
@@ -3727,7 +3690,7 @@ class Target : System.Exception
 }}
 ";
 			string expected =
-$@"partial struct Test
+$@"internal partial struct Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -3747,6 +3710,7 @@ $@"partial struct Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 [{PatternAttributeProvider.TypeName}(""TType"", ""T"")]
@@ -3763,7 +3727,7 @@ class Target<T> where T : struct
 }}
 ";
 			string expected =
-$@"partial class Test<T>
+$@"internal partial class Test<T>
 {{
 	{GetCodeGenerationAttributes("Target<T>.Method()")}
 	void Method()
@@ -3783,6 +3747,7 @@ $@"partial class Test<T>
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target<T>"", {CopyFromTypeAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Constraints})]
 [{PatternAttributeProvider.TypeName}(""TType"", ""T"")]
@@ -3799,7 +3764,7 @@ class Target<T> where T : struct
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target<T>.Method()")}
 	void Method()
@@ -3819,6 +3784,7 @@ $@"partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 /// <summary>
 /// hello there
@@ -3840,7 +3806,7 @@ class Target
 }}
 ";
 			string expected =
-$@"partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -3882,7 +3848,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.A()")}
 	void A()
@@ -3919,7 +3885,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -3956,7 +3922,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -3994,7 +3960,7 @@ class Target
 			string expected =
  $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -4032,7 +3998,7 @@ class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -4071,7 +4037,7 @@ partial class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
@@ -4110,7 +4076,7 @@ partial class Target
 			string expected =
 $@"using {DurianStrings.MainNamespace};
 
-partial class Test
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()

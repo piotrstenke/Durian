@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Logging
 {
@@ -28,9 +27,9 @@ namespace Durian.Analysis.Logging
 		public IGeneratorLogHandler LogHandler { get; }
 
 		/// <summary>
-		/// Target <see cref="CSharpSyntaxNode"/>.
+		/// Target <see cref="SyntaxNode"/>.
 		/// </summary>
-		public CSharpSyntaxNode? Node { get; private set; }
+		public SyntaxNode? Node { get; private set; }
 
 		/// <summary>
 		/// Determines what to output when a <see cref="SyntaxNode"/> is being logged.
@@ -94,7 +93,7 @@ namespace Durian.Analysis.Logging
 
 			Diagnostic[]? diagnostics;
 			string hintName;
-			CSharpSyntaxNode node;
+			SyntaxNode node;
 			NodeOutput nodeOutput;
 
 			lock (_bag)
@@ -147,7 +146,7 @@ namespace Durian.Analysis.Logging
 		}
 
 		/// <inheritdoc/>
-		public virtual void SetTargetNode(CSharpSyntaxNode? node, string? hintName)
+		public virtual void SetTargetNode(SyntaxNode? node, string? hintName)
 		{
 			lock (_bag)
 			{

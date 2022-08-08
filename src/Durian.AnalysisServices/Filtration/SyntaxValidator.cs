@@ -35,7 +35,7 @@ namespace Durian.Analysis.Filtration
 			CancellationToken cancellationToken = default
 		)
 		{
-			if (GetCandidateNodes(syntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
+			if (GetCandidateNodes(syntaxReceiver) is not IEnumerable<SyntaxNode> list)
 			{
 				return Array.Empty<IMemberData>();
 			}
@@ -46,7 +46,7 @@ namespace Durian.Analysis.Filtration
 		/// <inheritdoc/>
 		public sealed override IEnumerable<IMemberData> Filtrate(
 			ICompilationData compilation,
-			IEnumerable<CSharpSyntaxNode> collectedNodes,
+			IEnumerable<SyntaxNode> collectedNodes,
 			IDiagnosticReceiver diagnosticReceiver,
 			CancellationToken cancellationToken = default
 		)
@@ -66,7 +66,7 @@ namespace Durian.Analysis.Filtration
 			CancellationToken cancellationToken = default
 		)
 		{
-			if (GetCandidateNodes(syntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
+			if (GetCandidateNodes(syntaxReceiver) is not IEnumerable<SyntaxNode> list)
 			{
 				return Array.Empty<IMemberData>();
 			}
@@ -77,7 +77,7 @@ namespace Durian.Analysis.Filtration
 		/// <inheritdoc/>
 		public sealed override IEnumerable<IMemberData> Filtrate(
 			ICompilationData compilation,
-			IEnumerable<CSharpSyntaxNode> collectedNodes,
+			IEnumerable<SyntaxNode> collectedNodes,
 			CancellationToken cancellationToken = default
 		)
 		{
@@ -92,7 +92,7 @@ namespace Durian.Analysis.Filtration
 		/// <inheritdoc/>
 		public override IEnumerable<IMemberData> Filtrate(IGeneratorPassContext context)
 		{
-			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
+			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<SyntaxNode> list)
 			{
 				return Array.Empty<IMemberData>();
 			}
@@ -125,7 +125,7 @@ namespace Durian.Analysis.Filtration
 		/// <inheritdoc/>
 		public override IEnumerator<IMemberData> GetEnumerator(IGeneratorPassContext context)
 		{
-			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
+			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<SyntaxNode> list)
 			{
 				return Enumerable.Empty<IMemberData>().GetEnumerator();
 			}
@@ -146,7 +146,7 @@ namespace Durian.Analysis.Filtration
 		}
 
 		/// <summary>
-		/// Checks whether a <see cref="SemanticModel"/> and a <see cref="ISymbol"/> can be created from the a given <see cref="CSharpSyntaxNode"/>.
+		/// Checks whether a <see cref="SemanticModel"/> and a <see cref="ISymbol"/> can be created from the a given <see cref="SyntaxNode"/>.
 		/// </summary>
 		/// <param name="validationContext"><see cref="PreValidationContext"/> that contains all data necessary to retrieve the required data.</param>
 		/// <param name="context">Returned data.</param>
@@ -197,10 +197,10 @@ namespace Durian.Analysis.Filtration
 		}
 
 		/// <summary>
-		/// Returns a collection of candidate <see cref="CSharpSyntaxNode"/> collected by the specified <paramref name="syntaxReceiver"/>.
+		/// Returns a collection of candidate <see cref="SyntaxNode"/> collected by the specified <paramref name="syntaxReceiver"/>.
 		/// </summary>
-		/// <param name="syntaxReceiver"><see cref="IDurianSyntaxReceiver"/> to get the candidate <see cref="CSharpSyntaxNode"/>s from.</param>
-		protected virtual IEnumerable<CSharpSyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
+		/// <param name="syntaxReceiver"><see cref="IDurianSyntaxReceiver"/> to get the candidate <see cref="SyntaxNode"/>s from.</param>
+		protected virtual IEnumerable<SyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
 		{
 			return syntaxReceiver.GetNodes();
 		}

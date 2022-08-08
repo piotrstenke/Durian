@@ -114,12 +114,7 @@ namespace Durian.Analysis.DefaultParam
 			CancellationToken cancellationToken
 		)
 		{
-			if (typeParameters is null)
-			{
-				return new TypeParameterContainer(null);
-			}
-
-			return new TypeParameterContainer(typeParameters.Parameters.Select(p => TypeParameterData.CreateFrom(p, semanticModel, compilation, cancellationToken)));
+			return new TypeParameterContainer(typeParameters?.Parameters.Select(p => TypeParameterData.CreateFrom(p, semanticModel, compilation, cancellationToken)));
 		}
 	}
 }

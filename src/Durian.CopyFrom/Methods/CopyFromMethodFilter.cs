@@ -8,7 +8,6 @@ using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Durian.Analysis.CopyFrom.CopyFromAnalyzer;
 
@@ -160,7 +159,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 		}
 
 		/// <inheritdoc/>
-		protected override IEnumerable<CSharpSyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
+		protected override IEnumerable<SyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
 		{
 			if (syntaxReceiver is not CopyFromSyntaxReceiver sr)
 			{

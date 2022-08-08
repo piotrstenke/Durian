@@ -21,7 +21,7 @@ namespace Durian.Analysis.Logging
 	[DebuggerDisplay("Current = {Current}")]
 	public struct LoggableFilterEnumerator<T> : IFilterEnumerator<T>, IEnumerator<IMemberData> where T : ISyntaxValidationContext
 	{
-		internal readonly IEnumerator<CSharpSyntaxNode> _nodes;
+		internal readonly IEnumerator<SyntaxNode> _nodes;
 
 		/// <inheritdoc/>
 		public readonly ICompilationData Compilation { get; }
@@ -30,7 +30,7 @@ namespace Durian.Analysis.Logging
 		public IMemberData? Current { readonly get; private set; }
 
 		/// <summary>
-		/// <see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s.
+		/// <see cref="IHintNameProvider"/> that creates hint names for the <see cref="SyntaxNode"/>s.
 		/// </summary>
 		public readonly IHintNameProvider HintNameProvider { get; }
 
@@ -51,13 +51,13 @@ namespace Durian.Analysis.Logging
 		/// Initializes a new instance of the <see cref="LoggableFilterEnumerator{T}"/> struct.
 		/// </summary>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
-		/// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="nodes">A collection of <see cref="SyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
 		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <paramref name="nodes"/>.</param>
 		public LoggableFilterEnumerator(
 			ICompilationData compilation,
-			IEnumerable<CSharpSyntaxNode> nodes,
+			IEnumerable<SyntaxNode> nodes,
 			ISyntaxValidatorWithDiagnostics<T> validator,
 			INodeDiagnosticReceiver logReceiver,
 			IHintNameProvider hintNameProvider
@@ -68,11 +68,11 @@ namespace Durian.Analysis.Logging
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggableFilterEnumerator{T}"/> struct.
 		/// </summary>
-		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="nodeProvider"/>.</param>
-		/// <param name="nodeProvider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="SyntaxNode"/>s provided by the <paramref name="nodeProvider"/>.</param>
+		/// <param name="nodeProvider"><see cref="INodeProvider"/> that creates an array of <see cref="SyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
 		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
-		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="nodeProvider"/>.</param>
+		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <see cref="SyntaxNode"/>s provided by the <paramref name="nodeProvider"/>.</param>
 		public LoggableFilterEnumerator(
 			ICompilationData compilation,
 			INodeProvider nodeProvider,
@@ -87,13 +87,13 @@ namespace Durian.Analysis.Logging
 		/// Initializes a new instance of the <see cref="LoggableFilterEnumerator{T}"/> struct.
 		/// </summary>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
-		/// <param name="nodes">An enumerator that iterates through a collection of <see cref="CSharpSyntaxNode"/>s.</param>
+		/// <param name="nodes">An enumerator that iterates through a collection of <see cref="SyntaxNode"/>s.</param>
 		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
 		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
 		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <paramref name="nodes"/>.</param>
 		public LoggableFilterEnumerator(
 			ICompilationData compilation,
-			IEnumerator<CSharpSyntaxNode> nodes,
+			IEnumerator<SyntaxNode> nodes,
 			ISyntaxValidatorWithDiagnostics<T> validator,
 			INodeDiagnosticReceiver logReceiver,
 			IHintNameProvider hintNameProvider
@@ -113,7 +113,7 @@ namespace Durian.Analysis.Logging
 		{
 			while (_nodes.MoveNext())
 			{
-				CSharpSyntaxNode node = _nodes.Current;
+				SyntaxNode node = _nodes.Current;
 
 				if (node is null)
 				{

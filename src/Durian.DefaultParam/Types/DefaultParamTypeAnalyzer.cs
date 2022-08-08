@@ -45,7 +45,7 @@ namespace Durian.Analysis.DefaultParam.Types
 			}
 
 			ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
-			INamedTypeSymbol[] containingTypes = symbol.GetContainingTypes().ToArray();
+			ImmutableArray<INamedTypeSymbol> containingTypes = symbol.GetContainingTypes().ToImmutableArray();
 
 			bool isValid = AnalyzeAgainstProhibitedAttributes(symbol, compilation, diagnosticReceiver, attributes);
 			isValid &= AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver, containingTypes);
@@ -109,7 +109,7 @@ namespace Durian.Analysis.DefaultParam.Types
 			return syntaxes.Length <= 1 && !syntaxes[0].Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
 		}
 
-		/// <inheritdoc cref="Delegates.DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, out HashSet{int}?, IDiagnosticReceiver, IEnumerable{AttributeData}?, INamedTypeSymbol[], CancellationToken)"/>
+		/// <inheritdoc cref="Delegates.DefaultParamDelegateAnalyzer.AnalyzeCollidingMembers(INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, out HashSet{int}?, IDiagnosticReceiver, IEnumerable{AttributeData}?, ImmutableArray{INamedTypeSymbol}, CancellationToken)"/>
 		public static bool AnalyzeCollidingMembers(
 			INamedTypeSymbol symbol,
 			in TypeParameterContainer typeParameters,
@@ -118,7 +118,7 @@ namespace Durian.Analysis.DefaultParam.Types
 			out HashSet<int>? applyNew,
 			IDiagnosticReceiver diagnosticReceiver,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null,
+			ImmutableArray<INamedTypeSymbol> containingTypes = default,
 			CancellationToken cancellationToken = default
 		)
 		{
@@ -163,7 +163,7 @@ namespace Durian.Analysis.DefaultParam.Types
 			);
 		}
 
-		/// <inheritdoc cref="AnalyzeCollidingMembers(INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, out HashSet{int}?, IDiagnosticReceiver, IEnumerable{AttributeData}, INamedTypeSymbol[], CancellationToken)"/>
+		/// <inheritdoc cref="AnalyzeCollidingMembers(INamedTypeSymbol, in TypeParameterContainer, DefaultParamCompilationData, string, out HashSet{int}?, IDiagnosticReceiver, IEnumerable{AttributeData}, ImmutableArray{INamedTypeSymbol}, CancellationToken)"/>
 		public static bool AnalyzeCollidingMembers(
 			INamedTypeSymbol symbol,
 			in TypeParameterContainer typeParameters,
@@ -171,7 +171,7 @@ namespace Durian.Analysis.DefaultParam.Types
 			string targetNamespace,
 			out HashSet<int>? applyNew,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null,
+			ImmutableArray<INamedTypeSymbol> containingTypes = default,
 			CancellationToken cancellationToken = default
 		)
 		{
@@ -213,7 +213,7 @@ namespace Durian.Analysis.DefaultParam.Types
 			INamedTypeSymbol symbol,
 			DefaultParamCompilationData compilation,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null
+			ImmutableArray<INamedTypeSymbol> containingTypes = default
 		)
 		{
 			InitializeAttributes(ref attributes, symbol);
@@ -239,7 +239,7 @@ namespace Durian.Analysis.DefaultParam.Types
 		public static bool HasInheritConventionOnContainingTypes(
 			INamedTypeSymbol symbol,
 			DefaultParamCompilationData compilation,
-			INamedTypeSymbol[]? containingTypes = null
+			ImmutableArray<INamedTypeSymbol> containingTypes = default
 		)
 		{
 			InitializeContainingTypes(ref containingTypes, symbol);
@@ -268,7 +268,7 @@ namespace Durian.Analysis.DefaultParam.Types
 			DefaultParamCompilationData compilation,
 			IDiagnosticReceiver diagnosticReceiver,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null
+			ImmutableArray<INamedTypeSymbol> containingTypes = default
 		)
 		{
 			InitializeAttributes(ref attributes, symbol);
@@ -305,7 +305,7 @@ namespace Durian.Analysis.DefaultParam.Types
 			INamedTypeSymbol symbol,
 			DefaultParamCompilationData compilation,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null
+			ImmutableArray<INamedTypeSymbol> containingTypes = default
 		)
 		{
 			InitializeAttributes(ref attributes, symbol);

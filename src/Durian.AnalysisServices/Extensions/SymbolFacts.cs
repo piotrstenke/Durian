@@ -1068,6 +1068,21 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Determines whether the target <paramref name="type"/> inherits or implements the <paramref name="baseType"/>.
+		/// </summary>
+		/// <param name="type">Type to check if inherits the <paramref name="baseType"/>.</param>
+		/// <param name="baseType">Base type to check if is inherited by the target <paramref name="type"/>.</param>
+		public static bool InheritsOrImplements(this ITypeSymbol type, ITypeSymbol baseType)
+		{
+			if(baseType.TypeKind == TypeKind.Interface)
+			{
+				return type.Implements(baseType);
+			}
+
+			return type.Inherits(baseType);
+		}
+
+		/// <summary>
 		/// Determines whether the specified <paramref name="method"/> is an accessor of the given <paramref name="event"/>.
 		/// </summary>
 		/// <param name="method"><see cref="IMethodSymbol"/> to check if is an accessor of the given <paramref name="event"/>.</param>
@@ -2926,11 +2941,6 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to check whether can have an explicit base type.</param>
 		public static bool SupportsExplicitBaseType(this INamedTypeSymbol type)
 		{
-			if (type.TypeKind == TypeKind.Enum || type.TypeKind == TypeKind.Interface)
-			{
-				return true;
-			}
-
 			return type.TypeKind == TypeKind.Class && !type.IsStatic;
 		}
 

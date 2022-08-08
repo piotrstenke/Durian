@@ -337,7 +337,7 @@ namespace Durian.Analysis
 		/// <summary>
 		/// Writes a list of base types of the specified <paramref name="type"/>.
 		/// </summary>
-		/// <param name="type"><see cref="INamedTypeSymbol"/> to write the base type list of.</param>
+		/// <param name="type"><see cref="INamedTypeSymbol"/> to write the base types list of.</param>
 		public CodeBuilder BaseTypeList(INamedTypeSymbol type)
 		{
 			InitBuilder();
@@ -423,7 +423,9 @@ namespace Durian.Analysis
 		/// Begins declaration of a class.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
-		public CodeBuilder Class(INamedTypeSymbol type)
+		/// <param name="baseTypeList">Determines whether to also write the base types of the class.</param>
+		/// <param name="constraints">Determines whether to also write the constraints of the class.</param>
+		public CodeBuilder Class(INamedTypeSymbol type, bool baseTypeList = true, bool constraints = true)
 		{
 			Indent();
 			Accessibility(type);
@@ -451,10 +453,18 @@ namespace Durian.Analysis
 			if (type.IsGenericType)
 			{
 				TypeParameterList(type.TypeParameters);
-				BaseTypeList(type);
-				ConstraintList(type.TypeParameters);
+
+				if(baseTypeList)
+				{
+					BaseTypeList(type);
+				}
+
+				if(constraints)
+				{
+					ConstraintList(type.TypeParameters);
+				}
 			}
-			else
+			else if(baseTypeList)
 			{
 				BaseTypeList(type);
 			}
@@ -864,21 +874,23 @@ namespace Durian.Analysis
 		/// Begins declaration of a type of any valid kind.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
+		/// <param name="baseTypeList">Determines whether to also write the base types list of the type.</param>
+		/// <param name="constraints">Determines whether to also write the constraints of the type.</param>
 		/// <exception cref="ArgumentException"><paramref name="type"/> is of kind does not support declarations.</exception>
-		public CodeBuilder Declaration(INamedTypeSymbol type)
+		public CodeBuilder Declaration(INamedTypeSymbol type, bool baseTypeList = true, bool constraints = true)
 		{
 			if (type.IsRecord)
 			{
-				return Record(type);
+				return Record(type, baseTypeList, constraints);
 			}
 
 			return type.TypeKind switch
 			{
-				TypeKind.Class => Class(type),
-				TypeKind.Struct => Struct(type),
-				TypeKind.Enum => Enum(type),
-				TypeKind.Delegate => Delegate(type),
-				TypeKind.Interface => Interface(type),
+				TypeKind.Class => Class(type, baseTypeList, constraints),
+				TypeKind.Struct => Struct(type, baseTypeList, constraints),
+				TypeKind.Enum => Enum(type, baseTypeList),
+				TypeKind.Delegate => Delegate(type, constraints),
+				TypeKind.Interface => Interface(type, baseTypeList, constraints),
 				_ => throw new ArgumentException($"Type '{type}' is of kind that does not support declarations", nameof(type))
 			};
 		}
@@ -912,8 +924,9 @@ namespace Durian.Analysis
 		/// Writes a delegate declaration.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to write the declaration of.</param>
+		/// <param name="constraints">Determines whether to also write the constraints of the struct.</param>
 		/// <exception cref="ArgumentException"><see cref="INamedTypeSymbol.DelegateInvokeMethod"/> cannot be <see langword="null"/>.</exception>
-		public CodeBuilder Delegate(INamedTypeSymbol type)
+		public CodeBuilder Delegate(INamedTypeSymbol type, bool constraints = true)
 		{
 			if (type.DelegateInvokeMethod is null)
 			{
@@ -935,7 +948,11 @@ namespace Durian.Analysis
 			{
 				TypeParameterList(type.TypeParameters, true);
 				ParameterList(type.DelegateInvokeMethod);
-				ConstraintList(type.TypeParameters);
+
+				if(constraints)
+				{
+					ConstraintList(type.TypeParameters);
+				}
 			}
 			else
 			{
@@ -1012,15 +1029,16 @@ namespace Durian.Analysis
 		/// Begins declaration of an enum.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
-		/// <param name="explicitInt32">Determines whether to write the base type <see cref="int"/> type.</param>
-		public CodeBuilder Enum(INamedTypeSymbol type, bool explicitInt32)
+		/// <param name="baseTypeList">Determines whether to also write the base types of the enum.</param>
+		/// <param name="explicitInt32">Determines whether to write the base types <see cref="int"/> type.</param>
+		public CodeBuilder Enum(INamedTypeSymbol type, bool baseTypeList, bool explicitInt32 = false)
 		{
 			Indent();
 			Accessibility(type);
 			TextBuilder.Append("enum ");
 			SimpleName_Internal(type);
 
-			if (type.EnumUnderlyingType is not null && (!explicitInt32 || type.EnumUnderlyingType.SpecialType != SpecialType.System_Int32))
+			if (baseTypeList && type.EnumUnderlyingType is not null && (!explicitInt32 || type.EnumUnderlyingType.SpecialType != SpecialType.System_Int32))
 			{
 				Space();
 				TextBuilder.Append(':');
@@ -1526,7 +1544,9 @@ namespace Durian.Analysis
 		/// Begins declaration of an interface.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
-		public CodeBuilder Interface(INamedTypeSymbol type)
+		/// <param name="baseTypeList">Determines whether to also write the base types of the interface.</param>
+		/// <param name="constraints">Determines whether to also write the constraints of the inteface.</param>
+		public CodeBuilder Interface(INamedTypeSymbol type, bool baseTypeList = true, bool constraints = true)
 		{
 			Indent();
 			Accessibility(type);
@@ -1537,16 +1557,7 @@ namespace Durian.Analysis
 			TextBuilder.Append("interface ");
 			SimpleName_Internal(type);
 
-			if (type.IsGenericType)
-			{
-				TypeParameterList(type.TypeParameters, true);
-				BaseTypeList(type.Interfaces);
-				ConstraintList(type.TypeParameters);
-			}
-			else
-			{
-				BaseTypeList(type.Interfaces);
-			}
+			TypeListsAndConstraints(type, baseTypeList, constraints, true);
 
 			return BeginBlock();
 		}
@@ -2224,10 +2235,12 @@ namespace Durian.Analysis
 		/// Begins declaration of a record.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
+		/// <param name="baseTypeList">Determines whether to also write the base types of the record.</param>
+		/// <param name="constraints">Determines whether to also write the constraints of the class.</param>
 		/// <param name="body">Determines whether to begin a declaration body.</param>
-		public CodeBuilder Record(INamedTypeSymbol type, bool body = true)
+		public CodeBuilder Record(INamedTypeSymbol type, bool baseTypeList = true, bool constraints = true, bool body = true)
 		{
-			return Record(type, Style.RecordStyle, body);
+			return Record(type, Style.RecordStyle, baseTypeList, constraints, body);
 		}
 
 		/// <summary>
@@ -2235,8 +2248,10 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
 		/// <param name="style">Determines the record declaration is written.</param>
+		/// <param name="baseTypeList">Determines whether to also write the base types of the interface.</param>
+		/// <param name="constraints">Determines whether to also write the constraints of the record.</param>
 		/// <param name="body">Determines whether to begin a declaration body.</param>
-		public CodeBuilder Record(INamedTypeSymbol type, RecordStyle style, bool body = true)
+		public CodeBuilder Record(INamedTypeSymbol type, RecordStyle style, bool baseTypeList = true, bool constraints = true, bool body = true)
 		{
 			Indent();
 			Accessibility(type);
@@ -2277,7 +2292,12 @@ namespace Durian.Analysis
 				ParameterList(ctor);
 			}
 
-			if (type.IsGenericType)
+			if(baseTypeList)
+			{
+				BaseTypeList(type);
+			}
+
+			if (constraints && type.IsGenericType)
 			{
 				ConstraintList(type.TypeParameters);
 			}
@@ -2397,7 +2417,9 @@ namespace Durian.Analysis
 		/// Begins declaration of a struct.
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
-		public CodeBuilder Struct(INamedTypeSymbol type)
+		/// <param name="baseTypeList">Determines whether to also write the base types of the struct.</param>
+		/// <param name="constraints">Determines whether to also write the constraints of the struct.</param>
+		public CodeBuilder Struct(INamedTypeSymbol type, bool baseTypeList = true, bool constraints = true)
 		{
 			Indent();
 			Accessibility(type);
@@ -2419,16 +2441,7 @@ namespace Durian.Analysis
 			TextBuilder.Append("struct ");
 			SimpleName_Internal(type);
 
-			if (type.IsGenericType)
-			{
-				TypeParameterList(type.TypeParameters);
-				BaseTypeList(type);
-				ConstraintList(type.TypeParameters);
-			}
-			else
-			{
-				BaseTypeList(type);
-			}
+			TypeListsAndConstraints(type, baseTypeList, constraints);
 
 			return BeginBlock();
 		}
@@ -3041,6 +3054,28 @@ namespace Durian.Analysis
 			if (symbol.IsUnsafe())
 			{
 				TextBuilder.Append("unsafe ");
+			}
+		}
+
+		private void TypeListsAndConstraints(INamedTypeSymbol type, bool baseTypeList, bool constraints, bool variance = false)
+		{
+			if (type.IsGenericType)
+			{
+				TypeParameterList(type.TypeParameters, variance);
+
+				if (baseTypeList)
+				{
+					BaseTypeList(type);
+				}
+
+				if (constraints)
+				{
+					ConstraintList(type.TypeParameters);
+				}
+			}
+			else if (baseTypeList)
+			{
+				BaseTypeList(type);
 			}
 		}
 

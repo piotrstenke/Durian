@@ -16,18 +16,71 @@ namespace Durian.Analysis.DefaultParam.Methods
 	/// </summary>
 	public class DefaultParamMethodData : MethodData, IDefaultParamTarget
 	{
-		private readonly TypeParameterContainer _typeParameters;
+		/// <summary>
+		/// Contains data that can be passed to a <see cref="DefaultParamMethodData"/>.
+		/// </summary>
+		public new sealed class Properties : MethodData.Properties
+		{
+			/// <inheritdoc cref="DefaultParamMethodData.CallInsteadOfCopying"/>
+			public bool CallInsteadOfCopying { get; set; }
+
+			/// <inheritdoc cref="DefaultParamMethodData.NewModifierIndices"/>
+			public HashSet<int>? NewModifierIndices { get; set; }
+
+			/// <inheritdoc cref="DefaultParamMethodData.TargetNamespace"/>
+			public string? TargetNamespace { get; set; }
+
+			/// <inheritdoc cref="DefaultParamMethodData.TypeParameters"/>
+			public new TypeParameterContainer TypeParameters { get; set; }
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="Properties"/> class.
+			/// </summary>
+			public Properties()
+			{
+			}
+
+			/// <inheritdoc cref="MemberData.Properties.Clone"/>
+			public new Properties Clone()
+			{
+				return (CloneCore() as Properties)!;
+			}
+
+			/// <inheritdoc/>
+			public override void Map(MethodData.Properties properties)
+			{
+				base.Map(properties);
+
+				if (properties is Properties props)
+				{
+					props.CallInsteadOfCopying = CallInsteadOfCopying;
+					props.NewModifierIndices = NewModifierIndices;
+					props.TargetNamespace = TargetNamespace;
+					props.TypeParameters = TypeParameters;
+				}
+			}
+
+			/// <inheritdoc/>
+			protected override MemberData.Properties CloneCore()
+			{
+				Properties properties = new();
+				Map(properties);
+				return properties;
+			}
+		}
+
+		private TypeParameterContainer _typeParameters;
 		private string? _targetNamespace;
 
 		/// <summary>
 		/// Determines whether the generated method should call this method instead of copying its contents.
 		/// </summary>
-		public bool CallInsteadOfCopying { get; }
+		public bool CallInsteadOfCopying { get; private set; }
 
 		/// <summary>
 		/// A <see cref="HashSet{T}"/> of indexes of type parameters with the <c>Durian.DefaultParamAttribute</c> applied for whom the <see langword="new"/> modifier should be applied.
 		/// </summary>
-		public HashSet<int>? NewModifierIndexes { get; }
+		public HashSet<int>? NewModifierIndices { get; private set; }
 
 		/// <summary>
 		/// Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamMethodData"/>.
@@ -45,58 +98,22 @@ namespace Durian.Analysis.DefaultParam.Methods
 		/// </summary>
 		/// <param name="declaration"><see cref="MethodDeclarationSyntax"/> this <see cref="DefaultParamMethodData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamMethodData"/>.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
+		/// <param name="properties"><see cref="MemberData.Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="declaration"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>
 		/// </exception>
-		public DefaultParamMethodData(MethodDeclarationSyntax declaration, DefaultParamCompilationData compilation, in TypeParameterContainer typeParameters) : base(declaration, compilation)
-		{
-			_typeParameters = typeParameters;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="DefaultParamMethodData"/> class.
-		/// </summary>
-		/// <param name="declaration"><see cref="MethodDeclarationSyntax"/> this <see cref="DefaultParamMethodData"/> represents.</param>
-		/// <param name="compilation">Parent <see cref="DefaultParamCompilationData"/> of this <see cref="DefaultParamMethodData"/>.</param>
-		/// <param name="symbol"><see cref="INamedTypeSymbol"/> this <see cref="DefaultParamMethodData"/> represents.</param>
-		/// <param name="semanticModel"><see cref="SemanticModel"/> of the <paramref name="declaration"/>.</param>
-		/// <param name="typeParameters"><see cref="TypeParameterContainer"/> that contains type parameters of this member.</param>
-		/// <param name="callInsteadOfCopying">Determines whether the generated method should call this method instead of copying its contents.</param>
-		/// <param name="targetNamespace">Specifies the namespace where the target member should be generated in.</param>
-		/// <param name="newModifierIndexes">A <see cref="HashSet{T}"/> of indexes of type parameters with 'DefaultParam' attribute for whom the <see langword="new"/> modifier should be applied.</param>
-		/// <param name="modifiers">A collection of all modifiers applied to the <paramref name="symbol"/>.</param>
-		/// <param name="containingTypes">A collection of <see cref="ITypeData"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="containingNamespaces">A collection of <see cref="INamespaceSymbol"/>s the <paramref name="symbol"/> is contained within.</param>
-		/// <param name="attributes">A collection of <see cref="AttributeData"/>s representing the <paramref name="symbol"/> attributes.</param>
 		public DefaultParamMethodData(
 			MethodDeclarationSyntax declaration,
 			DefaultParamCompilationData compilation,
-			IMethodSymbol symbol,
-			SemanticModel semanticModel,
-			in TypeParameterContainer typeParameters,
-			bool callInsteadOfCopying,
-			string targetNamespace,
-			HashSet<int>? newModifierIndexes = null,
-			string[]? modifiers = null,
-			IEnumerable<ITypeData>? containingTypes = null,
-			IEnumerable<INamespaceSymbol>? containingNamespaces = null,
-			IEnumerable<AttributeData>? attributes = null
-		) : base(
-			declaration,
-			compilation,
-			symbol,
-			semanticModel,
-			modifiers,
-			containingTypes,
-			containingNamespaces,
-			attributes
-		)
+			Properties properties
+		) : base(declaration, compilation, properties)
 		{
-			_typeParameters = typeParameters;
-			CallInsteadOfCopying = callInsteadOfCopying;
-			NewModifierIndexes = newModifierIndexes;
-			_targetNamespace = targetNamespace;
+		}
+
+		/// <inheritdoc cref="MemberData.Clone"/>
+		public new DefaultParamMethodData Clone()
+		{
+			return (CloneCore() as DefaultParamMethodData)!;
 		}
 
 		/// <summary>
@@ -108,10 +125,58 @@ namespace Durian.Analysis.DefaultParam.Methods
 			return new MethodDeclarationBuilder(this, cancellationToken);
 		}
 
+		/// <inheritdoc cref="MemberData.GetProperties"/>
+		public new Properties GetProperties()
+		{
+			return (GetPropertiesCore() as Properties)!;
+		}
+
 		/// <inheritdoc/>
 		public IEnumerable<string> GetUsedNamespaces(CancellationToken cancellationToken = default)
 		{
 			return DefaultParamUtilities.GetUsedNamespaces(this, in _typeParameters, cancellationToken);
+		}
+
+		/// <inheritdoc/>
+		public override void Map(MethodData.Properties properties)
+		{
+			base.Map(properties);
+
+			if (properties is Properties props)
+			{
+				props.CallInsteadOfCopying = CallInsteadOfCopying;
+				props.NewModifierIndices = NewModifierIndices;
+				props.TargetNamespace = TargetNamespace;
+				props.TypeParameters = TypeParameters;
+			}
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData CloneCore()
+		{
+			return new DefaultParamMethodData(Declaration, ParentCompilation, GetProperties());
+		}
+
+		/// <inheritdoc/>
+		protected override MemberData.Properties GetPropertiesCore()
+		{
+			Properties properties = new();
+			Map(properties);
+			return properties;
+		}
+
+		/// <inheritdoc/>
+		protected override void SetProperties(MemberData.Properties properties)
+		{
+			base.SetProperties(properties);
+
+			if (properties is Properties props)
+			{
+				_targetNamespace = props.TargetNamespace;
+				_typeParameters = props.TypeParameters;
+				CallInsteadOfCopying = props.CallInsteadOfCopying;
+				NewModifierIndices = props.NewModifierIndices;
+			}
 		}
 
 		IDefaultParamDeclarationBuilder IDefaultParamTarget.GetDeclarationBuilder(CancellationToken cancellationToken)

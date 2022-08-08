@@ -313,8 +313,7 @@ namespace Durian.Analysis.CopyFrom
 				else if (members.Any())
 				{
 					WriteDeclarationLead(context.CodeBuilder, type, target.Usings);
-					context.CodeBuilder.Indent();
-					context.CodeBuilder.Declaration(type.Symbol);
+					context.CodeBuilder.Declaration(type.Symbol, false, false);
 					semanticModel = GetCurrentSemanticModel(type, partial, ref semanticModelCache);
 					GenerateMembers(target, context, generateAction, members, semanticModel);
 				}
@@ -495,13 +494,13 @@ namespace Durian.Analysis.CopyFrom
 			if (target.AdditionalNodes.HasFlag(AdditionalNodes.Constraints) && declaration.ConstraintClauses.Any())
 			{
 				ApplyLead(ref semanticModel);
-				name += TryApplyPattern(type, context, string.Join(" ", declaration.ConstraintClauses));
+				name += ' ' + TryApplyPattern(type, context, string.Join(" ", declaration.ConstraintClauses));
 			}
 
 			if (hasLead)
 			{
 				context.CodeBuilder.Indent();
-				context.CodeBuilder.Declaration($"partial {keyword} {name}");
+				context.CodeBuilder.Declaration($"{type.Symbol.DeclaredAccessibility.GetText()} partial {keyword} {name}");
 			}
 
 			return hasLead;
@@ -511,7 +510,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				if (!hasLead)
 				{
-					name = type.Symbol.GetGenericName();
+					name = type.GenericName;
 					semanticModel ??= GetCurrentSemanticModel(type, declaration, ref semanticModelCache);
 					WriteDeclarationLead(context.CodeBuilder, type, target.Usings);
 					hasLead = true;

@@ -2,10 +2,12 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filtration;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -38,7 +40,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 			bool isValid = AnalyzeAgainstInvalidMethodType(context.Symbol, diagnosticReceiver);
 			isValid &= AnalyzeAgainstPartialOrExtern(context.Symbol, context.Node, diagnosticReceiver);
 			isValid &= AnalyzeAgainstProhibitedAttributes(context.Symbol, context.TargetCompilation, out AttributeData[]? attributes, diagnosticReceiver);
-			isValid &= AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out ITypeData[]? containingTypes, diagnosticReceiver);
+			isValid &= AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out IWritableSymbolContainer<INamedTypeSymbol, ITypeData>? containingTypes, diagnosticReceiver);
 
 			if (isValid)
 			{
@@ -46,7 +48,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 
 				if (AnalyzeBaseMethodAndTypeParameters(context.Symbol, ref combinedParameters, in combinedTypeParameters, diagnosticReceiver))
 				{
-					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
+					ImmutableArray<INamedTypeSymbol> symbols = containingTypes!.GetSymbols().CastArray<INamedTypeSymbol>();
 
 					if (AnalyzeMethodSignature(context.Symbol, in combinedParameters, context.TargetCompilation, out HashSet<int>? newModifiers, diagnosticReceiver, attributes, symbols, context.CancellationToken))
 					{
@@ -56,17 +58,17 @@ namespace Durian.Analysis.DefaultParam.Methods
 						data = new DefaultParamMethodData(
 							context.Node,
 							context.TargetCompilation,
-							context.Symbol,
-							context.SemanticModel,
-							in combinedParameters,
-							call,
-							targetNamespace,
-							newModifiers,
-							null,
-							containingTypes,
-							null,
-							attributes
-						);
+							new DefaultParamMethodData.Properties()
+							{
+								Symbol = context.Symbol,
+								SemanticModel = context.SemanticModel,
+								NewModifierIndices = newModifiers,
+								TypeParameters = combinedParameters,
+								CallInsteadOfCopying = call,
+								TargetNamespace = targetNamespace,
+								ContainingTypes = new(containingTypes),
+								Attributes = attributes!.ToImmutableArray()
+							});
 
 						return true;
 					}
@@ -91,7 +93,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 
 				if (AnalyzeBaseMethodAndTypeParameters(context.Symbol, ref combinedParameters, in combinedTypeParameters))
 				{
-					INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
+					ImmutableArray<INamedTypeSymbol> symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
 
 					if (AnalyzeMethodSignature(context.Symbol, in combinedParameters, context.TargetCompilation, out HashSet<int>? newModifiers, attributes, symbols, context.CancellationToken))
 					{
@@ -101,17 +103,17 @@ namespace Durian.Analysis.DefaultParam.Methods
 						data = new DefaultParamMethodData(
 							context.Node,
 							context.TargetCompilation,
-							context.Symbol,
-							context.SemanticModel,
-							in combinedParameters,
-							call,
-							targetNamespace,
-							newModifiers,
-							null,
-							containingTypes,
-							null,
-							attributes
-						);
+							new DefaultParamMethodData.Properties()
+							{
+								Symbol = context.Symbol,
+								SemanticModel = context.SemanticModel,
+								NewModifierIndices = newModifiers,
+								TypeParameters = combinedParameters,
+								CallInsteadOfCopying = call,
+								TargetNamespace = targetNamespace,
+								ContainingTypes = containingTypes!.ToWritableContainer(context.TargetCompilation),
+								Attributes = attributes!.ToImmutableArray()
+							});
 
 						return true;
 					}
@@ -123,7 +125,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		}
 
 		/// <inheritdoc/>
-		protected override IEnumerable<CSharpSyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
+		protected override IEnumerable<SyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
 		{
 			if (syntaxReceiver is not DefaultParamSyntaxReceiver sr)
 			{
@@ -139,7 +141,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		}
 
 		/// <inheritdoc/>
-		protected override TypeParameterListSyntax? GetTypeParameterList(CSharpSyntaxNode node)
+		protected override TypeParameterListSyntax? GetTypeParameterList(SyntaxNode node)
 		{
 			return (node as MethodDeclarationSyntax)?.TypeParameterList;
 		}
@@ -161,7 +163,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		}
 
 		/// <inheritdoc/>
-		protected override bool TypeParametersAreValid(in TypeParameterContainer typeParameters, CSharpSyntaxNode node)
+		protected override bool TypeParametersAreValid(in TypeParameterContainer typeParameters, SyntaxNode node)
 		{
 			if (node is not MethodDeclarationSyntax method)
 			{

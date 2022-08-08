@@ -2,11 +2,12 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filtration;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Durian.Analysis.DefaultParam.DefaultParamAnalyzer;
 using static Durian.Analysis.DefaultParam.Types.DefaultParamTypeAnalyzer;
@@ -34,7 +35,7 @@ namespace Durian.Analysis.DefaultParam.Types
 				AnalyzeTypeParameters(context.Symbol, in context.GetTypeParameters())
 			)
 			{
-				INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
+				ImmutableArray<INamedTypeSymbol> symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
 				string targetNamespace = GetTargetNamespace(context.Symbol, context.TargetCompilation, attributes, symbols);
 
 				if (AnalyzeCollidingMembers(
@@ -53,18 +54,17 @@ namespace Durian.Analysis.DefaultParam.Types
 					data = new DefaultParamTypeData(
 						context.Node,
 						context.TargetCompilation,
-						context.Symbol,
-						context.SemanticModel,
-						in context.GetTypeParameters(),
-						inherit,
-						targetNamespace,
-						applyNewModifiers,
-						null,
-						null,
-						containingTypes,
-						null,
-						attributes
-					);
+						new DefaultParamTypeData.Properties()
+						{
+							Symbol = context.Symbol,
+							SemanticModel = context.SemanticModel,
+							TypeParameters = context.GetTypeParameters(),
+							Inherit = inherit,
+							TargetNamespace = targetNamespace,
+							NewModifierIndices = applyNewModifiers,
+							ContainingTypes = containingTypes.ToWritableContainer(context.TargetCompilation),
+							Attributes = attributes.ToImmutableArray()
+						});
 
 					return true;
 				}
@@ -79,12 +79,12 @@ namespace Durian.Analysis.DefaultParam.Types
 		{
 			bool isValid = AnalyzeAgainstProhibitedAttributes(context.Symbol, context.TargetCompilation, out AttributeData[]? attributes, diagnosticReceiver);
 			isValid &= AnalyzeAgainstPartial(context.Symbol, diagnosticReceiver, context.CancellationToken);
-			isValid &= AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out ITypeData[]? containingTypes, diagnosticReceiver);
+			isValid &= AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out IWritableSymbolContainer<INamedTypeSymbol, ITypeData>? containingTypes, diagnosticReceiver);
 			isValid &= AnalyzeTypeParameters(context.Symbol, in context.GetTypeParameters(), diagnosticReceiver);
 
 			if (isValid)
 			{
-				INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
+				ImmutableArray<INamedTypeSymbol> symbols = containingTypes!.GetSymbols().CastArray<INamedTypeSymbol>();
 				string targetNamespace = GetTargetNamespace(context.Symbol, context.TargetCompilation, attributes, symbols);
 
 				if (AnalyzeCollidingMembers(
@@ -104,18 +104,17 @@ namespace Durian.Analysis.DefaultParam.Types
 					data = new DefaultParamTypeData(
 						context.Node,
 						context.TargetCompilation,
-						context.Symbol,
-						context.SemanticModel,
-						in context.GetTypeParameters(),
-						inherit,
-						targetNamespace,
-						applyNewModifiers,
-						null,
-						null,
-						containingTypes,
-						null,
-						attributes
-					);
+						new DefaultParamTypeData.Properties()
+						{
+							Symbol = context.Symbol,
+							SemanticModel = context.SemanticModel,
+							TypeParameters = context.GetTypeParameters(),
+							Inherit = inherit,
+							TargetNamespace = targetNamespace,
+							NewModifierIndices = applyNewModifiers,
+							ContainingTypes = new(containingTypes),
+							Attributes = attributes!.ToImmutableArray()
+						});
 
 					return true;
 				}
@@ -130,7 +129,7 @@ namespace Durian.Analysis.DefaultParam.Types
 		}
 
 		/// <inheritdoc/>
-		protected override IEnumerable<CSharpSyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
+		protected override IEnumerable<SyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
 		{
 			if (syntaxReceiver is not DefaultParamSyntaxReceiver sr)
 			{
@@ -146,7 +145,7 @@ namespace Durian.Analysis.DefaultParam.Types
 		}
 
 		/// <inheritdoc/>
-		protected override TypeParameterListSyntax? GetTypeParameterList(CSharpSyntaxNode node)
+		protected override TypeParameterListSyntax? GetTypeParameterList(SyntaxNode node)
 		{
 			return (node as TypeDeclarationSyntax)?.TypeParameterList;
 		}

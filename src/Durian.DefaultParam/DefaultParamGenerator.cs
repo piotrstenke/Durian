@@ -144,7 +144,7 @@ namespace Durian.Analysis.DefaultParam
 			}
 
 			GenerateAllVersionsOfTarget(target, context);
-			AddSourceWithOriginal(target.Declaration, hintName, context);
+			AddSourceWithOriginal(target.Declaration!, hintName, context);
 
 			return true;
 		}
@@ -242,9 +242,9 @@ namespace Durian.Analysis.DefaultParam
 				context.CodeBuilder.Namespace(target.TargetNamespace);
 			}
 
-			foreach (ITypeData type in target.GetContainingTypes().GetData())
+			foreach (ITypeData type in target.ContainingTypes.GetData())
 			{
-				context.CodeBuilder.Declaration((type.Symbol as INamedTypeSymbol)!);
+				context.CodeBuilder.Declaration(type.Symbol);
 			}
 		}
 

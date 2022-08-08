@@ -2,11 +2,12 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filtration;
+using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Durian.Analysis.DefaultParam.DefaultParamAnalyzer;
 using static Durian.Analysis.DefaultParam.Delegates.DefaultParamDelegateAnalyzer;
@@ -32,7 +33,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 				AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out ITypeData[]? containingTypes) &&
 				AnalyzeTypeParameters(context.Symbol, in context.GetTypeParameters()))
 			{
-				INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
+				ImmutableArray<INamedTypeSymbol> symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
 				string targetNamespace = GetTargetNamespace(context.Symbol, context.TargetCompilation, attributes, symbols);
 
 				if (AnalyzeCollidingMembers(context.Symbol, in context.GetTypeParameters(), context.TargetCompilation, targetNamespace, out HashSet<int>? newModifiers, attributes, symbols, context.CancellationToken))
@@ -40,16 +41,16 @@ namespace Durian.Analysis.DefaultParam.Delegates
 					data = new DefaultParamDelegateData(
 						context.Node,
 						context.TargetCompilation,
-						context.Symbol,
-						context.SemanticModel,
-						context.GetTypeParameters(),
-						targetNamespace,
-						newModifiers,
-						null,
-						containingTypes,
-						null,
-						attributes
-					);
+						new DefaultParamDelegateData.Properties()
+						{
+							SemanticModel = context.SemanticModel,
+							Symbol = context.Symbol,
+							TargetNamespace = targetNamespace,
+							NewModifierIndices = newModifiers,
+							ContainingTypes = containingTypes.ToWritableContainer(context.TargetCompilation),
+							TypeParameters = context.GetTypeParameters(),
+							Attributes = attributes.ToImmutableArray()
+						});
 
 					return true;
 				}
@@ -63,12 +64,12 @@ namespace Durian.Analysis.DefaultParam.Delegates
 		public override bool ValidateAndCreate(in DefaultParamDelegateContext context, out IMemberData? data, IDiagnosticReceiver diagnosticReceiver)
 		{
 			bool isValid = AnalyzeAgainstProhibitedAttributes(context.Symbol, context.TargetCompilation, out AttributeData[]? attributes, diagnosticReceiver);
-			isValid &= AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out ITypeData[]? containingTypes, diagnosticReceiver);
+			isValid &= AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out IWritableSymbolContainer<INamedTypeSymbol, ITypeData>? containingTypes, diagnosticReceiver);
 			isValid &= AnalyzeTypeParameters(context.Symbol, in context.GetTypeParameters(), diagnosticReceiver);
 
 			if (isValid)
 			{
-				INamedTypeSymbol[] symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);
+				ImmutableArray<INamedTypeSymbol> symbols = containingTypes!.GetSymbols().CastArray<INamedTypeSymbol>();
 				string targetNamespace = GetTargetNamespace(context.Symbol, context.TargetCompilation, attributes, symbols);
 
 				if (AnalyzeCollidingMembers(context.Symbol, in context.GetTypeParameters(), context.TargetCompilation, targetNamespace, out HashSet<int>? applyNewModifiers, diagnosticReceiver, attributes, symbols, context.CancellationToken))
@@ -76,16 +77,16 @@ namespace Durian.Analysis.DefaultParam.Delegates
 					data = new DefaultParamDelegateData(
 						context.Node,
 						context.TargetCompilation,
-						context.Symbol,
-						context.SemanticModel,
-						context.GetTypeParameters(),
-						targetNamespace,
-						applyNewModifiers,
-						null,
-						containingTypes,
-						null,
-						attributes
-					);
+						new DefaultParamDelegateData.Properties()
+						{
+							SemanticModel = context.SemanticModel,
+							Symbol = context.Symbol,
+							TargetNamespace = targetNamespace,
+							NewModifierIndices = applyNewModifiers,
+							ContainingTypes = new(containingTypes),
+							TypeParameters = context.GetTypeParameters(),
+							Attributes = attributes!.ToImmutableArray()
+						});
 
 					return true;
 				}
@@ -96,7 +97,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 		}
 
 		/// <inheritdoc/>
-		protected override IEnumerable<CSharpSyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
+		protected override IEnumerable<SyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
 		{
 			if (syntaxReceiver is not DefaultParamSyntaxReceiver sr)
 			{
@@ -112,7 +113,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 		}
 
 		/// <inheritdoc/>
-		protected override TypeParameterListSyntax? GetTypeParameterList(CSharpSyntaxNode node)
+		protected override TypeParameterListSyntax? GetTypeParameterList(SyntaxNode node)
 		{
 			return (node as DelegateDeclarationSyntax)?.TypeParameterList;
 		}

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -255,7 +256,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 			out HashSet<int>? applyNew,
 			IDiagnosticReceiver diagnosticReceiver,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null,
+			ImmutableArray<INamedTypeSymbol> containingTypes = default,
 			CancellationToken cancellationToken = default
 		)
 		{
@@ -307,7 +308,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 			DefaultParamCompilationData compilation,
 			out HashSet<int>? applyNew,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null,
+			ImmutableArray<INamedTypeSymbol> containingTypes = default,
 			CancellationToken cancellationToken = default
 		)
 		{
@@ -459,7 +460,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 			IMethodSymbol symbol,
 			DefaultParamCompilationData compilation,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null
+			ImmutableArray<INamedTypeSymbol> containingTypes = default
 		)
 		{
 			InitializeAttributes(ref attributes, symbol);
@@ -774,7 +775,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 			bool isValid = AnalyzeAgainstInvalidMethodType(symbol, diagnosticReceiver);
 			isValid &= AnalyzeAgainstPartialOrExtern(symbol, diagnosticReceiver, cancellationToken);
 			isValid &= AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes, diagnosticReceiver);
-			isValid &= AnalyzeContainingTypes(symbol, compilation, out INamedTypeSymbol[]? containingTypes, diagnosticReceiver);
+			isValid &= AnalyzeContainingTypes(symbol, compilation, out ImmutableArray<INamedTypeSymbol> containingTypes, diagnosticReceiver);
 			isValid &= AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, in combinedTypeParameters, diagnosticReceiver);
 
 			if (!isValid)
@@ -797,7 +798,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 				AnalyzeAgainstInvalidMethodType(symbol) &&
 				AnalyzeAgainstPartialOrExtern(symbol, cancellationToken) &&
 				AnalyzeAgainstProhibitedAttributes(symbol, compilation, out AttributeData[]? attributes) &&
-				AnalyzeContainingTypes(symbol, compilation, out INamedTypeSymbol[]? containingTypes) &&
+				AnalyzeContainingTypes(symbol, compilation, out ImmutableArray<INamedTypeSymbol> containingTypes) &&
 				AnalyzeBaseMethodAndTypeParameters(symbol, ref typeParameters, combinedTypeParameters) &&
 				AnalyzeMethodSignature(symbol, in typeParameters, compilation, out _, attributes, containingTypes, cancellationToken);
 		}

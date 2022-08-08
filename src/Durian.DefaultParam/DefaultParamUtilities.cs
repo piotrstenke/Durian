@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Durian.Analysis.Data;
@@ -55,7 +56,7 @@ namespace Durian.Analysis.DefaultParam
 		public static int GetConfigurationEnumValue(
 			string propertyName,
 			IEnumerable<AttributeData> attributes,
-			INamedTypeSymbol[] containingTypes,
+			ImmutableArray<INamedTypeSymbol> containingTypes,
 			DefaultParamCompilationData compilation,
 			int defaultValue
 		)
@@ -77,7 +78,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="defaultValue">Value to be returned when no other valid configuration value is found.</param>
 		public static int GetConfigurationEnumValueOnContainingTypes(
 			string propertyName,
-			INamedTypeSymbol[] containingTypes,
+			ImmutableArray<INamedTypeSymbol> containingTypes,
 			DefaultParamCompilationData compilation,
 			int defaultValue
 		)
@@ -197,7 +198,7 @@ namespace Durian.Analysis.DefaultParam
 		public static IEnumerable<string> GetUsedNamespaces(IDefaultParamTarget target, in TypeParameterContainer parameters, CancellationToken cancellationToken = default)
 		{
 			int defaultParamCount = parameters.NumDefaultParam;
-			string currentNamespace = target.GetContainingNamespaces().ToString();
+			string currentNamespace = target.ContainingNamespaces.ToString();
 			List<string> namespaces = GetUsedNamespacesList(target, defaultParamCount, cancellationToken);
 
 			if (!string.IsNullOrWhiteSpace(currentNamespace) && target.TargetNamespace != currentNamespace && !namespaces.Contains(currentNamespace))
@@ -214,7 +215,7 @@ namespace Durian.Analysis.DefaultParam
 					continue;
 				}
 
-				string n = data.TargetType.GetContainingNamespaces().ToWritableContainer().ToString();
+				string n = data.TargetType.GetContainingNamespaces().ToWritableContainer(target.ParentCompilation).ToString();
 
 				if (!string.IsNullOrWhiteSpace(n) && !namespaces.Contains(n))
 				{
@@ -433,22 +434,22 @@ namespace Durian.Analysis.DefaultParam
 		/// Converts an array of <see cref="ITypeData"/>s to an array of <see cref="INamedTypeSymbol"/>s.
 		/// </summary>
 		/// <param name="types">Array of <see cref="ITypeData"/>s to convert.</param>
-		public static INamedTypeSymbol[] TypeDatasToTypeSymbols(ITypeData[]? types)
+		public static ImmutableArray<INamedTypeSymbol> TypeDatasToTypeSymbols(ITypeData[]? types)
 		{
 			if (types is null)
 			{
-				return Array.Empty<INamedTypeSymbol>();
+				return ImmutableArray<INamedTypeSymbol>.Empty;
 			}
 
 			int length = types.Length;
-			INamedTypeSymbol[] symbols = new INamedTypeSymbol[length];
+			ImmutableArray<INamedTypeSymbol>.Builder symbols = ImmutableArray.CreateBuilder<INamedTypeSymbol>(length);
 
 			for (int i = 0; i < length; i++)
 			{
-				symbols[i] = (types[i].Symbol as INamedTypeSymbol)!;
+				symbols[i] = types[i].Symbol;
 			}
 
-			return symbols;
+			return symbols.ToImmutable();
 		}
 
 		private static ParameterGeneration CreateDefaultGenerationForTypeArgumentParameter(IParameterSymbol parameter, in TypeParameterContainer typeParameters)

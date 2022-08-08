@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filtration;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.DefaultParam.Methods
@@ -39,7 +39,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		}
 
 		/// <inheritdoc/>
-		protected override IEnumerable<CSharpSyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
+		protected override IEnumerable<SyntaxNode>? GetCandidateNodes(IDurianSyntaxReceiver syntaxReceiver)
 		{
 			if (syntaxReceiver is not DefaultParamSyntaxReceiver sr)
 			{
@@ -55,7 +55,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		}
 
 		/// <inheritdoc/>
-		protected override TypeParameterListSyntax? GetTypeParameterList(CSharpSyntaxNode node)
+		protected override TypeParameterListSyntax? GetTypeParameterList(SyntaxNode node)
 		{
 			return (node as LocalFunctionStatementSyntax)?.TypeParameterList;
 		}

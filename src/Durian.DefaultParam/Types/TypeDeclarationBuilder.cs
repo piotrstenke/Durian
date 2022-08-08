@@ -136,7 +136,7 @@ namespace Durian.Analysis.DefaultParam.Types
 		{
 			SemanticModel = data.SemanticModel;
 			OriginalDeclaration = data.Declaration;
-			_newModifierIndexes = data.NewModifierIndexes;
+			_newModifierIndexes = data.NewModifierIndices;
 			_numNonDefaultParam = data.TypeParameters.NumNonDefaultParam;
 
 			InitializeDeclaration(data, cancellationToken);

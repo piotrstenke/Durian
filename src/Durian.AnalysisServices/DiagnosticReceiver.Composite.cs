@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis
 {
@@ -364,7 +363,7 @@ namespace Durian.Analysis
 			}
 
 			/// <inheritdoc/>
-			public void SetTargetNode(CSharpSyntaxNode? node, string? hintName)
+			public void SetTargetNode(SyntaxNode? node, string? hintName)
 			{
 				if (_receivers.Count > 0)
 				{

@@ -51,7 +51,7 @@ namespace Durian.Analysis.DefaultParam
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null
+			ImmutableArray<INamedTypeSymbol> containingTypes = default
 		)
 		{
 			InitializeAttributes(ref attributes, symbol);
@@ -198,13 +198,13 @@ namespace Durian.Analysis.DefaultParam
 		public static bool AnalyzeContainingTypes(
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
-			[NotNullWhen(true)] out INamedTypeSymbol[]? containingTypes,
+			out ImmutableArray<INamedTypeSymbol> containingTypes,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			INamedTypeSymbol[] types = symbol.GetContainingTypes().ToArray();
+			ImmutableArray<INamedTypeSymbol> types = symbol.GetContainingTypes().ToImmutableArray();
 			bool isValid = AnalyzeContainingTypes(symbol, compilation, diagnosticReceiver, types);
-			containingTypes = isValid ? types : null;
+			containingTypes = isValid ? types : default;
 			return isValid;
 		}
 
@@ -220,28 +220,25 @@ namespace Durian.Analysis.DefaultParam
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
 			IDiagnosticReceiver diagnosticReceiver,
-			INamedTypeSymbol[]? containingTypes = null
+			ImmutableArray<INamedTypeSymbol> containingTypes = default
 		)
 		{
 			InitializeContainingTypes(ref containingTypes, symbol);
 
 			bool isValid = true;
 
-			if (containingTypes.Length > 0)
+			foreach (INamedTypeSymbol parent in containingTypes)
 			{
-				foreach (INamedTypeSymbol parent in containingTypes)
+				if (!parent.IsPartial())
 				{
-					if (!parent.IsPartial())
-					{
-						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial, parent);
-						isValid = false;
-					}
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial, parent);
+					isValid = false;
+				}
 
-					if (!HasDefaultParamAttribute(parent, compilation))
-					{
-						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested, symbol);
-						isValid = false;
-					}
+				if (!HasDefaultParamAttribute(parent, compilation))
+				{
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested, symbol);
+					isValid = false;
 				}
 			}
 
@@ -259,34 +256,31 @@ namespace Durian.Analysis.DefaultParam
 		public static bool AnalyzeContainingTypes(
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
-			[NotNullWhen(true)] out ITypeData[]? containingTypes,
+			[NotNullWhen(true)] out IWritableSymbolContainer<INamedTypeSymbol, ITypeData>? containingTypes,
 			IDiagnosticReceiver diagnosticReceiver
 		)
 		{
-			ImmutableArray<ITypeData> types = symbol.GetContainingTypes().ToWritableContainer(compilation).GetData();
+			IWritableSymbolContainer<INamedTypeSymbol, ITypeData> container = symbol.GetContainingTypes().ToWritableContainer(compilation);
 			bool isValid = true;
 
-			if (types.Length > 0)
+			foreach (ITypeData parent in container.GetData())
 			{
-				foreach (ITypeData parent in types)
+				if (!parent.IsPartial)
 				{
-					if (!parent.IsPartial)
-					{
-						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial, parent.Symbol);
-						isValid = false;
-					}
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial, parent.Symbol);
+					isValid = false;
+				}
 
-					ImmutableArray<ITypeParameterSymbol> typeParameters = (parent.Symbol as INamedTypeSymbol)!.TypeParameters;
+				ImmutableArray<ITypeParameterSymbol> typeParameters = parent.Symbol.TypeParameters;
 
-					if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DefaultParamAttribute)))
-					{
-						diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested, symbol);
-						isValid = false;
-					}
+				if (typeParameters.Length > 0 && typeParameters.SelectMany(t => t.GetAttributes()).Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, compilation.DefaultParamAttribute)))
+				{
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested, symbol);
+					isValid = false;
 				}
 			}
 
-			containingTypes = isValid ? types.ToArray() : null;
+			containingTypes = isValid ? container : null;
 
 			return isValid;
 		}
@@ -301,12 +295,12 @@ namespace Durian.Analysis.DefaultParam
 		public static bool AnalyzeContainingTypes(
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
-			[NotNullWhen(true)] out INamedTypeSymbol[]? containingTypes
+			out ImmutableArray<INamedTypeSymbol> containingTypes
 		)
 		{
-			INamedTypeSymbol[] containing = symbol.GetContainingTypes().ToArray();
+			ImmutableArray<INamedTypeSymbol> containing = symbol.GetContainingTypes().ToImmutableArray();
 			bool isValid = AnalyzeContainingTypes(containing, compilation);
-			containingTypes = isValid ? containing : null;
+			containingTypes = isValid ? containing : default;
 			return isValid;
 		}
 
@@ -316,21 +310,18 @@ namespace Durian.Analysis.DefaultParam
 		/// <param name="containingTypes">An array of <see cref="INamedTypeSymbol"/>s to analyze.</param>
 		/// <param name="compilation">Current <see cref="DefaultParamCompilationData"/>.</param>
 		/// <returns><see langword="true"/> if the <paramref name="containingTypes"/> of the target <see cref="ISymbol"/> are valid, otherwise <see langword="false"/>.</returns>
-		public static bool AnalyzeContainingTypes(INamedTypeSymbol[] containingTypes, DefaultParamCompilationData compilation)
+		public static bool AnalyzeContainingTypes(ImmutableArray<INamedTypeSymbol> containingTypes, DefaultParamCompilationData compilation)
 		{
-			if (containingTypes.Length > 0)
+			foreach (INamedTypeSymbol parent in containingTypes)
 			{
-				foreach (INamedTypeSymbol parent in containingTypes)
+				if (!parent.IsPartial())
 				{
-					if (!parent.IsPartial())
-					{
-						return false;
-					}
+					return false;
+				}
 
-					if (!HasDefaultParamAttribute(parent, compilation))
-					{
-						return false;
-					}
+				if (!HasDefaultParamAttribute(parent, compilation))
+				{
+					return false;
 				}
 			}
 
@@ -345,7 +336,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <returns><see langword="true"/> if the containing types of the <paramref name="symbol"/> are valid, otherwise <see langword="false"/>.</returns>
 		public static bool AnalyzeContainingTypes(ISymbol symbol, DefaultParamCompilationData compilation)
 		{
-			INamedTypeSymbol[] types = symbol.GetContainingTypes().ToArray();
+			ImmutableArray<INamedTypeSymbol> types = symbol.GetContainingTypes().ToImmutableArray();
 
 			return AnalyzeContainingTypes(types, compilation);
 		}
@@ -630,7 +621,7 @@ namespace Durian.Analysis.DefaultParam
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
 			IEnumerable<AttributeData>? attributes = null,
-			INamedTypeSymbol[]? containingTypes = null
+			ImmutableArray<INamedTypeSymbol> containingTypes = default
 		)
 		{
 			const string propertyName = DefaultParamConfigurationAttributeProvider.TargetNamespace;
@@ -805,11 +796,11 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private protected static void InitializeContainingTypes([NotNull] ref INamedTypeSymbol[]? containingTypes, ISymbol symbol)
+		private protected static void InitializeContainingTypes([NotNull] ref ImmutableArray<INamedTypeSymbol> containingTypes, ISymbol symbol)
 		{
-			if (containingTypes is null)
+			if (containingTypes.IsDefault)
 			{
-				containingTypes = symbol.GetContainingTypes().ToArray();
+				containingTypes = symbol.GetContainingTypes().ToImmutableArray();
 			}
 		}
 
@@ -1121,7 +1112,7 @@ namespace Durian.Analysis.DefaultParam
 
 					if (data.IsValidDefaultParam)
 					{
-						if (!type.Inherits(data.TargetType))
+						if (!type.InheritsOrImplements(data.TargetType))
 						{
 							return false;
 						}
@@ -1131,7 +1122,7 @@ namespace Durian.Analysis.DefaultParam
 						return false;
 					}
 				}
-				else if (!type.Inherits(constraint))
+				else if (!type.InheritsOrImplements(constraint))
 				{
 					return false;
 				}
