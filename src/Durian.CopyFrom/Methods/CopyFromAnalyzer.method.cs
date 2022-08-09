@@ -266,6 +266,11 @@ namespace Durian.Analysis.CopyFrom
 			{
 				case IMethodSymbol method:
 
+					if(method.PartialImplementationPart is not null)
+					{
+						method = method.PartialImplementationPart;
+					}
+
 					if (SymbolEqualityComparer.Default.Equals(currentMethod, method))
 					{
 						diagnostic = DUR0207_MemberCannotCopyFromItselfOrItsParent;

@@ -1487,6 +1487,7 @@ internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -1505,7 +1506,9 @@ partial class Test
 			string expected =
 $@"internal partial class Test
 {{
-	/// <inheritdoc cref=""Target""/>
+	/// <summary>
+	/// Hello there
+	/// </summary>
 	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method()
 	{{
@@ -1521,6 +1524,7 @@ $@"internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -1541,7 +1545,7 @@ partial class Test
 $@"internal partial class Test
 {{
 	/// <summary>
-	/// Hello there
+	/// No there
 	/// </summary>
 	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method()
@@ -1558,6 +1562,7 @@ $@"internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -1575,8 +1580,8 @@ partial class Test
 			string expected =
 $@"internal partial class Test
 {{
-	{GetCodeGenerationAttributes("Test.Target()")}
 	[System.Diagnostics.Conditional(""RELEASE"")]
+	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method()
 	{{
 		string a = string.Empty;
@@ -1591,6 +1596,7 @@ $@"internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -1607,8 +1613,8 @@ partial class Test
 			string expected =
 $@"internal partial class Test
 {{
-	{GetCodeGenerationAttributes("Test.Target()")}
 	[System.Diagnostics.Conditional(""DEBUG"")]
+	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method()
 	{{
 		string a = string.Empty;
@@ -1645,7 +1651,7 @@ $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
 {{
-	{GetCodeGenerationAttributes("Target.Target()")}
+	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method()
 	{{
 		string a = string.Empty;
@@ -1695,6 +1701,7 @@ internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -1725,6 +1732,7 @@ $@"internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -1792,7 +1800,7 @@ internal partial class Test
 		public void Success_When_HasMultipleCopyFromMethods()
 		{
 			string input =
-$@"using {DurianStrings.MainNamespace}
+$@"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
@@ -1814,7 +1822,7 @@ partial class Test
 }}
 ";
 			string expected1 =
-$@"using {DurianStrings.MainNamespace}
+$@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
 {{
@@ -1826,7 +1834,7 @@ internal partial class Test
 }}
 ";
 			string expected2 =
-$@"using {DurianStrings.MainNamespace}
+$@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
 {{
@@ -1845,7 +1853,7 @@ internal partial class Test
 		public void Success_When_HasMultipleCopyFromMethods_And_SameTarget()
 		{
 			string input =
-$@"using {DurianStrings.MainNamespace}
+$@"using {DurianStrings.MainNamespace};
 
 partial class Test
 {{
@@ -1862,7 +1870,7 @@ partial class Test
 }}
 ";
 			string expected1 =
-$@"using {DurianStrings.MainNamespace}
+$@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
 {{
@@ -1874,7 +1882,7 @@ internal partial class Test
 }}
 ";
 			string expected2 =
-$@"using {DurianStrings.MainNamespace}
+$@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
 {{
@@ -2145,6 +2153,7 @@ internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -2158,7 +2167,10 @@ partial class Test
 }}
 ";
 			string expected =
-$@"internal partial class Test
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target<T>()")}
 	private partial void Method<T>()
@@ -2178,6 +2190,7 @@ $@"internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -2197,7 +2210,10 @@ partial class Test
 }}
 ";
 			string expected =
-$@"internal partial class Test
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method()
@@ -2873,7 +2889,7 @@ internal partial class Test
 	{GetCodeGenerationAttributes("Test.Target<T, U>(T, U)")}
 	private partial void Method()
 	{{
-		int t = default;
+		T t = default;
 		U u = default;
 	}}
 }}
@@ -3418,6 +3434,7 @@ internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -3431,9 +3448,7 @@ partial class Test
 }}
 ";
 			string expected =
-$@"using {DurianStrings.MainNamespace};
-
-internal partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method()
@@ -3453,6 +3468,7 @@ internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -3466,9 +3482,7 @@ partial class Test
 }}
 ";
 			string expected =
-$@"using {DurianStrings.MainNamespace};
-
-internal partial class Test
+$@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method()
@@ -3488,6 +3502,7 @@ internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{
@@ -3521,6 +3536,7 @@ $@"internal partial class Test
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
 
 partial class Test
 {{

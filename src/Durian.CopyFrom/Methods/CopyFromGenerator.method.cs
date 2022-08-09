@@ -3,70 +3,52 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.CopyFrom.Methods;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SyntaxVisitors;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.CopyFrom
 {
 	public partial class CopyFromGenerator
 	{
-		private bool GenerateMethod(CopyFromMethodData method, string hintName, CopyFromPassContext context)
+		private static void HandleAdditionalNodes(CopyFromMethodData method, TargetMethodData target, SyntaxNode declaration, CopyFromPassContext context)
 		{
-			MethodDeclarationSyntax targetMethod = method.Target.Symbol.GetSyntax<MethodDeclarationSyntax>();
-
-			if(targetMethod.Body is not null)
+			if (target.AdditionalNodes.HasFlag(AdditionalNodes.Documentation) && declaration.GetXmlDocumentation() is DocumentationCommentTriviaSyntax doc)
 			{
-				WriteDeclarationLead(context.CodeBuilder, method, method.Target.Usings);
-				WriteGenerationAttributes(method.Target.Symbol, context);
-				WriteBlockBody(method, context, targetMethod);
-			}
-			else if (targetMethod.ExpressionBody is not null)
-			{
-				WriteDeclarationLead(context.CodeBuilder, method, method.Target.Usings);
-				WriteGenerationAttributes(method.Target.Symbol, context);
-				WriteExpressionBody(method, context, targetMethod);
-			}
-			else
-			{
-				return false;
-			}
-
-			context.CodeBuilder.EndAllBlocks();
-
-			AddSourceWithOriginal(method.Declaration, hintName, context);
-
-			return true;
-		}
-
-		private static void WriteExpressionBody(CopyFromMethodData method, CopyFromPassContext context, MethodDeclarationSyntax decl)
-		{
-			ArrowExpressionClauseSyntax expression = (ArrowExpressionClauseSyntax)WriteMethodHead(method, context, decl.Modifiers, decl.ExpressionBody!);
-			context.CodeBuilder.Write(" =>");
-			context.CodeBuilder.Write(expression.Expression.ToFullString());
-			context.CodeBuilder.WriteLine(';');
-		}
-
-		private static void WriteBlockBody(CopyFromMethodData method, CopyFromPassContext context, MethodDeclarationSyntax decl)
-		{
-			BlockSyntax block = (BlockSyntax)WriteMethodHead(method, context, decl.Modifiers, decl.Body!);
-			context.CodeBuilder.BeginBlock();
-
-			foreach (StatementSyntax statement in block.Statements)
-			{
+				string documentationText = TryApplyPattern(method, context, doc.ToFullString());
 				context.CodeBuilder.Indent();
-				context.CodeBuilder.WriteLine(statement.ToString());
+				context.CodeBuilder.Write(documentationText);
+			}
+
+			if (target.AdditionalNodes.HasFlag(AdditionalNodes.Attributes))
+			{
+				SyntaxList<AttributeListSyntax> attributeLists;
+
+				switch (declaration)
+				{
+					case BaseMethodDeclarationSyntax decl:
+						attributeLists = decl.AttributeLists;
+						break;
+
+					case AccessorDeclarationSyntax accessor:
+						attributeLists = accessor.AttributeLists;
+						break;
+
+					default:
+						return;
+				}
+
+				TrySkipGeneratorAttributes(ref attributeLists, method.SemanticModel, context);
+				string attributeText = HandleAttributeText(method, attributeLists, context);
+				context.CodeBuilder.Write(attributeText);
 			}
 		}
 
 		private static void HandleGenericMethod(IMethodSymbol target, ref SyntaxNode currentNode)
 		{
-			if(!target.IsGenericMethod)
+			if (!target.IsGenericMethod)
 			{
 				return;
 			}
@@ -80,14 +62,31 @@ namespace Durian.Analysis.CopyFrom
 			ReplaceTypeParameters(ref currentNode, replacer, replacements);
 		}
 
-		private static SyntaxNode WriteMethodHead(CopyFromMethodData method, CopyFromPassContext context, SyntaxTokenList modifiers, SyntaxNode currentNode)
+		private static void WriteBlockBody(CopyFromMethodData method, CopyFromPassContext context, BlockSyntax decl)
+		{
+			BlockSyntax block = (BlockSyntax)WriteMethodHead(method, context, decl);
+			context.CodeBuilder.BeginBlock();
+
+			foreach (StatementSyntax statement in block.Statements)
+			{
+				context.CodeBuilder.Indent();
+				context.CodeBuilder.WriteLine(statement.ToString());
+			}
+		}
+
+		private static void WriteExpressionBody(CopyFromMethodData method, CopyFromPassContext context, ArrowExpressionClauseSyntax decl)
+		{
+			ArrowExpressionClauseSyntax expression = (ArrowExpressionClauseSyntax)WriteMethodHead(method, context, decl);
+			context.CodeBuilder.Write(" =>");
+			context.CodeBuilder.Write(expression.Expression.ToFullString());
+			context.CodeBuilder.WriteLine(';');
+		}
+
+		private static SyntaxNode WriteMethodHead(CopyFromMethodData method, CopyFromPassContext context, SyntaxNode currentNode)
 		{
 			context.CodeBuilder.Indent();
 
-			if (modifiers.Any(m => SyntaxFacts.IsAccessibilityModifier(m.Kind())))
-			{
-				context.CodeBuilder.Accessibility(method.Symbol);
-			}
+			context.CodeBuilder.Accessibility(method.Symbol, true);
 
 			if (method.Symbol.IsStatic)
 			{
@@ -131,6 +130,63 @@ namespace Durian.Analysis.CopyFrom
 
 			HandleGenericMethod(method.Target.Symbol, ref currentNode);
 			return currentNode;
+		}
+
+		private bool GenerateMethod(CopyFromMethodData method, string hintName, CopyFromPassContext context)
+		{
+			SyntaxNode? node;
+			SyntaxNode declaration;
+
+			if (method.Target.Symbol.IsAccessor())
+			{
+				declaration = method.Target.Symbol.GetSyntax<SyntaxNode>();
+
+				switch (declaration)
+				{
+					case AccessorDeclarationSyntax accessor:
+						node = accessor.GetBody();
+						break;
+
+					case ArrowExpressionClauseSyntax arrow:
+						node = arrow;
+						break;
+
+					default:
+						return false;
+				}
+			}
+			else
+			{
+				BaseMethodDeclarationSyntax targetMethod = method.Target.Symbol.GetSyntax<BaseMethodDeclarationSyntax>();
+				declaration = targetMethod;
+				node = targetMethod.GetBody();
+			}
+
+			switch (node)
+			{
+				case BlockSyntax block:
+					WriteDeclarationLead(context.CodeBuilder, method, method.Target.Usings);
+					HandleAdditionalNodes(method, method.Target, declaration, context);
+					WriteGenerationAttributes(method.Target.Symbol.ConstructedFrom, context);
+					WriteBlockBody(method, context, block);
+					break;
+
+				case ArrowExpressionClauseSyntax arrow:
+					WriteDeclarationLead(context.CodeBuilder, method, method.Target.Usings);
+					HandleAdditionalNodes(method, method.Target, declaration, context);
+					WriteGenerationAttributes(method.Target.Symbol.ConstructedFrom, context);
+					WriteExpressionBody(method, context, arrow);
+					break;
+
+				default:
+					return false;
+			}
+
+			context.CodeBuilder.EndAllBlocks();
+
+			AddSourceWithOriginal(method.Declaration, hintName, context);
+
+			return true;
 		}
 	}
 }

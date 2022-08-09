@@ -97,23 +97,23 @@ namespace Durian.Analysis.CopyFrom
 			return target.Symbol.GetPartialDeclarations<TypeDeclarationSyntax>().ToArray();
 		}
 
-		private static void HandleSpecialMemberTypes(ref SyntaxNode member, CopyFromTypeData type, INamedTypeSymbol target)
+		private static void HandleSpecialMemberTypes(ref SyntaxNode member, CopyFromTypeData data, INamedTypeSymbol target)
 		{
 			switch (member)
 			{
 				case ConstructorDeclarationSyntax ctor:
-					member = ctor.WithIdentifier(SyntaxFactory.Identifier(type.Name).WithTriviaFrom(ctor.Identifier));
+					member = ctor.WithIdentifier(SyntaxFactory.Identifier(data.Name).WithTriviaFrom(ctor.Identifier));
 					break;
 
 				case DestructorDeclarationSyntax dtor:
-					member = dtor.WithIdentifier(SyntaxFactory.Identifier(type.Name).WithTriviaFrom(dtor.Identifier));
+					member = dtor.WithIdentifier(SyntaxFactory.Identifier(data.Name).WithTriviaFrom(dtor.Identifier));
 					break;
 
 				case ConversionOperatorDeclarationSyntax conversion:
 				{
 					TypeSyntax? syntax = default;
 
-					if (SymbolEqualityComparer.Default.Equals(type.SemanticModel.GetSymbolInfo(conversion.Type).Symbol, target))
+					if (SymbolEqualityComparer.Default.Equals(data.SemanticModel.GetSymbolInfo(conversion.Type).Symbol, target))
 					{
 						InitTypeSyntax(ref syntax);
 						conversion = conversion.WithType(GetNameSyntax(syntax, ((SimpleNameSyntax)conversion.Type).Identifier));
@@ -127,7 +127,7 @@ namespace Durian.Analysis.CopyFrom
 				{
 					TypeSyntax? syntax = default;
 
-					if (SymbolEqualityComparer.Default.Equals(type.SemanticModel.GetSymbolInfo(op.ReturnType).Symbol, target))
+					if (SymbolEqualityComparer.Default.Equals(data.SemanticModel.GetSymbolInfo(op.ReturnType).Symbol, target))
 					{
 						InitTypeSyntax(ref syntax);
 						op = op.WithReturnType(GetNameSyntax(syntax, ((SimpleNameSyntax)op.ReturnType).Identifier));
@@ -140,7 +140,7 @@ namespace Durian.Analysis.CopyFrom
 
 			void InitTypeSyntax([NotNull] ref TypeSyntax? syntax)
 			{
-				syntax ??= type.Symbol.CreateTypeSyntax();
+				syntax ??= data.Symbol.CreateTypeSyntax();
 			}
 
 			List<ParameterSyntax> UpdateParameters(ref TypeSyntax? syntax, SeparatedSyntaxList<ParameterSyntax> parameters)
@@ -151,7 +151,7 @@ namespace Durian.Analysis.CopyFrom
 				{
 					ParameterSyntax parameter = parameters[i];
 
-					if (parameter.Type is not null && SymbolEqualityComparer.Default.Equals(type.SemanticModel.GetSymbolInfo(parameter.Type).Symbol, target))
+					if (parameter.Type is not null && SymbolEqualityComparer.Default.Equals(data.SemanticModel.GetSymbolInfo(parameter.Type).Symbol, target))
 					{
 						InitTypeSyntax(ref syntax);
 						parameter = parameter.WithType(GetNameSyntax(syntax, ((SimpleNameSyntax)parameter.Type).Identifier));
@@ -232,7 +232,7 @@ namespace Durian.Analysis.CopyFrom
 
 			members = new(variables.Count);
 
-			BaseFieldDeclarationSyntax newMember = (BaseFieldDeclarationSyntax)SkipGeneratorAttributes(member, semanticModel, context);
+			BaseFieldDeclarationSyntax newMember = (SkipGeneratorAttributes(member, semanticModel, context) as BaseFieldDeclarationSyntax)!;
 
 			if (field is EventFieldDeclarationSyntax)
 			{
@@ -447,19 +447,24 @@ namespace Durian.Analysis.CopyFrom
 
 			if (target.AdditionalNodes.HasFlag(AdditionalNodes.Documentation) &&
 				!hasDocumentation &&
-				declaration.GetLeadingTrivia().Where(t => t.HasStructure).Select(t => t.GetStructure()).OfType<DocumentationCommentTriviaSyntax>().FirstOrDefault() is DocumentationCommentTriviaSyntax doc
+				declaration.GetXmlDocumentation() is DocumentationCommentTriviaSyntax doc
 			)
 			{
 				ApplyLead(ref semanticModel);
 				hasDocumentation = true;
 
-				context.CodeBuilder.WriteLine(TryApplyPattern(type, context, doc.ToFullString()));
+				string documentationText = TryApplyPattern(type, context, doc.ToFullString());
+				context.CodeBuilder.WriteLine(documentationText);
 			}
 
 			if (target.AdditionalNodes.HasFlag(AdditionalNodes.Attributes) && declaration.AttributeLists.Any())
 			{
 				ApplyLead(ref semanticModel);
-				context.CodeBuilder.Write(HandleAttributeText(type, SkipGeneratorAttributes(declaration, semanticModel, context), context));
+
+				MemberDeclarationSyntax skipped = SkipGeneratorAttributes(declaration, semanticModel, context);
+
+				string attributeText = HandleAttributeText(type, skipped.AttributeLists, context);
+				context.CodeBuilder.Write(attributeText);
 			}
 
 			if (declaration.BaseList is not null && declaration.BaseList.Types.Any())

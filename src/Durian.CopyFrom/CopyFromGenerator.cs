@@ -265,13 +265,13 @@ namespace Durian.Analysis.CopyFrom
 				.FirstOrDefault();
 		}
 
-		private static string HandleAttributeText(ICopyFromMember member, MemberDeclarationSyntax declaration, CopyFromPassContext context)
+		private static string HandleAttributeText(ICopyFromMember member, SyntaxList<AttributeListSyntax> attributeLists, CopyFromPassContext context)
 		{
 			StringBuilder attributeText = new();
 
 			if (member.Patterns is null)
 			{
-				foreach (AttributeListSyntax list in declaration.AttributeLists)
+				foreach (AttributeListSyntax list in attributeLists)
 				{
 					for (int i = 0; i < context.CodeBuilder.CurrentIndent; i++)
 					{
@@ -284,7 +284,7 @@ namespace Durian.Analysis.CopyFrom
 			}
 			else
 			{
-				foreach (AttributeListSyntax list in declaration.AttributeLists)
+				foreach (AttributeListSyntax list in attributeLists)
 				{
 					for (int i = 0; i < context.CodeBuilder.CurrentIndent; i++)
 					{
@@ -318,13 +318,48 @@ namespace Durian.Analysis.CopyFrom
 			return true;
 		}
 
-		private static MemberDeclarationSyntax SkipGeneratorAttributes(MemberDeclarationSyntax node, SemanticModel semanticModel, CopyFromPassContext context)
+		private static void ReplaceTypeParameters(
+			ref SyntaxNode currentNode,
+			TypeParameterReplacer replacer,
+			List<(string identifier, string replacement)> replacements
+		)
 		{
-			SyntaxList<AttributeListSyntax> attributeLists = node.AttributeLists;
+			foreach ((string identifier, string replacement) in replacements)
+			{
+				replacer.Identifier = identifier;
+				replacer.Replacement = replacement;
 
+				currentNode = replacer.Visit(currentNode);
+			}
+		}
+
+		private static MemberDeclarationSyntax SkipGeneratorAttributes(MemberDeclarationSyntax declaration, SemanticModel semanticModel, CopyFromPassContext context)
+		{
+			SyntaxList<AttributeListSyntax> attributeLists = declaration.AttributeLists;
+
+			if (TrySkipGeneratorAttributes(ref attributeLists, semanticModel, context))
+			{
+				return declaration.WithAttributeLists(attributeLists);
+			}
+
+			return declaration;
+		}
+
+		private static string TryApplyPattern(ICopyFromMember member, CopyFromPassContext context, string input)
+		{
+			if (member.Patterns is not null)
+			{
+				return ApplyPattern(member, context, input);
+			}
+
+			return input;
+		}
+
+		private static bool TrySkipGeneratorAttributes(ref SyntaxList<AttributeListSyntax> attributeLists, SemanticModel semanticModel, CopyFromPassContext context)
+		{
 			if (!attributeLists.Any())
 			{
-				return node;
+				return false;
 			}
 
 			List<AttributeListSyntax> newAttributeLists = new(attributeLists.Count);
@@ -377,20 +412,11 @@ namespace Durian.Analysis.CopyFrom
 
 			if (isChanged)
 			{
-				return node.WithAttributeLists(SyntaxFactory.List(newAttributeLists));
+				attributeLists = SyntaxFactory.List(newAttributeLists);
+				return true;
 			}
 
-			return node;
-		}
-
-		private static string TryApplyPattern(ICopyFromMember member, CopyFromPassContext context, string input)
-		{
-			if (member.Patterns is not null)
-			{
-				return ApplyPattern(member, context, input);
-			}
-
-			return input;
+			return false;
 		}
 
 		private bool Generate(
@@ -491,7 +517,7 @@ namespace Durian.Analysis.CopyFrom
 				{
 					(SyntaxReference reference, string hintName) = dependencies.Dequeue();
 
-					SyntaxNode node = (SyntaxNode)reference.GetSyntax();
+					SyntaxNode node = reference.GetSyntax();
 
 					yield return (node, hintName);
 				}
@@ -578,21 +604,6 @@ namespace Durian.Analysis.CopyFrom
 				{
 					context.FileNameProvider.Success();
 				}
-			}
-		}
-
-		private static void ReplaceTypeParameters(
-			ref SyntaxNode currentNode,
-			TypeParameterReplacer replacer,
-			List<(string identifier, string replacement)> replacements
-		)
-		{
-			foreach ((string identifier, string replacement) in replacements)
-			{
-				replacer.Identifier = identifier;
-				replacer.Replacement = replacement;
-
-				currentNode = replacer.Visit(currentNode);
 			}
 		}
 
