@@ -59,6 +59,12 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 			context.RegisterCodeFix(action, data.Diagnostic);
 		}
 
+		/// <inheritdoc/>
+		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
+		{
+			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase };
+		}
+
 		internal static Document Execute(CodeFixExecutionContext<AttributeSyntax> context, ITypeSymbol targetType)
 		{
 			INamespaceSymbol? @namespace = (context.SemanticModel.GetSymbolInfo(context.Node).Symbol?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
@@ -102,12 +108,6 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 			}
 
 			return null;
-		}
-
-		/// <inheritdoc/>
-		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
-		{
-			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase };
 		}
 
 		private CodeAction GetCodeAction(in CodeFixData<AttributeSyntax> data, ITypeSymbol targetType)

@@ -14,7 +14,7 @@ namespace Durian.Analysis.SymbolContainers
 		ParentToChild = 0,
 
 		/// <summary>
-		/// Parent the value is returned last, proceeded by its children.
+		/// Parent value is returned last, proceeded by its children.
 		/// </summary>
 		ChildToParent = 1
 	}

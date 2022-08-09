@@ -872,9 +872,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the containing namespaces of.</param>
 		/// <param name="order">Specifies ordering of the returned values.</param>
-		public static IReturnOrderEnumerable<string> GetContainingNamespaces(this SyntaxNode node, ReturnOrder order = ReturnOrder.ChildToParent)
+		public static IReturnOrderEnumerable<string> GetContainingNamespaces(this SyntaxNode node, ReturnOrder order = ReturnOrder.ParentToChild)
 		{
-			return Yield().OrderBy(order);
+			return Yield().OrderBy(order, ReturnOrder.ParentToChild);
 
 			IEnumerable<string> Yield()
 			{
@@ -910,9 +910,9 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the containing <see cref="BaseTypeDeclarationSyntax"/>es of.</param>
 		/// <param name="order">Specifies ordering of the returned values.</param>
-		public static IReturnOrderEnumerable<BaseTypeDeclarationSyntax> GetContainingTypes(this SyntaxNode node, ReturnOrder order = ReturnOrder.ChildToParent)
+		public static IReturnOrderEnumerable<BaseTypeDeclarationSyntax> GetContainingTypes(this SyntaxNode node, ReturnOrder order = ReturnOrder.ParentToChild)
 		{
-			return Yield().OrderBy(order);
+			return Yield().OrderBy(order, ReturnOrder.ParentToChild);
 
 			IEnumerable<BaseTypeDeclarationSyntax> Yield()
 			{

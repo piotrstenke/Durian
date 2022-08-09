@@ -90,7 +90,8 @@ namespace Durian.Analysis.CodeFixes
 			CompilationUnitSyntax root,
 			T node,
 			CSharpCompilation compilation,
-			CancellationToken cancellationToken = default)
+			CancellationToken cancellationToken = default
+		)
 		{
 			return new CodeFixExecutionContext<T>(diagnostic, document, root, node, compilation, cancellationToken);
 		}

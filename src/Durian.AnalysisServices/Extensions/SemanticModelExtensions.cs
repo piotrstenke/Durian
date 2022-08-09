@@ -183,7 +183,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IReturnOrderEnumerable<IMethodSymbol> GetBaseConstructors(this SemanticModel semanticModel, IMethodSymbol ctor, bool includeSelf = false, ReturnOrder order = ReturnOrder.ChildToParent)
 		{
-			return Yield().OrderBy(order);
+			return Yield().OrderBy(order, ReturnOrder.ParentToChild);
 
 			IEnumerable<IMethodSymbol> Yield()
 			{
@@ -211,7 +211,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IReturnOrderEnumerable<IMethodSymbol> GetBaseConstructors(this SemanticModel semanticModel, ConstructorDeclarationSyntax ctor, bool includeSelf = false, ReturnOrder order = ReturnOrder.ChildToParent)
 		{
-			return Yield().OrderBy(order);
+			return Yield().OrderBy(order, ReturnOrder.ParentToChild);
 
 			IEnumerable<IMethodSymbol> Yield()
 			{

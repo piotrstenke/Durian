@@ -254,9 +254,9 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to get the inner types of.</param>
 		/// <param name="includeSelf">Determines whether to include the <paramref name="type"/> in the returned collection if its a <see cref="INamedTypeSymbol"/>.</param>
 		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static IReturnOrderEnumerable<INamedTypeSymbol> GetAllInnerTypes(this INamespaceOrTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.ChildToParent)
+		public static IReturnOrderEnumerable<INamedTypeSymbol> GetAllInnerTypes(this INamespaceOrTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.ParentToChild)
 		{
-			return Yield().OrderBy(order);
+			return Yield().OrderBy(order, ReturnOrder.ChildToParent);
 
 			IEnumerable<INamedTypeSymbol> Yield()
 			{
@@ -296,9 +296,9 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <inheritdoc cref="GetAllMembers(INamedTypeSymbol, string, ReturnOrder)"/>
-		public static IReturnOrderEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, ReturnOrder order = ReturnOrder.ChildToParent)
+		public static IReturnOrderEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, ReturnOrder order = ReturnOrder.ParentToChild)
 		{
-			return GetBaseTypes_Internal(type, true).SelectMany(t => t.GetMembers()).OrderBy(order);
+			return GetBaseTypes_Internal(type, true).SelectMany(t => t.GetMembers()).OrderBy(order, ReturnOrder.ChildToParent);
 		}
 
 		/// <summary>
@@ -307,9 +307,9 @@ namespace Durian.Analysis.Extensions
 		/// <param name="type"><see cref="ITypeSymbol"/> to get the members of.</param>
 		/// <param name="name">Name of the members to find.</param>
 		/// <param name="order">Specifies ordering of the returned members.</param>
-		public static IReturnOrderEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, string name, ReturnOrder order = ReturnOrder.ChildToParent)
+		public static IReturnOrderEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol type, string name, ReturnOrder order = ReturnOrder.ParentToChild)
 		{
-			return GetBaseTypes_Internal(type, true).SelectMany(t => t.GetMembers(name)).OrderBy(order);
+			return GetBaseTypes_Internal(type, true).SelectMany(t => t.GetMembers(name)).OrderBy(order, ReturnOrder.ChildToParent);
 		}
 
 		/// <summary>
@@ -813,7 +813,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IReturnOrderEnumerable<INamedTypeSymbol> GetBaseTypes(this INamedTypeSymbol type, bool includeSelf = false, ReturnOrder order = ReturnOrder.ChildToParent)
 		{
-			return GetBaseTypes_Internal(type, includeSelf).OrderBy(order);
+			return GetBaseTypes_Internal(type, includeSelf).OrderBy(order, ReturnOrder.ParentToChild);
 		}
 
 		/// <summary>
@@ -966,7 +966,7 @@ namespace Durian.Analysis.Extensions
 				namespaces = namespaces.Where(n => !n.IsGlobalNamespace);
 			}
 
-			return namespaces.OrderBy(order);
+			return namespaces.OrderBy(order, ReturnOrder.ParentToChild);
 
 			static IEnumerable<INamespaceSymbol> Yield(ISymbol symbol)
 			{
@@ -1006,7 +1006,7 @@ namespace Durian.Analysis.Extensions
 				second = symbol.GetContainingNamespaces(includeGlobal, order);
 			}
 
-			return first.Concat(second).OrderBy(order, false);
+			return first.Concat(second).OrderBy(order, GetNoReverseFlag(order));
 		}
 
 		/// <summary>
@@ -1017,7 +1017,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IReturnOrderEnumerable<INamedTypeSymbol> GetContainingTypes(this ISymbol symbol, bool includeSelf = false, ReturnOrder order = ReturnOrder.ParentToChild)
 		{
-			return Yield(symbol, includeSelf).OrderBy(order);
+			return Yield(symbol, includeSelf).OrderBy(order, ReturnOrder.ParentToChild);
 
 			static IEnumerable<INamedTypeSymbol> Yield(ISymbol symbol, bool includeSelf)
 			{
@@ -1252,7 +1252,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IReturnOrderEnumerable<ITypeSymbol> GetElementTypes(this IArrayTypeSymbol array, ReturnOrder order = ReturnOrder.ParentToChild)
 		{
-			return Yield().OrderBy(order);
+			return Yield().OrderBy(order, ReturnOrder.ChildToParent);
 
 			IEnumerable<ITypeSymbol> Yield()
 			{
@@ -1275,7 +1275,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IReturnOrderEnumerable<ITypeSymbol> GetElementTypes(this IPointerTypeSymbol pointer, ReturnOrder order = ReturnOrder.ParentToChild)
 		{
-			return Yield().OrderBy(order);
+			return Yield().OrderBy(order, ReturnOrder.ChildToParent);
 
 			IEnumerable<ITypeSymbol> Yield()
 			{
@@ -1712,7 +1712,7 @@ namespace Durian.Analysis.Extensions
 				collection = new[] { method }.Concat(collection);
 			}
 
-			return GetNested().OrderBy(order);
+			return GetNested().OrderBy(order, ReturnOrder.ChildToParent);
 
 			IEnumerable<IMethodSymbol> GetFuncs(IMethodSymbol method)
 			{
@@ -2456,7 +2456,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="order">Specifies ordering of the returned members.</param>
 		public static IReturnOrderEnumerable<INamespaceSymbol> GetSubNamespaces(this INamespaceSymbol @namespace, bool includeSelf = false, ReturnOrder order = ReturnOrder.ParentToChild)
 		{
-			return Yield().OrderBy(order);
+			return Yield().OrderBy(order, ReturnOrder.ParentToChild);
 
 			IEnumerable<INamespaceSymbol> Yield()
 			{
@@ -3549,9 +3549,9 @@ namespace Durian.Analysis.Extensions
 			};
 		}
 
-		internal static IReturnOrderEnumerable<T> OrderBy<T>(this IEnumerable<T> collection, ReturnOrder order, bool reverse = true)
+		internal static IReturnOrderEnumerable<T> OrderBy<T>(this IEnumerable<T> collection, ReturnOrder order, ReturnOrder reverseIfThis)
 		{
-			if (reverse && order == ReturnOrder.ParentToChild)
+			if (order == reverseIfThis)
 			{
 				collection = collection.Reverse();
 			}
@@ -3690,6 +3690,14 @@ namespace Durian.Analysis.Extensions
 		private static IEnumerable<T> GetImplicitImplementations_Internal<T>(T symbol) where T : ISymbol
 		{
 			return GetImplicitImplementations_Internal(symbol, intf => intf.GetMembers(symbol.Name));
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static ReturnOrder GetNoReverseFlag(ReturnOrder currentOrder)
+		{
+			const ReturnOrder defaultFlag = (ReturnOrder)(-1);
+
+			return currentOrder == defaultFlag ? (ReturnOrder)(-2) : defaultFlag;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
