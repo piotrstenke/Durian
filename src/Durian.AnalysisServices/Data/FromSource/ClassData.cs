@@ -74,7 +74,7 @@ namespace Durian.Analysis.Data.FromSource
 		/// <summary>
 		/// <see cref="INamedTypeSymbol"/> associated with the <see cref="TypeData{TDeclaration}.Declaration"/>.
 		/// </summary>
-		public new INamedTypeSymbol Symbol => (base.Symbol as INamedTypeSymbol)!;
+		public new INamedTypeSymbol Symbol => base.Symbol!;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ClassData"/> class.

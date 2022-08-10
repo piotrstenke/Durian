@@ -152,7 +152,7 @@ namespace Durian.Analysis.Data.FromSource
 		{
 			get
 			{
-				if(_body.IsDefault)
+				if (_body.IsDefault)
 				{
 					_body = Declaration.GetBody();
 				}
@@ -347,12 +347,12 @@ namespace Durian.Analysis.Data.FromSource
 		/// <inheritdoc/>
 		public ISymbolContainer<IMethodSymbol, ILocalFunctionData> GetLocalFunctions(IncludedMembers members)
 		{
-			if(_localFunctions is null)
+			if (_localFunctions is null)
 			{
 				_localFunctions = new LocalFunctionsContainer(this, ParentCompilation);
 			}
 
-			if(_localFunctions is IMappedSymbolContainer<IMethodSymbol, ILocalFunctionData, IncludedMembers> mapped)
+			if (_localFunctions is IMappedSymbolContainer<IMethodSymbol, ILocalFunctionData, IncludedMembers> mapped)
 			{
 				return mapped.ResolveLevel(members);
 			}
@@ -363,7 +363,7 @@ namespace Durian.Analysis.Data.FromSource
 		/// <inheritdoc/>
 		public ISymbolContainer<IMethodSymbol, IMethodData> GetOverloads(IncludedMembers members)
 		{
-			if(_overloads is null)
+			if (_overloads is null)
 			{
 				_overloads = new OverloadsContainer(this, ParentCompilation);
 			}

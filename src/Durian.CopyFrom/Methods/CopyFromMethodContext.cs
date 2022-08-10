@@ -6,7 +6,6 @@ using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.CopyFrom.Methods

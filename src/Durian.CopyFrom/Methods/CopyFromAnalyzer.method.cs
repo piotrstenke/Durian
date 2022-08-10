@@ -266,7 +266,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				case IMethodSymbol method:
 
-					if(method.PartialImplementationPart is not null)
+					if (method.PartialImplementationPart is not null)
 					{
 						method = method.PartialImplementationPart;
 					}
@@ -526,7 +526,7 @@ namespace Durian.Analysis.CopyFrom
 		{
 			AttributeData? attribute = target.GetAttribute(context.Compilation.CopyFromMethodAttribute!);
 
-			if(attribute is null)
+			if (attribute is null)
 			{
 				return false;
 			}
@@ -752,7 +752,7 @@ namespace Durian.Analysis.CopyFrom
 				diagnosticReceiver.ReportDiagnostic(DUR0221_CircularDependency, location, context.Symbol);
 			}
 
-			if(dependencies.Count == 0 && !target.HasImplementation())
+			if (dependencies.Count == 0 && !target.HasImplementation())
 			{
 				location ??= attribute.GetLocation();
 				diagnosticReceiver.ReportDiagnostic(DUR0209_CannotCopyFromMethodWithoutImplementation, location, context.Symbol, value);

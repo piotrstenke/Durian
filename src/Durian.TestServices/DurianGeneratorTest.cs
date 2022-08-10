@@ -113,7 +113,7 @@ namespace Durian.TestServices
 		/// <param name="disposing">Determines whether this method was called from the <see cref="IDisposable.Dispose"/> method or object's finalizer.</param>
 		protected virtual void Dispose(bool disposing)
 		{
-			if(disposing)
+			if (disposing)
 			{
 				UnderlayingGenerator.Dispose();
 			}

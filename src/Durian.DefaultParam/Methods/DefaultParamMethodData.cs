@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Durian.Analysis.Data;
 using Durian.Analysis.Data.FromSource;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.DefaultParam.Methods

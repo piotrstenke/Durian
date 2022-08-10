@@ -2,12 +2,12 @@
 // Licensed under the MIT license.
 
 using System;
-using Microsoft.CodeAnalysis;
-using Durian.Analysis.Extensions;
-using Durian.Analysis.SymbolContainers;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.ComponentModel;
 using System.Linq;
+using Durian.Analysis.Extensions;
+using Durian.Analysis.SymbolContainers;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data.FromSource
 {

@@ -372,7 +372,7 @@ namespace Durian.Analysis.DefaultParam
 					return false;
 				}
 
-				if (!HasDefaultParamAttribute((parent.Symbol as INamedTypeSymbol)!, compilation))
+				if (!HasDefaultParamAttribute(parent.Symbol!, compilation))
 				{
 					containingTypes = null;
 					return false;

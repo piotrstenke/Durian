@@ -46,7 +46,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				case BaseMethodDeclarationSyntax method:
 
-					if(method is ConstructorDeclarationSyntax)
+					if (method is ConstructorDeclarationSyntax)
 					{
 						return;
 					}
@@ -60,7 +60,7 @@ namespace Durian.Analysis.CopyFrom
 
 				case AccessorDeclarationSyntax accessor:
 
-					if(HasValidAttributeList(accessor.AttributeLists, SyntaxKind.MethodKeyword))
+					if (HasValidAttributeList(accessor.AttributeLists, SyntaxKind.MethodKeyword))
 					{
 						CandidateMethods.Add(accessor);
 					}

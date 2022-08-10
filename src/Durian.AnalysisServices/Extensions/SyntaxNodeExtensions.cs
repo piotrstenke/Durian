@@ -309,7 +309,7 @@ namespace Durian.Analysis.Extensions
 					return node is
 						BaseTypeDeclarationSyntax or
 						DelegateDeclarationSyntax
-						? node as CSharpSyntaxNode: default;
+						? node as CSharpSyntaxNode : default;
 
 				case AttributeTarget.TypeVar:
 					return node as TypeParameterSyntax;
@@ -650,17 +650,17 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="AnonymousFunctionExpressionSyntax"/> to get the type of body of.</param>
 		public static LambdaStyle GetBodyType(this AnonymousFunctionExpressionSyntax node)
 		{
-			if(node is AnonymousMethodExpressionSyntax)
+			if (node is AnonymousMethodExpressionSyntax)
 			{
 				return LambdaStyle.Method;
 			}
 
-			if(node.Body is not null)
+			if (node.Body is not null)
 			{
 				return LambdaStyle.Block;
 			}
 
-			if(node.ExpressionBody is not null)
+			if (node.ExpressionBody is not null)
 			{
 				return LambdaStyle.Expression;
 			}
@@ -1066,7 +1066,7 @@ namespace Durian.Analysis.Extensions
 					lowest = current;
 				}
 
-				n = n.Parent as SyntaxNode;
+				n = n.Parent;
 			}
 
 			return lowest;
@@ -1925,7 +1925,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="kind">Kind of special constructor to return.</param>
 		public static ConstructorDeclarationSyntax? GetSpecialConstructor(this TypeDeclarationSyntax node, SpecialConstructor kind)
 		{
-			if(kind == SpecialConstructor.None || kind == SpecialConstructor.Default)
+			if (kind == SpecialConstructor.None || kind == SpecialConstructor.Default)
 			{
 				return default;
 			}
@@ -2135,7 +2135,7 @@ namespace Durian.Analysis.Extensions
 				return TypeKeyword.NUInt;
 			}
 
-			if(node.IsDynamic())
+			if (node.IsDynamic())
 			{
 				return TypeKeyword.Dynamic;
 			}
@@ -2240,12 +2240,12 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="UsingDirectiveSyntax"/> to get the <see cref="UsingKind"/> associated with.</param>
 		public static UsingKind GetUsingKind(this UsingDirectiveSyntax node)
 		{
-			if(node.Alias is not null)
+			if (node.Alias is not null)
 			{
 				return UsingKind.Alias;
 			}
 
-			if(node.StaticKeyword.IsKind(SyntaxKind.StaticKeyword))
+			if (node.StaticKeyword.IsKind(SyntaxKind.StaticKeyword))
 			{
 				return UsingKind.Static;
 			}
@@ -2449,7 +2449,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="SyntaxNode"/> get the <see cref="DocumentationCommentTriviaSyntax"/> applied to.</param>
 		public static DocumentationCommentTriviaSyntax? GetXmlDocumentation(this SyntaxNode node)
 		{
-			if(!node.HasLeadingTrivia)
+			if (!node.HasLeadingTrivia)
 			{
 				return default;
 			}
@@ -2457,14 +2457,14 @@ namespace Durian.Analysis.Extensions
 			SyntaxTriviaList leadingTrivia = node.GetLeadingTrivia();
 			SyntaxTrivia token = leadingTrivia.FirstOrDefault(token => token.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) || token.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia));
 
-			if(token.IsKind(SyntaxKind.None))
+			if (token.IsKind(SyntaxKind.None))
 			{
 				return default;
 			}
 
 			SyntaxNode? structure = token.GetStructure();
 
-			return structure as	DocumentationCommentTriviaSyntax;
+			return structure as DocumentationCommentTriviaSyntax;
 		}
 
 		/// <summary>

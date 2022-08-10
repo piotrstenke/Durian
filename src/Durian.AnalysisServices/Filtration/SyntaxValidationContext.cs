@@ -4,7 +4,6 @@
 using System.Threading;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Filtration
 {

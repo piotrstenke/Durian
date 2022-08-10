@@ -27,14 +27,14 @@ namespace Durian.Analysis.Data
 		{
 			get
 			{
-				if(_member is null)
+				if (_member is null)
 				{
-					if(Compilation is null)
+					if (Compilation is null)
 					{
 						throw new InvalidOperationException($"Symbol '{Symbol}' cannot be converted to IMemberData, because no parent compilation was specified");
 					}
 
-					if(Symbol.ToData(Compilation) is not TData data)
+					if (Symbol.ToData(Compilation) is not TData data)
 					{
 						throw new InvalidOperationException($"Symbol data is not of type '{typeof(TData)}'");
 					}

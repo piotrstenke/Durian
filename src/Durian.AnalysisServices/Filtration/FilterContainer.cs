@@ -51,7 +51,7 @@ namespace Durian.Analysis.Filtration
 
 		bool ISealable.CanBeSealed => !IsSealed;
 
-		bool ISealable.CanBeUnsealed =>IsSealed;
+		bool ISealable.CanBeUnsealed => IsSealed;
 
 		/// <inheritdoc cref="GetGroup(int)"/>
 		public FilterGroup<TFilter> this[int index] => GetGroup(index);
@@ -400,7 +400,7 @@ namespace Durian.Analysis.Filtration
 		/// <inheritdoc/>
 		public bool Seal()
 		{
-			if(IsSealed)
+			if (IsSealed)
 			{
 				return false;
 			}
@@ -485,7 +485,7 @@ namespace Durian.Analysis.Filtration
 		/// <inheritdoc/>
 		public bool Unseal()
 		{
-			if(!IsSealed)
+			if (!IsSealed)
 			{
 				return false;
 			}

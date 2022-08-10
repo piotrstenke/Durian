@@ -10,7 +10,6 @@ using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Logging
 {

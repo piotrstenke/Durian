@@ -33,17 +33,17 @@ namespace Durian.Analysis.CopyFrom.CodeFixes
 		/// <inheritdoc/>
 		protected override Task<Document> ExecuteAsync(CodeFixExecutionContext<AttributeSyntax> context)
 		{
-			if(context.Node.Parent is not AttributeListSyntax attrList || attrList.Parent is not TypeDeclarationSyntax decl)
+			if (context.Node.Parent is not AttributeListSyntax attrList || attrList.Parent is not TypeDeclarationSyntax decl)
 			{
 				return Result();
 			}
 
-			if(context.SemanticModel.GetDeclaredSymbol(decl, context.CancellationToken) is not INamedTypeSymbol type)
+			if (context.SemanticModel.GetDeclaredSymbol(decl, context.CancellationToken) is not INamedTypeSymbol type)
 			{
 				return Result();
 			}
 
-			if(context.Compilation.GetTypeByMetadataName(CopyFromTypeAttributeProvider.FullName) is not INamedTypeSymbol attributeSymbol)
+			if (context.Compilation.GetTypeByMetadataName(CopyFromTypeAttributeProvider.FullName) is not INamedTypeSymbol attributeSymbol)
 			{
 				return Result();
 			}
@@ -61,7 +61,7 @@ namespace Durian.Analysis.CopyFrom.CodeFixes
 					.Any(attr => attr is not null && SymbolEqualityComparer.Default.Equals(attr, attributeSymbol))
 				);
 
-			if(target is null)
+			if (target is null)
 			{
 				return Result();
 			}

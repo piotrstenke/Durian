@@ -145,7 +145,7 @@ namespace Durian.Analysis.Data.FromSource
 		{
 			get
 			{
-				if(_explicitImplementation.IsDefault)
+				if (_explicitImplementation.IsDefault)
 				{
 					_explicitImplementation = new(Symbol.ExplicitInterfaceImplementations.FirstOrDefault()?.ToDataOrSymbol(ParentCompilation));
 				}

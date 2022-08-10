@@ -2,10 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.SymbolContainers
 {

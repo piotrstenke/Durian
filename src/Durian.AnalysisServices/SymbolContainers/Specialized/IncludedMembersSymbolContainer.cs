@@ -272,9 +272,9 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 
 			bool CheckLevel(IncludedMembers target)
 			{
-				if(level > target && AllowLevel(target))
+				if (level > target && AllowLevel(target))
 				{
-					if(skipRoot && !isSkipped)
+					if (skipRoot && !isSkipped)
 					{
 						isSkipped = true;
 						return false;

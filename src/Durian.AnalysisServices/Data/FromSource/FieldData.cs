@@ -132,7 +132,7 @@ namespace Durian.Analysis.Data.FromSource
 		{
 			get
 			{
-				if(!_customOffset.HasValue)
+				if (!_customOffset.HasValue)
 				{
 					AttributeData? attribute = this.GetSpecialAttribute(SpecialAttribute.FieldOffset);
 

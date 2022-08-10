@@ -233,11 +233,11 @@ namespace Durian.Analysis.Data.FromSource
 					{
 						_overriddenEvent = null;
 					}
-					else if(_overriddenEvents is null)
+					else if (_overriddenEvents is null)
 					{
 						_overriddenEvent = new(Symbol.OverriddenEvent.ToDataOrSymbol(ParentCompilation));
 					}
-					else if(_overriddenEvents.Count > 0)
+					else if (_overriddenEvents.Count > 0)
 					{
 						_overriddenEvent = new(_overriddenEvents.First(ReturnOrder.ChildToParent));
 					}

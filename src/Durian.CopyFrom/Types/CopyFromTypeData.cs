@@ -42,7 +42,7 @@ namespace Durian.Analysis.CopyFrom.Types
 			{
 				base.Map(properties);
 
-				if(properties is Properties props)
+				if (properties is Properties props)
 				{
 					props.Dependencies = Dependencies;
 					props.Patterns = Patterns;
@@ -115,7 +115,7 @@ namespace Durian.Analysis.CopyFrom.Types
 		{
 			base.Map(properties);
 
-			if(properties is Properties props)
+			if (properties is Properties props)
 			{
 				props.Dependencies = Dependencies;
 				props.Patterns = Patterns;
@@ -141,7 +141,7 @@ namespace Durian.Analysis.CopyFrom.Types
 		{
 			base.SetProperties(properties);
 
-			if(properties is Properties props)
+			if (properties is Properties props)
 			{
 				Patterns = props.Patterns;
 				Dependencies = props.Dependencies;

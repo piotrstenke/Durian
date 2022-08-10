@@ -189,7 +189,7 @@ namespace Durian.Analysis.Data.FromSource
 			/// <param name="fillWithDefault">Determines whether to fill the current properties with default data.</param>
 			public Properties(bool fillWithDefault)
 			{
-				if(fillWithDefault)
+				if (fillWithDefault)
 				{
 					FillWithDefaultData();
 				}
@@ -300,7 +300,7 @@ namespace Durian.Analysis.Data.FromSource
 		{
 			get
 			{
-				if(_containingMember.IsDefault)
+				if (_containingMember.IsDefault)
 				{
 					switch (Symbol.ContainingSymbol)
 					{
@@ -333,13 +333,13 @@ namespace Durian.Analysis.Data.FromSource
 		{
 			get
 			{
-				if(_containingNamespace.IsDefault)
+				if (_containingNamespace.IsDefault)
 				{
-					if(Symbol.ContainingNamespace is null)
+					if (Symbol.ContainingNamespace is null)
 					{
 						_containingNamespace = null;
 					}
-					else if(_containingNamespaces is not null && !Symbol.ContainingNamespace.IsGlobalNamespace)
+					else if (_containingNamespaces is not null && !Symbol.ContainingNamespace.IsGlobalNamespace)
 					{
 						_containingNamespace = new(_containingNamespaces.First(ReturnOrder.ChildToParent));
 					}
@@ -369,7 +369,7 @@ namespace Durian.Analysis.Data.FromSource
 			{
 				if (_containingType.IsDefault)
 				{
-					if(Symbol.ContainingType is null)
+					if (Symbol.ContainingType is null)
 					{
 						_containingType = null;
 					}
@@ -404,7 +404,7 @@ namespace Durian.Analysis.Data.FromSource
 		{
 			get
 			{
-				if(_genericName is null)
+				if (_genericName is null)
 				{
 					CodeBuilder builder = new(false);
 					builder.Name(this, SymbolName.Generic);

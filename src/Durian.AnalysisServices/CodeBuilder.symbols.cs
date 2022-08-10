@@ -36,14 +36,14 @@ namespace Durian.Analysis
 
 			Accessibility defaultAccessibility = symbol.GetDefaultAccessibility(false);
 
-			if(symbol.DeclaredAccessibility != defaultAccessibility && symbol.DeclaredAccessibility.GetText() is string keyword)
+			if (symbol.DeclaredAccessibility != defaultAccessibility && symbol.DeclaredAccessibility.GetText() is string keyword)
 			{
 				TextBuilder.Append(keyword);
 				TextBuilder.Append(' ');
 				return this;
 			}
 
-			if(!explicitDefaultAccessibility)
+			if (!explicitDefaultAccessibility)
 			{
 				return this;
 			}
@@ -454,17 +454,17 @@ namespace Durian.Analysis
 			{
 				TypeParameterList(type.TypeParameters);
 
-				if(baseTypeList)
+				if (baseTypeList)
 				{
 					BaseTypeList(type);
 				}
 
-				if(constraints)
+				if (constraints)
 				{
 					ConstraintList(type.TypeParameters);
 				}
 			}
-			else if(baseTypeList)
+			else if (baseTypeList)
 			{
 				BaseTypeList(type);
 			}
@@ -949,7 +949,7 @@ namespace Durian.Analysis
 				TypeParameterList(type.TypeParameters, true);
 				ParameterList(type.DelegateInvokeMethod);
 
-				if(constraints)
+				if (constraints)
 				{
 					ConstraintList(type.TypeParameters);
 				}
@@ -1694,7 +1694,7 @@ namespace Durian.Analysis
 
 			bool isPartial = method.IsPartial(out MethodDeclarationSyntax? decl);
 
-			if(!isPartial || (decl is not null && decl.GetAccessibility() != default))
+			if (!isPartial || (decl is not null && decl.GetAccessibility() != default))
 			{
 				Accessibility(method);
 			}
@@ -1715,7 +1715,7 @@ namespace Durian.Analysis
 				TextBuilder.Append("async ");
 			}
 
-			if(isPartial)
+			if (isPartial)
 			{
 				TextBuilder.Append("partial ");
 			}
@@ -2013,13 +2013,13 @@ namespace Durian.Analysis
 					ParameterType(parameters[i]);
 				}
 
-				if(isArgList)
+				if (isArgList)
 				{
 					CommaSpace();
 					TextBuilder.Append("__arglist");
 				}
 			}
-			else if(isArgList)
+			else if (isArgList)
 			{
 				TextBuilder.Append("__arglist");
 			}
@@ -2292,7 +2292,7 @@ namespace Durian.Analysis
 				ParameterList(ctor);
 			}
 
-			if(baseTypeList)
+			if (baseTypeList)
 			{
 				BaseTypeList(type);
 			}
@@ -2803,7 +2803,7 @@ namespace Durian.Analysis
 
 					int end = TextBuilder.Length;
 
-					if(start < end)
+					if (start < end)
 					{
 						TextBuilder.Replace('<', '{', start, end - start);
 						TextBuilder.Replace('>', '}', start, end - start);

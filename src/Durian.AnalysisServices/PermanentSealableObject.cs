@@ -26,7 +26,7 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		public bool Seal()
 		{
-			if(IsSealed)
+			if (IsSealed)
 			{
 				return false;
 			}

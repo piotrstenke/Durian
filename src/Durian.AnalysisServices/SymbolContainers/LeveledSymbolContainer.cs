@@ -151,7 +151,7 @@ namespace Durian.Analysis.SymbolContainers
 			ISymbolNameResolver? nameResolver = default
 		) : this(root, parentCompilation, nameResolver, false)
 		{
-			if(rootFunction is null)
+			if (rootFunction is null)
 			{
 				throw new ArgumentNullException(nameof(rootFunction));
 			}
@@ -167,7 +167,7 @@ namespace Durian.Analysis.SymbolContainers
 			ISymbolNameResolver? nameResolver = default
 		) : this(root, parentCompilation, nameResolver, false)
 		{
-			if(root is not ISymbolOrMember<TSymbol, TData>)
+			if (root is not ISymbolOrMember<TSymbol, TData>)
 			{
 				_rootFunction = ResolveRootInternal;
 				_levels.Add(new LevelEntry(null!));
@@ -312,7 +312,7 @@ namespace Durian.Analysis.SymbolContainers
 
 				int start = entry.StartIndex;
 
-				if(start > -1 && !entry.IsEmpty)
+				if (start > -1 && !entry.IsEmpty)
 				{
 					_data.RemoveRange(entry.StartIndex, _data.Count - entry.StartIndex);
 				}

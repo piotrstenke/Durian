@@ -178,7 +178,7 @@ namespace Durian.Analysis.Data.FromSource
 		{
 			get
 			{
-				if(_parameters is null)
+				if (_parameters is null)
 				{
 					ISymbolOrMember<IParameterSymbol, IParameterData>? parameter = Parameter;
 					_parameters = parameter is null

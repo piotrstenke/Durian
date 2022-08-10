@@ -626,6 +626,7 @@ class NotFriend
 			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
 		}
 
+		[Fact]
 		public async Task Error_When_IsRecord_And_HasInternalConstructor_And_ChildCallsConstructorInRecordDeclaration()
 		{
 			string input =
@@ -643,6 +644,7 @@ record Child(string Name) : Test(Name);
 			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
 		}
 
+		[Fact]
 		public async Task Error_When_IsRecord_And_HasInternalConstructor_And_ChildImpliciltyTriesToAccessParameterlessConstructor()
 		{
 			string input =

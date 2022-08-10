@@ -1022,7 +1022,7 @@ namespace Durian.Analysis.Extensions
 
 			ISymbol? symbol = @event.ContainingType.FindImplementationForInterfaceMember(other);
 
-			if(symbol is not IEventSymbol e)
+			if (symbol is not IEventSymbol e)
 			{
 				return false;
 			}
@@ -1074,7 +1074,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="baseType">Base type to check if is inherited by the target <paramref name="type"/>.</param>
 		public static bool InheritsOrImplements(this ITypeSymbol type, ITypeSymbol baseType)
 		{
-			if(baseType.TypeKind == TypeKind.Interface)
+			if (baseType.TypeKind == TypeKind.Interface)
 			{
 				return type.Implements(baseType);
 			}
@@ -1759,12 +1759,12 @@ namespace Durian.Analysis.Extensions
 		/// <param name="other"><see cref="INamedTypeSymbol"/> representing either an interface or a delegate to check whether the <paramref name="type"/> is a variant of.</param>
 		public static bool IsVariantOf(this INamedTypeSymbol type, INamedTypeSymbol other)
 		{
-			if(other.TypeKind != TypeKind.Interface && other.TypeKind != TypeKind.Delegate)
+			if (other.TypeKind != TypeKind.Interface && other.TypeKind != TypeKind.Delegate)
 			{
 				return false;
 			}
 
-			if(IsSameOrConstructed(type))
+			if (IsSameOrConstructed(type))
 			{
 				return true;
 			}
@@ -1843,7 +1843,7 @@ namespace Durian.Analysis.Extensions
 
 			bool IsVariant(INamedTypeSymbol type)
 			{
-				if(IsSameOrConstructed(type))
+				if (IsSameOrConstructed(type))
 				{
 					return true;
 				}
@@ -2954,7 +2954,7 @@ namespace Durian.Analysis.Extensions
 				return false;
 			}
 
-			if(!ignoreArity && method.Arity != other.Arity)
+			if (!ignoreArity && method.Arity != other.Arity)
 			{
 				return false;
 			}

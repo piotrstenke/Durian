@@ -141,7 +141,7 @@ namespace Durian.Analysis.Data.FromSource
 		{
 			get
 			{
-				if(_compilerCondition.IsDefault)
+				if (_compilerCondition.IsDefault)
 				{
 					AttributeData? attribute = this.GetSpecialAttribute(SpecialAttribute.Conditional);
 					_compilerCondition = attribute?.GetConstructorArgumentValue<string>(0);

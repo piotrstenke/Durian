@@ -83,12 +83,12 @@ namespace Durian.Analysis.Data
 			where TSymbol : class, ISymbol
 			where TData : class, IMemberData
 		{
-			if(value.IsDefault)
+			if (value.IsDefault)
 			{
 				return null;
 			}
 
-			if(value.Value is null)
+			if (value.Value is null)
 			{
 				return SymbolContainerFactory.EmptyWritable<TSymbol, TData>();
 			}
@@ -136,7 +136,7 @@ namespace Durian.Analysis.Data
 			MemberData.Properties? properties
 		) where TProps : MemberData.Properties, IVariableDeclaratorProperties, new()
 		{
-			if(declaration is null)
+			if (declaration is null)
 			{
 				throw new ArgumentNullException(nameof(declaration));
 			}
@@ -199,7 +199,7 @@ namespace Durian.Analysis.Data
 				symbol = target.Symbol;
 			}
 
-			if(isChanged)
+			if (isChanged)
 			{
 				if (!isLocalProperties)
 				{

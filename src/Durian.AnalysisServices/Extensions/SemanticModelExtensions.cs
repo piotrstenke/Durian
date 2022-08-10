@@ -144,9 +144,9 @@ namespace Durian.Analysis.Extensions
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static IMethodSymbol? GetBaseConstructor(this SemanticModel semanticModel, ConstructorDeclarationSyntax ctor, CancellationToken cancellationToken = default)
 		{
-			if(ctor.Initializer is null)
+			if (ctor.Initializer is null)
 			{
-				if(ctor.Parent is null || semanticModel.GetDeclaredSymbol(ctor.Parent, cancellationToken) is not INamedTypeSymbol type)
+				if (ctor.Parent is null || semanticModel.GetDeclaredSymbol(ctor.Parent, cancellationToken) is not INamedTypeSymbol type)
 				{
 					return null;
 				}
@@ -166,7 +166,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static IMethodSymbol? GetBaseConstructor(this SemanticModel semanticModel, ConstructorDeclarationSyntax ctor, INamedTypeSymbol parentType, CancellationToken cancellationToken = default)
 		{
-			if(ctor.Initializer is null)
+			if (ctor.Initializer is null)
 			{
 				return GetVisibleDefaultConstructor(parentType);
 			}
@@ -187,14 +187,14 @@ namespace Durian.Analysis.Extensions
 
 			IEnumerable<IMethodSymbol> Yield()
 			{
-				if(includeSelf)
+				if (includeSelf)
 				{
 					yield return ctor;
 				}
 
 				IMethodSymbol current = ctor;
 
-				while(semanticModel.GetBaseConstructor(current) is IMethodSymbol c)
+				while (semanticModel.GetBaseConstructor(current) is IMethodSymbol c)
 				{
 					yield return c;
 					current = c;
@@ -219,7 +219,7 @@ namespace Durian.Analysis.Extensions
 
 				if (includeSelf)
 				{
-					if(semanticModel.GetDeclaredSymbol(ctor) is IMethodSymbol symbol)
+					if (semanticModel.GetDeclaredSymbol(ctor) is IMethodSymbol symbol)
 					{
 						yield return symbol;
 					}
@@ -235,7 +235,7 @@ namespace Durian.Analysis.Extensions
 					current = GetFirstCtor(null);
 				}
 
-				if(current is null)
+				if (current is null)
 				{
 					yield break;
 				}
@@ -250,7 +250,7 @@ namespace Durian.Analysis.Extensions
 
 				IMethodSymbol? GetFirstCtor(INamedTypeSymbol? containingType)
 				{
-					if(containingType is null)
+					if (containingType is null)
 					{
 						return semanticModel.GetBaseConstructor(ctor);
 					}
@@ -267,7 +267,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="method"><see cref="IMethodSymbol"/> to get the captured variables of.</param>
 		public static IEnumerable<ISymbol> GetCapturedVariables(this SemanticModel semanticModel, IMethodSymbol method)
 		{
-			if(method.MethodKind is not
+			if (method.MethodKind is not
 				MethodKind.LambdaMethod and not
 				MethodKind.AnonymousFunction and not
 				MethodKind.LocalFunction)
@@ -294,7 +294,7 @@ namespace Durian.Analysis.Extensions
 		{
 			DataFlowAnalysis? dataFlow = semanticModel.AnalyzeDataFlow(node);
 
-			if(dataFlow is null)
+			if (dataFlow is null)
 			{
 				return Array.Empty<ISymbol>();
 			}

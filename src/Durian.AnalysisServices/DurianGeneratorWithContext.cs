@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Data;
 using Durian.Analysis.Filtration;
 using Durian.Analysis.Logging;

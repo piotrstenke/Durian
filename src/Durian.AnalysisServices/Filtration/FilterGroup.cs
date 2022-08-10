@@ -197,7 +197,7 @@ namespace Durian.Analysis.Filtration
 		/// <inheritdoc/>
 		public bool Seal()
 		{
-			if(IsSealed)
+			if (IsSealed)
 			{
 				return false;
 			}
@@ -215,7 +215,7 @@ namespace Durian.Analysis.Filtration
 		/// <inheritdoc/>
 		public bool Unseal()
 		{
-			if(!IsSealed)
+			if (!IsSealed)
 			{
 				return false;
 			}

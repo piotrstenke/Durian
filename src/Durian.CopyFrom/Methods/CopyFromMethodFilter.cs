@@ -32,7 +32,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 
 			ISymbol? symbol;
 
-			if(validationContext.Node is LambdaExpressionSyntax lambda)
+			if (validationContext.Node is LambdaExpressionSyntax lambda)
 			{
 				symbol = semanticModel.GetSymbolInfo(lambda, validationContext.CancellationToken).Symbol;
 			}
@@ -41,7 +41,7 @@ namespace Durian.Analysis.CopyFrom.Methods
 				symbol = semanticModel.GetDeclaredSymbol(validationContext.Node, validationContext.CancellationToken);
 			}
 
-			if(symbol is null)
+			if (symbol is null)
 			{
 				context = default;
 				return false;

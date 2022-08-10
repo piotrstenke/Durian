@@ -1596,7 +1596,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="property"><see cref="IPropertySymbol"/> to get the implicitly implemented <see cref="ISymbol"/>s by.</param>
 		public static IEnumerable<IPropertySymbol> GetImplicitImplementations(this IPropertySymbol property)
 		{
-			if(property.IsImplementedExplicitly())
+			if (property.IsImplementedExplicitly())
 			{
 				return Array.Empty<IPropertySymbol>();
 			}
@@ -3011,7 +3011,7 @@ namespace Durian.Analysis.Extensions
 						throw new ArgumentNullException(nameof(compilation));
 					}
 
-					if(symbol is not ITypeParameterSymbol)
+					if (symbol is not ITypeParameterSymbol)
 					{
 						throw new ArgumentException("Invalid type kind", nameof(symbol));
 					}

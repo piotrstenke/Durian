@@ -227,14 +227,14 @@ namespace Durian.Analysis.Extensions
 		{
 			string? @namespace = type.GetNamespaceName();
 
-			if(@namespace is null)
+			if (@namespace is null)
 			{
 				return null;
 			}
 
 			string? name = type.GetAttributeName();
 
-			if(name is null)
+			if (name is null)
 			{
 				return null;
 			}

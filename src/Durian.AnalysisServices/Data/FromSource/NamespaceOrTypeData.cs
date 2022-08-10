@@ -268,7 +268,7 @@ namespace Durian.Analysis.Data.FromSource
 		{
 			base.SetProperties(properties);
 
-			if(properties is Properties props)
+			if (properties is Properties props)
 			{
 				_types = DataHelpers.FromDefaultedOrEmpty(props.Types);
 			}

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 

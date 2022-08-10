@@ -25,7 +25,7 @@ namespace Durian.Analysis
 			get => _default;
 			set
 			{
-				if(value is null)
+				if (value is null)
 				{
 					throw new ArgumentNullException(nameof(value));
 				}
@@ -41,7 +41,7 @@ namespace Durian.Analysis
 		/// <param name="reuseBuilder">Determines whether to reuse the internal <see cref="CodeBuilder"/> of the <see cref="ISymbolNameResolver"/> is a <see cref="WithBuilder"/>.</param>
 		public static ISymbolNameResolver GetResolver(SymbolName format, bool reuseBuilder = false)
 		{
-			if(format == SymbolName.Default)
+			if (format == SymbolName.Default)
 			{
 				return Verbatim.Instance;
 			}

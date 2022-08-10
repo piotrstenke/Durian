@@ -436,7 +436,7 @@ namespace Durian.Analysis.SymbolContainers
 			/// <summary>
 			/// Returns a new <see cref="SymbolContainerBuilder{T}"/> for operators.
 			/// </summary>
-			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol,IOperatorData>> Operators()
+			public static SymbolContainerBuilder<SymbolContainer<IMethodSymbol, IOperatorData>> Operators()
 			{
 				return new();
 			}
