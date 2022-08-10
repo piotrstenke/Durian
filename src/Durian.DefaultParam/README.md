@@ -195,7 +195,7 @@ Most generic-compatible members are supported, but there are some notable rules 
 
 ## Configuration
 
-*DefaultParam* allows the user to configure, how new members are generated through the [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationAttributeProvider.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationATtributeProvider.cs) types.
+*DefaultParam* allows to configure how new members are generated through the [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationAttributeProvider.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationATtributeProvider.cs) types.
 
 ### Local configuration
 
