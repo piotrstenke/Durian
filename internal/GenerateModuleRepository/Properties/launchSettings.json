@@ -1,8 +1,8 @@
 {
   "profiles": {
-    "GenerateModuleRepository": {
-      "commandName": "Project",
-      "commandLineArgs": "\"$(SolutionDir)\\\" \"src\\Durian.Core\""
-    }
+	"GenerateModuleRepository": {
+	  "commandName": "Project",
+	  "commandLineArgs": "\"$(SolutionDir)\\\" \"src\\Durian.Core\""
+	}
   }
 }

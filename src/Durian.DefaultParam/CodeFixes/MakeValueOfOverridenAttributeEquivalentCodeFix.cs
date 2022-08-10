@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Threading;
+using System.Threading.Tasks;
 using Durian.Analysis.CodeFixes;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
@@ -8,123 +10,121 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Durian.Analysis.DefaultParam.CodeFixes
 {
-    /// <summary>
-    /// Code fox for the <see cref="DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase"/> diagnostic.
-    /// </summary>
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakeValueOfOverridenAttributeEquivalentCodeFix))]
-    public sealed class MakeValueOfOverridenAttributeEquivalentCodeFix : DurianCodeFixBase
-    {
-        /// <inheritdoc/>
-        public override string Id => Title + " [DefaultParam]";
+	/// <summary>
+	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase"/> diagnostic.
+	/// </summary>
+	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakeValueOfOverridenAttributeEquivalentCodeFix))]
+	public sealed class MakeValueOfOverridenAttributeEquivalentCodeFix : DurianCodeFixBase
+	{
+		/// <inheritdoc/>
+		public override string Id => Title + " [DefaultParam]";
 
-        /// <inheritdoc/>
-        public override string Title => "Make DefaultParam value the same as base method";
+		/// <inheritdoc/>
+		public override string Title => "Make DefaultParam value the same as base method";
 
-        /// <summary>
-        /// Creates a new instance of the <see cref="MakeValueOfOverridenAttributeEquivalentCodeFix"/> class.
-        /// </summary>
-        public MakeValueOfOverridenAttributeEquivalentCodeFix()
-        {
-        }
+		/// <summary>
+		/// Creates a new instance of the <see cref="MakeValueOfOverridenAttributeEquivalentCodeFix"/> class.
+		/// </summary>
+		public MakeValueOfOverridenAttributeEquivalentCodeFix()
+		{
+		}
 
-        /// <inheritdoc/>
-        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
-        {
-            CodeFixData<AttributeSyntax> data = await CodeFixData<AttributeSyntax>.FromAsync(context, true).ConfigureAwait(false);
+		/// <inheritdoc/>
+		public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+		{
+			CodeFixData<AttributeSyntax> data = await CodeFixData<AttributeSyntax>.FromAsync(context, true).ConfigureAwait(false);
 
-            if (!data.Success || !data.HasNode || !data.HasSemanticModel)
-            {
-                return;
-            }
+			if (!data.Success || !data.HasNode || !data.HasSemanticModel)
+			{
+				return;
+			}
 
-            if (data.Node.Parent?.Parent is not TypeParameterSyntax typeParameter ||
-                data.SemanticModel.GetDeclaredSymbol(typeParameter, data.CancellationToken) is not ITypeParameterSymbol parameterSymbol ||
-                GetTargetType(data.Node, data.SemanticModel, parameterSymbol.Ordinal, data.CancellationToken) is not ITypeSymbol targetType)
-            {
-                return;
-            }
+			if (data.Node.Parent?.Parent is not TypeParameterSyntax typeParameter ||
+				data.SemanticModel.GetDeclaredSymbol(typeParameter, data.CancellationToken) is not ITypeParameterSymbol parameterSymbol ||
+				GetTargetType(data.Node, data.SemanticModel, parameterSymbol.Ordinal, data.CancellationToken) is not ITypeSymbol targetType)
+			{
+				return;
+			}
 
-            CodeAction? action = GetCodeAction(in data, targetType);
+			CodeAction? action = GetCodeAction(in data, targetType);
 
-            if (action is null)
-            {
-                return;
-            }
+			if (action is null)
+			{
+				return;
+			}
 
-            context.RegisterCodeFix(action, data.Diagnostic);
-        }
+			context.RegisterCodeFix(action, data.Diagnostic);
+		}
 
-        internal static Document Execute(CodeFixExecutionContext<AttributeSyntax> context, ITypeSymbol targetType)
-        {
-            INamespaceSymbol? @namespace = (context.SemanticModel.GetSymbolInfo(context.Node).Symbol?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
+		/// <inheritdoc/>
+		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
+		{
+			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase };
+		}
 
-            NameSyntax name = context.SemanticModel.GetNameSyntax(context.Root.Usings, @namespace, targetType, context.CancellationToken);
+		internal static Document Execute(CodeFixExecutionContext<AttributeSyntax> context, ITypeSymbol targetType)
+		{
+			INamespaceSymbol? @namespace = (context.SemanticModel.GetSymbolInfo(context.Node).Symbol?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
 
-            AttributeSyntax attr = context.Node
-                .WithArgumentList(SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
-                    SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(name)))));
+			NameSyntax name = context.SemanticModel.GetNameSyntax(context.Root.Usings, @namespace, targetType, context.CancellationToken);
 
-            context.RegisterChange(context.Node, attr);
-            return context.Document;
-        }
+			AttributeSyntax attr = context.Node
+				.WithArgumentList(SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
+					SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(name)))));
 
-        internal static ITypeSymbol? GetTargetType(CSharpSyntaxNode node, SemanticModel semanticModel, int ordinal, CancellationToken cancellationToken)
-        {
-            MethodDeclarationSyntax? method = node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
+			context.RegisterChange(context.Node, attr);
+			return context.Document;
+		}
 
-            if (method is null ||
-                semanticModel.GetDeclaredSymbol(method, cancellationToken) is not IMethodSymbol symbol ||
-                symbol.OverriddenMethod is null
-            )
-            {
-                return null;
-            }
+		internal static ITypeSymbol? GetTargetType(CSharpSyntaxNode node, SemanticModel semanticModel, int ordinal, CancellationToken cancellationToken)
+		{
+			MethodDeclarationSyntax? method = node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
 
-            Compilation compilation = semanticModel.Compilation;
-            INamedTypeSymbol? attribute = compilation.GetTypeByMetadataName(DefaultParamAttributeProvider.TypeName);
+			if (method is null ||
+				semanticModel.GetDeclaredSymbol(method, cancellationToken) is not IMethodSymbol symbol ||
+				symbol.OverriddenMethod is null
+			)
+			{
+				return null;
+			}
 
-            if (attribute is null)
-            {
-                return null;
-            }
+			Compilation compilation = semanticModel.Compilation;
+			INamedTypeSymbol? attribute = compilation.GetTypeByMetadataName(DefaultParamAttributeProvider.TypeName);
 
-            foreach (IMethodSymbol m in symbol.GetBaseMethods())
-            {
-                if (m.TypeParameters[ordinal].GetAttribute(attribute) is AttributeData data)
-                {
-                    return data.GetConstructorArgumentTypeValue<ITypeSymbol>(0);
-                }
-            }
+			if (attribute is null)
+			{
+				return null;
+			}
 
-            return null;
-        }
+			foreach (IMethodSymbol m in symbol.GetOverriddenSymbols())
+			{
+				if (m.TypeParameters[ordinal].GetAttribute(attribute) is AttributeData data)
+				{
+					return data.GetConstructorArgumentTypeValue<ITypeSymbol>(0);
+				}
+			}
 
-        /// <inheritdoc/>
-        protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
-        {
-            return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase };
-        }
+			return null;
+		}
 
-        private CodeAction GetCodeAction(in CodeFixData<AttributeSyntax> data, ITypeSymbol targetType)
-        {
-            Document document = data.Document!;
-            AttributeSyntax node = data.Node!;
-            CompilationUnitSyntax root = data.Root!;
-            Diagnostic diagnostic = data.Diagnostic!;
-            SemanticModel semanticModel = data.SemanticModel!;
+		private CodeAction GetCodeAction(in CodeFixData<AttributeSyntax> data, ITypeSymbol targetType)
+		{
+			Document document = data.Document!;
+			AttributeSyntax node = data.Node!;
+			CompilationUnitSyntax root = data.Root!;
+			Diagnostic diagnostic = data.Diagnostic!;
+			SemanticModel semanticModel = data.SemanticModel!;
 
-            return CodeAction.Create(Title, cancenllationToken =>
-            {
-                CodeFixExecutionContext<AttributeSyntax> context = CodeFixExecutionContext<AttributeSyntax>.From(diagnostic, document, root, node, semanticModel, cancenllationToken);
+			return CodeAction.Create(Title, cancenllationToken =>
+			{
+				CodeFixExecutionContext<AttributeSyntax> context = CodeFixExecutionContext<AttributeSyntax>.From(diagnostic, document, root, node, semanticModel, cancenllationToken);
 
-                return Task.FromResult(Execute(context, targetType));
-            },
-            Id);
-        }
-    }
+				return Task.FromResult(Execute(context, targetType));
+			},
+			Id);
+		}
+	}
 }

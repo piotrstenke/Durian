@@ -6,12 +6,12 @@ using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Methods
 {
-    public sealed class MethodNewModifierConfigurationTests : DefaultParamGeneratorTestBase
-    {
-        [Fact]
-        public void AppliesNewModifier_When_GenericMemberOtherThanMethodIsPresentInBaseClass()
-        {
-            string input =
+	public sealed class MethodNewModifierConfigurationTests : DefaultParamGeneratorTest
+	{
+		[Fact]
+		public void AppliesNewModifier_When_GenericMemberOtherThanMethodIsPresentInBaseClass()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -29,8 +29,8 @@ partial class Test : Parent
 }}
 ";
 
-            string expected =
-@$"partial class Test
+			string expected =
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	new void Method()
@@ -39,13 +39,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_GloballyFalse_And_InTypeTrue()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_GloballyFalse_And_InTypeTrue()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -65,8 +65,8 @@ partial class Test : Parent
 	}}
 }}
 ";
-            string expected =
-@$"partial class Test
+			string expected =
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
@@ -75,13 +75,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_GloballyFalse_And_LocallyFalse()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_GloballyFalse_And_LocallyFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -101,8 +101,8 @@ partial class Test : Parent
 	}}
 }}
 ";
-            string expected =
-@$"partial class Test
+			string expected =
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
@@ -111,13 +111,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_HasMultipleNonDefaultParamParameters()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_HasMultipleNonDefaultParamParameters()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -141,8 +141,8 @@ partial class Test : Parent
 }}
 ";
 
-            string expected =
-@$"partial class Test
+			string expected =
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>(V)")}
 	new void Method<T, U>(int value)
@@ -151,13 +151,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_HasNonDefaultParamParameters()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_HasNonDefaultParamParameters()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -177,8 +177,8 @@ partial class Test : Parent
 }}
 ";
 
-            string expected =
-@$"partial class Test
+			string expected =
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U>(U)")}
 	new void Method<T>(int value)
@@ -187,13 +187,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_InTypeFalse_LocallyTrue()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_InTypeFalse_LocallyTrue()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -213,8 +213,8 @@ partial class Test : Parent
 	}}
 }}
 ";
-            string expected =
-@$"partial class Test
+			string expected =
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
@@ -223,13 +223,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_NonGenericCompatibleMemberIsPresentInBaseClass()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_NonGenericCompatibleMemberIsPresentInBaseClass()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -247,8 +247,8 @@ partial class Test : Parent
 }}
 ";
 
-            string expected =
-@$"partial class Test
+			string expected =
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	new void Method()
@@ -257,13 +257,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_SignatureExistsInBaseClass()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_SignatureExistsInBaseClass()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -283,8 +283,8 @@ partial class Test : Parent
 }}
 ";
 
-            string expected =
-@$"partial class Test
+			string expected =
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
 	new void Method(int value)
@@ -293,13 +293,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifierToAllDefaultParam_When_HasMultipleDefaultParams_And_AllHaveExistingSignature()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifierToAllDefaultParam_When_HasMultipleDefaultParams_And_AllHaveExistingSignature()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -323,8 +323,8 @@ partial class Test : Parent
 }}
 ";
 
-            string expected =
-@$"partial class Test
+			string expected =
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>(V)")}
 	new void Method<T, U>(int value)
@@ -339,13 +339,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifierToSingleDefaultParam_When_HasMultipleDefaultParams_And_OnlyOneHasExistingSignature()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifierToSingleDefaultParam_When_HasMultipleDefaultParams_And_OnlyOneHasExistingSignature()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -365,8 +365,8 @@ partial class Test : Parent
 }}
 ";
 
-            string expected =
-@$"partial class Test
+			string expected =
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>(U)")}
 	void Method<T, U>(U value)
@@ -381,13 +381,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void DoesNotApplyNewModifer_When_GloballyTrue_And_InTypeFalse()
-        {
-            string input =
+		[Fact]
+		public void DoesNotApplyNewModifer_When_GloballyTrue_And_InTypeFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -407,13 +407,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void DoesNotApplyNewModifer_When_GloballyTrue_And_LocallyFalse()
-        {
-            string input =
+		[Fact]
+		public void DoesNotApplyNewModifer_When_GloballyTrue_And_LocallyFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -433,13 +433,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void DoesNotApplyNewModifer_When_InTypeTrue_LocallyFalse()
-        {
-            string input =
+		[Fact]
+		public void DoesNotApplyNewModifer_When_InTypeTrue_LocallyFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -459,13 +459,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void Error_When_GenericMemberOtherThanMethodIsPresentInBaseClass_And_ConfigurationIsFalse()
-        {
-            string input =
+		[Fact]
+		public void Error_When_GenericMemberOtherThanMethodIsPresentInBaseClass_And_ConfigurationIsFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -483,13 +483,13 @@ partial class Test : Parent
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void Error_When_NonGenericCompatibleMemberIsPresentInBaseClass_And_ConfigurationIsFalse()
-        {
-            string input =
+		[Fact]
+		public void Error_When_NonGenericCompatibleMemberIsPresentInBaseClass_And_ConfigurationIsFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -506,13 +506,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0116_MemberWithNameAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void Error_When_SignatureExistsInBaseClass_And_ApplyNewModifierIsFalse()
-        {
-            string input =
+		[Fact]
+		public void Error_When_SignatureExistsInBaseClass_And_ApplyNewModifierIsFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -531,13 +531,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void Error_When_SignatureExistsInSameClass()
-        {
-            string input =
+		[Fact]
+		public void Error_When_SignatureExistsInSameClass()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -553,13 +553,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void IgnoresPrivateMembersInBaseType()
-        {
-            string input =
+		[Fact]
+		public void IgnoresPrivateMembersInBaseType()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -579,8 +579,8 @@ partial class Test : Parent
 }}
 ";
 
-            string expected =
-@$"partial class Test
+			string expected =
+@$"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	void Method()
@@ -589,7 +589,7 @@ partial class Test : Parent
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
-    }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+	}
 }

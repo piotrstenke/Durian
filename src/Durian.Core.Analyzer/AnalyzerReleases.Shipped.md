@@ -32,3 +32,12 @@ DUR0006 | Durian | Error | Target project must use C# 9 or newer.
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-----------------------------------------
 DUR0008 | Durian | Warning | Separate analyzer packages detected, reference the main Durian package instead for better performance. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/Core/DUR0008.md)]
+
+## Release 3.0.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-----------------------------------------
+DUR0006 | Durian | Warning | PartialNameAttribute should be applied to a partial type. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/Core/DUR0006.md)]
+DUR0009 | Durian | Warning | Type already has a PartialNameAttribute with same value. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/Core/DUR0009.md)]

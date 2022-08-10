@@ -21,9 +21,21 @@
 
 **Durian is a collection of Roslyn-based analyzers, source generators and utility libraries that bring many extensions to C#, with heavy emphasis on features that can be found in other existing languages. It's main goal is to make C# easier and more pleasant to use through reducing necessary boilerplate code, while at the same time providing additional layers of flexibility.**
 
-## Current state
+## Table of Contents
 
-Durian is at an early stage of its evolution - many core features are still missing, being either in early development or planning phase. As for now, three fully-fledged modules are completed - *DefaultParam*, *InterfaceTargets* and *FriendClass*.
+1. [Current State](#current-state)
+2. [Features](#features)
+    1. [DefaultParam](#defaultparam)
+    2. [InterfaceTargets](#interfacetargets)
+    3. [FriendClass](#friendclass)
+3. [In Progress](#in-progress)
+   1. [CopyFrom](#copyfrom)
+4. [Experimental](#experimental) 
+   1. [ConstExpr](#constexpr)
+
+## Current State
+
+Durian is at an early stage of its evolution - many core features are still missing, being either in early development or planning phase. As for now, three fully-fledged modules are ready - *DefaultParam*, *InterfaceTargets* and *FriendClass*.
 
 ## Features
 
@@ -119,13 +131,13 @@ public class B
 }
 ```
 
-## Experimental
+## In Progress
 
-Experimental modules include packages that are almost ready to be released, but still need some more polishing.
+The following modules are still in active development and are yet to be released in a not-yet-specified future.
 
 ### [CopyFrom](src/Durian.CopyFrom/README.md)
 
-CopyFrom allows to copy implementations of members to other members, without the need for inheritance. A regex pattern can be provided to customize the copied implementation.
+*CopyFrom* allows to copy implementations of members to other members, without the need for inheritance. A regex pattern can be provided to customize the copied implementation.
 
 ```csharp
 using Durian;
@@ -155,6 +167,47 @@ partial class Test
     {
         _name = name;
     }
+}
+
+```
+
+## Experimental
+
+Experimental stage is a playground of sorts - modules included here are very early in development and there in no guarantee that they will be ever actually released.
+
+### [ConstExpr](src/Durian.ConstExpr/README.md)
+
+*ConstExpr* allows a method to be executed at compile-time, producing actual constants.
+
+```csharp
+using Durian;
+
+public static class Utility
+{
+    [ConstExpr]
+    public static int Sum(params int[] values)
+    {
+        int sum = 0;
+
+        for(int i = 0; i < values.Length; i++)
+        {
+            sum += values[i];
+        }
+
+        return sum;
+    }
+}
+
+[ConstExprSource("Utility.Sum", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, Name = "Sum_10")]
+public static partial class Constants
+{
+}
+
+// Generated
+
+public static partial class Constants
+{
+    public const int Sum_10 = 55;
 }
 
 ```

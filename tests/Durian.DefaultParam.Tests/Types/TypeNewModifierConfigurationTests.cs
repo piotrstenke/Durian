@@ -7,12 +7,12 @@ using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 
 namespace Durian.Analysis.DefaultParam.Tests.Types
 {
-    public sealed class TypeNewModifierConfigurationTests : DefaultParamGeneratorTestBase
-    {
-        [Fact]
-        public void AppliesNewModifier_When_GeneratedGenericNameAlreadyExistsInBaseClass()
-        {
-            string input =
+	public sealed class TypeNewModifierConfigurationTests : DefaultParamGeneratorTest
+	{
+		[Fact]
+		public void AppliesNewModifier_When_GeneratedGenericNameAlreadyExistsInBaseClass()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 
 class Inner
@@ -30,8 +30,8 @@ partial class Parent : Inner
 }}
 ";
 
-            string expected =
-@$"partial class Parent
+			string expected =
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	new class Test<T> : Test<T, int>
@@ -39,13 +39,13 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_GeneratedNonGenericNameAlreadyExistsInBaseClass()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_GeneratedNonGenericNameAlreadyExistsInBaseClass()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 
 class Inner
@@ -61,8 +61,8 @@ partial class Parent : Inner
 }}
 ";
 
-            string expected =
-@$"partial class Parent
+			string expected =
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new class Test : Test<int>
@@ -70,13 +70,13 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_GloballyFalse_And_InTypeTrue()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_GloballyFalse_And_InTypeTrue()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -96,8 +96,8 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            string expected =
-@$"partial class Parent
+			string expected =
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new class Test : Test<int>
@@ -105,13 +105,13 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_GloballyFalse_And_LocallyFalse()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_GloballyFalse_And_LocallyFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -131,8 +131,8 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            string expected =
-@$"partial class Parent
+			string expected =
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new class Test : Test<int>
@@ -140,13 +140,13 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_HasMultipleNonDefaultParamParameters()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_HasMultipleNonDefaultParamParameters()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -170,8 +170,8 @@ partial class Parent : Inner
 }}
 ";
 
-            string expected =
-@$"partial class Parent
+			string expected =
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U, V>")}
 	new class Test<T, U> : Test<T, U, int>
@@ -179,13 +179,13 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_HasNonDefaultParamParameters()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_HasNonDefaultParamParameters()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -205,8 +205,8 @@ partial class Parent : Inner
 }}
 ";
 
-            string expected =
-@$"partial class Parent
+			string expected =
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T, U>")}
 	new class Test<T> : Test<T, int>
@@ -214,13 +214,13 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_InTypeFalse_LocallyTrue()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_InTypeFalse_LocallyTrue()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -240,8 +240,8 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            string expected =
-@$"partial class Parent
+			string expected =
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new class Test : Test<int>
@@ -249,13 +249,13 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifier_When_IsInInterface_And_GeneratedNameAlreadyExistsInBaseInterface()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifier_When_IsInInterface_And_GeneratedNameAlreadyExistsInBaseInterface()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -274,8 +274,8 @@ partial interface IChild : IParent
 	}}
 }}
 ";
-            string expected =
-$@"partial interface IChild
+			string expected =
+$@"internal partial interface IChild : IParent
 {{
 	{GetCodeGenerationAttributes("IChild.Test<T>")}
 	new class Test : Test<string>
@@ -283,13 +283,13 @@ $@"partial interface IChild
 	}}
 }}";
 
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void AppliesNewModifierBeforeRefKeyword()
-        {
-            string input =
+		[Fact]
+		public void AppliesNewModifierBeforeRefKeyword()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -309,8 +309,8 @@ partial class Parent : Inner
 }}
 ";
 
-            string expected =
-@$"partial class Parent
+			string expected =
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	new ref struct Test
@@ -318,13 +318,13 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
 
-        [Fact]
-        public void DoesNotApplyNewModifer_When_GloballyTrue_And_InTypeFalse()
-        {
-            string input =
+		[Fact]
+		public void DoesNotApplyNewModifer_When_GloballyTrue_And_InTypeFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -344,13 +344,13 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void DoesNotApplyNewModifer_When_GloballyTrue_And_LocallyFalse()
-        {
-            string input =
+		[Fact]
+		public void DoesNotApplyNewModifer_When_GloballyTrue_And_LocallyFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -370,13 +370,13 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void DoesNotApplyNewModifer_When_InTypeTrue_LocallyFalse()
-        {
-            string input =
+		[Fact]
+		public void DoesNotApplyNewModifer_When_InTypeTrue_LocallyFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -396,13 +396,13 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void Error_When_GeneratedGenericNameAlreadyExistsInBaseClass_And_ConfigurationIsFalse()
-        {
-            string input =
+		[Fact]
+		public void Error_When_GeneratedGenericNameAlreadyExistsInBaseClass_And_ConfigurationIsFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -422,13 +422,13 @@ partial class Parent : Inner
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void Error_When_GeneratedGenericNameAlreadyExistsInSameClass_And_ConfigurationIsFalse()
-        {
-            string input =
+		[Fact]
+		public void Error_When_GeneratedGenericNameAlreadyExistsInSameClass_And_ConfigurationIsFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -445,13 +445,13 @@ partial class Parent
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void Error_When_GeneratedMethodExistsInBaseInterface_And_ApplyNewModifierIsFalse()
-        {
-            string input =
+		[Fact]
+		public void Error_When_GeneratedMethodExistsInBaseInterface_And_ApplyNewModifierIsFalse()
+		{
+			string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -471,13 +471,13 @@ partial interface IChild : IParent
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void Error_When_GeneratedNonGenericNameAlreadyExistsInBaseClass_And_ConfigurationIsFalse()
-        {
-            string input =
+		[Fact]
+		public void Error_When_GeneratedNonGenericNameAlreadyExistsInBaseClass_And_ConfigurationIsFalse()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -495,13 +495,13 @@ partial class Parent : Inner
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void Error_When_GeneratedNonGenericNameAlreadyExistsInSameClass()
-        {
-            string input =
+		[Fact]
+		public void Error_When_GeneratedNonGenericNameAlreadyExistsInSameClass()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -516,13 +516,13 @@ partial class Parent
 }}
 ";
 
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0116_MemberWithNameAlreadyExists.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0116_MemberWithNameAlreadyExists.Id));
+		}
 
-        [Fact]
-        public void Error_When_IsGlobal_AndGeneratedNonGenericNameAlreadyExists()
-        {
-            string input =
+		[Fact]
+		public void Error_When_IsGlobal_AndGeneratedNonGenericNameAlreadyExists()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 
 class Test
@@ -533,13 +533,13 @@ class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T>
 {{
 }}
 ";
-            Assert.True(RunGenerator(input).HasFailedAndContainsDiagnosticIDs(DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
-        }
+			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
+		}
 
-        [Fact]
-        public void IgnoresPrivateMembersInBaseType()
-        {
-            string input =
+		[Fact]
+		public void IgnoresPrivateMembersInBaseType()
+		{
+			string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace}
 
@@ -559,8 +559,8 @@ partial class Parent : Inner
 }}
 ";
 
-            string expected =
-@$"partial class Parent
+			string expected =
+@$"internal partial class Parent : Inner
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
 	class Test : Test<int>
@@ -568,7 +568,7 @@ partial class Parent : Inner
 	}}
 }}
 ";
-            Assert.True(RunGenerator(input).Compare(expected));
-        }
-    }
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+	}
 }

@@ -2,7 +2,7 @@ This directory contains projects that are not part of any Durian module or packa
 
  As for now, two projects are located here:
  - **GenerateAnalyzerReleases** - generates the *AnalyzerReleases.Shipped.md* file for the 1.0.0 release of an analyzer.
- - **GenerateModuleRepository** - generates the [Durian.Info.PackageRepository](../src/Durian.Core/Info/.generated/PackageRepository.cs) and [Durian.Info.ModuleRepository](../src/Durian.Core/Info/.generated/ModuleRepository.cs) classes based on attributes from the *Durian.Generator* defined in every project's *_Configuration.cs* file.
+ - **GenerateModuleRepository** - generates the [Durian.Info.PackageRepository](../src/Durian.Core/.generated/PackageRepository.cs) and [Durian.Info.ModuleRepository](../src/Durian.Core/.generated/ModuleRepository.cs) classes based on attributes from the *Durian.Generator* defined in every project's *_Configuration.cs* file.
 ##
 
 *\(Written by Piotr Stenke\)*

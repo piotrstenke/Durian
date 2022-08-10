@@ -1,762 +1,640 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
+using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
 
 namespace Durian.Analysis
 {
-    /// <summary>
-    /// A wrapper for the <see cref="StringBuilder"/> class that helps generating C# code.
-    /// </summary>
-    [DebuggerDisplay("{TextBuilder}")]
-    public sealed class CodeBuilder
-    {
-        private int _currentIndent;
-
-        /// <summary>
-        /// Current indentation level.
-        /// </summary>
-        public int CurrentIndent
-        {
-            get => _currentIndent;
-            set
-            {
-                if (value < 0)
-                {
-                    _currentIndent = 0;
-                }
-                else
-                {
-                    _currentIndent = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="IDurianGenerator"/> this <see cref="CodeBuilder"/> is used by.
-        /// </summary>
-        public IDurianGenerator? Generator { get; }
-
-        /// <summary>
-        /// <see cref="StringBuilder"/> this <see cref="CodeBuilder"/> writes to.
-        /// </summary>
-        public StringBuilder TextBuilder { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CodeBuilder"/> class.
-        /// </summary>
-        public CodeBuilder()
-        {
-            TextBuilder = new StringBuilder();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CodeBuilder"/> class.
-        /// </summary>
-        /// <param name="capacity">Capacity of the internal <see cref="StringBuilder"/>.</param>
-        public CodeBuilder(int capacity)
-        {
-            TextBuilder = new StringBuilder(capacity);
-        }
-
-        /// <inheritdoc cref="CodeBuilder(IDurianGenerator?, StringBuilder)"/>
-        public CodeBuilder(StringBuilder builder)
-        {
-            if (builder is null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            TextBuilder = builder;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CodeBuilder"/> class.
-        /// </summary>
-        /// <param name="sourceGenerator">The <see cref="IDurianGenerator"/> this <see cref="CodeBuilder"/> is used by.</param>
-        public CodeBuilder(IDurianGenerator sourceGenerator)
-        {
-            TextBuilder = new StringBuilder();
-            Generator = sourceGenerator;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CodeBuilder"/> class.
-        /// </summary>
-        /// <param name="sourceGenerator">The <see cref="IDurianGenerator"/> this <see cref="CodeBuilder"/> is used by.</param>
-        /// <param name="builder"><see cref="StringBuilder"/> to write the data to.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-        public CodeBuilder(IDurianGenerator sourceGenerator, StringBuilder builder)
-        {
-            TextBuilder = builder;
-            Generator = sourceGenerator;
-        }
-
-        /// <summary>
-        /// Appends the <paramref name="value"/> to the <see cref="TextBuilder"/>.
-        /// </summary>
-        /// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>
-        public void Append(string value)
-        {
-            TextBuilder.Append(value);
-        }
-
-        /// <summary>
-        /// Appends a new line character to the <see cref="TextBuilder"/>.
-        /// </summary>
-        public void AppendLine()
-        {
-            TextBuilder.AppendLine();
-        }
-
-        /// <summary>
-        /// Appends the <paramref name="value"/> followed by a new line to the <see cref="TextBuilder"/>.
-        /// </summary>
-        /// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>v
-        public void AppendLine(string value)
-        {
-            TextBuilder.AppendLine(value);
-        }
-
-        /// <inheritdoc cref="BeginMethodDeclaration(MethodData, bool, bool)"/>
-        public void BeginMethodDeclaration(MethodData method, bool blockOrExpression)
-        {
-            BeginMethodDeclaration(method, blockOrExpression, false);
-        }
-
-        /// <summary>
-        /// Writes declaration of a method.
-        /// </summary>
-        /// <param name="method"><see cref="MethodData"/> that contains all the needed info about the target method.</param>
-        /// <param name="blockOrExpression">
-        /// Determines whether to begin a block body ('{') or an expression body ('=>').
-        /// <see langword="true"/> for block, <see langword="false"/> for expression.
-        /// </param>
-        /// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="method"/></param>
-        /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-        public void BeginMethodDeclaration(MethodData method, bool blockOrExpression, bool includeTrivia)
-        {
-            if (method is null)
-            {
-                throw new ArgumentNullException(nameof(method));
-            }
-
-            BeginMethodDeclaration_Internal(method.Declaration, blockOrExpression, includeTrivia);
-        }
-
-        /// <inheritdoc cref="BeginMethodDeclaration(MethodDeclarationSyntax, bool, bool)"/>
-        public void BeginMethodDeclaration(MethodDeclarationSyntax method, bool blockOrExpression)
-        {
-            BeginMethodDeclaration(method, blockOrExpression, false);
-        }
-
-        /// <summary>
-        /// Writes declaration of a method.
-        /// </summary>
-        /// <param name="method"><see cref="MethodDeclarationSyntax"/> to copy the method signature from.</param>
-        /// <param name="blockOrExpression">
-        /// Determines whether to begin a block body ('{') or an expression body ('=>').
-        /// <see langword="true"/> for block, <see langword="false"/> for expression.
-        /// </param>
-        /// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="method"/></param>
-        /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-        public void BeginMethodDeclaration(MethodDeclarationSyntax method, bool blockOrExpression, bool includeTrivia)
-        {
-            if (method is null)
-            {
-                throw new ArgumentNullException(nameof(method));
-            }
-
-            BeginMethodDeclaration_Internal(method, blockOrExpression, includeTrivia);
-        }
-
-        /// <summary>
-        /// Writes declaration of a namespace using the specified collection of <paramref name="namespaces"/>.
-        /// </summary>
-        /// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to write the names of.</param>
-        public void BeginNamespaceDeclaration(IEnumerable<INamespaceSymbol> namespaces)
-        {
-            if (namespaces is null)
-            {
-                throw new ArgumentNullException(nameof(namespaces));
-            }
-
-            BeginNamespaceDeclaration_Internal(namespaces);
-        }
-
-        /// <summary>
-        /// Writes declaration of a namespace using the specified collection of <paramref name="namespaces"/>.
-        /// </summary>
-        /// <param name="namespaces">A collection of namespace names s to write.</param>
-        public void BeginNamespaceDeclaration(IEnumerable<string> namespaces)
-        {
-            if (namespaces is null)
-            {
-                throw new ArgumentNullException(nameof(namespaces));
-            }
-
-            BeginNamespaceDeclaration_Internal(AnalysisUtilities.JoinNamespaces(namespaces));
-        }
-
-        /// <summary>
-        /// Writes declaration of the specified <paramref name="namespace"/>.
-        /// </summary>
-        /// <param name="namespace">Name of namespace to begin the declaration of.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="namespace"/> is <see langword="null"/>.</exception>
-        public void BeginNamespaceDeclaration(string @namespace)
-        {
-            if (@namespace is null)
-            {
-                throw new ArgumentNullException(nameof(@namespace));
-            }
-
-            BeginNamespaceDeclaration_Internal(@namespace);
-        }
-
-        /// <summary>
-        /// Writes declaration of the parent namespace of the specified <paramref name="member"/>.
-        /// </summary>
-        /// <param name="member"><see cref="IMemberData"/> to write the full namespace it is declared in.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-        public void BeginNamespaceDeclarationOf(IMemberData member)
-        {
-            if (member is null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
-
-            BeginNamespaceDeclaration_Internal(member.GetContainingNamespaces());
-        }
-
-        /// <summary>
-        /// Writes declaration of the parent namespace of the specified <paramref name="member"/>.
-        /// </summary>
-        /// <param name="member"><see cref="ISymbol"/> to write the full namespace it is declared in.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-        public void BeginNamespaceDeclarationOf(ISymbol member)
-        {
-            if (member is null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
-
-            BeginNamespaceDeclaration_Internal(member.GetContainingNamespaces(false));
-        }
-
-        /// <summary>
-        /// Writes declaration of the parent namespace of the specified <paramref name="node"/>.
-        /// </summary>
-        /// <param name="node"><see cref="CSharpSyntaxNode"/> to write the full namespace it is declared in.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="node"/> is <see langword="null"/>.</exception>
-        public void BeginNamespaceDeclarationOf(CSharpSyntaxNode node)
-        {
-            if (node is null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
-            BeginNamespaceDeclaration_Internal(AnalysisUtilities.JoinNamespaces(node.GetParentNamespaces()));
-        }
-
-        /// <summary>
-        /// Writes declaration of a type.
-        /// </summary>
-        /// <param name="type"><see cref="ITypeData"/> that contains all the needed info about the target type.</param>
-        /// <returns>An <see cref="int"/> that represents the modified indentation level.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-        public void BeginTypeDeclaration(ITypeData type)
-        {
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            BeginTypeDeclaration_Internal(type);
-        }
-
-        /// <inheritdoc cref="BeginTypeDeclaration(TypeDeclarationSyntax, bool)"/>
-        public void BeginTypeDeclaration(TypeDeclarationSyntax type)
-        {
-            BeginTypeDeclaration(type, false);
-        }
-
-        /// <summary>
-        /// Writes declaration of a type.
-        /// </summary>
-        /// <param name="type"><see cref="TypeDeclarationSyntax"/> to convert to a <see cref="string"/> and append to the <see cref="TextBuilder"/>.</param>
-        /// <param name="includeTrivia">Determines whether to include trivia of the <paramref name="type"/></param>
-        /// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-        public void BeginTypeDeclaration(TypeDeclarationSyntax type, bool includeTrivia)
-        {
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            BeginTypeDeclaration_Internal(type, includeTrivia);
-        }
-
-        /// <summary>
-        /// Clears the builder.
-        /// </summary>
-        public void Clear()
-        {
-            TextBuilder.Clear();
-        }
-
-        /// <summary>
-        /// Decrements the value of the <see cref="CurrentIndent"/>.
-        /// </summary>
-        public void DecrementIndent()
-        {
-            CurrentIndent--;
-        }
-
-        /// <summary>
-        /// Ends all the remaining blocks.
-        /// </summary>
-        public void EndAllBlocks()
-        {
-            int length = CurrentIndent;
-
-            for (int i = 0; i < length; i++)
-            {
-                CurrentIndent--;
-                Indent();
-                TextBuilder.AppendLine("}");
-            }
-        }
-
-        /// <summary>
-        /// Ends the current block.
-        /// </summary>
-        public void EndBlock()
-        {
-            CurrentIndent--;
-            Indent();
-            TextBuilder.AppendLine("}");
-        }
-
-        /// <summary>
-        /// Increments the value of the <see cref="CurrentIndent"/>.
-        /// </summary>
-        public void IncrementIndent()
-        {
-            CurrentIndent++;
-        }
-
-        /// <summary>
-        /// Applies indentation according to the value of <see cref="CurrentIndent"/>.
-        /// </summary>
-        public void Indent()
-        {
-            Indent(_currentIndent);
-        }
-
-        /// <summary>
-        /// Applies indentation according to the specified <paramref name="value"/>.
-        /// </summary>
-        /// <param name="value">Indentation level to apply.</param>
-        public void Indent(int value)
-        {
-            for (int i = 0; i < value; i++)
-            {
-                TextBuilder.Append('\t');
-            }
-        }
-
-        /// <inheritdoc cref="ParseSyntaxTree(CSharpParseOptions)"/>
-        public CSharpSyntaxTree ParseSyntaxTree()
-        {
-            return ParseSyntaxTree(Generator?.ParseOptions);
-        }
-
-        /// <summary>
-        /// Creates new <see cref="CSharpSyntaxTree"/> based on the contents of the <see cref="TextBuilder"/>.
-        /// </summary>
-        /// <param name="options"><see cref="CSharpParseOptions"/> to use when parsing the <see cref="CSharpSyntaxTree"/>.</param>
-        public CSharpSyntaxTree ParseSyntaxTree(CSharpParseOptions? options)
-        {
-            return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(
-                text: TextBuilder.ToString(),
-                options: options,
-                encoding: Encoding.UTF8
-            );
-        }
-
-        /// <inheritdoc/>
-        public override string ToString()
-        {
-            return TextBuilder.ToString();
-        }
-
-        /// <summary>
-        /// Writes the attribute text.
-        /// </summary>
-        /// <param name="attributeName">Name of the attribute to write.</param>
-        /// <param name="args">Arguments of the attribute.</param>
-        public void WriteAttribute(string? attributeName, params object[] args)
-        {
-            TextBuilder.Append('[').Append(attributeName ?? string.Empty);
-
-            if (args is not null)
-            {
-                TextBuilder.Append('(');
-
-                foreach (object arg in args)
-                {
-                    TextBuilder.Append(arg).Append(", ");
-                }
-
-                TextBuilder.Remove(TextBuilder.Length - 2, 2);
-                TextBuilder.Append(')');
-            }
-
-            TextBuilder.Append(']');
-        }
-
-        /// <inheritdoc cref="WriteDeclarationLead(IMemberData, IEnumerable{string}, string, string)"/>
-        public void WriteDeclarationLead(IMemberData member, IEnumerable<string> usings, string? generatorName)
-        {
-            WriteDeclarationLead(member, usings, generatorName, null);
-        }
-
-        /// <summary>
-        /// Writes all the text that is needed before the actual member declaration, that is: the 'auto-generated' header, usings, namespace and parent types declarations.
-        /// </summary>
-        /// <param name="member">The <see cref="IMemberData"/> that contains all needed info, such as the <see cref="SemanticModel"/> or the <see cref="ISymbol"/>.</param>
-        /// <param name="usings">A collection of usings to apply.</param>
-        /// <param name="generatorName">Name of generator that created the following code.</param>
-        /// <param name="version">Version of the generator.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>. -or- <paramref name="usings"/> is <see langword="null"/>.</exception>
-        public void WriteDeclarationLead(IMemberData member, IEnumerable<string> usings, string? generatorName, string? version)
-        {
-            if (member is null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
-
-            if (usings is null)
-            {
-                throw new ArgumentNullException(nameof(usings));
-            }
-
-            WriteDeclarationLead_Internal(member, usings, generatorName, version);
-        }
-
-        /// <summary>
-        /// Writes the file header returned by the <see cref="AutoGenerated.GetHeader(string?, string?)"/> method using values provided by the <see cref="Generator"/>.
-        /// </summary>
-        /// <remarks>If the <see cref="Generator"/> is <see langword="null"/>, calls the <see cref="AutoGenerated.GetHeader()"/> method instead.</remarks>
-        public void WriteHeader()
-        {
-            string text;
-
-            if (Generator is null)
-            {
-                text = AutoGenerated.GetHeader();
-            }
-            else
-            {
-                text = AutoGenerated.GetHeader(Generator.GeneratorName, Generator.GeneratorVersion);
-            }
-
-            TextBuilder.Append(text);
-        }
-
-        /// <summary>
-        /// Writes the file header returned by the <see cref="AutoGenerated.GetHeader(string?)"/> method.
-        /// </summary>
-        /// <param name="generatorName">Name of generator that created the following code.</param>
-        public void WriteHeader(string? generatorName)
-        {
-            TextBuilder.Append(AutoGenerated.GetHeader(generatorName));
-        }
-
-        /// <summary>
-        /// Writes the file header returned by the <see cref="AutoGenerated.GetHeader(string?, string?)"/> method.
-        /// </summary>
-        /// <param name="generatorName">Name of generator that created the following code.</param>
-        /// <param name="version">Version of the generator that created the following code.</param>
-        public void WriteHeader(string? generatorName, string? version)
-        {
-            TextBuilder.Append(AutoGenerated.GetHeader(generatorName, version));
-        }
-
-        /// <summary>
-        /// Writes declarations of the specified <paramref name="member"/>'s parent types.
-        /// </summary>
-        /// <param name="member">Target member.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-        public void WriteParentDeclarations(IMemberData member)
-        {
-            if (member is null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
-
-            WriteParentDeclarations_Internal(member.GetContainingTypes());
-        }
-
-        /// <summary>
-        /// Writes declarations of all the parent <paramref name="types"/>.
-        /// </summary>
-        /// <param name="types">A collection of parent <see cref="ITypeData"/>s to write the declarations of.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="types"/> is <see langword="null"/>.</exception>
-        public void WriteParentDeclarations(IEnumerable<ITypeData> types)
-        {
-            if (types is null)
-            {
-                throw new ArgumentNullException(nameof(types));
-            }
-
-            WriteParentDeclarations_Internal(types);
-        }
-
-        /// <summary>
-        /// Writes all usings that are needed by the specified <paramref name="member"/>.
-        /// </summary>
-        /// <param name="member">Target <see cref="IMemberData"/> to write the used namespaces of.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-        public void WriteUsings(IMemberData member, CancellationToken cancellationToken = default)
-        {
-            if (member is null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
-
-            WriteUsings_Internal(member.SemanticModel.GetUsedNamespaces(member.Declaration, member.ParentCompilation, true, cancellationToken));
-        }
-
-        /// <summary>
-        /// Writes all usings that are needed by the specified <paramref name="node"/>.
-        /// </summary>
-        /// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
-        /// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>.</exception>
-        /// <exception cref="InvalidOperationException">
-        /// If the <see cref="Generator"/> property is <see langword="null"/>,
-        /// a <see cref="INamespaceSymbol"/> of the assembly's global namespace must be explicitly provided using one of WriteUsings 3-parameter overloads.
-        /// </exception>
-        public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, CancellationToken cancellationToken = default)
-        {
-            if (Generator is null)
-            {
-                throw new InvalidOperationException($"If the {nameof(Generator)} property is null, a {nameof(INamespaceSymbol)} of the assembly's global namespace must be explicitly provided using one of WriteUsings 3-parameter overloads.");
-            }
-
-            WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, Generator.TargetCompilation, true, cancellationToken));
-        }
-
-        /// <summary>
-        /// Writes all usings that are needed by the specified <paramref name="node"/>.
-        /// </summary>
-        /// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
-        /// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
-        /// <param name="compilationData"><see cref="ICompilationData"/> the specified <paramref name="node"/> is defined in.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilationData"/> is <see langword="null"/>.</exception>
-        public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, ICompilationData compilationData, CancellationToken cancellationToken = default)
-        {
-            WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, compilationData, true, cancellationToken));
-        }
-
-        /// <summary>
-        /// Writes all usings that are needed by the specified <paramref name="node"/>.
-        /// </summary>
-        /// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
-        /// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
-        /// <param name="compilation"><see cref="CSharpCompilation"/> the specified <paramref name="node"/> is defined in.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
-        public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, CSharpCompilation compilation, CancellationToken cancellationToken = default)
-        {
-            WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, compilation, true, cancellationToken));
-        }
-
-        /// <summary>
-        /// Writes all usings that are needed by the specified <paramref name="node"/>.
-        /// </summary>
-        /// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
-        /// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
-        /// <param name="assembly"><see cref="IAssemblySymbol"/> the specified <paramref name="node"/> is defined in.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="assembly"/> is <see langword="null"/>.</exception>
-        public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, IAssemblySymbol assembly, CancellationToken cancellationToken = default)
-        {
-            WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, assembly, true, cancellationToken));
-        }
-
-        /// <summary>
-        /// Writes all usings that are needed by the specified <paramref name="node"/>.
-        /// </summary>
-        /// <param name="semanticModel">Target <see cref="SemanticModel"/> that is used to get the used namespaces of the specified <paramref name="node"/>.</param>
-        /// <param name="node"><see cref="CSharpSyntaxNode"/> to write the used namespaces of.</param>
-        /// <param name="globalNamespace"><see cref="INamespaceSymbol"/> that represents the assembly's global namespace.</param>
-        /// <param name="cancellationToken"><see cref="CancellationToken"/> that specifies if the operation should be canceled.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="semanticModel"/> is <see langword="null"/>. -or- <paramref name="node"/> is <see langword="null"/>. -or- <paramref name="globalNamespace"/> is <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentException"><paramref name="globalNamespace"/> is not an actual global namespace.</exception>
-        public void WriteUsings(SemanticModel semanticModel, CSharpSyntaxNode node, INamespaceSymbol globalNamespace, CancellationToken cancellationToken = default)
-        {
-            WriteUsings_Internal(semanticModel.GetUsedNamespaces(node, globalNamespace, true, cancellationToken));
-        }
-
-        /// <summary>
-        /// Writes usings for all the specified <paramref name="namespaces"/>.
-        /// </summary>
-        /// <param name="namespaces">A collection of namespaces to write.</param>
-        /// <exception cref="ArgumentNullException"> <paramref name="namespaces"/> is <see langword="null"/>.</exception>
-        public void WriteUsings(IEnumerable<string> namespaces)
-        {
-            if (namespaces is null)
-            {
-                throw new ArgumentNullException(nameof(namespaces));
-            }
-
-            WriteUsings_Internal(namespaces);
-        }
-
-        /// <summary>
-        /// Writes usings for all the specified <paramref name="namespaces"/>.
-        /// </summary>
-        /// <param name="namespaces">A collection of namespaces to write.</param>
-        /// <exception cref="ArgumentNullException"> <paramref name="namespaces"/> is <see langword="null"/>.</exception>
-        public void WriteUsings(IEnumerable<INamespaceSymbol> namespaces)
-        {
-            if (namespaces is null)
-            {
-                throw new ArgumentNullException(nameof(namespaces));
-            }
-
-            WriteUsings_Internal(namespaces.Select(n => n.Name).Where(n => n != string.Empty));
-        }
-
-        private static string GetDeclarationText(MemberDeclarationSyntax declaration, bool includeTrivia)
-        {
-            if (includeTrivia)
-            {
-                MemberDeclarationSyntax decl = declaration
-                    .WithLeadingTrivia(declaration.GetLeadingTrivia())
-                    .WithTrailingTrivia(declaration.GetTrailingTrivia());
-
-                return decl.ToFullString();
-            }
-
-            return declaration.ToString();
-        }
-
-        private void BeginMethodDeclaration_Internal(MethodDeclarationSyntax method, bool blockOrExpression, bool includeTrivia)
-        {
-            TextBuilder.Append(GetDeclarationText(SyntaxFactory.MethodDeclaration(method.ReturnType, method.Identifier), includeTrivia));
-
-            if (blockOrExpression)
-            {
-                TextBuilder.AppendLine();
-                Indent();
-                CurrentIndent++;
-                TextBuilder.AppendLine("{");
-            }
-            else
-            {
-                TextBuilder.Append(" => ");
-            }
-        }
-
-        private void BeginNamespaceDeclaration_Internal(IEnumerable<INamespaceSymbol> namespaces)
-        {
-            BeginNamespaceDeclaration_Internal(namespaces.JoinNamespaces());
-        }
-
-        private void BeginNamespaceDeclaration_Internal(string @namespace)
-        {
-            Indent();
-            TextBuilder.Append("namespace ").AppendLine(@namespace);
-            Indent();
-            TextBuilder.AppendLine("{");
-            CurrentIndent++;
-        }
-
-        private void BeginTypeDeclaration_Internal(ITypeData type)
-        {
-            Indent();
-
-            foreach (SyntaxToken modifier in type.Modifiers)
-            {
-                TextBuilder.Append(modifier.ValueText);
-                TextBuilder.Append(' ');
-            }
-
-            TextBuilder.Append(type.Declaration.GetKeyword());
-            TextBuilder.Append(' ');
-
-            TextBuilder.AppendLine(type.GetGenericName(false, true));
-            Indent();
-            CurrentIndent++;
-            TextBuilder.AppendLine("{");
-        }
-
-        private void BeginTypeDeclaration_Internal(TypeDeclarationSyntax type, bool includeTrivia)
-        {
-            TextBuilder.Append(GetDeclarationText(SyntaxFactory.TypeDeclaration(type.Kind(), type.Identifier), includeTrivia));
-        }
-
-        private void WriteDeclarationLead_Internal(IMemberData member, IEnumerable<string> usings, string? generatorName, string? version)
-        {
-            WriteHeader(generatorName, version);
-            TextBuilder.AppendLine();
-            string[] namespaces = usings.ToArray();
-
-            if (namespaces.Length > 0)
-            {
-                WriteUsings_Internal(usings);
-                TextBuilder.AppendLine();
-            }
-
-            if (member.Symbol.ContainingNamespace is not null && !member.Symbol.ContainingNamespace.IsGlobalNamespace)
-            {
-                BeginNamespaceDeclaration_Internal(member.GetContainingNamespaces());
-            }
-
-            WriteParentDeclarations_Internal(member.GetContainingTypes());
-        }
-
-        private void WriteParentDeclarations_Internal(IEnumerable<ITypeData> types)
-        {
-            foreach (ITypeData parent in types)
-            {
-                BeginTypeDeclaration_Internal(parent);
-            }
-        }
-
-        private void WriteUsings_Internal(IEnumerable<string> namespaces)
-        {
-            if (CurrentIndent == 0)
-            {
-                foreach (string u in namespaces)
-                {
-                    TextBuilder.Append("using ").Append(u).AppendLine(";");
-                }
-            }
-            else
-            {
-                foreach (string u in namespaces)
-                {
-                    Indent();
-                    TextBuilder.Append("using ").Append(u).AppendLine(";");
-                }
-            }
-        }
-    }
+	/// <summary>
+	/// A wrapper for the <see cref="StringBuilder"/> class that helps generating C# code.
+	/// </summary>
+	[DebuggerDisplay("{TextBuilder}")]
+	public sealed partial class CodeBuilder
+	{
+		private int _currentIndent;
+		private int _currentLength;
+
+		/// <summary>
+		/// Determines whether the last method call has changed state of the builder.
+		/// </summary>
+		public bool Changed => _currentLength != TextBuilder.Length;
+
+		/// <summary>
+		/// Current indentation level.
+		/// </summary>
+		public int CurrentIndent
+		{
+			get => _currentIndent;
+			set
+			{
+				if (value < 0)
+				{
+					_currentIndent = 0;
+				}
+				else
+				{
+					_currentIndent = value;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Builder that write single keywords.
+		/// </summary>
+		public KeywordWriter Keyword { get; }
+
+		/// <summary>
+		/// Builder that writes single literals.
+		/// </summary>
+		public LiteralWriter Literal { get; }
+
+		/// <summary>
+		/// Style configuration applied to the current builder.
+		/// </summary>
+		public CodeBuilderStyleConfiguration Style { get; }
+
+		/// <summary>
+		/// <see cref="StringBuilder"/> to write the generated code to.
+		/// </summary>
+		public StringBuilder TextBuilder { get; }
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CodeBuilder"/> class.
+		/// </summary>
+		/// <param name="style">Style configuration applied to the current builder.</param>
+		public CodeBuilder(CodeBuilderStyleConfiguration? style = default) : this(true, default, style)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CodeBuilder"/> class.
+		/// </summary>
+		/// <param name="builder"><see cref="StringBuilder"/> to write the generated code to.</param>
+		/// <param name="style">Style configuration applied to the current builder.</param>
+		public CodeBuilder(StringBuilder builder, CodeBuilderStyleConfiguration? style = default) : this(true, Validate(builder), style)
+		{
+		}
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+		internal CodeBuilder(bool requireChildBuilder, StringBuilder? builder = default, CodeBuilderStyleConfiguration? style = default)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+		{
+			Style = style ?? CodeBuilderStyleConfiguration.Default();
+			TextBuilder = builder ?? new();
+
+			if (requireChildBuilder)
+			{
+				Literal = new(TextBuilder);
+				Keyword = new(TextBuilder);
+			}
+		}
+
+		/// <summary>
+		/// Writes an accessibility modifier.
+		/// </summary>
+		/// <param name="accessibility">Accessibility modifier to write.</param>
+		public CodeBuilder Accessibility(Accessibility accessibility)
+		{
+			InitBuilder();
+
+			if (accessibility.GetText() is string keyword)
+			{
+				TextBuilder.Append(keyword);
+				Space();
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins declaration of auto-property accessors.
+		/// </summary>
+		public CodeBuilder Accessor(AutoPropertyKind kind)
+		{
+			InitBuilder();
+
+			switch (kind)
+			{
+				case AutoPropertyKind.GetOnly:
+					TextBuilder.Append(" { get; }");
+					break;
+
+				case AutoPropertyKind.GetSet:
+					TextBuilder.Append(" { get; set; }");
+					break;
+
+				case AutoPropertyKind.GetInit:
+					TextBuilder.Append(" { get; init; }");
+					break;
+
+				case AutoPropertyKind.SetOnly:
+					TextBuilder.Append(" { set; }");
+					break;
+
+				case AutoPropertyKind.InitOnly:
+					TextBuilder.Append(" { init; }");
+					break;
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins declaration of a property or event accessor.
+		/// </summary>
+		/// <param name="accessor">Kind of accessor to begin declaration of.</param>
+		public CodeBuilder Accessor(AccessorKind accessor)
+		{
+			return Accessor(accessor, Style.MethodStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a property or event accessor.
+		/// </summary>
+		/// <param name="accessor">Kind of accessor to begin declaration of.</param>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder Accessor(AccessorKind accessor, MethodStyle body)
+		{
+			InitBuilder();
+
+			if (accessor.GetText() is string value)
+			{
+				TextBuilder.Append(value);
+			}
+
+			return MethodBody(body);
+		}
+
+		/// <summary>
+		/// Begins an attribute list.
+		/// </summary>
+		public CodeBuilder AttributeList()
+		{
+			Indent();
+			TextBuilder.Append('[');
+			return this;
+		}
+
+		/// <summary>
+		/// Begins an attribute list with an <see cref="AttributeTarget"/>.
+		/// </summary>
+		/// <param name="target">Target of the attribute.</param>
+		public CodeBuilder AttributeList(AttributeTarget target)
+		{
+			Indent();
+
+			if (target.GetText() is not string text)
+			{
+				return AttributeList();
+			}
+
+			TextBuilder.Append('[');
+			TextBuilder.Append(text);
+			TextBuilder.Append(':');
+			TextBuilder.Append(' ');
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins a new scope.
+		/// </summary>
+		public CodeBuilder BeginBlock()
+		{
+			InitBuilder();
+
+			NewLine();
+			Indent();
+			TextBuilder.Append('{');
+			NewLine();
+			CurrentIndent++;
+
+			return this;
+		}
+
+		/// <summary>
+		/// Clears the builder.
+		/// </summary>
+		public CodeBuilder Clear()
+		{
+			InitBuilder();
+
+			TextBuilder.Clear();
+			return this;
+		}
+
+		/// <summary>
+		/// Begins a member declaration using the specified raw text.
+		/// </summary>
+		/// <param name="member">Raw text to write.</param>
+		public CodeBuilder Declaration(string member)
+		{
+			InitBuilder();
+
+			TextBuilder.Append(member);
+			BeginBlock();
+
+			return this;
+		}
+
+		/// <summary>
+		/// Decrements the value of the <see cref="CurrentIndent"/>.
+		/// </summary>
+		public CodeBuilder DecrementIndent()
+		{
+			InitBuilder();
+
+			CurrentIndent--;
+			return this;
+		}
+
+		/// <summary>
+		/// Ends all the remaining scope.
+		/// </summary>
+		public CodeBuilder EndAllBlocks()
+		{
+			InitBuilder();
+
+			int length = CurrentIndent;
+
+			for (int i = 0; i < length; i++)
+			{
+				CurrentIndent--;
+				Indent();
+				TextBuilder.AppendLine("}");
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Ends an attribute list.
+		/// </summary>
+		public CodeBuilder EndAttributeList()
+		{
+			InitBuilder();
+
+			TextBuilder.Append(']');
+			NewLine();
+			return this;
+		}
+
+		/// <summary>
+		/// Ends the current scope.
+		/// </summary>
+		public CodeBuilder EndBlock()
+		{
+			CurrentIndent--;
+			Indent();
+			TextBuilder.AppendLine("}");
+
+			return this;
+		}
+
+		/// <summary>
+		/// Increments the value of the <see cref="CurrentIndent"/>.
+		/// </summary>
+		public CodeBuilder IncrementIndent()
+		{
+			InitBuilder();
+			CurrentIndent++;
+			return this;
+		}
+
+		/// <summary>
+		/// Applies indentation according to the value of <see cref="CurrentIndent"/>.
+		/// </summary>
+		public CodeBuilder Indent()
+		{
+			Indent(_currentIndent);
+			return this;
+		}
+
+		/// <summary>
+		/// Applies indentation according to the specified <paramref name="value"/>.
+		/// </summary>
+		/// <param name="value">Indentation level to apply.</param>
+		public CodeBuilder Indent(int value)
+		{
+			InitBuilder();
+
+			for (int i = 0; i < value; i++)
+			{
+				TextBuilder.Append('\t');
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins a method body.
+		/// </summary>
+		/// <param name="body">Determines whether to begin a block body ('{') or an expression body ('=>').</param>
+		public CodeBuilder MethodBody(MethodStyle body)
+		{
+			InitBuilder();
+
+			switch (body)
+			{
+				case MethodStyle.Block:
+					BeginBlock();
+					break;
+
+				case MethodStyle.Expression:
+					TextBuilder.Append(" => ");
+					break;
+
+				default:
+					ColonNewLine();
+					break;
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Begins declaration of a <paramref name="namespace"/>.
+		/// </summary>
+		/// <param name="namespace">Name of namespace to begin declaration of.</param>
+		public CodeBuilder Namespace(string @namespace)
+		{
+			return Namespace(@namespace, Style.NamespaceStyle);
+		}
+
+		/// <summary>
+		/// Begins declaration of a <paramref name="namespace"/>.
+		/// </summary>
+		/// <param name="namespace">Name of namespace to begin declaration of.</param>
+		/// <param name="type">Type of namespace declaration to write.</param>
+		public CodeBuilder Namespace(string @namespace, NamespaceStyle type)
+		{
+			InitBuilder();
+
+			TextBuilder.Append("namespace ");
+			TextBuilder.Append(@namespace);
+
+			if (type == NamespaceStyle.File)
+			{
+				ColonNewLine();
+			}
+			else
+			{
+				BeginBlock();
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a new line.
+		/// </summary>
+		public CodeBuilder NewLine()
+		{
+			InitBuilder();
+			TextBuilder.AppendLine();
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <paramref name="number"/> of new lines.
+		/// </summary>
+		/// <param name="number">Number of new lines to write.</param>
+		public CodeBuilder NewLine(int number)
+		{
+			InitBuilder();
+
+			for (int i = 0; i < number; i++)
+			{
+				TextBuilder.AppendLine();
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes nullability marker if the <paramref name="annotation"/> is equal to <see cref="Microsoft.CodeAnalysis.NullableAnnotation.Annotated"/>.
+		/// </summary>
+		/// <param name="annotation"><see cref="Microsoft.CodeAnalysis.NullableAnnotation"/> to write.</param>
+		public CodeBuilder Nullability(NullableAnnotation annotation)
+		{
+			InitBuilder();
+
+			if (annotation == NullableAnnotation.Annotated)
+			{
+				TextBuilder.Append('?');
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a space.
+		/// </summary>
+		public CodeBuilder Space()
+		{
+			InitBuilder();
+
+			TextBuilder.Append(' ');
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <paramref name="number"/> of spaces.
+		/// </summary>
+		/// <param name="number">Number of spaces to write.</param>
+		public CodeBuilder Space(int number)
+		{
+			InitBuilder();
+
+			for (int i = 0; i < number; i++)
+			{
+				TextBuilder.Append(' ');
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a tab.
+		/// </summary>
+		public CodeBuilder Tab()
+		{
+			InitBuilder();
+
+			TextBuilder.Append('\t');
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <paramref name="number"/> of tabs.
+		/// </summary>
+		/// <param name="number">Number of tabs to write.</param>
+		public CodeBuilder Tab(int number)
+		{
+			InitBuilder();
+
+			for (int i = 0; i < number; i++)
+			{
+				TextBuilder.Append('\t');
+			}
+
+			return this;
+		}
+
+		/// <inheritdoc/>
+		public override string ToString()
+		{
+			return TextBuilder.ToString();
+		}
+
+		/// <summary>
+		/// Writes a <see langword="using"/> directive.
+		/// </summary>
+		/// <param name="namespace">Name of namespace to include using the <see langword="using"/> directive.</param>
+		/// <param name="isGlobal">Determines whether the <see langword="using"/> directive is <see langword="global"/>.</param>
+		public CodeBuilder Using(string @namespace, bool isGlobal = false)
+		{
+			Indent();
+
+			WriteUsing(isGlobal);
+			TextBuilder.Append(@namespace);
+
+			ColonNewLine();
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <see langword="using"/> directive with an alias.
+		/// </summary>
+		/// <param name="target">name of type or namespace to include using the <see langword="using"/> directive.</param>
+		/// <param name="alias">Alias to write.</param>
+		/// <param name="isGlobal">Determines whether the <see langword="using"/> directive is <see langword="global"/>.</param>
+		public CodeBuilder UsingAlias(string target, string alias, bool isGlobal = false)
+		{
+			Indent();
+
+			WriteUsing(isGlobal);
+
+			TextBuilder.Append(alias);
+			TextBuilder.Append(' ');
+			TextBuilder.Append('=');
+			TextBuilder.Append(' ');
+			TextBuilder.Append(target);
+
+			ColonNewLine();
+			return this;
+		}
+
+		/// <summary>
+		/// Writes a <see langword="using"/> <see langword="static"/> directive.
+		/// </summary>
+		/// <param name="target">Name of type or namespace to include using the <see langword="using"/> <see langword="static"/> directive.</param>
+		/// <param name="isGlobal">Determines whether the <see langword="using"/> directive is <see langword="global"/>.</param>
+		public CodeBuilder UsingStatic(string target, bool isGlobal = false)
+		{
+			Indent();
+
+			WriteUsing(isGlobal);
+			TextBuilder.Append("static ");
+			TextBuilder.Append(target);
+
+			ColonNewLine();
+
+			return this;
+		}
+
+		/// <summary>
+		/// Writes the specified <paramref name="variance"/>.
+		/// </summary>
+		/// <param name="variance">Kind of variance to write.</param>
+		public CodeBuilder Variance(VarianceKind variance)
+		{
+			InitBuilder();
+
+			if (variance.GetText() is string value)
+			{
+				TextBuilder.Append(value);
+				TextBuilder.Append(' ');
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Appends the <paramref name="value"/> to the <see cref="TextBuilder"/>.
+		/// </summary>
+		/// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>
+		public CodeBuilder Write(char value)
+		{
+			InitBuilder();
+
+			TextBuilder.Append(value);
+			return this;
+		}
+
+		/// <summary>
+		/// Appends the <paramref name="value"/> to the <see cref="TextBuilder"/>.
+		/// </summary>
+		/// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>
+		public CodeBuilder Write(string value)
+		{
+			InitBuilder();
+
+			TextBuilder.Append(value);
+			return this;
+		}
+
+		/// <summary>
+		/// Appends the <paramref name="value"/> followed by a new line to the <see cref="TextBuilder"/>.
+		/// </summary>
+		/// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>v
+		public CodeBuilder WriteLine(char value)
+		{
+			InitBuilder();
+
+			TextBuilder.Append(value);
+			TextBuilder.AppendLine();
+			return this;
+		}
+
+		/// <summary>
+		/// Appends the <paramref name="value"/> followed by a new line to the <see cref="TextBuilder"/>.
+		/// </summary>
+		/// <param name="value">Value to append to the <see cref="TextBuilder"/>.</param>v
+		public CodeBuilder WriteLine(string value)
+		{
+			InitBuilder();
+
+			TextBuilder.AppendLine(value);
+			return this;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static StringBuilder Validate(StringBuilder builder)
+		{
+			if (builder is null)
+			{
+				throw new ArgumentNullException(nameof(builder));
+			}
+
+			return builder;
+		}
+
+		private void CommaSpace()
+		{
+			TextBuilder.Append(',');
+			Space();
+		}
+
+		private void InitBuilder()
+		{
+			_currentLength = TextBuilder.Length;
+		}
+	}
 }

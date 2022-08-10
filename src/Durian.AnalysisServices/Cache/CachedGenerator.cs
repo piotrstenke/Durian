@@ -1,306 +1,290 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Durian.Analysis.Logging;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using Durian.Analysis.Data;
+using Durian.Analysis.Filtration;
+using Durian.Analysis.Logging;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Cache
 {
-    /// <summary>
-    /// <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}"/> that retrieves cached data from a <see cref="ConcurrentDictionary{TKey, TValue}"/>
-    /// </summary>
-    /// <typeparam name="TData">Type of cached values this generator can retrieve.</typeparam>
-    /// <typeparam name="TCompilationData">User-defined type of <see cref="ICompilationData"/> this <see cref="IDurianGenerator"/> operates on.</typeparam>
-    /// <typeparam name="TSyntaxReceiver">User-defined type of <see cref="IDurianSyntaxReceiver"/> that provides the <see cref="CSharpSyntaxNode"/>s to perform the generation on.</typeparam>
-    /// <typeparam name="TFilter">User-defined type of <see cref="ISyntaxFilter"/> that decides what <see cref="CSharpSyntaxNode"/>s collected by the <see cref="DurianGenerator{TCompilationData, TSyntaxReceiver, TFilter}.SyntaxReceiver"/> are valid for generation.</typeparam>
-    public abstract class CachedGenerator<TData, TCompilationData, TSyntaxReceiver, TFilter> : DurianGeneratorWithBuilder<TCompilationData, TSyntaxReceiver, TFilter>, ICachedGenerator<TData>
-        where TData : IMemberData
-        where TCompilationData : ICompilationDataWithSymbols
-        where TSyntaxReceiver : IDurianSyntaxReceiver
-        where TFilter : ICachedGeneratorSyntaxFilterWithDiagnostics<TData>
-    {
-        /// <inheritdoc cref="CachedGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
-        protected CachedGenerator()
-        {
-        }
+	/// <summary>
+	/// <see cref="DurianGenerator"/> that retrieves cached data from a <see cref="ConcurrentDictionary{TKey, TValue}"/>
+	/// </summary>
+	/// <typeparam name="TData">Type of cached values this generator can retrieve.</typeparam>
+	/// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> this generator uses.</typeparam>
+	public abstract class CachedGenerator<TData, TContext> : DurianGeneratorWithBuilder<TContext>, ICachedGenerator<TData>
+		where TData : IMemberData
+		where TContext : GeneratorPassBuilderContext
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData, TContext}"/> class.
+		/// </summary>
+		protected CachedGenerator()
+		{
+		}
 
-        /// <inheritdoc cref="CachedGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
-        protected CachedGenerator(in ConstructionContext context) : base(in context)
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData, TContext}"/> class.
+		/// </summary>
+		/// <param name="context">Configures how this <see cref="CachedGenerator{TData, TContext}"/> is initialized.</param>
+		protected CachedGenerator(in GeneratorLogCreationContext context) : base(in context)
+		{
+		}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CachedGenerator{TCompilationData, TSyntaxReceiver, TFilter, TData}"/> class.
-        /// </summary>
-        /// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-        /// <param name="fileNameProvider">Creates names for generated files.</param>
-        protected CachedGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData, TContext}"/> class.
+		/// </summary>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
+		protected CachedGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		{
+		}
 
-        /// <inheritdoc cref="CachedGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
-        protected CachedGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
-        {
-        }
+		/// <inheritdoc/>
+		public bool Execute(in CachedGeneratorExecutionContext<TData> context)
+		{
+			CachedGeneratorPassContext<TData, TContext>? pass;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/> class.
-        /// </summary>
-        /// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-        /// <param name="fileNameProvider">Creates names for generated files.</param>
-        protected CachedGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
-        {
-        }
+			try
+			{
+				Reset(Environment.CurrentManagedThreadId);
 
-        /// <inheritdoc/>
-        public void Execute(in CachedGeneratorExecutionContext<TData> context)
-        {
-            ResetData();
+				if (!InitializeCompilation(in context.GetContext(), out CSharpCompilation? compilation))
+				{
+					return false;
+				}
 
-            ref readonly GeneratorExecutionContext c = ref context.GetContext();
+				pass = CreateCurrentPassContext(compilation, in context);
 
-            if (!InitializeCompilation(in c, out CSharpCompilation? compilation) ||
-                c.SyntaxReceiver is not TSyntaxReceiver receiver ||
-                !ValidateSyntaxReceiver(receiver)
-            )
-            {
-                return;
-            }
+				if (pass is null)
+				{
+					return false;
+				}
+			}
+			catch when (!LoggingConfiguration.EnableExceptions)
+			{
+				return false;
+			}
 
-            try
-            {
-                InitializeExecutionData(compilation, receiver, in c);
+			try
+			{
+				return Execute_Internal(pass);
+			}
+			catch (Exception e) when (HandleException(e, pass.UnderlayingContext))
+			{
+				return false;
+			}
+		}
 
-                if (!HasValidData)
-                {
-                    return;
-                }
+		/// <summary>
+		/// Called to perform source generation. A generator can use the context to add source files via
+		/// the Microsoft.CodeAnalysis.GeneratorExecutionContext.AddSource(System.String,Microsoft.CodeAnalysis.Text.SourceText) method.
+		/// </summary>
+		/// <param name="context"><see cref="CachedGeneratorPassContext{TData, TContext}"/> to add the sources to.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+		public bool Execute(CachedGeneratorPassContext<TData, TContext> context)
+		{
+			if (context is null)
+			{
+				throw new ArgumentNullException(nameof(context));
+			}
 
-                Filtrate(in context, in c);
-                IsSuccess = true;
-            }
-            catch (Exception e)
-            {
-                LogException(e);
-                IsSuccess = false;
+			try
+			{
+				return Execute_Internal(context);
+			}
+			catch (Exception e) when (HandleException(e, context.UnderlayingContext))
+			{
+				return false;
+			}
+		}
 
-                if (EnableExceptions)
-                {
-                    throw;
-                }
-            }
-        }
+		/// <summary>
+		/// Performs node filtration.
+		/// </summary>
+		/// <param name="context">Current <see cref="CachedGeneratorPassContext{TData, TContext}"/>.</param>
+		public void Filtrate(CachedGeneratorPassContext<TData, TContext> context)
+		{
+			IReadOnlyFilterContainer<ICachedGeneratorSyntaxFilter<TData>>? filters = GetFilters(context);
 
-        /// <summary>
-        /// Returns a <see cref="FilterContainer{TFilter}"/> to be used during the current generation pass.
-        /// </summary>
-        /// <param name="context">Current <see cref="CachedGeneratorExecutionContext{TData}"/>.</param>
-        public virtual FilterContainer<TFilter>? GetFilters(in CachedGeneratorExecutionContext<TData> context)
-        {
-            return GetFilters(in context.GetContext());
-        }
+			if (filters is null || filters.NumGroups == 0)
+			{
+				return;
+			}
 
-        /// <summary>
-        /// Manually iterates through a <typeparamref name="TFilter"/> that has the <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> property set to <see langword="true"/>.
-        /// </summary>
-        /// <param name="filter"><typeparamref name="TFilter"/> to iterate through.</param>
-        /// <param name="context">Current <see cref="CachedGeneratorExecutionContext{TData}"/>.</param>
-        protected virtual void IterateThroughFilter(TFilter filter, in CachedGeneratorExecutionContext<TData> context)
-        {
-            IEnumerator<IMemberData> iter = filter.GetEnumerator(in context);
-            ref readonly GeneratorExecutionContext original = ref context.GetContext();
+			Filtrate(context, filters);
+		}
 
-            while (iter.MoveNext())
-            {
-                GenerateFromData(iter.Current, in original);
-            }
-        }
+		/// <summary>
+		/// Performs node filtration.
+		/// </summary>
+		/// <param name="context">Current <see cref="CachedGeneratorPassContext{TData, TContext}"/>.</param>
+		/// <param name="filters">Collection of <see cref="IGeneratorSyntaxFilter"/>s to filtrate the nodes with.</param>
+		public void Filtrate(CachedGeneratorPassContext<TData, TContext> context, IReadOnlyFilterContainer<ICachedGeneratorSyntaxFilter<TData>> filters)
+		{
+			BeforeExecution(context.UnderlayingContext);
+			HandleFilterContainer(filters, context);
+			AfterExecution(context.UnderlayingContext);
+		}
 
-        private void Filtrate(in CachedGeneratorExecutionContext<TData> cachedContext, in GeneratorExecutionContext originalContext)
-        {
-            FilterContainer<TFilter>? filters = GetFilters(in cachedContext);
+		/// <summary>
+		/// Returns a <see cref="IFilterContainer{TFilter}"/> to be used during the current generation pass.
+		/// </summary>
+		/// <param name="context">Current <see cref="CachedGeneratorPassContext{TData, TContext}"/>.</param>
+		public virtual IReadOnlyFilterContainer<ICachedGeneratorSyntaxFilter<TData>>? GetFilters(CachedGeneratorPassContext<TData, TContext> context)
+		{
+			IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? filters = GetFilters(context.UnderlayingContext);
 
-            if (filters is null || filters.NumGroups == 0)
-            {
-                return;
-            }
+			if (filters is IReadOnlyFilterContainer<ICachedGeneratorSyntaxFilter<TData>> r)
+			{
+				return r;
+			}
 
-            BeforeExecution(in originalContext);
+			if (filters is null)
+			{
+				return null;
+			}
 
-            foreach (FilterGroup<TFilter> filterGroup in filters)
-            {
-                HandleFilterGroup(filterGroup, in cachedContext, in originalContext);
-            }
+			return new FilterContainer<ICachedGeneratorSyntaxFilter<TData>>(filters.Cast<FilterGroup<ICachedGeneratorSyntaxFilter<TData>>>());
+		}
 
-            AfterExecution(in originalContext);
-        }
+		/// <summary>
+		/// Creates a new <see cref="CachedGeneratorPassContext{TData, TContext}"/> for the current generator pass.
+		/// </summary>
+		/// <param name="currentCompilation">Current <see cref="CSharpCompilation"/>.</param>
+		/// <param name="context">Current <see cref="CachedGeneratorExecutionContext{T}"/>.</param>
+		protected CachedGeneratorPassContext<TData, TContext>? CreateCurrentPassContext(CSharpCompilation currentCompilation, in CachedGeneratorExecutionContext<TData> context)
+		{
+			ref readonly GeneratorExecutionContext original = ref context.GetContext();
 
-        private void GenerateFromFiltersWithGeneratedSymbols(FilterGroup<TFilter> filterGroup, List<TFilter> filtersWithGeneratedSymbols, in CachedGeneratorExecutionContext<TData> cachedContext, in GeneratorExecutionContext originalContext)
-        {
-            UpdateCompilationBeforeFiltersWithGeneratedSymbols();
-            BeforeGeneratedSymbolFiltration(filterGroup, in originalContext);
-            BeginIterationOfFiltersWithGeneratedSymbols();
+			TContext? pass = CreateCurrentPassContext(currentCompilation, in original);
 
-            foreach (TFilter filter in filtersWithGeneratedSymbols)
-            {
-                IterateThroughFilter(filter, in cachedContext);
-            }
+			if (pass is null)
+			{
+				return null;
+			}
 
-            EndIterationOfFiltersWithGeneratedSymbols();
-        }
+			return new CachedGeneratorPassContext<TData, TContext>(pass, in context);
+		}
 
-        private void HandleFilterGroup(FilterGroup<TFilter> filterGroup, in CachedGeneratorExecutionContext<TData> cachedContext, in GeneratorExecutionContext originalContext)
-        {
-            int numFilters = filterGroup.Count;
-            List<TFilter> filtersWithGeneratedSymbols = new(numFilters);
+		/// <summary>
+		/// Performs node filtration without the <see cref="DurianGeneratorWithContext{TContext}.BeforeExecution"/> and <see cref="DurianGeneratorWithContext{TContext}.AfterExecution"/> callbacks.
+		/// </summary>
+		/// <param name="filters">Collection of <see cref="ISyntaxFilter"/>s to filtrate the nodes with.</param>
+		/// <param name="context">Current <see cref="CachedGeneratorPassContext{TData, TContextData}"/>.</param>
+		protected virtual void HandleFilterContainer(IReadOnlyFilterContainer<ICachedGeneratorSyntaxFilter<TData>> filters, CachedGeneratorPassContext<TData, TContext> context)
+		{
+			foreach (IReadOnlyFilterGroup<ICachedGeneratorSyntaxFilter<TData>> filterGroup in filters)
+			{
+				HandleFilterGroup(filterGroup, context);
+			}
+		}
 
-            filterGroup.Unseal();
-            BeforeFiltrationOfGroup(filterGroup, in originalContext);
-            filterGroup.Seal();
+		/// <summary>
+		/// Manually iterates through a <see cref="ISyntaxFilter"/> that has the <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> property set to <see langword="true"/>.
+		/// </summary>
+		/// <param name="filter"><see cref="ICachedGeneratorSyntaxFilter{T}"/> to iterate through.</param>
+		/// <param name="context">Current <see cref="CachedGeneratorPassContext{TData, TContext}"/>.</param>
+		protected virtual void IterateThroughFilter(ICachedGeneratorSyntaxFilter<TData> filter, CachedGeneratorPassContext<TData, TContext> context)
+		{
+			IEnumerator<IMemberData> iter = filter.GetEnumerator(context);
 
-            foreach (TFilter filter in filterGroup)
-            {
-                if (filter.IncludeGeneratedSymbols)
-                {
-                    filtersWithGeneratedSymbols.Add(filter);
-                }
-                else
-                {
-                    foreach (IMemberData data in filter.Filtrate(in cachedContext))
-                    {
-                        GenerateFromData(data, in originalContext);
-                    }
-                }
-            }
+			while (iter.MoveNext())
+			{
+				GenerateFromData(iter.Current, context.UnderlayingContext);
+			}
+		}
 
-            BeforeExecutionOfGroup(filterGroup, in originalContext);
+		private bool Execute_Internal(CachedGeneratorPassContext<TData, TContext> context)
+		{
+			GeneratorContextRegistry.AddContext(InstanceId, Environment.CurrentManagedThreadId, context);
+			Filtrate(context);
+			return true;
+		}
 
-            GenerateFromFiltersWithGeneratedSymbols(filterGroup, filtersWithGeneratedSymbols, in cachedContext, in originalContext);
+		private void GenerateFromFiltersWithGeneratedSymbols(
+			IReadOnlyFilterGroup<ICachedGeneratorSyntaxFilter<TData>> filterGroup,
+			List<ICachedGeneratorSyntaxFilter<TData>> filtersWithGeneratedSymbols,
+			CachedGeneratorPassContext<TData, TContext> context
+		)
+		{
+			BeforeFiltersWithGeneratedSymbols(context.UnderlayingContext);
+			BeforeFiltrationOfGeneratedSymbols(filterGroup, context.UnderlayingContext);
 
-            filterGroup.Unseal();
-            AfterExecutionOfGroup(filterGroup, in originalContext);
-        }
-    }
+			foreach (ICachedGeneratorSyntaxFilter<TData> filter in filtersWithGeneratedSymbols)
+			{
+				IterateThroughFilter(filter, context);
+			}
+		}
 
-    /// <inheritdoc cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/>
-    public abstract class CachedGenerator<TData, TCompilationData, TSyntaxReceiver> : CachedGenerator<TData, TCompilationData, TSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
-        where TData : IMemberData
-        where TCompilationData : ICompilationDataWithSymbols
-        where TSyntaxReceiver : IDurianSyntaxReceiver
-    {
-        /// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
-        protected CachedGenerator()
-        {
-        }
+		private void HandleFilterGroup(IReadOnlyFilterGroup<ICachedGeneratorSyntaxFilter<TData>> filterGroup, CachedGeneratorPassContext<TData, TContext> context)
+		{
+			int numFilters = filterGroup.Count;
+			List<ICachedGeneratorSyntaxFilter<TData>> filtersWithGeneratedSymbols = new(numFilters);
 
-        /// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
-        protected CachedGenerator(in ConstructionContext context) : base(in context)
-        {
-        }
+			//filterGroup.Unseal();
+			BeforeFiltrationOfGroup(filterGroup, context.UnderlayingContext);
+			//filterGroup.Seal();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver}"/> class.
-        /// </summary>
-        /// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-        /// <param name="fileNameProvider">Creates names for generated files.</param>
-        protected CachedGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
-        {
-        }
+			foreach (ICachedGeneratorSyntaxFilter<TData> filter in filterGroup)
+			{
+				if (filter.IncludeGeneratedSymbols)
+				{
+					filtersWithGeneratedSymbols.Add(filter);
+				}
+				else
+				{
+					foreach (IMemberData data in filter.Filtrate(context))
+					{
+						GenerateFromData(data, context.UnderlayingContext);
+					}
+				}
+			}
 
-        /// <inheritdoc cref="CachedGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
-        protected CachedGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
-        {
-        }
+			BeforeExecutionOfGroup(filterGroup, context.UnderlayingContext);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver}"/> class.
-        /// </summary>
-        /// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-        /// <param name="fileNameProvider">Creates names for generated files.</param>
-        protected CachedGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
-        {
-        }
-    }
+			GenerateFromFiltersWithGeneratedSymbols(filterGroup, filtersWithGeneratedSymbols, context);
 
-    /// <inheritdoc cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/>
-    public abstract class CachedGenerator<TData, TCompilationData> : CachedGenerator<TData, TCompilationData, IDurianSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
-        where TData : IMemberData
-        where TCompilationData : ICompilationDataWithSymbols
-    {
-        /// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
-        protected CachedGenerator()
-        {
-        }
+			//filterGroup.Unseal();
+			AfterExecutionOfGroup(filterGroup, context.UnderlayingContext);
+		}
+	}
 
-        /// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
-        protected CachedGenerator(in ConstructionContext context) : base(in context)
-        {
-        }
+	/// <inheritdoc cref="CachedGenerator{TData, TContext}"/>
+	public abstract class CachedGenerator<TData> : CachedGenerator<TData, GeneratorPassBuilderContext> where TData : class, IMemberData
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData}"/> class.
+		/// </summary>
+		protected CachedGenerator()
+		{
+		}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CachedGenerator{TData, TCompilationData}"/> class.
-        /// </summary>
-        /// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-        /// <param name="fileNameProvider">Creates names for generated files.</param>
-        protected CachedGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData}"/> class.
+		/// </summary>
+		/// <param name="context">Configures how this <see cref="CachedGenerator{TData}"/> is initialized.</param>
+		protected CachedGenerator(in GeneratorLogCreationContext context) : base(in context)
+		{
+		}
 
-        /// <inheritdoc cref="CachedGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
-        protected CachedGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedGenerator{TData}"/> class.
+		/// </summary>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
+		protected CachedGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		{
+		}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CachedGenerator{TData, TCompilationData}"/> class.
-        /// </summary>
-        /// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-        /// <param name="fileNameProvider">Creates names for generated files.</param>
-        protected CachedGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
-        {
-        }
-    }
-
-    /// <inheritdoc cref="CachedGenerator{TData, TCompilationData, TSyntaxReceiver, TFilter}"/>
-    public abstract class CachedGenerator<TData> : CachedGenerator<TData, ICompilationDataWithSymbols, IDurianSyntaxReceiver, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>>
-        where TData : IMemberData
-    {
-        /// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
-        protected CachedGenerator()
-        {
-        }
-
-        /// <inheritdoc cref="CachedGenerator(in ConstructionContext, IHintNameProvider?)"/>
-        protected CachedGenerator(in ConstructionContext context) : base(in context)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CachedGenerator{TData}"/> class.
-        /// </summary>
-        /// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-        /// <param name="fileNameProvider">Creates names for generated files.</param>
-        protected CachedGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
-        {
-        }
-
-        /// <inheritdoc cref="CachedGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
-        protected CachedGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CachedGenerator{TData}"/> class.
-        /// </summary>
-        /// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-        /// <param name="fileNameProvider">Creates names for generated files.</param>
-        protected CachedGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
-        {
-        }
-    }
+		/// <inheritdoc/>
+		protected override GeneratorPassBuilderContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
+		{
+			return new GeneratorPassBuilderContext();
+		}
+	}
 }

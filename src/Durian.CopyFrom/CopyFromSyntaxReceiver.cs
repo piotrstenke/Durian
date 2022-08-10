@@ -1,66 +1,109 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Durian.Analysis.CopyFrom
 {
-    /// <summary>
-    /// Collects <see cref="CSharpSyntaxNode"/>s that are potential targets for the <see cref="CopyFromGenerator"/>.
-    /// </summary>
-    public sealed class CopyFromSyntaxReceiver : IDurianSyntaxReceiver
-    {
-        /// <summary>
-        /// <see cref="MethodDeclarationSyntax"/>es that potentially have the <c>Durian.CopyFromAttribute</c> applied.
-        /// </summary>
-        public List<MethodDeclarationSyntax> CandidateMethods { get; }
+	/// <summary>
+	/// Collects <see cref="CSharpSyntaxNode"/>s that are potential targets for the <see cref="CopyFromGenerator"/>.
+	/// </summary>
+	public sealed class CopyFromSyntaxReceiver : IDurianSyntaxReceiver
+	{
+		/// <summary>
+		/// <see cref="BaseMethodDeclarationSyntax"/>es that potentially have the <c>Durian.CopyFromAttribute</c> applied.
+		/// </summary>
+		public List<CSharpSyntaxNode> CandidateMethods { get; }
 
-        /// <summary>
-        /// <see cref="TypeDeclarationSyntax"/>es that potentially have the <c>Durian.CopyFromAttribute</c> applied.
-        /// </summary>
-        public List<TypeDeclarationSyntax> CandidateTypes { get; }
+		/// <summary>
+		/// <see cref="TypeDeclarationSyntax"/>es that potentially have the <c>Durian.CopyFromAttribute</c> applied.
+		/// </summary>
+		public List<TypeDeclarationSyntax> CandidateTypes { get; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CopyFromSyntaxReceiver"/> class.
-        /// </summary>
-        public CopyFromSyntaxReceiver()
-        {
-            CandidateMethods = new();
-            CandidateTypes = new();
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CopyFromSyntaxReceiver"/> class.
+		/// </summary>
+		public CopyFromSyntaxReceiver()
+		{
+			CandidateMethods = new();
+			CandidateTypes = new();
+		}
 
-        /// <inheritdoc/>
-        public bool IsEmpty()
-        {
-            return CandidateMethods.Count == 0 && CandidateTypes.Count == 0;
-        }
+		/// <inheritdoc/>
+		public bool IsEmpty()
+		{
+			return CandidateMethods.Count == 0 && CandidateTypes.Count == 0;
+		}
 
-        /// <inheritdoc/>
-        public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-        {
-            if (syntaxNode is MethodDeclarationSyntax method)
-            {
-                if (method.AttributeLists.Any())
-                {
-                    CandidateMethods.Add(method);
-                }
-            }
-            else if (syntaxNode is TypeDeclarationSyntax type)
-            {
-                if (type.AttributeLists.Any())
-                {
-                    CandidateTypes.Add(type);
-                }
-            }
-        }
+		/// <inheritdoc/>
+		public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
+		{
+			switch (syntaxNode)
+			{
+				case BaseMethodDeclarationSyntax method:
 
-        IEnumerable<CSharpSyntaxNode> INodeProvider.GetNodes()
-        {
-            return CandidateMethods.Cast<CSharpSyntaxNode>().Concat(CandidateTypes);
-        }
-    }
+					if(method is ConstructorDeclarationSyntax)
+					{
+						return;
+					}
+
+					if (HasValidAttributeList(method.AttributeLists, SyntaxKind.MethodKeyword))
+					{
+						CandidateMethods.Add(method);
+					}
+
+					break;
+
+				case AccessorDeclarationSyntax accessor:
+
+					if(HasValidAttributeList(accessor.AttributeLists, SyntaxKind.MethodKeyword))
+					{
+						CandidateMethods.Add(accessor);
+					}
+
+					break;
+
+				case LocalFunctionStatementSyntax localFunction:
+
+					if (HasValidAttributeList(localFunction.AttributeLists, SyntaxKind.MethodKeyword))
+					{
+						CandidateMethods.Add(localFunction);
+					}
+
+					break;
+
+				case LambdaExpressionSyntax lambda:
+
+					if (HasValidAttributeList(lambda.AttributeLists, SyntaxKind.MethodKeyword))
+					{
+						CandidateMethods.Add(lambda);
+					}
+
+					break;
+
+				case TypeDeclarationSyntax type:
+
+					if (HasValidAttributeList(type.AttributeLists, SyntaxKind.TypeKeyword))
+					{
+						CandidateTypes.Add(type);
+					}
+
+					break;
+			}
+
+			static bool HasValidAttributeList(SyntaxList<AttributeListSyntax> list, SyntaxKind keyword)
+			{
+				return list.IndexOf(attr => attr.Target is null || attr.Target.Identifier.IsKind(keyword)) != -1;
+			}
+		}
+
+		IEnumerable<CSharpSyntaxNode> INodeProvider.GetNodes()
+		{
+			return CandidateMethods.Cast<CSharpSyntaxNode>().Concat(CandidateTypes);
+		}
+	}
 }

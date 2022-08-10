@@ -1,208 +1,218 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Durian.Analysis.Logging;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Durian.Analysis.Data;
+using Durian.Analysis.Filtration;
+using Durian.Analysis.Logging;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Cache
 {
-    /// <summary>
-    /// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="INodeValidatorWithDiagnostics{T}"/> or retrieved from a <see cref="CachedData{T}"/> with an option to log diagnostics using a <see cref="INodeDiagnosticReceiver"/>.
-    /// </summary>
-    /// <typeparam name="T">Type of <see cref="IMemberData"/> this enumerator can handle.</typeparam>
-    [DebuggerDisplay("Current = {Current}")]
-    public struct CachedLoggableFilterEnumerator<T> : IEnumerator<T> where T : IMemberData
-    {
-        internal readonly CachedData<T> _cache;
+	/// <summary>
+	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="TContext"/> created by the provided <see cref="ISyntaxValidator{T}"/> or retrieved from a <see cref="CachedData{T}"/> with an option to log diagnostics using a <see cref="INodeDiagnosticReceiver"/>.
+	/// </summary>
+	/// <typeparam name="TData">Type of cached data.</typeparam>
+	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
+	[DebuggerDisplay("Current = {Current}")]
+	public struct CachedLoggableFilterEnumerator<TData, TContext> : IFilterEnumerator<TContext>, IEnumerator<TData>
+		where TData : class, IMemberData
+		where TContext : ISyntaxValidationContext
+	{
+		internal readonly CachedData<TData> _cache;
 
-        private readonly IEnumerator<CSharpSyntaxNode> _nodes;
+		private readonly IEnumerator<SyntaxNode> _nodes;
 
-        /// <summary>
-        /// Parent <see cref="ICompilationData"/> of the provided <see cref="CSharpSyntaxNode"/>s.
-        /// </summary>
-        public readonly ICompilationData Compilation { get; }
+		/// <inheritdoc/>
+		public readonly ICompilationData Compilation { get; }
 
-        /// <summary>
-        /// Current <see cref="IMemberData"/>.
-        /// </summary>
-        public T? Current { readonly get; private set; }
+		/// <summary>
+		/// <typeparamref name="TData"/> at the current position in the enumerator.
+		/// </summary>
+		public TData? Current { readonly get; private set; }
 
-        /// <summary>
-        /// <see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s.
-        /// </summary>
-        public readonly IHintNameProvider HintNameProvider { get; }
+		/// <summary>
+		/// <see cref="IHintNameProvider"/> that creates hint names for the <see cref="SyntaxNode"/>s.
+		/// </summary>
+		public readonly IHintNameProvider HintNameProvider { get; }
 
-        /// <summary>
-        /// <see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.
-        /// </summary>
-        public readonly INodeDiagnosticReceiver LogReceiver { get; }
+		/// <summary>
+		/// <see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.
+		/// </summary>
+		public readonly INodeDiagnosticReceiver LogReceiver { get; }
 
-        /// <summary>
-        /// <see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.
-        /// </summary>
-        public readonly INodeValidatorWithDiagnostics<T> Validator { get; }
+		/// <inheritdoc cref="IFilterEnumerator{T}.Validator"/>
+		public readonly ISyntaxValidatorWithDiagnostics<TContext> Validator { get; }
 
-        readonly T IEnumerator<T>.Current => Current!;
-        readonly object IEnumerator.Current => Current!;
+		readonly TData IEnumerator<TData>.Current => Current!;
+		readonly IMemberData IFilterEnumerator<TContext>.Current => Current!;
+		readonly object IEnumerator.Current => Current!;
+		readonly ISyntaxValidator<TContext> IFilterEnumerator<TContext>.Validator => Validator;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{T}"/> struct.
-        /// </summary>
-        /// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
-        /// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
-        /// <param name="validator"><see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
-        /// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
-        /// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <paramref name="nodes"/>.</param>
-        /// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
-        public CachedLoggableFilterEnumerator(
-            IEnumerable<CSharpSyntaxNode> nodes,
-            ICompilationData compilation,
-            INodeValidatorWithDiagnostics<T> validator,
-            INodeDiagnosticReceiver logReceiver,
-            IHintNameProvider hintNameProvider,
-            in CachedData<T> cache
-        ) : this(nodes.GetEnumerator(), compilation, validator, logReceiver, hintNameProvider, in cache)
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> struct.
+		/// </summary>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
+		/// <param name="nodes">A collection of <see cref="SyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
+		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <paramref name="nodes"/>.</param>
+		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
+		public CachedLoggableFilterEnumerator(
+			ICompilationData compilation,
+			IEnumerable<SyntaxNode> nodes,
+			ISyntaxValidatorWithDiagnostics<TContext> validator,
+			INodeDiagnosticReceiver logReceiver,
+			IHintNameProvider hintNameProvider,
+			in CachedData<TData> cache
+		) : this(compilation, nodes.GetEnumerator(), validator, logReceiver, hintNameProvider, in cache)
+		{
+		}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{T}"/> struct.
-        /// </summary>
-        /// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
-        /// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
-        /// <param name="validator"><see cref="INodeValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
-        /// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
-        /// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
-        /// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
-        public CachedLoggableFilterEnumerator(
-            INodeProvider provider,
-            ICompilationData compilation,
-            INodeValidatorWithDiagnostics<T> validator,
-            INodeDiagnosticReceiver logReceiver,
-            IHintNameProvider hintNameProvider,
-            in CachedData<T> cache
-        ) : this(provider.GetNodes().GetEnumerator(), compilation, validator, logReceiver, hintNameProvider, in cache)
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> struct.
+		/// </summary>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="SyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
+		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="SyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
+		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
+		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <see cref="SyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
+		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
+		public CachedLoggableFilterEnumerator(
+			ICompilationData compilation,
+			INodeProvider provider,
+			ISyntaxValidatorWithDiagnostics<TContext> validator,
+			INodeDiagnosticReceiver logReceiver,
+			IHintNameProvider hintNameProvider,
+			in CachedData<TData> cache
+		) : this(compilation, provider.GetNodes().GetEnumerator(), validator, logReceiver, hintNameProvider, in cache)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> struct.
+		/// </summary>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
+		/// <param name="nodes">An enumerator that iterates through a collection of <see cref="SyntaxNode"/>s.</param>
+		/// <param name="validator"><see cref="ISyntaxValidatorWithDiagnostics{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="logReceiver"><see cref="INodeDiagnosticReceiver"/> that writes the reported <see cref="Diagnostic"/>s into a log file or buffer.</param>
+		/// <param name="hintNameProvider"><see cref="IHintNameProvider"/> that creates hint names for the <paramref name="nodes"/>.</param>
+		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
+		public CachedLoggableFilterEnumerator(
+			ICompilationData compilation,
+			IEnumerator<SyntaxNode> nodes,
+			ISyntaxValidatorWithDiagnostics<TContext> validator,
+			INodeDiagnosticReceiver logReceiver,
+			IHintNameProvider hintNameProvider,
+			in CachedData<TData> cache
+		)
+		{
+			Validator = validator;
+			Compilation = compilation;
+			LogReceiver = logReceiver;
+			HintNameProvider = hintNameProvider;
+			_nodes = nodes;
+			_cache = cache;
+			Current = default;
+		}
 
 #pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
 
-        internal CachedLoggableFilterEnumerator(
-            IEnumerator<CSharpSyntaxNode> nodes,
-            ICompilationData compilation,
-            INodeValidatorWithDiagnostics<T> validator,
-            INodeDiagnosticReceiver logReceiver,
-            IHintNameProvider hintNameProvider,
-            in CachedData<T> cache
-        )
-        {
-            Validator = validator;
-            Compilation = compilation;
-            LogReceiver = logReceiver;
-            HintNameProvider = hintNameProvider;
-            _nodes = nodes;
-            _cache = cache;
-            Current = default;
-        }
+		/// <inheritdoc/>
+		public static explicit operator LoggableFilterEnumerator<TContext>(in CachedLoggableFilterEnumerator<TData, TContext> a)
+		{
+			return new LoggableFilterEnumerator<TContext>(a.Compilation, a._nodes, a.Validator, a.LogReceiver, a.HintNameProvider);
+		}
 
-        /// <inheritdoc/>
-        public static explicit operator LoggableFilterEnumerator<T>(in CachedLoggableFilterEnumerator<T> a)
-        {
-            return new LoggableFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, a.LogReceiver, a.HintNameProvider);
-        }
-
-        /// <inheritdoc/>
-        public static implicit operator CachedLoggableFilterEnumerator<T>(in LoggableFilterEnumerator<T> a)
-        {
-            return new CachedLoggableFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, a.LogReceiver, a.HintNameProvider, CachedData<T>.Empty);
-        }
+		/// <inheritdoc/>
+		public static implicit operator CachedLoggableFilterEnumerator<TData, TContext>(in LoggableFilterEnumerator<TContext> a)
+		{
+			return new CachedLoggableFilterEnumerator<TData, TContext>(a.Compilation, a._nodes, a.Validator, a.LogReceiver, a.HintNameProvider, CachedData<TData>.Empty);
+		}
 
 #pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 
-        /// <inheritdoc cref="FilterEnumerator{T}.MoveNext"/>
-        [MemberNotNullWhen(true, nameof(Current))]
-        public bool MoveNext(CancellationToken cancellationToken = default)
-        {
-            while (_nodes.MoveNext())
-            {
-                CSharpSyntaxNode node = _nodes.Current;
+		/// <inheritdoc/>
+		[MemberNotNullWhen(true, nameof(Current))]
+		public bool MoveNext(CancellationToken cancellationToken = default)
+		{
+			while (_nodes.MoveNext())
+			{
+				SyntaxNode node = _nodes.Current;
 
-                if (node is null)
-                {
-                    continue;
-                }
+				if (node is null)
+				{
+					continue;
+				}
 
-                if (_cache.TryGetCachedValue(node.GetLocation().GetLineSpan(), out T? data))
-                {
-                    Current = data!;
-                    return true;
-                }
+				if (_cache.TryGetCachedValue(node.GetLocation().GetLineSpan(), out TData? data))
+				{
+					Current = data!;
+					return true;
+				}
 
-                if (!Validator.GetValidationData(node, Compilation, out SemanticModel? semanticModel, out ISymbol? symbol, cancellationToken))
-                {
-                    continue;
-                }
+				if (!Validator.TryGetContext(new PreValidationContext(node, Compilation, cancellationToken), out TContext? context))
+				{
+					continue;
+				}
 
-                string fileName = HintNameProvider.GetFileName(symbol);
-                LogReceiver.SetTargetNode(node, fileName);
-                bool isValid = Validator.ValidateAndCreate(node, Compilation, semanticModel, symbol, out data, LogReceiver, cancellationToken);
+				string fileName = HintNameProvider.GetHintName(context.Symbol);
+				LogReceiver.SetTargetNode(node, fileName);
+				bool isValid = Validator.ValidateAndCreate(context, out IMemberData? member, LogReceiver) && member is TData;
 
-                if (LogReceiver.Count > 0)
-                {
-                    LogReceiver.Push();
-                    HintNameProvider.Success();
-                }
+				if (LogReceiver.Count > 0)
+				{
+					LogReceiver.Push();
+					HintNameProvider.Success();
+				}
 
-                if (isValid)
-                {
-                    Current = data!;
-                    return true;
-                }
-            }
+				if (isValid)
+				{
+					Current = (member as TData)!;
+					return true;
+				}
+			}
 
-            Current = default;
-            return false;
-        }
+			Current = default;
+			return false;
+		}
 
-        /// <inheritdoc cref="FilterEnumerator{T}.Reset"/>
-        public void Reset()
-        {
-            _nodes.Reset();
-            Current = default;
-        }
+		/// <inheritdoc cref="FilterEnumerator{T}.Reset"/>
+		public void Reset()
+		{
+			_nodes.Reset();
+			Current = default;
+		}
 
-        /// <summary>
-        /// Converts this <see cref="CachedLoggableFilterEnumerator{T}"/> to a new instance of <see cref="CachedFilterEnumerator{T}"/>.
-        /// </summary>
-        public readonly CachedFilterEnumerator<T> ToBasicCachedEnumerator()
-        {
-            return new CachedFilterEnumerator<T>(_nodes, Compilation, Validator, in _cache);
-        }
+		/// <summary>
+		/// Converts this <see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> to a new instance of <see cref="CachedFilterEnumerator{TData, TContext}"/>.
+		/// </summary>
+		public readonly CachedFilterEnumerator<TData, TContext> ToBasicCachedEnumerator()
+		{
+			return new CachedFilterEnumerator<TData, TContext>(Compilation, _nodes, Validator, in _cache);
+		}
 
-        /// <summary>
-        /// Converts this <see cref="CachedLoggableFilterEnumerator{T}"/> to a new instance of <see cref="FilterEnumerator{T}"/>.
-        /// </summary>
-        public readonly FilterEnumerator<T> ToBasicEnumerator()
-        {
-            return new FilterEnumerator<T>(_nodes, Compilation, Validator);
-        }
+		/// <summary>
+		/// Converts this <see cref="CachedLoggableFilterEnumerator{TData, TContext}"/> to a new instance of <see cref="FilterEnumerator{T}"/>.
+		/// </summary>
+		public readonly FilterEnumerator<TContext> ToBasicEnumerator()
+		{
+			return new FilterEnumerator<TContext>(Compilation, _nodes, Validator);
+		}
 
-        readonly void IDisposable.Dispose()
-        {
-            // Do nothing.
-        }
+		readonly void IDisposable.Dispose()
+		{
+			// Do nothing.
+		}
 
-        bool IEnumerator.MoveNext()
-        {
-            return MoveNext();
-        }
-    }
+		bool IEnumerator.MoveNext()
+		{
+			return MoveNext();
+		}
+	}
 }

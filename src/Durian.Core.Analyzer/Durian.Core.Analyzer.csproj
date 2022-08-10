@@ -2,53 +2,53 @@
 
   <PropertyGroup>
 
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>
-      Durian.Core.Analyzer is a small, entirely analyzer-based package that provides diagnostics for situations when the Durian.Core package is used improperly.
-      Do not reference this package if the main Durian package is already referenced.
-    </Description>
-    <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Core</PackageTags>
-    <PackageVersion>2.1.0</PackageVersion>
-    <AssemblyVersion>2.1.0</AssemblyVersion>
-    <Version>2.1.0</Version>
-    <RootNamespace>Durian.Analysis</RootNamespace>
-    <IsRoslynComponent>true</IsRoslynComponent>
+	<TargetFramework>netstandard2.0</TargetFramework>
+	<Description>
+	  Durian.Core.Analyzer is a small, entirely analyzer-based package that provides diagnostics for situations when the Durian.Core package is used improperly.
+	  Do not reference this package if the main Durian package is already referenced.
+	</Description>
+	<PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Core</PackageTags>
+	<PackageVersion>3.0.0</PackageVersion>
+	<AssemblyVersion>3.0.0</AssemblyVersion>
+	<Version>3.0.0</Version>
+	<RootNamespace>Durian.Analysis</RootNamespace>
+	<IsRoslynComponent>true</IsRoslynComponent>
 
-    <DevelopmentDependency>true</DevelopmentDependency>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-    
+	<DevelopmentDependency>true</DevelopmentDependency>
+	<IncludeBuildOutput>false</IncludeBuildOutput>
+	<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+	
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
 
-    <DebugType>none</DebugType>
+	<DebugType>none</DebugType>
 
   </PropertyGroup>
 
   <ItemGroup>
 
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" PrivateAssets="all" />
-    
-    <ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" PrivateAssets="all" />
-    
-    <ProjectReference Include="..\Durian.DefaultParam\Durian.DefaultParam.csproj" />
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" PrivateAssets="all" />
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.1.0" PrivateAssets="all" />
+	
+	<ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" PrivateAssets="all" />
+	
+	<ProjectReference Include="..\Durian.DefaultParam\Durian.DefaultParam.csproj" />
 
-    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
-    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+	<AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+	<AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
 
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(OutputPath)\Durian.AnalysisServices.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    
+	<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	<None Include="$(OutputPath)\Durian.AnalysisServices.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	
   </ItemGroup>
   
   <ItemGroup Condition="'$(Configuration)'=='Debug'">
 
-    <PackageReference Include="Roslynator.Analyzers" Version="3.2.2" PrivateAssets="all" />
-    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="1.1.1" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
-    
+	<PackageReference Include="Roslynator.Analyzers" Version="4.1.0" PrivateAssets="all" />
+	<PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.1.0" PrivateAssets="all" />
+	<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" PrivateAssets="all" />
+	
   </ItemGroup>
   
 </Project>

@@ -1,14 +1,14 @@
 <div align="left">
-    <a href="https://www.nuget.org/packages/Durian.FriendClass">
-        <img src="https://img.shields.io/nuget/v/Durian.FriendClass?color=seagreen&style=flat-square" alt="Version"/>
-    </a>
-    <a href="https://www.nuget.org/packages/Durian.FriendClass">
-        <img src="https://img.shields.io/nuget/dt/Durian.FriendClass?color=blue&style=flat-square" alt="Downloads"/>
-    </a> <br />
+	<a href="https://www.nuget.org/packages/Durian.FriendClass">
+		<img src="https://img.shields.io/nuget/v/Durian.FriendClass?color=seagreen&style=flat-square" alt="Version"/>
+	</a>
+	<a href="https://www.nuget.org/packages/Durian.FriendClass">
+		<img src="https://img.shields.io/nuget/dt/Durian.FriendClass?color=blue&style=flat-square" alt="Downloads"/>
+	</a> <br />
 </div>
 
 <div align="center">
-        <img src="../../img/icons/Durian-256.png" alt="Durian logo"/>
+		<img src="../../img/icons/Durian-256.png" alt="Durian logo"/>
 </div>
 
 ##
@@ -19,13 +19,13 @@
 2. [Setup](#setup)
 3. [Basics](#basics)
 4. [Member rules](#member-rules)
-    1. [Allowed members](#allowed-members]
-    2. [Accessibility](#accessibility)
-    3. [Inner types](#inner-types)
+	1. [Allowed members](#allowed-members)
+	2. [Accessibility](#accessibility)
+	3. [Inner types](#inner-types)
 5. [Inheritance](#inheritance)
-    1. [Child types](#child-types)
-    2. [Inherited members](#inherited-members)
-    3. [External assemblies](#external-assemblies)
+	1. [Child types](#child-types)
+	2. [Inherited members](#inherited-members)
+	3. [External assemblies](#external-assemblies)
 
 ## Structure
 
@@ -55,27 +55,27 @@ using Durian;
 [FriendClass(typeof(A))]
 public class Test
 {
-    internal static string Key { get; }
+	internal static string Key { get; }
 }
 
 public class A
 {
-    public string GetKey()
-    {
-        // Success!
-        // Type 'A' is a friend of 'Test', so it can safely access internal members.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Success!
+		// Type 'A' is a friend of 'Test', so it can safely access internal members.
+		return Test.Key;
+	}
 }
 
 public class B
 {
-    public string GetKey()
-    {
-        // Error!
-        // Type 'B' is not a friend of 'Test', so it cannot access internal members.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Error!
+		// Type 'B' is not a friend of 'Test', so it cannot access internal members.
+		return Test.Key;
+	}
 }
 
 ```
@@ -89,27 +89,27 @@ using Durian;
 [FriendClass(typeof(B))]
 public class Test
 {
-    internal static string Key { get; }
+	internal static string Key { get; }
 }
 
 public class A
 {
-    public string GetKey()
-    {
-        // Success!
-        // Type 'A' is a friend of 'Test', so it can safely access internal members.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Success!
+		// Type 'A' is a friend of 'Test', so it can safely access internal members.
+		return Test.Key;
+	}
 }
 
 public class B
 {
-    public string GetKey()
-    {
-        // Success!
-        // Type 'B' is a friend of 'Test', so it can safely access internal members.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Success!
+		// Type 'B' is a friend of 'Test', so it can safely access internal members.
+		return Test.Key;
+	}
 }
 
 ```
@@ -132,48 +132,48 @@ using Durian;
 [FriendClass(typeof(A))]
 public class Test
 {
-    internal readonly string _key;
+	internal readonly string _key;
 
-    internal Test(string key)
-    {
-        _key = key;
-    }
+	internal Test(string key)
+	{
+		_key = key;
+	}
 
-    internal static Test Default { get; } = new Test("default");
+	internal static Test Default { get; } = new Test("default");
 
-    internal class Inner
-    {
-    }
+	internal class Inner
+	{
+	}
 }
 
 public class A
 {
-    public string GetKey()
-    {
-        // Success!
-        // Type 'A' is a friend of 'Test', so it can safely access all available kinds of internal members.
+	public string GetKey()
+	{
+		// Success!
+		// Type 'A' is a friend of 'Test', so it can safely access all available kinds of internal members.
 
-        Test custom = new Test("custom");
-        Test def = Test.Default;
-        Test.Inner inner = new Test.Inner();
+		Test custom = new Test("custom");
+		Test def = Test.Default;
+		Test.Inner inner = new Test.Inner();
 
-        return def._key;
-    }
+		return def._key;
+	}
 }
 
 public class B
 {
-    public string GetKey()
-    {
-        // Error!
-        // Type 'B' is not a friend of 'Test', so it has no access to any of the internal members.
+	public string GetKey()
+	{
+		// Error!
+		// Type 'B' is not a friend of 'Test', so it has no access to any of the internal members.
 
-        Test custom = new Test("custom");
-        Test def = Test.Default;
-        Test.Inner inner = new Test.Inner();
+		Test custom = new Test("custom");
+		Test def = Test.Default;
+		Test.Inner inner = new Test.Inner();
 
-        return def._key;
-    }
+		return def._key;
+	}
 }
 
 ```
@@ -186,37 +186,37 @@ using Durian;
 [FriendClass(typeof(A))]
 public class Test
 {
-    protected internal static string Key { get; }
+	protected internal static string Key { get; }
 }
 
 public class A
 {
-    public string GetKey()
-    {
-        // Success!
-        // Class 'A' is a friend of 'Test'.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Success!
+		// Class 'A' is a friend of 'Test'.
+		return Test.Key;
+	}
 }
 
 public class B
 {
-    public string GetKey()
-    {
-        // Error!
-        // Class 'B' is NOT a friend of 'Test'.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Error!
+		// Class 'B' is NOT a friend of 'Test'.
+		return Test.Key;
+	}
 }
 
 public class C : Test
 {
-    public string GetKey()
-    {
-        // Success!
-        // Class 'A' is a child of 'Test', so Key is not protected.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Success!
+		// Class 'A' is a child of 'Test', so Key is not protected.
+		return Test.Key;
+	}
 }
 
 ```
@@ -232,27 +232,27 @@ using Durian;
 [FriendClass(typeof(Inner1))]
 public class Test
 {
-    internal static string Key { get; }
+	internal static string Key { get; }
 
-    class Inner1
-    {
-        public string GetKey()
-        {
-            // Success!
-            // 'Key' can be accessed, because 'Inner1' is an implicit friend type.
-            return Key;
-        }
-    }
+	class Inner1
+	{
+		public string GetKey()
+		{
+			// Success!
+			// 'Key' can be accessed, because 'Inner1' is an implicit friend type.
+			return Key;
+		}
+	}
 
-    class Inner2
-    {
-        public string GetKey()
-        {
-            // Success!
-            // 'Key' can be accessed, because 'Inner2' is an implicit friend type.
-            return Key;
-        }
-    }
+	class Inner2
+	{
+		public string GetKey()
+		{
+			// Success!
+			// 'Key' can be accessed, because 'Inner2' is an implicit friend type.
+			return Key;
+		}
+	}
 }
 
 ```
@@ -265,27 +265,27 @@ using Durian;
 [FriendClass(typeof(Other))]
 public class Test
 {
-    internal static string Key { get; }
+	internal static string Key { get; }
 }
 
 public class Other
 {
-    public string GetKey()
-    {
-        // Success!
-        // Type 'Other' is a friend of 'Test', so it can safely access internal members.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Success!
+		// Type 'Other' is a friend of 'Test', so it can safely access internal members.
+		return Test.Key;
+	}
 
-    public class Inner
-    {
-        public string GetKey()
-        {
-            // Success!
-            // Type 'Inner' is an inner type of friend of 'Test', so it can safely access internal members.
-            return Test.Key;
-        }
-    }
+	public class Inner
+	{
+		public string GetKey()
+		{
+			// Success!
+			// Type 'Inner' is an inner type of friend of 'Test', so it can safely access internal members.
+			return Test.Key;
+		}
+	}
 }
 
 ```
@@ -298,27 +298,27 @@ using Durian;
 [FriendClass(typeof(Other.Inner))]
 public class Test
 {
-    internal static string Key { get; }
+	internal static string Key { get; }
 }
 
 public class Other
 {
-    public string GetKey()
-    {
-        // Error!
-        // Type 'Other' is not a friend of 'Test', so it cannot access internal members.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Error!
+		// Type 'Other' is not a friend of 'Test', so it cannot access internal members.
+		return Test.Key;
+	}
 
-    public class Inner
-    {
-        public string GetKey()
-        {
-            // Success!
-            // Type 'Inner' is an inner type of friend of 'Test', so it can safely access internal members.
-            return Test.Key;
-        }
-    }
+	public class Inner
+	{
+		public string GetKey()
+		{
+			// Success!
+			// Type 'Inner' is an inner type of friend of 'Test', so it can safely access internal members.
+			return Test.Key;
+		}
+	}
 }
 
 ```
@@ -337,7 +337,7 @@ using Durian;
 [FriendClass(typeof(Other))]
 public class Test
 {
-    internal static string Key { get; }
+	internal static string Key { get; }
 }
 
 public class Other
@@ -346,12 +346,12 @@ public class Other
 
 public class Child : Test
 {
-    public string GetKey()
-    {
-        // Error!
-        // Type 'Child' is not a friend of 'Test', so it cannot access internal members.
-        return Key;
-    }
+	public string GetKey()
+	{
+		// Error!
+		// Type 'Child' is not a friend of 'Test', so it cannot access internal members.
+		return Key;
+	}
 }
 
 ```
@@ -364,7 +364,7 @@ using Durian;
 [FriendClass(typeof(Other))]
 public class Test
 {
-    internal static string Key { get; }
+	internal static string Key { get; }
 }
 
 public class Other
@@ -373,12 +373,12 @@ public class Other
 
 public class Child : Other
 {
-    public string GetKey()
-    {
-        // Error!
-        // Type 'Child' is not a friend of 'Test', so it cannot access internal members.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Error!
+		// Type 'Child' is not a friend of 'Test', so it cannot access internal members.
+		return Test.Key;
+	}
 }
 
 ```
@@ -393,7 +393,7 @@ using Durian.Configuration;
 [FriendClassConfiguration(AllowChildren = true)]
 public class Test
 {
-    internal static string Key { get; }
+	internal static string Key { get; }
 }
 
 public class Other
@@ -402,12 +402,12 @@ public class Other
 
 public class Child : Test
 {
-    public string GetKey()
-    {
-        // Success!
-        // Type 'Child' is an inner type of friend of 'Test', so it can safely access internal members.
-        return Key;
-    }
+	public string GetKey()
+	{
+		// Success!
+		// Type 'Child' is an inner type of friend of 'Test', so it can safely access internal members.
+		return Key;
+	}
 }
 
 ```
@@ -420,7 +420,7 @@ using Durian;
 [FriendClass(typeof(Other), AllowFriendChildren = true)]
 public class Test
 {
-    internal static string Key { get; }
+	internal static string Key { get; }
 }
 
 public class Other
@@ -429,12 +429,12 @@ public class Other
 
 public class Child : Other
 {
-    public string GetKey()
-    {
-        // Success!
-        // Type 'Child' is an inner type of friend of 'Test', so it can safely access internal members.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Success!
+		// Type 'Child' is an inner type of friend of 'Test', so it can safely access internal members.
+		return Test.Key;
+	}
 }
 
 ```
@@ -455,7 +455,7 @@ public class Test : Parent
 
 public class Parent
 {
-    internal string Name { get; set; }  
+	internal string Name { get; set; }  
 }
 
 public class Other
@@ -464,13 +464,13 @@ public class Other
 
 public class NotFriend
 {
-    public string GetName()
-    {
-        // Success! Inherited 'internal' members are not protected.
-        Test test = new();
-        test.Name = "";
-        return test.Name;
-    }
+	public string GetName()
+	{
+		// Success! Inherited 'internal' members are not protected.
+		Test test = new();
+		test.Name = "";
+		return test.Name;
+	}
 }
 
 ```
@@ -489,7 +489,7 @@ public class Test : Parent
 
 public class Parent
 {
-    internal string Name { get; set; }  
+	internal string Name { get; set; }  
 }
 
 public class Other
@@ -498,13 +498,13 @@ public class Other
 
 public class NotFriend
 {
-    public string GetName()
-    {
-        // Error! Inherited member cannot be accessed.
-        Test test = new();
-        test.Name = "";
-        return test.Name;
-    }
+	public string GetName()
+	{
+		// Error! Inherited member cannot be accessed.
+		Test test = new();
+		test.Name = "";
+		return test.Name;
+	}
 }
 
 ```
@@ -525,7 +525,7 @@ public class Test : Parent
 
 public class Parent
 {
-    internal static string Name { get; set; }  
+	internal static string Name { get; set; }  
 }
 
 public class Other
@@ -534,11 +534,11 @@ public class Other
 
 public class NotFriend
 {
-    public void SetName()
-    {
-        // Success! Inherited static members are not protected.
-        Test.Name = "";
-    }
+	public void SetName()
+	{
+		// Success! Inherited static members are not protected.
+		Test.Name = "";
+	}
 }
 ```
 
@@ -562,20 +562,20 @@ public class Other
 
 public class NotFriend
 {
-    public string GetName()
-    {
-        // Error! Inherited member cannot be accessed.
-        Test test = new();
-        test.Name = "";
-        return test.Name;
-    }
+	public string GetName()
+	{
+		// Error! Inherited member cannot be accessed.
+		Test test = new();
+		test.Name = "";
+		return test.Name;
+	}
 }
 
 // In different assembly...
 
 public class Parent
 {
-    internal string Name { get; set; }  
+	internal string Name { get; set; }  
 }
 ```
 

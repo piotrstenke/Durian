@@ -2,43 +2,42 @@
 
   <PropertyGroup>
 
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>This is the main package of the Durian framework. Here you can access all the existing Durian modules.</Description>
-    <PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Core;Module</PackageTags>
-    <PackageVersion>2.1.0</PackageVersion>
-    <AssemblyVersion>2.1.0</AssemblyVersion>
-    <Version>2.1.0</Version>
-    <RootNamespace>Durian</RootNamespace>
-    
+	<TargetFramework>netstandard2.0</TargetFramework>
+	<Description>This is the main package of the Durian framework. Here you can access all the existing Durian modules.</Description>
+	<PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Core;Module</PackageTags>
+	<PackageVersion>2.1.0</PackageVersion>
+	<AssemblyVersion>2.1.0</AssemblyVersion>
+	<Version>3.0.0</Version>
+	<RootNamespace>Durian</RootNamespace>
+	
   </PropertyGroup>
 
   <ItemGroup>
 
-    <ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
-    <ProjectReference Include="..\Durian.DefaultParam\Durian.DefaultParam.csproj">
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <IncludeAssets>Durian.DefaultParam.dll</IncludeAssets>
-    </ProjectReference>
-    <ProjectReference Include="..\Durian.FriendClass\Durian.FriendClass.csproj">
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <IncludeAssets>Durian.FriendClass.dll</IncludeAssets>
-    </ProjectReference>
-    <ProjectReference Include="..\Durian.InterfaceTargets\Durian.InterfaceTargets.csproj">
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <IncludeAssets>Durian.InterfaceTargets.dll</IncludeAssets>
-    </ProjectReference>
-    <ProjectReference Include="..\Durian.Core.Analyzer\Durian.Core.Analyzer.csproj">
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <IncludeAssets>Durian.Core.Analyzer.dll</IncludeAssets>
-    </ProjectReference>
+	<ProjectReference Include="..\Durian.Core\Durian.Core.csproj" />
+	<ProjectReference Include="..\Durian.DefaultParam\Durian.DefaultParam.csproj">
+	  <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+	  <IncludeAssets>Durian.DefaultParam.dll</IncludeAssets>
+	</ProjectReference>
+	<ProjectReference Include="..\Durian.FriendClass\Durian.FriendClass.csproj">
+	  <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+	  <IncludeAssets>Durian.FriendClass.dll</IncludeAssets>
+	</ProjectReference>
+	<ProjectReference Include="..\Durian.InterfaceTargets\Durian.InterfaceTargets.csproj">
+	  <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+	  <IncludeAssets>Durian.InterfaceTargets.dll</IncludeAssets>
+	</ProjectReference>
+	<ProjectReference Include="..\Durian.Core.Analyzer\Durian.Core.Analyzer.csproj">
+	  <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+	  <IncludeAssets>Durian.Core.Analyzer.dll</IncludeAssets>
+	</ProjectReference>
 
-    <None Include="$(OutputPath)\Durian.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(OutputPath)\Durian.Core.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(OutputPath)\Durian.AnalysisServices.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(OutputPath)\Durian.DefaultParam.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(OutputPath)\Durian.FriendClass.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(OutputPath)\Durian.InterfaceTargets.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="..\..\.editorconfig" Link=".editorconfig" />
+	<None Include="$(OutputPath)\Durian.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	<None Include="$(OutputPath)\Durian.Core.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	<None Include="$(OutputPath)\Durian.AnalysisServices.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	<None Include="$(OutputPath)\Durian.DefaultParam.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	<None Include="$(OutputPath)\Durian.FriendClass.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	<None Include="$(OutputPath)\Durian.InterfaceTargets.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
   </ItemGroup>
   

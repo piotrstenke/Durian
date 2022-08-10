@@ -1,136 +1,158 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Durian.Analysis.Data;
+using Durian.Analysis.Filtration;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Cache
 {
-    /// <summary>
-    /// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="T"/> created by the provided <see cref="INodeValidator{T}"/> or retrieved from a <see cref="CachedData{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">Type of <see cref="IMemberData"/> this enumerator can handle.</typeparam>
-    [DebuggerDisplay("Current = {Current}")]
-    public struct CachedFilterEnumerator<T> : IEnumerator<T> where T : IMemberData
-    {
-        internal readonly CachedData<T> _cache;
+	/// <summary>
+	/// Enumerates through a collection of <see cref="IMemberData"/>s of type <typeparamref name="TContext"/> created by the provided <see cref="ISyntaxValidator{T}"/> or retrieved from a <see cref="CachedData{T}"/>.
+	/// </summary>
+	/// <typeparam name="TData">Type of cached data.</typeparam>
+	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
+	[DebuggerDisplay("Current = {Current}")]
+	public struct CachedFilterEnumerator<TData, TContext> : IFilterEnumerator<TContext>, IEnumerator<TData>
+		where TData : class, IMemberData
+		where TContext : ISyntaxValidationContext
+	{
+		internal readonly CachedData<TData> _cache;
 
-        private readonly IEnumerator<CSharpSyntaxNode> _nodes;
+		private readonly IEnumerator<SyntaxNode> _nodes;
 
-        /// <inheritdoc cref="FilterEnumerator{T}.Compilation"/>
-        public readonly ICompilationData Compilation { get; }
+		/// <inheritdoc/>
+		public readonly ICompilationData Compilation { get; }
 
-        /// <inheritdoc cref="FilterEnumerator{T}.Current"/>
-        public T? Current { readonly get; private set; }
+		/// <summary>
+		/// <typeparamref name="TData"/> at the current position in the enumerator.
+		/// </summary>
+		public TData? Current { readonly get; private set; }
 
-        /// <inheritdoc cref="FilterEnumerator{T}.Validator"/>
-        public readonly INodeValidator<T> Validator { get; }
+		/// <inheritdoc/>
+		public readonly ISyntaxValidator<TContext> Validator { get; }
 
-        readonly T IEnumerator<T>.Current => Current!;
-        readonly object IEnumerator.Current => Current!;
+		readonly TData IEnumerator<TData>.Current => Current!;
+		readonly IMemberData IFilterEnumerator<TContext>.Current => Current!;
+		readonly object IEnumerator.Current => Current!;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FilterEnumerator{T}"/> struct.
-        /// </summary>
-        /// <param name="nodes">A collection of <see cref="CSharpSyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
-        /// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
-        /// <param name="validator"><see cref="INodeValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
-        /// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
-        public CachedFilterEnumerator(
-            IEnumerable<CSharpSyntaxNode> nodes,
-            ICompilationData compilation,
-            INodeValidator<T> validator,
-            in CachedData<T> cache
-        ) : this(nodes.GetEnumerator(), compilation, validator, in cache)
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedFilterEnumerator{TData, TContext}"/> struct.
+		/// </summary>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
+		/// <param name="nodes">A collection of <see cref="SyntaxNode"/>s to use to create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="validator"><see cref="ISyntaxValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
+		public CachedFilterEnumerator(
+			ICompilationData compilation,
+			IEnumerable<SyntaxNode> nodes,
+			ISyntaxValidator<TContext> validator,
+			in CachedData<TData> cache
+		) : this(compilation, nodes.GetEnumerator(), validator, in cache)
+		{
+		}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FilterEnumerator{T}"/> struct.
-        /// </summary>
-        /// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="CSharpSyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
-        /// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="CSharpSyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
-        /// <param name="validator"><see cref="INodeValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
-        /// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
-        public CachedFilterEnumerator(
-            INodeProvider provider,
-            ICompilationData compilation,
-            INodeValidator<T> validator,
-            in CachedData<T> cache
-        ) : this(provider.GetNodes().GetEnumerator(), compilation, validator, in cache)
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedFilterEnumerator{TData, TContext}"/> struct.
+		/// </summary>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of <see cref="SyntaxNode"/>s provided by the <paramref name="provider"/>.</param>
+		/// <param name="provider"><see cref="INodeProvider"/> that creates an array of <see cref="SyntaxNode"/>s to be used to create the target <see cref="IMemberData"/>s.</param>
+		/// <param name="validator"><see cref="ISyntaxValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
+		public CachedFilterEnumerator(
+			ICompilationData compilation,
+			INodeProvider provider,
+			ISyntaxValidator<TContext> validator,
+			in CachedData<TData> cache
+		) : this(compilation, provider.GetNodes().GetEnumerator(), validator, in cache)
+		{
+		}
 
-        internal CachedFilterEnumerator(IEnumerator<CSharpSyntaxNode> nodes, ICompilationData compilation, INodeValidator<T> validator, in CachedData<T> cache)
-        {
-            Validator = validator;
-            Compilation = compilation;
-            _nodes = nodes;
-            Current = default;
-            _cache = cache;
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CachedFilterEnumerator{TData, TContext}"/> struct.
+		/// </summary>
+		/// <param name="compilation">Parent <see cref="ICompilationData"/> of the provided <paramref name="nodes"/>.</param>
+		/// <param name="nodes">An enumerator that iterates through a collection of <see cref="SyntaxNode"/>s.</param>
+		/// <param name="validator"><see cref="ISyntaxValidator{T}"/> that is used to validate and create the <see cref="IMemberData"/>s to enumerate through.</param>
+		/// <param name="cache">Container of cached <see cref="IMemberData"/>s.</param>
+		public CachedFilterEnumerator(ICompilationData compilation, IEnumerator<SyntaxNode> nodes, ISyntaxValidator<TContext> validator, in CachedData<TData> cache)
+		{
+			Validator = validator;
+			Compilation = compilation;
+			_nodes = nodes;
+			Current = default;
+			_cache = cache;
+		}
 
-        /// <inheritdoc/>
+		/// <inheritdoc/>
 #pragma warning disable RCS1242 // Do not pass non-read-only struct by read-only reference.
-        public static explicit operator CachedFilterEnumerator<T>(in FilterEnumerator<T> a)
-        {
-            return new CachedFilterEnumerator<T>(a._nodes, a.Compilation, a.Validator, CachedData<T>.Empty);
-        }
 
-        /// <inheritdoc/>
-        public static explicit operator FilterEnumerator<T>(in CachedFilterEnumerator<T> a)
-        {
-            return new FilterEnumerator<T>(a._nodes, a.Compilation, a.Validator);
-        }
+		public static explicit operator CachedFilterEnumerator<TData, TContext>(in FilterEnumerator<TContext> a)
+		{
+			return new CachedFilterEnumerator<TData, TContext>(a.Compilation, a._nodes, a.Validator, CachedData<TData>.Empty);
+		}
+
+		/// <inheritdoc/>
+		public static explicit operator FilterEnumerator<TContext>(in CachedFilterEnumerator<TData, TContext> a)
+		{
+			return new FilterEnumerator<TContext>(a.Compilation, a._nodes, a.Validator);
+		}
+
 #pragma warning restore RCS1242 // Do not pass non-read-only struct by read-only reference.
 
-        /// <inheritdoc cref="FilterEnumerator{T}.MoveNext(CancellationToken)"/>
-        [MemberNotNullWhen(true, nameof(Current))]
-        public bool MoveNext(CancellationToken cancellationToken = default)
-        {
-            while (_nodes.MoveNext())
-            {
-                CSharpSyntaxNode node = _nodes.Current;
+		/// <inheritdoc/>
+		[MemberNotNullWhen(true, nameof(Current))]
+		public bool MoveNext(CancellationToken cancellationToken = default)
+		{
+			while (_nodes.MoveNext())
+			{
+				SyntaxNode node = _nodes.Current;
 
-                if (node is null)
-                {
-                    continue;
-                }
+				if (node is null)
+				{
+					continue;
+				}
 
-                if (_cache.TryGetCachedValue(node.GetLocation().GetLineSpan(), out T? data) || Validator.ValidateAndCreate(node, Compilation, out data, cancellationToken))
-                {
-                    Current = data!;
-                    return true;
-                }
-            }
+				if (_cache.TryGetCachedValue(node, out TData? data))
+				{
+					Current = data;
+					return true;
+				}
 
-            Current = default;
-            return false;
-        }
+				if (Validator.ValidateAndCreate(new PreValidationContext(node, Compilation, cancellationToken), out IMemberData? member) && member is TData d)
+				{
+					Current = d;
+					return true;
+				}
+			}
 
-        /// <summary>
-        /// Resets the enumerator.
-        /// </summary>
-        public void Reset()
-        {
-            _nodes.Reset();
-            Current = default;
-        }
+			Current = default;
+			return false;
+		}
 
-        readonly void IDisposable.Dispose()
-        {
-            // Do nothing.
-        }
+		/// <summary>
+		/// Resets the enumerator.
+		/// </summary>
+		public void Reset()
+		{
+			_nodes.Reset();
+			Current = default;
+		}
 
-        bool IEnumerator.MoveNext()
-        {
-            return MoveNext();
-        }
-    }
+		readonly void IDisposable.Dispose()
+		{
+			// Do nothing.
+		}
+
+		bool IEnumerator.MoveNext()
+		{
+			return MoveNext();
+		}
+	}
 }

@@ -1,14 +1,14 @@
 <div align="left">
-    <a href="https://www.nuget.org/packages/Durian.DefaultParam">
-        <img src="https://img.shields.io/nuget/v/Durian.DefaultParam?color=seagreen&style=flat-square" alt="Version"/>
-    </a>
-    <a href="https://www.nuget.org/packages/Durian.DefaultParam">
-        <img src="https://img.shields.io/nuget/dt/Durian.DefaultParam?color=blue&style=flat-square" alt="Downloads"/>
-    </a> <br />
+	<a href="https://www.nuget.org/packages/Durian.DefaultParam">
+		<img src="https://img.shields.io/nuget/v/Durian.DefaultParam?color=seagreen&style=flat-square" alt="Version"/>
+	</a>
+	<a href="https://www.nuget.org/packages/Durian.DefaultParam">
+		<img src="https://img.shields.io/nuget/dt/Durian.DefaultParam?color=blue&style=flat-square" alt="Downloads"/>
+	</a> <br />
 </div>
 
 <div align="center">
-        <img src="../../img/icons/Durian-256.png" alt="Durian logo"/>
+		<img src="../../img/icons/Durian-256.png" alt="Durian logo"/>
 </div>
 
 ##
@@ -20,10 +20,10 @@
 1. [Structure](#structure)
 2. [Setup](#setup)
 3. [Basics](#basics)
-    1. [Parameter constraints](#parameter-constraints)
-    2. [Accessibility](#accessibility)
-    3. [Invalid values](#invalid-values)
-    4. [Member limitations](#member-limitations)
+	1. [Parameter constraints](#parameter-constraints)
+	2. [Accessibility](#accessibility)
+	3. [Invalid values](#invalid-values)
+	4. [Member limitations](#member-limitations)
 4. [Configuration](#configuration)
    1. [Local configuration](#local-configuration)
    2. [Scoped configuration](#scoped-configuration)
@@ -64,21 +64,21 @@ using Durian;
 
 public class Test<[DefaultParam(typeof(string))]T>
 {
-    public T Value { get; }
+	public T Value { get; }
 
-    public Test(T value)
-    {
-        Value = value;
-    }
+	public Test(T value)
+	{
+		Value = value;
+	}
 }
 
 // Generated
 
 public class Test : Test<string>
 {
-    public Test(string value) : base(value)
-    {
-    }
+	public Test(string value) : base(value)
+	{
+	}
 }
 
 ```
@@ -92,30 +92,30 @@ using Durian;
 
 public class Test<[DefaultParam(typeof(int))]T, [DefaultParam(typeof(string))]U>
 {
-    public U UValue { get; }
-    public T TValue { get; }
+	public U UValue { get; }
+	public T TValue { get; }
 
-    public Test(T t_value, U u_value)
-    {
-        TValue = t_value;
-        UValue = u_value;
-    }
+	public Test(T t_value, U u_value)
+	{
+		TValue = t_value;
+		UValue = u_value;
+	}
 }
 
 // Generated
 
 public class Test<T> : Test<T, string>
 {
-    public Test(T t_value, string u_value) : base(t_value, u_value)
-    {
-    }
+	public Test(T t_value, string u_value) : base(t_value, u_value)
+	{
+	}
 }
 
 public class Test : Test<int, string>
 {
-    public Test(int t_value, string u_value) : base(t_value, u_value)
-    {
-    }
+	public Test(int t_value, string u_value) : base(t_value, u_value)
+	{
+	}
 }
 
 ```
@@ -195,7 +195,7 @@ Most generic-compatible members are supported, but there are some notable rules 
 
 ## Configuration
 
-*DefaultParam* allows the user to configure, how new members are generated through the [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationAttributeProvider.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationATtributeProvider.cs) types.
+*DefaultParam* allows to configure how new members are generated through the [Durian.Configuration.DefaultParamConfigurationAttribute](../Durian.DefaultParam/DefaultParamConfigurationAttributeProvider.cs) and [Durian.Configuration.DefaultParamScopedConfigurationAttribute](../Durian.DefaultParam/DefaultParamScopedConfigurationATtributeProvider.cs) types.
 
 ### Local configuration
 
@@ -209,19 +209,19 @@ using Durian.Configuration;
 [DefaultParamConfiguration(TypeConvention = DPTypeConvention.Inherit)]
 public class Test<T, [DefaultParam(typeof(string))]U>
 {
-    public void Method(U value)
-    {
-        U second = value;
-    }
+	public void Method(U value)
+	{
+		U second = value;
+	}
 }
 
 public delegate void Delegate<T, [DefaultParam(typeof(string))]U>();
 
 public partial class Dummy
 {
-    public void Method<[DefaultParam(typeof(string))]T>()
-    {
-    }
+	public void Method<[DefaultParam(typeof(string))]T>()
+	{
+	}
 }
 
 ```
@@ -243,10 +243,10 @@ using Durian.Configuration;
 [DefaultParamScopedConfiguration(TypeConvention = DPTypeConvention.Default)]
 public partial class Test
 {
-    public void Method<[DefaultParam(typeof(string))]T>(T value)
-    {
-        U second = value;
-    }
+	public void Method<[DefaultParam(typeof(string))]T>(T value)
+	{
+		U second = value;
+	}
 }
 
 public class Another<T, [DefaultParam(typeof(string))]U>
@@ -274,19 +274,19 @@ using Durian.Configuration;
 [DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Default)]
 public partial class Test
 {
-    public void Method<[DefaultParam(typeof(string))]T>(T value)
-    {
-    }
+	public void Method<[DefaultParam(typeof(string))]T>(T value)
+	{
+	}
 }
 
 [DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Default)]
 public partial class Other
 {
-    // This configuration is applied directly on the member, so it has the biggest priority.
-    [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Call)]
-    public void Method<[DefaultParam(typeof(string))]T>(T value)
-    {
-    }
+	// This configuration is applied directly on the member, so it has the biggest priority.
+	[DefaultParamConfiguration(MethodConvention = DPMethodConvention.Call)]
+	public void Method<[DefaultParam(typeof(string))]T>(T value)
+	{
+	}
 }
 
 ```
@@ -305,20 +305,20 @@ using Durian.Configuration;
 [DefaultParamScopedConfiguration]
 public partial class Test
 {
-    public void Method<[DefaultParam(typeof(string))]T>(T value)
-    {
-    }
+	public void Method<[DefaultParam(typeof(string))]T>(T value)
+	{
+	}
 }
 
 [DefaultParamScopedConfiguration(MethodConvention = DPMethodConvention.Default)]
 public partial class Other
 {
-    // This configuration does not specify a MethodConvention,
-    // so value of the scoped configuration of the containing type is used instead.
-    [DefaultParamConfiguration]
-    public void Method<[DefaultParam(typeof(string))]T>(T value)
-    {
-    }
+	// This configuration does not specify a MethodConvention,
+	// so value of the scoped configuration of the containing type is used instead.
+	[DefaultParamConfiguration]
+	public void Method<[DefaultParam(typeof(string))]T>(T value)
+	{
+	}
 }
 
 ```
@@ -343,22 +343,22 @@ using Durian.Configuration;
 
 public partial class Other
 {
-    [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Call)]
-    public T Method<[DefaultParam(typeof(string))]T>(T value)
-    {
-        T other = value;
-        return default(T);
-    }
+	[DefaultParamConfiguration(MethodConvention = DPMethodConvention.Call)]
+	public T Method<[DefaultParam(typeof(string))]T>(T value)
+	{
+		T other = value;
+		return default(T);
+	}
 }
 
 // Generated
 
 public partial class Other
 {
-    public string Method(string value)
-    {
-        return Method<string>(value);
-    }
+	public string Method(string value)
+	{
+		return Method<string>(value);
+	}
 }
 
 ```
@@ -371,23 +371,23 @@ using Durian.Configuration;
 
 public partial class Other
 {
-    [DefaultParamConfiguration(MethodConvention = DPMethodConvention.Copy)]
-    public T Method<[DefaultParam(typeof(string))]T>(T value)
-    {
-        T other = value;
-        return default(T);
-    }
+	[DefaultParamConfiguration(MethodConvention = DPMethodConvention.Copy)]
+	public T Method<[DefaultParam(typeof(string))]T>(T value)
+	{
+		T other = value;
+		return default(T);
+	}
 }
 
 // Generated
 
 public partial class Other
 {
-    public string Method(string value)
-    {
-        string other = value;
-        return default(string);
-    }
+	public string Method(string value)
+	{
+		string other = value;
+		return default(string);
+	}
 }
 
 ```
@@ -415,23 +415,23 @@ using Durian.Configuration;
 [DefaultParamConfiguration(TypeConvention = DPTypeConvention.Inherit)]
 public class Test<[DefaultParam(typeof(string))]T>
 {
-    private readonly T _value;
+	private readonly T _value;
 
-    protected T Value => _value;
+	protected T Value => _value;
 
-    public Other(T value)
-    {
-        _value = value;
-    }
+	public Other(T value)
+	{
+		_value = value;
+	}
 }
 
 // Generated
 
 public class Test : Test<int>
 {
-    public Other(string value) : base(value)
-    {
-    }
+	public Other(string value) : base(value)
+	{
+	}
 }
 
 ```
@@ -445,28 +445,28 @@ using Durian.Configuration;
 [DefaultParamConfiguration(TypeConvention = DPTypeConvention.Copy)]
 public class Test<[DefaultParam(typeof(string))]T>
 {
-    private readonly T _value;
+	private readonly T _value;
 
-    protected T Value => _value;
+	protected T Value => _value;
 
-    public Other(T value)
-    {
-        _value = value;
-    }
+	public Other(T value)
+	{
+		_value = value;
+	}
 }
 
 // Generated
 
 public class Test
 {
-    private readonly string _value;
+	private readonly string _value;
 
-    protected string Value => _value;
+	protected string Value => _value;
 
-    public Other(string value)
-    {
-        _value = value;
-    }
+	public Other(string value)
+	{
+		_value = value;
+	}
 }
 
 ```
@@ -492,26 +492,26 @@ using Durian.Configuration;
 
 public class Parent
 {
-    public void Method()
-    {
-    }
+	public void Method()
+	{
+	}
 }
 
 public partial class Other : Parent
 {
-    [DefaultParamConfiguration(ApplyNewModifierWhenPossible = true)]
-    public void Method<[DefaultParam(typeof(string))]T>()
-    {
-    }
+	[DefaultParamConfiguration(ApplyNewModifierWhenPossible = true)]
+	public void Method<[DefaultParam(typeof(string))]T>()
+	{
+	}
 }
 
 // Generated
 
 public partial class Other
 {
-    public new void Method()
-    {
-    }
+	public new void Method()
+	{
+	}
 }
 
 ```
@@ -528,18 +528,18 @@ using Durian.Configuration;
 
 public class Parent
 {
-    public void Method()
-    {
-    }
+	public void Method()
+	{
+	}
 }
 
 public partial class Other : Parent
 {
-    // DUR0114 - Method with generated signature already exist
-    [DefaultParamConfiguration(ApplyNewModifierWhenPossible = false)]
-    public void Method<[DefaultParam(typeof(string))]T>()
-    {
-    }
+	// DUR0114 - Method with generated signature already exist
+	[DefaultParamConfiguration(ApplyNewModifierWhenPossible = false)]
+	public void Method<[DefaultParam(typeof(string))]T>()
+	{
+	}
 }
 
 ```
@@ -556,19 +556,19 @@ using Durian.Configuration;
 
 namespace Durian
 {
-    [DefaultParamConfiguration(TargetNamespace = "Durian.Extensions")]
-    public class Other<[DefaultParam(typeof(string))]T>
-    {
-    }
+	[DefaultParamConfiguration(TargetNamespace = "Durian.Extensions")]
+	public class Other<[DefaultParam(typeof(string))]T>
+	{
+	}
 }
 
 // Generated
 
 namespace Durian.Extensions
 {
-    public class Other : Other<string>
-    {
-    }
+	public class Other : Other<string>
+	{
+	}
 }
 
 ```
@@ -583,19 +583,19 @@ using Durian.Configuration;
 
 namespace Durian
 {
-    [DefaultParamConfiguration(TargetNamespace = "Durian.Extensions")]
-    public class Other<[DefaultParam(typeof(string))]T>
-    {
-    }
+	[DefaultParamConfiguration(TargetNamespace = "Durian.Extensions")]
+	public class Other<[DefaultParam(typeof(string))]T>
+	{
+	}
 }
 
 // Generated
 
 namespace Durian
 {
-    public class Other : Other<string>
-    {
-    }
+	public class Other : Other<string>
+	{
+	}
 }
 
 ```
@@ -608,10 +608,10 @@ using Durian.Configuration;
 
 namespace Durian
 {
-    [DefaultParamConfiguration(TargetNamespace = "Durian.Extensions")]
-    public class Other<[DefaultParam(typeof(string))]T>
-    {
-    }
+	[DefaultParamConfiguration(TargetNamespace = "Durian.Extensions")]
+	public class Other<[DefaultParam(typeof(string))]T>
+	{
+	}
 }
 
 // Generated
@@ -640,34 +640,34 @@ using Durian;
 
 public partial class Parent
 {
-    public virtual void Method<[DefaultParam(typeof(string))]T>()
-    {
-        T t = default(T);
-    }
+	public virtual void Method<[DefaultParam(typeof(string))]T>()
+	{
+		T t = default(T);
+	}
 }
 
 public partial class Other : Parent
 {
-    public override void Method<[DefaultParam(typeof(string))]T>()
-    {
-    }
+	public override void Method<[DefaultParam(typeof(string))]T>()
+	{
+	}
 }
 
 // Generated
 
 public partial class Parent
 {
-    public virtual void Method()
-    {
-        string t = default(string);
-    }
+	public virtual void Method()
+	{
+		string t = default(string);
+	}
 }
 
 public partial class Other
 {
-    public override void Method()
-    {
-    }
+	public override void Method()
+	{
+	}
 }
 
 ```

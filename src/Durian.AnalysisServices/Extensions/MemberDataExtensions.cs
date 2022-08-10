@@ -1,158 +1,357 @@
 // Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
-using System;
-using System.Text;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Extensions
 {
-    /// <summary>
-    /// Contains various extension methods for the <see cref="IMemberData"/> interface.
-    /// </summary>
-    public static class MemberDataExtensions
-    {
-        /// <summary>
-        /// Returns the generic identifier of the specified <paramref name="type"/>.
-        /// </summary>
-        /// <param name="type"><see cref="ITypeData"/> to get the generic name of.</param>
-        /// <param name="includeVariance">Determines whether to include variance of the <paramref name="type"/>'s type parameters.</param>
-        /// <returns>If the <paramref name="type"/> has no type parameters, returns the name of the <paramref name="type"/> instead.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-        public static string GetGenericName(this ITypeData type, bool includeVariance = false)
-        {
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
+	/// <summary>
+	/// Contains various extension methods for the <see cref="IMemberData"/> interface.
+	/// </summary>
+	public static class MemberDataExtensions
+	{
+		/// <summary>
+		/// Returns an <see cref="AttributeData"/> associated with the <paramref name="attrSymbol"/> and defined on the specified <paramref name="member"/>.
+		/// </summary>
+		/// <param name="member">Target <see cref="ISymbol"/>.</param>
+		/// <param name="attrSymbol">Type of attribute to look for.</param>
+		/// <returns>The <see cref="AttributeData"/> associated with the <paramref name="attrSymbol"/> and defined on the specified <paramref name="member"/>. -or- <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
+		public static AttributeData? GetAttribute(this IMemberData member, INamedTypeSymbol attrSymbol)
+		{
+			return member.Attributes
+				.FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol));
+		}
 
-            return type.Symbol.GetGenericName(true, includeVariance);
-        }
+		/// <summary>
+		/// Returns an <see cref="AttributeData"/> associated with the <paramref name="syntax"/> defined on the specified <paramref name="member"/>.
+		/// </summary>
+		/// <param name="member">Target <see cref="ISymbol"/>.</param>
+		/// <param name="syntax"><see cref="AttributeSyntax"/> to get the data of.</param>
+		/// <returns>The <see cref="AttributeData"/> associated with the <paramref name="syntax"/>. -or- <see langword="null"/> if no such <see cref="AttributeData"/> found.</returns>
+		public static AttributeData? GetAttribute(this IMemberData member, AttributeSyntax syntax)
+		{
+			foreach (AttributeData attr in member.Attributes)
+			{
+				SyntaxReference? reference = attr.ApplicationSyntaxReference;
 
-        /// <summary>
-        /// Returns the generic identifier of the specified <paramref name="member"/>.
-        /// </summary>
-        /// <param name="member"><see cref="IMemberData"/> to get the generic name of.</param>
-        /// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-        /// <returns>If the <see cref="IMemberData.Symbol"/> is not of type <see cref="INamedTypeSymbol"/> or <see cref="IMethodSymbol"/> or the symbol has no type parameters, returns the name of the symbol instead.</returns>
-        /// <param name="includeVariance">Determines whether to include variance of the <paramref name="member"/>'s type parameters.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-        public static string GetGenericName(this IMemberData member, bool includeParameters = false, bool includeVariance = false)
-        {
-            if (member is null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
+				if (reference is null)
+				{
+					continue;
+				}
 
-            if (member.Symbol is INamedTypeSymbol type)
-            {
-                return type.GetGenericName(true, includeParameters, includeVariance);
-            }
-            else if (member.Symbol is IMethodSymbol method)
-            {
-                return method.GetGenericName(true, includeParameters);
-            }
+				if (reference.Span == syntax.Span)
+				{
+					return attr;
+				}
+			}
 
-            return member.Symbol.Name;
-        }
+			return null;
+		}
 
-        /// <summary>
-        /// Creates an <c>&lt;inheritdoc/&gt;</c> tag from the specified <paramref name="member"/>.
-        /// </summary>
-        /// <param name="member"><see cref="IMemberData"/> to get the <c>&lt;inheritdoc/&gt;</c> tag from.</param>
-        /// <returns>A <see cref="string"/> containing the created <c>&lt;inheritdoc/&gt;</c> tag -or- <see langword="null"/> if <paramref name="member"/> has no documentation comment.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-        public static string? GetInheritdocIfHasDocumentation(this IMemberData member)
-        {
-            if (member is null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
+		/// <summary>
+		/// Returns a collection of <see cref="AttributeData"/>s defined on the specified <paramref name="member"/>.
+		/// </summary>
+		public static IEnumerable<AttributeData> GetAttributes(this IMemberData member)
+		{
+			return member.Attributes;
+		}
 
-            if (string.IsNullOrEmpty(member.Symbol.GetDocumentationCommentXml()))
-            {
-                return null;
-            }
-            else
-            {
-                return AutoGenerated.GetInheritdoc(member.GetXmlParentTypesString(true));
-            }
-        }
+		/// <summary>
+		/// Returns a collection of <see cref="AttributeData"/>s associated with the <paramref name="attrSymbol"/> and defined on the specified <paramref name="member"/>.
+		/// </summary>
+		/// <param name="member">Target <see cref="ISymbol"/>.</param>
+		/// <param name="attrSymbol">Type of attributes to look for.</param>
+		public static IEnumerable<AttributeData> GetAttributes(this IMemberData member, INamedTypeSymbol attrSymbol)
+		{
+			foreach (AttributeData attr in member.Attributes)
+			{
+				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrSymbol))
+				{
+					yield return attr;
+				}
+			}
+		}
 
-        /// <summary>
-        /// Returns a <see cref="string"/> that contains all the parent types of the specified <paramref name="member"/> and the <paramref name="member"/>'s name separated by the dot ('.') character.
-        /// </summary>
-        /// <remarks>If the <paramref name="member"/> is not contained within a type, an empty <see cref="string"/> is returned instead.</remarks>
-        /// <param name="member"><see cref="IMemberData"/> to get the <see cref="string"/> of.</param>
-        /// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-        public static string GetParentTypesString(this IMemberData member, bool includeParameters = false)
-        {
-            if (member is null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
+		/// <summary>
+		/// Returns fully qualified name of the specified <paramref name="member"/>.
+		/// </summary>
+		/// <param name="member"><see cref="IMemberData"/> to get the fully qualified name of.</param>
+		/// <param name="format">Determines format of the returned qualified name.</param>
+		public static string GetFullyQualifiedName(this IMemberData member, QualifiedName format = default)
+		{
+			if (format == QualifiedName.Metadata)
+			{
+				return member.ToString();
+			}
 
-            StringBuilder sb = new();
+			CodeBuilder builder = new(false);
+			builder.QualifiedName(member);
+			string value = builder.ToString();
 
-            foreach (ITypeData type in member.GetContainingTypes())
-            {
-                sb.Append(GetGenericName(type)).Append('.');
-            }
+			if (format == QualifiedName.Xml)
+			{
+				return AnalysisUtilities.ToXmlCompatible(value);
+			}
 
-            sb.Append(GetGenericName(member));
+			return value;
+		}
 
-            if (includeParameters && member.Symbol is IMethodSymbol m)
-            {
-                sb.Append(m.GetParameterSignature());
-            }
+		/// <summary>
+		/// Creates an <c>&lt;inheritdoc/&gt;</c> tag from the specified <paramref name="member"/>.
+		/// </summary>
+		/// <param name="member"><see cref="IMemberData"/> to get the <c>&lt;inheritdoc/&gt;</c> tag from.</param>
+		/// <param name="forceUnsupported">Determines whether to return the <c>&lt;inheritdoc/&gt;</c> event if it cannot be referenced by other symbols.</param>
+		/// <returns>A <see cref="string"/> containing the created <c>&lt;inheritdoc/&gt;</c> tag -or- <see langword="null"/> if <paramref name="member"/> has no documentation comment.</returns>
+		public static string? GetInheritdocIfHasDocumentation(this IMemberData member, bool forceUnsupported = false)
+		{
+			if (forceUnsupported)
+			{
+				if (!member.Symbol.HasDocumentation())
+				{
+					return default;
+				}
+			}
+			else if (!member.Symbol.HasInheritableDocumentation())
+			{
+				return default;
+			}
 
-            return sb.ToString();
-        }
+			CodeBuilder builder = new(false);
 
-        /// <summary>
-        /// Returns a <see cref="string"/> representing the fully qualified name of the <paramref name="member"/> that can be used in the XML documentation.
-        /// </summary>
-        /// <param name="member"><see cref="IMemberData"/> to get the fully qualified name of.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-        public static string GetXmlFullyQualifiedName(this IMemberData member)
-        {
-            if (member is null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
+			foreach (INamedTypeSymbol type in member.ContainingTypes)
+			{
+				builder.XmlName(type);
+				builder.Write('.');
+			}
 
-            return AnalysisUtilities.ConvertFullyQualifiedNameToXml(member.Symbol.ToString());
-        }
+			builder.XmlName(member.Symbol);
 
-        /// <summary>
-        /// Returns a <see cref="string"/> that contains all the parent types of the specified <paramref name="member"/> and the <paramref name="member"/>'s separated by the dot ('.') character. Can be used in XML documentation.
-        /// </summary>
-        /// <param name="member"><see cref="IMemberData"/> to get the <see cref="string"/> of.</param>
-        /// <param name="includeParameters">If the value of the <see cref="IMemberData.Symbol"/> property of the <paramref name="member"/> parameter is a <see cref="IMethodSymbol"/>, determines whether to include the method's parameters in the returned <see cref="string"/>.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-        public static string GetXmlParentTypesString(this IMemberData member, bool includeParameters = false)
-        {
-            string parentString = GetParentTypesString(member, includeParameters);
+			return AutoGenerated.GetInheritdoc(builder.ToString());
+		}
 
-            return AnalysisUtilities.ConvertFullyQualifiedNameToXml(parentString);
-        }
+		/// <summary>
+		/// Returns the <see cref="AttributeData"/> defined on the specified <paramref name="member"/> that is of the given <paramref name="attributeKind"/>.
+		/// </summary>
+		/// <param name="member"><see cref="IMemberData"/> to get the <see cref="AttributeData"/> of.</param>
+		/// <param name="attributeKind"><see cref="NullableAnnotationAttribute"/> to check for.</param>
+		public static AttributeData? GetNullableAnnotationAttribute(this IMemberData member, NullableAnnotationAttribute attributeKind)
+		{
+			string? name = attributeKind.GetAttributeName();
 
-        /// <summary>
-        /// Returns full namespace of the target <paramref name="member"/>.
-        /// </summary>
-        /// <param name="member"><see cref="IMemberData"/> to get the parent namespace of.</param>
-        /// <returns>The full namespace of the target <paramref name="member"/>. -or- <see langword="null"/> if the <paramref name="member"/> is not contained withing a namespace. -or- <paramref name="member"/> is contained within global namespace.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="member"/> is <see langword="null"/>.</exception>
-        public static string? JoinNamespaces(this IMemberData member)
-        {
-            if (member is null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
+			if (name is null)
+			{
+				return default;
+			}
 
-            return member.GetContainingNamespaces().JoinNamespaces();
-        }
-    }
+			string? @namespace = attributeKind.GetNamespaceName();
+
+			if (@namespace is null)
+			{
+				return default;
+			}
+
+			return member.Attributes.FirstOrDefault(attr =>
+				attr.AttributeClass is not null &&
+				attr.AttributeClass.Name == name &&
+				attr.AttributeClass.IsWithinNamespace(@namespace, @namespace != "System")
+			);
+		}
+
+		/// <summary>
+		/// Returns the kind of <see cref="NullableAnnotationAttribute"/> this <paramref name="type"/> represents.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeData"/> to get the <see cref="NullableAnnotationAttribute"/> kind of.</param>
+		public static NullableAnnotationAttribute GetNullableAnnotationAttributeKind(this ITypeData type)
+		{
+			return SymbolExtensions.MapToNullableAnnotationAttribute(type.Name, toReturn => type.IsWithinNamespace("System.Diagnostics.CodeAnalysis", true) ? toReturn : default);
+		}
+
+		/// <summary>
+		/// Returns the <see cref="AttributeData"/> defined on the specified <paramref name="member"/> that is of the given <paramref name="attributeKind"/>.
+		/// </summary>
+		/// <param name="member"><see cref="IMemberData"/> to get the <see cref="AttributeData"/> of.</param>
+		/// <param name="attributeKind"><see cref="SpecialAttribute"/> to check for.</param>
+		public static AttributeData? GetSpecialAttribute(this IMemberData member, SpecialAttribute attributeKind)
+		{
+			string? name = attributeKind.GetAttributeName();
+
+			if (name is null)
+			{
+				return default;
+			}
+
+			string? @namespace = attributeKind.GetNamespaceName();
+
+			if (@namespace is null)
+			{
+				return default;
+			}
+
+			return member.Attributes.FirstOrDefault(attr =>
+				attr.AttributeClass is not null &&
+				attr.AttributeClass.Name == name &&
+				attr.AttributeClass.IsWithinNamespace(@namespace, @namespace != "System")
+			);
+		}
+
+		/// <summary>
+		/// Returns the kind of <see cref="SpecialAttribute"/> this <paramref name="type"/> represents.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeData"/> to get the <see cref="SpecialAttribute"/> kind of.</param>
+		public static SpecialAttribute GetSpecialAttributeKind(this ITypeData type)
+		{
+			if (!type.Name.EndsWith("Attribute"))
+			{
+				return default;
+			}
+
+			return SymbolExtensions.MapToSpecialAttribute(type.Name, (@namespace, toReturn) => type.IsWithinNamespace(@namespace, @namespace.Length > 6) ? toReturn : default);
+		}
+
+		/// <summary>
+		/// Returns an <see cref="ISymbol"/> representing the given kind of <paramref name="specialMember"/> available from the specified <paramref name="type"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeData"/> to get the special member from.</param>
+		/// <param name="specialMember">Kind of special member to return.</param>
+		public static ISymbolOrMember<ISymbol, IMemberData>? GetSpecialMember(this ITypeData type, SpecialMember specialMember)
+		{
+			return type
+				.GetMembers(IncludedMembers.All)
+				.AsEnumerable()
+				.FirstOrDefault(member => member.Symbol.IsSpecialMember(specialMember));
+		}
+
+		/// <summary>
+		/// Checks if an attribute of type <paramref name="attrSymbol"/> is defined on the target <paramref name="member"/>
+		/// </summary>
+		/// <param name="member"><see cref="IMemberData"/> to check if contains the specified attribute.</param>
+		/// <param name="attrSymbol"><see cref="INamedTypeSymbol"/> of attribute to check for.</param>
+		public static bool HasAttribute(this IMemberData member, INamedTypeSymbol attrSymbol)
+		{
+			return member.GetAttribute(attrSymbol) is not null;
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="symbol"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>.
+		/// </summary>
+		/// <param name="symbol"><see cref="ISymbol"/> to check if is <see langword="partial"/>.</param>
+		public static bool IsPartialContext(this ISymbol symbol)
+		{
+			return symbol switch
+			{
+				INamedTypeSymbol type => type.IsPartialContext(),
+				IMethodSymbol method => method.IsPartialContext(),
+				_ => false
+			};
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="type"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>.
+		/// </summary>
+		/// <param name="type"><see cref="ITypeData"/> to check if is <see langword="partial"/>.</param>
+		public static bool IsPartialContext(this ITypeData type)
+		{
+			return type.IsPartial && type.ContainingTypes.AsEnumerable().All(t => t.Member.IsPartial);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="method"/> is <see langword="partial"/> and all its containing types are also <see langword="partial"/>.
+		/// </summary>
+		/// <param name="method"><see cref="IMethodData"/> to check if is <see langword="partial"/>.</param>
+		public static bool IsPartialContext(this IMethodData method)
+		{
+			return method.IsPartial && method.ContainingTypes.AsEnumerable().All(t => t.Member.IsPartial);
+		}
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="member"/> is contained within a <see langword="namespace"/> with the specified name.
+		/// </summary>
+		/// <param name="member"><see cref="IMemberData"/> to check if is contained within the specified <paramref name="namespace"/>.</param>
+		/// <param name="namespace">Name of target namespace.</param>
+		/// <param name="split">Determines whether to split the namespace name by the dot '.' character.</param>
+		/// <param name="topLevel">Determines whether the matched namespace must be top-level, i.e. not have a parent namespace (other than the <see langword="global"/> namespace).</param>
+		/// <param name="lookupOuter">Determines whether to lookup all parent namespaces of the <paramref name="member"/>.</param>
+		public static bool IsWithinNamespace(this IMemberData member, string @namespace, bool split = true, bool topLevel = true, bool lookupOuter = false)
+		{
+			if (member.Symbol.ContainingNamespace is null || member.Symbol.ContainingNamespace.IsGlobalNamespace)
+			{
+				return false;
+			}
+
+			if (split)
+			{
+				string[] parts = @namespace.Split('.');
+
+				if (parts.Length > 1)
+				{
+					Array.Reverse(parts);
+					return IsWithinNamespace_Internal(member, parts, topLevel, lookupOuter);
+				}
+			}
+
+			if (member.Symbol.ContainingNamespace.Name == @namespace)
+			{
+				if (topLevel)
+				{
+					INamespaceSymbol? root = member.ContainingNamespace?.Symbol.ContainingNamespace;
+					return root is null || root.IsGlobalNamespace;
+				}
+
+				return true;
+			}
+
+			if (topLevel || !lookupOuter)
+			{
+				return false;
+			}
+
+			return member.ContainingNamespaces.AsEnumerable().Skip(1).Any(n => n.Symbol.Name == @namespace);
+		}
+
+		private static bool IsWithinNamespace_Internal(IMemberData member, string[] @namespace, bool topLevel, bool lookupOuter)
+		{
+			int current = 0;
+			IEnumerator<ISymbolOrMember<INamespaceSymbol, INamespaceData>> all = member.ContainingNamespaces.GetEnumerator();
+
+			while (current < @namespace.Length)
+			{
+				if (!all.MoveNext())
+				{
+					return false;
+				}
+
+				if (all.Current.Symbol.Name == @namespace[current])
+				{
+					if (all.Current.Symbol.IsGlobalNamespace)
+					{
+						return false;
+					}
+
+					current++;
+				}
+				else
+				{
+					if (!lookupOuter || topLevel)
+					{
+						return false;
+					}
+
+					current = 0;
+				}
+			}
+
+			if (topLevel)
+			{
+				return !all.MoveNext();
+			}
+
+			return true;
+		}
+	}
 }

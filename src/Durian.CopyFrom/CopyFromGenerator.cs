@@ -1,156 +1,685 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using Durian.Analysis.Cache;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
+using Durian.Analysis.Extensions;
+using Durian.Analysis.Filtration;
 using Durian.Analysis.Logging;
+using Durian.Analysis.SymbolContainers;
+using Durian.Analysis.SyntaxVisitors;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.CopyFrom
 {
-    /// <summary>
-    /// Main class of the <c>CopyFrom</c> module. Generates source code of members marked with the <c>Durian.CopyFromAttribute</c>.
-    /// </summary>
-    [Generator(LanguageNames.CSharp)]
-    [LoggingConfiguration(SupportedLogs = GeneratorLogs.All, LogDirectory = "CopyFrom", SupportsDiagnostics = true, RelativeToGlobal = true, EnableExceptions = true)]
-    public sealed class CopyFromGenerator : CachedGenerator<ICopyFromMember, CopyFromCompilationData, CopyFromSyntaxReceiver, ICopyFromFilter>
-    {
-        private FilterContainer<ICopyFromFilter>? _filters;
+	/// <summary>
+	/// Main class of the <c>CopyFrom</c> module. Generates source code of members marked with the <c>Durian.CopyFromAttribute</c>.
+	/// </summary>
+	[Generator(LanguageNames.CSharp)]
+	[LoggingConfiguration(
+		SupportedLogs = GeneratorLogs.All,
+		LogDirectory = "CopyFrom",
+		SupportsDiagnostics = true,
+		RelativeToGlobal = true,
+		EnableExceptions = true,
+		DefaultNodeOutput = NodeOutput.SyntaxTree)]
+	public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember, CopyFromPassContext>
+	{
+		private const string _groupMethods = "Methods";
+		private const string _groupTypes = "Types";
+		private const int _numStaticTrees = 5;
 
-        /// <summary>
-        /// Name of this source generator.
-        /// </summary>
-        public static string GeneratorName => "CopyFrom";
+		/// <inheritdoc/>
+		public override string GeneratorName => "CopyFrom";
 
-        /// <summary>
-        /// Version of this source generator.
-        /// </summary>
-        public static string Version => "1.0.0";
+		/// <inheritdoc/>
+		public override string GeneratorVersion => "1.0.0";
 
-        /// <inheritdoc/>
-        public override int NumStaticTrees => 3;
+		/// <inheritdoc/>
+		public override int NumStaticTrees => _numStaticTrees;
 
-        /// <inheritdoc cref="CopyFromGenerator(in ConstructionContext, IHintNameProvider?)"/>
-        public CopyFromGenerator()
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CopyFromGenerator"/> class.
+		/// </summary>
+		public CopyFromGenerator()
+		{
+		}
 
-        /// <inheritdoc cref="CopyFromGenerator(in ConstructionContext, IHintNameProvider?)"/>
-        public CopyFromGenerator(in ConstructionContext context) : base(in context)
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CopyFromGenerator"/> class.
+		/// </summary>
+		/// <param name="context">Configures how this <see cref="CopyFromGenerator"/> is initialized.</param>
+		public CopyFromGenerator(in GeneratorLogCreationContext context) : base(in context)
+		{
+		}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CopyFromGenerator"/> class.
-        /// </summary>
-        /// <param name="context">Configures how this <see cref="LoggableGenerator"/> is initialized.</param>
-        /// <param name="fileNameProvider">Creates names for generated files.</param>
-        public CopyFromGenerator(in ConstructionContext context, IHintNameProvider? fileNameProvider) : base(in context, fileNameProvider)
-        {
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CopyFromGenerator"/> class.
+		/// </summary>
+		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
+		public CopyFromGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+		{
+		}
 
-        /// <inheritdoc cref="CopyFromGenerator(LoggingConfiguration?, IHintNameProvider?)"/>
-        public CopyFromGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
-        {
-        }
+		/// <summary>
+		/// Returns a collection of <see cref="ISourceTextProvider"/> used by this generator to create initial sources.
+		/// </summary>
+		public static IEnumerable<ISourceTextProvider> GetSourceProviders()
+		{
+			return new ISourceTextProvider[_numStaticTrees - 1]
+			{
+				new CopyFromAdditionalNodesProvider(),
+				new CopyFromTypeAttributeProvider(),
+				new CopyFromMethodAttributeProvider(),
+				new PatternAttributeProvider(),
+			};
+		}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CopyFromGenerator"/> class.
-        /// </summary>
-        /// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-        /// <param name="fileNameProvider">Creates names for generated files.</param>
-        public CopyFromGenerator(LoggingConfiguration? loggingConfiguration, IHintNameProvider? fileNameProvider) : base(loggingConfiguration, fileNameProvider)
-        {
-        }
+		/// <inheritdoc/>
+		public override ICompilationData? CreateCompilationData(CSharpCompilation compilation)
+		{
+			return new CopyFromCompilationData(compilation);
+		}
 
-        /// <summary>
-        /// Returns a collection of <see cref="ISourceTextProvider"/> used by this generator to create initial sources.
-        /// </summary>
-        public static IEnumerable<ISourceTextProvider> GetSourceProviders()
-        {
-            return new ISourceTextProvider[]
-            {
-                new CopyFromTypeAttributeProvider(),
-                new CopyFromMethodAttributeProvider(),
-                new PatternAttributeProvider(),
-            };
-        }
+		/// <inheritdoc/>
+		public override IDurianSyntaxReceiver CreateSyntaxReceiver()
+		{
+			return new CopyFromSyntaxReceiver();
+		}
 
-        /// <inheritdoc/>
-        public override CopyFromCompilationData? CreateCompilationData(CSharpCompilation compilation)
-        {
-            return new CopyFromCompilationData(compilation);
-        }
+		/// <inheritdoc/>
+		public override IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? GetFilters(CopyFromPassContext context)
+		{
+			FilterContainer<IGeneratorSyntaxFilter> list = new();
 
-        /// <inheritdoc/>
-        public override CopyFromSyntaxReceiver CreateSyntaxReceiver()
-        {
-            return new CopyFromSyntaxReceiver();
-        }
+			list.RegisterGroup(_groupMethods, new Methods.CopyFromMethodFilter());
+			list.RegisterGroup(_groupTypes, new Types.CopyFromTypeFilter());
 
-        /// <summary>
-        /// Returns a <see cref="FilterContainer{TFilter}"/> to be used during the current generation pass.
-        /// </summary>
-        /// <param name="fileNameProvider">Creates name for the generated files.</param>
-        public override FilterContainer<ICopyFromFilter> GetFilters(IHintNameProvider fileNameProvider)
-        {
-            if (_filters is null)
-            {
-                FilterContainer<ICopyFromFilter> list = new();
+			return list;
+		}
 
-                list.RegisterFilterGroup("Methods", new CopyFromMethodFilter(this, fileNameProvider));
-                list.RegisterFilterGroup("Types", new CopyFromTypeFilter(this, fileNameProvider));
+		/// <inheritdoc/>
+		public override IEnumerable<ISourceTextProvider>? GetInitialSources()
+		{
+			return GetSourceProviders();
+		}
 
-                _filters = list;
-            }
+		/// <inheritdoc/>
+		public override DurianModule[] GetRequiredModules()
+		{
+			return new DurianModule[]
+			{
+				DurianModule.CopyFrom
+			};
+		}
 
-            return _filters;
-        }
+		/// <inheritdoc/>
+		protected internal override void AfterExecutionOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, CopyFromPassContext context)
+		{
+			if (context.DependencyQueue.Count > 0)
+			{
+				GenerateFromDependencyQueue(filterGroup, context);
+			}
+			else
+			{
+				context.SymbolRegistry.Clear();
+			}
 
-        /// <inheritdoc/>
-        public override string? GetGeneratorName()
-        {
-            return GeneratorName;
-        }
+			base.AfterExecutionOfGroup(filterGroup, context);
+		}
 
-        /// <inheritdoc/>
-        public override string? GetGeneratorVersion()
-        {
-            return Version;
-        }
+		/// <inheritdoc/>
+		protected internal override bool Generate(IMemberData data, string hintName, CopyFromPassContext context)
+		{
+			if (data is not ICopyFromMember target)
+			{
+				return false;
+			}
 
-        /// <inheritdoc/>
-        public override IEnumerable<ISourceTextProvider>? GetInitialSources()
-        {
-            return GetSourceProviders();
-        }
+			if (context.SymbolRegistry.IsRegistered(target.Symbol))
+			{
+				return true;
+			}
 
-        /// <inheritdoc/>
-        public override DurianModule[] GetRequiredModules()
-        {
-            return new DurianModule[]
-            {
-                DurianModule.CopyFrom
-            };
-        }
+			if (!HasAllDependencies(target.Dependencies, context))
+			{
+				context.DependencyQueue.Enqueue(target.Declaration!, hintName);
+				return false;
+			}
 
-        /// <inheritdoc/>
-        protected override bool Generate(IMemberData member, string hintName, in GeneratorExecutionContext context)
-        {
-            if (member is not ICopyFromMember target)
-            {
-                return false;
-            }
+			if (Generate(target, hintName, context))
+			{
+				context.SymbolRegistry.Register(target.Symbol);
+				return true;
+			}
 
-            CodeBuilder.WriteDeclarationLead(target, member.Declaration.SyntaxTree.GetCompilationUnitRoot().Usings.Select(u => u.Name.ToString()), GeneratorName, Version);
-            CodeBuilder.EndAllBlocks();
-            AddSourceWithOriginal(target.Declaration, hintName, in context);
+			return false;
+		}
 
-            return true;
-        }
-    }
+		/// <inheritdoc/>
+		protected override CopyFromPassContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
+		{
+			return new();
+		}
+
+		private static void AddTypeParameterReplacements(
+			ImmutableArray<ITypeParameterSymbol> typeParameters,
+			ImmutableArray<ITypeSymbol> typeArguments,
+			List<(string, string)> list
+		)
+		{
+			for (int i = 0; i < typeParameters.Length; i++)
+			{
+				ITypeParameterSymbol parameter = typeParameters[i];
+				ITypeSymbol argument = typeArguments[i];
+
+				if (parameter.Name != argument.Name && !SymbolEqualityComparer.Default.Equals(parameter, argument))
+				{
+					list.Add((parameter.Name, argument.GetTypeKeyword() ?? argument.GetGenericName(true)));
+				}
+			}
+		}
+
+		private static string ApplyPattern(ICopyFromMember member, CopyFromPassContext context, string input)
+		{
+			string current = input;
+
+			for (int i = 0; i < member.Patterns!.Length; i++)
+			{
+				ref readonly PatternData pattern = ref member.Patterns[i];
+
+				Regex regex = context.RegexProvider.GetRegex(pattern.Pattern);
+				current = regex.Replace(current, pattern.Replacement);
+			}
+
+			return current;
+		}
+
+		private static bool CanCache(Queue<(SyntaxNode, string)> cache)
+		{
+			return cache.Count < 32;
+		}
+
+		private static Queue<(SyntaxReference, string)> GetDependenciesFromQueue(
+			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
+			CopyFromPassContext context,
+			out Queue<(SyntaxNode, string)> cache
+		)
+		{
+			Queue<(SyntaxReference, string)> dependencies = context.DependencyQueue.ToSystemQueue();
+			cache = new(dependencies.Count);
+
+			return filterGroup.Name switch
+			{
+				_groupMethods => CreateQueue<MethodDeclarationSyntax>(cache),
+				_groupTypes => CreateQueue<TypeDeclarationSyntax>(cache),
+				_ => dependencies,
+			};
+
+			Queue<(SyntaxReference, string)> CreateQueue<T>(Queue<(SyntaxNode, string)> cache) where T : SyntaxNode
+			{
+				Queue<(SyntaxReference, string)> queue = new(dependencies.Count);
+
+				while (dependencies.Count > 0)
+				{
+					(SyntaxReference reference, string hintName) result = dependencies.Dequeue();
+
+					if (result.reference.GetSyntax(context.CancellationToken) is T node)
+					{
+						if (CanCache(cache))
+						{
+							cache.Enqueue((node, result.hintName));
+						}
+						else
+						{
+							queue.Enqueue(result);
+						}
+					}
+					else
+					{
+						context.DependencyQueue.Enqueue(result.reference, result.hintName);
+					}
+				}
+
+				return queue;
+			}
+		}
+
+		private static DocumentationCommentTriviaSyntax? GetDocumentationTrivia(SyntaxNode node)
+		{
+			return node
+				.GetLeadingTrivia()
+				.Where(trivia => trivia.HasStructure)
+				.Select(trivia => trivia.GetStructure())
+				.OfType<DocumentationCommentTriviaSyntax>()
+				.FirstOrDefault();
+		}
+
+		private static string HandleAttributeText(ICopyFromMember member, SyntaxList<AttributeListSyntax> attributeLists, CopyFromPassContext context)
+		{
+			StringBuilder attributeText = new();
+
+			if (member.Patterns is null)
+			{
+				foreach (AttributeListSyntax list in attributeLists)
+				{
+					for (int i = 0; i < context.CodeBuilder.CurrentIndent; i++)
+					{
+						attributeText.Append('\t');
+					}
+
+					string current = NodeToString(list);
+					attributeText.AppendLine(current);
+				}
+			}
+			else
+			{
+				foreach (AttributeListSyntax list in attributeLists)
+				{
+					for (int i = 0; i < context.CodeBuilder.CurrentIndent; i++)
+					{
+						attributeText.Append('\t');
+					}
+
+					string current = NodeToString(list);
+					current = ApplyPattern(member, context, current);
+					attributeText.AppendLine(current);
+				}
+			}
+
+			return attributeText.ToString();
+		}
+
+		private static bool HasAllDependencies(ISymbol[]? symbols, CopyFromPassContext context)
+		{
+			if (symbols is null)
+			{
+				return true;
+			}
+
+			foreach (ISymbol symbol in symbols)
+			{
+				if (!context.SymbolRegistry.IsRegistered(symbol))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		private static void ReplaceTypeParameters(
+			ref SyntaxNode currentNode,
+			TypeParameterReplacer replacer,
+			List<(string identifier, string replacement)> replacements
+		)
+		{
+			foreach ((string identifier, string replacement) in replacements)
+			{
+				replacer.Identifier = identifier;
+				replacer.Replacement = replacement;
+
+				currentNode = replacer.Visit(currentNode);
+			}
+		}
+
+		private static MemberDeclarationSyntax SkipGeneratorAttributes(MemberDeclarationSyntax declaration, SemanticModel semanticModel, CopyFromPassContext context)
+		{
+			SyntaxList<AttributeListSyntax> attributeLists = declaration.AttributeLists;
+
+			if (TrySkipGeneratorAttributes(ref attributeLists, semanticModel, context))
+			{
+				return declaration.WithAttributeLists(attributeLists);
+			}
+
+			return declaration;
+		}
+
+		private static string TryApplyPattern(ICopyFromMember member, CopyFromPassContext context, string input)
+		{
+			if (member.Patterns is not null)
+			{
+				return ApplyPattern(member, context, input);
+			}
+
+			return input;
+		}
+
+		private static bool TrySkipGeneratorAttributes(ref SyntaxList<AttributeListSyntax> attributeLists, SemanticModel semanticModel, CopyFromPassContext context)
+		{
+			if (!attributeLists.Any())
+			{
+				return false;
+			}
+
+			List<AttributeListSyntax> newAttributeLists = new(attributeLists.Count);
+			List<AttributeSyntax> newAttributes = new();
+
+			bool isChanged = false;
+
+			foreach (AttributeListSyntax attrList in attributeLists)
+			{
+				SeparatedSyntaxList<AttributeSyntax> attributes = attrList.Attributes;
+
+				if (!attributes.Any())
+				{
+					continue;
+				}
+
+				foreach (AttributeSyntax attribute in attributes)
+				{
+					if (semanticModel.GetSymbolInfo(attribute, context.CancellationToken).Symbol?.ContainingType is not INamedTypeSymbol attrType)
+					{
+						continue;
+					}
+
+					if (!SymbolEqualityComparer.Default.Equals(attrType, context.TargetCompilation.DurianGeneratedAttribute) &&
+						!SymbolEqualityComparer.Default.Equals(attrType, context.TargetCompilation.GeneratedCodeAttribute))
+					{
+						newAttributes.Add(attribute);
+					}
+				}
+
+				if (newAttributes.Count > 0)
+				{
+					if (newAttributes.Count == attributes.Count)
+					{
+						newAttributeLists.Add(attrList);
+					}
+					else
+					{
+						newAttributeLists.Add(attrList.WithAttributes(SyntaxFactory.SeparatedList(newAttributes)));
+						isChanged = true;
+					}
+
+					newAttributes.Clear();
+				}
+				else
+				{
+					isChanged = true;
+				}
+			}
+
+			if (isChanged)
+			{
+				attributeLists = SyntaxFactory.List(newAttributeLists);
+				return true;
+			}
+
+			return false;
+		}
+
+		private bool Generate(
+			IMemberData data,
+			string hintName,
+			CopyFromPassContext context,
+			Queue<(SyntaxReference, string)> dependencies,
+			Queue<(SyntaxNode, string)> cache
+		)
+		{
+			if (data is not ICopyFromMember target)
+			{
+				return false;
+			}
+
+			if (context.SymbolRegistry.IsRegistered(target.Symbol))
+			{
+				return true;
+			}
+
+			if (!HasAllDependencies(target.Dependencies, context))
+			{
+				if (CanCache(cache))
+				{
+					cache.Enqueue((target.Declaration!, hintName));
+				}
+				else
+				{
+					dependencies.Enqueue((target.Declaration!.GetReference(), hintName));
+				}
+
+				return false;
+			}
+
+			if (Generate(target, hintName, context))
+			{
+				context.SymbolRegistry.Register(target.Symbol);
+				return true;
+			}
+
+			return false;
+		}
+
+		private bool Generate(ICopyFromMember data, string hintName, CopyFromPassContext context)
+		{
+			if (data is Types.CopyFromTypeData type)
+			{
+				return GenerateType(type, hintName, context);
+			}
+
+			if (data is Methods.CopyFromMethodData method)
+			{
+				return GenerateMethod(method, hintName, context);
+			}
+
+			return false;
+		}
+
+		private bool GenerateFromDependencyQueue(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, CopyFromPassContext context)
+		{
+			Queue<(SyntaxReference, string)> dependencies = GetDependenciesFromQueue(filterGroup, context, out Queue<(SyntaxNode, string)> cache);
+
+			if (dependencies.Count == 0 && cache.Count == 0)
+			{
+				return true;
+			}
+
+			while (true)
+			{
+				int current = dependencies.Count + cache.Count;
+
+				HandleFilterGroup(filterGroup, context, dependencies, cache, GetNodesFromQueue());
+
+				int result = dependencies.Count + cache.Count;
+
+				if (result >= current)
+				{
+					return false;
+				}
+
+				if (result == 0)
+				{
+					return true;
+				}
+			}
+
+			IEnumerable<(SyntaxNode, string)> GetNodesFromQueue()
+			{
+				int cacheLength = cache.Count;
+				int depLength = dependencies.Count;
+
+				for (int i = 0; i < cacheLength; i++)
+				{
+					yield return cache.Dequeue();
+				}
+
+				for (int i = 0; i < depLength; i++)
+				{
+					(SyntaxReference reference, string hintName) = dependencies.Dequeue();
+
+					SyntaxNode node = reference.GetSyntax();
+
+					yield return (node, hintName);
+				}
+			}
+		}
+
+		private void GenerateFromFiltersWithGeneratedSymbols(
+			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
+			List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols,
+			CopyFromPassContext context,
+			Queue<(SyntaxReference, string)> dependencies,
+			Queue<(SyntaxNode, string)> cache,
+			IEnumerable<(SyntaxNode node, string hintName)> nodes
+		)
+		{
+			BeforeFiltersWithGeneratedSymbols(context);
+			BeforeFiltrationOfGeneratedSymbols(filterGroup, context);
+
+			foreach (IGeneratorSyntaxFilter filter in filtersWithGeneratedSymbols)
+			{
+				IterateThroughFilter(filterGroup, filter, context, dependencies, cache, nodes);
+			}
+		}
+
+		private void HandleFilterGroup(
+			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
+			CopyFromPassContext context,
+			Queue<(SyntaxReference, string)> dependencies,
+			Queue<(SyntaxNode, string)> cache,
+			IEnumerable<(SyntaxNode node, string hintName)> nodes
+		)
+		{
+			int numFilters = filterGroup.Count;
+			List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols = new(numFilters);
+
+			//filterGroup.Unseal();
+			BeforeFiltrationOfGroup(filterGroup, context);
+			//filterGroup.Seal();
+
+			// TODO: Current implementation will enumerate 'nodes' for each filter in the group.
+			// That's OK for now, since all filter groups in CopyFrom contain only a single filter,
+			// but if there will ever be need to make this code more generic (e.g. by moving it to one of abstract DurianGenerators),
+			// the implementation must be re-written.
+
+			foreach (IGeneratorSyntaxFilter filter in filterGroup)
+			{
+				if (filter.IncludeGeneratedSymbols)
+				{
+					filtersWithGeneratedSymbols.Add(filter);
+				}
+				else
+				{
+					IterateThroughFilter(filterGroup, filter, context, dependencies, cache, nodes);
+				}
+			}
+
+			BeforeExecutionOfGroup(filterGroup, context);
+
+			GenerateFromFiltersWithGeneratedSymbols(filterGroup, filtersWithGeneratedSymbols, context, dependencies, cache, nodes);
+
+			//filterGroup.Unseal();
+			AfterExecutionOfGroup(filterGroup, context);
+		}
+
+		private void IterateThroughFilter(
+			IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup,
+			IGeneratorSyntaxFilter filter,
+			CopyFromPassContext context,
+			Queue<(SyntaxReference, string)> dependencies,
+			Queue<(SyntaxNode, string)> cache,
+			IEnumerable<(SyntaxNode node, string hintName)> nodes
+		)
+		{
+			if (filter is not ISyntaxValidator single)
+			{
+				throw new InvalidOperationException($"Filter in group '{filterGroup.Name}' does not implement the '{nameof(ISyntaxValidator)}' interface");
+			}
+
+			foreach ((SyntaxNode node, string hintName) in nodes)
+			{
+				PreValidationContext validation = new(node, context.TargetCompilation, context.CancellationToken);
+
+				if (single.ValidateAndCreate(validation, out IMemberData? member) && Generate(member, hintName, context, dependencies, cache))
+				{
+					context.FileNameProvider.Success();
+				}
+			}
+		}
+
+		private void WriteGeneratedMember(
+			ICopyFromMember member,
+			SyntaxNode node,
+			ISymbol original,
+			CopyFromPassContext context,
+			GenerateDocumentation applyInheritdoc,
+			DocumentationCommentTriviaSyntax? documentation
+		)
+		{
+			string current = NodeToString(node);
+			string generatedFrom = AutoGenerated.GetDurianGeneratedAttribute(SymbolToString(original));
+
+			if (documentation is null)
+			{
+				current = ApplyPattern(member, context, current);
+
+				if (applyInheritdoc == GenerateDocumentation.Always)
+				{
+					WriteGeneratedMember_Internal(current, generatedFrom, AutoGenerated.GetInheritdoc(original.GetFullyQualifiedName(QualifiedName.Xml)), context);
+				}
+				else
+				{
+					WriteGeneratedMember_Internal(current, generatedFrom, context);
+				}
+
+				return;
+			}
+
+			string doc = documentation.ToFullString();
+
+			for (int i = 0; i < member.Patterns!.Length; i++)
+			{
+				ref readonly PatternData pattern = ref member.Patterns[i];
+
+				Regex regex = context.RegexProvider.GetRegex(pattern.Pattern);
+				current = regex.Replace(current, pattern.Replacement);
+				doc = regex.Replace(doc, pattern.Replacement);
+			}
+
+			context.CodeBuilder.Indent();
+			context.CodeBuilder.Write(doc);
+			WriteGeneratedMember_Internal(current, generatedFrom, context);
+		}
+
+		private void WriteGeneratedMember(
+			ICopyFromMember member,
+			SyntaxNode node,
+			ISymbol original,
+			CopyFromPassContext context,
+			GenerateDocumentation applyInheritdoc
+		)
+		{
+			if (member.Patterns is null || member.Patterns.Length == 0)
+			{
+				WriteGeneratedMember(node, original, context, applyInheritdoc);
+				return;
+			}
+
+			DocumentationCommentTriviaSyntax? documentation = default;
+
+			if (applyInheritdoc != GenerateDocumentation.Never)
+			{
+				documentation = GetDocumentationTrivia(node);
+			}
+
+			WriteGeneratedMember(
+				member,
+				node,
+				original,
+				context,
+				applyInheritdoc,
+				documentation
+			);
+		}
+	}
 }
