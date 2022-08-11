@@ -2423,6 +2423,7 @@ namespace Durian.Analysis.Extensions
 			{
 				SpecialConstructor.Static => type.StaticConstructors.FirstOrDefault(),
 				SpecialConstructor.None => default,
+				SpecialConstructor.Parameterless => type.InstanceConstructors.FirstOrDefault(ctor => ctor.GetConstructorKind() is SpecialConstructor.Parameterless or SpecialConstructor.Default),
 				_ => type.InstanceConstructors.FirstOrDefault(ctor => ctor.GetConstructorKind() == kind),
 			};
 		}

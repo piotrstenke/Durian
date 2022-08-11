@@ -149,10 +149,7 @@ namespace Durian.Analysis.FriendClass
 				{
 					if (ctor.Initializer is null)
 					{
-						if (currentType.BaseType?.GetSpecialConstructor(SpecialConstructor.Parameterless) is IMethodSymbol baseCtor)
-						{
-							return baseCtor;
-						}
+						return currentType.BaseType?.GetSpecialConstructor(SpecialConstructor.Parameterless);
 					}
 					else if (semanticModel.GetSymbolInfo(ctor.Initializer).Symbol is IMethodSymbol baseCtor)
 					{
@@ -164,11 +161,9 @@ namespace Durian.Analysis.FriendClass
 
 				case ClassDeclarationSyntax @class:
 				{
-					if (@class.BaseList is not null &&
-						GetParameterlessConstructorFromSymbol(currentType) is IMethodSymbol baseCtor
-					)
+					if (@class.BaseList is not null && @class.BaseList.Types.Any())
 					{
-						return baseCtor;
+						return GetParameterlessConstructorFromSymbol(currentType);
 					}
 
 					break;
@@ -179,16 +174,26 @@ namespace Durian.Analysis.FriendClass
 					if (record.BaseList is not null && record.BaseList.Types.Any())
 					{
 						BaseTypeSyntax baseType = record.BaseList.Types[0];
-						ISymbol? symbol = semanticModel.GetSymbolInfo(baseType).Symbol;
 
-						if (symbol is IMethodSymbol baseCtor)
+						switch (baseType)
 						{
-							return baseCtor;
-						}
+							case PrimaryConstructorBaseTypeSyntax primary:
+								SymbolInfo info = semanticModel.GetSymbolInfo(primary);
 
-						if (symbol is INamedTypeSymbol type && GetParameterlessConstructorFromSymbol(type) is IMethodSymbol ctor)
-						{
-							return ctor;
+								if (info.Symbol is IMethodSymbol baseCtor)
+								{
+									return baseCtor;
+								}
+
+								break;
+
+							case SimpleBaseTypeSyntax:
+								if(record.ParameterList is not null)
+								{
+									return currentType.BaseType?.GetSpecialConstructor(SpecialConstructor.Parameterless);
+								}
+
+								return GetParameterlessConstructorFromSymbol(currentType);
 						}
 					}
 
@@ -202,7 +207,7 @@ namespace Durian.Analysis.FriendClass
 			{
 				if (type is not null &&
 					type.TypeKind == TypeKind.Class &&
-					type.InstanceConstructors.Length == 1 &&
+					type.InstanceConstructors.All(ctor => ctor.IsImplicitlyDeclared || ctor.DeclaringSyntaxReferences.Length == 0) &&
 					type.BaseType?.GetSpecialConstructor(SpecialConstructor.Parameterless) is IMethodSymbol baseCtor
 				)
 				{

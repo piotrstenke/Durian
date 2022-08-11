@@ -633,7 +633,12 @@ class NotFriend
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
-record Test(string Name)
+record Test()
+{{
+	internal Test(string name)
+	{{
+	}}
+}}
 
 class Other
 {{
