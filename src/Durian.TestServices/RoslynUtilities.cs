@@ -499,20 +499,26 @@ namespace Durian.TestServices
 		{
 			string directory = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
 
-			List<MetadataReference> references = new()
-			{
-				MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(File).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
-				MetadataReference.CreateFromFile(Path.Combine(directory, "System.Runtime.dll")),
-				MetadataReference.CreateFromFile(Path.Combine(directory, "netstandard.dll")),
-			};
+			HashSet<string> locations = new();
+
+			locations.Add(typeof(object).Assembly.Location);
+			locations.Add(typeof(File).Assembly.Location);
+			locations.Add(typeof(BigInteger).Assembly.Location);
+			locations.Add(typeof(Enumerable).Assembly.Location);
+			locations.Add(typeof(List<>).Assembly.Location);
+			locations.Add(Path.Combine(directory, "System.Runtime.dll"));
+			locations.Add(Path.Combine(directory, "netstandard.dll"));
 
 			if (includeDurianCore)
 			{
-				references.Add(MetadataReference.CreateFromFile(typeof(DurianGeneratedAttribute).Assembly.Location));
+				locations.Add(typeof(DurianGeneratedAttribute).Assembly.Location);
+			}
+
+			List<MetadataReference> references = new(locations.Count);
+
+			foreach (string location in locations)
+			{
+				references.Add(MetadataReference.CreateFromFile(location));
 			}
 
 			return references.ToArray();
