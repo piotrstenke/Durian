@@ -21,7 +21,8 @@ namespace Durian.Analysis.InterfaceTargets
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 			DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind,
 			DUR0402_InterfaceCannotBeBaseOfAnotherInterface,
-			DUR0403_InterfaceIsNotDirectlyAccessible
+			DUR0403_InterfaceIsNotDirectlyAccessible,
+			DUR0404_InvalidConstraint
 		);
 
 		/// <inheritdoc/>
@@ -36,11 +37,12 @@ namespace Durian.Analysis.InterfaceTargets
 					return;
 				}
 
-				context.RegisterSyntaxNodeAction(context => Analyze(context, targetsAttribute), SyntaxKind.SimpleBaseType);
+				context.RegisterSyntaxNodeAction(context => AnalyzeBaseType(context, targetsAttribute), SyntaxKind.SimpleBaseType);
+				context.RegisterSyntaxNodeAction(context => AnalyzeConstraint(context, targetsAttribute), SyntaxKind.TypeParameterConstraintClause);
 			});
 		}
 
-		private static void Analyze(SyntaxNodeAnalysisContext context, INamedTypeSymbol targetsAttribute)
+		private static void AnalyzeBaseType(SyntaxNodeAnalysisContext context, INamedTypeSymbol targetsAttribute)
 		{
 			if (context.Node is not SimpleBaseTypeSyntax s)
 			{
@@ -52,22 +54,34 @@ namespace Durian.Analysis.InterfaceTargets
 				return;
 			}
 
-			if (context.SemanticModel.GetSymbolInfo(s.Type).Symbol is not INamedTypeSymbol target || target.TypeKind != TypeKind.Interface)
+			if (!TryGetIntfTargets(context.SemanticModel, targetsAttribute, s.Type, out IntfTargets targets))
 			{
 				return;
 			}
 
-			if (target.GetAttribute(targetsAttribute) is not AttributeData attr || !attr.TryGetConstructorArgumentValue(0, out int value))
-			{
-				return;
-			}
-
-			IntfTargets targets = (IntfTargets)value;
-
-			HandleTargets(context, targets, symbol);
+			HandleBaseTypeTarget(context, targets, symbol);
 		}
 
-		private static void HandleTargets(SyntaxNodeAnalysisContext context, IntfTargets targets, INamedTypeSymbol intf)
+		private static void AnalyzeConstraint(SyntaxNodeAnalysisContext context, INamedTypeSymbol targetsAttribute)
+		{
+			if (context.Node is not TypeParameterConstraintClauseSyntax clause)
+			{
+				return;
+			}
+
+			SeparatedSyntaxList<TypeParameterConstraintSyntax> constraints = clause.Constraints;
+
+			for (int i = 0; i < constraints.Count; i++)
+			{
+				if (constraints[i] is TypeConstraintSyntax type && TryGetIntfTargets(context.SemanticModel, targetsAttribute, type.Type, out IntfTargets targets))
+				{
+					HandleConstraintTarget(context, type.Type, targets, constraints, i);
+					break;
+				}
+			}
+		}
+
+		private static void HandleBaseTypeTarget(SyntaxNodeAnalysisContext context, IntfTargets targets, INamedTypeSymbol intf)
 		{
 			if (targets == IntfTargets.ReflectionOnly)
 			{
@@ -126,9 +140,154 @@ namespace Durian.Analysis.InterfaceTargets
 			}
 		}
 
+		private static void HandleConstraintTarget(
+			SyntaxNodeAnalysisContext context,
+			TypeSyntax type,
+			IntfTargets targets,
+			SeparatedSyntaxList<TypeParameterConstraintSyntax> constraints,
+			int targetIndex
+		)
+		{
+			int start;
+
+			if (HandleNonTypeConstraint(constraints[0], targets, out DiagnosticDescriptor? diag))
+			{
+				if (diag is not null)
+				{
+					ReportDiagnostic(diag, constraints[0]);
+				}
+
+				start = 1;
+			}
+			else
+			{
+				start = 0;
+			}
+
+			for (int i = start; i < targetIndex; i++)
+			{
+				if (constraints[i] is TypeConstraintSyntax typeConstraint && !HandleTypeConstraint(context.SemanticModel, typeConstraint, targets))
+				{
+					ReportDiagnostic(DUR0404_InvalidConstraint, typeConstraint);
+				}
+			}
+
+			for (int i = targetIndex + 1; i < constraints.Count; i++)
+			{
+				if (constraints[i] is TypeConstraintSyntax typeConstraint && !HandleTypeConstraint(context.SemanticModel, typeConstraint, targets))
+				{
+					ReportDiagnostic(DUR0404_InvalidConstraint, typeConstraint);
+				}
+			}
+
+			void ReportDiagnostic(DiagnosticDescriptor diag, TypeParameterConstraintSyntax constraint)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(diag, constraint.GetLocation(), type, constraint));
+			}
+		}
+
+		private static bool HandleTypeConstraint(
+			SemanticModel semanticModel,
+			TypeConstraintSyntax constraint,
+			IntfTargets targets
+		)
+		{
+			if (semanticModel.GetSymbolInfo(constraint.Type).Symbol is not INamedTypeSymbol target)
+			{
+				return false;
+			}
+
+			switch (target.TypeKind)
+			{
+				case TypeKind.Class:
+
+					if(targets == IntfTargets.RecordClass)
+					{
+						return target.IsRecord;
+					}
+
+					if(targets == IntfTargets.ReflectionOnly)
+					{
+						return false;
+					}
+
+					return !(targets is IntfTargets.Struct or IntfTargets.RecordStruct);
+
+				case TypeKind.TypeParameter:
+					return true;
+
+				default:
+					return true;
+			}
+		}
+
+		private static bool HandleNonTypeConstraint(TypeParameterConstraintSyntax constraint, IntfTargets targets, out DiagnosticDescriptor? diagnostic)
+		{
+			switch (constraint)
+			{
+				case ClassOrStructConstraintSyntax @class when @class.IsClass():
+
+					diagnostic = targets.HasFlag(IntfTargets.Class)
+						? default
+						: DUR0404_InvalidConstraint;
+
+					return true;
+
+				case ClassOrStructConstraintSyntax @struct when @struct.IsStruct():
+
+					diagnostic = targets.HasFlag(IntfTargets.Struct)
+						? default
+						: DUR0404_InvalidConstraint;
+
+					return true;
+
+				case ClassOrStructConstraintSyntax:
+					diagnostic = default;
+					return true;
+
+				case TypeConstraintSyntax unmanaged when unmanaged.IsUnmanagedConstraint():
+
+					diagnostic = targets.HasFlag(IntfTargets.Struct)
+						? default
+						: DUR0404_InvalidConstraint;
+
+					return true;
+
+				case TypeConstraintSyntax notnull when notnull.IsNotNullConstraint():
+					diagnostic = default;
+					return true;
+			}
+
+			diagnostic = default;
+			return false;
+		}
+
 		private static void ReportCannotBeImplemented(SyntaxNodeAnalysisContext context, INamedTypeSymbol intf, string memberType)
 		{
 			context.ReportDiagnostic(Diagnostic.Create(DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind, context.Node.GetLocation(), context.ContainingSymbol, intf, memberType));
+		}
+
+		private static bool TryGetIntfTargets(
+			SemanticModel semanticModel,
+			INamedTypeSymbol targetsAttribute,
+			SyntaxNode node,
+			out IntfTargets targets
+		)
+		{
+			if (semanticModel.GetSymbolInfo(node).Symbol is not INamedTypeSymbol target || target.TypeKind != TypeKind.Interface)
+			{
+				targets = default;
+				return false;
+			}
+
+			if (target.GetAttribute(targetsAttribute) is not AttributeData attr || !attr.TryGetConstructorArgumentValue(0, out int value))
+			{
+				targets = default;
+				return false;
+			}
+
+			targets = (IntfTargets)value;
+			return true;
 		}
 	}
 }

@@ -51,6 +51,19 @@ namespace Durian.Analysis.InterfaceTargets
 		);
 
 		/// <summary>
+		/// Provides a diagnostic message indicating that the target interface is applied with invalid constraints.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0404_InvalidConstraint = new(
+			id: "DUR0404",
+			title: "Interface will never match target constraint",
+			messageFormat: "'{0}': Interface '{1}' will never match a '{2}' constraint",
+			category: "Durian.FriendClass",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			helpLinkUri: DocsPath + "/DUR0404.md",
+			isEnabledByDefault: true
+		);
+
+		/// <summary>
 		/// Documentation directory of the <c>InterfaceTargets</c> module.
 		/// </summary>
 		public static string DocsPath => GlobalInfo.Repository + "/tree/master/docs/InterfaceTargets";

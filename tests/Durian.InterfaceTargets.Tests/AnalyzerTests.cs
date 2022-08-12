@@ -199,6 +199,122 @@ public {memberType} Test : ITest
 			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0403_InterfaceIsNotDirectlyAccessible.Id);
 		}
 
+		[Theory]
+		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.Class)]
+		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.RecordClass)]
+		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.Interface)]
+		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.ReflectionOnly)]
+		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.Class)]
+		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.RecordClass)]
+		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.Interface)]
+		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.ReflectionOnly)]
+		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.Struct)]
+		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.RecordStruct)]
+		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.Interface)]
+		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.ReflectionOnly)]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, InterfaceTargetsProvider.Struct)]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, InterfaceTargetsProvider.RecordStruct)]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, InterfaceTargetsProvider.Interface)]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, InterfaceTargetsProvider.ReflectionOnly)]
+		[InlineData(InterfaceTargetsProvider.Interface, InterfaceTargetsProvider.Class)]
+		[InlineData(InterfaceTargetsProvider.Interface, InterfaceTargetsProvider.RecordClass)]
+		[InlineData(InterfaceTargetsProvider.Interface, InterfaceTargetsProvider.Struct)]
+		[InlineData(InterfaceTargetsProvider.Interface, InterfaceTargetsProvider.RecordStruct)]
+		[InlineData(InterfaceTargetsProvider.Interface, InterfaceTargetsProvider.Interface)]
+		[InlineData(InterfaceTargetsProvider.Interface, InterfaceTargetsProvider.ReflectionOnly)]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, InterfaceTargetsProvider.Class)]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, InterfaceTargetsProvider.RecordClass)]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, InterfaceTargetsProvider.Struct)]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, InterfaceTargetsProvider.RecordStruct)]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, InterfaceTargetsProvider.Interface)]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, InterfaceTargetsProvider.ReflectionOnly)]
+		public async Task Success_When_ConstraintCanMatchOtherInterface(string firstTarget, string secondTarget)
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{firstTarget})]
+public interface ITest
+{{
+}}
+
+public class Other<T> where T : ITest, IOther
+{{
+}}
+
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{secondTarget})]
+public interface IOther
+{{
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Theory]
+		[InlineData(InterfaceTargetsProvider.Class, "class")]
+		[InlineData(InterfaceTargetsProvider.Class, "notnull")]
+		[InlineData(InterfaceTargetsProvider.Class, "new()")]
+		[InlineData(InterfaceTargetsProvider.Class, "Other")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "class")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "notnull")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "new()")]
+		[InlineData(InterfaceTargetsProvider.Struct, "struct")]
+		[InlineData(InterfaceTargetsProvider.Struct, "unmanaged")]
+		[InlineData(InterfaceTargetsProvider.Struct, "notnull")]
+		[InlineData(InterfaceTargetsProvider.Struct, "new()")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "struct")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "notnull")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "new()")]
+		[InlineData(InterfaceTargetsProvider.Interface, "class")]
+		[InlineData(InterfaceTargetsProvider.Interface, "struct")]
+		[InlineData(InterfaceTargetsProvider.Interface, "unmanaged")]
+		[InlineData(InterfaceTargetsProvider.Interface, "notnull")]
+		[InlineData(InterfaceTargetsProvider.Interface, "new()")]
+		[InlineData(InterfaceTargetsProvider.Interface, "Other")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "class")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "struct")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "unmanaged")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "notnull")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "new()")]
+		public async Task Success_When_ConstraintWillMatch(string target, string constraint)
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{target})]
+public interface ITest
+{{
+}}
+
+public class Other<T, U> where T : {constraint}, ITest
+{{
+}}
+
+public class Other
+{{
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Fact]
+		public async Task Success_When_HasSingleInterfaceConstraint()
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{InterfaceTargetsProvider.Class})]
+public interface ITest
+{{
+}}
+
+public class Other<T> where T : ITest
+{{
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
 		[Fact]
 		public async Task Success_When_IsValidOnClass_And_TargetIsClass()
 		{
@@ -307,6 +423,68 @@ public struct Test : ITest
 }}
 ";
 			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Theory]
+		[InlineData(InterfaceTargetsProvider.Class, "struct")]
+		[InlineData(InterfaceTargetsProvider.Class, "unmanaged")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "struct")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "unmanaged")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "Other")]
+		[InlineData(InterfaceTargetsProvider.Struct, "class")]
+		[InlineData(InterfaceTargetsProvider.Struct, "Other")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "class")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "unmanaged")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "Other")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "Other")]
+		public async Task Warning_When_ConstraintWillNeverMatch(string target, string constraint)
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{target})]
+public interface ITest
+{{
+}}
+
+public class Other<T> where T : {constraint}, ITest
+{{
+}}
+
+public class Other
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0404_InvalidConstraint.Id);
+		}
+
+		[Theory]
+		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.Struct)]
+		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.RecordStruct)]
+		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.Struct)]
+		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.RecordStruct)]
+		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.Class)]
+		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.RecordClass)]
+		public async Task Warning_When_ConstraintWillNeverMatchOtherInterface(string firstTarget, string secondTarget)
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{firstTarget})]
+public interface ITest
+{{
+}}
+
+public class Other<T> where T : ITest, IOther
+{{
+}}
+
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{secondTarget})]
+public interface IOther
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0404_InvalidConstraint.Id);
 		}
 
 		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
