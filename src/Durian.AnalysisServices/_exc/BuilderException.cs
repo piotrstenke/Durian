@@ -11,27 +11,38 @@ namespace Durian.Analysis
 	public class BuilderException : Exception
 	{
 		/// <summary>
+		/// Target builder.
+		/// </summary>
+		public IBuilder<object> Builder { get; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="BuilderException"/> class.
 		/// </summary>
-		public BuilderException()
+		/// <param name="builder">Target builder.</param>
+		public BuilderException(IBuilder<object> builder)
 		{
+			Builder = builder;
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="BuilderException"/> class.
 		/// </summary>
+		/// <param name="builder">Target builder.</param>
 		/// <param name="message">Message explaining the reason for the exception.</param>
-		public BuilderException(string message) : base(message)
+		public BuilderException(IBuilder<object> builder, string message) : base(message)
 		{
+			Builder = builder;
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="BuilderException"/> class.
 		/// </summary>
+		/// <param name="builder">Target builder.</param>
 		/// <param name="message">Message explaining the reason for the exception.</param>
 		/// <param name="innerException"><see cref="Exception"/> that caused this exception.</param>
-		public BuilderException(string message, Exception innerException) : base(message, innerException)
+		public BuilderException(IBuilder<object> builder, string message, Exception innerException) : base(message, innerException)
 		{
+			Builder = builder;
 		}
 	}
 }

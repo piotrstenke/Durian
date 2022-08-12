@@ -60,12 +60,6 @@ namespace Durian.Analysis
 		public abstract ICompilationData? CreateCompilationData(CSharpCompilation compilation);
 
 		/// <inheritdoc/>
-		public override void Initialize(GeneratorInitializationContext context)
-		{
-			base.Initialize(context);
-		}
-
-		/// <inheritdoc/>
 		protected internal override void AddSourceCore(CSharpSyntaxTree tree, string hintName, TContext context)
 		{
 			base.AddSourceCore(tree, hintName, context);

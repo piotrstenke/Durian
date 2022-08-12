@@ -33,7 +33,7 @@ namespace Durian.Analysis
 
 			if (!CanBeSealed)
 			{
-				throw new SealedObjectException("Current state of the object does not allow it to be sealed");
+				throw new SealedObjectException(this, "Current state of the object does not allow it to be sealed");
 			}
 
 			IsSealed = SealCore();

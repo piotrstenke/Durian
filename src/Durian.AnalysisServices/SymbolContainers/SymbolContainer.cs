@@ -199,16 +199,17 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <inheritdoc cref="IBuilderReceiver{TBuilder}.Receive(TBuilder)"/>
+		/// <exception cref="InvalidOperationException">Object cannot receive more than one builder. -or- Builder cannot be passed after manual initialization of the object.</exception>
 		protected virtual void Receive(ref SymbolContainerBuilder builder)
 		{
 			if (_builderState == BuilderState.Received)
 			{
-				throw new BuilderException("Object cannot receive more than one builder");
+				throw new InvalidOperationException("Object cannot receive more than one builder");
 			}
 
 			if (_builderState == BuilderState.Missed)
 			{
-				throw new BuilderException("Builder cannot be passed after manual initialization of the object");
+				throw new InvalidOperationException("Builder cannot be passed after manual initialization of the object");
 			}
 
 			ParentCompilation = builder.ParentCompilation;

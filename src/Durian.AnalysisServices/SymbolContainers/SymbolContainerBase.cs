@@ -243,7 +243,7 @@ namespace Durian.Analysis.SymbolContainers
 		{
 			if (IsSealed)
 			{
-				throw new SealedObjectException("Cannot add new symbols to a sealed container");
+				throw new SealedObjectException(this, "Cannot add new symbols to a sealed container");
 			}
 		}
 	}

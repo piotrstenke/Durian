@@ -658,7 +658,7 @@ namespace Durian.Analysis.SymbolContainers
 		{
 			if (IsSealed)
 			{
-				throw new SealedObjectException("Cannot register new level to a sealed container");
+				throw new SealedObjectException(this, "Cannot register new level to a sealed container");
 			}
 
 			_levels.Add(new LevelEntry(function));
