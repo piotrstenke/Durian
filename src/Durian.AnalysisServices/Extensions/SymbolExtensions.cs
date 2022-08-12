@@ -47,7 +47,7 @@ namespace Durian.Analysis.Extensions
 					SyntaxFactory.Identifier(type.GetVerbatimName()),
 					SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(arguments)));
 			}
-			else if (GetPredefineTypeSyntax(type) is PredefinedTypeSyntax predefined)
+			else if (type.GetPredefineTypeSyntax() is PredefinedTypeSyntax predefined)
 			{
 				syntax = predefined;
 			}

@@ -41,7 +41,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>$(BaseIntermediateOutputPath)$(MSBuildProjectName).xml</DocumentationFile>
-    <DebugType>embedded</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Deterministic>true</Deterministic>
 
   </PropertyGroup>
