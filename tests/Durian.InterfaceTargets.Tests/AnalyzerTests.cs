@@ -200,19 +200,57 @@ public {memberType} Test : ITest
 		}
 
 		[Theory]
+		[InlineData(InterfaceTargetsProvider.Class, "class")]
+		[InlineData(InterfaceTargetsProvider.Class, "notnull")]
+		[InlineData(InterfaceTargetsProvider.Class, "new()")]
+		[InlineData(InterfaceTargetsProvider.Class, "Other")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "class")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "notnull")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "new()")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "OtherRecord")]
+		[InlineData(InterfaceTargetsProvider.Interface, "class")]
+		[InlineData(InterfaceTargetsProvider.Interface, "notnull")]
+		[InlineData(InterfaceTargetsProvider.Interface, "new()")]
+		[InlineData(InterfaceTargetsProvider.Interface, "Other")]
+		[InlineData(InterfaceTargetsProvider.Interface, "OtherRecord")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "class")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "notnull")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "new()")]
+		public async Task Success_When_ChainConstraintsToValidTypeParameter(string target, string constraint)
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{target})]
+public interface ITest
+{{
+}}
+
+public class Other<T, U, V> where T : {constraint} where U : T where V : U, ITest
+{{
+}}
+
+public class Other
+{{
+}}
+
+public record OtherRecord
+{{
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Theory]
 		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.Class)]
-		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.RecordClass)]
 		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.Interface)]
 		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.ReflectionOnly)]
-		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.Class)]
 		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.RecordClass)]
 		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.Interface)]
 		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.ReflectionOnly)]
 		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.Struct)]
-		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.RecordStruct)]
 		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.Interface)]
 		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.ReflectionOnly)]
-		[InlineData(InterfaceTargetsProvider.RecordStruct, InterfaceTargetsProvider.Struct)]
 		[InlineData(InterfaceTargetsProvider.RecordStruct, InterfaceTargetsProvider.RecordStruct)]
 		[InlineData(InterfaceTargetsProvider.RecordStruct, InterfaceTargetsProvider.Interface)]
 		[InlineData(InterfaceTargetsProvider.RecordStruct, InterfaceTargetsProvider.ReflectionOnly)]
@@ -258,6 +296,53 @@ public interface IOther
 		[InlineData(InterfaceTargetsProvider.RecordClass, "class")]
 		[InlineData(InterfaceTargetsProvider.RecordClass, "notnull")]
 		[InlineData(InterfaceTargetsProvider.RecordClass, "new()")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "OtherRecord")]
+		[InlineData(InterfaceTargetsProvider.Struct, "notnull")]
+		[InlineData(InterfaceTargetsProvider.Struct, "new()")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "notnull")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "new()")]
+		[InlineData(InterfaceTargetsProvider.Interface, "class")]
+		[InlineData(InterfaceTargetsProvider.Interface, "notnull")]
+		[InlineData(InterfaceTargetsProvider.Interface, "new()")]
+		[InlineData(InterfaceTargetsProvider.Interface, "Other")]
+		[InlineData(InterfaceTargetsProvider.Interface, "OtherRecord")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "class")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "notnull")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "new()")]
+		public async Task Success_When_ConstraintsToValidTypeParameter(string target, string constraint)
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{target})]
+public interface ITest
+{{
+}}
+
+public class Other<T, U> where T : {constraint} where U : T, ITest
+{{
+}}
+
+public class Other
+{{
+}}
+
+public record OtherRecord
+{{
+}}
+";
+			Assert.Empty(await RunAnalyzer(input));
+		}
+
+		[Theory]
+		[InlineData(InterfaceTargetsProvider.Class, "class")]
+		[InlineData(InterfaceTargetsProvider.Class, "notnull")]
+		[InlineData(InterfaceTargetsProvider.Class, "new()")]
+		[InlineData(InterfaceTargetsProvider.Class, "Other")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "class")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "notnull")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "new()")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "OtherRecord")]
 		[InlineData(InterfaceTargetsProvider.Struct, "struct")]
 		[InlineData(InterfaceTargetsProvider.Struct, "unmanaged")]
 		[InlineData(InterfaceTargetsProvider.Struct, "notnull")]
@@ -271,6 +356,7 @@ public interface IOther
 		[InlineData(InterfaceTargetsProvider.Interface, "notnull")]
 		[InlineData(InterfaceTargetsProvider.Interface, "new()")]
 		[InlineData(InterfaceTargetsProvider.Interface, "Other")]
+		[InlineData(InterfaceTargetsProvider.Interface, "OtherRecord")]
 		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "class")]
 		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "struct")]
 		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "unmanaged")]
@@ -291,6 +377,10 @@ public class Other<T, U> where T : {constraint}, ITest
 }}
 
 public class Other
+{{
+}}
+
+public record OtherRecord
 {{
 }}
 ";
@@ -426,6 +516,78 @@ public struct Test : ITest
 		}
 
 		[Theory]
+		[InlineData(InterfaceTargetsProvider.Class, "OtherRecord")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "Other")]
+		[InlineData(InterfaceTargetsProvider.Struct, "class")]
+		[InlineData(InterfaceTargetsProvider.Struct, "Other")]
+		[InlineData(InterfaceTargetsProvider.Struct, "OtherRecord")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "class")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "Other")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "OtherRecord")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "Other")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "OtherRecord")]
+		public async Task Warning_When_ChainConstraintsToInvalidTypeParameter(string target, string constraint)
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{target})]
+public interface ITest
+{{
+}}
+
+public class Other<T, U, V> where T : {constraint} where U : T where V : U, ITest
+{{
+}}
+
+public class Other
+{{
+}}
+
+public record OtherRecord
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0404_InvalidConstraint.Id);
+		}
+
+		[Theory]
+		[InlineData(InterfaceTargetsProvider.Class, "OtherRecord")]
+		[InlineData(InterfaceTargetsProvider.RecordClass, "Other")]
+		[InlineData(InterfaceTargetsProvider.Struct, "class")]
+		[InlineData(InterfaceTargetsProvider.Struct, "Other")]
+		[InlineData(InterfaceTargetsProvider.Struct, "OtherRecord")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "class")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "Other")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "OtherRecord")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "Other")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "OtherRecord")]
+		public async Task Warning_When_ConstraintsToInvalidTypeParameter(string target, string constraint)
+		{
+			string input =
+@$"using {DurianStrings.MainNamespace};
+
+[{InterfaceTargetsAttributeProvider.TypeName}({InterfaceTargetsProvider.TypeName}.{target})]
+public interface ITest
+{{
+}}
+
+public class Other<T, U> where T : {constraint} where U : T, ITest
+{{
+}}
+
+public class Other
+{{
+}}
+
+public record OtherRecord
+{{
+}}
+";
+			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0404_InvalidConstraint.Id);
+		}
+
+		[Theory]
 		[InlineData(InterfaceTargetsProvider.Class, "struct")]
 		[InlineData(InterfaceTargetsProvider.Class, "unmanaged")]
 		[InlineData(InterfaceTargetsProvider.RecordClass, "struct")]
@@ -433,10 +595,13 @@ public struct Test : ITest
 		[InlineData(InterfaceTargetsProvider.RecordClass, "Other")]
 		[InlineData(InterfaceTargetsProvider.Struct, "class")]
 		[InlineData(InterfaceTargetsProvider.Struct, "Other")]
+		[InlineData(InterfaceTargetsProvider.Struct, "OtherRecord")]
 		[InlineData(InterfaceTargetsProvider.RecordStruct, "class")]
 		[InlineData(InterfaceTargetsProvider.RecordStruct, "unmanaged")]
 		[InlineData(InterfaceTargetsProvider.RecordStruct, "Other")]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, "OtherRecord")]
 		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "Other")]
+		[InlineData(InterfaceTargetsProvider.ReflectionOnly, "OtherRecord")]
 		public async Task Warning_When_ConstraintWillNeverMatch(string target, string constraint)
 		{
 			string input =
@@ -454,17 +619,27 @@ public class Other<T> where T : {constraint}, ITest
 public class Other
 {{
 }}
+
+public record OtherRecord
+{{
+}}
 ";
 			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0404_InvalidConstraint.Id);
 		}
 
 		[Theory]
+		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.RecordClass)]
 		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.Struct)]
 		[InlineData(InterfaceTargetsProvider.Class, InterfaceTargetsProvider.RecordStruct)]
+		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.Class)]
 		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.Struct)]
 		[InlineData(InterfaceTargetsProvider.RecordClass, InterfaceTargetsProvider.RecordStruct)]
 		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.Class)]
 		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.RecordClass)]
+		[InlineData(InterfaceTargetsProvider.Struct, InterfaceTargetsProvider.RecordStruct)]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, InterfaceTargetsProvider.Class)]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, InterfaceTargetsProvider.RecordClass)]
+		[InlineData(InterfaceTargetsProvider.RecordStruct, InterfaceTargetsProvider.Struct)]
 		public async Task Warning_When_ConstraintWillNeverMatchOtherInterface(string firstTarget, string secondTarget)
 		{
 			string input =

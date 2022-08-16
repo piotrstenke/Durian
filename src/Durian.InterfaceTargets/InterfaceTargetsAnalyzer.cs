@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -54,12 +56,12 @@ namespace Durian.Analysis.InterfaceTargets
 				return;
 			}
 
-			if (!TryGetIntfTargets(context.SemanticModel, targetsAttribute, s.Type, out IntfTargets targets))
+			if (!TryGetIntfTargets(context.SemanticModel, targetsAttribute, s.Type, out INamedTypeSymbol? intf, out IntfTargets targets))
 			{
 				return;
 			}
 
-			HandleBaseTypeTarget(context, targets, symbol);
+			HandleBaseTypeTarget(context, targets, symbol, intf);
 		}
 
 		private static void AnalyzeConstraint(SyntaxNodeAnalysisContext context, INamedTypeSymbol targetsAttribute)
@@ -73,15 +75,15 @@ namespace Durian.Analysis.InterfaceTargets
 
 			for (int i = 0; i < constraints.Count; i++)
 			{
-				if (constraints[i] is TypeConstraintSyntax type && TryGetIntfTargets(context.SemanticModel, targetsAttribute, type.Type, out IntfTargets targets))
+				if (constraints[i] is TypeConstraintSyntax type && TryGetIntfTargets(context.SemanticModel, targetsAttribute, type.Type, out INamedTypeSymbol? intf, out IntfTargets targets))
 				{
-					HandleConstraintTarget(context, type.Type, targets, constraints, i);
+					HandleConstraintTarget(context, intf, targets, targetsAttribute, constraints, i);
 					break;
 				}
 			}
 		}
 
-		private static void HandleBaseTypeTarget(SyntaxNodeAnalysisContext context, IntfTargets targets, INamedTypeSymbol intf)
+		private static void HandleBaseTypeTarget(SyntaxNodeAnalysisContext context, IntfTargets targets, INamedTypeSymbol type, INamedTypeSymbol intf)
 		{
 			if (targets == IntfTargets.ReflectionOnly)
 			{
@@ -89,7 +91,7 @@ namespace Durian.Analysis.InterfaceTargets
 				return;
 			}
 
-			switch (intf.TypeKind)
+			switch (type.TypeKind)
 			{
 				case TypeKind.Interface:
 
@@ -102,7 +104,7 @@ namespace Durian.Analysis.InterfaceTargets
 
 				case TypeKind.Struct:
 
-					if (intf.IsRecord)
+					if (type.IsRecord)
 					{
 						if (!targets.HasFlag(IntfTargets.RecordStruct))
 						{
@@ -121,7 +123,7 @@ namespace Durian.Analysis.InterfaceTargets
 
 				case TypeKind.Class:
 
-					if (intf.IsRecord)
+					if (type.IsRecord)
 					{
 						if (!targets.HasFlag(IntfTargets.RecordClass))
 						{
@@ -142,8 +144,9 @@ namespace Durian.Analysis.InterfaceTargets
 
 		private static void HandleConstraintTarget(
 			SyntaxNodeAnalysisContext context,
-			TypeSyntax type,
+			INamedTypeSymbol intf,
 			IntfTargets targets,
+			INamedTypeSymbol targetsAttribute,
 			SeparatedSyntaxList<TypeParameterConstraintSyntax> constraints,
 			int targetIndex
 		)
@@ -166,15 +169,17 @@ namespace Durian.Analysis.InterfaceTargets
 
 			for (int i = start; i < targetIndex; i++)
 			{
-				if (constraints[i] is TypeConstraintSyntax typeConstraint && !HandleTypeConstraint(context.SemanticModel, typeConstraint, targets))
-				{
-					ReportDiagnostic(DUR0404_InvalidConstraint, typeConstraint);
-				}
+				HandleConstraint(i);
 			}
 
 			for (int i = targetIndex + 1; i < constraints.Count; i++)
 			{
-				if (constraints[i] is TypeConstraintSyntax typeConstraint && !HandleTypeConstraint(context.SemanticModel, typeConstraint, targets))
+				HandleConstraint(i);
+			}
+
+			void HandleConstraint(int i)
+			{
+				if (constraints[i] is TypeConstraintSyntax typeConstraint && !HandleTypeConstraint(context.SemanticModel, typeConstraint, targets, targetsAttribute))
 				{
 					ReportDiagnostic(DUR0404_InvalidConstraint, typeConstraint);
 				}
@@ -182,42 +187,52 @@ namespace Durian.Analysis.InterfaceTargets
 
 			void ReportDiagnostic(DiagnosticDescriptor diag, TypeParameterConstraintSyntax constraint)
 			{
-				context.ReportDiagnostic(Diagnostic.Create(diag, constraint.GetLocation(), type, constraint));
+				context.ReportDiagnostic(Diagnostic.Create(diag, constraint.GetLocation(), intf, constraint));
 			}
 		}
 
-		private static bool HandleTypeConstraint(
-			SemanticModel semanticModel,
-			TypeConstraintSyntax constraint,
-			IntfTargets targets
-		)
+		private static bool HandleInterfaceConstraint(IntfTargets targets, INamedTypeSymbol targetsAttribute, ITypeSymbol target)
 		{
-			if (semanticModel.GetSymbolInfo(constraint.Type).Symbol is not INamedTypeSymbol target)
+			if (!TryGetIntfTargets((target as INamedTypeSymbol)!, targetsAttribute, out IntfTargets otherTargets))
 			{
 				return false;
 			}
 
-			switch (target.TypeKind)
+			if(otherTargets == IntfTargets.ReflectionOnly)
 			{
-				case TypeKind.Class:
+				return true;
+			}
 
-					if(targets == IntfTargets.RecordClass)
-					{
-						return target.IsRecord;
-					}
+			if(!CheckTarget(IntfTargets.Class))
+			{
+				return false;
+			}
 
-					if(targets == IntfTargets.ReflectionOnly)
-					{
-						return false;
-					}
+			if (!CheckTarget(IntfTargets.RecordClass))
+			{
+				return false;
+			}
 
-					return !(targets is IntfTargets.Struct or IntfTargets.RecordStruct);
+			if (!CheckTarget(IntfTargets.Struct))
+			{
+				return false;
+			}
 
-				case TypeKind.TypeParameter:
-					return true;
+			if (!CheckTarget(IntfTargets.RecordStruct))
+			{
+				return false;
+			}
 
-				default:
-					return true;
+			return true;
+
+			bool CheckTarget(IntfTargets target)
+			{
+				if (targets.HasFlag(target))
+				{
+					return otherTargets.HasFlag(target) || otherTargets.HasFlag(IntfTargets.Interface);
+				}
+
+				return true;
 			}
 		}
 
@@ -227,7 +242,13 @@ namespace Durian.Analysis.InterfaceTargets
 			{
 				case ClassOrStructConstraintSyntax @class when @class.IsClass():
 
-					diagnostic = targets.HasFlag(IntfTargets.Class)
+					if (targets == IntfTargets.ReflectionOnly)
+					{
+						diagnostic = default;
+						return true;
+					}
+
+					diagnostic = targets.HasFlag(IntfTargets.Class) || targets.HasFlag(IntfTargets.Interface) || targets.HasFlag(IntfTargets.RecordClass)
 						? default
 						: DUR0404_InvalidConstraint;
 
@@ -235,7 +256,13 @@ namespace Durian.Analysis.InterfaceTargets
 
 				case ClassOrStructConstraintSyntax @struct when @struct.IsStruct():
 
-					diagnostic = targets.HasFlag(IntfTargets.Struct)
+					if (targets == IntfTargets.ReflectionOnly)
+					{
+						diagnostic = default;
+						return true;
+					}
+
+					diagnostic = targets.HasFlag(IntfTargets.Struct) || targets.HasFlag(IntfTargets.Interface) || targets.HasFlag(IntfTargets.RecordStruct)
 						? default
 						: DUR0404_InvalidConstraint;
 
@@ -247,7 +274,13 @@ namespace Durian.Analysis.InterfaceTargets
 
 				case TypeConstraintSyntax unmanaged when unmanaged.IsUnmanagedConstraint():
 
-					diagnostic = targets.HasFlag(IntfTargets.Struct)
+					if (targets == IntfTargets.ReflectionOnly)
+					{
+						diagnostic = default;
+						return true;
+					}
+
+					diagnostic = targets.HasFlag(IntfTargets.Struct) || targets.HasFlag(IntfTargets.Interface)
 						? default
 						: DUR0404_InvalidConstraint;
 
@@ -262,6 +295,136 @@ namespace Durian.Analysis.InterfaceTargets
 			return false;
 		}
 
+		private static bool HandleTypeConstraint(
+			SemanticModel semanticModel,
+			TypeConstraintSyntax constraint,
+			IntfTargets targets,
+			INamedTypeSymbol targetsAttribute
+		)
+		{
+			if (semanticModel.GetSymbolInfo(constraint.Type).Symbol is not ITypeSymbol target)
+			{
+				return false;
+			}
+
+			switch (target.TypeKind)
+			{
+				case TypeKind.Class:
+
+					if (targets == IntfTargets.ReflectionOnly)
+					{
+						return false;
+					}
+
+					if (targets.HasFlag(IntfTargets.RecordClass))
+					{
+						return target.IsRecord;
+					}
+
+					return !targets.HasFlag(IntfTargets.Struct) && !targets.HasFlag(IntfTargets.RecordStruct);
+
+				case TypeKind.Interface:
+
+					if (targets == IntfTargets.ReflectionOnly)
+					{
+						return true;
+					}
+
+					return HandleInterfaceConstraint(targets, targetsAttribute, target);
+
+				case TypeKind.TypeParameter:
+
+					ITypeParameterSymbol typeParameter = (target as ITypeParameterSymbol)!;
+
+					if (targets == IntfTargets.ReflectionOnly)
+					{
+						return CheckTypeParameter(typeParameter);
+					}
+
+					return HandleTypeParameterConstraint(targets, typeParameter);
+
+				default:
+					return true;
+			}
+
+			static bool CheckTypeParameter(ITypeParameterSymbol typeParameter)
+			{
+				return !typeParameter.ConstraintTypes.Any(t =>
+				{
+					if (t.TypeKind == TypeKind.Class)
+					{
+						return true;
+					}
+
+					if (t.TypeKind == TypeKind.TypeParameter)
+					{
+						return !CheckTypeParameter((t as ITypeParameterSymbol)!);
+					}
+
+					return false;
+				});
+			}
+		}
+
+		private static bool HandleTypeParameterConstraint(IntfTargets targets, ITypeParameterSymbol typeParameter)
+		{
+			if (typeParameter.HasReferenceTypeConstraint)
+			{
+				return targets.HasFlag(IntfTargets.Class) || targets.HasFlag(IntfTargets.RecordClass) || targets.HasFlag(IntfTargets.Interface);
+			}
+
+			if (typeParameter.HasValueTypeConstraint)
+			{
+				return targets.HasFlag(IntfTargets.Struct) || targets.HasFlag(IntfTargets.RecordStruct) || targets.HasFlag(IntfTargets.Interface);
+			}
+
+			if (typeParameter.HasUnmanagedTypeConstraint)
+			{
+				return targets.HasFlag(IntfTargets.Struct) || targets.HasFlag(IntfTargets.Interface);
+			}
+
+			ImmutableArray<ITypeSymbol> constraintTypes = typeParameter.ConstraintTypes;
+
+			if (constraintTypes.Length > 0)
+			{
+				if (!targets.HasFlag(IntfTargets.Class) && !targets.HasFlag(IntfTargets.RecordClass) && !targets.HasFlag(IntfTargets.Interface))
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return true;
+			}
+
+			foreach (ITypeSymbol type in typeParameter.ConstraintTypes)
+			{
+				if (type.TypeKind == TypeKind.TypeParameter)
+				{
+					if (!HandleTypeParameterConstraint(targets, (type as ITypeParameterSymbol)!))
+					{
+						return false;
+					}
+
+					continue;
+				}
+
+				if (type.IsRecord)
+				{
+					if (!targets.HasFlag(IntfTargets.RecordClass) && !targets.HasFlag(IntfTargets.Interface))
+					{
+						return false;
+					}
+				}
+				else if (!targets.HasFlag(IntfTargets.Class) && !targets.HasFlag(IntfTargets.Interface))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		private static void ReportCannotBeImplemented(SyntaxNodeAnalysisContext context, INamedTypeSymbol intf, string memberType)
 		{
 			context.ReportDiagnostic(Diagnostic.Create(DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind, context.Node.GetLocation(), context.ContainingSymbol, intf, memberType));
@@ -271,16 +434,34 @@ namespace Durian.Analysis.InterfaceTargets
 			SemanticModel semanticModel,
 			INamedTypeSymbol targetsAttribute,
 			SyntaxNode node,
+			[NotNullWhen(true)] out INamedTypeSymbol? intf,
 			out IntfTargets targets
 		)
 		{
 			if (semanticModel.GetSymbolInfo(node).Symbol is not INamedTypeSymbol target || target.TypeKind != TypeKind.Interface)
 			{
 				targets = default;
+				intf = default;
 				return false;
 			}
 
-			if (target.GetAttribute(targetsAttribute) is not AttributeData attr || !attr.TryGetConstructorArgumentValue(0, out int value))
+			if (!TryGetIntfTargets(target, targetsAttribute, out targets))
+			{
+				intf = default;
+				return false;
+			}
+
+			intf = target;
+			return true;
+		}
+
+		private static bool TryGetIntfTargets(
+			INamedTypeSymbol intf,
+			INamedTypeSymbol targetsAttribute,
+			out IntfTargets targets
+		)
+		{
+			if (intf.GetAttribute(targetsAttribute) is not AttributeData attr || !attr.TryGetConstructorArgumentValue(0, out int value))
 			{
 				targets = default;
 				return false;

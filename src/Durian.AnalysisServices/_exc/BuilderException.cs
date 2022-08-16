@@ -2,12 +2,14 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Durian.Analysis
 {
 	/// <summary>
 	/// Thrown when there was an error when building an object using the builder pattern.
 	/// </summary>
+	[SuppressMessage("Roslynator", "RCS1194:Implement exception constructors.")]
 	public class BuilderException : Exception
 	{
 		/// <summary>

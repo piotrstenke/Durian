@@ -130,6 +130,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InterfaceTargets", "Interfa
 		docs\InterfaceTargets\DUR0401.md = docs\InterfaceTargets\DUR0401.md
 		docs\InterfaceTargets\DUR0402.md = docs\InterfaceTargets\DUR0402.md
 		docs\InterfaceTargets\DUR0403.md = docs\InterfaceTargets\DUR0403.md
+		docs\InterfaceTargets\DUR0404.md = docs\InterfaceTargets\DUR0404.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{180C285B-7C46-4E5B-9DC9-88439B518746}"
