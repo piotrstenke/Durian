@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -20,42 +21,8 @@ namespace Durian.Analysis
 	/// <summary>
 	/// Base class for all Durian generators.
 	/// </summary>
-	public abstract class DurianGeneratorBase : IDurianGenerator
+	public abstract partial class DurianGeneratorBase : IDurianGenerator
 	{
-		#region Diagnostics copied from Durian.Core.Analyzer
-
-#pragma warning disable IDE1006 // Naming Styles
-
-		private static readonly DiagnosticDescriptor DUR0001_ProjectMustReferenceDurianCore = new(
-#pragma warning restore IDE1006 // Naming Styles
-#pragma warning disable RS2008 // Enable analyzer release tracking
-			id: "DUR0001",
-#pragma warning restore RS2008 // Enable analyzer release tracking
-			title: "Projects with any Durian analyzer must reference the Durian.Core package",
-			messageFormat: "Projects with any Durian analyzer must reference the Durian.Core package",
-			category: "Durian",
-			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: GlobalInfo.Repository + "/tree/master/docs/Core/DUR0001.md",
-			isEnabledByDefault: true
-		);
-
-#pragma warning disable IDE1006 // Naming Styles
-
-		private static readonly DiagnosticDescriptor DUR0004_DurianModulesAreValidOnlyInCSharp = new(
-#pragma warning restore IDE1006 // Naming Styles
-#pragma warning disable RS2008 // Enable analyzer release tracking
-			id: "DUR0004",
-#pragma warning restore RS2008 // Enable analyzer release tracking
-			title: "Durian modules can be used only in C#",
-			messageFormat: "Durian modules can be used only in C#",
-			category: "Durian",
-			defaultSeverity: DiagnosticSeverity.Error,
-			helpLinkUri: GlobalInfo.Repository + "/tree/master/docs/Core/DUR0004.md",
-			isEnabledByDefault: true
-		);
-
-		#endregion Diagnostics copied from Durian.Core.Analyzer
-
 		/// <inheritdoc/>
 		public abstract string GeneratorName { get; }
 
@@ -76,12 +43,15 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		public virtual int NumStaticTrees => GetInitialSources().Count();
 
+		/// <inheritdoc/>
+		public virtual bool SupportsDynamicLoggingConfiguration => true;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DurianGeneratorBase"/> class.
 		/// </summary>
 		protected DurianGeneratorBase()
 		{
-			LogHandler = new GeneratorLogHandler();
+			LogHandler = InitLogHandler(null);
 			InstanceId = Guid.NewGuid();
 		}
 
@@ -107,7 +77,7 @@ namespace Durian.Analysis
 		/// <param name="context">Configures how this generator is initialized.</param>
 		protected DurianGeneratorBase(in GeneratorLogCreationContext context)
 		{
-			LogHandler = new GeneratorLogHandler(LoggingConfiguration.CreateForGenerator(this, in context));
+			LogHandler = InitLogHandler(LoggingConfiguration.ForGenerator(this, in context));
 			InstanceId = Guid.NewGuid();
 		}
 
@@ -117,7 +87,7 @@ namespace Durian.Analysis
 		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 		protected DurianGeneratorBase(LoggingConfiguration? loggingConfiguration)
 		{
-			LogHandler = new GeneratorLogHandler(loggingConfiguration);
+			LogHandler = InitLogHandler(loggingConfiguration);
 			InstanceId = Guid.NewGuid();
 		}
 
@@ -131,7 +101,7 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		public virtual bool Execute(in GeneratorExecutionContext context)
 		{
-			return InitializeCompilation(in context, out _);
+			return PrepareForExecution(in context, out _);
 		}
 
 		/// <inheritdoc cref="IDurianGenerator.GetCurrentPassContext"/>
@@ -254,25 +224,64 @@ namespace Durian.Analysis
 			return null;
 		}
 
-		/// <summary>
-		/// Validates and initializes a <see cref="CSharpCompilation"/> provided by the <paramref name="context"/>.
-		/// </summary>
-		/// <param name="context"><see cref="GeneratorExecutionContext"/> that provides a <see cref="CSharpCompilation"/> to validate and initialize.</param>
-		/// <param name="compilation">The validated and initialized <see cref="CSharpCompilation"/>.</param>
-		/// <returns><see langword="true"/> if the <paramref name="compilation"/> was successfully validated and initialized, <see langword="false"/> otherwise.</returns>
-		protected bool InitializeCompilation(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
+		private protected bool PrepareForExecution(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
 		{
-			if (IsValidCSharpCompilation(in context, out CSharpCompilation? c) && ValidateCompilation(c, in context))
-			{
-				DurianModule[] modules = GetRequiredModules();
-				EnableModules(ref c, in context, modules);
+			DurianModule[]? modules;
 
-				compilation = c;
-				return true;
+			if (SupportsDynamicLoggingConfiguration && LogHandler is DynamicGeneratorLogHandler logHandler)
+			{
+				if (FindDynamicLoggingConfiguration(in context, out modules) is LoggingConfiguration config)
+				{
+					logHandler.LoggingConfiguration = config;
+				}
+				else
+				{
+					logHandler.LoggingConfiguration = LoggingConfiguration.Default;
+				}
+			}
+			else
+			{
+				modules = default;
 			}
 
-			compilation = default;
-			return false;
+			return InitializeCompilation(in context, modules, out compilation);
+		}
+
+		private static LoggingConfiguration CreateDynamicLoggingConfiguration(AttributeData attribute)
+		{
+			LoggingConfigurationAttribute attr = new();
+
+			if (attribute.TryGetNamedArgumentValue(nameof(EnableLoggingAttribute.EnableExceptions), out bool enableExceptions))
+			{
+				attr.EnableExceptions = enableExceptions;
+			}
+
+			if (attribute.TryGetNamedArgumentEnumValue(nameof(EnableLoggingAttribute.DefaultNodeOutput), out NodeOutput defaultNodeOutput))
+			{
+				attr.DefaultNodeOutput = defaultNodeOutput;
+			}
+
+			if (attribute.TryGetNamedArgumentValue(nameof(EnableLoggingAttribute.SupportsDiagnostics), out bool supportsDiagnostics))
+			{
+				attr.SupportsDiagnostics = supportsDiagnostics;
+			}
+
+			if (attribute.TryGetNamedArgumentEnumValue(nameof(EnableLoggingAttribute.SupportedLogs), out GeneratorLogs supportedLogs))
+			{
+				attr.SupportedLogs = supportedLogs;
+			}
+
+			if (attribute.TryGetNamedArgumentValue(nameof(EnableLoggingAttribute.LogDirectory), out string? logDirectory))
+			{
+				attr.LogDirectory = logDirectory;
+			}
+
+			if (attribute.TryGetNamedArgumentValue(nameof(EnableLoggingAttribute.RelativeToDefault), out bool relativeToDefault))
+			{
+				attr.RelativeToDefault = relativeToDefault;
+			}
+
+			return LoggingConfiguration.FromAttribute(attr as ILoggingConfigurationAttribute);
 		}
 
 		private static void EnableModules(ref CSharpCompilation compilation, in GeneratorExecutionContext context, DurianModule[] modules)
@@ -388,6 +397,76 @@ namespace Durian.Analysis
 			return false;
 		}
 
+		private LoggingConfiguration? FindDynamicLoggingConfiguration(in GeneratorExecutionContext context, out DurianModule[]? modules)
+		{
+			Compilation compilation = context.Compilation;
+
+			if (compilation.GetTypeByMetadataName(typeof(EnableLoggingAttribute).ToString()) is not INamedTypeSymbol enableLoggingAttribute)
+			{
+				modules = default;
+				return default;
+			}
+
+			ImmutableArray<AttributeData> assemblyAttributes = compilation.Assembly
+				.GetAttributes()
+				.Where(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, enableLoggingAttribute))
+				.ToImmutableArray();
+
+			if (assemblyAttributes.Length == 0)
+			{
+				modules = default;
+				return default;
+			}
+
+			modules = GetRequiredModules();
+
+			if (modules.Length == 0)
+			{
+				return default;
+			}
+
+			string[] moduleNames = new string[modules.Length];
+
+			for (int i = 0; i < modules.Length; i++)
+			{
+				moduleNames[i] = ModuleIdentity.GetName(modules[i]);
+			}
+
+			foreach (AttributeData attr in assemblyAttributes)
+			{
+				TypedConstant argument = attr.GetConstructorArgument(0);
+
+				if(!AnalysisUtilities.TryRetrieveModuleName(argument, out string? moduleName))
+				{
+					continue;
+				}
+
+				if (Array.IndexOf(moduleNames, moduleName) != -1)
+				{
+					LoggingConfiguration config = CreateDynamicLoggingConfiguration(attr);
+					LoggingConfiguration.RegisterDynamic(moduleName, config);
+					return config;
+				}
+			}
+
+			return default;
+		}
+
+		private bool InitializeCompilation(in GeneratorExecutionContext context, DurianModule[]? modules, [NotNullWhen(true)] out CSharpCompilation? compilation)
+		{
+			if (IsValidCSharpCompilation(in context, out CSharpCompilation? c) && ValidateCompilation(c, in context))
+			{
+				modules ??= GetRequiredModules();
+				EnableModules(ref c, in context, modules);
+
+				compilation = c;
+				return true;
+			}
+
+			compilation = default;
+			return false;
+		}
+
 		private void InitializeStaticTrees(GeneratorPostInitializationContext context)
 		{
 			IEnumerable<ISourceTextProvider>? syntaxTreeProviders = GetInitialSources();
@@ -416,6 +495,16 @@ namespace Durian.Analysis
 				context.AddSource(hintName, text);
 				LogSource(hintName, syntaxTree, context.CancellationToken);
 			}
+		}
+
+		private IGeneratorLogHandler InitLogHandler(LoggingConfiguration? configuration)
+		{
+			if (SupportsDynamicLoggingConfiguration)
+			{
+				return new DynamicGeneratorLogHandler(configuration);
+			}
+
+			return new GeneratorLogHandler(configuration);
 		}
 
 		private void LogSource(string hintName, SyntaxTree syntaxTree, CancellationToken cancellationToken)

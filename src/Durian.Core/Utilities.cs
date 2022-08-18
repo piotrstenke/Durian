@@ -3,14 +3,11 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Text.RegularExpressions;
 
 namespace Durian.Info
 {
 	internal static class Utilities
 	{
-		public static Regex DurianRegex = new(@"durian\.", RegexOptions.IgnoreCase);
-
 		public static bool CompareImmutableArrays<T>(ImmutableArray<T> first, ImmutableArray<T> second) where T : IEquatable<T>
 		{
 			int length = first.Length;
@@ -46,6 +43,24 @@ namespace Durian.Info
 			}
 
 			return code;
+		}
+
+		public static string GetParsableIdentityName(string infoName)
+		{
+			string name;
+
+			int index = infoName!.IndexOf("durian.", StringComparison.OrdinalIgnoreCase);
+
+			if (index == -1)
+			{
+				name = infoName;
+			}
+			else
+			{
+				name = infoName.Substring(index);
+			}
+
+			return name.Trim();
 		}
 	}
 }

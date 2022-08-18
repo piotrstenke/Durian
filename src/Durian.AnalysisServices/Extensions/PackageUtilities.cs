@@ -428,7 +428,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			ParsePackage(packageName);
+			Parse(packageName);
 			return HasReference_Internal(compilation, packageName);
 		}
 
@@ -439,13 +439,13 @@ namespace Durian.Analysis.Extensions
 
 		private static bool HasReference_Internal(Compilation compilation, DurianPackage package)
 		{
-			string packageName = PackageToString(package);
+			string packageName = GetName(package);
 			return HasReference_Internal(compilation, packageName);
 		}
 
 		private static bool HasReference_Internal(AssemblyIdentity[] assemblies, DurianPackage package)
 		{
-			string packageName = PackageToString(package);
+			string packageName = GetName(package);
 			return HasReference_Internal(assemblies, packageName);
 		}
 

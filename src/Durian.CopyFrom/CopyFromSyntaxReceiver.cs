@@ -12,7 +12,7 @@ namespace Durian.Analysis.CopyFrom
 	/// <summary>
 	/// Collects <see cref="CSharpSyntaxNode"/>s that are potential targets for the <see cref="CopyFromGenerator"/>.
 	/// </summary>
-	public sealed class CopyFromSyntaxReceiver : IDurianSyntaxReceiver
+	public sealed class CopyFromSyntaxReceiver : DurianSyntaxReceiver
 	{
 		/// <summary>
 		/// <see cref="BaseMethodDeclarationSyntax"/>es that potentially have the <c>Durian.CopyFromAttribute</c> applied.
@@ -34,13 +34,19 @@ namespace Durian.Analysis.CopyFrom
 		}
 
 		/// <inheritdoc/>
-		public bool IsEmpty()
+		public override bool IsEmpty()
 		{
 			return CandidateMethods.Count == 0 && CandidateTypes.Count == 0;
 		}
 
 		/// <inheritdoc/>
-		public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
+		public override IEnumerable<SyntaxNode> GetNodes()
+		{
+			return CandidateMethods.Cast<CSharpSyntaxNode>().Concat(CandidateTypes);
+		}
+
+		/// <inheritdoc/>
+		public override bool OnVisitSyntaxNode(SyntaxNode syntaxNode)
 		{
 			switch (syntaxNode)
 			{
@@ -48,12 +54,13 @@ namespace Durian.Analysis.CopyFrom
 
 					if (method is ConstructorDeclarationSyntax)
 					{
-						return;
+						return false;
 					}
 
 					if (HasValidAttributeList(method.AttributeLists, SyntaxKind.MethodKeyword))
 					{
 						CandidateMethods.Add(method);
+						return true;
 					}
 
 					break;
@@ -63,6 +70,7 @@ namespace Durian.Analysis.CopyFrom
 					if (HasValidAttributeList(accessor.AttributeLists, SyntaxKind.MethodKeyword))
 					{
 						CandidateMethods.Add(accessor);
+						return true;
 					}
 
 					break;
@@ -72,6 +80,7 @@ namespace Durian.Analysis.CopyFrom
 					if (HasValidAttributeList(localFunction.AttributeLists, SyntaxKind.MethodKeyword))
 					{
 						CandidateMethods.Add(localFunction);
+						return true;
 					}
 
 					break;
@@ -81,6 +90,7 @@ namespace Durian.Analysis.CopyFrom
 					if (HasValidAttributeList(lambda.AttributeLists, SyntaxKind.MethodKeyword))
 					{
 						CandidateMethods.Add(lambda);
+						return true;
 					}
 
 					break;
@@ -90,20 +100,18 @@ namespace Durian.Analysis.CopyFrom
 					if (HasValidAttributeList(type.AttributeLists, SyntaxKind.TypeKeyword))
 					{
 						CandidateTypes.Add(type);
+						return true;
 					}
 
 					break;
 			}
 
+			return false;
+
 			static bool HasValidAttributeList(SyntaxList<AttributeListSyntax> list, SyntaxKind keyword)
 			{
 				return list.IndexOf(attr => attr.Target is null || attr.Target.Identifier.IsKind(keyword)) != -1;
 			}
-		}
-
-		IEnumerable<CSharpSyntaxNode> INodeProvider.GetNodes()
-		{
-			return CandidateMethods.Cast<CSharpSyntaxNode>().Concat(CandidateTypes);
 		}
 	}
 }

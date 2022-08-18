@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
-using Microsoft.CodeAnalysis;
-
 namespace Durian.Analysis.Logging
 {
 	/// <summary>
-	/// Determines what to output when a <see cref="SyntaxNode"/> is being logged.
+	/// Determines what to output when a node is being logged.
 	/// </summary>
 	public enum NodeOutput
 	{
@@ -16,17 +14,17 @@ namespace Durian.Analysis.Logging
 		Default,
 
 		/// <summary>
-		/// Outputs only the target <see cref="SyntaxNode"/>.
+		/// Outputs only the target node.
 		/// </summary>
 		Node,
 
 		/// <summary>
-		/// Outputs containing node of the <see cref="SyntaxNode"/>.
+		/// Outputs containing node of the node.
 		/// </summary>
 		Containing,
 
 		/// <summary>
-		/// Outputs whole <see cref="Microsoft.CodeAnalysis.SyntaxTree"/> associated with the <see cref="SyntaxNode"/>.
+		/// Outputs whole syntax tree associated with the node.
 		/// </summary>
 		SyntaxTree
 	}

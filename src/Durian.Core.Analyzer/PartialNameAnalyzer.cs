@@ -35,7 +35,7 @@ namespace Durian.Analysis
 		{
 			context.RegisterCompilationStartAction(context =>
 			{
-				INamedTypeSymbol? partialNameAttribute = context.Compilation.GetTypeByMetadataName($"{nameof(Durian)}.{nameof(PartialNameAttribute)}");
+				INamedTypeSymbol? partialNameAttribute = context.Compilation.GetTypeByMetadataName(typeof(PartialNameAttribute).ToString());
 
 				if (partialNameAttribute is null)
 				{

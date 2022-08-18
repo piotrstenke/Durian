@@ -22,7 +22,7 @@ namespace Durian.TestServices
 		}
 
 		/// <inheritdoc/>
-		public IEnumerable<CSharpSyntaxNode> GetNodes()
+		public IEnumerable<SyntaxNode> GetNodes()
 		{
 			return Array.Empty<CSharpSyntaxNode>();
 		}

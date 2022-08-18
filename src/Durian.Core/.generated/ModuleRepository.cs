@@ -106,6 +106,14 @@ namespace Durian.Info
 								fatal: false,
 								hasLocation: true
 							),
+
+							new DiagnosticData(
+								title: "Equivalent EnableLoggingAttribute already specified",
+								id: 10,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/Core/DUR0010.md",
+								fatal: false,
+								hasLocation: true
+							),
 						},
 						types: new TypeIdentity[]
 						{
@@ -613,6 +621,14 @@ namespace Durian.Info
 								id: 03,
 								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/InterfaceTargets/DUR0403.md",
 								fatal: true,
+								hasLocation: true
+							),
+
+							new DiagnosticData(
+								title: "Interface will never match target constraint",
+								id: 04,
+								docsPath: "https://github.com/piotrstenke/Durian/tree/master/docs/InterfaceTargets/DUR0404.md",
+								fatal: false,
 								hasLocation: true
 							),
 						},

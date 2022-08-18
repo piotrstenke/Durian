@@ -32,8 +32,8 @@
 	  <IncludeAssets>Durian.Core.Analyzer.dll</IncludeAssets>
 	</ProjectReference>
 	<ProjectReference Include="..\Durian.CopyFrom\Durian.CopyFrom.csproj">
-		<ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-		<IncludeAssets>Durian.CopyFrom.dll</IncludeAssets>
+	  <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+	  <IncludeAssets>Durian.CopyFrom.dll</IncludeAssets>
 	</ProjectReference>
 
 	<None Include="$(OutputPath)\Durian.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />

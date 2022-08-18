@@ -441,7 +441,7 @@ namespace Durian.Info
 				throw new ArgumentNullException(nameof(assembly));
 			}
 
-			DurianModule module = ModuleIdentity.ParseModule(moduleName);
+			DurianModule module = ModuleIdentity.Parse(moduleName);
 			return IsEnabled_Internal(assembly, module);
 		}
 

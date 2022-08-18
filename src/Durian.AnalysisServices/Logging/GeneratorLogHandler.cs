@@ -15,7 +15,7 @@ namespace Durian.Analysis.Logging
 	public class GeneratorLogHandler : IGeneratorLogHandler
 	{
 		/// <inheritdoc/>
-		public LoggingConfiguration LoggingConfiguration { get; }
+		public LoggingConfiguration LoggingConfiguration { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GeneratorLogHandler"/> class.

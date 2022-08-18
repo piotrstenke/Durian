@@ -9,6 +9,11 @@ namespace Durian.Info
 	public enum DurianPackage
 	{
 		/// <summary>
+		/// This package is not a Durian package.
+		/// </summary>
+		None,
+
+		/// <summary>
 		/// Represents the <c>Durian</c> package.
 		/// </summary>
 		Main,

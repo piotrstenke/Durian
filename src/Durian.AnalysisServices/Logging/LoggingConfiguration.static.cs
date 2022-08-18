@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using Durian.Info;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Logging
@@ -12,6 +15,7 @@ namespace Durian.Analysis.Logging
 	public sealed partial class LoggingConfiguration
 	{
 		private static readonly ConcurrentDictionary<Assembly, LoggingConfiguration> _assemblyConfigurations = new();
+		private static readonly ConcurrentDictionary<string, LoggingConfiguration> _dynamicConfigurations = new();
 
 		/// <summary>
 		/// Creates a new instance of the <see cref="LoggingConfiguration"/> class with its values set to default.
@@ -49,7 +53,7 @@ namespace Durian.Analysis.Logging
 		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> is set to <see langword="false"/>.
 		/// </exception>
 		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static LoggingConfiguration CreateForAssembly(Assembly assembly)
+		public static LoggingConfiguration ForAssembly(Assembly assembly)
 		{
 			if (assembly is null)
 			{
@@ -62,31 +66,31 @@ namespace Durian.Analysis.Logging
 			{
 				return Default;
 			}
-			else
+
+			string fullDir = GetFullDirectoryForAssembly(attr);
+
+			return new LoggingConfiguration()
 			{
-				return new LoggingConfiguration()
-				{
-					LogDirectory = attr.GetFullDirectoryForAssembly(),
-					SupportedLogs = attr.SupportedLogs,
-					EnableLogging = IsGloballyEnabled && !Attribute.IsDefined(assembly, typeof(DisableLoggingAttribute)),
-					SupportsDiagnostics = attr.SupportsDiagnostics,
-					EnableDiagnostics = attr.SupportsDiagnostics,
-					EnableExceptions = attr.EnableExceptions,
-					DefaultNodeOutput = attr.DefaultNodeOutput == NodeOutput.Default ? NodeOutput.Node : attr.DefaultNodeOutput
-				};
-			}
+				LogDirectory = fullDir,
+				SupportedLogs = attr.SupportedLogs,
+				EnableLogging = IsGloballyEnabled && !Attribute.IsDefined(assembly, typeof(DisableLoggingAttribute)),
+				SupportsDiagnostics = attr.SupportsDiagnostics,
+				EnableDiagnostics = attr.SupportsDiagnostics,
+				EnableExceptions = attr.EnableExceptions,
+				DefaultNodeOutput = attr.DefaultNodeOutput == NodeOutput.Default ? NodeOutput.Node : attr.DefaultNodeOutput
+			};
 		}
 
-		/// <inheritdoc cref="CreateForGenerator{T}(in GeneratorLogCreationContext, LoggingConfiguration?)"/>
-		public static LoggingConfiguration CreateForGenerator<T>() where T : ISourceGenerator
+		/// <inheritdoc cref="ForGenerator{T}(in GeneratorLogCreationContext, LoggingConfiguration?)"/>
+		public static LoggingConfiguration ForGenerator<T>() where T : ISourceGenerator
 		{
-			return CreateForGenerator_Internal(typeof(T));
+			return ForGenerator_Internal(typeof(T));
 		}
 
-		/// <inheritdoc cref="CreateForGenerator{T}(in GeneratorLogCreationContext, LoggingConfiguration?)"/>
-		public static LoggingConfiguration CreateForGenerator<T>(in GeneratorLogCreationContext context)
+		/// <inheritdoc cref="ForGenerator{T}(in GeneratorLogCreationContext, LoggingConfiguration?)"/>
+		public static LoggingConfiguration ForGenerator<T>(in GeneratorLogCreationContext context)
 		{
-			return CreateForGenerator<T>(in context, default);
+			return ForGenerator<T>(in context, default);
 		}
 
 		/// <summary>
@@ -100,10 +104,10 @@ namespace Durian.Analysis.Logging
 		/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
 		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
-		public static LoggingConfiguration CreateForGenerator<T>(in GeneratorLogCreationContext context, LoggingConfiguration? defaultConfiguration)
+		public static LoggingConfiguration ForGenerator<T>(in GeneratorLogCreationContext context, LoggingConfiguration? defaultConfiguration)
 		{
 			LoggingConfiguration config = context.CheckForConfigurationAttribute
-				? CreateForGenerator_Internal(typeof(T))
+				? ForGenerator_Internal(typeof(T))
 				: (defaultConfiguration ?? Default);
 
 			config.AcceptContext(in context);
@@ -111,8 +115,8 @@ namespace Durian.Analysis.Logging
 			return config;
 		}
 
-		/// <inheritdoc cref="CreateForGenerator(Type, in GeneratorLogCreationContext, LoggingConfiguration?)"/>
-		public static LoggingConfiguration CreateForGenerator(Type type)
+		/// <inheritdoc cref="ForGenerator(Type, in GeneratorLogCreationContext, LoggingConfiguration?)"/>
+		public static LoggingConfiguration ForGenerator(Type type)
 		{
 			if (type is null)
 			{
@@ -120,7 +124,7 @@ namespace Durian.Analysis.Logging
 			}
 
 			CheckTypeIsISourceGenerator(type);
-			return CreateForGenerator_Internal(type);
+			return ForGenerator_Internal(type);
 		}
 
 		/// <summary>
@@ -135,9 +139,9 @@ namespace Durian.Analysis.Logging
 		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static LoggingConfiguration CreateForGenerator(Type type, in GeneratorLogCreationContext context)
+		public static LoggingConfiguration ForGenerator(Type type, in GeneratorLogCreationContext context)
 		{
-			return CreateForGenerator(type, in context, default);
+			return ForGenerator(type, in context, default);
 		}
 
 		/// <summary>
@@ -153,7 +157,7 @@ namespace Durian.Analysis.Logging
 		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
 		/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
-		public static LoggingConfiguration CreateForGenerator(Type type, in GeneratorLogCreationContext context, LoggingConfiguration? defaultConfiguration)
+		public static LoggingConfiguration ForGenerator(Type type, in GeneratorLogCreationContext context, LoggingConfiguration? defaultConfiguration)
 		{
 			if (type is null)
 			{
@@ -163,7 +167,7 @@ namespace Durian.Analysis.Logging
 			CheckTypeIsISourceGenerator(type);
 
 			LoggingConfiguration config = context.CheckForConfigurationAttribute
-				? CreateForGenerator_Internal(type)
+				? ForGenerator_Internal(type)
 				: (defaultConfiguration ?? Default);
 
 			config.AcceptContext(in context);
@@ -181,14 +185,14 @@ namespace Durian.Analysis.Logging
 		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		public static LoggingConfiguration CreateForGenerator(ISourceGenerator generator)
+		public static LoggingConfiguration ForGenerator(ISourceGenerator generator)
 		{
 			if (generator is null)
 			{
 				throw new ArgumentNullException(nameof(generator));
 			}
 
-			return CreateForGenerator_Internal(generator.GetType());
+			return ForGenerator_Internal(generator.GetType());
 		}
 
 		/// <summary>
@@ -202,9 +206,9 @@ namespace Durian.Analysis.Logging
 		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		public static LoggingConfiguration CreateForGenerator(ISourceGenerator generator, in GeneratorLogCreationContext context)
+		public static LoggingConfiguration ForGenerator(ISourceGenerator generator, in GeneratorLogCreationContext context)
 		{
-			return CreateForGenerator(generator, in context, default);
+			return ForGenerator(generator, in context, default);
 		}
 
 		/// <summary>
@@ -219,7 +223,7 @@ namespace Durian.Analysis.Logging
 		/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 		/// </exception>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-		public static LoggingConfiguration CreateForGenerator(ISourceGenerator generator, in GeneratorLogCreationContext context, LoggingConfiguration? defaultConfiguration)
+		public static LoggingConfiguration ForGenerator(ISourceGenerator generator, in GeneratorLogCreationContext context, LoggingConfiguration? defaultConfiguration)
 		{
 			if (generator is null)
 			{
@@ -227,7 +231,7 @@ namespace Durian.Analysis.Logging
 			}
 
 			LoggingConfiguration config = context.CheckForConfigurationAttribute
-				? CreateForGenerator_Internal(generator.GetType())
+				? ForGenerator_Internal(generator.GetType())
 				: (defaultConfiguration ?? Default);
 
 			config.AcceptContext(in context);
@@ -236,28 +240,53 @@ namespace Durian.Analysis.Logging
 		}
 
 		/// <summary>
-		/// Returns a reference to the <see cref="LoggingConfiguration"/> for the specified <paramref name="assembly"/>.
+		/// Creates a new <see cref="LoggingConfiguration"/> based on data specified in the given <paramref name="attribute"/>.
 		/// </summary>
-		/// <param name="assembly"><see cref="Assembly"/> to get the <see cref="LoggingConfiguration"/> for.</param>
-		/// <exception cref="ArgumentException"><see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
-		public static LoggingConfiguration GetForAssembly(Assembly assembly)
+		/// <param name="attribute"><see cref="LoggingConfigurationAttribute"/> to create the <see cref="LoggingConfiguration"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
+		public static LoggingConfiguration FromAttribute(LoggingConfigurationAttribute attribute)
 		{
-			if (assembly is null)
+			return FromAttribute(attribute as ILoggingConfigurationAttribute);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="LoggingConfiguration"/> based on data specified in the given <paramref name="attribute"/>.
+		/// </summary>
+		/// <param name="attribute"><see cref="EnableLoggingAttribute"/> to create the <see cref="LoggingConfiguration"/> for.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
+		public static LoggingConfiguration FromAttribute(EnableLoggingAttribute attribute)
+		{
+			return FromAttribute(attribute as ILoggingConfigurationAttribute);
+		}
+
+		/// <summary>
+		/// Returns a cached reference to a <see cref="LoggingConfiguration"/> created using an <see cref="EnableLoggingAttribute"/>.
+		/// </summary>
+		/// <param name="module"><see cref="DurianModule"/> to get the <see cref="LoggingConfiguration"/> of.</param>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value: <paramref name="module"/>. -or- <see cref="LoggingConfiguration"/> not found for the specified <paramref name="module"/>.</exception>
+		public static LoggingConfiguration GetDynamic(DurianModule module)
+		{
+			if (!TryGetDynamic(module, out LoggingConfiguration? configuration))
 			{
-				throw new ArgumentNullException(nameof(assembly));
+				throw new ArgumentException($"{nameof(LoggingConfiguration)} not found for module '{module}'", nameof(module));
 			}
 
-			if (_assemblyConfigurations.TryGetValue(assembly, out LoggingConfiguration config))
+			return configuration;
+		}
+
+		/// <summary>
+		/// Returns a cached reference to a <see cref="LoggingConfiguration"/> created using an <see cref="EnableLoggingAttribute"/>.
+		/// </summary>
+		/// <param name="moduleName">Name of module to get the <see cref="LoggingConfiguration"/> of.</param>
+		/// <exception cref="ArgumentException"><paramref name="moduleName"/> cannot be <see langword="null"/> or empty. -or- <see cref="LoggingConfiguration"/> not found for module with name <paramref name="moduleName"/>.</exception>
+		public static LoggingConfiguration GetDynamic(string moduleName)
+		{
+			if (!TryGetDynamic(moduleName, out LoggingConfiguration? configuration))
 			{
-				return config;
+				throw new ArgumentException($"{nameof(LoggingConfiguration)} not found for module with name '{moduleName}'", nameof(moduleName));
 			}
-			else
-			{
-				config = CreateForAssembly(assembly);
-				_assemblyConfigurations.TryAdd(assembly, config);
-				return config;
-			}
+
+			return configuration;
 		}
 
 		/// <summary>
@@ -386,6 +415,190 @@ namespace Durian.Analysis.Logging
 			return IsEnabledForGenerator_Internal(type, true);
 		}
 
+		/// <summary>
+		/// Registers a new dynamic <see cref="LoggingConfiguration"/> for the specified <paramref name="module"/>.
+		/// </summary>
+		/// <param name="module"><see cref="DurianModule"/> to register the <paramref name="configuration"/> for.</param>
+		/// <param name="configuration"><see cref="LoggingConfiguration"/> to register.</param>
+		/// <param name="replace">Determines whether to replace the existing <see cref="LoggingConfiguration"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value: <paramref name="module"/>.</exception>
+		public static bool RegisterDynamic(DurianModule module, LoggingConfiguration configuration, bool replace = true)
+		{
+			if (configuration is null)
+			{
+				throw new ArgumentNullException(nameof(configuration));
+			}
+
+			string moduleName = ModuleIdentity.GetName(module);
+			return RegisterDynamic_Internal(moduleName, configuration, replace);
+		}
+
+		/// <summary>
+		/// Registers a new dynamic <see cref="LoggingConfiguration"/> for a module with the specified <paramref name="moduleName"/>.
+		/// </summary>
+		/// <param name="moduleName">Name of module to register the <paramref name="configuration"/> for.</param>
+		/// <param name="configuration"><see cref="LoggingConfiguration"/> to register.</param>
+		/// <param name="replace">Determines whether to replace the existing <see cref="LoggingConfiguration"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="moduleName"/> cannot be <see langword="null"/> or empty.</exception>
+		public static bool RegisterDynamic(string moduleName, LoggingConfiguration configuration, bool replace = true)
+		{
+			if (configuration is null)
+			{
+				throw new ArgumentNullException(nameof(configuration));
+			}
+
+			if (string.IsNullOrWhiteSpace(moduleName))
+			{
+				throw new ArgumentException("Value cannot be null or empty", nameof(moduleName));
+			}
+
+			return RegisterDynamic_Internal(moduleName, configuration, replace);
+		}
+
+		/// <summary>
+		/// Removes the cached <see cref="LoggingConfiguration"/> of the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to remove the cached <see cref="LoggingConfiguration"/> of.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		public static bool RemoveAssembly(Assembly assembly)
+		{
+			return RemoveAssembly(assembly, out _);
+		}
+
+		/// <summary>
+		/// Removes the cached <see cref="LoggingConfiguration"/> of the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to remove the cached <see cref="LoggingConfiguration"/> of.</param>
+		/// <param name="configuration">The removed <see cref="LoggingConfiguration"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		public static bool RemoveAssembly(Assembly assembly, [NotNullWhen(true)] out LoggingConfiguration? configuration)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			return _assemblyConfigurations.TryRemove(assembly, out configuration);
+		}
+
+		/// <summary>
+		/// Removes the cached dynamic <see cref="LoggingConfiguration"/> of a module with the specified <paramref name="moduleName"/>.
+		/// </summary>
+		/// <param name="moduleName">Name of module to remove the cached <see cref="LoggingConfiguration"/> of.</param>
+		/// <exception cref="ArgumentException"><paramref name="moduleName"/> cannot be <see langword="null"/> or empty.</exception>
+		public static bool RemoveDynamic(string moduleName)
+		{
+			return RemoveDynamic(moduleName, out _);
+		}
+
+		/// <summary>
+		/// Removes the cached dynamic <see cref="LoggingConfiguration"/> of a module with the specified <paramref name="moduleName"/>.
+		/// </summary>
+		/// <param name="moduleName">Name of module to remove the cached <see cref="LoggingConfiguration"/> of.</param>
+		/// <param name="configuration">The removed <see cref="LoggingConfiguration"/>.</param>
+		/// <exception cref="ArgumentException"><paramref name="moduleName"/> cannot be <see langword="null"/> or empty.</exception>
+		public static bool RemoveDynamic(string moduleName, [NotNullWhen(true)] out LoggingConfiguration? configuration)
+		{
+			if (string.IsNullOrWhiteSpace(moduleName))
+			{
+				throw new ArgumentException("Value cannot be null or empty", nameof(moduleName));
+			}
+
+			return _dynamicConfigurations.TryRemove(moduleName, out configuration);
+		}
+
+		/// <summary>
+		/// Removes the cached dynamic <see cref="LoggingConfiguration"/> of the specified <paramref name="module"/>.
+		/// </summary>
+		/// <param name="module"><see cref="DurianModule"/> to remove the cached <see cref="LoggingConfiguration"/> of.</param>
+		public static bool RemoveDynamic(DurianModule module)
+		{
+			return RemoveDynamic(module, out _);
+		}
+
+		/// <summary>
+		/// Removes the cached dynamic <see cref="LoggingConfiguration"/> of the specified <paramref name="module"/>.
+		/// </summary>
+		/// <param name="module"><see cref="DurianModule"/> to remove the cached <see cref="LoggingConfiguration"/> of.</param>
+		/// <param name="configuration">The removed <see cref="LoggingConfiguration"/>.</param>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value: <paramref name="module"/>.</exception>
+		public static bool RemoveDynamic(DurianModule module, [NotNullWhen(true)] out LoggingConfiguration? configuration)
+		{
+			string moduleName = ModuleIdentity.GetName(module);
+			return RemoveDynamic(moduleName, out configuration);
+		}
+
+		/// <summary>
+		/// Returns a cached reference to the <see cref="LoggingConfiguration"/> for the specified <paramref name="assembly"/>.
+		/// </summary>
+		/// <param name="assembly"><see cref="Assembly"/> to get the <see cref="LoggingConfiguration"/> for.</param>
+		/// <exception cref="ArgumentException"><see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or whitespace only.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="assembly"/> is <see langword="null"/>.</exception>
+		public static LoggingConfiguration ResolveAssembly(Assembly assembly)
+		{
+			if (assembly is null)
+			{
+				throw new ArgumentNullException(nameof(assembly));
+			}
+
+			if (!_assemblyConfigurations.TryGetValue(assembly, out LoggingConfiguration config))
+			{
+				config = ForAssembly(assembly);
+				_assemblyConfigurations.TryAdd(assembly, config);
+			}
+
+			return config;
+		}
+
+		/// <summary>
+		/// Attempts to return a dynamic <see cref="LoggingConfiguration"/> for the specified <paramref name="module"/>.
+		/// </summary>
+		/// <param name="module"><see cref="DurianModule"/> to get the <see cref="LoggingConfiguration"/> of.</param>
+		/// <param name="configuration">Returned <see cref="LoggingConfiguration"/>.</param>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value: <paramref name="module"/>.</exception>
+		public static bool TryGetDynamic(DurianModule module, [NotNullWhen(true)] out LoggingConfiguration? configuration)
+		{
+			string moduleName = ModuleIdentity.GetName(module);
+			return TryGetDynamic(moduleName, out configuration);
+		}
+
+		/// <summary>
+		/// Attempts to return a dynamic <see cref="LoggingConfiguration"/> for a module with the specified <paramref name="moduleName"/>.
+		/// </summary>
+		/// <param name="moduleName">Name of module to get the <see cref="LoggingConfiguration"/> of.</param>
+		/// <param name="configuration">Returned <see cref="LoggingConfiguration"/>.</param>
+		/// <exception cref="ArgumentException"><paramref name="moduleName"/> cannot be <see langword="null"/> or empty.</exception>
+		public static bool TryGetDynamic(string moduleName, [NotNullWhen(true)] out LoggingConfiguration? configuration)
+		{
+			if (string.IsNullOrWhiteSpace(moduleName))
+			{
+				throw new ArgumentException("Value cannot be null or empty", nameof(moduleName));
+			}
+
+			return _dynamicConfigurations.TryGetValue(moduleName, out configuration);
+		}
+
+		internal static LoggingConfiguration FromAttribute(ILoggingConfigurationAttribute attribute)
+		{
+			if (attribute is null)
+			{
+				throw new ArgumentNullException(nameof(attribute));
+			}
+
+			return new LoggingConfiguration()
+			{
+				_logDirectory = GetFullDirectoryForType(attribute, null),
+				SupportedLogs = attribute.SupportedLogs,
+				_enableLogging = IsGloballyEnabled,
+				_supportsDiagnostics = attribute.SupportsDiagnostics,
+				_enableDiagnostics = attribute.SupportsDiagnostics,
+				EnableExceptions = attribute.EnableExceptions,
+				DefaultNodeOutput = attribute.DefaultNodeOutput == NodeOutput.Default ? NodeOutput.Node : attribute.DefaultNodeOutput
+			};
+		}
+
 		internal static ReportDiagnosticTarget GetReportDiagnosticTarget(bool enableLogging, bool enableReport)
 		{
 			ReportDiagnosticTarget target = ReportDiagnosticTarget.None;
@@ -416,13 +629,13 @@ namespace Durian.Analysis.Logging
 			}
 		}
 
-		private static LoggingConfiguration CreateForGenerator_Internal(Type type)
+		private static LoggingConfiguration ForGenerator_Internal(Type type)
 		{
 			LoggingConfigurationAttribute? attr = type.GetCustomAttribute<LoggingConfigurationAttribute>(true);
 
 			if (attr is null)
 			{
-				LoggingConfiguration config = GetForAssembly(type.Assembly);
+				LoggingConfiguration config = ResolveAssembly(type.Assembly);
 
 				if (config.EnableLogging)
 				{
@@ -435,7 +648,7 @@ namespace Durian.Analysis.Logging
 			{
 				return new LoggingConfiguration()
 				{
-					_logDirectory = attr.GetFullDirectoryForType(GetForAssembly(type.Assembly)),
+					_logDirectory = GetFullDirectoryForType(attr, ResolveAssembly(type.Assembly)),
 					SupportedLogs = attr.SupportedLogs,
 					_enableLogging = IsGloballyEnabled && !HasDisableAttribute_Internal(type),
 					_supportsDiagnostics = attr.SupportsDiagnostics,
@@ -443,6 +656,118 @@ namespace Durian.Analysis.Logging
 					EnableExceptions = attr.EnableExceptions,
 					DefaultNodeOutput = attr.DefaultNodeOutput == NodeOutput.Default ? NodeOutput.Node : attr.DefaultNodeOutput
 				};
+			}
+		}
+
+		private static string GetFullDirectoryForAssembly(LoggingConfigurationAttribute attribute)
+		{
+			if (attribute.LogDirectory is null)
+			{
+				if (!attribute.RelativeToDefault)
+				{
+					throw new ArgumentException($"{nameof(LogDirectory)} must be specified if {nameof(attribute.RelativeToDefault)} is set to false!", nameof(attribute));
+				}
+
+				return DefaultLogDirectory;
+			}
+
+			if (string.IsNullOrWhiteSpace(attribute.LogDirectory))
+			{
+				throw new ArgumentException($"{nameof(LogDirectory)} of the {nameof(LoggingConfigurationAttribute)} cannot be empty or whitespace only!", nameof(attribute));
+			}
+
+			string? dir;
+
+			if (attribute.RelativeToDefault)
+			{
+				if (attribute.LogDirectory![0] == '/')
+				{
+					dir = DefaultLogDirectory + attribute.LogDirectory;
+				}
+				else
+				{
+					dir = DefaultLogDirectory + "/" + attribute.LogDirectory;
+				}
+			}
+			else
+			{
+				dir = attribute.LogDirectory;
+			}
+
+			// Checks if the directory is valid.
+			Path.GetFullPath(dir);
+
+			return dir;
+		}
+
+		private static string GetFullDirectoryForType(ILoggingConfigurationAttribute attribute, LoggingConfiguration? globalConfiguration)
+		{
+			if (attribute.LogDirectory is null)
+			{
+				if (attribute.RelativeToGlobal)
+				{
+					if (globalConfiguration is null)
+					{
+						throw Exc_GlobalNotSpecified(nameof(globalConfiguration));
+					}
+
+					return globalConfiguration!.LogDirectory;
+				}
+				else if (attribute.RelativeToDefault)
+				{
+					return DefaultLogDirectory;
+				}
+				else
+				{
+					throw new ArgumentException($"{nameof(LogDirectory)} must be specified if both {nameof(attribute.RelativeToDefault)} and {nameof(attribute.RelativeToGlobal)} are set to false.", nameof(attribute));
+				}
+			}
+
+			if (string.IsNullOrWhiteSpace(attribute.LogDirectory))
+			{
+				throw new ArgumentException($"{nameof(LogDirectory)} of the {nameof(LoggingConfigurationAttribute)} cannot be empty or white space only!", nameof(attribute));
+			}
+
+			string? dir;
+
+			if (attribute.RelativeToGlobal)
+			{
+				if (globalConfiguration is null)
+				{
+					throw Exc_GlobalNotSpecified(nameof(globalConfiguration));
+				}
+
+				dir = CombineWithRoot(globalConfiguration.LogDirectory);
+			}
+			else if (attribute.RelativeToDefault)
+			{
+				dir = CombineWithRoot(DefaultLogDirectory);
+			}
+			else
+			{
+				dir = attribute.LogDirectory;
+			}
+
+			// Checks if the directory is valid.
+			Path.GetFullPath(dir);
+
+			return dir;
+
+			static ArgumentException Exc_GlobalNotSpecified(string argName)
+			{
+				return new ArgumentException($"{argName} must be specified if {nameof(attribute.RelativeToGlobal)} is set to true!", nameof(attribute));
+			}
+
+			string CombineWithRoot(string root)
+			{
+				if (attribute.LogDirectory![0] == '/')
+				{
+					return root + attribute.LogDirectory;
+				}
+				else
+				{
+					return root + "/" + attribute.LogDirectory;
+				}
 			}
 		}
 
@@ -481,6 +806,17 @@ namespace Durian.Analysis.Logging
 			}
 
 			return false;
+		}
+
+		private static bool RegisterDynamic_Internal(string moduleName, LoggingConfiguration configuration, bool replace)
+		{
+			if (replace)
+			{
+				_dynamicConfigurations[moduleName] = configuration;
+				return true;
+			}
+
+			return _dynamicConfigurations.TryAdd(moduleName, configuration);
 		}
 	}
 }

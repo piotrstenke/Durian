@@ -57,7 +57,7 @@ namespace Durian.Analysis
 			{
 				Reset(Environment.CurrentManagedThreadId);
 
-				if (!InitializeCompilation(in context, out CSharpCompilation? compilation))
+				if (!PrepareForExecution(in context, out CSharpCompilation? compilation))
 				{
 					return false;
 				}

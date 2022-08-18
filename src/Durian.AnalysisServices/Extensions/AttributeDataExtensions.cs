@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -21,7 +22,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="position">Position where the target argument is to be found.</param>
 		public static TypedConstant GetConstructorArgument(this AttributeData attribute, int position)
 		{
-			TryGetConstructorArgument(attribute, position, out TypedConstant value);
+			attribute.TryGetConstructorArgument(position, out TypedConstant value);
 			return value;
 		}
 
@@ -32,20 +33,49 @@ namespace Durian.Analysis.Extensions
 		/// <param name="position">Position where the target argument is to be found.</param>
 		public static ImmutableArray<TypedConstant> GetConstructorArgumentArrayValue(this AttributeData attribute, int position)
 		{
-			TryGetConstructorArgumentArrayValue(attribute, position, out ImmutableArray<TypedConstant> array);
+			attribute.TryGetConstructorArgumentArrayValue(position, out ImmutableArray<TypedConstant> array);
 			return array;
 		}
 
 		/// <summary>
-		/// Returns an <see cref="ImmutableArray"/> of <see cref="TypedConstant"/>s representing the <see cref="Array"/> value of the constructor argument at the specified <paramref name="position"/>.
+		/// Returns an <see cref="ImmutableArray{T}"/> of <see cref="TypedConstant"/>s representing the <see cref="Array"/> value of the constructor argument at the specified <paramref name="position"/>.
 		/// </summary>
 		/// <typeparam name="T">Type of array's elements.</typeparam>
 		/// <param name="attribute"><see cref="AttributeData"/> to get the values from.</param>
 		/// <param name="position">Position where the target argument is to be found.</param>
 		public static ImmutableArray<T> GetConstructorArgumentArrayValue<T>(this AttributeData attribute, int position)
 		{
-			TryGetConstructorArgumentArrayValue(attribute, position, out ImmutableArray<T> array);
+			attribute.TryGetConstructorArgumentArrayValue(position, out ImmutableArray<T> array);
 			return array;
+		}
+
+		/// <summary>
+		/// Returns the enum value of the constructor argument at the specified <paramref name="position"/>.
+		/// </summary>
+		/// <typeparam name="TEnum">Type of enum value to return.</typeparam>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
+		/// <param name="position">Position where the target argument is to be found.</param>
+		/// <exception cref="InvalidOperationException">Type size mismatch.</exception>
+		public static TEnum GetConstructorArgumentEnumValue<TEnum>(this AttributeData attribute, int position) where TEnum : unmanaged, Enum
+		{
+			attribute.TryGetConstructorArgumentEnumValue(position, out TEnum value);
+			return value;
+		}
+
+		/// <summary>
+		/// Returns the enum value of the constructor argument at the specified <paramref name="position"/>.
+		/// </summary>
+		/// <typeparam name="TEnum">Type of enum value to return.</typeparam>
+		/// <typeparam name="TType">Type the <typeparamref name="TEnum"/> type extends.</typeparam>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
+		/// <param name="position">Position where the target argument is to be found.</param>
+		/// <exception cref="InvalidOperationException">Type size mismatch.</exception>
+		public static TEnum GetConstructorArgumentEnumValue<TEnum, TType>(this AttributeData attribute, int position)
+			where TEnum : unmanaged, Enum
+			where TType : unmanaged
+		{
+			attribute.TryGetConstructorArgumentEnumValue<TEnum, TType>(position, out TEnum value);
+			return value;
 		}
 
 		/// <summary>
@@ -80,7 +110,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="position">Position where the target argument is to be found.</param>
 		public static T? GetConstructorArgumentTypeValue<T>(this AttributeData attribute, int position) where T : ITypeSymbol
 		{
-			TryGetConstructorArgumentTypeValue(attribute, position, out T? symbol);
+			attribute.TryGetConstructorArgumentTypeValue(position, out T? symbol);
 			return symbol;
 		}
 
@@ -92,7 +122,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="position">Position where the target argument is to be found.</param>
 		public static T? GetConstructorArgumentValue<T>(this AttributeData attribute, int position)
 		{
-			TryGetConstructorArgumentValue(attribute, position, out T? value);
+			attribute.TryGetConstructorArgumentValue(position, out T? value);
 			return value;
 		}
 
@@ -116,7 +146,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="argumentName">Name of the argument to get the <see cref="TypedConstant"/> of.</param>
 		public static TypedConstant GetNamedArgument(this AttributeData attribute, string argumentName)
 		{
-			TryGetNamedArgument(attribute, argumentName, out TypedConstant value);
+			attribute.TryGetNamedArgument(argumentName, out TypedConstant value);
 			return value;
 		}
 
@@ -127,7 +157,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="argumentName">Name of the argument to get the values of.</param>
 		public static ImmutableArray<TypedConstant> GetNamedArgumentArrayValue(this AttributeData attribute, string argumentName)
 		{
-			TryGetNamedArgumentArrayValue(attribute, argumentName, out ImmutableArray<TypedConstant> array);
+			attribute.TryGetNamedArgumentArrayValue(argumentName, out ImmutableArray<TypedConstant> array);
 			return array;
 		}
 
@@ -139,8 +169,37 @@ namespace Durian.Analysis.Extensions
 		/// <param name="argumentName">Name of the argument to get the values of.</param>
 		public static ImmutableArray<T> GetNamedArgumentArrayValue<T>(this AttributeData attribute, string argumentName)
 		{
-			TryGetNamedArgumentArrayValue(attribute, argumentName, out ImmutableArray<T> array);
+			attribute.TryGetNamedArgumentArrayValue(argumentName, out ImmutableArray<T> array);
 			return array;
+		}
+
+		/// <summary>
+		/// Returns the enum value of the named argument with the specified <paramref name="argumentName"/>.
+		/// </summary>
+		/// <typeparam name="TEnum">Type of enum value to return.</typeparam>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
+		/// <param name="argumentName">Name of the argument to get the values of.</param>
+		/// <exception cref="InvalidOperationException">Type size mismatch.</exception>
+		public static TEnum GetNamedArgumentEnumValue<TEnum>(this AttributeData attribute, string argumentName) where TEnum : unmanaged, Enum
+		{
+			attribute.TryGetNamedArgumentEnumValue(argumentName, out TEnum value);
+			return value;
+		}
+
+		/// <summary>
+		/// Returns the enum value of the named argument with the specified <paramref name="argumentName"/>.
+		/// </summary>
+		/// <typeparam name="TEnum">Type of enum value to return.</typeparam>
+		/// <typeparam name="TType">Type the <typeparamref name="TEnum"/> type extends.</typeparam>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
+		/// <param name="argumentName">Name of the argument to get the values of.</param>
+		/// <exception cref="InvalidOperationException">Type size mismatch.</exception>
+		public static TEnum GetNamedArgumentEnumValue<TEnum, TType>(this AttributeData attribute, string argumentName)
+			where TEnum : unmanaged, Enum
+			where TType : unmanaged
+		{
+			attribute.TryGetNamedArgumentEnumValue<TEnum, TType>(argumentName, out TEnum value);
+			return value;
 		}
 
 		/// <summary>
@@ -175,7 +234,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="argumentName">Name of the argument to get the value of.</param>
 		public static T? GetNamedArgumentTypeValue<T>(this AttributeData attribute, string argumentName) where T : ITypeSymbol
 		{
-			TryGetNamedArgumentTypeValue(attribute, argumentName, out T? symbol);
+			attribute.TryGetNamedArgumentTypeValue(argumentName, out T? symbol);
 			return symbol;
 		}
 
@@ -187,7 +246,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="argumentName">Name of the argument to get the value of.</param>
 		public static T? GetNamedArgumentValue<T>(this AttributeData attribute, string argumentName)
 		{
-			TryGetNamedArgumentValue(attribute, argumentName, out T? value);
+			attribute.TryGetNamedArgumentValue(argumentName, out T? value);
 			return value;
 		}
 
@@ -264,7 +323,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="values">Values contained within array value of the argument.</param>
 		public static bool TryGetConstructorArgumentArrayValue(this AttributeData attribute, int position, out ImmutableArray<TypedConstant> values)
 		{
-			if (TryGetConstructorArgument(attribute, position, out TypedConstant constant))
+			if (attribute.TryGetConstructorArgument(position, out TypedConstant constant))
 			{
 				if (constant.Values.IsDefault)
 				{
@@ -291,7 +350,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="values">Values contained within array value of the argument.</param>
 		public static bool TryGetConstructorArgumentArrayValue<T>(this AttributeData attribute, int position, out ImmutableArray<T> values)
 		{
-			if (!TryGetConstructorArgumentArrayValue(attribute, position, out ImmutableArray<TypedConstant> constants))
+			if (!attribute.TryGetConstructorArgumentArrayValue(position, out ImmutableArray<TypedConstant> constants))
 			{
 				values = ImmutableArray.Create<T>();
 				return false;
@@ -324,17 +383,61 @@ namespace Durian.Analysis.Extensions
 		}
 
 		/// <summary>
+		/// Checks if the target <paramref name="attribute"/> defines a constructor argument at specified <paramref name="position"/>. If so, also returns the enum value of that argument.
+		/// </summary>
+		/// <typeparam name="TEnum">Type of enum value to return.</typeparam>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
+		/// <param name="position">Position where the target argument is to be found.</param>
+		/// <param name="value">Returned enum value.</param>
+		/// <exception cref="InvalidOperationException">Type size mismatch.</exception>
+		public static bool TryGetConstructorArgumentEnumValue<TEnum>(this AttributeData attribute, int position, out TEnum value) where TEnum : unmanaged, Enum
+		{
+			return attribute.TryGetConstructorArgumentEnumValue<TEnum, int>(position, out value);
+		}
+
+		/// <summary>
+		/// Checks if the target <paramref name="attribute"/> defines a constructor argument at specified <paramref name="position"/>. If so, also returns the enum value of that argument.
+		/// </summary>
+		/// <typeparam name="TEnum">Type of enum value to return.</typeparam>
+		/// <typeparam name="TType">Type the <typeparamref name="TEnum"/> type extends.</typeparam>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
+		/// <param name="position">Position where the target argument is to be found.</param>
+		/// <param name="value">Returned enum value.</param>
+		/// <exception cref="InvalidOperationException">Type size mismatch.</exception>
+		public static unsafe bool TryGetConstructorArgumentEnumValue<TEnum, TType>(this AttributeData attribute, int position, out TEnum value)
+			where TEnum : unmanaged, Enum
+			where TType : unmanaged
+		{
+			if (sizeof(TType) != sizeof(TEnum))
+			{
+				throw new InvalidOperationException($"Type size mismatch. TEnum is {sizeof(TEnum)}, while TType is {sizeof(TType)}");
+			}
+
+			if (attribute.TryGetConstructorArgumentValue(position, out TType n))
+			{
+				// For some reason this line causes assembly version conflicts.
+				//value = Unsafe.As<TType, TEnum>(ref n);
+
+				value = (TEnum)(object)n;
+				return true;
+			}
+
+			value = default;
+			return false;
+		}
+
+		/// <summary>
 		/// Checks if the target <paramref name="attribute"/> defines a constructor argument at specified <paramref name="position"/>. If so, also returns the <paramref name="symbol"/> represented by value of that argument.
 		/// </summary>
-		/// <typeparam name="T">Type of <see cref="ITypeSymbol"/> to return.</typeparam>
+		/// <typeparam name="TType">Type of <see cref="ITypeSymbol"/> to return.</typeparam>
 		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
 		/// <param name="position">Position where the target argument is to be found.</param>
 		/// <param name="symbol">Symbol that represents the <see cref="Type"/> value of the argument.</param>
-		public static bool TryGetConstructorArgumentTypeValue<T>(this AttributeData attribute, int position, out T? symbol) where T : ITypeSymbol
+		public static bool TryGetConstructorArgumentTypeValue<TType>(this AttributeData attribute, int position, out TType? symbol) where TType : ITypeSymbol
 		{
-			if (TryGetConstructorArgument(attribute, position, out TypedConstant value))
+			if (attribute.TryGetConstructorArgument(position, out TypedConstant value))
 			{
-				if (value.Value is T t)
+				if (value.Value is TType t)
 				{
 					symbol = t;
 				}
@@ -359,7 +462,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="value">Value of the argument.</param>
 		public static bool TryGetConstructorArgumentValue<T>(this AttributeData attribute, int position, out T? value)
 		{
-			if (TryGetConstructorArgument(attribute, position, out TypedConstant arg))
+			if (attribute.TryGetConstructorArgument(position, out TypedConstant arg))
 			{
 				if (arg.Value is T t)
 				{
@@ -436,7 +539,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="values">Values contained within array value of the argument.</param>
 		public static bool TryGetNamedArgumentArrayValue<T>(this AttributeData attribute, string argumentName, out ImmutableArray<T> values)
 		{
-			if (!TryGetNamedArgumentArrayValue(attribute, argumentName, out ImmutableArray<TypedConstant> constants))
+			if (!attribute.TryGetNamedArgumentArrayValue(argumentName, out ImmutableArray<TypedConstant> constants))
 			{
 				values = ImmutableArray.Create<T>();
 				return false;
@@ -466,6 +569,50 @@ namespace Durian.Analysis.Extensions
 
 			values = ImmutableArray.Create(array);
 			return true;
+		}
+
+		/// <summary>
+		/// Checks if the target <paramref name="attribute"/> defines a named argument with the specified <paramref name="argumentName"/>. If so, also returns the enum <paramref name="value"/> of that argument.
+		/// </summary>
+		/// <typeparam name="TEnum">Type of enum value to return.</typeparam>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
+		/// <param name="argumentName">Name of the argument to get the <paramref name="value"/> of.</param>
+		/// <param name="value">Returned enum value.</param>
+		/// <exception cref="InvalidOperationException">Type size mismatch.</exception>
+		public static bool TryGetNamedArgumentEnumValue<TEnum>(this AttributeData attribute, string argumentName, out TEnum value) where TEnum : unmanaged, Enum
+		{
+			return attribute.TryGetNamedArgumentEnumValue<TEnum, int>(argumentName, out value);
+		}
+
+		/// <summary>
+		/// Checks if the target <paramref name="attribute"/> defines a named argument with the specified <paramref name="argumentName"/>. If so, also returns the enum <paramref name="value"/> of that argument.
+		/// </summary>
+		/// <typeparam name="TEnum">Type of enum value to return.</typeparam>
+		/// <typeparam name="TType">Type the <typeparamref name="TEnum"/> type extends.</typeparam>
+		/// <param name="attribute"><see cref="AttributeData"/> to get the value from.</param>
+		/// <param name="argumentName">Name of the argument to get the <paramref name="value"/> of.</param>
+		/// <param name="value">Returned enum value.</param>
+		/// <exception cref="InvalidOperationException">Type size mismatch.</exception>
+		public static unsafe bool TryGetNamedArgumentEnumValue<TEnum, TType>(this AttributeData attribute, string argumentName, out TEnum value)
+			where TEnum : unmanaged, Enum
+			where TType : unmanaged
+		{
+			if (sizeof(TType) != sizeof(TEnum))
+			{
+				throw new InvalidOperationException($"Type size mismatch. TEnum is {sizeof(TEnum)}, while TType is {sizeof(TType)}");
+			}
+
+			if (attribute.TryGetNamedArgumentValue(argumentName, out TType n))
+			{
+				// For some reason this line causes assembly version conflicts.
+				//value = Unsafe.As<TType, TEnum>(ref n);
+
+				value = (TEnum)(object)n;
+				return true;
+			}
+
+			value = default;
+			return false;
 		}
 
 		/// <summary>

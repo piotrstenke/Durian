@@ -41,7 +41,7 @@ namespace Durian.TestServices
 		/// <param name="generatorType"><see cref="Type"/> to get the <see cref="LoggingConfiguration"/> from.</param>
 		protected LoggableGeneratorTest(bool enableDiagnostics, Type generatorType)
 		{
-			_configuration = LoggingConfiguration.CreateForGenerator(generatorType);
+			_configuration = LoggingConfiguration.ForGenerator(generatorType);
 			_configuration.LogDirectory += $"/{GetType().Name}";
 			_enableDiagnostics = enableDiagnostics;
 		}

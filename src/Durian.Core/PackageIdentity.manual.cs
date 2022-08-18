@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Durian.Info
@@ -135,20 +136,102 @@ namespace Durian.Info
 		}
 
 		/// <summary>
-		/// Converts the specified <paramref name="package"/> value into a <see cref="string"/> value.
+		/// Attempts to return a name of the specified <paramref name="package"/>.
 		/// </summary>
-		/// <param name="package"><see cref="DurianPackage"/> to convert into a <see cref="string"/>.</param>
-		/// <exception cref="ArgumentException">Unknown <see cref="DurianPackage"/> value: <paramref name="package"/>.</exception>
-		public static string PackageToString(DurianPackage package)
+		/// <param name="package"><see cref="DurianPackage"/> to get the name of.</param>
+		/// <param name="packageName">Name of the package.</param>
+		public static bool TryGetName(DurianPackage package, [NotNullWhen(true)] out string? packageName)
 		{
-			EnsureIsValidPackageEnum(package);
-
-			return package switch
+			packageName = package switch
 			{
-				DurianPackage.CoreAnalyzer => "Durian.Core.Analyzer",
-				DurianPackage.Main => "Durian",
-				_ => $"Durian.{package}"
+				DurianPackage.Main => PackageNames.Main,
+				DurianPackage.Core => PackageNames.Core,
+				DurianPackage.CoreAnalyzer => PackageNames.CoreAnalyzer,
+				DurianPackage.AnalysisServices => PackageNames.AnalysisServices,
+				DurianPackage.TestServices => PackageNames.TestServices,
+				DurianPackage.DefaultParam => PackageNames.DefaultParam,
+				DurianPackage.FriendClass => PackageNames.FriendClass,
+				DurianPackage.InterfaceTargets => PackageNames.InterfaceTargets,
+				DurianPackage.CopyFrom => PackageNames.CopyFrom,
+				_ => null
 			};
+
+			return packageName is not null;
+		}
+
+		/// <summary>
+		/// Attempts to convert the specified <paramref name="packageName"/> into a value of the <see cref="DurianPackage"/> enum.
+		/// </summary>
+		/// <param name="packageName"><see cref="string"/> to convert to a value of the <see cref="DurianPackage"/> enum.</param>
+		/// <param name="package">Value of the <see cref="DurianPackage"/> enum created from the <paramref name="packageName"/>.</param>
+		public static bool TryParse([NotNullWhen(true)] string? packageName, out DurianPackage package)
+		{
+			if (string.IsNullOrWhiteSpace(packageName))
+			{
+				package = default;
+				return false;
+			}
+
+			string name = Utilities.GetParsableIdentityName(packageName!);
+
+			// Switch expression gives a compilation error here, weird.
+
+			if(name.Equals(PackageNames.Main, StringComparison.OrdinalIgnoreCase))
+			{
+				package = DurianPackage.Main;
+				return true;
+			}
+
+			if (name.Equals(PackageNames.Core, StringComparison.OrdinalIgnoreCase))
+			{
+				package = DurianPackage.Core;
+				return true;
+			}
+
+			if (name.Equals(PackageNames.CoreAnalyzer, StringComparison.OrdinalIgnoreCase))
+			{
+				package = DurianPackage.CoreAnalyzer;
+				return true;
+			}
+
+			if (name.Equals(PackageNames.AnalysisServices, StringComparison.OrdinalIgnoreCase))
+			{
+				package = DurianPackage.AnalysisServices;
+				return true;
+			}
+
+			if (name.Equals(PackageNames.TestServices, StringComparison.OrdinalIgnoreCase))
+			{
+				package = DurianPackage.TestServices;
+				return true;
+			}
+
+			if (name.Equals(PackageNames.DefaultParam, StringComparison.OrdinalIgnoreCase))
+			{
+				package = DurianPackage.DefaultParam;
+				return true;
+			}
+
+			if (name.Equals(PackageNames.FriendClass, StringComparison.OrdinalIgnoreCase))
+			{
+				package = DurianPackage.FriendClass;
+				return true;
+			}
+
+			if (name.Equals(PackageNames.InterfaceTargets, StringComparison.OrdinalIgnoreCase))
+			{
+				package = DurianPackage.InterfaceTargets;
+				return true;
+			}
+
+			if (name.Equals(PackageNames.CopyFrom, StringComparison.OrdinalIgnoreCase))
+			{
+				package = DurianPackage.CopyFrom;
+				return true;
+			}
+
+			package = default;
+			return false;
 		}
 	}
 }

@@ -2,29 +2,29 @@
 // Licensed under the MIT license.
 
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// Provides a method that returns an array of <see cref="CSharpSyntaxNode"/>s.
+	/// Provides a method that returns an array of <see cref="SyntaxNode"/>s.
 	/// </summary>
 	public interface INodeProvider
 	{
 		/// <summary>
-		/// Returns a collection of <see cref="CSharpSyntaxNode"/>s.
+		/// Returns a collection of <see cref="SyntaxNode"/>s.
 		/// </summary>
-		IEnumerable<CSharpSyntaxNode> GetNodes();
+		IEnumerable<SyntaxNode> GetNodes();
 	}
 
 	/// <summary>
-	/// Provides a method that returns an array of <see cref="CSharpSyntaxNode"/>s of type <typeparamref name="T"/>.
+	/// Provides a method that returns an array of <see cref="SyntaxNode"/>s of type <typeparamref name="T"/>.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> this <see cref="INodeProvider{T}"/> can return.</typeparam>
-	public interface INodeProvider<out T> : INodeProvider where T : CSharpSyntaxNode
+	/// <typeparam name="T">Type of <see cref="SyntaxNode"/> this <see cref="INodeProvider{T}"/> can return.</typeparam>
+	public interface INodeProvider<out T> : INodeProvider where T : SyntaxNode
 	{
 		/// <summary>
-		/// Returns a collection of <see cref="CSharpSyntaxNode"/>s of type <typeparamref name="T"/>.
+		/// Returns a collection of <see cref="SyntaxNode"/>s of type <typeparamref name="T"/>.
 		/// </summary>
 		new IEnumerable<T> GetNodes();
 	}

@@ -68,8 +68,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{A6400D35-7
 		docs\Core\DUR0003.md = docs\Core\DUR0003.md
 		docs\Core\DUR0004.md = docs\Core\DUR0004.md
 		docs\Core\DUR0005.md = docs\Core\DUR0005.md
+		docs\Core\DUR0006.md = docs\Core\DUR0006.md
 		docs\Core\DUR0007.md = docs\Core\DUR0007.md
 		docs\Core\DUR0008.md = docs\Core\DUR0008.md
+		docs\Core\DUR0009.md = docs\Core\DUR0009.md
+		docs\Core\DUR0010.md = docs\Core\DUR0010.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DefaultParam", "DefaultParam", "{ED212D80-C490-4BDB-801C-E487EB7E390D}"

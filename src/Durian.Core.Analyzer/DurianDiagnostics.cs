@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Piotr Stenke. All rights reserved.
 // Licensed under the MIT license.
 
+using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 
@@ -132,6 +133,19 @@ namespace Durian.Analysis
 		   category: "Durian",
 		   defaultSeverity: DiagnosticSeverity.Warning,
 		   helpLinkUri: DocsPath + "/DUR0009.md",
+		   isEnabledByDefault: true
+	   );
+
+		/// <summary>
+		/// Provides a diagnostic message indicating that the an equivalent <see cref="EnableLoggingAttribute"/> was already specifies.
+		/// </summary>
+		public static readonly DiagnosticDescriptor DUR0010_DuplicateEnableLogging = new(
+		   id: "DUR0010",
+		   title: "Equivalent EnableLoggingAttribute already specified",
+		   messageFormat: "Equivalent EnableLoggingAttribute already specified",
+		   category: "Durian",
+		   defaultSeverity: DiagnosticSeverity.Warning,
+		   helpLinkUri: DocsPath + "/DUR0010.md",
 		   isEnabledByDefault: true
 	   );
 

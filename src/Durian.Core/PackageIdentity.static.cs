@@ -17,6 +17,7 @@ namespace Durian.Info
 		{
 			get => _allPackages ??= Enum.GetValues(typeof(DurianPackage))
 				.Cast<DurianPackage>()
+				.Skip(1)
 				.ToArray();
 		}
 
@@ -51,6 +52,21 @@ namespace Durian.Info
 			List<DurianPackage> packages = new(AllPackages);
 
 			return new PackageContainer(packages);
+		}
+
+		/// <summary>
+		/// Returns a name of the specified <paramref name="package"/>.
+		/// </summary>
+		/// <param name="package"><see cref="DurianPackage"/> to get the name of.</param>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianPackage"/> value: <paramref name="package"/>.</exception>
+		public static string GetName(DurianPackage package)
+		{
+			if (!TryGetName(package, out string? packageName))
+			{
+				throw new ArgumentException($"Unknown {nameof(DurianPackage)} value: {package}", nameof(package));
+			}
+
+			return packageName;
 		}
 
 		/// <summary>
@@ -114,7 +130,7 @@ namespace Durian.Info
 		/// </exception>
 		public static PackageIdentity GetPackage(string packageName)
 		{
-			DurianPackage package = ParsePackage(packageName);
+			DurianPackage package = Parse(packageName);
 			return GetPackage(package);
 		}
 
@@ -128,7 +144,7 @@ namespace Durian.Info
 		/// </exception>
 		public static PackageType GetPackageType(string packageName)
 		{
-			DurianPackage package = ParsePackage(packageName);
+			DurianPackage package = Parse(packageName);
 			return GetPackageType(package);
 		}
 
@@ -142,7 +158,7 @@ namespace Durian.Info
 		/// </exception>
 		public static PackageReference GetReference(string packageName)
 		{
-			DurianPackage package = ParsePackage(packageName);
+			DurianPackage package = Parse(packageName);
 			return new PackageReference(package);
 		}
 
@@ -301,7 +317,7 @@ namespace Durian.Info
 		/// </exception>
 		public static bool IsPackageType(string packageName, PackageType type)
 		{
-			DurianPackage package = ParsePackage(packageName);
+			DurianPackage package = Parse(packageName);
 			return IsPackageType(package, type);
 		}
 
@@ -313,9 +329,9 @@ namespace Durian.Info
 		/// <paramref name="packageName"/> is <see langword="null"/> or empty. -or-
 		/// Unknown Durian package name: <paramref name="packageName"/>.
 		/// </exception>
-		public static DurianPackage ParsePackage(string packageName)
+		public static DurianPackage Parse(string packageName)
 		{
-			if (!TryParsePackage(packageName, out DurianPackage package))
+			if (!TryParse(packageName, out DurianPackage package))
 			{
 				if (string.IsNullOrWhiteSpace(packageName))
 				{
@@ -335,7 +351,7 @@ namespace Durian.Info
 		/// <param name="package"><see cref="PackageIdentity"/> that was returned.</param>
 		public static bool TryGetPackage([NotNullWhen(true)] string? packageName, [NotNullWhen(true)] out PackageIdentity? package)
 		{
-			if (!TryParsePackage(packageName, out DurianPackage p))
+			if (!TryParse(packageName, out DurianPackage p))
 			{
 				package = null;
 				return false;
@@ -352,7 +368,7 @@ namespace Durian.Info
 		/// <param name="reference">Newly-created <see cref="PackageReference"/>.</param>
 		public static bool TryGetReference([NotNullWhen(true)] string? packageName, [NotNullWhen(true)] out PackageReference? reference)
 		{
-			if (!TryParsePackage(packageName, out DurianPackage package))
+			if (!TryParse(packageName, out DurianPackage package))
 			{
 				reference = null;
 				return false;
@@ -362,29 +378,16 @@ namespace Durian.Info
 			return true;
 		}
 
-		/// <summary>
-		/// Attempts to convert the specified <paramref name="packageName"/> into a value of the <see cref="DurianPackage"/> enum.
-		/// </summary>
-		/// <param name="packageName"><see cref="string"/> to convert to a value of the <see cref="DurianPackage"/> enum.</param>
-		/// <param name="package">Value of the <see cref="DurianPackage"/> enum created from the <paramref name="packageName"/>.</param>
-		public static bool TryParsePackage([NotNullWhen(true)] string? packageName, out DurianPackage package)
-		{
-			if (string.IsNullOrWhiteSpace(packageName))
-			{
-				package = default;
-				return false;
-			}
-
-			string name = Utilities.DurianRegex.Replace(packageName, "");
-
-			return Enum.TryParse(name, true, out package);
-		}
-
 		internal static void EnsureIsValidPackageEnum_InvOp(DurianPackage package)
 		{
+			if (package == DurianPackage.None)
+			{
+				throw new InvalidOperationException($"{nameof(DurianPackage)}.{nameof(DurianPackage.None)} is not a valid Durian package");
+			}
+
 			if (!GlobalInfo.IsValidPackageValue(package))
 			{
-				throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!");
+				throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}");
 			}
 		}
 	}

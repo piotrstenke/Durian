@@ -18,7 +18,7 @@ namespace Durian.Analysis.FriendClass
 		public static readonly DiagnosticDescriptor DUR0301_TargetTypeIsOutsideOfAssembly = new(
 			id: "DUR0301",
 			title: "Target type is outside of the current assembly",
-			messageFormat: "'{0}': Target type is outside of the current assembly, thus FriendClass will have no effect",
+			messageFormat: "'{0}': Target type is outside of the current assembly",
 			category: "Durian.FriendClass",
 			defaultSeverity: DiagnosticSeverity.Error,
 			helpLinkUri: DocsPath + "/DUR0301.md",

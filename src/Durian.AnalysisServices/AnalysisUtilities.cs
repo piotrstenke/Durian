@@ -7,6 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Durian.Analysis.Extensions;
+using Durian.Info;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -64,6 +66,33 @@ namespace Durian.Analysis
 			}
 
 			return false;
+		}
+
+		/// <summary>
+		/// Returns the <paramref name="attributeName"/> with a 'Attribute' at the end.
+		/// </summary>
+		/// <param name="attributeName">Name of the attribute to get the full type name of.</param>
+		public static string GetFullAttributeType(string attributeName)
+		{
+			return $"{attributeName}Attribute";
+		}
+
+		/// <summary>
+		/// Returns the <paramref name="attributeName"/> with the <see cref="DurianStrings.MainNamespace"/> at the start and 'Attribute' at the end.
+		/// </summary>
+		/// <param name="attributeName">Name of the attribute to get the full type name of.</param>
+		public static string GetFullyQualifiedAttribute(string attributeName)
+		{
+			return $"{DurianStrings.MainNamespace}.{GetFullAttributeType(attributeName)}";
+		}
+
+		/// <summary>
+		/// Returns the <paramref name="attributeName"/> with the <see cref="DurianStrings.ConfigurationNamespace"/> at the start and 'Attribute' at the end.
+		/// </summary>
+		/// <param name="attributeName">Name of the attribute to get the full type name of.</param>
+		public static string GetFullyQualifiedConfigurationAttribute(string attributeName)
+		{
+			return $"{DurianStrings.ConfigurationNamespace}.{GetFullAttributeType(attributeName)}";
 		}
 
 		/// <summary>
@@ -499,6 +528,25 @@ namespace Durian.Analysis
 			}
 
 			return hashCode;
+		}
+
+		internal static bool TryRetrieveModuleName(TypedConstant argument, [NotNullWhen(true)] out string? moduleName)
+		{
+			if (argument.Value is string name)
+			{
+				moduleName = name;
+				return true;
+			}
+
+			if (argument.Value is not int n)
+			{
+				moduleName = default;
+				return false;
+			}
+
+			DurianModule module = (DurianModule)n;
+
+			return ModuleIdentity.TryGetName(module, out moduleName!);
 		}
 	}
 }

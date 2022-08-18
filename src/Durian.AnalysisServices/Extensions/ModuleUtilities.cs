@@ -2023,7 +2023,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(compilation));
 			}
 
-			DurianModule module = ModuleIdentity.ParseModule(moduleName);
+			DurianModule module = ModuleIdentity.Parse(moduleName);
 			return IsEnabled_Internal(compilation, module);
 		}
 
@@ -2047,7 +2047,7 @@ namespace Durian.Analysis.Extensions
 				throw new ArgumentNullException(nameof(enableModuleAttribute));
 			}
 
-			DurianModule module = ModuleIdentity.ParseModule(moduleName);
+			DurianModule module = ModuleIdentity.Parse(moduleName);
 			return IsEnabled_Internal(compilation, module, enableModuleAttribute);
 		}
 

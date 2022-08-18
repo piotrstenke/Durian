@@ -2,17 +2,16 @@
 // Licensed under the MIT license.
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis
 {
 	/// <summary>
-	/// <see cref="ISyntaxReceiver"/> that provides access to all collected nodes.
+	/// Durian-specific <see cref="ISyntaxReceiver"/>.
 	/// </summary>
 	public interface IDurianSyntaxReceiver : ISyntaxReceiver, INodeProvider
 	{
 		/// <summary>
-		/// Determines whether the <see cref="ISyntaxReceiver"/> is empty, i.e. it didn't collect any <see cref="CSharpSyntaxNode"/>s.
+		/// Determines whether the <see cref="ISyntaxReceiver"/> is empty, i.e. it didn't collect any <see cref="SyntaxNode"/>s.
 		/// </summary>
 		bool IsEmpty();
 	}

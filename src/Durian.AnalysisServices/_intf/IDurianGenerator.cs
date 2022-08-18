@@ -32,6 +32,11 @@ namespace Durian.Analysis
 		/// </summary>
 		int NumStaticTrees { get; }
 
+		/// <summary>
+		/// Determines whether the current generator supports creating <see cref="LoggingConfiguration"/> using the <see cref="EnableLoggingAttribute"/> during generator execution.
+		/// </summary>
+		bool SupportsDynamicLoggingConfiguration { get; }
+
 		/// <inheritdoc cref="ISourceGenerator.Execute(GeneratorExecutionContext)"/>
 		bool Execute(in GeneratorExecutionContext context);
 

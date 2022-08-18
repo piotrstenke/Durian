@@ -12,14 +12,14 @@ namespace Durian.Analysis.DefaultParam
 	/// <summary>
 	/// Collects <see cref="CSharpSyntaxNode"/>s that are potential targets for the <see cref="DefaultParamGenerator"/>.
 	/// </summary>
-	public sealed class DefaultParamSyntaxReceiver : IDurianSyntaxReceiver
+	public sealed class DefaultParamSyntaxReceiver : DurianSyntaxReceiver
 	{
 		private bool _allowsCollectingLocalFunctions;
 
 		/// <summary>
 		/// Determines whether to allow collecting <see cref="LocalFunctionStatementSyntax"/>es.
 		/// </summary>
-		/// <remarks>If this property is set to <see langword="false"/> and <see cref="CandidateLocalFunctions"/> is not empty, it is cleared using the <see cref="List{T}.Clear"/> method.</remarks>
+		/// <remarks>If this property is set to <see langword="false"/> and <see cref="CandidateLocalFunctions"/> is not empty, it is cleared using the <see cref="List{T}.Clear()"/> method.</remarks>
 		public bool AllowsCollectingLocalFunctions
 		{
 			get => _allowsCollectingLocalFunctions;
@@ -75,7 +75,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public bool IsEmpty()
+		public override bool IsEmpty()
 		{
 			return
 				CandidateTypes.Count == 0 &&
@@ -85,27 +85,7 @@ namespace Durian.Analysis.DefaultParam
 		}
 
 		/// <inheritdoc/>
-		public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-		{
-			if (syntaxNode is TypeDeclarationSyntax t)
-			{
-				CollectType(t);
-			}
-			else if (syntaxNode is MethodDeclarationSyntax m)
-			{
-				CollectMethod(m);
-			}
-			else if (syntaxNode is DelegateDeclarationSyntax d)
-			{
-				CollectDelegate(d);
-			}
-			else if (AllowsCollectingLocalFunctions && syntaxNode is LocalFunctionStatementSyntax f)
-			{
-				CollectLocalFunction(f);
-			}
-		}
-
-		IEnumerable<CSharpSyntaxNode> INodeProvider.GetNodes()
+		public override IEnumerable<SyntaxNode> GetNodes()
 		{
 			foreach (MethodDeclarationSyntax m in CandidateMethods)
 			{
@@ -131,11 +111,24 @@ namespace Durian.Analysis.DefaultParam
 			}
 		}
 
-		private void CollectDelegate(DelegateDeclarationSyntax decl)
+		/// <inheritdoc/>
+		public override bool OnVisitSyntaxNode(SyntaxNode syntaxNode)
+		{
+			return syntaxNode switch
+			{
+				TypeDeclarationSyntax t => CollectType(t),
+				MethodDeclarationSyntax m => CollectMethod(m),
+				DelegateDeclarationSyntax d => CollectDelegate(d),
+				LocalFunctionStatementSyntax f when AllowsCollectingLocalFunctions => CollectLocalFunction(f),
+				_ => false
+			};
+		}
+
+		private bool CollectDelegate(DelegateDeclarationSyntax decl)
 		{
 			if (decl.TypeParameterList is null)
 			{
-				return;
+				return false;
 			}
 
 			SeparatedSyntaxList<TypeParameterSyntax> parameters = decl.TypeParameterList.Parameters;
@@ -143,14 +136,17 @@ namespace Durian.Analysis.DefaultParam
 			if (parameters.Any() && parameters.Any(p => p.AttributeLists.Any()))
 			{
 				CandidateDelegates.Add(decl);
+				return true;
 			}
+
+			return false;
 		}
 
-		private void CollectLocalFunction(LocalFunctionStatementSyntax decl)
+		private bool CollectLocalFunction(LocalFunctionStatementSyntax decl)
 		{
 			if (decl.TypeParameterList is null)
 			{
-				return;
+				return false;
 			}
 
 			SeparatedSyntaxList<TypeParameterSyntax> parameters = decl.TypeParameterList.Parameters;
@@ -158,10 +154,13 @@ namespace Durian.Analysis.DefaultParam
 			if (parameters.Any() && parameters.Any(p => p.AttributeLists.Any()))
 			{
 				CandidateLocalFunctions!.Add(decl);
+				return true;
 			}
+
+			return false;
 		}
 
-		private void CollectMethod(MethodDeclarationSyntax decl)
+		private bool CollectMethod(MethodDeclarationSyntax decl)
 		{
 			if (decl.TypeParameterList is not null)
 			{
@@ -170,21 +169,24 @@ namespace Durian.Analysis.DefaultParam
 				if (parameters.Any() && parameters.Any(p => p.AttributeLists.Any()))
 				{
 					CandidateMethods.Add(decl);
-					return;
+					return true;
 				}
 			}
 
 			if (decl.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
 			{
 				CandidateMethods.Add(decl);
+				return true;
 			}
+
+			return false;
 		}
 
-		private void CollectType(TypeDeclarationSyntax decl)
+		private bool CollectType(TypeDeclarationSyntax decl)
 		{
 			if (decl.TypeParameterList is null)
 			{
-				return;
+				return false;
 			}
 
 			SeparatedSyntaxList<TypeParameterSyntax> parameters = decl.TypeParameterList.Parameters;
@@ -192,7 +194,10 @@ namespace Durian.Analysis.DefaultParam
 			if (parameters.Any() && parameters.Any(p => p.AttributeLists.Any()))
 			{
 				CandidateTypes.Add(decl);
+				return true;
 			}
+
+			return false;
 		}
 	}
 }

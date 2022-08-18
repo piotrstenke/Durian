@@ -49,7 +49,7 @@ namespace Durian.Info
 		internal PackageIdentity(DurianPackage enumValue, string version, PackageType type, DurianModule[]? modules)
 		{
 			EnumValue = enumValue;
-			Name = PackageToString(enumValue);
+			Name = GetName(enumValue);
 			Version = version;
 			Type = type;
 

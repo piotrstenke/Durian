@@ -54,7 +54,7 @@ namespace Durian.Analysis.Cache
 			{
 				Reset(Environment.CurrentManagedThreadId);
 
-				if (!InitializeCompilation(in context.GetContext(), out CSharpCompilation? compilation))
+				if (!PrepareForExecution(in context.GetContext(), out CSharpCompilation? compilation))
 				{
 					return false;
 				}

@@ -171,8 +171,23 @@ namespace Durian.Info
 		/// </exception>
 		public static ModuleIdentity GetModule(string moduleName)
 		{
-			DurianModule module = ParseModule(moduleName);
+			DurianModule module = Parse(moduleName);
 			return GetModule(module);
+		}
+
+		/// <summary>
+		/// Returns a name of the specified <paramref name="module"/>.
+		/// </summary>
+		/// <param name="module"><see cref="DurianModule"/> to get the name of.</param>
+		/// <exception cref="ArgumentException">Unknown <see cref="DurianModule"/> value: <paramref name="module"/>.</exception>
+		public static string GetName(DurianModule module)
+		{
+			if (!TryGetName(module, out string? moduleName))
+			{
+				throw new ArgumentException($"Unknown {nameof(DurianModule)} value: {module}", nameof(module));
+			}
+
+			return moduleName;
 		}
 
 		/// <summary>
@@ -195,7 +210,7 @@ namespace Durian.Info
 		/// </exception>
 		public static ModuleReference GetReference(string moduleName)
 		{
-			DurianModule module = ParseModule(moduleName);
+			DurianModule module = Parse(moduleName);
 			return new ModuleReference(module);
 		}
 
@@ -250,9 +265,9 @@ namespace Durian.Info
 		/// <paramref name="moduleName"/> is <see langword="null"/> or empty. -or-
 		/// Unknown Durian module name: <paramref name="moduleName"/>.
 		/// </exception>
-		public static DurianModule ParseModule(string moduleName)
+		public static DurianModule Parse(string moduleName)
 		{
-			if (!TryParseModule(moduleName, out DurianModule module))
+			if (!TryParse(moduleName, out DurianModule module))
 			{
 				if (string.IsNullOrWhiteSpace(moduleName))
 				{
@@ -272,7 +287,7 @@ namespace Durian.Info
 		/// <param name="module"><see cref="ModuleIdentity"/> that was returned.</param>
 		public static bool TryGetModule([NotNullWhen(true)] string? moduleName, [NotNullWhen(true)] out ModuleIdentity? module)
 		{
-			if (!TryParseModule(moduleName, out DurianModule m))
+			if (!TryParse(moduleName, out DurianModule m))
 			{
 				module = null;
 				return false;
@@ -289,7 +304,7 @@ namespace Durian.Info
 		/// <param name="reference">Newly-created <see cref="ModuleReference"/>.</param>
 		public static bool TryGetReference([NotNullWhen(true)] string? moduleName, [NotNullWhen(true)] out ModuleReference? reference)
 		{
-			if (!TryParseModule(moduleName, out DurianModule module))
+			if (!TryParse(moduleName, out DurianModule module))
 			{
 				reference = null;
 				return false;
@@ -299,29 +314,11 @@ namespace Durian.Info
 			return true;
 		}
 
-		/// <summary>
-		/// Attempts to convert the specified <paramref name="moduleName"/> into a value of the <see cref="DurianModule"/> enum.
-		/// </summary>
-		/// <param name="moduleName"><see cref="string"/> to convert to a value of the <see cref="DurianModule"/> enum.</param>
-		/// <param name="module">Value of the <see cref="DurianModule"/> enum created from the <paramref name="moduleName"/>.</param>
-		public static bool TryParseModule([NotNullWhen(true)] string? moduleName, out DurianModule module)
-		{
-			if (string.IsNullOrWhiteSpace(moduleName))
-			{
-				module = default;
-				return false;
-			}
-
-			string name = Utilities.DurianRegex.Replace(moduleName, "");
-
-			return Enum.TryParse(name, true, out module);
-		}
-
 		internal static void EnsureIsValidModuleEnum_InvOp(DurianModule module)
 		{
 			if (module == DurianModule.None)
 			{
-				throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!");
+				throw new InvalidOperationException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module");
 			}
 
 			if (!GlobalInfo.IsValidModuleValue(module))

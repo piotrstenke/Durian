@@ -441,7 +441,7 @@ namespace Durian.Info
 				throw new ArgumentNullException(nameof(assembly));
 			}
 
-			PackageIdentity.ParsePackage(packageName);
+			PackageIdentity.Parse(packageName);
 			return HasReference_Internal(assembly, packageName);
 		}
 
@@ -453,7 +453,7 @@ namespace Durian.Info
 
 		private static bool HasReference_Internal(Assembly assembly, DurianPackage package)
 		{
-			string packageName = PackageIdentity.PackageToString(package);
+			string packageName = PackageIdentity.GetName(package);
 			return HasReference_Internal(assembly, packageName);
 		}
 
@@ -464,7 +464,7 @@ namespace Durian.Info
 
 		private static bool HasReference_Internal(AssemblyName[] references, DurianPackage package)
 		{
-			string packageName = PackageIdentity.PackageToString(package);
+			string packageName = PackageIdentity.GetName(package);
 			return HasReference_Internal(references, packageName);
 		}
 	}
