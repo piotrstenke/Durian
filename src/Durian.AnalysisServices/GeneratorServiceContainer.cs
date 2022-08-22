@@ -155,8 +155,10 @@ namespace Durian.Analysis
 				}
 				else
 				{
-					entries = new();
-					entries.Add(new Entry(type, (Delegate)value));
+					entries = new()
+					{
+						new Entry(type, (Delegate)value)
+					};
 
 					services[type] = entries;
 				}

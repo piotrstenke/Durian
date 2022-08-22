@@ -287,10 +287,7 @@ namespace Durian.Analysis.Data.FromSource
 		[MemberNotNull(nameof(_members))]
 		private void InitMembers()
 		{
-			if (_members is null)
-			{
-				_members = new NamespacesOrTypesContainer(this, ParentCompilation);
-			}
+			_members ??= new NamespacesOrTypesContainer(this, ParentCompilation);
 		}
 	}
 }

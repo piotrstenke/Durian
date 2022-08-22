@@ -5,7 +5,6 @@ using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis
 {
@@ -35,9 +34,9 @@ namespace Durian.Analysis
 		ref readonly GeneratorExecutionContext OriginalContext { get; }
 
 		/// <summary>
-		/// <see cref="CSharpParseOptions"/> that will be used to parse any added sources.
+		/// <see cref="ParseOptions"/> that will be used to parse any added sources.
 		/// </summary>
-		CSharpParseOptions ParseOptions { get; }
+		ParseOptions ParseOptions { get; }
 
 		/// <summary>
 		/// Container of services that can be resolved during the current generator pass.

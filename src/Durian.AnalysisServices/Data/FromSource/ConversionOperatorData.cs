@@ -8,7 +8,6 @@ using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Durian.Analysis.SymbolContainers.Specialized;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data.FromSource
@@ -138,13 +137,13 @@ namespace Durian.Analysis.Data.FromSource
 		private bool? _isExplicit;
 		private bool? _isImplicit;
 		private MethodStyle? _bodyType;
-		private DefaultedValue<CSharpSyntaxNode> _body;
+		private DefaultedValue<SyntaxNode> _body;
 		private ILeveledSymbolContainer<IMethodSymbol, ILocalFunctionData>? _localFunctions;
 		private DefaultedValue<ISymbolOrMember<IParameterSymbol, IParameterData>> _parameter;
 		private ISymbolContainer<IParameterSymbol, IParameterData>? _parameters;
 
 		/// <inheritdoc/>
-		public CSharpSyntaxNode? Body
+		public SyntaxNode? Body
 		{
 			get
 			{
@@ -233,7 +232,7 @@ namespace Durian.Analysis.Data.FromSource
 
 		IConversionOperatorData ISymbolOrMember<IMethodSymbol, IConversionOperatorData>.Member => this;
 
-		CSharpSyntaxNode IMethodData.SafeDeclaration => Declaration;
+		SyntaxNode IMethodData.SafeDeclaration => Declaration;
 
 		BaseMethodDeclarationSyntax IMethodData.Declaration => Declaration;
 
@@ -263,10 +262,7 @@ namespace Durian.Analysis.Data.FromSource
 		/// <inheritdoc/>
 		public ISymbolContainer<IMethodSymbol, ILocalFunctionData> GetLocalFunctions(IncludedMembers members)
 		{
-			if (_localFunctions is null)
-			{
-				_localFunctions = new LocalFunctionsContainer(this, ParentCompilation);
-			}
+			_localFunctions ??= new LocalFunctionsContainer(this, ParentCompilation);
 
 			if (_localFunctions is IMappedSymbolContainer<IMethodSymbol, ILocalFunctionData, IncludedMembers> mapped)
 			{

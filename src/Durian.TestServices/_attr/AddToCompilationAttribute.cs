@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.TestServices
@@ -22,7 +23,7 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Creates new <see cref="CSharpSyntaxTree"/>s from the marked <c>static readonly</c> or <c>const</c> <see cref="string"/> fields in the specified <paramref name="sourceType"/>
+		/// Creates new <see cref="SyntaxTree"/>s from the marked <c>static readonly</c> or <c>const</c> <see cref="string"/> fields in the specified <paramref name="sourceType"/>
 		/// and returns a new <see cref="CSharpCompilation"/> that contains them.
 		/// </summary>
 		/// <param name="sourceType"><see cref="Type"/> to collect the <see cref="string"/> fields from.</param>
@@ -32,7 +33,7 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Creates new <see cref="CSharpSyntaxTree"/>s from the marked <c>static readonly</c> or <c>const</c> <see cref="string"/> fields in the specified <paramref name="sourceType"/>
+		/// Creates new <see cref="SyntaxTree"/>s from the marked <c>static readonly</c> or <c>const</c> <see cref="string"/> fields in the specified <paramref name="sourceType"/>
 		/// and returns a new <see cref="CSharpCompilation"/> that contains them.
 		/// </summary>
 		/// <param name="sourceType"><see cref="Type"/> to collect the <see cref="string"/> fields from.</param>

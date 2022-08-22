@@ -60,7 +60,7 @@ namespace Durian.Analysis
 		public abstract ICompilationData? CreateCompilationData(CSharpCompilation compilation);
 
 		/// <inheritdoc/>
-		protected internal override void AddSourceCore(CSharpSyntaxTree tree, string hintName, TContext context)
+		protected internal override void AddSourceCore(SyntaxTree tree, string hintName, TContext context)
 		{
 			base.AddSourceCore(tree, hintName, context);
 
@@ -92,7 +92,7 @@ namespace Durian.Analysis
 			if (context.GenerationQueue.Count > 0)
 			{
 				// Generated sources should be added AFTER all filters that don't include generated symbols were executed to avoid conflicts with SemanticModels.
-				foreach (CSharpSyntaxTree generatedTree in context.GenerationQueue)
+				foreach (SyntaxTree generatedTree in context.GenerationQueue)
 				{
 					context.TargetCompilation.UpdateCompilation(generatedTree);
 				}
@@ -130,15 +130,8 @@ namespace Durian.Analysis
 			pass.SyntaxReceiver = syntaxReceiver;
 			pass.State = GeneratorState.Running;
 
-			if (pass.ParseOptions is null)
-			{
-				pass.ParseOptions = CSharpParseOptions.Default;
-			}
-
-			if (pass.FileNameProvider is null)
-			{
-				pass.FileNameProvider = new SymbolNameToFile();
-			}
+			pass.ParseOptions ??= context.ParseOptions;
+			pass.FileNameProvider ??= new SymbolNameToFile();
 
 			FillContext(pass);
 

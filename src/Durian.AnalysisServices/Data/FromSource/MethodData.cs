@@ -9,7 +9,6 @@ using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Durian.Analysis.SymbolContainers.Specialized;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data.FromSource
@@ -138,7 +137,7 @@ namespace Durian.Analysis.Data.FromSource
 		private bool? _isDefaultImplementation;
 		private bool? _isModuleInitializer;
 		private bool? _isParameterless;
-		private DefaultedValue<CSharpSyntaxNode> _body;
+		private DefaultedValue<SyntaxNode> _body;
 		private ILeveledSymbolContainer<IMethodSymbol, ILocalFunctionData>? _localFunctions;
 		private ILeveledSymbolContainer<IMethodSymbol, IMethodData>? _overloads;
 		private DefaultedValue<ISymbolOrMember<IMethodSymbol, IMethodData>> _overriddenMethod;
@@ -148,7 +147,7 @@ namespace Durian.Analysis.Data.FromSource
 		private ISymbolContainer<ITypeParameterSymbol, ITypeParameterData>? _typeParameters;
 
 		/// <inheritdoc/>
-		public CSharpSyntaxNode? Body
+		public SyntaxNode? Body
 		{
 			get
 			{
@@ -319,12 +318,12 @@ namespace Durian.Analysis.Data.FromSource
 
 		BaseMethodDeclarationSyntax IMethodData.Declaration => Declaration;
 
-		CSharpSyntaxNode IMethodData.SafeDeclaration => Declaration;
+		SyntaxNode IMethodData.SafeDeclaration => Declaration;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MethodData"/> class.
 		/// </summary>
-		/// <param name="declaration"><see cref="CSharpSyntaxNode"/> this <see cref="MethodData"/> represents.</param>
+		/// <param name="declaration"><see cref="SyntaxNode"/> this <see cref="MethodData"/> represents.</param>
 		/// <param name="compilation">Parent <see cref="ICompilationData"/> of this <see cref="MethodData"/>.</param>
 		/// <param name="properties"><see cref="Properties"/> to use for the current instance.</param>
 		/// <exception cref="ArgumentNullException">
@@ -347,10 +346,7 @@ namespace Durian.Analysis.Data.FromSource
 		/// <inheritdoc/>
 		public ISymbolContainer<IMethodSymbol, ILocalFunctionData> GetLocalFunctions(IncludedMembers members)
 		{
-			if (_localFunctions is null)
-			{
-				_localFunctions = new LocalFunctionsContainer(this, ParentCompilation);
-			}
+			_localFunctions ??= new LocalFunctionsContainer(this, ParentCompilation);
 
 			if (_localFunctions is IMappedSymbolContainer<IMethodSymbol, ILocalFunctionData, IncludedMembers> mapped)
 			{
@@ -363,10 +359,7 @@ namespace Durian.Analysis.Data.FromSource
 		/// <inheritdoc/>
 		public ISymbolContainer<IMethodSymbol, IMethodData> GetOverloads(IncludedMembers members)
 		{
-			if (_overloads is null)
-			{
-				_overloads = new OverloadsContainer(this, ParentCompilation);
-			}
+			_overloads ??= new OverloadsContainer(this, ParentCompilation);
 
 			if (_localFunctions is IMappedSymbolContainer<IMethodSymbol, IMethodData, IncludedMembers> mapped)
 			{

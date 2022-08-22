@@ -123,12 +123,12 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Checks if the <see cref="CSharpSyntaxTree"/>s in <see cref="GeneratedSources"/> are equivalent to the given array of <paramref name="expected"/>.
+		/// Checks if the <see cref="SyntaxTree"/>s in <see cref="GeneratedSources"/> are equivalent to the given array of <paramref name="expected"/>.
 		/// </summary>
 		/// <remarks>
 		/// If <paramref name="expected"/> is <see langword="null"/>, empty, or it's length is not equal to that of <see cref="GeneratedSources"/>, <see langword="false"/> is returned.
 		/// </remarks>
-		/// <param name="expected">Array of <see cref="string"/>s representing <see cref="CSharpSyntaxTree"/>s that were expected to be generated.</param>
+		/// <param name="expected">Array of <see cref="string"/>s representing <see cref="SyntaxTree"/>s that were expected to be generated.</param>
 		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
 		public bool Compare(string[]? expected, bool includeStructuredTrivia)
 		{
@@ -167,21 +167,21 @@ namespace Durian.TestServices
 			return true;
 		}
 
-		/// <inheritdoc cref="Compare(CSharpSyntaxTree[], bool)"/>
-		public bool Compare(params CSharpSyntaxTree[]? syntaxTrees)
+		/// <inheritdoc cref="Compare(SyntaxTree[], bool)"/>
+		public bool Compare(params SyntaxTree[]? syntaxTrees)
 		{
 			return Compare(syntaxTrees, false);
 		}
 
 		/// <summary>
-		/// Checks if the <see cref="CSharpSyntaxTree"/>s in <see cref="GeneratedSources"/> are equivalent to the given array of <paramref name="syntaxTrees"/>.
+		/// Checks if the <see cref="SyntaxTree"/>s in <see cref="GeneratedSources"/> are equivalent to the given array of <paramref name="syntaxTrees"/>.
 		/// </summary>
 		/// <remarks>
 		/// If <paramref name="syntaxTrees"/> is <see langword="null"/>, empty, or it's length is not equal to that of <see cref="GeneratedSources"/>, <see langword="false"/> is returned.
 		/// </remarks>
-		/// <param name="syntaxTrees">Array of <see cref="CSharpSyntaxTree"/>s to compare.</param>
+		/// <param name="syntaxTrees">Array of <see cref="SyntaxTree"/>s to compare.</param>
 		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
-		public bool Compare(CSharpSyntaxTree[]? syntaxTrees, bool includeStructuredTrivia)
+		public bool Compare(SyntaxTree[]? syntaxTrees, bool includeStructuredTrivia)
 		{
 			if (syntaxTrees is null || syntaxTrees.Length == 0 || syntaxTrees.Length != Length)
 			{
@@ -219,10 +219,10 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Checks if the <see cref="CSharpSyntaxTree"/> at the specified <paramref name="index"/> in <see cref="GeneratedSources"/> is equivalent to a <see cref="CSharpSyntaxTree"/> created from the given <paramref name="expected"/> source.
+		/// Checks if the <see cref="SyntaxTree"/> at the specified <paramref name="index"/> in <see cref="GeneratedSources"/> is equivalent to a <see cref="SyntaxTree"/> created from the given <paramref name="expected"/> source.
 		/// </summary>
-		/// <param name="index">Index at which the <see cref="CSharpSyntaxTree"/> to compare is located at.</param>
-		/// <param name="expected">A <see cref="string"/> that represents a <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
+		/// <param name="index">Index at which the <see cref="SyntaxTree"/> to compare is located at.</param>
+		/// <param name="expected">A <see cref="string"/> that represents a <see cref="SyntaxTree"/> that was expected to be generated.</param>
 		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
 		public bool Compare(int index, string? expected, bool includeStructuredTrivia = false)
 		{
@@ -240,12 +240,12 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Checks if the <see cref="CSharpSyntaxTree"/> at the specified <paramref name="index"/> in <see cref="GeneratedSources"/> is equivalent to the given <paramref name="syntaxTree"/>.
+		/// Checks if the <see cref="SyntaxTree"/> at the specified <paramref name="index"/> in <see cref="GeneratedSources"/> is equivalent to the given <paramref name="syntaxTree"/>.
 		/// </summary>
-		/// <param name="index">Index at which the <see cref="CSharpSyntaxTree"/> to compare is located at.</param>
-		/// <param name="syntaxTree"><see cref="CSharpSyntaxTree"/> to compare.</param>
+		/// <param name="index">Index at which the <see cref="SyntaxTree"/> to compare is located at.</param>
+		/// <param name="syntaxTree"><see cref="SyntaxTree"/> to compare.</param>
 		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
-		public bool Compare(int index, CSharpSyntaxTree? syntaxTree, bool includeStructuredTrivia = false)
+		public bool Compare(int index, SyntaxTree? syntaxTree, bool includeStructuredTrivia = false)
 		{
 			if (index < 0 && index > Length)
 			{
@@ -262,7 +262,7 @@ namespace Durian.TestServices
 				return false;
 			}
 
-			return Compare(result.GeneratedTrees.CastArray<CSharpSyntaxTree>().ToArray());
+			return Compare(result.GeneratedTrees.CastArray<SyntaxTree>().ToArray());
 		}
 
 		private bool Compare_Internal(SyntaxTree? syntaxTree, int index, bool includeStructuredTrivia)

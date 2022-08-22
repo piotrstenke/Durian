@@ -24,7 +24,7 @@ namespace Durian.Analysis.Logging
 			}
 			set
 			{
-				if(value is null)
+				if (value is null)
 				{
 					throw new ArgumentNullException(nameof(value));
 				}

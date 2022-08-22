@@ -7,7 +7,6 @@ using System.ComponentModel;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data.FromSource
@@ -182,7 +181,7 @@ namespace Durian.Analysis.Data.FromSource
 
 		BaseTypeDeclarationSyntax ITypeData.Declaration => Declaration;
 
-		CSharpSyntaxNode ITypeData.SafeDeclaration => Declaration;
+		SyntaxNode ITypeData.SafeDeclaration => Declaration;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EnumData"/> class.

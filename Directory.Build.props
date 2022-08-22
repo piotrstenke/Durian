@@ -1,61 +1,61 @@
 <Project>
 
   <PropertyGroup>
-    
-    <OutputType>Library</OutputType>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <Nullable>enable</Nullable>
+	
+	<OutputType>Library</OutputType>
+	<EnableNETAnalyzers>true</EnableNETAnalyzers>
+	<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+	<Nullable>enable</Nullable>
 	<LangVersion>9</LangVersion>
-    <PreferredUILang>en-US</PreferredUILang>
+	<PreferredUILang>en-US</PreferredUILang>
 	<NeutralLanguage>en</NeutralLanguage>
   
   </PropertyGroup>
   
   <PropertyGroup Condition="!$(MSBuildProjectDirectoryNoRoot.Contains('samples'))">
   
-    <OutputPath>..\..\bin\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
-    <BaseIntermediateOutputPath>..\..\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-    <MSBuildProjectExtensionsPath>..\..\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
+	<OutputPath>..\..\bin\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
+	<BaseIntermediateOutputPath>..\..\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+	<MSBuildProjectExtensionsPath>..\..\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
 	
   </PropertyGroup>
 
   <PropertyGroup Condition="$(MSBuildProjectDirectoryNoRoot.Contains('src'))">
 
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Authors>Piotr Stenke</Authors>
-    <Company>Piotr Stenke</Company>
-    <PackageId>$(MSBuildProjectName)</PackageId>
-    <Product>$(MSBuildProjectName)</Product>
-    <Copyright>Copyright (c) Piotr Stenke - 2021</Copyright>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <RepositoryType>git</RepositoryType>
-    <PackageIcon>Durian-pkg-icon-128.png</PackageIcon>
-    <PackageIconUrl>..\..\img\icons\Durian-pkg-icon-128.png</PackageIconUrl>
-    <RepositoryUrl>https://github.com/piotrstenke/Durian</RepositoryUrl>
-    <ProjectUrl>https://github.com/piotrstenke/Durian/tree/master/${MSBuildProjectName)</ProjectUrl>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>$(BaseIntermediateOutputPath)$(MSBuildProjectName).xml</DocumentationFile>
-    <DebugType>pdbonly</DebugType>
-    <Deterministic>true</Deterministic>
+	<TargetFramework>netstandard2.0</TargetFramework>
+	<Authors>Piotr Stenke</Authors>
+	<Company>Piotr Stenke</Company>
+	<PackageId>$(MSBuildProjectName)</PackageId>
+	<Product>$(MSBuildProjectName)</Product>
+	<Copyright>Copyright (c) Piotr Stenke - 2021</Copyright>
+	<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<RepositoryType>git</RepositoryType>
+	<PackageIcon>Durian-pkg-icon-128.png</PackageIcon>
+	<PackageIconUrl>..\..\img\icons\Durian-pkg-icon-128.png</PackageIconUrl>
+	<RepositoryUrl>https://github.com/piotrstenke/Durian</RepositoryUrl>
+	<ProjectUrl>https://github.com/piotrstenke/Durian/tree/master/${MSBuildProjectName)</ProjectUrl>
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<DocumentationFile>$(BaseIntermediateOutputPath)$(MSBuildProjectName).xml</DocumentationFile>
+	<DebugType>pdbonly</DebugType>
+	<Deterministic>true</Deterministic>
 
   </PropertyGroup>
 
   <PropertyGroup Condition="$(MSBuildProjectDirectoryNoRoot.Contains('tests'))">
-    
-    <TargetFramework>net5.0</TargetFramework>
-    <IsPackable>false</IsPackable>
-    
+	
+	<TargetFramework>net5.0</TargetFramework>
+	<IsPackable>false</IsPackable>
+	
   </PropertyGroup>
   
   <ItemGroup Condition="$(MsBuildProjectDirectoryNoRoot.Contains('src'))">
-    
-    <None Include="..\..\img\icons\Durian-pkg-icon-128.png" Pack="true" Visible="false" PackagePath="" />
+	
+	<None Include="..\..\img\icons\Durian-pkg-icon-128.png" Pack="true" Visible="false" PackagePath="" />
   
   </ItemGroup>
 

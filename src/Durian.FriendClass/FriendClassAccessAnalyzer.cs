@@ -188,7 +188,7 @@ namespace Durian.Analysis.FriendClass
 								break;
 
 							case SimpleBaseTypeSyntax:
-								if(record.ParameterList is not null)
+								if (record.ParameterList is not null)
 								{
 									return currentType.BaseType?.GetSpecialConstructor(SpecialConstructor.Parameterless);
 								}

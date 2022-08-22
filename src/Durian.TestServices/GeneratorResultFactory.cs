@@ -66,11 +66,11 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Creates a new instance of the <see cref="GeneratedSourceResult"/> struct.
 		/// </summary>
-		/// <param name="source">A <see cref="string"/> value to be parsed and converted to a <see cref="CSharpSyntaxTree"/> that will be used to set the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
+		/// <param name="source">A <see cref="string"/> value to be parsed and converted to a <see cref="SyntaxTree"/> that will be used to set the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
 		/// <param name="hintName">A <see cref="string"/> value to be set to the <see cref="GeneratedSourceResult.HintName"/> property.</param>
 		/// <exception cref="ArgumentException">
-		/// A <see cref="CSharpSyntaxTree"/> couldn't be created from the specified <paramref name="source"/>. -or-
-		/// A valid <see cref="SourceText"/> couldn't be properly retrieved from the created <see cref="CSharpSyntaxTree"/>.
+		/// A <see cref="SyntaxTree"/> couldn't be created from the specified <paramref name="source"/>. -or-
+		/// A valid <see cref="SourceText"/> couldn't be properly retrieved from the created <see cref="SyntaxTree"/>.
 		/// </exception>
 		public static GeneratedSourceResult CreateSourceResult(string source, string? hintName)
 		{
@@ -79,7 +79,7 @@ namespace Durian.TestServices
 				throw GetException();
 			}
 
-			if (CSharpSyntaxTree.ParseText(source) is not CSharpSyntaxTree tree)
+			if (CSharpSyntaxTree.ParseText(source) is not SyntaxTree tree)
 			{
 				throw GetException();
 			}
@@ -88,12 +88,12 @@ namespace Durian.TestServices
 
 			static ArgumentException GetException()
 			{
-				return new ArgumentException($"A {nameof(CSharpSyntaxTree)} couldn't be created from the specified {nameof(source)}!");
+				return new ArgumentException($"A {nameof(SyntaxTree)} couldn't be created from the specified {nameof(source)}!");
 			}
 		}
 
-		/// <inheritdoc cref="CreateSourceResult(CSharpSyntaxTree, string)"/>
-		public static GeneratedSourceResult CreateSourceResult(CSharpSyntaxTree syntaxTree)
+		/// <inheritdoc cref="CreateSourceResult(SyntaxTree, string)"/>
+		public static GeneratedSourceResult CreateSourceResult(SyntaxTree syntaxTree)
 		{
 			return CreateSourceResult(syntaxTree, string.Empty);
 		}
@@ -101,12 +101,12 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Creates a new instance of the <see cref="GeneratedSourceResult"/> struct.
 		/// </summary>
-		/// <param name="syntaxTree">A <see cref="CSharpSyntaxTree"/> to be set to the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
+		/// <param name="syntaxTree">A <see cref="SyntaxTree"/> to be set to the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
 		/// <param name="hintName">A <see cref="string"/> value to be set to the <see cref="GeneratedSourceResult.HintName"/> property.</param>
 		/// <remarks>The needed <see cref="SourceText"/> for the <see cref="GeneratedSourceResult.SourceText"/> property is created by calling the <see cref="SyntaxTree.TryGetText(out SourceText?)"/> method.</remarks>
 		/// <exception cref="ArgumentNullException"><paramref name="syntaxTree"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">A valid <see cref="SourceText"/> couldn't be properly retrieved from the <paramref name="syntaxTree"/>.</exception>
-		public static GeneratedSourceResult CreateSourceResult(CSharpSyntaxTree syntaxTree, string? hintName)
+		public static GeneratedSourceResult CreateSourceResult(SyntaxTree syntaxTree, string? hintName)
 		{
 			if (syntaxTree is null)
 			{
@@ -124,11 +124,11 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Creates a new instance of the <see cref="GeneratedSourceResult"/> struct.
 		/// </summary>
-		/// <param name="syntaxTree">A <see cref="CSharpSyntaxTree"/> to be set to the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
+		/// <param name="syntaxTree">A <see cref="SyntaxTree"/> to be set to the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
 		/// <param name="sourceText">A <see cref="SourceText"/> to be set to the <see cref="GeneratedSourceResult.SourceText"/> property.</param>
 		/// <param name="hintName">A <see cref="string"/> value to be set to the <see cref="GeneratedSourceResult.HintName"/> property.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="syntaxTree"/> is <see langword="null"/>. -or <paramref name="sourceText"/> is <see langword="null"/>.</exception>
-		public static GeneratedSourceResult CreateSourceResult(CSharpSyntaxTree syntaxTree, SourceText sourceText, string? hintName)
+		public static GeneratedSourceResult CreateSourceResult(SyntaxTree syntaxTree, SourceText sourceText, string? hintName)
 		{
 			if (syntaxTree is null)
 			{
@@ -154,7 +154,7 @@ namespace Durian.TestServices
 			);
 		}
 
-		private static GeneratedSourceResult CreateSourceResult_Internal(CSharpSyntaxTree syntaxTree, SourceText sourceText, string? hintName)
+		private static GeneratedSourceResult CreateSourceResult_Internal(SyntaxTree syntaxTree, SourceText sourceText, string? hintName)
 		{
 			object? obj = CreateInstance(typeof(GeneratedSourceResult), syntaxTree, sourceText, hintName ?? string.Empty);
 

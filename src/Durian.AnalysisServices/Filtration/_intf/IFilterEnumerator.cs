@@ -4,7 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Durian.Analysis.Data;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Filtration
 {
@@ -15,7 +15,7 @@ namespace Durian.Analysis.Filtration
 	public interface IFilterEnumerator<T> where T : ISyntaxValidationContext
 	{
 		/// <summary>
-		/// Parent <see cref="ICompilationData"/> of the provided <see cref="CSharpSyntaxNode"/>s.
+		/// Parent <see cref="ICompilationData"/> of the provided <see cref="SyntaxNode"/>s.
 		/// </summary>
 		ICompilationData Compilation { get; }
 

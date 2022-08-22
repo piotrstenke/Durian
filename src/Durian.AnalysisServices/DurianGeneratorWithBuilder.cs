@@ -53,7 +53,7 @@ namespace Durian.Analysis
 		/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
 		protected void AddSource(string hintName, TContext context)
 		{
-			CSharpSyntaxTree tree = ParseSyntaxTree(context);
+			SyntaxTree tree = ParseSyntaxTree(context);
 			context.CodeBuilder.Clear();
 			AddSource_Internal(tree, hintName, context);
 		}
@@ -66,7 +66,7 @@ namespace Durian.Analysis
 		/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
 		protected void AddSourceWithOriginal(SyntaxNode original, string hintName, TContext context)
 		{
-			CSharpSyntaxTree tree = ParseSyntaxTree(context);
+			SyntaxTree tree = ParseSyntaxTree(context);
 			context.CodeBuilder.Clear();
 			AddSource_Internal(original, tree, hintName, context);
 		}
@@ -259,7 +259,7 @@ namespace Durian.Analysis
 				builder.Namespace(member.Symbol.ContainingNamespace);
 			}
 
-			foreach (INamedTypeSymbol type in member.ContainingTypes.GetSymbols())
+			foreach (INamedTypeSymbol type in member.ContainingTypes.GetSymbols().Cast<INamedTypeSymbol>())
 			{
 				builder.Declaration(type);
 			}
@@ -617,9 +617,9 @@ namespace Durian.Analysis
 			return nodes.Select(n => NodeToString(n)).ToArray();
 		}
 
-		private static CSharpSyntaxTree ParseSyntaxTree(TContext context)
+		private static SyntaxTree ParseSyntaxTree(TContext context)
 		{
-			return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(context.CodeBuilder.ToString(), context.ParseOptions, encoding: Encoding.UTF8);
+			return CSharpSyntaxTree.ParseText(context.CodeBuilder.ToString(), context.ParseOptions as CSharpParseOptions, encoding: Encoding.UTF8);
 		}
 	}
 

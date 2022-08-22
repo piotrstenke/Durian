@@ -66,7 +66,7 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc/>
-		public void UpdateCompilation(CSharpSyntaxTree? tree)
+		public void UpdateCompilation(SyntaxTree? tree)
 		{
 			if (tree is not null)
 			{
@@ -77,7 +77,7 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc/>
-		public void UpdateCompilation(CSharpSyntaxTree? original, CSharpSyntaxTree? updated)
+		public void UpdateCompilation(SyntaxTree? original, SyntaxTree? updated)
 		{
 			if (original is null || updated is null)
 			{
@@ -90,7 +90,7 @@ namespace Durian.Analysis.Data
 		}
 
 		/// <inheritdoc/>
-		public void UpdateCompilation(IEnumerable<CSharpSyntaxTree>? trees)
+		public void UpdateCompilation(IEnumerable<SyntaxTree>? trees)
 		{
 			if (trees is not null)
 			{

@@ -11,8 +11,8 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.TestServices
 {
 	/// <summary>
-	/// A <see cref="IGeneratorTestResult"/> that represents two <see cref="CSharpSyntaxTree"/>s - one for a generated <see cref="System.Attribute"/>
-	/// and one for a <see cref="CSharpSyntaxTree"/> that uses this <see cref="System.Attribute"/>.
+	/// A <see cref="IGeneratorTestResult"/> that represents two <see cref="SyntaxTree"/>s - one for a generated <see cref="System.Attribute"/>
+	/// and one for a <see cref="SyntaxTree"/> that uses this <see cref="System.Attribute"/>.
 	/// </summary>
 	public readonly struct AttributeTargetGeneratorTestResult : IGeneratorTestResult
 	{
@@ -42,7 +42,7 @@ namespace Durian.TestServices
 		public CSharpCompilation OutputCompilation { get; }
 
 		/// <summary>
-		/// A <see cref="GeneratedSourceResult"/> that represents the generated <see cref="CSharpSyntaxTree"/> that uses the generated <see cref="Attribute"/>.
+		/// A <see cref="GeneratedSourceResult"/> that represents the generated <see cref="SyntaxTree"/> that uses the generated <see cref="Attribute"/>.
 		/// </summary>
 		public GeneratedSourceResult Source { get; }
 
@@ -63,7 +63,7 @@ namespace Durian.TestServices
 				Attribute = _runResult.GeneratedSources[0];
 				Source = _runResult.GeneratedSources[1];
 
-				IsGenerated = Attribute.SyntaxTree is CSharpSyntaxTree && Source.SyntaxTree is CSharpSyntaxTree;
+				IsGenerated = Attribute.SyntaxTree is SyntaxTree && Source.SyntaxTree is SyntaxTree;
 			}
 			else
 			{
@@ -80,43 +80,43 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Checks if the <paramref name="expected"/> <see cref="CSharpSyntaxTree"/> is equivalent to the <see cref="CSharpSyntaxTree"/> of the <see cref="Attribute"/> created by the <see cref="ISourceGenerator"/>.
+		/// Checks if the <paramref name="expected"/> <see cref="SyntaxTree"/> is equivalent to the <see cref="SyntaxTree"/> of the <see cref="Attribute"/> created by the <see cref="ISourceGenerator"/>.
 		/// </summary>
-		/// <param name="expected">A <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
+		/// <param name="expected">A <see cref="SyntaxTree"/> that was expected to be generated.</param>
 		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
-		public bool CompareAttribute(CSharpSyntaxTree? expected, bool includeStructuredTrivia = false)
+		public bool CompareAttribute(SyntaxTree? expected, bool includeStructuredTrivia = false)
 		{
-			return Compare((CSharpSyntaxTree)Attribute.SyntaxTree, expected, includeStructuredTrivia);
+			return Compare(Attribute.SyntaxTree, expected, includeStructuredTrivia);
 		}
 
 		/// <summary>
-		/// Checks if the <see cref="CSharpSyntaxTree"/> created from the <paramref name="expected"/> source is equivalent to the <see cref="CSharpSyntaxTree"/> of the <see cref="Attribute"/> created by the <see cref="ISourceGenerator"/>.
+		/// Checks if the <see cref="SyntaxTree"/> created from the <paramref name="expected"/> source is equivalent to the <see cref="SyntaxTree"/> of the <see cref="Attribute"/> created by the <see cref="ISourceGenerator"/>.
 		/// </summary>
-		/// <param name="expected">A <see cref="string"/> that represents a <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
+		/// <param name="expected">A <see cref="string"/> that represents a <see cref="SyntaxTree"/> that was expected to be generated.</param>
 		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
 		public bool CompareAttribute(string? expected, bool includeStructuredTrivia = false)
 		{
-			return Compare((CSharpSyntaxTree)Attribute.SyntaxTree, expected, includeStructuredTrivia);
+			return Compare(Attribute.SyntaxTree, expected, includeStructuredTrivia);
 		}
 
 		/// <summary>
-		/// Checks if the <paramref name="expected"/> <see cref="CSharpSyntaxTree"/> is equivalent to the <see cref="CSharpSyntaxTree"/> of the <see cref="Source"/> created by the <see cref="ISourceGenerator"/>.
+		/// Checks if the <paramref name="expected"/> <see cref="SyntaxTree"/> is equivalent to the <see cref="SyntaxTree"/> of the <see cref="Source"/> created by the <see cref="ISourceGenerator"/>.
 		/// </summary>
-		/// <param name="expected">A <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
+		/// <param name="expected">A <see cref="SyntaxTree"/> that was expected to be generated.</param>
 		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
-		public bool CompareSource(CSharpSyntaxTree? expected, bool includeStructuredTrivia = false)
+		public bool CompareSource(SyntaxTree? expected, bool includeStructuredTrivia = false)
 		{
-			return Compare((CSharpSyntaxTree)Source.SyntaxTree, expected, includeStructuredTrivia);
+			return Compare(Source.SyntaxTree, expected, includeStructuredTrivia);
 		}
 
 		/// <summary>
-		/// Checks if the <see cref="CSharpSyntaxTree"/> created from the <paramref name="expected"/> source is equivalent to the <see cref="CSharpSyntaxTree"/> of the <see cref="Source"/> created by the <see cref="ISourceGenerator"/>.
+		/// Checks if the <see cref="SyntaxTree"/> created from the <paramref name="expected"/> source is equivalent to the <see cref="SyntaxTree"/> of the <see cref="Source"/> created by the <see cref="ISourceGenerator"/>.
 		/// </summary>
-		/// <param name="expected">A <see cref="string"/> that represents a <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
+		/// <param name="expected">A <see cref="string"/> that represents a <see cref="SyntaxTree"/> that was expected to be generated.</param>
 		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
 		public bool CompareSource(string? expected, bool includeStructuredTrivia = false)
 		{
-			return Compare((CSharpSyntaxTree)Source.SyntaxTree, expected, includeStructuredTrivia);
+			return Compare(Source.SyntaxTree, expected, includeStructuredTrivia);
 		}
 
 		bool IGeneratorTestResult.Compare(GeneratorDriverRunResult result, bool includeStructuredTrivia)
@@ -149,17 +149,17 @@ namespace Durian.TestServices
 			return node.IsEquivalentTo(other);
 		}
 
-		private static bool Compare(CSharpSyntaxTree first, string? second, bool includeStructuredTrivia)
+		private static bool Compare(SyntaxTree first, string? second, bool includeStructuredTrivia)
 		{
 			if (second is null)
 			{
 				return false;
 			}
 
-			return Compare(first, CSharpSyntaxTree.ParseText(second, encoding: Encoding.UTF8) as CSharpSyntaxTree, includeStructuredTrivia);
+			return Compare(first, CSharpSyntaxTree.ParseText(second, encoding: Encoding.UTF8), includeStructuredTrivia);
 		}
 
-		private static bool Compare(CSharpSyntaxTree first, CSharpSyntaxTree? second, bool includeStructuredTrivia)
+		private static bool Compare(SyntaxTree first, SyntaxTree? second, bool includeStructuredTrivia)
 		{
 			if (second is null)
 			{

@@ -6,7 +6,6 @@ using System.Diagnostics;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -19,7 +18,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Body of the method.
 		/// </summary>
-		CSharpSyntaxNode? Body { get; }
+		SyntaxNode? Body { get; }
 
 		/// <summary>
 		/// Target <see cref="BaseMethodDeclarationSyntax"/>.
@@ -30,7 +29,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Equivalent to <see cref="Declaration"/>, but will never throw an exception. Used when a <see cref="IMethodSymbol"/> resolves to different node kind than <see cref="BaseMethodDeclarationSyntax"/>.
 		/// </summary>
-		CSharpSyntaxNode SafeDeclaration { get; }
+		SyntaxNode SafeDeclaration { get; }
 
 		/// <summary>
 		/// Type of body of the method.

@@ -287,7 +287,7 @@ namespace Durian.Analysis.Extensions
 		/// <item><see cref="AttributeTarget.Method"/> for events.</item>
 		/// </list>
 		/// </remarks>
-		public static CSharpSyntaxNode? GetAttributeTarget(this SyntaxNode node, AttributeTarget target)
+		public static SyntaxNode? GetAttributeTarget(this SyntaxNode node, AttributeTarget target)
 		{
 			switch (target)
 			{
@@ -303,13 +303,13 @@ namespace Durian.Analysis.Extensions
 						LocalFunctionStatementSyntax or
 						ParenthesizedLambdaExpressionSyntax or
 						AccessorDeclarationSyntax
-						? node as CSharpSyntaxNode : default;
+						? node : default;
 
 				case AttributeTarget.Type:
 					return node is
 						BaseTypeDeclarationSyntax or
 						DelegateDeclarationSyntax
-						? node as CSharpSyntaxNode : default;
+						? node : default;
 
 				case AttributeTarget.TypeVar:
 					return node as TypeParameterSyntax;
@@ -318,7 +318,7 @@ namespace Durian.Analysis.Extensions
 
 					if (node is EventDeclarationSyntax or EventFieldDeclarationSyntax)
 					{
-						return node as CSharpSyntaxNode;
+						return node;
 					}
 
 					return default;
@@ -339,7 +339,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="node"><see cref="SyntaxNode"/> to get the attribute target node of.</param>
 		/// <param name="target">Kind of attribute target.</param>
-		public static CSharpSyntaxNode? GetAttributeTarget(this SyntaxNode node, AttributeTargetKind target)
+		public static SyntaxNode? GetAttributeTarget(this SyntaxNode node, AttributeTargetKind target)
 		{
 			return target switch
 			{
@@ -353,7 +353,7 @@ namespace Durian.Analysis.Extensions
 					LocalFunctionStatementSyntax or
 					ParenthesizedLambdaExpressionSyntax or
 					AccessorDeclarationSyntax
-					? node as CSharpSyntaxNode : default,
+					? node : default,
 
 				AttributeTargetKind.Value => node is not BasePropertyDeclarationSyntax ? node.GetReturnType() : default,
 
@@ -515,7 +515,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns the body of the specified <paramref name="node"/>.
 		/// </summary>
 		/// <param name="node"><see cref="BaseMethodDeclarationSyntax"/> to get the body of.</param>
-		public static CSharpSyntaxNode? GetBody(this BaseMethodDeclarationSyntax node)
+		public static SyntaxNode? GetBody(this BaseMethodDeclarationSyntax node)
 		{
 			if (node.Body is not null)
 			{
@@ -534,7 +534,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns the body of the specified <paramref name="node"/>.
 		/// </summary>
 		/// <param name="node"><see cref="LocalFunctionStatementSyntax"/> to get the body of.</param>
-		public static CSharpSyntaxNode? GetBody(this LocalFunctionStatementSyntax node)
+		public static SyntaxNode? GetBody(this LocalFunctionStatementSyntax node)
 		{
 			if (node.Body is not null)
 			{
@@ -553,7 +553,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns the body of the specified <paramref name="node"/>.
 		/// </summary>
 		/// <param name="node"><see cref="AccessorDeclarationSyntax"/> to get the body of.</param>
-		public static CSharpSyntaxNode? GetBody(this AccessorDeclarationSyntax node)
+		public static SyntaxNode? GetBody(this AccessorDeclarationSyntax node)
 		{
 			if (node.Body is not null)
 			{
@@ -572,7 +572,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns the body of the specified <paramref name="node"/>.
 		/// </summary>
 		/// <param name="node"><see cref="AnonymousFunctionExpressionSyntax"/> to get the body of.</param>
-		public static CSharpSyntaxNode? GetBody(this AnonymousFunctionExpressionSyntax node)
+		public static SyntaxNode? GetBody(this AnonymousFunctionExpressionSyntax node)
 		{
 			if (node.Body is not null)
 			{
@@ -1360,7 +1360,7 @@ namespace Durian.Analysis.Extensions
 				LocalFunctionStatementSyntax => new LocalFunctionData((LocalFunctionStatementSyntax)member, compilation),
 				LocalDeclarationStatementSyntax => new LocalData((LocalDeclarationStatementSyntax)member, compilation, 0),
 
-				_ => new MemberData((CSharpSyntaxNode)member, compilation),
+				_ => new MemberData(member, compilation),
 			};
 		}
 
@@ -1432,7 +1432,7 @@ namespace Durian.Analysis.Extensions
 		{
 			List<SyntaxToken> tokens = new();
 
-			foreach (TypeDeclarationSyntax d in decl)
+			foreach (MemberDeclarationSyntax d in decl)
 			{
 				if (d is null)
 				{

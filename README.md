@@ -1,20 +1,20 @@
 ﻿<div align="left">
-    <a href="https://www.nuget.org/packages/Durian">
-        <img src="https://img.shields.io/nuget/v/Durian?color=seagreen&style=flat-square" alt="Version"/>
-    </a>
-    <a href="https://www.nuget.org/packages/Durian">
-        <img src="https://img.shields.io/nuget/dt/Durian?color=blue&style=flat-square" alt="Downloads"/>
-    </a> <br />
-    <a href="https://github.com/piotrstenke/Durian/actions">
-        <img src="https://img.shields.io/github/workflow/status/piotrstenke/Durian/.NET?style=flat-square" alt="Build"/>
-    </a>
-    <a href="https://github.com//piotrstenke/Durian/blob/master/LICENSE.md">
-        <img src="https://img.shields.io/github/license/piotrstenke/Durian?color=orange&style=flat-square" alt="License"/>
-    </a>
+	<a href="https://www.nuget.org/packages/Durian">
+		<img src="https://img.shields.io/nuget/v/Durian?color=seagreen&style=flat-square" alt="Version"/>
+	</a>
+	<a href="https://www.nuget.org/packages/Durian">
+		<img src="https://img.shields.io/nuget/dt/Durian?color=blue&style=flat-square" alt="Downloads"/>
+	</a> <br />
+	<a href="https://github.com/piotrstenke/Durian/actions">
+		<img src="https://img.shields.io/github/workflow/status/piotrstenke/Durian/.NET?style=flat-square" alt="Build"/>
+	</a>
+	<a href="https://github.com//piotrstenke/Durian/blob/master/LICENSE.md">
+		<img src="https://img.shields.io/github/license/piotrstenke/Durian?color=orange&style=flat-square" alt="License"/>
+	</a>
 </div>
 
 <div align="center">
-        <img src="img/icons/Durian-256.png" alt="Durian logo"/>
+		<img src="img/icons/Durian-256.png" alt="Durian logo"/>
 </div>
 
 ##
@@ -25,9 +25,9 @@
 
 1. [Current State](#current-state)
 2. [Features](#features)
-    1. [DefaultParam](#defaultparam)
-    2. [InterfaceTargets](#interfacetargets)
-    3. [FriendClass](#friendclass)
+	1. [DefaultParam](#defaultparam)
+	2. [InterfaceTargets](#interfacetargets)
+	3. [FriendClass](#friendclass)
 3. [In Progress](#in-progress)
    1. [CopyFrom](#copyfrom)
 4. [Experimental](#experimental) 
@@ -49,24 +49,24 @@ using Durian;
 
 public class Test<[DefaultParam(typeof(string))]T>
 {
-    public T Value { get; }
+	public T Value { get; }
 
-    public Test(T value)
-    {
-        Value = value;
-    }
+	public Test(T value)
+	{
+		Value = value;
+	}
 }
 
 public class Program
 {
-    static void Main()
-    {
-        // Test<T> can be used without type parameters - 'T' defaults to 'string'.
-        Test test1 = new Test("");
-        
-        // Type parameter can be stated explicitly.
-        Test<string> test2 = new Test<string>("");
-    }
+	static void Main()
+	{
+		// Test<T> can be used without type parameters - 'T' defaults to 'string'.
+		Test test1 = new Test("");
+		
+		// Type parameter can be stated explicitly.
+		Test<string> test2 = new Test<string>("");
+	}
 }
 
 ```
@@ -107,27 +107,27 @@ using Durian;
 [FriendClass(typeof(A))]
 public class Test
 {
-    internal static string Key { get; }
+	internal static string Key { get; }
 }
 
 public class A
 {
-    public string GetKey()
-    {
-        // Success!
-        // Type 'A' is a friend of 'Test', so it can safely access internal members.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Success!
+		// Type 'A' is a friend of 'Test', so it can safely access internal members.
+		return Test.Key;
+	}
 }
 
 public class B
 {
-    public string GetKey()
-    {
-        // Error!
-        // Type 'B' is not a friend of 'Test', so it cannot access internal members.
-        return Test.Key;
-    }
+	public string GetKey()
+	{
+		// Error!
+		// Type 'B' is not a friend of 'Test', so it cannot access internal members.
+		return Test.Key;
+	}
 }
 ```
 
@@ -149,24 +149,24 @@ public partial class Test
 
 public class Other
 {
-    private string _text;
+	private string _text;
 
-    void Set(string text)
-    {
-        _text = text;
-    }
+	void Set(string text)
+	{
+		_text = text;
+	}
 }
 
 // Generated
 
 partial class Test
 {
-    private string _name;
+	private string _name;
 
-    void Set(string name)
-    {
-        _name = name;
-    }
+	void Set(string name)
+	{
+		_name = name;
+	}
 }
 
 ```
@@ -184,18 +184,18 @@ using Durian;
 
 public static class Utility
 {
-    [ConstExpr]
-    public static int Sum(params int[] values)
-    {
-        int sum = 0;
+	[ConstExpr]
+	public static int Sum(params int[] values)
+	{
+		int sum = 0;
 
-        for(int i = 0; i < values.Length; i++)
-        {
-            sum += values[i];
-        }
+		for(int i = 0; i < values.Length; i++)
+		{
+			sum += values[i];
+		}
 
-        return sum;
-    }
+		return sum;
+	}
 }
 
 [ConstExprSource("Utility.Sum", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, Name = "Sum_10")]
@@ -207,7 +207,7 @@ public static partial class Constants
 
 public static partial class Constants
 {
-    public const int Sum_10 = 55;
+	public const int Sum_10 = 55;
 }
 
 ```

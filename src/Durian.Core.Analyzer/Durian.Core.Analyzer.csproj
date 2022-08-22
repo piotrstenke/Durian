@@ -20,21 +20,12 @@
 	
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-
-	<DebugType>none</DebugType>
-
-  </PropertyGroup>
-
   <ItemGroup>
 
 	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" PrivateAssets="all" />
 	<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.1.0" PrivateAssets="all" />
-	<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.1.0" PrivateAssets="all" />
 	
 	<ProjectReference Include="..\Durian.AnalysisServices\Durian.AnalysisServices.csproj" PrivateAssets="all" />
-	
-	<ProjectReference Include="..\Durian.DefaultParam\Durian.DefaultParam.csproj" />
 
 	<AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
 	<AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />

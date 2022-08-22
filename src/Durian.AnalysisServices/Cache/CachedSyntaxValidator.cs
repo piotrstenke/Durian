@@ -15,7 +15,7 @@ namespace Durian.Analysis.Cache
 {
 	/// <summary>
 	/// <see cref="ISyntaxFilter"/> that validates the filtrated nodes.
-	/// If the value associated with a <see cref="CSharpSyntaxNode"/> is present in the <see cref="CachedGeneratorExecutionContext{T}"/>, it is re-used.
+	/// If the value associated with a <see cref="SyntaxNode"/> is present in the <see cref="CachedGeneratorExecutionContext{T}"/>, it is re-used.
 	/// </summary>
 	/// <typeparam name="TData">Type of cached values.</typeparam>
 	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
@@ -33,7 +33,7 @@ namespace Durian.Analysis.Cache
 		/// <inheritdoc/>
 		public IEnumerable<IMemberData> Filtrate(ICachedGeneratorPassContext<TData> context)
 		{
-			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
+			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<SyntaxNode> list)
 			{
 				return Array.Empty<TData>();
 			}
@@ -66,7 +66,7 @@ namespace Durian.Analysis.Cache
 		/// <inheritdoc/>
 		public virtual IEnumerator<IMemberData> GetEnumerator(ICachedGeneratorPassContext<TData> context)
 		{
-			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<CSharpSyntaxNode> list)
+			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<SyntaxNode> list)
 			{
 				return Enumerable.Empty<TData>().GetEnumerator();
 			}

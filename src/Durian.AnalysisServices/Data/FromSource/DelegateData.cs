@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data.FromSource
@@ -146,7 +145,7 @@ namespace Durian.Analysis.Data.FromSource
 
 		BaseTypeDeclarationSyntax ITypeData.Declaration => throw new InvalidOperationException("A delegate cannot be represented by a BaseTypeDeclarationSyntax");
 
-		CSharpSyntaxNode ITypeData.SafeDeclaration => Declaration;
+		SyntaxNode ITypeData.SafeDeclaration => Declaration;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DelegateData"/> class.

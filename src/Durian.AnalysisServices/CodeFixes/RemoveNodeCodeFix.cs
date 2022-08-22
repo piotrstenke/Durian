@@ -3,15 +3,14 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.CodeFixes
 {
 	/// <summary>
-	/// A code fix that removes a specific <see cref="CSharpSyntaxNode"/>.
+	/// A code fix that removes a specific <see cref="SyntaxNode"/>.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to remove.</typeparam>
-	public abstract class RemoveNodeCodeFix<T> : DurianCodeFix<T> where T : CSharpSyntaxNode
+	/// <typeparam name="T">Type of <see cref="SyntaxNode"/> to remove.</typeparam>
+	public abstract class RemoveNodeCodeFix<T> : DurianCodeFix<T> where T : SyntaxNode
 	{
 		/// <summary>
 		/// Creates a new instance of the <see cref="RemoveNodeCodeFix{T}"/> class.

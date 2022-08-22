@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.Analysis.SyntaxVisitors
 {
 	/// <summary>
-	/// Replaces a given identifier with a specified <see cref="CSharpSyntaxNode"/>.
+	/// Replaces a given identifier with a specified <see cref="SyntaxNode"/>.
 	/// </summary>
 	public class IdentifierReplacer : NodeReplacer
 	{

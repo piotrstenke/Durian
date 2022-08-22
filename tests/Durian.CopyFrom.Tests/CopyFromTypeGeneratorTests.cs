@@ -1799,7 +1799,7 @@ internal partial class Test
 	/// <summary>
 	/// <see cref=""int""/>.
 	/// </summary>
-	{ GetCodeGenerationAttributes("Target.Method()")}
+	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
 	{{
 		int b = default;
@@ -2294,7 +2294,7 @@ $@"using {DurianStrings.MainNamespace};
 internal partial class Test
 {{
 	/// <inheritdoc cref=""Target.Method()""/>
-	{ GetCodeGenerationAttributes("Target.Method()")}
+	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
 	{{
 		string b = """";
@@ -2437,7 +2437,7 @@ $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
 {{
-	{ GetCodeGenerationAttributes("Target.Method()")}
+	{GetCodeGenerationAttributes("Target.Method()")}
 	void Method()
 	{{
 	}}

@@ -187,7 +187,7 @@ namespace Durian.Analysis.InterfaceTargets
 
 			void ReportDiagnostic(DiagnosticDescriptor diag, TypeParameterConstraintSyntax constraint)
 			{
-				context.ReportDiagnostic(Diagnostic.Create(diag, constraint.GetLocation(), intf, constraint));
+				context.ReportDiagnostic(Diagnostic.Create(diag, constraint.Parent!.GetLocation(), context.ContainingSymbol, intf, constraint));
 			}
 		}
 
@@ -198,12 +198,12 @@ namespace Durian.Analysis.InterfaceTargets
 				return false;
 			}
 
-			if(otherTargets == IntfTargets.ReflectionOnly)
+			if (otherTargets == IntfTargets.ReflectionOnly)
 			{
 				return true;
 			}
 
-			if(!CheckTarget(IntfTargets.Class))
+			if (!CheckTarget(IntfTargets.Class))
 			{
 				return false;
 			}

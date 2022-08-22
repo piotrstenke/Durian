@@ -7,7 +7,6 @@ using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis
 {
@@ -31,7 +30,7 @@ namespace Durian.Analysis
 		public ref readonly GeneratorExecutionContext OriginalContext => ref _originalContext;
 
 		/// <inheritdoc/>
-		public CSharpParseOptions ParseOptions { get; internal set; }
+		public ParseOptions ParseOptions { get; internal set; }
 
 		/// <inheritdoc/>
 		public IGeneratorServiceResolver Services { get; internal set; }
@@ -45,7 +44,7 @@ namespace Durian.Analysis
 		/// <inheritdoc/>
 		public ICompilationData TargetCompilation { get; internal set; }
 
-		internal List<CSharpSyntaxTree> GenerationQueue { get; } = new();
+		internal List<SyntaxTree> GenerationQueue { get; } = new();
 		internal bool IsFilterWithGeneratedSymbols { get; set; }
 
 		/// <summary>
@@ -55,7 +54,7 @@ namespace Durian.Analysis
 		/// <param name="generator"><see cref="IDurianGenerator"/> this context was created for.</param>
 		/// <param name="targetCompilation"><see cref="ICompilationData"/> this <see cref="IDurianGenerator"/> operates on.</param>
 		/// <param name="syntaxReceiver"><see cref="IDurianSyntaxReceiver"/> that provides the <see cref="SyntaxNode"/>es that will take part in the generation.</param>
-		/// <param name="parseOptions"><see cref="CSharpParseOptions"/> that will be used to parse any added sources.</param>
+		/// <param name="parseOptions"><see cref="ParseOptions"/> that will be used to parse any added sources.</param>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
 		/// <param name="services">Container of services that can be resolved during the current generator pass.</param>
 		/// <param name="cancellationToken"><see cref="System.Threading.CancellationToken"/> that can be checked to see if the generation should be canceled.</param>
@@ -64,7 +63,7 @@ namespace Durian.Analysis
 			IDurianGenerator generator,
 			ICompilationData targetCompilation,
 			IDurianSyntaxReceiver syntaxReceiver,
-			CSharpParseOptions parseOptions,
+			ParseOptions parseOptions,
 			IHintNameProvider fileNameProvider,
 			IGeneratorServiceResolver services,
 			CancellationToken cancellationToken = default
@@ -84,9 +83,9 @@ namespace Durian.Analysis
 		/// Initializes a new instance of the <see cref="GeneratorPassContext"/> class.
 		/// </summary>
 		/// <param name="fileNameProvider">Creates names for generated files.</param>
-		/// <param name="parseOptions"><see cref="CSharpParseOptions"/> that will be used to parse any added sources.</param>
+		/// <param name="parseOptions"><see cref="ParseOptions"/> that will be used to parse any added sources.</param>
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-		protected internal GeneratorPassContext(IHintNameProvider? fileNameProvider = default, CSharpParseOptions? parseOptions = default)
+		protected internal GeneratorPassContext(IHintNameProvider? fileNameProvider = default, ParseOptions? parseOptions = default)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
 			FileNameProvider = fileNameProvider!;

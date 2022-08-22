@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -35,7 +34,7 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Equivalent to <see cref="Declaration"/>, but will never throw an exception. Used when a <see cref="INamedTypeSymbol"/> resolves to different node kind than <see cref="BaseTypeDeclarationSyntax"/>.
 		/// </summary>
-		CSharpSyntaxNode SafeDeclaration { get; }
+		SyntaxNode SafeDeclaration { get; }
 
 		/// <summary>
 		/// Determines whether the type is an attribute.

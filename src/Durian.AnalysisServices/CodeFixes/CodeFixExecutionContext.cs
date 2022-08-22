@@ -14,8 +14,8 @@ namespace Durian.Analysis.CodeFixes
 	/// <summary>
 	/// Contains data needed to execute a code fix.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> this <see cref="CodeFixExecutionContext{T}"/> can store.</typeparam>
-	public sealed class CodeFixExecutionContext<T> where T : CSharpSyntaxNode
+	/// <typeparam name="T">Type of <see cref="SyntaxNode"/> this <see cref="CodeFixExecutionContext{T}"/> can store.</typeparam>
+	public sealed class CodeFixExecutionContext<T> where T : SyntaxNode
 	{
 		private readonly SyntaxAnnotation _annotation;
 
@@ -42,7 +42,7 @@ namespace Durian.Analysis.CodeFixes
 		public Document Document { get; private set; }
 
 		/// <summary>
-		/// <see cref="CSharpSyntaxNode"/> this context represents.
+		/// <see cref="SyntaxNode"/> this context represents.
 		/// </summary>
 		public T Node { get; private set; }
 
@@ -81,7 +81,7 @@ namespace Durian.Analysis.CodeFixes
 		/// <param name="diagnostic"><see cref="Microsoft.CodeAnalysis.Diagnostic"/> that the code fix is being proposed for.</param>
 		/// <param name="document"><see cref="Microsoft.CodeAnalysis.Document"/> where the <see cref="Diagnostic"/> is to be found.</param>
 		/// <param name="root">Root node of the analyzed tree.</param>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> this context represents.</param>
+		/// <param name="node"><see cref="SyntaxNode"/> this context represents.</param>
 		/// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
 		/// <param name="cancellationToken"><see cref="System.Threading.CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static CodeFixExecutionContext<T> From(
@@ -102,7 +102,7 @@ namespace Durian.Analysis.CodeFixes
 		/// <param name="diagnostic"><see cref="Microsoft.CodeAnalysis.Diagnostic"/> that the code fix is being proposed for.</param>
 		/// <param name="document"><see cref="Microsoft.CodeAnalysis.Document"/> where the <see cref="Diagnostic"/> is to be found.</param>
 		/// <param name="root">Root node of the analyzed tree.</param>
-		/// <param name="node"><see cref="CSharpSyntaxNode"/> this context represents.</param>
+		/// <param name="node"><see cref="SyntaxNode"/> this context represents.</param>
 		/// <param name="semanticModel"><see cref="SemanticModel"/> of the target <paramref name="node"/>.</param>
 		/// <param name="cancellationToken"><see cref="System.Threading.CancellationToken"/> that specifies if the operation should be canceled.</param>
 		public static CodeFixExecutionContext<T> From(
@@ -172,7 +172,7 @@ namespace Durian.Analysis.CodeFixes
 		/// <summary>
 		/// Registers a change on the <see cref="Node"/> performed by the code fix.
 		/// </summary>
-		/// <param name="updated"><see cref="CSharpSyntaxNode"/> to replace the original <see cref="Node"/> with.</param>
+		/// <param name="updated"><see cref="SyntaxNode"/> to replace the original <see cref="Node"/> with.</param>
 		public void RegisterChange(T updated)
 		{
 			RegisterChange(Node, updated);
@@ -181,9 +181,9 @@ namespace Durian.Analysis.CodeFixes
 		/// <summary>
 		/// Registers a change performed by the code fix.
 		/// </summary>
-		/// <param name="original">Original <see cref="CSharpSyntaxNode"/> that is begin replaced by the <paramref name="updated"/> node.</param>
-		/// <param name="updated"><see cref="CSharpSyntaxNode"/> to replace the <paramref name="original"/> node with.</param>
-		public void RegisterChange(CSharpSyntaxNode original, CSharpSyntaxNode updated)
+		/// <param name="original">Original <see cref="SyntaxNode"/> that is begin replaced by the <paramref name="updated"/> node.</param>
+		/// <param name="updated"><see cref="SyntaxNode"/> to replace the <paramref name="original"/> node with.</param>
+		public void RegisterChange(SyntaxNode original, SyntaxNode updated)
 		{
 			SyntaxTree old = Root.SyntaxTree;
 			Root = Root.ReplaceNode(original, updated);
@@ -202,7 +202,7 @@ namespace Durian.Analysis.CodeFixes
 		/// </summary>
 		/// <typeparam name="TNode">Type of node.</typeparam>
 		/// <param name="node">New target node of the context.</param>
-		public CodeFixExecutionContext<TNode> WithNode<TNode>(TNode node) where TNode : CSharpSyntaxNode
+		public CodeFixExecutionContext<TNode> WithNode<TNode>(TNode node) where TNode : SyntaxNode
 		{
 			return new CodeFixExecutionContext<TNode>(Diagnostic, Document, Root, node, Compilation, CancellationToken);
 		}

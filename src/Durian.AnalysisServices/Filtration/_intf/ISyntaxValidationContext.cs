@@ -4,7 +4,6 @@
 using System.Threading;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Filtration
 {
@@ -19,7 +18,7 @@ namespace Durian.Analysis.Filtration
 		CancellationToken CancellationToken { get; }
 
 		/// <summary>
-		/// <see cref="CSharpSyntaxNode"/> to validate.
+		/// <see cref="SyntaxNode"/> to validate.
 		/// </summary>
 		SyntaxNode Node { get; }
 

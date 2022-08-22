@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Durian.Core" Version="2.0.1" />
-	<PackageReference Include="Durian.InterfaceTargets" Version="1.0.1">
+	<PackageReference Include="Durian.Core" Version="3.0.0" />
+	<PackageReference Include="Durian.InterfaceTargets" Version="2.0.0">
 	  <PrivateAssets>all</PrivateAssets>
 	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>

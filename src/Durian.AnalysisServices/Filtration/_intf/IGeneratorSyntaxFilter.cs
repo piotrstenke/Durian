@@ -4,12 +4,11 @@
 using System.Collections.Generic;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Filtration
 {
 	/// <summary>
-	/// <see cref="ISyntaxFilter"/> that filtrates <see cref="CSharpSyntaxNode"/>s for the specified <see cref="IDurianGenerator"/>.
+	/// <see cref="ISyntaxFilter"/> that filtrates <see cref="SyntaxNode"/>s for the specified <see cref="IDurianGenerator"/>.
 	/// </summary>
 	public interface IGeneratorSyntaxFilter : ISyntaxFilter
 	{
@@ -19,7 +18,7 @@ namespace Durian.Analysis.Filtration
 		public bool IncludeGeneratedSymbols { get; }
 
 		/// <summary>
-		/// Decides, which <see cref="CSharpSyntaxNode"/>s collected by a <see cref="IDurianSyntaxReceiver"/> of the <paramref name="context"/> are valid and returns a collection of <see cref="IMemberData"/> based on those <see cref="CSharpSyntaxNode"/>s.
+		/// Decides, which <see cref="SyntaxNode"/>s collected by a <see cref="IDurianSyntaxReceiver"/> of the <paramref name="context"/> are valid and returns a collection of <see cref="IMemberData"/> based on those <see cref="SyntaxNode"/>s.
 		/// </summary>
 		/// <param name="context"><see cref="IGeneratorPassContext"/> that is used when filtrating the <see cref="IMemberData"/>s.</param>
 		IEnumerable<IMemberData> Filtrate(IGeneratorPassContext context);

@@ -6,7 +6,6 @@ using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Cache
 {
@@ -36,7 +35,7 @@ namespace Durian.Analysis.Cache
 		IDurianGenerator IGeneratorPassContext.Generator => UnderlayingContext.Generator;
 		ref readonly GeneratorExecutionContext IGeneratorPassContext.OriginalContext => ref UnderlayingContext.OriginalContext;
 
-		CSharpParseOptions IGeneratorPassContext.ParseOptions => UnderlayingContext.ParseOptions;
+		ParseOptions IGeneratorPassContext.ParseOptions => UnderlayingContext.ParseOptions;
 
 		IGeneratorServiceResolver IGeneratorPassContext.Services => UnderlayingContext.Services;
 

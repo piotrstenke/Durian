@@ -5,13 +5,12 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.SyntaxVisitors
 {
 	/// <summary>
-	/// Replaces a given identifier of a type parameter with a specified <see cref="CSharpSyntaxNode"/>.
+	/// Replaces a given identifier of a type parameter with a specified <see cref="SyntaxNode"/>.
 	/// </summary>
 	public class TypeParameterReplacer : IdentifierReplacer
 	{

@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Filtration
 {
@@ -14,7 +13,7 @@ namespace Durian.Analysis.Filtration
 	public interface IValidationContextProvider<T> where T : ISyntaxValidationContext
 	{
 		/// <summary>
-		/// Checks whether a <see cref="SemanticModel"/> and a <see cref="ISymbol"/> can be created from the a given <see cref="CSharpSyntaxNode"/>.
+		/// Checks whether a <see cref="SemanticModel"/> and a <see cref="ISymbol"/> can be created from the a given <see cref="SyntaxNode"/>.
 		/// </summary>
 		/// <param name="context"><see cref="PreValidationContext"/> that contains all data necessary to retrieve the required data.</param>
 		/// <param name="data">Returned data.</param>

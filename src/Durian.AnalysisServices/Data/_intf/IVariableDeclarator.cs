@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data
@@ -11,7 +10,7 @@ namespace Durian.Analysis.Data
 	/// Provides a <see cref="VariableDeclaratorSyntax"/> and an actual <see cref="Declaration"/> of a <see cref="ISymbol"/>.
 	/// </summary>
 	/// <typeparam name="TSyntax">Type of declaration.</typeparam>
-	public interface IVariableDeclarator<TSyntax> where TSyntax : CSharpSyntaxNode
+	public interface IVariableDeclarator<TSyntax> where TSyntax : SyntaxNode
 	{
 		/// <summary>
 		/// Target <typeparamref name="TSyntax"/>.

@@ -242,7 +242,7 @@ namespace Durian.Analysis.DefaultParam
 				context.CodeBuilder.Namespace(target.TargetNamespace);
 			}
 
-			foreach (ITypeData type in target.ContainingTypes.GetData())
+			foreach (IMemberData type in target.ContainingTypes.GetData())
 			{
 				context.CodeBuilder.Declaration(type.Symbol);
 			}

@@ -9,8 +9,8 @@ namespace Durian.Analysis.SyntaxVisitors
 	/// <summary>
 	/// Removes nodes of the specified type from the syntax tree.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to remove.</typeparam>
-	public class NodeRemover<T> : CSharpSyntaxRewriter where T : CSharpSyntaxNode
+	/// <typeparam name="T">Type of <see cref="SyntaxNode"/> to remove.</typeparam>
+	public class NodeRemover<T> : CSharpSyntaxRewriter where T : SyntaxNode
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="NodeRemover{T}"/> class.

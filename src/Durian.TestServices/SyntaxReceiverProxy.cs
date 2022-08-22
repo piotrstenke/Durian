@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Durian.Analysis;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.TestServices
 {
@@ -24,7 +23,7 @@ namespace Durian.TestServices
 		/// <inheritdoc/>
 		public IEnumerable<SyntaxNode> GetNodes()
 		{
-			return Array.Empty<CSharpSyntaxNode>();
+			return Array.Empty<SyntaxNode>();
 		}
 
 		/// <inheritdoc/>

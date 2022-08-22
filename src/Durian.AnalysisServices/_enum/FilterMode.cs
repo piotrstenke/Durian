@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis
 {
@@ -17,17 +16,17 @@ namespace Durian.Analysis
 		None = 0,
 
 		/// <summary>
-		/// Filter reports <see cref="Diagnostic"/>s for the invalid <see cref="CSharpSyntaxNode"/>s.
+		/// Filter reports <see cref="Diagnostic"/>s for the invalid <see cref="SyntaxNode"/>s.
 		/// </summary>
 		Diagnostics = 1,
 
 		/// <summary>
-		/// Filter creates log files for the invalid <see cref="CSharpSyntaxNode"/>s.
+		/// Filter creates log files for the invalid <see cref="SyntaxNode"/>s.
 		/// </summary>
 		Logs = 2,
 
 		/// <summary>
-		/// Filter both creates log files and reports <see cref="Diagnostic"/>s for the invalid <see cref="CSharpSyntaxNode"/>s.
+		/// Filter both creates log files and reports <see cref="Diagnostic"/>s for the invalid <see cref="SyntaxNode"/>s.
 		/// </summary>
 		Both = 3
 	}

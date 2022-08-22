@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.CodeFixes
@@ -13,8 +12,8 @@ namespace Durian.Analysis.CodeFixes
 	/// <summary>
 	/// Base class for all Durian code fixes that provides methods for straight-up registration and execution of <see cref="CodeAction"/>s.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> this <see cref="DurianCodeFix{T}"/> can handle.</typeparam>
-	public abstract class DurianCodeFix<T> : DurianCodeFixBase where T : CSharpSyntaxNode
+	/// <typeparam name="T">Type of <see cref="SyntaxNode"/> this <see cref="DurianCodeFix{T}"/> can handle.</typeparam>
+	public abstract class DurianCodeFix<T> : DurianCodeFixBase where T : SyntaxNode
 	{
 		/// <summary>
 		/// Creates a new instance of the <see cref="DurianCodeFix{T}"/> class.

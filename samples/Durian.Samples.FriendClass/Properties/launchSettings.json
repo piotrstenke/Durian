@@ -1,8 +1,8 @@
 {
   "profiles": {
-    "WSL": {
-      "commandName": "WSL2",
-      "distributionName": ""
-    }
+	"WSL": {
+	  "commandName": "WSL2",
+	  "distributionName": ""
+	}
   }
 }

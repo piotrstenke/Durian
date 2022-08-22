@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Durian.TestServices
@@ -106,8 +105,8 @@ namespace Durian.TestServices
 			return this;
 		}
 
-		/// <inheritdoc cref="AddSource(CSharpSyntaxTree, string)"/>
-		public GeneratorRunResultBuilder AddSource(CSharpSyntaxTree? syntaxTree)
+		/// <inheritdoc cref="AddSource(SyntaxTree, string)"/>
+		public GeneratorRunResultBuilder AddSource(SyntaxTree? syntaxTree)
 		{
 			if (syntaxTree is not null)
 			{
@@ -117,9 +116,9 @@ namespace Durian.TestServices
 			return this;
 		}
 
-		/// <inheritdoc cref="AddSource(CSharpSyntaxTree, SourceText, string)"/>
+		/// <inheritdoc cref="AddSource(SyntaxTree, SourceText, string)"/>
 		/// <exception cref="ArgumentException">A valid <see cref="SourceText"/> couldn't be properly retrieved from the <paramref name="syntaxTree"/>.</exception>
-		public GeneratorRunResultBuilder AddSource(CSharpSyntaxTree? syntaxTree, string? hintName)
+		public GeneratorRunResultBuilder AddSource(SyntaxTree? syntaxTree, string? hintName)
 		{
 			if (syntaxTree is not null)
 			{
@@ -132,11 +131,11 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Adds a new <see cref="GeneratedSourceResult"/> created from the specified <paramref name="syntaxTree"/> to the <see cref="GeneratorRunResult.GeneratedSources"/> collection.
 		/// </summary>
-		/// <param name="syntaxTree">A <see cref="CSharpSyntaxTree"/> to be set to the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
+		/// <param name="syntaxTree">A <see cref="SyntaxTree"/> to be set to the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
 		/// <param name="sourceText">A <see cref="SourceText"/> to be set to the <see cref="GeneratedSourceResult.SourceText"/> property.</param>
 		/// <param name="hintName">A <see cref="string"/> value to be set to the <see cref="GeneratedSourceResult.HintName"/> property.</param>
 		/// <returns>This <see cref="GeneratorRunResultBuilder"/>.</returns>
-		public GeneratorRunResultBuilder AddSource(CSharpSyntaxTree? syntaxTree, SourceText? sourceText, string? hintName)
+		public GeneratorRunResultBuilder AddSource(SyntaxTree? syntaxTree, SourceText? sourceText, string? hintName)
 		{
 			if (syntaxTree is not null && sourceText is not null)
 			{
@@ -160,11 +159,11 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Adds a new <see cref="GeneratedSourceResult"/> created from the specified <paramref name="source"/> to the <see cref="GeneratorRunResult.GeneratedSources"/> collection.
 		/// </summary>
-		/// <param name="source">A <see cref="string"/> value to be parsed and converted to a <see cref="CSharpSyntaxTree"/> that will be used to set the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
+		/// <param name="source">A <see cref="string"/> value to be parsed and converted to a <see cref="SyntaxTree"/> that will be used to set the <see cref="GeneratedSourceResult.SyntaxTree"/> property.</param>
 		/// <param name="hintName">A <see cref="string"/> value to be set to the <see cref="GeneratedSourceResult.HintName"/> property.</param>
 		/// <exception cref="ArgumentException">
-		/// A <see cref="CSharpSyntaxTree"/> couldn't be created from the specified <paramref name="source"/>. -or-
-		/// A valid <see cref="SourceText"/> couldn't be properly retrieved from the created <see cref="CSharpSyntaxTree"/>.
+		/// A <see cref="SyntaxTree"/> couldn't be created from the specified <paramref name="source"/>. -or-
+		/// A valid <see cref="SourceText"/> couldn't be properly retrieved from the created <see cref="SyntaxTree"/>.
 		/// </exception>
 		public GeneratorRunResultBuilder AddSource(string source, string? hintName)
 		{

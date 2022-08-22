@@ -25,21 +25,21 @@ namespace Durian.Analysis.Data
 		/// <summary>
 		/// Adds the <paramref name="tree"/> to the <see cref="Compilation"/>.
 		/// </summary>
-		/// <param name="tree"><see cref="CSharpSyntaxTree"/> to add.</param>
-		void UpdateCompilation(CSharpSyntaxTree? tree);
+		/// <param name="tree"><see cref="SyntaxTree"/> to add.</param>
+		void UpdateCompilation(SyntaxTree? tree);
 
 		/// <summary>
-		/// Replaces the <paramref name="original"/> <see cref="CSharpSyntaxTree"/> with the <paramref name="updated"/> one.
+		/// Replaces the <paramref name="original"/> <see cref="SyntaxTree"/> with the <paramref name="updated"/> one.
 		/// </summary>
-		/// <param name="original"><see cref="CSharpSyntaxTree"/> to replace.</param>
-		/// <param name="updated"><see cref="CSharpSyntaxTree"/> to replace the <paramref name="original"/> by.</param>
-		void UpdateCompilation(CSharpSyntaxTree? original, CSharpSyntaxTree? updated);
+		/// <param name="original"><see cref="SyntaxTree"/> to replace.</param>
+		/// <param name="updated"><see cref="SyntaxTree"/> to replace the <paramref name="original"/> by.</param>
+		void UpdateCompilation(SyntaxTree? original, SyntaxTree? updated);
 
 		/// <summary>
 		/// Adds the following <paramref name="trees"/> to the <see cref="Compilation"/>.
 		/// </summary>
-		/// <param name="trees"><see cref="CSharpSyntaxTree"/>s to add.</param>
-		void UpdateCompilation(IEnumerable<CSharpSyntaxTree>? trees);
+		/// <param name="trees"><see cref="SyntaxTree"/>s to add.</param>
+		void UpdateCompilation(IEnumerable<SyntaxTree>? trees);
 
 		/// <summary>
 		/// Adds the <paramref name="reference"/> to the <see cref="Compilation"/>.

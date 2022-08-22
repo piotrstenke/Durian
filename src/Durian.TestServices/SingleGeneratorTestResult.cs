@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace Durian.TestServices
 {
 	/// <summary>
-	/// A <see cref="IGeneratorTestResult"/> that represents a single <see cref="CSharpSyntaxTree"/> retrieved from a tested <see cref="ISourceGenerator"/>.
+	/// A <see cref="IGeneratorTestResult"/> that represents a single <see cref="SyntaxTree"/> retrieved from a tested <see cref="ISourceGenerator"/>.
 	/// </summary>
 	public readonly struct SingleGeneratorTestResult : IGeneratorTestResult
 	{
@@ -41,7 +41,7 @@ namespace Durian.TestServices
 		public CSharpCompilation InputCompilation { get; }
 
 		/// <summary>
-		/// Determines whether the <see cref="ISourceGenerator"/> actually generated any <see cref="CSharpSyntaxTree"/>.
+		/// Determines whether the <see cref="ISourceGenerator"/> actually generated any <see cref="SyntaxTree"/>.
 		/// </summary>
 		[MemberNotNullWhen(true, nameof(SourceText), nameof(SyntaxTree), nameof(HintName))]
 		public bool IsGenerated { get; }
@@ -55,9 +55,9 @@ namespace Durian.TestServices
 		public SourceText? SourceText => _sourceResult.SourceText;
 
 		/// <summary>
-		/// A <see cref="CSharpSyntaxTree"/> that was generated during the generator pass.
+		/// A <see cref="SyntaxTree"/> that was generated during the generator pass.
 		/// </summary>
-		public CSharpSyntaxTree? SyntaxTree => _sourceResult.SyntaxTree as CSharpSyntaxTree;
+		public SyntaxTree? SyntaxTree => _sourceResult.SyntaxTree;
 
 		private SingleGeneratorTestResult(
 			GeneratorRunResult runResult,
@@ -128,11 +128,11 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Checks if the <paramref name="expected"/> <see cref="CSharpSyntaxTree"/> is equivalent to the <see cref="CSharpSyntaxTree"/> created by the <see cref="ISourceGenerator"/>.
+		/// Checks if the <paramref name="expected"/> <see cref="SyntaxTree"/> is equivalent to the <see cref="SyntaxTree"/> created by the <see cref="ISourceGenerator"/>.
 		/// </summary>
-		/// <param name="expected">A <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
+		/// <param name="expected">A <see cref="SyntaxTree"/> that was expected to be generated.</param>
 		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
-		public bool Compare(CSharpSyntaxTree? expected, bool includeStructuredTrivia = false)
+		public bool Compare(SyntaxTree? expected, bool includeStructuredTrivia = false)
 		{
 			if (expected is null)
 			{
@@ -148,9 +148,9 @@ namespace Durian.TestServices
 		}
 
 		/// <summary>
-		/// Checks if the <see cref="CSharpSyntaxTree"/> created from the <paramref name="expected"/> source is equivalent to the <see cref="CSharpSyntaxTree"/> created by the <see cref="ISourceGenerator"/>.
+		/// Checks if the <see cref="SyntaxTree"/> created from the <paramref name="expected"/> source is equivalent to the <see cref="SyntaxTree"/> created by the <see cref="ISourceGenerator"/>.
 		/// </summary>
-		/// <param name="expected">A <see cref="string"/> that represents a <see cref="CSharpSyntaxTree"/> that was expected to be generated.</param>
+		/// <param name="expected">A <see cref="string"/> that represents a <see cref="SyntaxTree"/> that was expected to be generated.</param>
 		/// <param name="includeStructuredTrivia">Determines whether to include structured trivia in the comparison.</param>
 		public bool Compare(string? expected, bool includeStructuredTrivia = false)
 		{
@@ -164,7 +164,7 @@ namespace Durian.TestServices
 				return false;
 			}
 
-			if (CSharpSyntaxTree.ParseText(expected, encoding: Encoding.UTF8) is not CSharpSyntaxTree tree)
+			if (CSharpSyntaxTree.ParseText(expected, encoding: Encoding.UTF8) is not SyntaxTree tree)
 			{
 				return false;
 			}
@@ -179,10 +179,10 @@ namespace Durian.TestServices
 				return false;
 			}
 
-			return Compare(result.GeneratedTrees[0] as CSharpSyntaxTree, includeStructuredTrivia);
+			return Compare(result.GeneratedTrees[0], includeStructuredTrivia);
 		}
 
-		private bool Compare_Internal(CSharpSyntaxTree expected, bool includeStructuredTrivia)
+		private bool Compare_Internal(SyntaxTree expected, bool includeStructuredTrivia)
 		{
 			if (!includeStructuredTrivia)
 			{

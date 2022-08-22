@@ -10,10 +10,10 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.Analysis.CodeFixes
 {
 	/// <summary>
-	/// A code fix that replaces a specific <see cref="CSharpSyntaxNode"/> with a new one.
+	/// A code fix that replaces a specific <see cref="SyntaxNode"/> with a new one.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> to replace.</typeparam>
-	public abstract class ReplaceNodeCodeFix<T> : DurianCodeFix<T> where T : CSharpSyntaxNode
+	/// <typeparam name="T">Type of <see cref="SyntaxNode"/> to replace.</typeparam>
+	public abstract class ReplaceNodeCodeFix<T> : DurianCodeFix<T> where T : SyntaxNode
 	{
 		/// <summary>
 		/// Creates a new instance of the <see cref="ReplaceNodeCodeFix{T}"/> class.

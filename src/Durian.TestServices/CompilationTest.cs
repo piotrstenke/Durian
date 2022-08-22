@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.TestServices
 {
 	/// <summary>
-	/// An abstract class that provides methods that retrieve <see cref="IMemberData"/>of various types, <see cref="ISymbol"/>s or <see cref="CSharpSyntaxNode"/>s directly from an input <see cref="string"/>. Useful when unit testing a <see cref="ISourceGenerator"/>.
+	/// An abstract class that provides methods that retrieve <see cref="IMemberData"/>of various types, <see cref="ISymbol"/>s or <see cref="SyntaxNode"/>s directly from an input <see cref="string"/>. Useful when unit testing a <see cref="ISourceGenerator"/>.
 	/// </summary>
 	public abstract class CompilationTest
 	{
@@ -36,7 +36,7 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CompilationTest"/> class.
 		/// </summary>
-		/// <param name="sources">An array of <see cref="string"/>s to be used as initial sources of <see cref="CSharpSyntaxTree"/>s for the <see cref="Compilation"/>.</param>
+		/// <param name="sources">An array of <see cref="string"/>s to be used as initial sources of <see cref="SyntaxTree"/>s for the <see cref="Compilation"/>.</param>
 		protected CompilationTest(params string[]? sources)
 		{
 			Compilation = TestableCompilationData.Create(sources);
@@ -73,7 +73,7 @@ namespace Durian.TestServices
 
 			if (sourceTexts is not null)
 			{
-				IEnumerable<CSharpSyntaxTree> syntaxTrees = sourceTexts.Select(text => (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text.GetText(), encoding: Encoding.UTF8));
+				IEnumerable<SyntaxTree> syntaxTrees = sourceTexts.Select(text => CSharpSyntaxTree.ParseText(text.GetText(), encoding: Encoding.UTF8));
 
 				compilation = compilation.AddSyntaxTrees(syntaxTrees);
 			}
@@ -85,7 +85,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="ClassData"/> should be returned. Can be thought of as a number of <see cref="ClassDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="ClassData"/> created from a <see cref="ClassDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="ClassData"/> created from a <see cref="ClassDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="ClassDeclarationSyntax"/> exists.
 		/// </returns>
 		protected ClassData? GetClass(string? source, int index = 0)
@@ -99,7 +99,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="ConstructorData"/> should be returned. Can be thought of as a number of <see cref="ConstructorDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="ConstructorData"/> created from a <see cref="ConstructorDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="ConstructorData"/> created from a <see cref="ConstructorDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="ConstructorDeclarationSyntax"/> exists.
 		/// </returns>
 		protected ConstructorData? GetConstructor(string? source, int index = 0)
@@ -113,7 +113,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="ConversionOperatorData"/> should be returned. Can be thought of as a number of <see cref="ConversionOperatorDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="ConversionOperatorData"/> created from a <see cref="ConversionOperatorDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="ConversionOperatorData"/> created from a <see cref="ConversionOperatorDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="ConversionOperatorDeclarationSyntax"/> exists.
 		/// </returns>
 		protected ConversionOperatorData? GetConversionOperator(string? source, int index = 0)
@@ -127,7 +127,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="DelegateData"/> should be returned. Can be thought of as a number of <see cref="DelegateDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="DelegateData"/> created from a <see cref="DelegateDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="DelegateData"/> created from a <see cref="DelegateDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="DelegateDeclarationSyntax"/> exists.
 		/// </returns>
 		protected DelegateData? GetDelegate(string? source, int index = 0)
@@ -141,7 +141,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="DestructorData"/> should be returned. Can be thought of as a number of <see cref="DestructorDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="DestructorData"/> created from a <see cref="DestructorDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="DestructorData"/> created from a <see cref="DestructorDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="DestructorDeclarationSyntax"/> exists.
 		/// </returns>
 		protected DestructorData? GetDestructor(string? source, int index = 0)
@@ -155,7 +155,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="EnumData"/> should be returned. Can be thought of as a number of <see cref="EnumDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="EnumData"/> created from a <see cref="EnumDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="EnumData"/> created from a <see cref="EnumDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="EnumDeclarationSyntax"/> exists.
 		/// </returns>
 		protected EnumData? GetEnum(string? source, int index = 0)
@@ -169,7 +169,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="EventData"/> should be returned. Can be thought of as a number of <see cref="EventFieldDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="EventData"/> created from a <see cref="EventFieldDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="EventData"/> created from a <see cref="EventFieldDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="EventFieldDeclarationSyntax"/> exists.
 		/// </returns>
 		protected EventData? GetEventField(string? source, int index = 0)
@@ -183,7 +183,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="EventData"/> should be returned. Can be thought of as a number of <see cref="EventDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="EventData"/> created from a <see cref="EventDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="EventData"/> created from a <see cref="EventDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="EventDeclarationSyntax"/> exists.
 		/// </returns>
 		protected EventData? GetEventProperty(string? source, int index = 0)
@@ -197,7 +197,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="FieldData"/> should be returned. Can be thought of as a number of <see cref="FieldDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="FieldData"/> created from a <see cref="FieldDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="FieldData"/> created from a <see cref="FieldDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="FieldDeclarationSyntax"/> exists.
 		/// </returns>
 		protected FieldData? GetField(string? source, int index = 0)
@@ -211,7 +211,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="IndexerData"/> should be returned. Can be thought of as a number of <see cref="IndexerDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="IndexerData"/> created from a <see cref="IndexerDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="IndexerData"/> created from a <see cref="IndexerDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="IndexerDeclarationSyntax"/> exists.
 		/// </returns>
 		protected IndexerData? GetIndexer(string? source, int index = 0)
@@ -233,7 +233,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="InterfaceData"/> should be returned. Can be thought of as a number of <see cref="InterfaceDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="InterfaceData"/> created from a <see cref="InterfaceDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="InterfaceData"/> created from a <see cref="InterfaceDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="InterfaceDeclarationSyntax"/> exists.
 		/// </returns>
 		protected InterfaceData? GetInterface(string? source, int index = 0)
@@ -247,7 +247,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="MemberData"/> should be returned. Can be thought of as a number of <see cref="MemberDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="MemberData"/> created from a <see cref="MemberDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="MemberData"/> created from a <see cref="MemberDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="MemberDeclarationSyntax"/> exists.
 		/// </returns>
 		protected MemberData? GetMember(string? source, int index = 0)
@@ -261,7 +261,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="MethodData"/> should be returned. Can be thought of as a number of <see cref="MethodDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="MethodData"/> created from a <see cref="MethodDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="MethodData"/> created from a <see cref="MethodDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="MethodDeclarationSyntax"/> exists.
 		/// </returns>
 		protected MethodData? GetMethod(string? source, int index = 0)
@@ -270,13 +270,13 @@ namespace Durian.TestServices
 		}
 
 		/// <inheritdoc cref="TestableCompilationData.GetNode{TNode}(string?, int)"/>
-		protected TNode? GetNode<TNode>(string? source, int index = 0) where TNode : CSharpSyntaxNode
+		protected TNode? GetNode<TNode>(string? source, int index = 0) where TNode : SyntaxNode
 		{
 			return Compilation.GetNode<TNode>(source, index);
 		}
 
-		/// <inheritdoc cref="TestableCompilationData.GetNode{TNode}(CSharpSyntaxTree?, int)"/>
-		protected TNode? GetNode<TNode>(CSharpSyntaxTree? syntaxTree, int index = 0) where TNode : CSharpSyntaxNode
+		/// <inheritdoc cref="TestableCompilationData.GetNode{TNode}(SyntaxTree?, int)"/>
+		protected TNode? GetNode<TNode>(SyntaxTree? syntaxTree, int index = 0) where TNode : SyntaxNode
 		{
 			return Compilation.GetNode<TNode>(syntaxTree, index);
 		}
@@ -287,7 +287,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="OperatorData"/> should be returned. Can be thought of as a number of <see cref="OperatorDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="OperatorData"/> created from a <see cref="OperatorDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="OperatorData"/> created from a <see cref="OperatorDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="OperatorDeclarationSyntax"/> exists.
 		/// </returns>
 		protected OperatorData? GetOperator(string? source, int index = 0)
@@ -301,7 +301,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="PropertyData"/> should be returned. Can be thought of as a number of <see cref="PropertyDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="PropertyData"/> created from a <see cref="PropertyDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="PropertyData"/> created from a <see cref="PropertyDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="PropertyDeclarationSyntax"/> exists.
 		/// </returns>
 		protected PropertyData? GetProperty(string? source, int index = 0)
@@ -315,7 +315,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="RecordData"/> should be returned. Can be thought of as a number of <see cref="RecordDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="RecordData"/> created from a <see cref="RecordDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="RecordData"/> created from a <see cref="RecordDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="RecordDeclarationSyntax"/> exists.
 		/// </returns>
 		protected RecordData? GetRecord(string? source, int index = 0)
@@ -329,7 +329,7 @@ namespace Durian.TestServices
 		/// <param name="source"></param>
 		/// <param name="index">Index at which the <see cref="StructData"/> should be returned. Can be thought of as a number of <see cref="StructDeclarationSyntax"/>es to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="StructData"/> created from a <see cref="StructDeclarationSyntax"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
+		/// A new <see cref="StructData"/> created from a <see cref="StructDeclarationSyntax"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
 		/// <see langword="null"/> if no such <see cref="StructDeclarationSyntax"/> exists.
 		/// </returns>
 		protected StructData? GetStruct(string? source, int index = 0)
@@ -337,20 +337,20 @@ namespace Durian.TestServices
 			return Compilation.GetMemberData<StructDeclarationSyntax>(source, index) as StructData;
 		}
 
-		/// <inheritdoc cref="TestableCompilationData.GetSymbol{TSymbol}(CSharpSyntaxNode)"/>
-		protected TSymbol? GetSymbol<TSymbol>(CSharpSyntaxNode node) where TSymbol : class, ISymbol
+		/// <inheritdoc cref="TestableCompilationData.GetSymbol{TSymbol}(SyntaxNode)"/>
+		protected TSymbol? GetSymbol<TSymbol>(SyntaxNode node) where TSymbol : class, ISymbol
 		{
 			return Compilation.GetSymbol<TSymbol>(node);
 		}
 
 		/// <inheritdoc cref="TestableCompilationData.GetSymbol{TSymbol, TNode}(string?, int)"/>
-		protected TSymbol? GetSymbol<TSymbol, TNode>(string? source, int index = 0) where TSymbol : class, ISymbol where TNode : CSharpSyntaxNode
+		protected TSymbol? GetSymbol<TSymbol, TNode>(string? source, int index = 0) where TSymbol : class, ISymbol where TNode : SyntaxNode
 		{
 			return Compilation.GetSymbol<TSymbol, TNode>(source, index);
 		}
 
-		/// <inheritdoc cref="TestableCompilationData.GetSymbol{TSymbol, TNode}(CSharpSyntaxTree?, int)"/>
-		protected TSymbol? GetSymbol<TSymbol, TNode>(CSharpSyntaxTree? syntaxTree, int index = 0) where TSymbol : class, ISymbol where TNode : CSharpSyntaxNode
+		/// <inheritdoc cref="TestableCompilationData.GetSymbol{TSymbol, TNode}(SyntaxTree?, int)"/>
+		protected TSymbol? GetSymbol<TSymbol, TNode>(SyntaxTree? syntaxTree, int index = 0) where TSymbol : class, ISymbol where TNode : SyntaxNode
 		{
 			return Compilation.GetSymbol<TSymbol, TNode>(syntaxTree, index);
 		}
@@ -359,10 +359,10 @@ namespace Durian.TestServices
 		/// Creates a new <see cref="TypeData{TDeclaration}"/> from the specified <paramref name="source"/>.
 		/// </summary>
 		/// <param name="source"></param>
-		/// <param name="index">Index at which the <see cref="TypeData{TDeclaration}"/> should be returned. Can be thought of as a number of <see cref="CSharpSyntaxNode"/>es of type <typeparamref name="TDeclaration"/> to skip before creating a valid <see cref="IMemberData"/>.</param>
+		/// <param name="index">Index at which the <see cref="TypeData{TDeclaration}"/> should be returned. Can be thought of as a number of <see cref="SyntaxNode"/>es of type <typeparamref name="TDeclaration"/> to skip before creating a valid <see cref="IMemberData"/>.</param>
 		/// <returns>
-		/// A new <see cref="TypeData{TDeclaration}"/> created from a <see cref="CSharpSyntaxNode"/>es of type <typeparamref name="TDeclaration"/> found at the specified index in the parsed <see cref="CSharpSyntaxTree"/> -or-
-		/// <see langword="null"/> if no such <see cref="CSharpSyntaxNode"/> of type <typeparamref name="TDeclaration"/> exists.
+		/// A new <see cref="TypeData{TDeclaration}"/> created from a <see cref="SyntaxNode"/>es of type <typeparamref name="TDeclaration"/> found at the specified index in the parsed <see cref="SyntaxTree"/> -or-
+		/// <see langword="null"/> if no such <see cref="SyntaxNode"/> of type <typeparamref name="TDeclaration"/> exists.
 		/// </returns>
 		protected TypeData<TDeclaration>? GetType<TDeclaration>(string? source, int index = 0) where TDeclaration : TypeDeclarationSyntax
 		{

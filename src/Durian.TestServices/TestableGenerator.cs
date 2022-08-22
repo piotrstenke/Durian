@@ -91,13 +91,13 @@ namespace Durian.TestServices
 		}
 
 		/// <inheritdoc/>
-		protected internal override void AddSourceCore(CSharpSyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+		protected internal override void AddSourceCore(SyntaxTree tree, string hintName, in GeneratorExecutionContext context)
 		{
 			UnderlayingGenerator.AddSourceCore(tree, hintName, context);
 		}
 
 		/// <inheritdoc/>
-		protected internal override void AddSourceCore(CSharpSyntaxTree tree, string hintName, TContext context)
+		protected internal override void AddSourceCore(SyntaxTree tree, string hintName, TContext context)
 		{
 			UnderlayingGenerator.AddSourceCore(tree, hintName, context);
 		}

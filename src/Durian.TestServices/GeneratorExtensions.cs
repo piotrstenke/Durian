@@ -218,7 +218,7 @@ namespace Durian.TestServices
 		/// Runs the specified <paramref name="analyzer"/> and returns an <see cref="ImmutableArray{T}"/> of produced <see cref="Diagnostic"/>s.
 		/// </summary>
 		/// <param name="analyzer"><see cref="DiagnosticAnalyzer"/> to run.</param>
-		/// <param name="source">A <see cref="string"/> representing a <see cref="CSharpSyntaxTree"/> the analysis should be performed on.</param>
+		/// <param name="source">A <see cref="string"/> representing a <see cref="SyntaxTree"/> the analysis should be performed on.</param>
 		public static Task<ImmutableArray<Diagnostic>> RunAnalyzer(this DiagnosticAnalyzer analyzer, string? source)
 		{
 			CSharpCompilation compilation = RoslynUtilities.CreateBaseCompilation();
@@ -235,8 +235,8 @@ namespace Durian.TestServices
 		/// Runs the specified <paramref name="analyzer"/> and returns an <see cref="ImmutableArray{T}"/> of produced <see cref="Diagnostic"/>s.
 		/// </summary>
 		/// <param name="analyzer"><see cref="DiagnosticAnalyzer"/> to run.</param>
-		/// <param name="tree">A <see cref="CSharpSyntaxTree"/> the analysis should be performed on.</param>
-		public static Task<ImmutableArray<Diagnostic>> RunAnalyzer(this DiagnosticAnalyzer analyzer, CSharpSyntaxTree? tree)
+		/// <param name="tree">A <see cref="SyntaxTree"/> the analysis should be performed on.</param>
+		public static Task<ImmutableArray<Diagnostic>> RunAnalyzer(this DiagnosticAnalyzer analyzer, SyntaxTree? tree)
 		{
 			CSharpCompilation compilation = RoslynUtilities.CreateBaseCompilation();
 
@@ -253,7 +253,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider resultProvider, string? source, params Assembly[]? assemblies)
@@ -266,7 +266,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider resultProvider, string? source)
 		{
@@ -278,7 +278,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider resultProvider, string? source, params MetadataReference[]? references)
@@ -291,7 +291,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider resultProvider, IEnumerable<string>? sources, params Assembly[]? assemblies)
@@ -304,7 +304,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider resultProvider, IEnumerable<string>? sources)
 		{
@@ -316,7 +316,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider resultProvider, IEnumerable<string>? sources, params MetadataReference[]? references)
@@ -358,7 +358,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
@@ -372,7 +372,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
@@ -386,7 +386,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static TResult RunTest<TResult>(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider<TResult> resultProvider, string? source) where TResult : IGeneratorTestResult
@@ -399,7 +399,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
@@ -413,7 +413,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static TResult RunTest<TResult>(this CSharpGeneratorDriver generatorDriver, GeneratorTestResultProvider<TResult> resultProvider, IEnumerable<string>? sources) where TResult : IGeneratorTestResult
@@ -426,7 +426,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
@@ -470,7 +470,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this ISourceGenerator generator, GeneratorTestResultProvider resultProvider, string? source, params Assembly[]? assemblies)
@@ -489,7 +489,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this ISourceGenerator generator, GeneratorTestResultProvider resultProvider, string? source)
 		{
@@ -501,7 +501,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this ISourceGenerator generator, GeneratorTestResultProvider resultProvider, string? source, params MetadataReference[]? references)
@@ -520,7 +520,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this ISourceGenerator generator, GeneratorTestResultProvider resultProvider, IEnumerable<string>? sources, params Assembly[]? assemblies)
@@ -539,7 +539,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this ISourceGenerator generator, GeneratorTestResultProvider resultProvider, IEnumerable<string>? sources)
 		{
@@ -551,7 +551,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static IGeneratorTestResult RunTest(this ISourceGenerator generator, GeneratorTestResultProvider resultProvider, IEnumerable<string>? sources, params MetadataReference[]? references)
@@ -587,7 +587,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
@@ -607,7 +607,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
@@ -627,7 +627,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="CSharpSyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static TResult RunTest<TResult>(this ISourceGenerator generator, GeneratorTestResultProvider<TResult> resultProvider, string? source) where TResult : IGeneratorTestResult
@@ -640,7 +640,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> of type <typeparamref name="TResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
@@ -660,7 +660,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> of type <typeparamref name="TResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
 		public static TResult RunTest<TResult>(this ISourceGenerator generator, GeneratorTestResultProvider<TResult> resultProvider, IEnumerable<string>? sources) where TResult : IGeneratorTestResult
@@ -673,7 +673,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
 		/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> of type <typeparamref name="TResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
-		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="CSharpSyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+		/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 		/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 		/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>

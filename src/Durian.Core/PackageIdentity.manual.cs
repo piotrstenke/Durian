@@ -176,7 +176,7 @@ namespace Durian.Info
 
 			// Switch expression gives a compilation error here, weird.
 
-			if(name.Equals(PackageNames.Main, StringComparison.OrdinalIgnoreCase))
+			if (name.Equals(PackageNames.Main, StringComparison.OrdinalIgnoreCase))
 			{
 				package = DurianPackage.Main;
 				return true;

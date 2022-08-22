@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.CodeFixes
@@ -16,8 +15,8 @@ namespace Durian.Analysis.CodeFixes
 	/// <summary>
 	/// Represents data that is used when creating a <see cref="CodeAction"/> for the code fix.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> this <see cref="CodeFixData{T}"/> can store.</typeparam>
-	public readonly struct CodeFixData<T> where T : CSharpSyntaxNode
+	/// <typeparam name="T">Type of <see cref="SyntaxNode"/> this <see cref="CodeFixData{T}"/> can store.</typeparam>
+	public readonly struct CodeFixData<T> where T : SyntaxNode
 	{
 		/// <summary>
 		/// <see cref="System.Threading.CancellationToken"/> that specifies if the operation should be canceled.
@@ -35,7 +34,7 @@ namespace Durian.Analysis.CodeFixes
 		public readonly Document? Document { get; }
 
 		/// <summary>
-		/// Determines whether this <see cref="CodeFixData{T}"/> contains a <see cref="CSharpSyntaxNode"/>.
+		/// Determines whether this <see cref="CodeFixData{T}"/> contains a <see cref="SyntaxNode"/>.
 		/// </summary>
 		[MemberNotNullWhen(true, nameof(Node))]
 		public readonly bool HasNode => Node is not null;
@@ -47,7 +46,7 @@ namespace Durian.Analysis.CodeFixes
 		public readonly bool HasSemanticModel => SemanticModel is not null;
 
 		/// <summary>
-		/// Target <see cref="CSharpSyntaxNode"/>.
+		/// Target <see cref="SyntaxNode"/>.
 		/// </summary>
 		public readonly T? Node { get; }
 

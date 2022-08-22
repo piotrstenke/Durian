@@ -12,7 +12,7 @@ namespace Durian.Analysis.CodeFixes
 	/// <summary>
 	/// A code fix that applies a specified modifier or modifiers.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="CSharpSyntaxNode"/> this <see cref="ApplyModifierCodeFix{T}"/> can handle.</typeparam>
+	/// <typeparam name="T">Type of <see cref="SyntaxNode"/> this <see cref="ApplyModifierCodeFix{T}"/> can handle.</typeparam>
 	public abstract class ApplyModifierCodeFix<T> : DurianCodeFix<T> where T : MemberDeclarationSyntax
 	{
 		/// <summary>

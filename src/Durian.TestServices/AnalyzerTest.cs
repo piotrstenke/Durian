@@ -27,7 +27,7 @@ namespace Durian.TestServices
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AnalyzerTest{T}"/> class.
 		/// </summary>
-		/// <param name="sources">An array of <see cref="string"/>s to be used as initial sources of <see cref="CSharpSyntaxTree"/>s for the <see cref="Compilation"/>.</param>
+		/// <param name="sources">An array of <see cref="string"/>s to be used as initial sources of <see cref="SyntaxTree"/>s for the <see cref="Compilation"/>.</param>
 		protected AnalyzerTest(params string[]? sources) : base(sources)
 		{
 		}
@@ -46,7 +46,7 @@ namespace Durian.TestServices
 		/// Asynchronously executes a new instance of <typeparamref name="T"/>.
 		/// </summary>
 		/// <param name="input">Input for the analyzer.</param>
-		/// <param name="addToCompilation">Determines whether to add the <see cref="CSharpSyntaxTree"/> created from the <paramref name="input"/> to the <see cref="CompilationTest.Compilation"/>.</param>
+		/// <param name="addToCompilation">Determines whether to add the <see cref="SyntaxTree"/> created from the <paramref name="input"/> to the <see cref="CompilationTest.Compilation"/>.</param>
 		protected async Task<ImmutableArray<Diagnostic>> RunAnalyzer(string? input, bool addToCompilation = false)
 		{
 			if (input is null)
@@ -63,7 +63,7 @@ namespace Durian.TestServices
 		/// </summary>
 		/// <param name="analyzer"><see cref="DiagnosticAnalyzer"/> to execute.</param>
 		/// <param name="input">Input for the analyzer.</param>
-		/// <param name="addToCompilation">Determines whether to add the <see cref="CSharpSyntaxTree"/> created from the <paramref name="input"/> to the <see cref="CompilationTest.Compilation"/>.</param>
+		/// <param name="addToCompilation">Determines whether to add the <see cref="SyntaxTree"/> created from the <paramref name="input"/> to the <see cref="CompilationTest.Compilation"/>.</param>
 		protected async Task<ImmutableArray<Diagnostic>> RunAnalyzer(T analyzer, string? input, bool addToCompilation = false)
 		{
 			if (analyzer is null || input is null)

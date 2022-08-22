@@ -11,7 +11,6 @@ using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Durian.Analysis.SymbolContainers.Specialized;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.Data.FromSource
@@ -228,7 +227,7 @@ namespace Durian.Analysis.Data.FromSource
 
 		BaseTypeDeclarationSyntax ITypeData.Declaration => Declaration;
 
-		CSharpSyntaxNode ITypeData.SafeDeclaration => Declaration;
+		SyntaxNode ITypeData.SafeDeclaration => Declaration;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TypeData{TDeclaration}"/> class.
@@ -489,10 +488,7 @@ namespace Durian.Analysis.Data.FromSource
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void InitMembers()
 		{
-			if (_members is null)
-			{
-				_members = new MembersOfTypeContainer(this, ParentCompilation);
-			}
+			_members ??= new MembersOfTypeContainer(this, ParentCompilation);
 		}
 	}
 }
