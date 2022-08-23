@@ -232,7 +232,7 @@ namespace Durian.Analysis.Data.FromSource
 		/// <inheritdoc/>
 		public ISymbolContainer<IMethodSymbol, ILocalFunctionData> GetLocalFunctions(IncludedMembers members)
 		{
-			_localFunctions ??= new LocalFunctionsContainer(this, ParentCompilation);
+			_localFunctions ??= new LocalFunctionContainer(this, ParentCompilation);
 
 			if (_localFunctions is IMappedSymbolContainer<IMethodSymbol, ILocalFunctionData, IncludedMembers> mapped)
 			{

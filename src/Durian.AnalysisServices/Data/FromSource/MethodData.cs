@@ -346,7 +346,7 @@ namespace Durian.Analysis.Data.FromSource
 		/// <inheritdoc/>
 		public ISymbolContainer<IMethodSymbol, ILocalFunctionData> GetLocalFunctions(IncludedMembers members)
 		{
-			_localFunctions ??= new LocalFunctionsContainer(this, ParentCompilation);
+			_localFunctions ??= new LocalFunctionContainer(this, ParentCompilation);
 
 			if (_localFunctions is IMappedSymbolContainer<IMethodSymbol, ILocalFunctionData, IncludedMembers> mapped)
 			{
@@ -359,7 +359,7 @@ namespace Durian.Analysis.Data.FromSource
 		/// <inheritdoc/>
 		public ISymbolContainer<IMethodSymbol, IMethodData> GetOverloads(IncludedMembers members)
 		{
-			_overloads ??= new OverloadsContainer(this, ParentCompilation);
+			_overloads ??= new MethodOverloadContainer(this, ParentCompilation);
 
 			if (_localFunctions is IMappedSymbolContainer<IMethodSymbol, IMethodData, IncludedMembers> mapped)
 			{

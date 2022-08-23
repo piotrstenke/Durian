@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -142,7 +143,7 @@ internal static class Program
 
 	private static void WriteMatchData(MatchCollection matches, string moduleName, StringBuilder builder)
 	{
-		foreach (Match match in matches)
+		foreach (Match match in matches.Cast<Match>())
 		{
 			DiagnosticData? data = RetrieveDiagnosticData(match.ToString());
 

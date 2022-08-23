@@ -13,20 +13,20 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// <summary>
 	/// <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> that handles inner types.
 	/// </summary>
-	public sealed class InnerTypesContainer : IncludedMembersSymbolContainerWithoutInner<INamedTypeSymbol, ITypeData>
+	public sealed class InnerTypeContainer : IncludedMemberContainerWithoutInner<INamedTypeSymbol, ITypeData>
 	{
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.TargetRoot"/>
 		public new ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> TargetRoot => (base.TargetRoot as ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>)!;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="InnerTypesContainer"/> class.
+		/// Initializes a new instance of the <see cref="InnerTypeContainer"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <see cref="ITypeData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
-		public InnerTypesContainer(
+		public InnerTypeContainer(
 			ISymbolOrMember<INamedTypeSymbol, ITypeData> root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default,
@@ -36,13 +36,13 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="InnerTypesContainer"/> class.
+		/// Initializes a new instance of the <see cref="InnerTypeContainer"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <see cref="ITypeData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
-		public InnerTypesContainer(
+		public InnerTypeContainer(
 			ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default
@@ -69,9 +69,9 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.Reverse"/>
-		public new InnerTypesContainer Reverse()
+		public new InnerTypeContainer Reverse()
 		{
-			return (base.Reverse() as InnerTypesContainer)!;
+			return (base.Reverse() as InnerTypeContainer)!;
 		}
 
 		private IEnumerable<ISymbolOrMember<INamedTypeSymbol, ITypeData>> GetTypes(ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> member)

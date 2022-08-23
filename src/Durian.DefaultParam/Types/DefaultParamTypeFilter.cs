@@ -31,7 +31,7 @@ namespace Durian.Analysis.DefaultParam.Types
 		{
 			if (AnalyzeAgainstPartial(context.Symbol, context.CancellationToken) &&
 				AnalyzeAgainstProhibitedAttributes(context.Symbol, context.TargetCompilation, out AttributeData[]? attributes) &&
-				AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out ITypeData[]? containingTypes) &&
+				AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out ImmutableArray<ITypeData> containingTypes) &&
 				AnalyzeTypeParameters(context.Symbol, in context.GetTypeParameters())
 			)
 			{

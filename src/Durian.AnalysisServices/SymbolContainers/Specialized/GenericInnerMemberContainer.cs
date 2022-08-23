@@ -11,7 +11,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// <summary>
 	/// <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> that handles inner members of a symbol.
 	/// </summary>
-	internal sealed class InnerMembersContainer<TSymbol, TData, TParentSymbol, TParentData> : IncludedMembersSymbolContainerWithoutInner<TSymbol, TData>
+	internal sealed class GenericInnerMemberContainer<TSymbol, TData, TParentSymbol, TParentData> : IncludedMemberContainerWithoutInner<TSymbol, TData>
 		where TSymbol : class, ISymbol
 		where TData : class, IMemberData
 		where TParentSymbol : class, ISymbol
@@ -19,7 +19,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	{
 		public LeveledSymbolContainer<TParentSymbol, TParentData> ParentContainer { get; }
 
-		public InnerMembersContainer(
+		public GenericInnerMemberContainer(
 			LeveledSymbolContainer<TParentSymbol, TParentData> parentContainer,
 			ISymbolOrMember<TSymbol, TData> root
 		) : base(root, parentContainer.ParentCompilation, parentContainer.SymbolNameResolver, parentContainer.IncludeRoot)
@@ -27,7 +27,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 			ParentContainer = parentContainer;
 		}
 
-		public InnerMembersContainer(
+		public GenericInnerMemberContainer(
 			LeveledSymbolContainer<TParentSymbol, TParentData> parentContainer,
 			ISymbolOrMember root
 		) : base(root, parentContainer.ParentCompilation, parentContainer.SymbolNameResolver)

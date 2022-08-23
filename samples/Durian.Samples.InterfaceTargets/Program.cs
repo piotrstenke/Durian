@@ -8,6 +8,11 @@ namespace Durian.Samples.InterfaceTargets
 	{
 	}
 
+	// Error!
+	//public struct Struct : IInterface
+	//{
+	//}
+
 	// This interface can only be implemented by classes.
 	[InterfaceTargets(Durian.InterfaceTargets.Class)]
 	public interface IInterface
@@ -20,9 +25,4 @@ namespace Durian.Samples.InterfaceTargets
 		{
 		}
 	}
-
-	// Error!
-	//public struct Struct : IInterface
-	//{
-	//}
 }

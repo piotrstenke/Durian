@@ -13,7 +13,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// </summary>
 	/// <typeparam name="TSymbol">Type of returned <see cref="ISymbol"/>s.</typeparam>
 	/// <typeparam name="TData">Type of returned <see cref="IMemberData"/>s.</typeparam>s
-	public abstract class IncludedMembersSymbolContainer<TSymbol, TData> : LeveledSymbolContainer<TSymbol, TData>, IMappedSymbolContainer<TSymbol, TData, IncludedMembers>
+	public abstract class IncludedMemberContainer<TSymbol, TData> : LeveledSymbolContainer<TSymbol, TData>, IMappedSymbolContainer<TSymbol, TData, IncludedMembers>
 		where TSymbol : class, ISymbol
 		where TData : class, IMemberData
 	{
@@ -38,14 +38,14 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		protected virtual IncludedMembers Limit => IncludedMembers.All;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="IncludedMembersSymbolContainer{TSymbol, TData}"/> class.
+		/// Initializes a new instance of the <see cref="IncludedMemberContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <typeparamref name="TData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
-		protected IncludedMembersSymbolContainer(
+		protected IncludedMemberContainer(
 			ISymbolOrMember<TSymbol, TData> root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default,
@@ -56,13 +56,13 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="IncludedMembersSymbolContainer{TSymbol, TData}"/> class.
+		/// Initializes a new instance of the <see cref="IncludedMemberContainer{TSymbol, TData}"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <typeparamref name="TData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
-		protected IncludedMembersSymbolContainer(
+		protected IncludedMemberContainer(
 			ISymbolOrMember root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default
@@ -105,9 +105,9 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.Reverse"/>
-		public new IncludedMembersSymbolContainer<TSymbol, TData> Reverse()
+		public new IncludedMemberContainer<TSymbol, TData> Reverse()
 		{
-			return (base.Reverse() as IncludedMembersSymbolContainer<TSymbol, TData>)!;
+			return (base.Reverse() as IncludedMemberContainer<TSymbol, TData>)!;
 		}
 
 		/// <summary>

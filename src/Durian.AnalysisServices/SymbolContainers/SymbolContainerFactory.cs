@@ -1662,7 +1662,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// Creates a new <see cref="SymbolContainerBuilder{T}"/>.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
-		public static SymbolContainerBuilder<WritableTypesContainer<ITypeData>> ToWritableContainer(this IEnumerable<INamedTypeSymbol> collection)
+		public static SymbolContainerBuilder<WritableTypeContainer<ITypeData>> ToWritableContainer(this IEnumerable<INamedTypeSymbol> collection)
 		{
 			return new(collection);
 		}
@@ -1671,17 +1671,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// Creates a new <see cref="SymbolContainerBuilder{T}"/>.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
-		public static SymbolContainerBuilder<WritableTypesContainer<ITypeData>> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, ITypeData>> collection)
-		{
-			return new(collection);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="SymbolContainerBuilder{T}"/>.
-		/// </summary>
-		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
-		/// <typeparam name="TData">Type of target <see cref="ITypeData"/>.</typeparam>
-		public static SymbolContainerBuilder<WritableTypesContainer<TData>> ToWritableContainer<TData>(this IEnumerable<INamedTypeSymbol> collection) where TData : class, ITypeData
+		public static SymbolContainerBuilder<WritableTypeContainer<ITypeData>> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, ITypeData>> collection)
 		{
 			return new(collection);
 		}
@@ -1691,7 +1681,17 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
 		/// <typeparam name="TData">Type of target <see cref="ITypeData"/>.</typeparam>
-		public static SymbolContainerBuilder<WritableTypesContainer<TData>> ToWritableContainer<TData>(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, TData>> collection) where TData : class, ITypeData
+		public static SymbolContainerBuilder<WritableTypeContainer<TData>> ToWritableContainer<TData>(this IEnumerable<INamedTypeSymbol> collection) where TData : class, ITypeData
+		{
+			return new(collection);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="SymbolContainerBuilder{T}"/>.
+		/// </summary>
+		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
+		/// <typeparam name="TData">Type of target <see cref="ITypeData"/>.</typeparam>
+		public static SymbolContainerBuilder<WritableTypeContainer<TData>> ToWritableContainer<TData>(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, TData>> collection) where TData : class, ITypeData
 		{
 			return new(collection);
 		}
@@ -1700,7 +1700,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// Creates a new <see cref="SymbolContainerBuilder{T}"/>.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
-		public static SymbolContainerBuilder<WritableNamespacesOrTypesContainer<INamespaceOrTypeData>> ToWritableContainer(this IEnumerable<INamespaceOrTypeSymbol> collection)
+		public static SymbolContainerBuilder<WritableNamespaceOrTypeContainer<INamespaceOrTypeData>> ToWritableContainer(this IEnumerable<INamespaceOrTypeSymbol> collection)
 		{
 			return new(collection);
 		}
@@ -1709,7 +1709,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// Creates a new <see cref="SymbolContainerBuilder{T}"/>.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
-		public static SymbolContainerBuilder<WritableNamespacesOrTypesContainer<INamespaceOrTypeData>> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> collection)
+		public static SymbolContainerBuilder<WritableNamespaceOrTypeContainer<INamespaceOrTypeData>> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> collection)
 		{
 			return new(collection);
 		}
@@ -1719,7 +1719,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
 		/// <typeparam name="TData">Type of target <see cref="INamespaceOrTypeData"/>.</typeparam>
-		public static SymbolContainerBuilder<WritableNamespacesOrTypesContainer<TData>> ToWritableContainer<TData>(this IEnumerable<INamespaceOrTypeSymbol> collection) where TData : class, INamespaceOrTypeData
+		public static SymbolContainerBuilder<WritableNamespaceOrTypeContainer<TData>> ToWritableContainer<TData>(this IEnumerable<INamespaceOrTypeSymbol> collection) where TData : class, INamespaceOrTypeData
 		{
 			return new(collection);
 		}
@@ -1729,7 +1729,7 @@ namespace Durian.Analysis.SymbolContainers
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
 		/// <typeparam name="TData">Type of target <see cref="INamespaceOrTypeData"/>.</typeparam>
-		public static SymbolContainerBuilder<WritableNamespacesOrTypesContainer<TData>> ToWritableContainer<TData>(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, TData>> collection) where TData : class, INamespaceOrTypeData
+		public static SymbolContainerBuilder<WritableNamespaceOrTypeContainer<TData>> ToWritableContainer<TData>(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, TData>> collection) where TData : class, INamespaceOrTypeData
 		{
 			return new(collection);
 		}
@@ -1821,7 +1821,7 @@ namespace Durian.Analysis.SymbolContainers
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="WritableTypesContainer{TData}"/>.
+		/// Creates a new <see cref="WritableTypeContainer{TData}"/>.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
 		/// <param name="parentCompilation">
@@ -1829,13 +1829,13 @@ namespace Durian.Analysis.SymbolContainers
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 		/// </param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-		public static WritableTypesContainer<ITypeData> ToWritableContainer(this IEnumerable<INamedTypeSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+		public static WritableTypeContainer<ITypeData> ToWritableContainer(this IEnumerable<INamedTypeSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 		{
 			return new(collection, parentCompilation, nameResolver);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="WritableTypesContainer{TData}"/>.
+		/// Creates a new <see cref="WritableTypeContainer{TData}"/>.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
 		/// <param name="parentCompilation">
@@ -1843,13 +1843,13 @@ namespace Durian.Analysis.SymbolContainers
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 		/// </param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-		public static WritableTypesContainer<ITypeData> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, ITypeData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+		public static WritableTypeContainer<ITypeData> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, ITypeData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 		{
 			return new(collection, parentCompilation, nameResolver);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="WritableTypesContainer{TData}"/>.
+		/// Creates a new <see cref="WritableTypeContainer{TData}"/>.
 		/// </summary>
 		/// <typeparam name="TData">Type of target <see cref="ITypeData"/>.</typeparam>
 		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
@@ -1858,13 +1858,13 @@ namespace Durian.Analysis.SymbolContainers
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 		/// </param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-		public static WritableTypesContainer<TData> ToWritableContainer<TData>(this IEnumerable<INamedTypeSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) where TData : class, ITypeData
+		public static WritableTypeContainer<TData> ToWritableContainer<TData>(this IEnumerable<INamedTypeSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) where TData : class, ITypeData
 		{
 			return new(collection, parentCompilation, nameResolver);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="WritableTypesContainer{TData}"/>.
+		/// Creates a new <see cref="WritableTypeContainer{TData}"/>.
 		/// </summary>
 		/// <typeparam name="TData">Type of target <see cref="ITypeData"/>.</typeparam>
 		/// <param name="collection">Collection of <see cref="INamedTypeSymbol"/>s to add to the container.</param>
@@ -1873,13 +1873,13 @@ namespace Durian.Analysis.SymbolContainers
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 		/// </param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-		public static WritableTypesContainer<TData> ToWritableContainer<TData>(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, TData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) where TData : class, ITypeData
+		public static WritableTypeContainer<TData> ToWritableContainer<TData>(this IEnumerable<ISymbolOrMember<INamedTypeSymbol, TData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) where TData : class, ITypeData
 		{
 			return new(collection, parentCompilation, nameResolver);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="WritableNamespacesOrTypesContainer{TData}"/>.
+		/// Creates a new <see cref="WritableNamespaceOrTypeContainer{TData}"/>.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
 		/// <param name="parentCompilation">
@@ -1887,13 +1887,13 @@ namespace Durian.Analysis.SymbolContainers
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 		/// </param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-		public static WritableNamespacesOrTypesContainer<INamespaceOrTypeData> ToWritableContainer(this IEnumerable<INamespaceOrTypeSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+		public static WritableNamespaceOrTypeContainer<INamespaceOrTypeData> ToWritableContainer(this IEnumerable<INamespaceOrTypeSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 		{
 			return new(collection, parentCompilation, nameResolver);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="WritableNamespacesOrTypesContainer{TData}"/>.
+		/// Creates a new <see cref="WritableNamespaceOrTypeContainer{TData}"/>.
 		/// </summary>
 		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
 		/// <param name="parentCompilation">
@@ -1901,28 +1901,13 @@ namespace Durian.Analysis.SymbolContainers
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 		/// </param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-		public static WritableNamespacesOrTypesContainer<INamespaceOrTypeData> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
+		public static WritableNamespaceOrTypeContainer<INamespaceOrTypeData> ToWritableContainer(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default)
 		{
 			return new(collection, parentCompilation, nameResolver);
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="WritableNamespacesOrTypesContainer{TData}"/>.
-		/// </summary>
-		/// <typeparam name="TData">Type of target <see cref="INamespaceOrTypeData"/>.</typeparam>
-		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
-		/// <param name="parentCompilation">
-		/// Parent <see cref="ICompilationData"/> of the current container.
-		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
-		/// </param>
-		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-		public static WritableNamespacesOrTypesContainer<TData> ToWritableContainer<TData>(this IEnumerable<INamespaceOrTypeSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) where TData : class, INamespaceOrTypeData
-		{
-			return new(collection, parentCompilation, nameResolver);
-		}
-
-		/// <summary>
-		/// Creates a new <see cref="WritableNamespacesOrTypesContainer{TData}"/>.
+		/// Creates a new <see cref="WritableNamespaceOrTypeContainer{TData}"/>.
 		/// </summary>
 		/// <typeparam name="TData">Type of target <see cref="INamespaceOrTypeData"/>.</typeparam>
 		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
@@ -1931,7 +1916,22 @@ namespace Durian.Analysis.SymbolContainers
 		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
 		/// </param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
-		public static WritableNamespacesOrTypesContainer<TData> ToWritableContainer<TData>(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, TData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) where TData : class, INamespaceOrTypeData
+		public static WritableNamespaceOrTypeContainer<TData> ToWritableContainer<TData>(this IEnumerable<INamespaceOrTypeSymbol> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) where TData : class, INamespaceOrTypeData
+		{
+			return new(collection, parentCompilation, nameResolver);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="WritableNamespaceOrTypeContainer{TData}"/>.
+		/// </summary>
+		/// <typeparam name="TData">Type of target <see cref="INamespaceOrTypeData"/>.</typeparam>
+		/// <param name="collection">Collection of <see cref="INamespaceOrTypeSymbol"/>s to add to the container.</param>
+		/// <param name="parentCompilation">
+		/// Parent <see cref="ICompilationData"/> of the current container.
+		/// <para>Required for converting <see cref="ISymbol"/>s to <see cref="IMemberData"/>s.</para>
+		/// </param>
+		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
+		public static WritableNamespaceOrTypeContainer<TData> ToWritableContainer<TData>(this IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, TData>> collection, ICompilationData? parentCompilation = default, ISymbolNameResolver? nameResolver = default) where TData : class, INamespaceOrTypeData
 		{
 			return new(collection, parentCompilation, nameResolver);
 		}

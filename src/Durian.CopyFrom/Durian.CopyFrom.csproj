@@ -5,7 +5,8 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<Description>
 			CopyFrom allows to copy implementations of members to other members, without the need for inheritance. A regex pattern can be provided to customize the copied implementation.
-			Do not reference this package if the main Durian package is already referenced.
+			
+Do not reference this package if the main Durian package is already referenced.
 		</Description>
 		<PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Copy;From;Move;Implementation</PackageTags>
 		<PackageVersion>1.0.0</PackageVersion>

@@ -13,17 +13,17 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// <summary>
 	/// <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> that handles local functions.
 	/// </summary>
-	public sealed class LocalFunctionsContainer : IncludedMembersSymbolContainerWithoutInner<IMethodSymbol, ILocalFunctionData>
+	public sealed class LocalFunctionContainer : IncludedMemberContainerWithoutInner<IMethodSymbol, ILocalFunctionData>
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="LocalFunctionsContainer"/> class.
+		/// Initializes a new instance of the <see cref="LocalFunctionContainer"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <see cref="INamespaceData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
-		public LocalFunctionsContainer(
+		public LocalFunctionContainer(
 			ISymbolOrMember<IMethodSymbol, ILocalFunctionData> root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default,
@@ -33,13 +33,13 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="LocalFunctionsContainer"/> class.
+		/// Initializes a new instance of the <see cref="LocalFunctionContainer"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <see cref="INamespaceData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
-		public LocalFunctionsContainer(
+		public LocalFunctionContainer(
 			ISymbolOrMember<IMethodSymbol, IMethodData> root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default
@@ -66,9 +66,9 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.Reverse"/>
-		public new LocalFunctionsContainer Reverse()
+		public new LocalFunctionContainer Reverse()
 		{
-			return (base.Reverse() as LocalFunctionsContainer)!;
+			return (base.Reverse() as LocalFunctionContainer)!;
 		}
 
 		private IEnumerable<ISymbolOrMember<IMethodSymbol, ILocalFunctionData>> GetLocalFunctions(ISymbolOrMember<IMethodSymbol, IMethodData> member)

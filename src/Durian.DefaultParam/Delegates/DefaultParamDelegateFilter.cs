@@ -30,7 +30,7 @@ namespace Durian.Analysis.DefaultParam.Delegates
 		public override bool ValidateAndCreate(in DefaultParamDelegateContext context, out IMemberData? data)
 		{
 			if (AnalyzeAgainstProhibitedAttributes(context.Symbol, context.TargetCompilation, out AttributeData[]? attributes) &&
-				AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out ITypeData[]? containingTypes) &&
+				AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out ImmutableArray<ITypeData> containingTypes) &&
 				AnalyzeTypeParameters(context.Symbol, in context.GetTypeParameters()))
 			{
 				ImmutableArray<INamedTypeSymbol> symbols = DefaultParamUtilities.TypeDatasToTypeSymbols(containingTypes);

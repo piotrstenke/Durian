@@ -1558,40 +1558,6 @@ $@"internal partial class Test
 		}
 
 		[Fact]
-		public void Success_When_CopiesFromMethodWithAttribtes_And_AllowsCopyFromAttributes_And_HasPattern()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-using {DurianStrings.ConfigurationNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
-	[{PatternAttributeProvider.TypeName}(""DEBUG"", ""RELEASE"")]
-	partial void Method();
-
-	[System.Diagnostics.Conditional(""DEBUG"")]
-	void Target()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			string expected =
-$@"internal partial class Test
-{{
-	[System.Diagnostics.Conditional(""RELEASE"")]
-	{GetCodeGenerationAttributes("Test.Target()")}
-	private partial void Method()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
 		public void Success_When_CopiesFromMethodWithAttributes_And_AllowsCopyFromAttributes()
 		{
 			string input =
@@ -1614,6 +1580,40 @@ partial class Test
 $@"internal partial class Test
 {{
 	[System.Diagnostics.Conditional(""DEBUG"")]
+	{GetCodeGenerationAttributes("Test.Target()")}
+	private partial void Method()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_CopiesFromMethodWithAttributes_And_AllowsCopyFromAttributes_And_HasPattern()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+using {DurianStrings.ConfigurationNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"", {CopyFromMethodAttributeProvider.AdditionalNodes} = {CopyFromAdditionalNodesProvider.TypeName}.{CopyFromAdditionalNodesProvider.Attributes})]
+	[{PatternAttributeProvider.TypeName}(""DEBUG"", ""RELEASE"")]
+	partial void Method();
+
+	[System.Diagnostics.Conditional(""DEBUG"")]
+	void Target()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"internal partial class Test
+{{
+	[System.Diagnostics.Conditional(""RELEASE"")]
 	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method()
 	{{
@@ -1761,6 +1761,38 @@ internal partial class Test
 		}
 
 		[Fact]
+		public void Success_When_HasArglist()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target(__arglist)"")]
+	private partial void Method(__arglist);
+
+	static void Target(__arglist)
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+internal partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Target(__arglist)")}
+	private partial void Method(__arglist)
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
 		public void Success_When_HasCollidingMethodAndTypeName()
 		{
 			string input =
@@ -1895,6 +1927,190 @@ internal partial class Test
 ";
 
 			Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
+		}
+
+		[Fact]
+		public void Success_When_HasMultiplePattern()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
+	[{PatternAttributeProvider.TypeName}(""name"", ""variable"")]
+	[{PatternAttributeProvider.TypeName}(""variable"", ""abc"")]
+	public partial void Method();
+
+	public void Target()
+	{{
+		string name = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+internal partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Target()")}
+	public partial void Method()
+	{{
+		string abc = string.Empty;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_HasMultiplePattern_And_IsArrowExpression()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
+	[{PatternAttributeProvider.TypeName}(""int"", ""long"")]
+	[{PatternAttributeProvider.TypeName}(""long"", ""short"")]
+	public partial short Method();
+
+	public int Target() => int.MaxValue;
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+internal partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Target()")}
+	public partial short Method() => short.MaxValue;
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_HasMultiplePatternWithOrder()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
+	[{PatternAttributeProvider.TypeName}(""abc"", ""variable"", {PatternAttributeProvider.Order} = 1)]
+	[{PatternAttributeProvider.TypeName}(""name"", ""abc"", {PatternAttributeProvider.Order} = 0)]
+	public partial void Method();
+
+	public void Target()
+	{{
+		string name = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+internal partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Target()")}
+	public partial void Method()
+	{{
+		string variable = string.Empty;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_HasMultiplePatternWithOrder_And_IsArrowExpression()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
+	[{PatternAttributeProvider.TypeName}(""long"", ""short"", {PatternAttributeProvider.Order} = 1)]
+	[{PatternAttributeProvider.TypeName}(""int"", ""long"", {PatternAttributeProvider.Order} = 0)]
+	public partial short Method();
+
+	public int Target() => int.MaxValue;
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+internal partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Target()")}
+	public partial short Method() => short.MaxValue;
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_HasPattern()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
+	[{PatternAttributeProvider.TypeName}(""name"", ""variable"")]
+	public partial void Method();
+
+	public void Target()
+	{{
+		string name = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+internal partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Target()")}
+	public partial void Method()
+	{{
+		string variable = string.Empty;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
+		}
+
+		[Fact]
+		public void Success_When_HasPattern_And_IsArrowExpression()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
+	[{PatternAttributeProvider.TypeName}(""int"", ""long"")]
+	public partial long Method();
+
+	public int Target() => int.MaxValue;
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+internal partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Target()")}
+	public partial long Method() => long.MaxValue;
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
 		}
 
 		[Fact]
@@ -2223,6 +2439,38 @@ internal partial class Test
 }}
 ";
 			Assert.True(RunGenerator(input).Compare(expected, true));
+		}
+
+		[Fact]
+		public void Success_When_IsExtensionMethod()
+		{
+			string input =
+$@"using {DurianStrings.MainNamespace};
+
+static partial class Test
+{{
+	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
+	static partial void Method(this int a);
+
+	static void Target()
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			string expected =
+$@"using {DurianStrings.MainNamespace};
+
+internal static partial class Test
+{{
+	{GetCodeGenerationAttributes("Test.Target()")}
+	private static partial void Method(this int a)
+	{{
+		string a = string.Empty;
+	}}
+}}
+";
+			Assert.True(RunGenerator(input).Compare(expected));
 		}
 
 		[Fact]
@@ -3321,70 +3569,6 @@ internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
 	private partial void Method()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_HasArglist()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target(__arglist)"")]
-	private partial void Method(__arglist);
-
-	static void Target(__arglist)
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			string expected =
-$@"using {DurianStrings.MainNamespace};
-
-internal partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Target(__arglist)")}
-	private partial void Method(__arglist)
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
-
-		[Fact]
-		public void Success_When_IsExtensionMethod()
-		{
-			string input =
-$@"using {DurianStrings.MainNamespace};
-
-static partial class Test
-{{
-	[{CopyFromMethodAttributeProvider.TypeName}(""Target"")]
-	static partial void Method(this int a);
-
-	static void Target()
-	{{
-		string a = string.Empty;
-	}}
-}}
-";
-			string expected =
-$@"using {DurianStrings.MainNamespace};
-
-internal static partial class Test
-{{
-	{GetCodeGenerationAttributes("Test.Target()")}
-	private static partial void Method(this int a)
 	{{
 		string a = string.Empty;
 	}}

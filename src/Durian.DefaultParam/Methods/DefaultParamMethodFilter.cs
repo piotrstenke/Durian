@@ -86,7 +86,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 				AnalyzeAgainstInvalidMethodType(context.Symbol) &&
 				AnalyzeAgainstPartialOrExtern(context.Symbol, context.Node) &&
 				AnalyzeAgainstProhibitedAttributes(context.Symbol, context.TargetCompilation, out AttributeData[]? attributes) &&
-				AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out ITypeData[]? containingTypes)
+				AnalyzeContainingTypes(context.Symbol, context.TargetCompilation, out ImmutableArray<ITypeData> containingTypes)
 			)
 			{
 				TypeParameterContainer combinedParameters = context.GetTypeParameters();

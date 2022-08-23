@@ -160,7 +160,7 @@ namespace Durian.Analysis.Data.FromSource
 
 			switch (_members)
 			{
-				case NamespacesOrTypesContainer typed:
+				case NamespaceOrTypeContainer typed:
 					IMappedSymbolContainer<INamespaceSymbol, INamespaceData, IncludedMembers> namespaces = typed.GetNamespaces();
 					return namespaces.ResolveLevel(members);
 
@@ -191,7 +191,7 @@ namespace Durian.Analysis.Data.FromSource
 
 			switch (_members)
 			{
-				case NamespacesOrTypesContainer typed:
+				case NamespaceOrTypeContainer typed:
 					IMappedSymbolContainer<INamedTypeSymbol, ITypeData, IncludedMembers> types = typed.GetTypes();
 					return types.ResolveLevel(members);
 
@@ -287,7 +287,7 @@ namespace Durian.Analysis.Data.FromSource
 		[MemberNotNull(nameof(_members))]
 		private void InitMembers()
 		{
-			_members ??= new NamespacesOrTypesContainer(this, ParentCompilation);
+			_members ??= new NamespaceOrTypeContainer(this, ParentCompilation);
 		}
 	}
 }

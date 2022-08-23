@@ -14,20 +14,20 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// <summary>
 	/// <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> that handles sub-namespaces and types.
 	/// </summary>
-	public sealed class NamespacesOrTypesContainer : IncludedMembersSymbolContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>
+	public sealed class NamespaceOrTypeContainer : IncludedMemberContainer<INamespaceOrTypeSymbol, INamespaceOrTypeData>
 	{
 		private IMappedSymbolContainer<INamespaceSymbol, INamespaceData, IncludedMembers>? _subNamespaces;
-		private InnerMembersContainer<INamedTypeSymbol, ITypeData, INamespaceOrTypeSymbol, INamespaceOrTypeData>? _innerTypes;
+		private GenericInnerMemberContainer<INamedTypeSymbol, ITypeData, INamespaceOrTypeSymbol, INamespaceOrTypeData>? _innerTypes;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="NamespacesOrTypesContainer"/> class.
+		/// Initializes a new instance of the <see cref="NamespaceOrTypeContainer"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <see cref="INamespaceOrTypeData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
-		public NamespacesOrTypesContainer(
+		public NamespaceOrTypeContainer(
 			ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default,
@@ -53,7 +53,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		/// </summary>
 		public IMappedSymbolContainer<INamedTypeSymbol, ITypeData, IncludedMembers> GetTypes()
 		{
-			return _innerTypes ??= new InnerMembersContainer<INamedTypeSymbol, ITypeData, INamespaceOrTypeSymbol, INamespaceOrTypeData>(this, TargetRoot);
+			return _innerTypes ??= new GenericInnerMemberContainer<INamedTypeSymbol, ITypeData, INamespaceOrTypeSymbol, INamespaceOrTypeData>(this, TargetRoot);
 		}
 
 		/// <inheritdoc/>
@@ -81,9 +81,9 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.Reverse"/>
-		public new NamespacesOrTypesContainer Reverse()
+		public new NamespaceOrTypeContainer Reverse()
 		{
-			return (base.Reverse() as NamespacesOrTypesContainer)!;
+			return (base.Reverse() as NamespaceOrTypeContainer)!;
 		}
 
 		private IEnumerable<ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData>> GetNamespacesOrTypes(ISymbolOrMember<INamespaceOrTypeSymbol, INamespaceOrTypeData> member)
@@ -103,7 +103,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		{
 			if (Root is ISymbolOrMember<INamespaceSymbol, INamespaceData> @namespace)
 			{
-				return new InnerMembersContainer<INamespaceSymbol, INamespaceData, INamespaceOrTypeSymbol, INamespaceOrTypeData>(this, @namespace);
+				return new GenericInnerMemberContainer<INamespaceSymbol, INamespaceData, INamespaceOrTypeSymbol, INamespaceOrTypeData>(this, @namespace);
 			}
 
 			return (SymbolContainerFactory.EmptyLeveled<INamespaceSymbol, INamespaceData>() as IMappedSymbolContainer<INamespaceSymbol, INamespaceData, IncludedMembers>)!;

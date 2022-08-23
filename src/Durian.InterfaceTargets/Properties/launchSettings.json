@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Durian.InterfaceTargets": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\samples\\Durian.Samples.InterfaceTargets\\Durian.Samples.InterfaceTargets.csproj"
+    }
+  }
+}

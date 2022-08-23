@@ -380,14 +380,14 @@ namespace Durian.Analysis.CopyFrom
 					{
 						HandleSpecialMemberTypes(ref member, type, target.Symbol);
 						ReplaceTypeParameters(ref member, replacer, replacements);
-						WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
+						WriteGeneratedMember(type, member, symbol, context, applyInheritdoc, true);
 					};
 				}
 
 				return (member, symbol, context, applyInheritdoc) =>
 				{
 					ReplaceTypeParameters(ref member, replacer, replacements);
-					WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
+					WriteGeneratedMember(type, member, symbol, context, applyInheritdoc, true);
 				};
 			}
 
@@ -396,11 +396,11 @@ namespace Durian.Analysis.CopyFrom
 				return (member, symbol, context, applyInheritdoc) =>
 				{
 					HandleSpecialMemberTypes(ref member, type, target.Symbol);
-					WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
+					WriteGeneratedMember(type, member, symbol, context, applyInheritdoc, true);
 				};
 			}
 
-			return (member, symbol, context, applyInheritdoc) => WriteGeneratedMember(type, member, symbol, context, applyInheritdoc);
+			return (member, symbol, context, applyInheritdoc) => WriteGeneratedMember(type, member, symbol, context, applyInheritdoc, true);
 		}
 
 		private static List<(string identifier, string replacement)> GetTypeParameterReplacements(INamedTypeSymbol type)

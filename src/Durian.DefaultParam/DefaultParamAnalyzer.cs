@@ -263,7 +263,7 @@ namespace Durian.Analysis.DefaultParam
 			IWritableSymbolContainer<INamedTypeSymbol, ITypeData> container = symbol.GetContainingTypes().ToWritableContainer(compilation);
 			bool isValid = true;
 
-			foreach (ITypeData parent in container.GetData())
+			foreach (ITypeData parent in container.GetData().CastArray<ITypeData>())
 			{
 				if (!parent.IsPartial)
 				{
@@ -351,35 +351,34 @@ namespace Durian.Analysis.DefaultParam
 		public static bool AnalyzeContainingTypes(
 			ISymbol symbol,
 			DefaultParamCompilationData compilation,
-			[NotNullWhen(true)] out ITypeData[]? containingTypes
+			out ImmutableArray<ITypeData> containingTypes
 		)
 		{
 			INamedTypeSymbol[] types = symbol.GetContainingTypes().ToArray();
+			ImmutableArray<ITypeData> arr = types.ToContainer(compilation).GetData();
 
-			if (types.Length == 0)
+			if (arr.Length == 0)
 			{
-				containingTypes = null;
-				return false;
+				containingTypes = arr;
+				return true;
 			}
-
-			ImmutableArray<ITypeData> arr = types.ToWritableContainer(compilation).GetData();
 
 			foreach (ITypeData parent in arr)
 			{
 				if (!parent.IsPartial)
 				{
-					containingTypes = null;
+					containingTypes = default;
 					return false;
 				}
 
 				if (!HasDefaultParamAttribute(parent.Symbol!, compilation))
 				{
-					containingTypes = null;
+					containingTypes = default;
 					return false;
 				}
 			}
 
-			containingTypes = arr.ToArray();
+			containingTypes = arr;
 			return true;
 		}
 
@@ -789,10 +788,7 @@ namespace Durian.Analysis.DefaultParam
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private protected static void InitializeAttributes([NotNull] ref IEnumerable<AttributeData>? attributes, ISymbol symbol)
 		{
-			if (attributes is null)
-			{
-				attributes = symbol.GetAttributes();
-			}
+			attributes ??= symbol.GetAttributes();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

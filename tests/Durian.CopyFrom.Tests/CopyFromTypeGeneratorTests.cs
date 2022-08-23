@@ -1642,7 +1642,7 @@ internal partial class Test
 $@"using {DurianStrings.MainNamespace};
 
 [{CopyFromTypeAttributeProvider.TypeName}(""Target"")]
-[{PatternAttributeProvider.TypeName}(""A"", ""B"", {PatternAttributeProvider.Order} = 1), {PatternAttributeProvider.TypeName}(""B"", ""C"", {PatternAttributeProvider.Order} = 0)]
+[{PatternAttributeProvider.TypeName}(""B"", ""C"", {PatternAttributeProvider.Order} = 1), {PatternAttributeProvider.TypeName}(""A"", ""B"", {PatternAttributeProvider.Order} = 0)]
 partial class Test
 {{
 }}
@@ -1661,9 +1661,9 @@ $@"using {DurianStrings.MainNamespace};
 internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Target.A()")}
-	void B()
+	void C()
 	{{
-		B();
+		C();
 	}}
 }}
 ";

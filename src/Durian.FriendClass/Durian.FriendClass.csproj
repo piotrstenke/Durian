@@ -5,7 +5,8 @@
 	<TargetFramework>netstandard2.0</TargetFramework>
 	<Description>
 	  FriendClass allows to limit access to 'internal' members by specifying a fixed list of friend types.
-	  Do not reference this package if the main Durian package is already referenced.
+	  
+Do not reference this package if the main Durian package is already referenced.
 	</Description>
 	<PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Friend;Type;Class</PackageTags>
 	<PackageVersion>2.0.0</PackageVersion>

@@ -32,13 +32,7 @@ namespace Durian.Analysis.Logging
 		/// <summary>
 		/// Determines whether the <see cref="LogDirectory"/> is relative to the <see cref="LoggingConfiguration.DefaultLogDirectory"/>. Defaults to <see langword="false"/>.
 		/// </summary>
-		/// <remarks>If <see cref="RelativeToDefault"/> is set to <see langword="true"/>, value of <see cref="RelativeToGlobal"/> is irrelevant.</remarks>
 		public bool RelativeToDefault { get; set; }
-
-		/// <summary>
-		/// Determines whether the <see cref="LogDirectory"/> is relative to the global <see cref="LogDirectory"/>. Defaults to <see langword="true"/>.
-		/// </summary>
-		public bool RelativeToGlobal { get; set; } = true;
 
 		/// <inheritdoc cref="LoggingConfiguration.SupportedLogs"/>
 		public GeneratorLogs SupportedLogs { get; set; }
@@ -47,6 +41,11 @@ namespace Durian.Analysis.Logging
 		/// Determines whether the <see cref="ISourceGenerator"/> supports reporting <see cref="Diagnostic"/>s. Defaults to <see langword="false"/>
 		/// </summary>
 		public bool SupportsDiagnostics { get; set; }
+
+		/// <summary>
+		/// Determines whether the <see cref="LogDirectory"/> is relative to the global <see cref="LogDirectory"/>. Defaults to <see langword="true"/>.
+		/// </summary>
+		public bool RelativeToGlobal { get; set; } = true;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoggingConfigurationAttribute"/> class.

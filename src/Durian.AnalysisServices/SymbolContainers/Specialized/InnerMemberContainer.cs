@@ -13,13 +13,13 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// <summary>
 	/// <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> that handles members of a type.
 	/// </summary>
-	public sealed class MembersOfTypeContainer : IncludedMembersSymbolContainerWithoutInner<ISymbol, IMemberData>
+	public sealed class InnerMemberContainer : IncludedMemberContainerWithoutInner<ISymbol, IMemberData>
 	{
-		private InnerMembersContainer<INamedTypeSymbol, ITypeData, ISymbol, IMemberData>? _innerTypes;
-		private InnerMembersContainer<IPropertySymbol, IPropertyData, ISymbol, IMemberData>? _properties;
-		private InnerMembersContainer<IFieldSymbol, IFieldData, ISymbol, IMemberData>? _fields;
-		private InnerMembersContainer<IMethodSymbol, IMethodData, ISymbol, IMemberData>? _methods;
-		private InnerMembersContainer<IEventSymbol, IEventData, ISymbol, IMemberData>? _events;
+		private GenericInnerMemberContainer<INamedTypeSymbol, ITypeData, ISymbol, IMemberData>? _innerTypes;
+		private GenericInnerMemberContainer<IPropertySymbol, IPropertyData, ISymbol, IMemberData>? _properties;
+		private GenericInnerMemberContainer<IFieldSymbol, IFieldData, ISymbol, IMemberData>? _fields;
+		private GenericInnerMemberContainer<IMethodSymbol, IMethodData, ISymbol, IMemberData>? _methods;
+		private GenericInnerMemberContainer<IEventSymbol, IEventData, ISymbol, IMemberData>? _events;
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.Root"/>
 		public new ISymbolOrMember<INamedTypeSymbol, ITypeData> Root => (base.Root as ISymbolOrMember<INamedTypeSymbol, ITypeData>)!;
@@ -29,14 +29,14 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		public new ISymbolOrMember<INamedTypeSymbol, ITypeData> TargetRoot => Root;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="MembersOfTypeContainer"/> class.
+		/// Initializes a new instance of the <see cref="InnerMemberContainer"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <see cref="INamespaceOrTypeData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
-		public MembersOfTypeContainer(
+		public InnerMemberContainer(
 			ISymbolOrMember<INamedTypeSymbol, ITypeData> root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default,

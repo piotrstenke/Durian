@@ -62,24 +62,18 @@ namespace Durian.Analysis.CopyFrom
 			ReplaceTypeParameters(ref currentNode, replacer, replacements);
 		}
 
-		private static void WriteBlockBody(CopyFromMethodData method, CopyFromPassContext context, BlockSyntax decl)
+		private void WriteBlockBody(CopyFromMethodData method, CopyFromPassContext context, BlockSyntax decl)
 		{
 			BlockSyntax block = (BlockSyntax)WriteMethodHead(method, context, decl);
-			context.CodeBuilder.BeginBlock();
-
-			foreach (StatementSyntax statement in block.Statements)
-			{
-				context.CodeBuilder.Indent();
-				context.CodeBuilder.WriteLine(statement.ToString());
-			}
+			WriteGeneratedMember(method, block, method.Symbol, context, CodeGeneration.GenerateDocumentation.Never, false);
 		}
 
-		private static void WriteExpressionBody(CopyFromMethodData method, CopyFromPassContext context, ArrowExpressionClauseSyntax decl)
+		private void WriteExpressionBody(CopyFromMethodData method, CopyFromPassContext context, ArrowExpressionClauseSyntax decl)
 		{
 			ArrowExpressionClauseSyntax expression = (ArrowExpressionClauseSyntax)WriteMethodHead(method, context, decl);
-			context.CodeBuilder.Write(" =>");
-			context.CodeBuilder.Write(expression.Expression.ToFullString());
-			context.CodeBuilder.WriteLine(';');
+			WriteGeneratedMember(method, expression, method.Symbol, context, CodeGeneration.GenerateDocumentation.Never, false);
+			context.CodeBuilder.Write(';');
+			context.CodeBuilder.NewLine();
 		}
 
 		private static SyntaxNode WriteMethodHead(CopyFromMethodData method, CopyFromPassContext context, SyntaxNode currentNode)
@@ -165,16 +159,12 @@ namespace Durian.Analysis.CopyFrom
 			switch (node)
 			{
 				case BlockSyntax block:
-					WriteDeclarationLead(context.CodeBuilder, method, method.Target.Usings);
-					HandleAdditionalNodes(method, method.Target, declaration, context);
-					WriteGenerationAttributes(method.Target.Symbol.ConstructedFrom, context);
+					BeginDeclaration(method, context, declaration);
 					WriteBlockBody(method, context, block);
 					break;
 
 				case ArrowExpressionClauseSyntax arrow:
-					WriteDeclarationLead(context.CodeBuilder, method, method.Target.Usings);
-					HandleAdditionalNodes(method, method.Target, declaration, context);
-					WriteGenerationAttributes(method.Target.Symbol.ConstructedFrom, context);
+					BeginDeclaration(method, context, declaration);
 					WriteExpressionBody(method, context, arrow);
 					break;
 
@@ -187,6 +177,13 @@ namespace Durian.Analysis.CopyFrom
 			AddSourceWithOriginal(method.Declaration, hintName, context);
 
 			return true;
+
+			void BeginDeclaration(CopyFromMethodData method, CopyFromPassContext context, SyntaxNode declaration)
+			{
+				WriteDeclarationLead(context.CodeBuilder, method, method.Target.Usings);
+				HandleAdditionalNodes(method, method.Target, declaration, context);
+				WriteGenerationAttributes(method.Target.Symbol.ConstructedFrom, context);
+			}
 		}
 	}
 }

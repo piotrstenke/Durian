@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Durian.CopyFrom": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\samples\\Durian.Samples.CopyFrom\\Durian.Samples.CopyFrom.csproj"
+    }
+  }
+}

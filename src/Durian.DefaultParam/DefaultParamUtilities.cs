@@ -434,9 +434,9 @@ namespace Durian.Analysis.DefaultParam
 		/// Converts an array of <see cref="ITypeData"/>s to an array of <see cref="INamedTypeSymbol"/>s.
 		/// </summary>
 		/// <param name="types">Array of <see cref="ITypeData"/>s to convert.</param>
-		public static ImmutableArray<INamedTypeSymbol> TypeDatasToTypeSymbols(ITypeData[]? types)
+		public static ImmutableArray<INamedTypeSymbol> TypeDatasToTypeSymbols(ImmutableArray<ITypeData> types)
 		{
-			if (types is null)
+			if (types.IsDefault)
 			{
 				return ImmutableArray<INamedTypeSymbol>.Empty;
 			}

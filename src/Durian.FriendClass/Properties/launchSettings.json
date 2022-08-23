@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Durian.FriendClass": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\samples\\Durian.Samples.FriendClass\\Durian.Samples.FriendClass.csproj"
+    }
+  }
+}

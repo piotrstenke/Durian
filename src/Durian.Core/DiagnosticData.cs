@@ -179,10 +179,7 @@ namespace Durian.Info
 		{
 			ModuleReference reference = new(module);
 
-			if (_originalModule is null)
-			{
-				_originalModule = reference;
-			}
+			_originalModule ??= reference;
 
 			_module = reference;
 		}

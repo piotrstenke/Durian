@@ -259,7 +259,7 @@ namespace Durian.Analysis.Data.FromSource
 
 			switch (_members)
 			{
-				case MembersOfTypeContainer typed:
+				case InnerMemberContainer typed:
 					IMappedSymbolContainer<IEventSymbol, IEventData, IncludedMembers> events = typed.GetEvents();
 					return events.ResolveLevel(members);
 
@@ -284,7 +284,7 @@ namespace Durian.Analysis.Data.FromSource
 
 			switch (_members)
 			{
-				case MembersOfTypeContainer typed:
+				case InnerMemberContainer typed:
 					IMappedSymbolContainer<IFieldSymbol, IFieldData, IncludedMembers> fields = typed.GetFields();
 					return fields.ResolveLevel(members);
 
@@ -322,7 +322,7 @@ namespace Durian.Analysis.Data.FromSource
 
 			switch (_members)
 			{
-				case MembersOfTypeContainer typed:
+				case InnerMemberContainer typed:
 					IMappedSymbolContainer<IMethodSymbol, IMethodData, IncludedMembers> methods = typed.GetMethods();
 					return methods.ResolveLevel(members);
 
@@ -353,7 +353,7 @@ namespace Durian.Analysis.Data.FromSource
 
 			switch (_members)
 			{
-				case MembersOfTypeContainer typed:
+				case InnerMemberContainer typed:
 					IMappedSymbolContainer<IPropertySymbol, IPropertyData, IncludedMembers> properties = typed.GetProperties();
 					return properties.ResolveLevel(members);
 
@@ -378,7 +378,7 @@ namespace Durian.Analysis.Data.FromSource
 
 			switch (_members)
 			{
-				case MembersOfTypeContainer typed:
+				case InnerMemberContainer typed:
 					IMappedSymbolContainer<INamedTypeSymbol, ITypeData, IncludedMembers> types = typed.GetTypes();
 					return types.ResolveLevel(members);
 
@@ -488,7 +488,7 @@ namespace Durian.Analysis.Data.FromSource
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void InitMembers()
 		{
-			_members ??= new MembersOfTypeContainer(this, ParentCompilation);
+			_members ??= new InnerMemberContainer(this, ParentCompilation);
 		}
 	}
 }

@@ -13,17 +13,17 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// <summary>
 	/// <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> that handles sub-namespaces.
 	/// </summary>
-	public sealed class SubNamespacesContainer : IncludedMembersSymbolContainerWithoutInner<INamespaceSymbol, INamespaceData>
+	public sealed class SubNamespaceContainer : IncludedMemberContainerWithoutInner<INamespaceSymbol, INamespaceData>
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SubNamespacesContainer"/> class.
+		/// Initializes a new instance of the <see cref="SubNamespaceContainer"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <see cref="INamespaceData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
-		public SubNamespacesContainer(
+		public SubNamespaceContainer(
 			ISymbolOrMember<INamespaceSymbol, INamespaceData> root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default,
@@ -51,9 +51,9 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.Reverse"/>
-		public new SubNamespacesContainer Reverse()
+		public new SubNamespaceContainer Reverse()
 		{
-			return (base.Reverse() as SubNamespacesContainer)!;
+			return (base.Reverse() as SubNamespaceContainer)!;
 		}
 
 		private IEnumerable<ISymbolOrMember<INamespaceSymbol, INamespaceData>> GetNamespaces(ISymbolOrMember<INamespaceSymbol, INamespaceData> member)

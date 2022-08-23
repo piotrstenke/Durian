@@ -13,17 +13,17 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 	/// <summary>
 	/// <see cref="ILeveledSymbolContainer{TSymbol, TData}"/> that handles method overloads.
 	/// </summary>
-	public sealed class OverloadsContainer : IncludedMembersSymbolContainerWithoutInner<IMethodSymbol, IMethodData>
+	public sealed class MethodOverloadContainer : IncludedMemberContainerWithoutInner<IMethodSymbol, IMethodData>
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="OverloadsContainer"/> class.
+		/// Initializes a new instance of the <see cref="MethodOverloadContainer"/> class.
 		/// </summary>
 		/// <param name="root"><see cref="ISymbol"/> that is a root of all the underlaying containers.</param>
 		/// <param name="parentCompilation"><see cref="ICompilationData"/> used to create <see cref="INamespaceData"/>s.</param>
 		/// <param name="nameResolver"><see cref="ISymbolNameResolver"/> used to resolve names of symbols when <see cref="ISymbolContainer.GetNames"/> is called.</param>
 		/// <param name="includeRoot">Determines whether the <paramref name="root"/> should be included in the underlaying containers.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="root"/> is <see langword="null"/>.</exception>
-		public OverloadsContainer(
+		public MethodOverloadContainer(
 			ISymbolOrMember<IMethodSymbol, IMethodData> root,
 			ICompilationData? parentCompilation = default,
 			ISymbolNameResolver? nameResolver = default,
@@ -51,9 +51,9 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		}
 
 		/// <inheritdoc cref="LeveledSymbolContainer{TSymbol, TData}.Reverse"/>
-		public new OverloadsContainer Reverse()
+		public new MethodOverloadContainer Reverse()
 		{
-			return (base.Reverse() as OverloadsContainer)!;
+			return (base.Reverse() as MethodOverloadContainer)!;
 		}
 
 		private IEnumerable<ISymbolOrMember<IMethodSymbol, IMethodData>> GetOverloads(ISymbolOrMember<IMethodSymbol, IMethodData> member)

@@ -161,7 +161,7 @@ namespace Durian.Analysis.Data.FromSource
 		/// <inheritdoc/>
 		public ISymbolContainer<INamedTypeSymbol, ITypeData> GetTypes(IncludedMembers members)
 		{
-			_types ??= new NamespacesOrTypesContainer(this, ParentCompilation).GetTypes();
+			_types ??= new NamespaceOrTypeContainer(this, ParentCompilation).GetTypes();
 
 #pragma warning disable IDE0066 // Convert switch statement to expression
 			switch (_types)
