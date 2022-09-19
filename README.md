@@ -131,10 +131,6 @@ public class B
 }
 ```
 
-## In Progress
-
-The following modules are still in active development and are yet to be released in a not-yet-specified future.
-
 ### [CopyFrom](src/Durian.CopyFrom/README.md)
 
 *CopyFrom* allows to copy implementations of members to other members, without the need for inheritance. A regex pattern can be provided to customize the copied implementation.
@@ -170,6 +166,10 @@ partial class Test
 }
 
 ```
+
+## In Progress
+
+The following modules are still in active development and are yet to be released in a not-yet-specified future.
 
 ## Experimental
 
