@@ -142,10 +142,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "icons", "icons", "{1321229E
 	ProjectSection(SolutionItems) = preProject
 		img\icons\Durian-256.png = img\icons\Durian-256.png
 		img\icons\Durian-pkg-icon-128.png = img\icons\Durian-pkg-icon-128.png
-		img\icons\Durian.Core-256.png = img\icons\Durian.Core-256.png
-		img\icons\Durian.Core.svg = img\icons\Durian.Core.svg
-		img\icons\Durian.DefaultParam-256.png = img\icons\Durian.DefaultParam-256.png
-		img\icons\Durian.DefaultParam.svg = img\icons\Durian.DefaultParam.svg
 		img\icons\Durian.svg = img\icons\Durian.svg
 	EndProjectSection
 EndProject
@@ -192,7 +188,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CopyFrom", "CopyFrom", "{07
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.ConstExpr", "src\Durian.ConstExpr\Durian.ConstExpr.csproj", "{4563AEC2-3292-4CDD-B920-E615670CB101}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Durian.Samples.CopyFrom", "samples\Durian.Samples.CopyFrom\Durian.Samples.CopyFrom.csproj", "{9C383ACD-8C9E-4C24-B2EA-4326C7553866}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.CopyFrom", "samples\Durian.Samples.CopyFrom\Durian.Samples.CopyFrom.csproj", "{9C383ACD-8C9E-4C24-B2EA-4326C7553866}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
