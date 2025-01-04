@@ -507,13 +507,13 @@ public partial class LeveledSymbolContainer<TSymbol, TData> : PermanentSealableO
 
 	private void FillFirstLevel()
 	{
-		const int firstLevelIndex = 0;
+		const int FIRST_LEVEL_INDEX = 0;
 
-		OnLevelReady(firstLevelIndex);
+		OnLevelReady(FIRST_LEVEL_INDEX);
 
-		LevelEntry firstLevel = _levels[firstLevelIndex];
+		LevelEntry firstLevel = _levels[FIRST_LEVEL_INDEX];
 
-		if (!IsHandledExternally(firstLevelIndex))
+		if (!IsHandledExternally(FIRST_LEVEL_INDEX))
 		{
 			if (_rootFunction is null)
 			{
@@ -526,10 +526,10 @@ public partial class LeveledSymbolContainer<TSymbol, TData> : PermanentSealableO
 			}
 		}
 
-		OnLevelFilled(firstLevelIndex);
+		OnLevelFilled(FIRST_LEVEL_INDEX);
 		CurrentLevel++;
 
-		_levels[firstLevelIndex].StartIndex = 1;
+		_levels[FIRST_LEVEL_INDEX].StartIndex = 1;
 	}
 
 	private void FillLevel(IEnumerable<ISymbolOrMember<TSymbol, TData>> collection)

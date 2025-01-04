@@ -84,16 +84,16 @@ public static class EnumExtensions
 	/// <param name="value"><see cref="EventAccessorKind"/> to convert.</param>
 	public static AccessorKind GetAccessorKind(this EventAccessorKind value)
 	{
-		const int min = (int)AccessorKind.Init;
+		const int MIN = (int)AccessorKind.Init;
 
 		if (value == default)
 		{
 			return default;
 		}
 
-		int n = (int)value + min;
+		int n = (int)value + MIN;
 
-		if (n <= min)
+		if (n <= MIN)
 		{
 			return default;
 		}

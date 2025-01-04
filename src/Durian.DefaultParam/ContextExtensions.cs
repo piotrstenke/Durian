@@ -1,7 +1,7 @@
 ﻿using Durian.Analysis.DefaultParam.Delegates;
 using Durian.Analysis.DefaultParam.Methods;
 using Durian.Analysis.DefaultParam.Types;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 
 namespace Durian.Analysis.DefaultParam;
 

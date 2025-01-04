@@ -321,7 +321,7 @@ public sealed partial class CopyFromGenerator
 
 			context.CodeBuilder.EndAllBlocks();
 
-			AddSourceWithOriginal(type.Declaration, partialName, context);
+			AddSourceWithOriginal(partialName, type.Declaration, context);
 			isGenerated = true;
 			partialName = currentName + $"_{i + 1}";
 		}
@@ -482,7 +482,7 @@ public sealed partial class CopyFromGenerator
 					semanticModel = currentModel;
 					ApplyLead(ref semanticModel);
 
-					name += TryApplyPattern(type, context, " : " + firstType.ToString());
+					name += TryApplyPattern(type, context, " : " + firstType);
 					hasColon = true;
 				}
 			}

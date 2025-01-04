@@ -7,7 +7,7 @@ namespace Durian.Info;
 
 public partial class PackageIdentity
 {
-	private const int _maxPackageType = (int)PackageType.CodeFixLibrary;
+	private const int MAX_PACKAGE_TYPE = (int)PackageType.CodeFixLibrary;
 
 	/// <summary>
 	/// Returns a new instance of <see cref="PackageIdentity"/> corresponding with the specified <see cref="DurianPackage"/>.
@@ -91,7 +91,7 @@ public partial class PackageIdentity
 		{
 			int x = (int)type;
 
-			return (x & (x - 1)) == 0 && x <= _maxPackageType;
+			return (x & (x - 1)) == 0 && x <= MAX_PACKAGE_TYPE;
 		}
 
 		static bool IsFlag(DurianPackage package, PackageType type)

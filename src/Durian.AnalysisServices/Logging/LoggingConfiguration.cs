@@ -44,7 +44,7 @@ public sealed partial class LoggingConfiguration : IEquatable<LoggingConfigurati
 	}
 
 	/// <summary>
-	/// Determines whether this <see cref="IDurianGenerator"/> allows to report any <see cref="Diagnostic"/>s during the current execution pass.
+	/// Determines whether this generator allows to report any <see cref="Diagnostic"/>s during the current execution pass.
 	/// </summary>
 	/// <exception cref="InvalidOperationException"><see cref="EnableDiagnostics"/> cannot be set to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</exception>
 	public bool EnableDiagnostics

@@ -1,4 +1,5 @@
-﻿using Durian.Analysis.CodeGeneration;
+﻿using System.Linq;
+using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 
@@ -77,7 +78,7 @@ public partial class CodeBuilder
 		{
 			if (type == NamespaceStyle.Nested)
 			{
-				foreach (INamespaceSymbol parent in @namespace.ContainingNamespaces.GetSymbols())
+				foreach (INamespaceSymbol parent in @namespace.ContainingNamespaces.GetSymbols().Cast<INamespaceSymbol>())
 				{
 					SimpleName_Internal(parent);
 					BeginBlock();
@@ -87,7 +88,7 @@ public partial class CodeBuilder
 			}
 			else
 			{
-				foreach (INamespaceSymbol parent in @namespace.ContainingNamespaces.GetSymbols())
+				foreach (INamespaceSymbol parent in @namespace.ContainingNamespaces.GetSymbols().Cast<INamespaceSymbol>())
 				{
 					SimpleName_Internal(parent);
 					TextBuilder.Append('.');
@@ -118,7 +119,7 @@ public partial class CodeBuilder
 	{
 		InitBuilder();
 
-		foreach (INamespaceSymbol @namespace in member.ContainingNamespaces.GetSymbols())
+		foreach (INamespaceSymbol @namespace in member.ContainingNamespaces.GetSymbols().Cast<INamespaceSymbol>())
 		{
 			SimpleName_Internal(@namespace);
 			TextBuilder.Append('.');
@@ -128,7 +129,7 @@ public partial class CodeBuilder
 		{
 			if (useArguments)
 			{
-				foreach (INamedTypeSymbol type in member.ContainingTypes.GetSymbols())
+				foreach (INamedTypeSymbol type in member.ContainingTypes.GetSymbols().Cast<INamedTypeSymbol>())
 				{
 					SimpleName_Internal(type);
 					TypeArgumentList(type.TypeArguments);
@@ -137,7 +138,7 @@ public partial class CodeBuilder
 			}
 			else
 			{
-				foreach (INamedTypeSymbol type in member.ContainingTypes.GetSymbols())
+				foreach (INamedTypeSymbol type in member.ContainingTypes.GetSymbols().Cast<INamedTypeSymbol>())
 				{
 					SimpleName_Internal(type);
 					TypeParameterList(type.TypeParameters);

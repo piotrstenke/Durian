@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Cache;

@@ -24,9 +24,9 @@ public static class SyntaxNodeExtensions
 	public static CompilationUnitSyntax AddUsings(this CompilationUnitSyntax compilationUnit, INamespaceSymbol @namespace)
 	{
 		UsingDirectiveSyntax directive = @namespace.GetUsingDirective();
-		string name = directive.Name.ToString();
+		string name = directive.NamespaceOrType.ToString();
 
-		if (compilationUnit.Usings.Any(u => u.Name.ToString() == name))
+		if (compilationUnit.Usings.Any(u => u.NamespaceOrType.ToString() == name))
 		{
 			return compilationUnit;
 		}
@@ -41,11 +41,11 @@ public static class SyntaxNodeExtensions
 	/// <param name="namespaces">A collection of <see cref="INamespaceSymbol"/>s to build the <see cref="UsingDirectiveSyntax"/>es from.</param>
 	public static CompilationUnitSyntax AddUsings(this CompilationUnitSyntax compilationUnit, IEnumerable<INamespaceSymbol>? namespaces)
 	{
-		HashSet<string> usings = new(compilationUnit.Usings.Where(u => u.Alias is null).Select(u => u.Name.ToString()));
+		HashSet<string> usings = new(compilationUnit.Usings.Where(u => u.Alias is null).Select(u => u.NamespaceOrType.ToString()));
 		UsingDirectiveSyntax[] directives = namespaces
 			.Where(n => n.Name != string.Empty)
 			.Select(n => n.GetUsingDirective())
-			.Where(n => usings.Add(n.Name.ToString()))
+			.Where(n => usings.Add(n.NamespaceOrType.ToString()))
 			.ToArray();
 
 		if (directives.Length == 0)
@@ -514,17 +514,7 @@ public static class SyntaxNodeExtensions
 	/// <param name="node"><see cref="BaseMethodDeclarationSyntax"/> to get the body of.</param>
 	public static SyntaxNode? GetBody(this BaseMethodDeclarationSyntax node)
 	{
-		if (node.Body is not null)
-		{
-			return node.Body;
-		}
-
-		if (node.ExpressionBody is not null)
-		{
-			return node.ExpressionBody;
-		}
-
-		return null;
+		return node.Body ?? (SyntaxNode?)node.ExpressionBody;
 	}
 
 	/// <summary>
@@ -533,17 +523,7 @@ public static class SyntaxNodeExtensions
 	/// <param name="node"><see cref="LocalFunctionStatementSyntax"/> to get the body of.</param>
 	public static SyntaxNode? GetBody(this LocalFunctionStatementSyntax node)
 	{
-		if (node.Body is not null)
-		{
-			return node.Body;
-		}
-
-		if (node.ExpressionBody is not null)
-		{
-			return node.ExpressionBody;
-		}
-
-		return null;
+		return node.Body ?? (SyntaxNode?)node.ExpressionBody;
 	}
 
 	/// <summary>
@@ -552,17 +532,7 @@ public static class SyntaxNodeExtensions
 	/// <param name="node"><see cref="AccessorDeclarationSyntax"/> to get the body of.</param>
 	public static SyntaxNode? GetBody(this AccessorDeclarationSyntax node)
 	{
-		if (node.Body is not null)
-		{
-			return node.Body;
-		}
-
-		if (node.ExpressionBody is not null)
-		{
-			return node.ExpressionBody;
-		}
-
-		return null;
+		return node.Body ?? (SyntaxNode?)node.ExpressionBody;
 	}
 
 	/// <summary>
@@ -571,17 +541,7 @@ public static class SyntaxNodeExtensions
 	/// <param name="node"><see cref="AnonymousFunctionExpressionSyntax"/> to get the body of.</param>
 	public static SyntaxNode? GetBody(this AnonymousFunctionExpressionSyntax node)
 	{
-		if (node.Body is not null)
-		{
-			return node.Body;
-		}
-
-		if (node.ExpressionBody is not null)
-		{
-			return node.ExpressionBody;
-		}
-
-		return null;
+		return node.Body ?? (SyntaxNode?)node.ExpressionBody;
 	}
 
 	/// <summary>
@@ -1151,7 +1111,7 @@ public static class SyntaxNodeExtensions
 	/// <param name="includeSelf">Determines whether to include the <paramref name="node"/> in the returned collection.</param>
 	public static IEnumerable<BaseTypeDeclarationSyntax> GetInnerTypes(this TypeDeclarationSyntax node, bool includeSelf = false)
 	{
-		const int capacity = 32;
+		const int CAPACITY = 32;
 
 		if (includeSelf)
 		{
@@ -1165,7 +1125,7 @@ public static class SyntaxNodeExtensions
 			yield break;
 		}
 
-		Stack<BaseTypeDeclarationSyntax> stack = new(members.Length > capacity ? members.Length : capacity);
+		Stack<BaseTypeDeclarationSyntax> stack = new(members.Length > CAPACITY ? members.Length : CAPACITY);
 
 		foreach (BaseTypeDeclarationSyntax t in members)
 		{

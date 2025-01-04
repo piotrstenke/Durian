@@ -105,13 +105,13 @@ public class GeneratorLogHandler : IGeneratorLogHandler
 	internal void LogException_Internal(Exception exception)
 	{
 		Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
-		TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString() + "\n\n");
+		TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception + "\n\n");
 	}
 
 	internal void LogException_Internal(Exception exception, string source)
 	{
 		Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
-		TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", source + "::\n\n" + exception.ToString() + "\n\n");
+		TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", source + "::\n\n" + exception + "\n\n");
 	}
 
 	internal void LogInputOutput_Internal(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput)

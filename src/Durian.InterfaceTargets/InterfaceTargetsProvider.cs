@@ -83,58 +83,60 @@ public sealed class InterfaceTargetsProvider : SourceTextProvider
 	public override string GetText()
 	{
 		return
-$@"using System;
+$$"""
+using System;
 
-namespace {Namespace}
-{{
+namespace {{Namespace}}
+{
 	/// <summary>
-	/// Specifies possible targets of an <see langword=""interface""/>.
+	/// Specifies possible targets of an <see langword="interface"/>.
 	/// </summary>
 	[Flags]
-	public enum {TypeName}
-	{{
+	public enum {{TypeName}}
+	{
 		/// <summary>
 		/// Interface cannot be implemented in code, only through reflection.
 		/// </summary>
-		{ReflectionOnly} = 0,
+		{{ReflectionOnly}} = 0,
 
 		/// <summary>
-		/// Interface cannot be implemented in code. This value is the same as <see cref=""{ReflectionOnly}""/>.
+		/// Interface cannot be implemented in code. This value is the same as <see cref="{{ReflectionOnly}}"/>.
 		/// </summary>
-		{None} = {ReflectionOnly},
+		{{None}} = {{ReflectionOnly}},
 
 		/// <summary>
 		/// Interface can be implemented by normal C# classes.
 		/// </summary>
-		{Class} = 1,
+		{{Class}} = 1,
 
 		/// <summary>
 		/// Interface can be implemented by record classes.
 		/// </summary>
-		{RecordClass} = 2,
+		{{RecordClass}} = 2,
 
 		/// <summary>
 		/// Interface can be a base for other interface.
 		/// </summary>
-		{Interface} = 4,
+		{{Interface}} = 4,
 
 		/// <summary>
 		/// Interface can be implemented by normal C# structs.
 		/// </summary>
-		{Struct} = 8,
+		{{Struct}} = 8,
 
 		/// <summary>
 		/// Interface can be implemented by record structs.
 		/// </summary>
-		{RecordStruct} = 16,
+		{{RecordStruct}} = 16,
 
 		/// <summary>
 		/// Interface can be implemented by all valid member kinds.
 		/// </summary>
-		{All} = {Class} | {RecordClass} | {Struct} | {RecordStruct} | {Interface}
-	}}
-}}
-";
+		{{All}} = {{Class}} | {{RecordClass}} | {{Struct}} | {{RecordStruct}} | {{Interface}}
+	}
+}
+
+""";
 	}
 
 	/// <inheritdoc/>

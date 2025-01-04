@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Logging;

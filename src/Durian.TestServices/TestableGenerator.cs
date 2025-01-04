@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Durian.Analysis;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -58,25 +58,25 @@ public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>,
 	}
 
 	/// <inheritdoc/>
-	public override IDurianSyntaxReceiver CreateSyntaxReceiver()
-	{
-		return UnderlayingGenerator.CreateSyntaxReceiver();
-	}
-
-	/// <inheritdoc/>
 	public override IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? GetFilters(TContext context)
 	{
 		return UnderlayingGenerator.GetFilters(context);
 	}
 
 	/// <inheritdoc/>
-	public override IEnumerable<ISourceTextProvider>? GetInitialSources()
+	protected internal override IDurianSyntaxReceiver CreateSyntaxReceiver()
+	{
+		return UnderlayingGenerator.CreateSyntaxReceiver();
+	}
+
+	/// <inheritdoc/>
+	protected internal override IEnumerable<ISourceTextProvider>? GetInitialSources()
 	{
 		return UnderlayingGenerator.GetInitialSources();
 	}
 
 	/// <inheritdoc/>
-	public override DurianModule[] GetRequiredModules()
+	protected internal override DurianModule[] GetRequiredModules()
 	{
 		return UnderlayingGenerator.GetRequiredModules();
 	}
@@ -88,15 +88,15 @@ public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>,
 	}
 
 	/// <inheritdoc/>
-	protected internal override void AddSourceCore(SyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+	protected internal override void AddSourceCore(string hintName, SyntaxTree tree, GeneratorExecutionContext context)
 	{
-		UnderlayingGenerator.AddSourceCore(tree, hintName, context);
+		UnderlayingGenerator.AddSourceCore(hintName, tree, context);
 	}
 
 	/// <inheritdoc/>
-	protected internal override void AddSourceCore(SyntaxTree tree, string hintName, TContext context)
+	protected internal override void AddSourceCore(string hintName, SyntaxTree tree, TContext context)
 	{
-		UnderlayingGenerator.AddSourceCore(tree, hintName, context);
+		UnderlayingGenerator.AddSourceCore(hintName, tree, context);
 	}
 
 	/// <inheritdoc/>
@@ -140,17 +140,17 @@ public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>,
 	}
 
 	/// <inheritdoc/>
-	protected internal override void BeforeFiltrationOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
+	protected internal override void BeforeFilteringOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
 	{
-		UnderlayingGenerator.BeforeFiltrationOfGroup(filterGroup, context);
+		UnderlayingGenerator.BeforeFilteringOfGroup(filterGroup, context);
 
 		SetAnalyzerMode(context);
 	}
 
 	/// <inheritdoc/>
-	protected internal override TContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, in GeneratorExecutionContext context)
+	protected internal override TContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, GeneratorExecutionContext context)
 	{
-		TContext? newContext = UnderlayingGenerator.CreateCurrentPassContext(currentCompilation, in context);
+		TContext? newContext = UnderlayingGenerator.CreateCurrentPassContext(currentCompilation, context);
 
 		if (newContext is not null)
 		{
@@ -193,9 +193,9 @@ public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>,
 	}
 
 	/// <inheritdoc/>
-	protected internal override bool ValidateCompilation(CSharpCompilation compilation, in GeneratorExecutionContext context)
+	protected internal override bool ValidateCompilation(CSharpCompilation compilation, Action<Diagnostic> reportDiagnostic)
 	{
-		return UnderlayingGenerator.ValidateCompilation(compilation, context);
+		return UnderlayingGenerator.ValidateCompilation(compilation, reportDiagnostic);
 	}
 
 	private void SetAnalyzerMode(TContext context)

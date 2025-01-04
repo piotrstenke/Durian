@@ -50,7 +50,7 @@ public static class CodeFixUtility
 
 		foreach (UsingDirectiveSyntax u in usings)
 		{
-			SymbolInfo info = semanticModel.GetSymbolInfo(u.Name, cancellationToken);
+			SymbolInfo info = semanticModel.GetSymbolInfo(u.NamespaceOrType, cancellationToken);
 
 			if (info.Symbol is not INamespaceSymbol n)
 			{
@@ -99,7 +99,7 @@ public static class CodeFixUtility
 
 		foreach (UsingDirectiveSyntax u in usings)
 		{
-			SymbolInfo info = semanticModel.GetSymbolInfo(u.Name, cancellationToken);
+			SymbolInfo info = semanticModel.GetSymbolInfo(u.NamespaceOrType, cancellationToken);
 
 			if (info.Symbol is not INamespaceSymbol n)
 			{
@@ -116,11 +116,11 @@ public static class CodeFixUtility
 
 		static string GetIdentifier(string str)
 		{
-			const string attribute = "Attribute";
+			const string ATTRIBUTE = "Attribute";
 
-			if (str.EndsWith(attribute))
+			if (str.EndsWith(ATTRIBUTE))
 			{
-				return str.Substring(0, str.Length - attribute.Length);
+				return str.Substring(0, str.Length - ATTRIBUTE.Length);
 			}
 
 			return str;
@@ -160,7 +160,7 @@ public static class CodeFixUtility
 
 		foreach (UsingDirectiveSyntax u in usings)
 		{
-			SymbolInfo info = semanticModel.GetSymbolInfo(u.Name, cancellationToken);
+			SymbolInfo info = semanticModel.GetSymbolInfo(u.NamespaceOrType, cancellationToken);
 
 			if (info.Symbol is not INamespaceSymbol n)
 			{

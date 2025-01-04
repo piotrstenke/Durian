@@ -38,5 +38,10 @@ public enum DurianModule
 	/// <summary>
 	/// Represents the <c>Durian.CopyFrom</c> module.
 	/// </summary>
-	CopyFrom
+	CopyFrom,
+
+	/// <summary>
+	/// Represents the <c>Durian.GlobalScope</c> module.
+	/// </summary>
+	GlobalScope
 }

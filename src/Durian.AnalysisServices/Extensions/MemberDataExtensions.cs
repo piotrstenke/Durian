@@ -121,7 +121,7 @@ public static class MemberDataExtensions
 
 		CodeBuilder builder = new(false);
 
-		foreach (INamedTypeSymbol type in member.ContainingTypes)
+		foreach (INamedTypeSymbol type in member.ContainingTypes.Cast<INamedTypeSymbol>())
 		{
 			builder.XmlName(type);
 			builder.Write('.');

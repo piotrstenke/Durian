@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Durian.Analysis.Extensions;
@@ -304,17 +305,24 @@ public sealed partial class CopyFromAnalyzer : DurianAnalyzer<CopyFromCompilatio
 
 		static string GetUsingString(UsingDirectiveSyntax @using)
 		{
+			string name = @using.NamespaceOrType.ToString();
+
+			if(@using.GlobalKeyword != default)
+			{
+				name = $"global {name}";
+			}
+
 			if (@using.StaticKeyword != default)
 			{
-				return "static " + @using.Name.ToString();
+				return $"static {name}";
 			}
 
 			if (@using.Alias is not null)
 			{
-				return $"{@using.Alias.Name} = {@using.Name}";
+				return $"{@using.Alias.Name} = {name}";
 			}
 
-			return @using.Name.ToString();
+			return name;
 		}
 	}
 

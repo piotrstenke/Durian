@@ -9,6 +9,7 @@ namespace Durian.Analysis;
 /// </summary>
 public static class DurianDiagnostics
 {
+#pragma warning disable IDE1006 // Naming Styles
 	/// <summary>
 	/// Provides a diagnostic message indicating that the target project must reference the
 	/// <c>Durian.Core</c> package.
@@ -20,9 +21,8 @@ public static class DurianDiagnostics
 		messageFormat: "Projects with any Durian analyzer must reference the Durian.Core package",
 		category: "Durian",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0001.md",
-		isEnabledByDefault: true
-	);
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0001.md");
 
 	/// <summary>
 	/// Provides a diagnostic message indicating that the target type cannot be accessed, because
@@ -34,8 +34,8 @@ public static class DurianDiagnostics
 		messageFormat: "Type '{0}' cannot be accessed, because the '{1}' module is not imported",
 		category: "Durian",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0002.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0002.md"
 	);
 
 	/// <summary>
@@ -48,8 +48,8 @@ public static class DurianDiagnostics
 		messageFormat: "Do not use types from the Durian.Generator namespace",
 		category: "Durian",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0003.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0003.md"
 	);
 
 	/// <summary>
@@ -62,8 +62,9 @@ public static class DurianDiagnostics
 		messageFormat: "Durian modules can be used only in C#",
 		category: "Durian",
 		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true,
 		helpLinkUri: DocsPath + "/DUR0004.md",
-		isEnabledByDefault: true
+		customTags: [WellKnownDiagnosticTags.CompilationEnd]
 	);
 
 	/// <summary>
@@ -75,8 +76,8 @@ public static class DurianDiagnostics
 		messageFormat: "Do not add custom types to the Durian.Generator namespace",
 		category: "Durian",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0005.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0005.md"
 	);
 
 	/// <summary>
@@ -88,8 +89,8 @@ public static class DurianDiagnostics
 	   messageFormat: "'{0}': PartialNameAttribute should be applied to a partial type",
 	   category: "Durian",
 	   defaultSeverity: DiagnosticSeverity.Warning,
-	   helpLinkUri: DocsPath + "/DUR0006.md",
-	   isEnabledByDefault: true
+	   isEnabledByDefault: true,
+	   helpLinkUri: DocsPath + "/DUR0006.md"
    );
 
 	/// <summary>
@@ -102,8 +103,8 @@ public static class DurianDiagnostics
 		messageFormat: "Do not reference the '{0}' package if the main Durian package is already included",
 		category: "Durian",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0007.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0007.md"
 	);
 
 	/// <summary>
@@ -116,8 +117,8 @@ public static class DurianDiagnostics
 		messageFormat: "Separate analyzer packages detected, reference the main Durian package instead for better performance",
 		category: "Durian",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0008.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0008.md"
 	);
 
 	/// <summary>
@@ -129,8 +130,8 @@ public static class DurianDiagnostics
 	   messageFormat: "'{0}': Type already has a PartialNameAttribute with same value",
 	   category: "Durian",
 	   defaultSeverity: DiagnosticSeverity.Warning,
-	   helpLinkUri: DocsPath + "/DUR0009.md",
-	   isEnabledByDefault: true
+	   isEnabledByDefault: true,
+	   helpLinkUri: DocsPath + "/DUR0009.md"
    );
 
 	/// <summary>
@@ -142,9 +143,11 @@ public static class DurianDiagnostics
 	   messageFormat: "Equivalent EnableLoggingAttribute already specified",
 	   category: "Durian",
 	   defaultSeverity: DiagnosticSeverity.Warning,
+	   isEnabledByDefault: true,
 	   helpLinkUri: DocsPath + "/DUR0010.md",
-	   isEnabledByDefault: true
+	   customTags: [WellKnownDiagnosticTags.CompilationEnd]
    );
+#pragma warning restore IDE1006 // Naming Styles
 
 	/// <summary>
 	/// Documentation directory of the <c>Core</c> module.

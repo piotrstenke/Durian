@@ -9,9 +9,9 @@ namespace Durian.Analysis.CodeFixes;
 /// <summary>
 /// A code fix that replaces a specific <see cref="SyntaxNode"/> with a new one.
 /// </summary>
-/// <typeparam name="T">Type of <see cref="SyntaxNode"/> to replace.</typeparam>
-/// <typeparam name="U">Type of <see cref="SyntaxNode"/> to replace old <see cref="SyntaxNode"/> with.</typeparam>
-public abstract class ReplaceNodeCodeFix<T, U> : DurianCodeFix<T> where T : SyntaxNode where U : SyntaxNode
+/// <typeparam name="TOld">Type of <see cref="SyntaxNode"/> to replace.</typeparam>
+/// <typeparam name="TNew">Type of <see cref="SyntaxNode"/> to replace old <see cref="SyntaxNode"/> with.</typeparam>
+public abstract class ReplaceNodeCodeFix<TOld, TNew> : DurianCodeFix<TOld> where TOld : SyntaxNode where TNew : SyntaxNode
 {
 	/// <summary>
 	/// Creates a new instance of the <see cref="ReplaceNodeCodeFix{T}"/> class.
@@ -21,9 +21,9 @@ public abstract class ReplaceNodeCodeFix<T, U> : DurianCodeFix<T> where T : Synt
 	}
 
 	/// <inheritdoc/>
-	protected sealed override Task<Document> ExecuteAsync(CodeFixExecutionContext<T> context)
+	protected sealed override Task<Document> ExecuteAsync(CodeFixExecutionContext<TOld> context)
 	{
-		U newNode = GetNewNode(context.Node, context.Compilation, context.SemanticModel, out INamespaceSymbol[]? requiredNamespaces);
+		TNew newNode = GetNewNode(context.Node, context.Compilation, context.SemanticModel, out INamespaceSymbol[]? requiredNamespaces);
 		CompilationUnitSyntax newRoot = context.Root.ReplaceNode(context.Node, newNode);
 
 		if (requiredNamespaces?.Length > 0)
@@ -35,5 +35,5 @@ public abstract class ReplaceNodeCodeFix<T, U> : DurianCodeFix<T> where T : Synt
 	}
 
 	/// <inheritdoc cref="ReplaceNodeCodeFix{T}.GetNewNode(T, CSharpCompilation, SemanticModel, out INamespaceSymbol[])"/>
-	protected abstract U GetNewNode(T currentNode, CSharpCompilation compilation, SemanticModel semanticModel, out INamespaceSymbol[]? requiredNamespaces);
+	protected abstract TNew GetNewNode(TOld currentNode, CSharpCompilation compilation, SemanticModel semanticModel, out INamespaceSymbol[]? requiredNamespaces);
 }

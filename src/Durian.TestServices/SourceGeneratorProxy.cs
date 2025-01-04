@@ -46,7 +46,7 @@ public class SourceGeneratorProxy : ISourceGenerator
 	{
 		_exeContext = context;
 
-		OnExecute?.Invoke(in _exeContext);
+		OnExecute?.Invoke(_exeContext);
 	}
 
 	/// <summary>

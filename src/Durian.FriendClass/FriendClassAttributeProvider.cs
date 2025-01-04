@@ -53,37 +53,39 @@ public sealed class FriendClassAttributeProvider : SourceTextProvider
 	public override string GetText()
 	{
 		return
-@$"using System;
+$$"""
+using System;
 
-namespace {Namespace}
-{{
+namespace {{Namespace}}
+{
 	/// <summary>
-	/// Specifies a <see cref=""Type""/> that can use <see langword=""internal""/> members of the current <see cref=""Type""/>.
+	/// Specifies a <see cref="Type"/> that can use <see langword="internal"/> members of the current <see cref="Type"/>.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = false)]
-	public sealed class {TypeName} : Attribute
-	{{
+	public sealed class {{TypeName}} : Attribute
+	{
 		/// <summary>
-		/// Determines whether <see langword=""internal""/> members of the current <see cref=""Type""/> can be accessed by <see cref=""Type""/>s that inherit the <see cref=""{FriendType}""/>. Defaults to <see langword=""false""/>.
+		/// Determines whether <see langword="internal"/> members of the current <see cref="Type"/> can be accessed by <see cref="Type"/>s that inherit the <see cref="{{FriendType}}"/>. Defaults to <see langword="false"/>.
 		/// </summary>
-		public bool {AllowFriendChildren} {{ get; set; }}
+		public bool {{AllowFriendChildren}} { get; set; }
 
 		/// <summary>
-		/// Friend <see cref=""Type""/> of the current <see cref=""Type""/>.
+		/// Friend <see cref="Type"/> of the current <see cref="Type"/>.
 		/// </summary>
-		public Type {FriendType} {{ get; }}
+		public Type {{FriendType}} { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref=""{TypeName}""/> class.
+		/// Initializes a new instance of the <see cref="{{TypeName}}"/> class.
 		/// </summary>
-		/// <param name=""type"">Friend <see cref=""Type""/> of the current <see cref=""Type""/>.</param>
-		public {TypeName}(Type type)
-		{{
-			{FriendType} = type;
-		}}
-	}}
-}}
-";
+		/// <param name="type">Friend <see cref="Type"/> of the current <see cref="Type"/>.</param>
+		public {{TypeName}}(Type type)
+		{
+			{{FriendType}} = type;
+		}
+	}
+}
+
+""";
 	}
 
 	/// <inheritdoc/>

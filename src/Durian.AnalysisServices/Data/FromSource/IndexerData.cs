@@ -149,17 +149,14 @@ public class IndexerData : MemberData, IIndexerData
 	{
 		get
 		{
-			return _implicitImplementations ??= SymbolExtensions.GetImplicitImplementations_Internal(Symbol, intf =>
-			{
-				return intf
-					.ToDataOrSymbol(ParentCompilation)
-					.Member
-					.GetMembers(IncludedMembers.Direct)
-					.AsEnumerable()
-					.Select(s => s.Symbol)
-					.OfType<IPropertySymbol>()
-					.Where(m => m.IsIndexer && m.Parameters.Length == Symbol.Parameters.Length);
-			})
+			return _implicitImplementations ??= SymbolExtensions.GetImplicitImplementations_Internal(Symbol, intf => intf
+				.ToDataOrSymbol(ParentCompilation)
+				.Member
+				.GetMembers(IncludedMembers.Direct)
+				.AsEnumerable()
+				.Select(s => s.Symbol)
+				.OfType<IPropertySymbol>()
+				.Where(m => m.IsIndexer && m.Parameters.Length == Symbol.Parameters.Length))
 			.ToContainer<IIndexerData>(ParentCompilation);
 		}
 	}

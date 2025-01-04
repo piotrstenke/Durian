@@ -9,7 +9,7 @@ namespace Durian.TestServices;
 public interface ITestableGenerator : IDurianGenerator
 {
 	/// <summary>
-	/// <see cref="ISourceGenerator"/> that is used to actually generate sources.
+	/// Source generator that is used to actually generate sources.
 	/// </summary>
 	IDurianGenerator UnderlayingGenerator { get; }
 }

@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Logging;
 
-public sealed partial class LoggingConfiguration
+partial class LoggingConfiguration
 {
 	private static readonly ConcurrentDictionary<Assembly, LoggingConfiguration> _assemblyConfigurations = new();
 	private static readonly ConcurrentDictionary<string, LoggingConfiguration> _dynamicConfigurations = new();
@@ -79,7 +79,7 @@ public sealed partial class LoggingConfiguration
 	}
 
 	/// <inheritdoc cref="ForGenerator{T}(in GeneratorLogCreationContext, LoggingConfiguration?)"/>
-	public static LoggingConfiguration ForGenerator<T>() where T : ISourceGenerator
+	public static LoggingConfiguration ForGenerator<T>()
 	{
 		return ForGenerator_Internal(typeof(T));
 	}
@@ -93,10 +93,11 @@ public sealed partial class LoggingConfiguration
 	/// <summary>
 	/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</typeparam>
+	/// <typeparam name="T">Type of source generator to get the <see cref="LoggingConfiguration"/> for.</typeparam>
 	/// <param name="context"><see cref="GeneratorLogCreationContext"/> to use when creating the <see cref="LoggingConfiguration"/>.</param>
 	/// <param name="defaultConfiguration"><see cref="LoggingConfiguration"/> to return if <see cref="GeneratorLogCreationContext.CheckForConfigurationAttribute"/> is <see langword="true"/>.</param>
 	/// <exception cref="ArgumentException">
+	/// Type <typeparamref name="T"/> does not implement the <see cref="ISourceGenerator"/> or <see cref="IIncrementalGenerator"/> interface. -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
 	/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
@@ -120,17 +121,16 @@ public sealed partial class LoggingConfiguration
 			throw new ArgumentNullException(nameof(type));
 		}
 
-		CheckTypeIsISourceGenerator(type);
 		return ForGenerator_Internal(type);
 	}
 
 	/// <summary>
 	/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
 	/// </summary>
-	/// <param name="type"><see cref="Type"/> of <see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</param>
+	/// <param name="type"><see cref="Type"/> of source generator to get the <see cref="LoggingConfiguration"/> for.</param>
 	/// <exception cref="ArgumentException">
 	/// <param name="context"><see cref="GeneratorLogCreationContext"/> to use when creating the <see cref="LoggingConfiguration"/>.</param>
-	/// <paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface. -or-
+	/// <paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> or <see cref="IIncrementalGenerator"/> interface. -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
 	/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
@@ -144,11 +144,11 @@ public sealed partial class LoggingConfiguration
 	/// <summary>
 	/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
 	/// </summary>
-	/// <param name="type"><see cref="Type"/> of <see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</param>
+	/// <param name="type"><see cref="Type"/> of source generator to get the <see cref="LoggingConfiguration"/> for.</param>
 	/// <exception cref="ArgumentException">
 	/// <param name="context"><see cref="GeneratorLogCreationContext"/> to use when creating the <see cref="LoggingConfiguration"/>.</param>
 	/// <param name="defaultConfiguration"><see cref="LoggingConfiguration"/> to return if <see cref="GeneratorLogCreationContext.CheckForConfigurationAttribute"/> is <see langword="true"/>.</param>
-	/// <paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface. -or-
+	/// <paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> or <see cref="IIncrementalGenerator"/> interface. -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
 	/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
@@ -160,8 +160,6 @@ public sealed partial class LoggingConfiguration
 		{
 			throw new ArgumentNullException(nameof(type));
 		}
-
-		CheckTypeIsISourceGenerator(type);
 
 		LoggingConfiguration config = context.CheckForConfigurationAttribute
 			? ForGenerator_Internal(type)
@@ -175,14 +173,15 @@ public sealed partial class LoggingConfiguration
 	/// <summary>
 	/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</param>
+	/// <param name="generator">Source generator to get the <see cref="LoggingConfiguration"/> for.</param>
 	/// <exception cref="ArgumentException">
+	/// <paramref name="generator"/> does not implement the <see cref="ISourceGenerator"/> or <see cref="IIncrementalGenerator"/> interface. -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
 	/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 	/// </exception>
 	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-	public static LoggingConfiguration ForGenerator(ISourceGenerator generator)
+	public static LoggingConfiguration ForGenerator(object generator)
 	{
 		if (generator is null)
 		{
@@ -195,15 +194,16 @@ public sealed partial class LoggingConfiguration
 	/// <summary>
 	/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</param>
+	/// <param name="generator">Source generator to get the <see cref="LoggingConfiguration"/> for.</param>
 	/// <param name="context"><see cref="GeneratorLogCreationContext"/> to use when creating the <see cref="LoggingConfiguration"/>.</param>
 	/// <exception cref="ArgumentException">
+	/// <paramref name="generator"/> does not implement the <see cref="ISourceGenerator"/> or <see cref="IIncrementalGenerator"/> interface. -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
 	/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 	/// </exception>
 	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-	public static LoggingConfiguration ForGenerator(ISourceGenerator generator, in GeneratorLogCreationContext context)
+	public static LoggingConfiguration ForGenerator(object generator, in GeneratorLogCreationContext context)
 	{
 		return ForGenerator(generator, in context, default);
 	}
@@ -211,16 +211,17 @@ public sealed partial class LoggingConfiguration
 	/// <summary>
 	/// Creates new instance of the <see cref="LoggingConfiguration"/> for the specified type.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to get the <see cref="LoggingConfiguration"/> for.</param>
+	/// <param name="generator">Source generator to get the <see cref="LoggingConfiguration"/> for.</param>
 	/// <param name="context"><see cref="GeneratorLogCreationContext"/> to use when creating the <see cref="LoggingConfiguration"/>.</param>
 	/// <param name="defaultConfiguration"><see cref="LoggingConfiguration"/> to return if <see cref="GeneratorLogCreationContext.CheckForConfigurationAttribute"/> is <see langword="true"/>.</param>
 	/// <exception cref="ArgumentException">
+	/// <paramref name="generator"/> does not implement the <see cref="ISourceGenerator"/> or <see cref="IIncrementalGenerator"/> interface. -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> cannot be empty or white space only. -or-
 	/// <see cref="LoggingConfigurationAttribute"/> must be specified if <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> is set to <see langword="true"/> -or-
 	/// <see cref="LoggingConfigurationAttribute.LogDirectory"/> must be specified if both <see cref="LoggingConfigurationAttribute.RelativeToDefault"/> and <see cref="LoggingConfigurationAttribute.RelativeToGlobal"/> are set to <see langword="false"/>.
 	/// </exception>
 	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-	public static LoggingConfiguration ForGenerator(ISourceGenerator generator, in GeneratorLogCreationContext context, LoggingConfiguration? defaultConfiguration)
+	public static LoggingConfiguration ForGenerator(object generator, in GeneratorLogCreationContext context, LoggingConfiguration? defaultConfiguration)
 	{
 		if (generator is null)
 		{
@@ -243,7 +244,7 @@ public sealed partial class LoggingConfiguration
 	/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 	public static LoggingConfiguration FromAttribute(LoggingConfigurationAttribute attribute)
 	{
-		return FromAttribute(attribute as ILoggingConfigurationAttribute);
+		return FromAttribute_Internal(attribute);
 	}
 
 	/// <summary>
@@ -253,7 +254,7 @@ public sealed partial class LoggingConfiguration
 	/// <exception cref="ArgumentNullException"><paramref name="attribute"/> is <see langword="null"/>.</exception>
 	public static LoggingConfiguration FromAttribute(EnableLoggingAttribute attribute)
 	{
-		return FromAttribute(attribute as ILoggingConfigurationAttribute);
+		return FromAttribute_Internal(attribute);
 	}
 
 	/// <summary>
@@ -290,7 +291,7 @@ public sealed partial class LoggingConfiguration
 	/// Checks if the specified <paramref name="type"/> has the <see cref="DisableLoggingAttribute"/> applied, either directly or by inheritance.
 	/// </summary>
 	/// <param name="type"><see cref="Type"/> to perform the check for.</param>
-	/// <exception cref="ArgumentException"><paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface.</exception>
+	/// <exception cref="ArgumentException"><paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> or <see cref="IIncrementalGenerator"/> interface.</exception>
 	/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 	public static bool HasDisableAttribute(Type type)
 	{
@@ -330,7 +331,7 @@ public sealed partial class LoggingConfiguration
 			throw new ArgumentNullException(nameof(assembly));
 		}
 
-		return IsGloballyEnabled && assembly.GetCustomAttribute(typeof(DisableLoggingAttribute)) is null;
+		return IsGloballyEnabled && assembly.GetCustomAttribute<DisableLoggingAttribute>() is null;
 	}
 
 	/// <summary>
@@ -338,8 +339,9 @@ public sealed partial class LoggingConfiguration
 	/// </summary>
 	/// <remarks>Always returns <see langword="false"/> is <see cref="IsGloballyEnabled"/> is <see langword="false"/>.</remarks>
 	/// <param name="generator"><see cref="ISourceGenerator"/> to perform the check for.</param>
+	/// <exception cref="ArgumentException"><paramref name="generator"/> does not implement the <see cref="ISourceGenerator"/> or <see cref="IIncrementalGenerator"/> interface.</exception>
 	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-	public static bool IsEnabledForGenerator(ISourceGenerator generator)
+	public static bool IsEnabledForGenerator(object generator)
 	{
 		if (generator is null)
 		{
@@ -352,6 +354,8 @@ public sealed partial class LoggingConfiguration
 		}
 
 		Type type = generator.GetType();
+
+		CheckTypeIsISourceGenerator(type);
 
 		if (!IsEnabledForAssembly_Internal(type.Assembly))
 		{
@@ -366,7 +370,7 @@ public sealed partial class LoggingConfiguration
 	/// </summary>
 	/// <remarks>Always returns <see langword="false"/> is <see cref="IsGloballyEnabled"/> is <see langword="false"/>.</remarks>
 	/// <param name="type"><see cref="Type"/> of <see cref="ISourceGenerator"/> to perform the check for.</param>
-	/// <exception cref="ArgumentException"><paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> interface.</exception>
+	/// <exception cref="ArgumentException"><paramref name="type"/> does not implement the <see cref="ISourceGenerator"/> or <see cref="IIncrementalGenerator"/> interface.</exception>
 	/// <exception cref="ArgumentNullException"><paramref name="type"/> is <see langword="null"/>.</exception>
 	public static bool IsEnabledForGenerator(Type type)
 	{
@@ -395,7 +399,8 @@ public sealed partial class LoggingConfiguration
 	/// </summary>
 	/// <remarks>Always returns <see langword="false"/> is <see cref="IsGloballyEnabled"/> is <see langword="false"/>.</remarks>
 	/// <typeparam name="T">Type of <see cref="ISourceGenerator"/> to perform the check for.</typeparam>
-	public static bool IsEnabledForGenerator<T>() where T : ISourceGenerator
+	/// <exception cref="ArgumentException"><typeparamref name="T"/> does not implement the <see cref="ISourceGenerator"/> or <see cref="IIncrementalGenerator"/> interface.</exception>
+	public static bool IsEnabledForGenerator<T>()
 	{
 		if (!IsGloballyEnabled)
 		{
@@ -404,6 +409,7 @@ public sealed partial class LoggingConfiguration
 
 		Type type = typeof(T);
 
+		CheckTypeIsISourceGenerator(type);
 		if (!IsEnabledForAssembly_Internal(type.Assembly))
 		{
 			return false;
@@ -577,7 +583,7 @@ public sealed partial class LoggingConfiguration
 		return _dynamicConfigurations.TryGetValue(moduleName, out configuration);
 	}
 
-	internal static LoggingConfiguration FromAttribute(ILoggingConfigurationAttribute attribute)
+	internal static LoggingConfiguration FromAttribute_Internal(ILoggingConfigurationAttribute attribute)
 	{
 		if (attribute is null)
 		{
@@ -615,19 +621,21 @@ public sealed partial class LoggingConfiguration
 
 	private static bool CheckLoggingIsEnabled()
 	{
-		return !AppDomain.CurrentDomain.GetAssemblies().Any(assembly => assembly.GetCustomAttribute(typeof(DisableLoggingGloballyAttribute)) is not null);
+		return !AppDomain.CurrentDomain.GetAssemblies().Any(assembly => assembly.GetCustomAttribute<DisableLoggingGloballyAttribute>() is not null);
 	}
 
 	private static void CheckTypeIsISourceGenerator(Type type)
 	{
-		if (!typeof(ISourceGenerator).IsAssignableFrom(type))
+		if (!typeof(ISourceGenerator).IsAssignableFrom(type) && ! typeof(IIncrementalGenerator).IsAssignableFrom(type))
 		{
-			throw new ArgumentException($"Specified type does not implement the {nameof(ISourceGenerator)} interface!");
+			throw new ArgumentException($"Specified type does not implement the {nameof(ISourceGenerator)} or {nameof(IIncrementalGenerator)} interface!");
 		}
 	}
 
 	private static LoggingConfiguration ForGenerator_Internal(Type type)
 	{
+		CheckTypeIsISourceGenerator(type);
+
 		LoggingConfigurationAttribute? attr = type.GetCustomAttribute<LoggingConfigurationAttribute>(true);
 
 		if (attr is null)
@@ -776,10 +784,12 @@ public sealed partial class LoggingConfiguration
 		{
 			attr = type.BaseType.GetCustomAttribute<DisableLoggingAttribute>(true);
 
+#pragma warning disable RCS1146 // Use conditional access
 			if (attr is null || !attr.Inherit)
 			{
 				return false;
 			}
+#pragma warning restore RCS1146 // Use conditional access
 		}
 
 		return true;
@@ -787,7 +797,7 @@ public sealed partial class LoggingConfiguration
 
 	private static bool IsEnabledForAssembly_Internal(Assembly assembly)
 	{
-		return assembly.GetCustomAttribute(typeof(DisableLoggingAttribute)) is null;
+		return assembly.GetCustomAttribute<DisableLoggingAttribute>() is null;
 	}
 
 	private static bool IsEnabledForGenerator_Internal(Type type, bool checkForConfigurationAttribute)
@@ -799,7 +809,7 @@ public sealed partial class LoggingConfiguration
 
 		if (checkForConfigurationAttribute)
 		{
-			return type.GetCustomAttribute(typeof(LoggingConfigurationAttribute), true) is not null;
+			return type.GetCustomAttribute<LoggingConfigurationAttribute>(true) is not null;
 		}
 
 		return false;

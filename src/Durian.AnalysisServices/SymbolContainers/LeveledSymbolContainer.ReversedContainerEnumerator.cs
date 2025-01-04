@@ -14,11 +14,11 @@ public partial class LeveledSymbolContainer<TSymbol, TData> where TSymbol : clas
 		private readonly List<ISymbolOrMember<TSymbol, TData>> _data;
 		private int _currentIndex;
 
-		public ISymbolOrMember<TSymbol, TData> Current => _data[_currentIndex];
+		public readonly ISymbolOrMember<TSymbol, TData> Current => _data[_currentIndex];
 
 		public int EndIndex { get; }
 
-		object IEnumerator.Current => Current;
+		readonly object IEnumerator.Current => Current;
 
 		public ReversedContainerEnumerator(List<ISymbolOrMember<TSymbol, TData>> data, int endIndex)
 		{
@@ -43,9 +43,9 @@ public partial class LeveledSymbolContainer<TSymbol, TData> where TSymbol : clas
 			_currentIndex = EndIndex;
 		}
 
-		void IDisposable.Dispose()
+		readonly void IDisposable.Dispose()
 		{
-			// Do nothing/
+			// Do nothing.
 		}
 	}
 }

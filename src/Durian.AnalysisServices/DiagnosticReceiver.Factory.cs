@@ -17,7 +17,7 @@ public sealed partial class DiagnosticReceiver
 		/// </summary>
 		public static ReadonlyContextual<AdditionalFileAnalysisContext> AdditionalFile()
 		{
-			return new ReadonlyContextual<AdditionalFileAnalysisContext>((in AdditionalFileAnalysisContext context, Diagnostic diag) => context.ReportDiagnostic(diag));
+			return new ReadonlyContextual<AdditionalFileAnalysisContext>((AdditionalFileAnalysisContext context, Diagnostic diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
@@ -26,7 +26,7 @@ public sealed partial class DiagnosticReceiver
 		/// <param name="context">Context of this <see cref="ReadonlyContextual{T}"/>.</param>
 		public static ReadonlyContextual<AdditionalFileAnalysisContext> AdditionalFile(AdditionalFileAnalysisContext context)
 		{
-			return new ReadonlyContextual<AdditionalFileAnalysisContext>((in AdditionalFileAnalysisContext context, Diagnostic diag) => context.ReportDiagnostic(diag), context);
+			return new ReadonlyContextual<AdditionalFileAnalysisContext>((AdditionalFileAnalysisContext context, Diagnostic diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>
@@ -189,16 +189,16 @@ public sealed partial class DiagnosticReceiver
 		/// </summary>
 		public static ReadonlyContextual<GeneratorExecutionContext> SourceGenerator()
 		{
-			return new ReadonlyContextual<GeneratorExecutionContext>((in GeneratorExecutionContext context, Diagnostic diag) => context.ReportDiagnostic(diag));
+			return new ReadonlyContextual<GeneratorExecutionContext>((GeneratorExecutionContext context, Diagnostic diag) => context.ReportDiagnostic(diag));
 		}
 
 		/// <summary>
 		/// Creates a new instance of the <see cref="ReadonlyContextual{T}"/> class that accepts only <see cref="GeneratorExecutionContext"/>.
 		/// </summary>
 		/// <param name="context">Context of this <see cref="ReadonlyContextual{T}"/>.</param>
-		public static ReadonlyContextual<GeneratorExecutionContext> SourceGenerator(in GeneratorExecutionContext context)
+		public static ReadonlyContextual<GeneratorExecutionContext> SourceGenerator(GeneratorExecutionContext context)
 		{
-			return new ReadonlyContextual<GeneratorExecutionContext>((in GeneratorExecutionContext context, Diagnostic diag) => context.ReportDiagnostic(diag), context);
+			return new ReadonlyContextual<GeneratorExecutionContext>((GeneratorExecutionContext context, Diagnostic diag) => context.ReportDiagnostic(diag), context);
 		}
 
 		/// <summary>

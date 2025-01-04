@@ -15,7 +15,7 @@ namespace Durian.Analysis.FriendClass;
 	SupportsDiagnostics = true,
 	RelativeToGlobal = true,
 	EnableExceptions = true)]
-public sealed class FriendClassGenerator : DurianGeneratorBase
+public sealed class FriendClassGenerator : DurianBasicGenerator
 {
 	/// <summary>
 	/// Name of this source generator.
@@ -63,13 +63,13 @@ public sealed class FriendClassGenerator : DurianGeneratorBase
 	}
 
 	/// <inheritdoc/>
-	public override IEnumerable<ISourceTextProvider>? GetInitialSources()
+	protected internal override IEnumerable<ISourceTextProvider>? GetInitialSources()
 	{
 		return GetSourceProviders();
 	}
 
 	/// <inheritdoc/>
-	public override DurianModule[] GetRequiredModules()
+	protected internal override DurianModule[] GetRequiredModules()
 	{
 		return new DurianModule[] { DurianModule.FriendClass };
 	}

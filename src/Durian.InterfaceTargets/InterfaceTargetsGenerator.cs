@@ -15,7 +15,7 @@ namespace Durian.Analysis.InterfaceTargets;
 	SupportsDiagnostics = true,
 	RelativeToGlobal = true,
 	EnableExceptions = true)]
-public class InterfaceTargetsGenerator : DurianGeneratorBase
+public class InterfaceTargetsGenerator : DurianBasicGenerator
 {
 	/// <summary>
 	/// Name of this source generator.
@@ -63,13 +63,13 @@ public class InterfaceTargetsGenerator : DurianGeneratorBase
 	}
 
 	/// <inheritdoc/>
-	public override IEnumerable<ISourceTextProvider>? GetInitialSources()
+	protected internal override IEnumerable<ISourceTextProvider>? GetInitialSources()
 	{
 		return GetSourceProviders();
 	}
 
 	/// <inheritdoc/>
-	public override DurianModule[] GetRequiredModules()
+	protected internal override DurianModule[] GetRequiredModules()
 	{
 		return new DurianModule[] { DurianModule.InterfaceTargets };
 	}

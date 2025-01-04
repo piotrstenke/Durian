@@ -16,9 +16,9 @@ using Microsoft.CodeAnalysis.Text;
 namespace Durian.Analysis;
 
 /// <summary>
-/// Base class for all Durian generators.
+/// Base class for all Durian source generators.
 /// </summary>
-public abstract partial class DurianGeneratorBase : IDurianGenerator
+public abstract partial class DurianGeneratorBase : IDurianGenerator, ILoggableSourceGenerator
 {
 	private readonly LoggingConfiguration? _initialConfig;
 
@@ -55,7 +55,7 @@ public abstract partial class DurianGeneratorBase : IDurianGenerator
 	{
 		LogHandler = InitLogHandler(null);
 
-		if(SupportsDynamicLoggingConfiguration)
+		if (SupportsDynamicLoggingConfiguration)
 		{
 			_initialConfig = LoggingConfiguration.ForGenerator(this);
 		}
@@ -100,47 +100,16 @@ public abstract partial class DurianGeneratorBase : IDurianGenerator
 	}
 
 	/// <inheritdoc/>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	/// <inheritdoc/>
-	public virtual bool Execute(in GeneratorExecutionContext context)
-	{
-		return PrepareForExecution(in context, out _);
-	}
-
-	/// <inheritdoc cref="IDurianGenerator.GetCurrentPassContext"/>
-	public IGeneratorPassContext? GetCurrentPassContext()
-	{
-		return GetCurrentPassContextCore();
-	}
-
-	/// <inheritdoc/>
 	public override int GetHashCode()
 	{
 		return InstanceId.GetHashCode();
 	}
 
-	/// <summary>
-	/// Returns a collection of <see cref="ISourceTextProvider"/>s that will be used to generate syntax trees statically during the generator's initialization process.
-	/// </summary>
-	public virtual IEnumerable<ISourceTextProvider>? GetInitialSources()
-	{
-		return null;
-	}
-
-	/// <summary>
-	/// Returns an array of <see cref="DurianModule"/>s representing modules that should be enabled before the current generator pass is executed.
-	/// </summary>
-	public abstract DurianModule[] GetRequiredModules();
-
 	/// <inheritdoc/>
-	public virtual void Initialize(GeneratorInitializationContext context)
+	public void Dispose()
 	{
-		context.RegisterForPostInitialization(InitializeStaticTrees);
+		Dispose(true);
+		GC.SuppressFinalize(this);
 	}
 
 	/// <inheritdoc/>
@@ -149,73 +118,18 @@ public abstract partial class DurianGeneratorBase : IDurianGenerator
 		return $"{GeneratorName} (v. {GeneratorVersion})";
 	}
 
-	void ISourceGenerator.Execute(GeneratorExecutionContext context)
+	/// <summary>
+	/// Returns a collection of <see cref="ISourceTextProvider"/>s that will be used to generate syntax trees statically during the generator's initialization process.
+	/// </summary>
+	protected internal virtual IEnumerable<ISourceTextProvider>? GetInitialSources()
 	{
-		Execute(in context);
-	}
-
-	IGeneratorPassContext? IDurianGenerator.GetCurrentPassContext()
-	{
-		return GetCurrentPassContextCore();
+		return null;
 	}
 
 	/// <summary>
-	/// Validates the specified <paramref name="compilation"/>.
+	/// Returns an array of <see cref="DurianModule"/>s representing modules that should be enabled before the current generator pass is executed.
 	/// </summary>
-	/// <param name="compilation"><see cref="CSharpCompilation"/> to validate.</param>
-	/// <param name="context"><see cref="GeneratorExecutionContext"/> to report <see cref="Diagnostic"/>s to.</param>
-	protected internal virtual bool ValidateCompilation(CSharpCompilation compilation, in GeneratorExecutionContext context)
-	{
-		return true;
-	}
-
-	/// <summary>
-	/// Adds the specified <paramref name="source"/> to the <paramref name="context"/>.
-	/// </summary>
-	/// <param name="source">A <see cref="string"/> representation of the generated code.</param>
-	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
-	/// <param name="context"><see cref="GeneratorPostInitializationContext"/> to add the source to.</param>
-	protected virtual void AddSource(string source, string hintName, in GeneratorPostInitializationContext context)
-	{
-		SyntaxTree tree = CSharpSyntaxTree.ParseText(source, encoding: Encoding.UTF8);
-		AddSource(tree, hintName, in context);
-	}
-
-	/// <summary>
-	/// Adds the specified <paramref name="syntaxTree"/> to the <paramref name="context"/>.
-	/// </summary>
-	/// <param name="syntaxTree"><see cref="SyntaxTree"/> to add to the <paramref name="context"/>.</param>
-	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
-	/// <param name="context"><see cref="GeneratorPostInitializationContext"/> to add the source to.</param>
-	protected virtual void AddSource(SyntaxTree syntaxTree, string hintName, in GeneratorPostInitializationContext context)
-	{
-		context.AddSource(hintName, syntaxTree.GetText(context.CancellationToken));
-		LogSource(hintName, syntaxTree, context.CancellationToken);
-	}
-
-	/// <summary>
-	/// Adds the specified <paramref name="source"/> to the <paramref name="context"/>.
-	/// </summary>
-	/// <param name="source">A <see cref="string"/> representation of the generated code.</param>
-	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
-	/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-	protected virtual void AddSource(string source, string hintName, in GeneratorExecutionContext context)
-	{
-		SyntaxTree tree = CSharpSyntaxTree.ParseText(source, context.ParseOptions as CSharpParseOptions, encoding: Encoding.UTF8);
-		AddSource(tree, hintName, in context);
-	}
-
-	/// <summary>
-	/// Adds the specified <paramref name="syntaxTree"/> to the <paramref name="context"/>.
-	/// </summary>
-	/// <param name="syntaxTree"><see cref="SyntaxTree"/> to add to the <paramref name="context"/>.</param>
-	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
-	/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-	protected virtual void AddSource(SyntaxTree syntaxTree, string hintName, in GeneratorExecutionContext context)
-	{
-		context.AddSource(hintName, syntaxTree.GetText(context.CancellationToken));
-		LogSource(hintName, syntaxTree, context.CancellationToken);
-	}
+	protected internal abstract DurianModule[] GetRequiredModules();
 
 	/// <summary>
 	/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
@@ -226,19 +140,66 @@ public abstract partial class DurianGeneratorBase : IDurianGenerator
 		// Do nothing by default.
 	}
 
-	/// <inheritdoc cref="IDurianGenerator.GetCurrentPassContext"/>
-	protected virtual IGeneratorPassContext? GetCurrentPassContextCore()
+	/// <summary>
+	/// Validates the specified <paramref name="compilation"/>.
+	/// </summary>
+	/// <param name="compilation"><see cref="CSharpCompilation"/> to validate.</param>
+	/// <param name="reportDiagnostic">Action used to report <see cref="Diagnostic"/>s.</param>
+	protected internal virtual bool ValidateCompilation(CSharpCompilation compilation, Action<Diagnostic> reportDiagnostic)
 	{
-		return null;
+		return true;
 	}
 
-	private protected bool PrepareForExecution(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
+	/// <summary>
+	/// Initializes static syntax trees.
+	/// </summary>
+	/// <param name="addSource">Action used to add the generated source text.</param>
+	/// <param name="cancellationToken">Token used to cancel the operation.</param>
+	protected void InitializeStaticTrees(Action<string, SourceText> addSource, CancellationToken cancellationToken)
+	{
+		IEnumerable<ISourceTextProvider>? syntaxTreeProviders = GetInitialSources();
+
+		if (syntaxTreeProviders is null)
+		{
+			return;
+		}
+
+		string? generatorName = GeneratorName;
+		string? generatorVersion = GeneratorVersion;
+
+		foreach (ISourceTextProvider treeProvider in syntaxTreeProviders)
+		{
+			if (cancellationToken.IsCancellationRequested)
+			{
+				break;
+			}
+
+			string hintName = treeProvider.GetHintName();
+			string text = treeProvider.GetText();
+
+			text = AutoGenerated.ApplyHeader(text, generatorName, generatorVersion);
+			SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(text, encoding: Encoding.UTF8, cancellationToken: cancellationToken);
+
+			SourceText source = syntaxTree.GetText(cancellationToken);
+
+			addSource(hintName, source);
+			LogSource(hintName, syntaxTree, cancellationToken);
+		}
+	}
+
+	/// <summary>
+	/// Prepares then generator for a generation pass.
+	/// </summary>
+	/// <param name="compilation">Current compilation.</param>
+	/// <param name="addSource">Action used to add new source to the compilation.</param>
+	/// <param name="reportDiagnostic">Action used to report diagnostics.</param>
+	protected CSharpCompilation? PrepareForExecution(Compilation compilation, Func<string, SourceText, CSharpCompilation, CSharpCompilation> addSource, Action<Diagnostic> reportDiagnostic)
 	{
 		DurianModule[]? modules;
 
 		if (SupportsDynamicLoggingConfiguration && LogHandler is DynamicGeneratorLogHandler logHandler)
 		{
-			if (FindDynamicLoggingConfiguration(in context, out modules) is LoggingConfiguration config)
+			if (FindDynamicLoggingConfiguration(compilation, out modules) is LoggingConfiguration config)
 			{
 				logHandler.LoggingConfiguration = config;
 			}
@@ -252,7 +213,18 @@ public abstract partial class DurianGeneratorBase : IDurianGenerator
 			modules = default;
 		}
 
-		return InitializeCompilation(in context, modules, out compilation);
+		return InitializeCompilation(compilation, modules, addSource, reportDiagnostic);
+	}
+
+	/// <summary>
+	/// Logs the specified <paramref name="syntaxTree"/>.
+	/// </summary>
+	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+	/// <param name="syntaxTree"><see cref="SyntaxTree"/> to log.</param>
+	/// <param name="cancellationToken"><see cref="CancellationToken"/> used to cancel the operation.</param>
+	protected void LogSource(string hintName, SyntaxTree syntaxTree, CancellationToken cancellationToken)
+	{
+		LogHandler.LogNode(syntaxTree.GetRoot(cancellationToken), hintName, NodeOutput.Node);
 	}
 
 	private LoggingConfiguration CreateDynamicLoggingConfiguration(AttributeData attribute)
@@ -298,20 +270,30 @@ public abstract partial class DurianGeneratorBase : IDurianGenerator
 
 		attr.RelativeToGlobal = false;
 
-		if(isChanged)
+		if (isChanged)
 		{
-			if(logDirectory is null && !attr.RelativeToDefault)
+			if (logDirectory is null && !attr.RelativeToDefault)
 			{
 				return LoggingConfiguration.Default;
 			}
 
-			return LoggingConfiguration.FromAttribute(attr as ILoggingConfigurationAttribute);
+			return LoggingConfiguration.FromAttribute(attr);
 		}
 
 		return _initialConfig!;
 	}
 
-	private static void EnableModules(ref CSharpCompilation compilation, in GeneratorExecutionContext context, DurianModule[] modules)
+	private IGeneratorLogHandler InitLogHandler(LoggingConfiguration? configuration)
+	{
+		if (SupportsDynamicLoggingConfiguration)
+		{
+			return new DynamicGeneratorLogHandler(configuration);
+		}
+
+		return new GeneratorLogHandler(configuration);
+	}
+
+	private static CSharpCompilation EnableModules(CSharpCompilation compilation, Func<string, SourceText, CSharpCompilation, CSharpCompilation> addSource, DurianModule[] modules)
 	{
 		AttributeData[] attributes = ModuleUtilities.GetInstancesOfEnableAttribute(compilation);
 		bool[] enabled = new bool[modules.Length];
@@ -345,14 +327,10 @@ public abstract partial class DurianGeneratorBase : IDurianGenerator
 
 			string source = AutoGenerated.ApplyHeader($"[assembly: global::{DurianStrings.GeneratorNamespace}.EnableModule({DurianStrings.InfoNamespace}.{nameof(DurianModule)}.{module})]\r\n");
 
-			context.AddSource($"__EnableModule__{module}", SourceText.From(source, Encoding.UTF8));
-			compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(
-				source,
-				context.ParseOptions as CSharpParseOptions,
-				encoding: Encoding.UTF8,
-				cancellationToken: context.CancellationToken)
-			);
+			compilation = addSource($"__EnableModule__{module}", SourceText.From(source, Encoding.UTF8), compilation);
 		}
+
+		return compilation;
 	}
 
 	private static bool HasValidReferences(Compilation compilation, out bool hasCoreAnalyzer)
@@ -396,38 +374,40 @@ public abstract partial class DurianGeneratorBase : IDurianGenerator
 		return currentValue;
 	}
 
-	private static bool IsValidCSharpCompilation(in GeneratorExecutionContext context, [NotNullWhen(true)] out CSharpCompilation? compilation)
+	private bool IsValidCSharpCompilation(Compilation compilation, Action<Diagnostic> reportDiagnostic)
 	{
 		bool isValid = true;
 
-		if (!HasValidReferences(context.Compilation, out bool hasCoreAnalyzer))
+		if (!HasValidReferences(compilation, out bool hasCoreAnalyzer))
 		{
 			if (!hasCoreAnalyzer)
 			{
-				context.ReportDiagnostic(Diagnostic.Create(DUR0001_ProjectMustReferenceDurianCore, Location.None));
+				reportDiagnostic(Diagnostic.Create(DUR0001_ProjectMustReferenceDurianCore, Location.None));
 			}
 
 			isValid = false;
 		}
 
-		if (context.Compilation is CSharpCompilation c)
+		if (compilation is CSharpCompilation c)
 		{
-			compilation = c;
-			return isValid;
-		}
-		else if (!hasCoreAnalyzer)
-		{
-			context.ReportDiagnostic(Diagnostic.Create(DUR0004_DurianModulesAreValidOnlyInCSharp, Location.None));
+			if(!isValid)
+			{
+				return false;
+			}
+
+			return ValidateCompilation(c, reportDiagnostic);
 		}
 
-		compilation = default;
+		if (!hasCoreAnalyzer)
+		{
+			reportDiagnostic(Diagnostic.Create(DUR0004_DurianModulesAreValidOnlyInCSharp, Location.None));
+		}
+
 		return false;
 	}
 
-	private LoggingConfiguration? FindDynamicLoggingConfiguration(in GeneratorExecutionContext context, out DurianModule[]? modules)
+	private LoggingConfiguration? FindDynamicLoggingConfiguration(Compilation compilation, out DurianModule[]? modules)
 	{
-		Compilation compilation = context.Compilation;
-
 		if (compilation.GetTypeByMetadataName(typeof(EnableLoggingAttribute).ToString()) is not INamedTypeSymbol enableLoggingAttribute)
 		{
 			modules = default;
@@ -479,63 +459,15 @@ public abstract partial class DurianGeneratorBase : IDurianGenerator
 		return default;
 	}
 
-	private bool InitializeCompilation(in GeneratorExecutionContext context, DurianModule[]? modules, [NotNullWhen(true)] out CSharpCompilation? compilation)
+	private CSharpCompilation? InitializeCompilation(Compilation compilation, DurianModule[]? modules, Func<string, SourceText, CSharpCompilation, CSharpCompilation> addSource, Action<Diagnostic> reportDiagnostic)
 	{
-		if (IsValidCSharpCompilation(in context, out CSharpCompilation? c) && ValidateCompilation(c, in context))
+		if (IsValidCSharpCompilation(compilation, reportDiagnostic))
 		{
+			CSharpCompilation c = (compilation as CSharpCompilation)!;
 			modules ??= GetRequiredModules();
-			EnableModules(ref c, in context, modules);
-
-			compilation = c;
-			return true;
+			return EnableModules(c, addSource, modules);
 		}
 
-		compilation = default;
-		return false;
-	}
-
-	private void InitializeStaticTrees(GeneratorPostInitializationContext context)
-	{
-		IEnumerable<ISourceTextProvider>? syntaxTreeProviders = GetInitialSources();
-
-		if (syntaxTreeProviders is null)
-		{
-			return;
-		}
-
-		string? generatorName = GeneratorName;
-		string? generatorVersion = GeneratorVersion;
-
-		foreach (ISourceTextProvider treeProvider in syntaxTreeProviders)
-		{
-			if (context.CancellationToken.IsCancellationRequested)
-			{
-				break;
-			}
-
-			string hintName = treeProvider.GetHintName();
-			string text = treeProvider.GetText();
-
-			text = AutoGenerated.ApplyHeader(text, generatorName, generatorVersion);
-			SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(text, encoding: Encoding.UTF8);
-
-			context.AddSource(hintName, text);
-			LogSource(hintName, syntaxTree, context.CancellationToken);
-		}
-	}
-
-	private IGeneratorLogHandler InitLogHandler(LoggingConfiguration? configuration)
-	{
-		if (SupportsDynamicLoggingConfiguration)
-		{
-			return new DynamicGeneratorLogHandler(configuration);
-		}
-
-		return new GeneratorLogHandler(configuration);
-	}
-
-	private void LogSource(string hintName, SyntaxTree syntaxTree, CancellationToken cancellationToken)
-	{
-		LogHandler.LogNode(syntaxTree.GetRoot(cancellationToken), hintName, NodeOutput.Node);
+		return null;
 	}
 }

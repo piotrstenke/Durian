@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -12,7 +12,7 @@ using static Durian.Analysis.DefaultParam.Delegates.DefaultParamDelegateAnalyzer
 namespace Durian.Analysis.DefaultParam.Delegates;
 
 /// <summary>
-/// Filtrates and validates <see cref="DelegateDeclarationSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
+/// Filters and validates <see cref="DelegateDeclarationSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
 /// </summary>
 public sealed class DefaultParamDelegateFilter : DefaultParamFilter<DefaultParamDelegateContext>
 {

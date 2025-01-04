@@ -8,7 +8,7 @@ using Durian.Analysis.Cache;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Durian.Analysis.Logging;
 using Durian.Analysis.SymbolContainers;
 using Durian.Analysis.SyntaxVisitors;
@@ -32,9 +32,9 @@ namespace Durian.Analysis.CopyFrom;
 	DefaultNodeOutput = NodeOutput.SyntaxTree)]
 public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember, CopyFromPassContext>
 {
-	private const string _groupMethods = "Methods";
-	private const string _groupTypes = "Types";
-	private const int _numStaticTrees = 5;
+	private const string GROUP_METHODS = "Methods";
+	private const string GROUP_TYPES = "Types";
+	private const int NUM_STATIC_TREES = 5;
 
 	/// <inheritdoc/>
 	public override string GeneratorName => "CopyFrom";
@@ -43,7 +43,7 @@ public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember,
 	public override string GeneratorVersion => "1.0.0";
 
 	/// <inheritdoc/>
-	public override int NumStaticTrees => _numStaticTrees;
+	public override int NumStaticTrees => NUM_STATIC_TREES;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CopyFromGenerator"/> class.
@@ -73,7 +73,7 @@ public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember,
 	/// </summary>
 	public static IEnumerable<ISourceTextProvider> GetSourceProviders()
 	{
-		return new ISourceTextProvider[_numStaticTrees - 1]
+		return new ISourceTextProvider[NUM_STATIC_TREES - 1]
 		{
 			new CopyFromAdditionalNodesProvider(),
 			new CopyFromTypeAttributeProvider(),
@@ -83,36 +83,36 @@ public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember,
 	}
 
 	/// <inheritdoc/>
-	public override ICompilationData? CreateCompilationData(CSharpCompilation compilation)
-	{
-		return new CopyFromCompilationData(compilation);
-	}
-
-	/// <inheritdoc/>
-	public override IDurianSyntaxReceiver CreateSyntaxReceiver()
-	{
-		return new CopyFromSyntaxReceiver();
-	}
-
-	/// <inheritdoc/>
 	public override IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? GetFilters(CopyFromPassContext context)
 	{
 		FilterContainer<IGeneratorSyntaxFilter> list = new();
 
-		list.RegisterGroup(_groupMethods, new Methods.CopyFromMethodFilter());
-		list.RegisterGroup(_groupTypes, new Types.CopyFromTypeFilter());
+		list.RegisterGroup(GROUP_METHODS, new Methods.CopyFromMethodFilter());
+		list.RegisterGroup(GROUP_TYPES, new Types.CopyFromTypeFilter());
 
 		return list;
 	}
 
 	/// <inheritdoc/>
-	public override IEnumerable<ISourceTextProvider>? GetInitialSources()
+	protected internal override ICompilationData? CreateCompilationData(CSharpCompilation compilation)
+	{
+		return new CopyFromCompilationData(compilation);
+	}
+
+	/// <inheritdoc/>
+	protected internal override IDurianSyntaxReceiver CreateSyntaxReceiver()
+	{
+		return new CopyFromSyntaxReceiver();
+	}
+
+	/// <inheritdoc/>
+	protected internal override IEnumerable<ISourceTextProvider>? GetInitialSources()
 	{
 		return GetSourceProviders();
 	}
 
 	/// <inheritdoc/>
-	public override DurianModule[] GetRequiredModules()
+	protected internal override DurianModule[] GetRequiredModules()
 	{
 		return new DurianModule[]
 		{
@@ -164,7 +164,7 @@ public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember,
 	}
 
 	/// <inheritdoc/>
-	protected override CopyFromPassContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
+	protected override CopyFromPassContext CreateCurrentPassContext(ICompilationData currentCompilation, GeneratorExecutionContext context)
 	{
 		return new();
 	}
@@ -218,8 +218,8 @@ public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember,
 
 		return filterGroup.Name switch
 		{
-			_groupMethods => CreateQueue<MethodDeclarationSyntax>(cache),
-			_groupTypes => CreateQueue<TypeDeclarationSyntax>(cache),
+			GROUP_METHODS => CreateQueue<MethodDeclarationSyntax>(cache),
+			GROUP_TYPES => CreateQueue<TypeDeclarationSyntax>(cache),
 			_ => dependencies,
 		};
 
@@ -551,7 +551,7 @@ public sealed partial class CopyFromGenerator : CachedGenerator<ICopyFromMember,
 		List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols = new(numFilters);
 
 		//filterGroup.Unseal();
-		BeforeFiltrationOfGroup(filterGroup, context);
+		BeforeFilteringOfGroup(filterGroup, context);
 		//filterGroup.Seal();
 
 		// TODO: Current implementation will enumerate 'nodes' for each filter in the group.

@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Cache;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Durian.Analysis.CopyFrom.CopyFromAnalyzer;
@@ -11,7 +11,7 @@ using static Durian.Analysis.CopyFrom.CopyFromAnalyzer;
 namespace Durian.Analysis.CopyFrom.Methods;
 
 /// <summary>
-/// Filtrates and validates <see cref="MethodDeclarationSyntax"/>es collected by a <see cref="CopyFromSyntaxReceiver"/>.
+/// Filters and validates <see cref="MethodDeclarationSyntax"/>es collected by a <see cref="CopyFromSyntaxReceiver"/>.
 /// </summary>
 public sealed class CopyFromMethodFilter : CachedSyntaxValidator<ICopyFromMember, CopyFromMethodContext>
 {

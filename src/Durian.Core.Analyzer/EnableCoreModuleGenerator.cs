@@ -14,7 +14,7 @@ namespace Durian.Analysis;
 	SupportsDiagnostics = false,
 	RelativeToGlobal = true,
 	EnableExceptions = true)]
-public sealed class EnableCoreModuleGenerator : DurianGeneratorBase
+public sealed class EnableCoreModuleGenerator : DurianBasicGenerator
 {
 	/// <inheritdoc/>
 	public override string GeneratorName => nameof(EnableCoreModuleGenerator);
@@ -46,7 +46,7 @@ public sealed class EnableCoreModuleGenerator : DurianGeneratorBase
 	}
 
 	/// <inheritdoc/>
-	public override DurianModule[] GetRequiredModules()
+	protected internal override DurianModule[] GetRequiredModules()
 	{
 		return new DurianModule[] { DurianModule.Core };
 	}

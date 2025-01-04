@@ -2881,13 +2881,13 @@ public partial class CodeBuilder
 
 	private CodeBuilder AttributeName(ISymbol symbol)
 	{
-		const string suffix = "Attribute";
+		const string SUFFIX = "Attribute";
 
 		string name = symbol.GetVerbatimName();
 
-		if (name.EndsWith(suffix) && name.Length > suffix.Length)
+		if (name.EndsWith(SUFFIX) && name.Length > SUFFIX.Length)
 		{
-			TextBuilder.Append(name, 0, name.Length - suffix.Length);
+			TextBuilder.Append(name, 0, name.Length - SUFFIX.Length);
 			return this;
 		}
 

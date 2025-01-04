@@ -9,6 +9,7 @@ namespace Durian.Analysis.FriendClass;
 /// </summary>
 public static class FriendClassDiagnostics
 {
+#pragma warning disable IDE1006 // Naming Styles
 	/// <summary>
 	/// Provides a diagnostic message indicating that <see cref="Type"/> specified by the target <c>Durian.FriendClassAttribute</c> is outside of the current assembly.
 	/// </summary>
@@ -18,8 +19,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Target type is outside of the current assembly",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0301.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0301.md"
 	);
 
 	/// <summary>
@@ -31,8 +32,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Member '{1}' cannot be accessed outside of friend types",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0302.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0302.md"
 	);
 
 	/// <summary>
@@ -44,8 +45,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Do not use FriendClassConfigurationAttribute on types with no friend specified",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0303.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0303.md"
 	);
 
 	/// <summary>
@@ -57,8 +58,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Type '{1}' cannot access the target type",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0304.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0304.md"
 	);
 
 	/// <summary>
@@ -70,8 +71,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': FriendClassAttribute is unnecessary as the target type does not declare any 'internal' members",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0305.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0305.md"
 	);
 
 	/// <summary>
@@ -83,8 +84,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Friend type '{1}' is specified multiple times by two different FriendClassAttributes",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0306.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0306.md"
 	);
 
 	/// <summary>
@@ -96,8 +97,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Member '{1}' cannot be accessed by a child type",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0307.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0307.md"
 	);
 
 	/// <summary>
@@ -109,8 +110,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Type '{1}' is not a valid friend type",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0308.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0308.md"
 	);
 
 	/// <summary>
@@ -122,8 +123,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Type cannot be a friend of itself",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0309.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0309.md"
 	);
 
 	/// <summary>
@@ -135,8 +136,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Member '{1}' cannot be accessed outside by friend type's child class",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0310.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0310.md"
 	);
 
 	/// <summary>
@@ -148,8 +149,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Do not use FriendClassConfigurationAttribute.AllowChildren on a sealed type",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0311.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0311.md"
 	);
 
 	/// <summary>
@@ -161,8 +162,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Inner types don't need to be specified as friends explicitly",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0312.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0312.md"
 	);
 
 	/// <summary>
@@ -174,8 +175,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': FriendClassConfigurationAttribute is redundant",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0313.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0313.md"
 	);
 
 	/// <summary>
@@ -187,8 +188,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Inherited static members are not protected against access from non-friend types",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0314.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0314.md"
 	);
 
 	/// <summary>
@@ -200,8 +201,8 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Do not use FriendClassConfigurationAttribute.IncludeInherited on a type without parent type",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0315.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0315.md"
 	);
 
 	/// <summary>
@@ -213,9 +214,10 @@ public static class FriendClassDiagnostics
 		messageFormat: "'{0}': Base type does not provide internal instance members",
 		category: "Durian.FriendClass",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0316.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0316.md"
 	);
+#pragma warning restore IDE1006 // Naming Styles
 
 	/// <summary>
 	/// Documentation directory of the <c>FriendClass</c> module.

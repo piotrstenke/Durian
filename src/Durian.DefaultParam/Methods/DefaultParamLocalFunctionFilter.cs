@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis.DefaultParam.Methods;
 
 /// <summary>
-/// Filtrates and validates <see cref="LocalFunctionStatementSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
+/// Filters and validates <see cref="LocalFunctionStatementSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
 /// </summary>
 public class DefaultParamLocalFunctionFilter : DefaultParamFilter<SyntaxValidationContext>
 {

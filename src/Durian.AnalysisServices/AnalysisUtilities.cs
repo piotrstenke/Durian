@@ -315,7 +315,7 @@ public static class AnalysisUtilities
 
 		if (str[0] == '@')
 		{
-			str = str.Substring(1, str.Length - 1);
+			str = str.Substring(1);
 			return SyntaxFacts.IsValidIdentifier(str);
 		}
 

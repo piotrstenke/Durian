@@ -176,20 +176,20 @@ public sealed class DefaultParamConfigurationAnalyzer : DurianAnalyzer<DefaultPa
 			diagnosticReceiver.ReportDiagnostic(DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods, arg.GetLocation(), type);
 		}
 
-		const string propertyName = DefaultParamConfigurationAttributeProvider.TypeConvention;
+		const string PROPERTY_NAME = DefaultParamConfigurationAttributeProvider.TypeConvention;
 
 		if (type.TypeKind == TypeKind.Delegate)
 		{
-			if (CheckArguments(arguments, propertyName, out arg))
+			if (CheckArguments(arguments, PROPERTY_NAME, out arg))
 			{
 				diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), type);
 			}
 		}
 		else if (type.TypeKind == TypeKind.Struct || type.IsSealed || type.IsStatic)
 		{
-			if (CheckArguments(arguments, propertyName, out arg) &&
+			if (CheckArguments(arguments, PROPERTY_NAME, out arg) &&
 				type.GetAttribute(node) is AttributeData attr &&
-				attr.TryGetNamedArgumentValue(propertyName, out int value)
+				attr.TryGetNamedArgumentValue(PROPERTY_NAME, out int value)
 			)
 			{
 				TypeConvention convention = (TypeConvention)value;
@@ -202,10 +202,10 @@ public sealed class DefaultParamConfigurationAnalyzer : DurianAnalyzer<DefaultPa
 		}
 		else if (type.TypeKind == TypeKind.Class)
 		{
-			if (CheckArguments(arguments, propertyName, out arg) &&
+			if (CheckArguments(arguments, PROPERTY_NAME, out arg) &&
 				!type.InstanceConstructors.Any(ctor => ctor.DeclaredAccessibility >= Accessibility.Protected) &&
 				type.GetAttribute(node) is AttributeData attr &&
-				attr.TryGetNamedArgumentValue(propertyName, out int value)
+				attr.TryGetNamedArgumentValue(PROPERTY_NAME, out int value)
 			)
 			{
 				TypeConvention convention = (TypeConvention)value;
@@ -257,11 +257,11 @@ public sealed class DefaultParamConfigurationAnalyzer : DurianAnalyzer<DefaultPa
 		DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver
 	)
 	{
-		const string propertyName = DefaultParamConfigurationAttributeProvider.TargetNamespace;
+		const string PROPERTY_NAME = DefaultParamConfigurationAttributeProvider.TargetNamespace;
 
-		if (CheckArguments(arguments, propertyName, out AttributeArgumentSyntax? arg) &&
+		if (CheckArguments(arguments, PROPERTY_NAME, out AttributeArgumentSyntax? arg) &&
 			symbol.GetAttribute(node) is AttributeData data &&
-			data.TryGetNamedArgumentValue(propertyName, out string? value) &&
+			data.TryGetNamedArgumentValue(PROPERTY_NAME, out string? value) &&
 			value is not null)
 		{
 			if (value == "Durian.Generator" || !AnalysisUtilities.IsValidNamespaceIdentifier(value))

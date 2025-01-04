@@ -49,10 +49,10 @@ public static class CompilationExtensions
 	/// <param name="includeExternal">Determines whether to include types from referenced assemblies.</param>
 	public static IEnumerable<INamedTypeSymbol> GetAllTypes(this Compilation compilation, bool includeExternal = false)
 	{
-		const int capacity = 32;
+		const int CAPACITY = 32;
 		INamespaceSymbol globalNamespace = includeExternal ? compilation.GlobalNamespace : compilation.Assembly.GlobalNamespace;
 
-		Stack<INamedTypeSymbol> innerTypes = new(capacity);
+		Stack<INamedTypeSymbol> innerTypes = new(CAPACITY);
 
 		foreach (INamedTypeSymbol globalType in globalNamespace.GetTypeMembers())
 		{

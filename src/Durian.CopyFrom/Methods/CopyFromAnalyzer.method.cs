@@ -396,7 +396,7 @@ public partial class CopyFromAnalyzer
 		out CSharpSyntaxNode cref
 	)
 	{
-		const string annotation = "copyFrom - inheritdoc";
+		const string ANNOTATION = "copyFrom - inheritdoc";
 
 		text = AnalysisUtilities.ToXmlCompatible(text);
 		string parse = $"/// <inheritdoc cref=\"{text}\"/>";
@@ -404,7 +404,7 @@ public partial class CopyFromAnalyzer
 		SyntaxNode root = CSharpSyntaxTree.ParseText(parse, encoding: Encoding.UTF8).GetRoot();
 		DocumentationCommentTriviaSyntax trivia = root.DescendantNodes(descendIntoTrivia: true).OfType<DocumentationCommentTriviaSyntax>().First();
 
-		trivia = trivia.WithAdditionalAnnotations(new SyntaxAnnotation(annotation));
+		trivia = trivia.WithAdditionalAnnotations(new SyntaxAnnotation(ANNOTATION));
 
 		root = context.Node!.SyntaxTree.GetRoot();
 		root = root.ReplaceNode(context.Node, context.Node.WithLeadingTrivia(SyntaxFactory.Trivia(trivia)));
@@ -414,7 +414,7 @@ public partial class CopyFromAnalyzer
 		SemanticModel createdSemanticModel = compilation.GetSemanticModel(root.SyntaxTree, true);
 #pragma warning restore RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
 
-		trivia = (DocumentationCommentTriviaSyntax)root.GetAnnotatedNodes(annotation).First();
+		trivia = (DocumentationCommentTriviaSyntax)root.GetAnnotatedNodes(ANNOTATION).First();
 
 		cref = trivia.DescendantNodes().OfType<CrefSyntax>().First();
 		return createdSemanticModel.GetSymbolInfo(cref);

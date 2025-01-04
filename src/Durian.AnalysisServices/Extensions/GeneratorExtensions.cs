@@ -21,7 +21,7 @@ public static class GeneratorExtensions
 	/// Determines a <see cref="FilterMode"/> from values provided by the specified <paramref name="generator"/>.
 	/// </summary>
 	/// <param name="generator"><see cref="IDurianGenerator"/> to get the <see cref="FilterMode"/> value for.</param>
-	public static FilterMode GetFilterMode(this IDurianGenerator generator)
+	public static FilterMode GetFilterMode(this ILoggableSourceGenerator generator)
 	{
 		if (generator.LogHandler is null)
 		{

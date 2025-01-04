@@ -47,7 +47,7 @@ public sealed class CopyFromPassContext : GeneratorPassBuilderContext
 	/// <param name="services">Container of services that can be resolved during the current generator pass.</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/> that can be checked to see if the generation should be canceled.</param>
 	public CopyFromPassContext(
-		in GeneratorExecutionContext originalContext,
+		GeneratorExecutionContext originalContext,
 		CopyFromGenerator generator,
 		CopyFromCompilationData targetCompilation,
 		CopyFromSyntaxReceiver syntaxReceiver,

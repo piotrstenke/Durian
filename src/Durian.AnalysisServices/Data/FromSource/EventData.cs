@@ -196,17 +196,14 @@ public class EventData : MemberData, IEventData, IVariableDeclarator
 	{
 		get
 		{
-			return _implicitImplementations ??= SymbolExtensions.GetImplicitImplementations_Internal(Symbol, intf =>
-			{
-				return intf
-					.ToDataOrSymbol(ParentCompilation)
-					.Member
-					.GetMembers(IncludedMembers.Direct)
-					.AsEnumerable()
-					.Select(s => s.Symbol)
-					.OfType<IEventSymbol>()
-					.Where(m => m.Name == Symbol.Name);
-			})
+			return _implicitImplementations ??= SymbolExtensions.GetImplicitImplementations_Internal(Symbol, intf => intf
+				.ToDataOrSymbol(ParentCompilation)
+				.Member
+				.GetMembers(IncludedMembers.Direct)
+				.AsEnumerable()
+				.Select(s => s.Symbol)
+				.OfType<IEventSymbol>()
+				.Where(m => m.Name == Symbol.Name))
 			.ToContainer(ParentCompilation);
 		}
 	}

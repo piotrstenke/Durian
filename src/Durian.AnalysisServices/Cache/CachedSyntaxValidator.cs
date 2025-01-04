@@ -4,14 +4,14 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.Analysis.Cache;
 
 /// <summary>
-/// <see cref="ISyntaxFilter"/> that validates the filtrated nodes.
+/// <see cref="ISyntaxFilter"/> that validates the filtered nodes.
 /// If the value associated with a <see cref="SyntaxNode"/> is present in the <see cref="CachedGeneratorExecutionContext{T}"/>, it is re-used.
 /// </summary>
 /// <typeparam name="TData">Type of cached values.</typeparam>
@@ -28,7 +28,7 @@ public abstract class CachedSyntaxValidator<TData, TContext> : SyntaxValidator<T
 	}
 
 	/// <inheritdoc/>
-	public IEnumerable<IMemberData> Filtrate(ICachedGeneratorPassContext<TData> context)
+	public IEnumerable<IMemberData> Filter(ICachedGeneratorPassContext<TData> context)
 	{
 		if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<SyntaxNode> list)
 		{

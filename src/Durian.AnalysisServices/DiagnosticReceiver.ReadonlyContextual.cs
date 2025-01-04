@@ -72,7 +72,7 @@ public sealed partial class DiagnosticReceiver
 		public void ReportDiagnostic(DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs)
 		{
 			CheckContext();
-			_action.Invoke(in _context, Diagnostic.Create(descriptor, location, messageArgs));
+			_action.Invoke(_context, Diagnostic.Create(descriptor, location, messageArgs));
 		}
 
 		/// <inheritdoc/>
@@ -80,7 +80,7 @@ public sealed partial class DiagnosticReceiver
 		public void ReportDiagnostic(Diagnostic diagnostic)
 		{
 			CheckContext();
-			_action.Invoke(in _context, diagnostic);
+			_action.Invoke(_context, diagnostic);
 		}
 
 		/// <summary>

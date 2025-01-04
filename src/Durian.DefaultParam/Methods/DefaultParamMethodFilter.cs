@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -14,7 +14,7 @@ using static Durian.Analysis.DefaultParam.Methods.DefaultParamMethodAnalyzer;
 namespace Durian.Analysis.DefaultParam.Methods;
 
 /// <summary>
-/// Filtrates and validates <see cref="MethodDeclarationSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
+/// Filters and validates <see cref="MethodDeclarationSyntax"/>es collected by a <see cref="DefaultParamSyntaxReceiver"/>.
 /// </summary>
 public sealed class DefaultParamMethodFilter : DefaultParamFilter<DefaultParamMethodContext>
 {

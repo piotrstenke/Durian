@@ -23,7 +23,7 @@ public interface IGeneratorPassContext
 	/// <summary>
 	/// <see cref="IDurianGenerator"/> this context was created for.
 	/// </summary>
-	IDurianGenerator Generator { get; }
+	ILoggableSourceGenerator Generator { get; }
 
 	/// <summary>
 	/// <see cref="GeneratorExecutionContext"/> created for the current generator pass.

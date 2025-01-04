@@ -199,17 +199,14 @@ public class MethodData : MemberData, IMethodData
 	{
 		get
 		{
-			return _implicitImplementations ??= SymbolExtensions.GetImplicitImplementations_Internal(Symbol, intf =>
-			{
-				return intf
-					.ToDataOrSymbol(ParentCompilation)
-					.Member
-					.GetMembers(IncludedMembers.Direct)
-					.AsEnumerable()
-					.Select(s => s.Symbol)
-					.OfType<IMethodSymbol>()
-					.Where(m => m.Name == Symbol.Name && m.Arity == Symbol.Arity);
-			})
+			return _implicitImplementations ??= SymbolExtensions.GetImplicitImplementations_Internal(Symbol, intf => intf
+				.ToDataOrSymbol(ParentCompilation)
+				.Member
+				.GetMembers(IncludedMembers.Direct)
+				.AsEnumerable()
+				.Select(s => s.Symbol)
+				.OfType<IMethodSymbol>()
+				.Where(m => m.Name == Symbol.Name && m.Arity == Symbol.Arity))
 			.ToContainer(ParentCompilation);
 		}
 	}

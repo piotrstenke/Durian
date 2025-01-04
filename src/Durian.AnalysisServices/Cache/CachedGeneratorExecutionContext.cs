@@ -17,8 +17,8 @@ public readonly struct CachedGeneratorExecutionContext<T>
 
 	private readonly bool _hasData;
 
-	/// <inheritdoc cref="CachedGeneratorExecutionContext(in GeneratorExecutionContext, ConcurrentDictionary{FileLinePositionSpan, T})"/>
-	public CachedGeneratorExecutionContext(in GeneratorExecutionContext context)
+	/// <inheritdoc cref="CachedGeneratorExecutionContext(GeneratorExecutionContext, ConcurrentDictionary{FileLinePositionSpan, T})"/>
+	public CachedGeneratorExecutionContext(GeneratorExecutionContext context)
 	{
 		_context = context;
 		_data = default;
@@ -30,7 +30,7 @@ public readonly struct CachedGeneratorExecutionContext<T>
 	/// </summary>
 	/// <param name="context">Original <see cref="GeneratorExecutionContext"/>.</param>
 	/// <param name="cached"><see cref="ConcurrentDictionary{TKey, TValue}"/> that contains the cached values.</param>
-	public CachedGeneratorExecutionContext(in GeneratorExecutionContext context, ConcurrentDictionary<FileLinePositionSpan, T> cached)
+	public CachedGeneratorExecutionContext(GeneratorExecutionContext context, ConcurrentDictionary<FileLinePositionSpan, T> cached)
 	{
 		_context = context;
 		_data = new(cached);
@@ -44,7 +44,7 @@ public readonly struct CachedGeneratorExecutionContext<T>
 	}
 
 	/// <inheritdoc/>
-	public static implicit operator CachedGeneratorExecutionContext<T>(in GeneratorExecutionContext context)
+	public static implicit operator CachedGeneratorExecutionContext<T>(GeneratorExecutionContext context)
 	{
 		return new CachedGeneratorExecutionContext<T>(context);
 	}

@@ -40,8 +40,8 @@ public static class ReportAction
 	public delegate void DirectContextual<in T>(T context, Diagnostic diagnostic);
 
 	/// <inheritdoc cref="Contextual{T}"/>
-	public delegate void ReadonlyContextual<T>(in T context, DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs) where T : struct;
+	public delegate void ReadonlyContextual<T>(T context, DiagnosticDescriptor descriptor, Location? location, params object?[]? messageArgs) where T : struct;
 
 	/// <inheritdoc cref="DirectContextual{T}"/>
-	public delegate void ReadonlyDirectContextual<T>(in T context, Diagnostic diagnostic) where T : struct;
+	public delegate void ReadonlyDirectContextual<T>(T context, Diagnostic diagnostic) where T : struct;
 }

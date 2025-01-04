@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Durian.Analysis;
 
@@ -13,7 +14,7 @@ namespace Durian.Analysis;
 /// Abstract implementation of the <see cref="IDurianGenerator"/> interface that performs early validation of the input <see cref="GeneratorExecutionContext"/>.
 /// </summary>
 /// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> this generator uses.</typeparam>
-public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase where TContext : class, IGeneratorPassContext
+public abstract class DurianGeneratorWithContext<TContext> : DurianBasicGenerator where TContext : class, IGeneratorPassContext
 {
 	private readonly int _sourceThreadId = Environment.CurrentManagedThreadId;
 
@@ -40,13 +41,8 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 	{
 	}
 
-	/// <summary>
-	/// Creates a new instance of <see cref="IDurianSyntaxReceiver"/> to be used during the current generation pass.
-	/// </summary>
-	public abstract IDurianSyntaxReceiver CreateSyntaxReceiver();
-
 	/// <inheritdoc/>
-	public sealed override bool Execute(in GeneratorExecutionContext context)
+	public sealed override bool Execute(GeneratorExecutionContext context)
 	{
 		TContext? pass;
 
@@ -54,12 +50,12 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 		{
 			Reset(Environment.CurrentManagedThreadId);
 
-			if (!PrepareForExecution(in context, out CSharpCompilation? compilation))
+			if (!PrepareForExecution(context, out CSharpCompilation? compilation))
 			{
 				return false;
 			}
 
-			pass = CreateCurrentPassContext(compilation, in context);
+			pass = CreateCurrentPassContext(compilation, context);
 
 			if (pass is null)
 			{
@@ -108,7 +104,7 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 	/// Performs node filtration.
 	/// </summary>
 	/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-	public void Filtrate(TContext context)
+	public void Filter(TContext context)
 	{
 		IReadOnlyFilterContainer<IGeneratorSyntaxFilter>? filters = GetFilters(context);
 
@@ -117,15 +113,15 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 			return;
 		}
 
-		Filtrate(context, filters);
+		Filter(context, filters);
 	}
 
 	/// <summary>
 	/// Performs node filtration.
 	/// </summary>
 	/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-	/// <param name="filters">Collection of <see cref="IGeneratorSyntaxFilter"/>s to filtrate the nodes with.</param>
-	public void Filtrate(TContext context, IReadOnlyFilterContainer<IGeneratorSyntaxFilter> filters)
+	/// <param name="filters">Collection of <see cref="IGeneratorSyntaxFilter"/>s to filter the nodes with.</param>
+	public void Filter(TContext context, IReadOnlyFilterContainer<IGeneratorSyntaxFilter> filters)
 	{
 		BeforeExecution(context);
 		HandleFilterContainer(filters, context);
@@ -204,51 +200,18 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 		GeneratorContextRegistry.RemoveContext(InstanceId, threadId);
 	}
 
-	internal bool HandleException(Exception e, TContext context)
-	{
-		OnException(e, context, true);
-		return !LoggingConfiguration.EnableExceptions;
-	}
-
-	internal void HandleFilterGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
-	{
-		int numFilters = filterGroup.Count;
-		List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols = new(numFilters);
-
-		//filterGroup.Unseal();
-		BeforeFiltrationOfGroup(filterGroup, context);
-		//filterGroup.Seal();
-
-		foreach (IGeneratorSyntaxFilter filter in filterGroup)
-		{
-			if (filter.IncludeGeneratedSymbols)
-			{
-				filtersWithGeneratedSymbols.Add(filter);
-			}
-			else
-			{
-				foreach (IMemberData data in filter.Filtrate(context))
-				{
-					GenerateFromData(data, context);
-				}
-			}
-		}
-
-		BeforeExecutionOfGroup(filterGroup, context);
-
-		GenerateFromFiltersWithGeneratedSymbols(filterGroup, filtersWithGeneratedSymbols, context);
-
-		//filterGroup.Unseal();
-		AfterExecutionOfGroup(filterGroup, context);
-	}
+	/// <summary>
+	/// Creates a new instance of <see cref="IDurianSyntaxReceiver"/> to be used during the current generation pass.
+	/// </summary>
+	protected internal abstract IDurianSyntaxReceiver CreateSyntaxReceiver();
 
 	/// <summary>
 	/// Directly adds the generated <paramref name="tree"/> to the <paramref name="context"/> without any validation.
 	/// </summary>
-	/// <param name="tree">The generated <see cref="SyntaxTree"/>.</param>
 	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+	/// <param name="tree">The generated <see cref="SyntaxTree"/>.</param>
 	/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-	protected internal virtual void AddSourceCore(SyntaxTree tree, string hintName, TContext context)
+	protected internal virtual void AddSourceCore(string hintName, SyntaxTree tree, TContext context)
 	{
 		context.OriginalContext.AddSource(hintName, tree.GetText(context.CancellationToken));
 	}
@@ -256,10 +219,10 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 	/// <summary>
 	/// Directly adds the generated <paramref name="tree"/> to the <paramref name="context"/> without any validation.
 	/// </summary>
-	/// <param name="tree">The generated <see cref="SyntaxTree"/>.</param>
 	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+	/// <param name="tree">The generated <see cref="SyntaxTree"/>.</param>
 	/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-	protected internal virtual void AddSourceCore(SyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+	protected internal virtual void AddSourceCore(string hintName, SyntaxTree tree, GeneratorExecutionContext context)
 	{
 		context.AddSource(hintName, tree.GetText(context.CancellationToken));
 	}
@@ -293,7 +256,7 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 	}
 
 	/// <summary>
-	/// Called after <see cref="IGeneratorSyntaxFilter"/>s with <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> set to <see langword="false"/> are filtrated, but before actual generation.
+	/// Called after <see cref="IGeneratorSyntaxFilter"/>s with <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> set to <see langword="false"/> are filtered, but before actual generation.
 	/// </summary>
 	/// <param name="filterGroup">Current <see cref="IReadOnlyFilterGroup{TFilter}"/>.</param>
 	/// <param name="context">Current <typeparamref name="TContext"/>.</param>
@@ -313,7 +276,7 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 
 	/// <summary>
 	/// Called after <see cref="IGeneratorSyntaxFilter"/>s with <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> set to <see langword="false"/> generated their code,
-	/// but before <see cref="IGeneratorSyntaxFilter"/>s with <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> set to <see langword="true"/> are filtrated and executed.
+	/// but before <see cref="IGeneratorSyntaxFilter"/>s with <see cref="IGeneratorSyntaxFilter.IncludeGeneratedSymbols"/> set to <see langword="true"/> are filtered and executed.
 	/// </summary>
 	/// <param name="filterGroup">Current <see cref="IReadOnlyFilterGroup{TFilter}"/>.</param>
 	/// <param name="context">Current <typeparamref name="TContext"/>.</param>
@@ -327,7 +290,7 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 	/// </summary>
 	/// <param name="filterGroup">Current <see cref="IReadOnlyFilterGroup{TFilter}"/>.</param>
 	/// <param name="context">Current <typeparamref name="TContext"/>.</param>
-	protected internal virtual void BeforeFiltrationOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
+	protected internal virtual void BeforeFilteringOfGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
 	{
 		// Do nothing by default.
 	}
@@ -337,7 +300,7 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 	/// </summary>
 	/// <param name="currentCompilation">Current <see cref="CSharpCompilation"/>.</param>
 	/// <param name="context">Current <see cref="GeneratorExecutionContext"/>.</param>
-	protected internal abstract TContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, in GeneratorExecutionContext context);
+	protected internal abstract TContext? CreateCurrentPassContext(CSharpCompilation currentCompilation, GeneratorExecutionContext context);
 
 	/// <summary>
 	/// Performs the generation for the specified <paramref name="data"/>.
@@ -392,111 +355,117 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 	}
 
 	/// <inheritdoc/>
-	protected sealed override void AddSource(SyntaxTree syntaxTree, string hintName, in GeneratorPostInitializationContext context)
+	protected sealed override void AddSource(string hintName, SyntaxTree syntaxTree, GeneratorPostInitializationContext context)
 	{
-		base.AddSource(syntaxTree, hintName, context);
+		base.AddSource(hintName, syntaxTree, context);
 	}
 
 	/// <inheritdoc/>
-	protected sealed override void AddSource(string source, string hintName, in GeneratorPostInitializationContext context)
+	protected sealed override void AddSource(string hintName, SourceText source, GeneratorPostInitializationContext context)
 	{
-		base.AddSource(source, hintName, context);
+		base.AddSource(hintName, source, context);
+	}
+
+	/// <inheritdoc/>
+	protected sealed override void AddSource(string hintName, string source, GeneratorPostInitializationContext context)
+	{
+		base.AddSource(hintName, source, context);
 	}
 
 	/// <summary>
 	/// Adds the generated <paramref name="source"/> to the <paramref name="context"/>.
 	/// </summary>
-	/// <param name="source">The generated text.</param>
 	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+	/// <param name="source">The generated text.</param>
 	/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-	protected void AddSource(string source, string hintName, TContext context)
+	protected void AddSource(string hintName, string source, TContext context)
 	{
 		SyntaxTree tree = CSharpSyntaxTree.ParseText(source, context.ParseOptions as CSharpParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
-		AddSource_Internal(tree, hintName, context);
+		AddSource_Internal(hintName, tree, context);
 	}
 
 	/// <summary>
 	/// Adds the generated <paramref name="tree"/> to the <paramref name="context"/>.
 	/// </summary>
-	/// <param name="tree">The generated <see cref="SyntaxTree"/>.</param>
 	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+	/// <param name="tree">The generated <see cref="SyntaxTree"/>.</param>
 	/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-	protected void AddSource(SyntaxTree tree, string hintName, TContext context)
+	protected void AddSource(string hintName, SyntaxTree tree, TContext context)
 	{
-		AddSource_Internal(tree, hintName, context);
+		AddSource_Internal(hintName, tree, context);
 	}
 
 	/// <summary>
 	/// Adds the generated <paramref name="source"/> to the <paramref name="context"/>.
 	/// </summary>
-	/// <param name="source">The generated text.</param>
 	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+	/// <param name="source">The generated text.</param>
 	/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-	protected sealed override void AddSource(string source, string hintName, in GeneratorExecutionContext context)
+	protected sealed override void AddSource(string hintName, string source, GeneratorExecutionContext context)
 	{
 		SyntaxTree tree = CSharpSyntaxTree.ParseText(source, context.ParseOptions as CSharpParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
-		AddSource_Internal(tree, hintName, in context);
+		AddSource_Internal(hintName, tree, context);
 	}
 
 	/// <summary>
 	/// Adds the generated <paramref name="tree"/> to the <paramref name="context"/>.
 	/// </summary>
-	/// <param name="tree">The generated <see cref="SyntaxTree"/>.</param>
 	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
+	/// <param name="tree">The generated <see cref="SyntaxTree"/>.</param>
 	/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-	protected sealed override void AddSource(SyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+	protected sealed override void AddSource(string hintName, SyntaxTree tree, GeneratorExecutionContext context)
 	{
-		AddSource_Internal(tree, hintName, in context);
+		AddSource_Internal(hintName, tree, context);
 	}
 
 	/// <summary>
 	/// Adds the generated <paramref name="text"/> to the <paramref name="context"/>.
 	/// </summary>
+	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 	/// <param name="original">The <see cref="SyntaxNode"/> the source was generated from.</param>
 	/// <param name="text">The generated text.</param>
-	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 	/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-	protected void AddSourceWithOriginal(SyntaxNode original, string text, string hintName, TContext context)
+	protected void AddSourceWithOriginal(string hintName, SyntaxNode original, string text, TContext context)
 	{
 		SyntaxTree tree = CSharpSyntaxTree.ParseText(text, context.ParseOptions as CSharpParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
-		AddSource_Internal(original, tree, hintName, context);
+		AddSource_Internal(hintName, original, tree, context);
 	}
 
 	/// <summary>
 	/// Adds the generated <paramref name="tree"/> to the <paramref name="context"/>.
 	/// </summary>
+	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 	/// <param name="original">The <see cref="SyntaxNode"/> the source was generated from.</param>
 	/// <param name="tree">The generated <see cref="SyntaxTree"/>.</param>
-	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 	/// <param name="context"><typeparamref name="TContext"/> to add the source to.</param>
-	protected void AddSourceWithOriginal(SyntaxNode original, SyntaxTree tree, string hintName, TContext context)
+	protected void AddSourceWithOriginal(string hintName, SyntaxNode original, SyntaxTree tree, TContext context)
 	{
-		AddSource_Internal(original, tree, hintName, context);
+		AddSource_Internal(hintName, original, tree, context);
 	}
 
 	/// <summary>
 	/// Adds the generated <paramref name="text"/> to the <paramref name="context"/>.
 	/// </summary>
+	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 	/// <param name="original">The <see cref="SyntaxNode"/> the source was generated from.</param>
 	/// <param name="text">The generated text.</param>
-	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 	/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-	protected void AddSourceWithOriginal(SyntaxNode original, string text, string hintName, in GeneratorExecutionContext context)
+	protected void AddSourceWithOriginal(string hintName, SyntaxNode original, string text, GeneratorExecutionContext context)
 	{
 		SyntaxTree tree = CSharpSyntaxTree.ParseText(text, context.ParseOptions as CSharpParseOptions, encoding: System.Text.Encoding.UTF8, cancellationToken: context.CancellationToken);
-		AddSource_Internal(original, tree, hintName, in context);
+		AddSource_Internal(hintName, original, tree, context);
 	}
 
 	/// <summary>
 	/// Adds the generated <paramref name="tree"/> to the <paramref name="context"/>.
 	/// </summary>
+	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 	/// <param name="original">The <see cref="SyntaxNode"/> the source was generated from.</param>
 	/// <param name="tree">The generated <see cref="SyntaxTree"/>.</param>
-	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
 	/// <param name="context"><see cref="GeneratorExecutionContext"/> to add the source to.</param>
-	protected void AddSourceWithOriginal(SyntaxNode original, SyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+	protected void AddSourceWithOriginal(string hintName, SyntaxNode original, SyntaxTree tree, GeneratorExecutionContext context)
 	{
-		AddSource_Internal(original, tree, hintName, in context);
+		AddSource_Internal(hintName, original, tree, context);
 	}
 
 	/// <inheritdoc/>
@@ -504,6 +473,7 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 	{
 		GeneratorContextRegistry.RemoveAllContexts(InstanceId);
 	}
+
 	/// <inheritdoc/>
 	[Obsolete("Use GetCurrentPassContext() instead")]
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -517,7 +487,7 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 	/// <summary>
 	/// Performs node filtration without the <see cref="BeforeExecution"/> and <see cref="AfterExecution"/> callbacks.
 	/// </summary>
-	/// <param name="filters">Collection of <see cref="ISyntaxFilter"/>s to filtrate the nodes with.</param>
+	/// <param name="filters">Collection of <see cref="ISyntaxFilter"/>s to filter the nodes with.</param>
 	/// <param name="context">Current <typeparamref name="TContext"/>.</param>
 	protected void HandleFilterContainer(IReadOnlyFilterContainer<IGeneratorSyntaxFilter> filters, TContext context)
 	{
@@ -527,30 +497,68 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 		}
 	}
 
-	private protected void AddSource_Internal(SyntaxTree tree, string hintName, TContext context)
+	internal bool HandleException(Exception e, TContext context)
 	{
-		AddSourceCore(tree, hintName, context);
+		OnException(e, context, true);
+		return !LoggingConfiguration.EnableExceptions;
+	}
+
+	internal void HandleFilterGroup(IReadOnlyFilterGroup<IGeneratorSyntaxFilter> filterGroup, TContext context)
+	{
+		int numFilters = filterGroup.Count;
+		List<IGeneratorSyntaxFilter> filtersWithGeneratedSymbols = new(numFilters);
+
+		//filterGroup.Unseal();
+		BeforeFilteringOfGroup(filterGroup, context);
+		//filterGroup.Seal();
+
+		foreach (IGeneratorSyntaxFilter filter in filterGroup)
+		{
+			if (filter.IncludeGeneratedSymbols)
+			{
+				filtersWithGeneratedSymbols.Add(filter);
+			}
+			else
+			{
+				foreach (IMemberData data in filter.Filter(context))
+				{
+					GenerateFromData(data, context);
+				}
+			}
+		}
+
+		BeforeExecutionOfGroup(filterGroup, context);
+
+		GenerateFromFiltersWithGeneratedSymbols(filterGroup, filtersWithGeneratedSymbols, context);
+
+		//filterGroup.Unseal();
+		AfterExecutionOfGroup(filterGroup, context);
+	}
+
+	private protected void AddSource_Internal(string hintName, SyntaxTree tree, TContext context)
+	{
+		AddSourceCore(hintName, tree, context);
 
 		LogHandler.LogNode(tree.GetRoot(context.CancellationToken), hintName, NodeOutput.Node);
 	}
 
-	private protected void AddSource_Internal(SyntaxNode original, SyntaxTree tree, string hintName, TContext context)
+	private protected void AddSource_Internal(string hintName, SyntaxNode original, SyntaxTree tree, TContext context)
 	{
-		AddSourceCore(tree, hintName, context);
+		AddSourceCore(hintName, tree, context);
 
 		LogHandler.LogInputOutput(original, tree.GetRoot(context.CancellationToken), hintName, default);
 	}
 
-	private protected void AddSource_Internal(SyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+	private protected void AddSource_Internal(string hintName, SyntaxTree tree, GeneratorExecutionContext context)
 	{
-		AddSourceCore(tree, hintName, in context);
+		AddSourceCore(hintName, tree, context);
 
 		LogHandler.LogNode(tree.GetRoot(context.CancellationToken), hintName, NodeOutput.Node);
 	}
 
-	private protected void AddSource_Internal(SyntaxNode original, SyntaxTree tree, string hintName, in GeneratorExecutionContext context)
+	private protected void AddSource_Internal(string hintName, SyntaxNode original, SyntaxTree tree, GeneratorExecutionContext context)
 	{
-		AddSourceCore(tree, hintName, in context);
+		AddSourceCore(hintName, tree, context);
 
 		LogHandler.LogInputOutput(original, tree.GetRoot(context.CancellationToken), hintName, default);
 	}
@@ -558,7 +566,7 @@ public abstract class DurianGeneratorWithContext<TContext> : DurianGeneratorBase
 	private bool Execute_Internal(TContext context)
 	{
 		GeneratorContextRegistry.AddContext(InstanceId, Environment.CurrentManagedThreadId, context);
-		Filtrate(context);
+		Filter(context);
 		return true;
 	}
 

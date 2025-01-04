@@ -11,14 +11,15 @@ public static class InterfaceTargetsDiagnostics
 	/// <summary>
 	/// Provides a diagnostic message indicating that the target interface cannot be implemented by members of specified kind.
 	/// </summary>
+#pragma warning disable IDE1006 // Naming Styles
 	public static readonly DiagnosticDescriptor DUR0401_InterfaceCannotBeImplementedByMembersOfThisKind = new(
 		id: "DUR0401",
 		title: "Interface is not valid on members of this kind",
 		messageFormat: "'{0}': Interface '{1}' cannot be implemented by {2}",
-		category: "Durian.FriendClass",
+		category: "Durian.InterfaceTargets",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0401.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0401.md"
 	);
 
 	/// <summary>
@@ -28,10 +29,10 @@ public static class InterfaceTargetsDiagnostics
 		id: "DUR0402",
 		title: "Interface cannot be a base of another interface",
 		messageFormat: "'{0}': Interface '{1}' cannot be a base of another interface",
-		category: "Durian.FriendClass",
+		category: "Durian.InterfaceTargets",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0402.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0402.md"
 	);
 
 	/// <summary>
@@ -41,10 +42,10 @@ public static class InterfaceTargetsDiagnostics
 		id: "DUR0403",
 		title: "Interface is accessible only through reflection",
 		messageFormat: "'{0}': Interface '{1}' is accessible only through reflection",
-		category: "Durian.FriendClass",
+		category: "Durian.InterfaceTargets",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0403.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0403.md"
 	);
 
 	/// <summary>
@@ -54,11 +55,12 @@ public static class InterfaceTargetsDiagnostics
 		id: "DUR0404",
 		title: "Interface will never match target constraint",
 		messageFormat: "'{0}': Interface '{1}' will never match a '{2}' constraint",
-		category: "Durian.FriendClass",
+		category: "Durian.InterfaceTargets",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0404.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0404.md"
 	);
+#pragma warning restore IDE1006 // Naming Styles
 
 	/// <summary>
 	/// Documentation directory of the <c>InterfaceTargets</c> module.

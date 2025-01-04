@@ -32,7 +32,7 @@ public abstract class GeneratorTest
 	{
 		ISourceGenerator generator = CreateGenerator();
 
-		if (enableDiagnostics && generator is IDurianGenerator g && g.LogHandler is not null)
+		if (enableDiagnostics && generator is ILoggableSourceGenerator g && g.LogHandler is not null)
 		{
 			g.LogHandler.EnableDiagnosticsIfSupported();
 		}

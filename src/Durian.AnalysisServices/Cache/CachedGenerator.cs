@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Durian.Analysis.Data;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Durian.Analysis.Cache;
 
 /// <summary>
-/// <see cref="DurianGenerator"/> that retrieves cached data from a <see cref="ConcurrentDictionary{TKey, TValue}"/>
+/// <see cref="DurianSourceGenerator"/> that retrieves cached data from a <see cref="ConcurrentDictionary{TKey, TValue}"/>
 /// </summary>
 /// <typeparam name="TData">Type of cached values this generator can retrieve.</typeparam>
 /// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> this generator uses.</typeparam>
@@ -51,7 +51,7 @@ public abstract class CachedGenerator<TData, TContext> : DurianGeneratorWithBuil
 		{
 			Reset(Environment.CurrentManagedThreadId);
 
-			if (!PrepareForExecution(in context.GetContext(), out CSharpCompilation? compilation))
+			if (!PrepareForExecution(context.GetContext(), out CSharpCompilation? compilation))
 			{
 				return false;
 			}
@@ -105,7 +105,7 @@ public abstract class CachedGenerator<TData, TContext> : DurianGeneratorWithBuil
 	/// Performs node filtration.
 	/// </summary>
 	/// <param name="context">Current <see cref="CachedGeneratorPassContext{TData, TContext}"/>.</param>
-	public void Filtrate(CachedGeneratorPassContext<TData, TContext> context)
+	public void Filter(CachedGeneratorPassContext<TData, TContext> context)
 	{
 		IReadOnlyFilterContainer<ICachedGeneratorSyntaxFilter<TData>>? filters = GetFilters(context);
 
@@ -114,15 +114,15 @@ public abstract class CachedGenerator<TData, TContext> : DurianGeneratorWithBuil
 			return;
 		}
 
-		Filtrate(context, filters);
+		Filter(context, filters);
 	}
 
 	/// <summary>
 	/// Performs node filtration.
 	/// </summary>
 	/// <param name="context">Current <see cref="CachedGeneratorPassContext{TData, TContext}"/>.</param>
-	/// <param name="filters">Collection of <see cref="IGeneratorSyntaxFilter"/>s to filtrate the nodes with.</param>
-	public void Filtrate(CachedGeneratorPassContext<TData, TContext> context, IReadOnlyFilterContainer<ICachedGeneratorSyntaxFilter<TData>> filters)
+	/// <param name="filters">Collection of <see cref="IGeneratorSyntaxFilter"/>s to filter the nodes with.</param>
+	public void Filter(CachedGeneratorPassContext<TData, TContext> context, IReadOnlyFilterContainer<ICachedGeneratorSyntaxFilter<TData>> filters)
 	{
 		BeforeExecution(context.UnderlayingContext);
 		HandleFilterContainer(filters, context);
@@ -157,9 +157,9 @@ public abstract class CachedGenerator<TData, TContext> : DurianGeneratorWithBuil
 	/// <param name="context">Current <see cref="CachedGeneratorExecutionContext{T}"/>.</param>
 	protected CachedGeneratorPassContext<TData, TContext>? CreateCurrentPassContext(CSharpCompilation currentCompilation, in CachedGeneratorExecutionContext<TData> context)
 	{
-		ref readonly GeneratorExecutionContext original = ref context.GetContext();
+		GeneratorExecutionContext original = context.GetContext();
 
-		TContext? pass = CreateCurrentPassContext(currentCompilation, in original);
+		TContext? pass = (this as DurianSourceGenerator<TContext>).CreateCurrentPassContext(currentCompilation, original);
 
 		if (pass is null)
 		{
@@ -172,7 +172,7 @@ public abstract class CachedGenerator<TData, TContext> : DurianGeneratorWithBuil
 	/// <summary>
 	/// Performs node filtration without the <see cref="DurianGeneratorWithContext{TContext}.BeforeExecution"/> and <see cref="DurianGeneratorWithContext{TContext}.AfterExecution"/> callbacks.
 	/// </summary>
-	/// <param name="filters">Collection of <see cref="ISyntaxFilter"/>s to filtrate the nodes with.</param>
+	/// <param name="filters">Collection of <see cref="ISyntaxFilter"/>s to filter the nodes with.</param>
 	/// <param name="context">Current <see cref="CachedGeneratorPassContext{TData, TContextData}"/>.</param>
 	protected virtual void HandleFilterContainer(IReadOnlyFilterContainer<ICachedGeneratorSyntaxFilter<TData>> filters, CachedGeneratorPassContext<TData, TContext> context)
 	{
@@ -200,7 +200,7 @@ public abstract class CachedGenerator<TData, TContext> : DurianGeneratorWithBuil
 	private bool Execute_Internal(CachedGeneratorPassContext<TData, TContext> context)
 	{
 		GeneratorContextRegistry.AddContext(InstanceId, Environment.CurrentManagedThreadId, context);
-		Filtrate(context);
+		Filter(context);
 		return true;
 	}
 
@@ -225,7 +225,7 @@ public abstract class CachedGenerator<TData, TContext> : DurianGeneratorWithBuil
 		List<ICachedGeneratorSyntaxFilter<TData>> filtersWithGeneratedSymbols = new(numFilters);
 
 		//filterGroup.Unseal();
-		BeforeFiltrationOfGroup(filterGroup, context.UnderlayingContext);
+		BeforeFilteringOfGroup(filterGroup, context.UnderlayingContext);
 		//filterGroup.Seal();
 
 		foreach (ICachedGeneratorSyntaxFilter<TData> filter in filterGroup)
@@ -236,7 +236,7 @@ public abstract class CachedGenerator<TData, TContext> : DurianGeneratorWithBuil
 			}
 			else
 			{
-				foreach (IMemberData data in filter.Filtrate(context))
+				foreach (IMemberData data in filter.Filter(context))
 				{
 					GenerateFromData(data, context.UnderlayingContext);
 				}
@@ -279,7 +279,7 @@ public abstract class CachedGenerator<TData> : CachedGenerator<TData, GeneratorP
 	}
 
 	/// <inheritdoc/>
-	protected override GeneratorPassBuilderContext CreateCurrentPassContext(ICompilationData currentCompilation, in GeneratorExecutionContext context)
+	protected override GeneratorPassBuilderContext CreateCurrentPassContext(ICompilationData currentCompilation, GeneratorExecutionContext context)
 	{
 		return new GeneratorPassBuilderContext();
 	}

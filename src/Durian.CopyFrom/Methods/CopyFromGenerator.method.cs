@@ -171,7 +171,7 @@ public partial class CopyFromGenerator
 
 		context.CodeBuilder.EndAllBlocks();
 
-		AddSourceWithOriginal(method.Declaration, hintName, context);
+		AddSourceWithOriginal(hintName, method.Declaration, context);
 
 		return true;
 

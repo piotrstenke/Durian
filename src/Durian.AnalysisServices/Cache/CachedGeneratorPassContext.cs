@@ -29,7 +29,7 @@ public class CachedGeneratorPassContext<TData, TContext> : ICachedGeneratorPassC
 
 	IHintNameProvider IGeneratorPassContext.FileNameProvider => UnderlayingContext.FileNameProvider;
 
-	IDurianGenerator IGeneratorPassContext.Generator => UnderlayingContext.Generator;
+	ILoggableSourceGenerator IGeneratorPassContext.Generator => UnderlayingContext.Generator;
 	ref readonly GeneratorExecutionContext IGeneratorPassContext.OriginalContext => ref UnderlayingContext.OriginalContext;
 
 	ParseOptions IGeneratorPassContext.ParseOptions => UnderlayingContext.ParseOptions;

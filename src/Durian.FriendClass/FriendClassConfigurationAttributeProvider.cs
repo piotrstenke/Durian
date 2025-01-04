@@ -53,35 +53,37 @@ public sealed class FriendClassConfigurationAttributeProvider : SourceTextProvid
 	public override string GetText()
 	{
 		return
-@$"using System;
+$$"""
+using System;
 
-namespace {Namespace}
-{{
+namespace {{Namespace}}
+{
 	/// <summary>
-	/// Configures how friend classes of the target <see cref=""Type""/> are handled.
+	/// Configures how friend classes of the target <see cref="Type"/> are handled.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-	public sealed class {TypeName} : Attribute
-	{{
+	public sealed class {{TypeName}} : Attribute
+	{
 		/// <summary>
-		/// Determines whether sub-classes of the current type should be treated like friend types. Defaults to <see langword=""false""/>.
+		/// Determines whether sub-classes of the current type should be treated like friend types. Defaults to <see langword="false"/>.
 		/// </summary>
-		public bool {AllowChildren} {{ get; set; }}
+		public bool {{AllowChildren}} { get; set; }
 
 		/// <summary>
-		/// Determines whether to include inherited <see langword=""internal""/> members in the analysis. Defaults to <see langword=""false""/>.
+		/// Determines whether to include inherited <see langword="internal"/> members in the analysis. Defaults to <see langword="false"/>.
 		/// </summary>
-		public bool {IncludeInherited} {{ get; set; }}
+		public bool {{IncludeInherited}} { get; set; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref=""{TypeName}""/>.
+		/// Initializes a new instance of the <see cref="{{TypeName}}"/>.
 		/// </summary>
-		public {TypeName}()
-		{{
-		}}
-	}}
-}}
-";
+		public {{TypeName}}()
+		{
+		}
+	}
+}
+
+""";
 	}
 
 	/// <inheritdoc/>

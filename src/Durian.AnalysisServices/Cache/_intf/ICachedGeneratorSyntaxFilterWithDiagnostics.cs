@@ -1,4 +1,4 @@
-﻿using Durian.Analysis.Filtration;
+﻿using Durian.Analysis.Filtering;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Cache;

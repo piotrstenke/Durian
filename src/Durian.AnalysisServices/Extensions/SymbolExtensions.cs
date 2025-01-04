@@ -257,7 +257,7 @@ public static class SymbolExtensions
 
 		IEnumerable<INamedTypeSymbol> Yield()
 		{
-			const int capacity = 32;
+			const int CAPACITY = 32;
 
 			if (includeSelf && type is INamedTypeSymbol named)
 			{
@@ -271,7 +271,7 @@ public static class SymbolExtensions
 				yield break;
 			}
 
-			Stack<INamedTypeSymbol> innerTypes = new(array.Length > capacity ? array.Length : capacity);
+			Stack<INamedTypeSymbol> innerTypes = new(array.Length > CAPACITY ? array.Length : CAPACITY);
 
 			PushReverse(ref array, innerTypes);
 
@@ -1721,7 +1721,7 @@ public static class SymbolExtensions
 
 		IEnumerable<IMethodSymbol> GetNested()
 		{
-			const int capacity = 8;
+			const int CAPACITY = 8;
 
 			ImmutableArray<IMethodSymbol> array = GetFuncs(method).ToImmutableArray();
 
@@ -1730,7 +1730,7 @@ public static class SymbolExtensions
 				yield break;
 			}
 
-			Stack<IMethodSymbol> subs = new(array.Length > capacity ? array.Length : capacity);
+			Stack<IMethodSymbol> subs = new(array.Length > CAPACITY ? array.Length : CAPACITY);
 
 			PushReverse(ref array, subs);
 
@@ -2458,7 +2458,7 @@ public static class SymbolExtensions
 
 		IEnumerable<INamespaceSymbol> Yield()
 		{
-			const int capacity = 32;
+			const int CAPACITY = 32;
 
 			if (includeSelf)
 			{
@@ -2472,7 +2472,7 @@ public static class SymbolExtensions
 				yield break;
 			}
 
-			Stack<INamespaceSymbol> subs = new(array.Length > capacity ? array.Length : capacity);
+			Stack<INamespaceSymbol> subs = new(array.Length > CAPACITY ? array.Length : CAPACITY);
 
 			PushReverse(ref array, subs);
 
@@ -3693,9 +3693,9 @@ public static class SymbolExtensions
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static ReturnOrder GetNoReverseFlag(ReturnOrder currentOrder)
 	{
-		const ReturnOrder defaultFlag = (ReturnOrder)(-1);
+		const ReturnOrder DEFAULT_FLAG = (ReturnOrder)(-1);
 
-		return currentOrder == defaultFlag ? (ReturnOrder)(-2) : defaultFlag;
+		return currentOrder == DEFAULT_FLAG ? (ReturnOrder)(-2) : DEFAULT_FLAG;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

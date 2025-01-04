@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using Durian.Analysis.Data;
 using Durian.Analysis.Extensions;
-using Durian.Analysis.Filtration;
+using Durian.Analysis.Filtering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 

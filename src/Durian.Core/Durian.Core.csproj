@@ -14,47 +14,19 @@
 
   <ItemGroup>
     
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="9.0.0" />
     
     <Compile Include=".generated\ModuleRepository.cs" />
     <Compile Include=".generated\PackageRepository.cs" />
     <Compile Include=".generated\TypeRepository.cs" />
-
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-        <_Parameter1>Durian.TestServices</_Parameter1>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-        <_Parameter1>Durian.CopyFrom</_Parameter1>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-        <_Parameter1>Durian.DefaultParam</_Parameter1>
-    </AssemblyAttribute>
-      
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-        <_Parameter1>Durian.InterfaceTargets</_Parameter1>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-        <_Parameter1>Durian.AnalysisServices</_Parameter1>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-        <_Parameter1>Durian.Core.Analyzer</_Parameter1>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-        <_Parameter1>Durian.FriendClass</_Parameter1>
-    </AssemblyAttribute>
-    
+	
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Debug'">
 
-    <PackageReference Include="Roslynator.Analyzers" Version="4.1.1" PrivateAssets="all" />
-    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.1.1" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" PrivateAssets="all" />
+    <PackageReference Include="Roslynator.Analyzers" Version="4.12.10" PrivateAssets="all" />
+    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.10" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
 
   </ItemGroup>
 

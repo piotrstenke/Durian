@@ -41,32 +41,34 @@ public sealed class InterfaceTargetsAttributeProvider : SourceTextProvider
 	public override string GetText()
 	{
 		return
-$@"using System;
+$$"""
+using System;
 
-namespace {Namespace}
-{{
+namespace {{Namespace}}
+{
 	/// <summary>
-	/// Specifies that an <see langword=""interface""/> can be implemented only by members of certain kind.
+	/// Specifies that an <see langword="interface"/> can be implemented only by members of certain kind.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
-	public sealed class {TypeName} : Attribute
-	{{
+	public sealed class {{TypeName}} : Attribute
+	{
 		/// <summary>
 		/// Specifies member kinds this interface is valid on.
 		/// </summary>
-		public {InterfaceTargetsProvider.TypeName} {Targets} {{ get; }}
+		public {{InterfaceTargetsProvider.TypeName}} {{Targets}} { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref=""{TypeName}""/> class.
+		/// Initializes a new instance of the <see cref="{{TypeName}}"/> class.
 		/// </summary>
-		/// <param name=""targets"">Specifies member kinds this interface is valid on.</param>
-		public {TypeName}({InterfaceTargetsProvider.TypeName} targets)
-		{{
-			{Targets} = targets;
-		}}
-	}}
-}}
-";
+		/// <param name="targets">Specifies member kinds this interface is valid on.</param>
+		public {{TypeName}}({{InterfaceTargetsProvider.TypeName}} targets)
+		{
+			{{Targets}} = targets;
+		}
+	}
+}
+
+""";
 	}
 
 	/// <inheritdoc/>
