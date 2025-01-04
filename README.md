@@ -28,10 +28,9 @@
 	1. [DefaultParam](#defaultparam)
 	2. [InterfaceTargets](#interfacetargets)
 	3. [FriendClass](#friendclass)
+	4. [CopyFrom](#copyfrom)
 3. [In Progress](#in-progress)
-   1. [CopyFrom](#copyfrom)
 4. [Experimental](#experimental) 
-   1. [ConstExpr](#constexpr)
 
 ## Current State
 
