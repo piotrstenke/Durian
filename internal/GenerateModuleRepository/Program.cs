@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
@@ -133,7 +134,7 @@ internal static class Program
 				continue;
 			}
 
-			foreach (Match match in matches)
+			foreach (Match match in matches.Cast<Match>())
 			{
 				DiagnosticData data = GetDiagnosticData(match, module.Module.Name!, file);
 
@@ -518,7 +519,7 @@ $@"				//
 		builder.Append(
 $@"							new DiagnosticData(
 								title: ""{diag.Title}"",
-								id: {diag.Id!.Substring(5, 2)},
+								id: {diag.Id!.AsSpan(5, 2)},
 								docsPath: ""{module.Documentation}/{diag.Id}.md"",
 								fatal: {diag.Fatal.ToString().ToLower()},
 								hasLocation: {diag.HasLocation.ToString().ToLower()}");

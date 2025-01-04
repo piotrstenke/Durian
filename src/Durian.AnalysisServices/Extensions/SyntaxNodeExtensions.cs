@@ -2721,7 +2721,7 @@ namespace Durian.Analysis.Extensions
 		/// <param name="node"><see cref="TypeSyntax"/> to determine whether represents the <see langword="dynamic"/> keyword.</param>
 		public static bool IsDynamic(this TypeSyntax node)
 		{
-			return (node as IdentifierNameSyntax)?.Identifier.ValueText == "dynamic";
+			return node is IdentifierNameSyntax { Identifier.ValueText: "dynamic" };
 		}
 
 		/// <summary>

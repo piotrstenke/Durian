@@ -2082,10 +2082,7 @@ namespace Durian.Analysis.Extensions
 				return symbol.GetAttributes().Any(attr => attr.AttributeClass is
 				{
 					MetadataName: nameof(ObsoleteAttribute),
-					ContainingNamespace:
-					{
-						Name: nameof(System)
-					}
+					ContainingNamespace.Name: nameof(System)
 				});
 			}
 		}
