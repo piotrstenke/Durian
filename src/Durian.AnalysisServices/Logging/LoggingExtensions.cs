@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Analysis.Logging
+﻿namespace Durian.Analysis.Logging
 {
 	/// <summary>
 	/// Contains extension methods for better logging experience.

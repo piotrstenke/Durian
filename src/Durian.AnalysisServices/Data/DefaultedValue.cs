@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Analysis.Data
+﻿namespace Durian.Analysis.Data
 {
 	/// <summary>
 	/// Provides mechanism to determine whether a value of type <typeparamref name="T"/> represents an actual desired value or <see langword="default"/> specified by the compiler.

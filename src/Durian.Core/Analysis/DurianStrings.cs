@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Analysis
+﻿namespace Durian.Analysis
 {
 	/// <summary>
 	/// Contains some of the most commonly-used <see cref="string"/>s.

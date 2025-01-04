@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Analysis.FriendClass
+﻿namespace Durian.Analysis.FriendClass
 {
 	/// <summary>
 	/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.FriendClassAttribute</c> class.

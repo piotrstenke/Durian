@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Analysis
+﻿namespace Durian.Analysis
 {
 	/// <summary>
 	/// Defines all types that have a built-in alias.

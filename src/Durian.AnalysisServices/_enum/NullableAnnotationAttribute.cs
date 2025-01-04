@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Analysis
+﻿namespace Durian.Analysis
 {
 	/// <summary>
 	/// Defines all attributes that are considered to be part of the nullable reference types features.

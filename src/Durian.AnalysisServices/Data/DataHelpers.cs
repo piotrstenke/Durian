@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
 using Durian.Analysis.Data.FromSource;
 using Durian.Analysis.Extensions;

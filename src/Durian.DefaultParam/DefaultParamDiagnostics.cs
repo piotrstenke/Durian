@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-using Durian.Generator;
+﻿using Durian.Generator;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 

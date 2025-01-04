@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Analysis.SymbolContainers
+﻿namespace Durian.Analysis.SymbolContainers
 {
 	/// <summary>
 	/// Specifies order at which members should be returned.

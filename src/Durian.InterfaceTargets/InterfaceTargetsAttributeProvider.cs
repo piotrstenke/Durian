@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Analysis.InterfaceTargets
+﻿namespace Durian.Analysis.InterfaceTargets
 {
 	/// <summary>
 	/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.InterfaceTargetsAttribute</c> class.

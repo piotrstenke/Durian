@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Analysis.CodeGeneration
+﻿namespace Durian.Analysis.CodeGeneration
 {
 	/// <summary>
 	/// Type of namespace declaration.

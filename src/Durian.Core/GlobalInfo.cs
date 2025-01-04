@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Info
+﻿namespace Durian.Info
 {
 	/// <summary>
 	/// Contains information about the Durian project.

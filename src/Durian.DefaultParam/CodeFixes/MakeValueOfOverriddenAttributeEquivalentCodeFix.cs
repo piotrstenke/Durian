@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Durian.Analysis.CodeFixes;
 using Durian.Analysis.Extensions;

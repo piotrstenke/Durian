@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-using Durian.TestServices;
+﻿using Durian.TestServices;
 using Xunit;
 
 namespace Durian.Analysis.DefaultParam.Tests.Types

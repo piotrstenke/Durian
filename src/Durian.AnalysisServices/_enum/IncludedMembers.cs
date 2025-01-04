@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-using Durian.Analysis.SymbolContainers;
+﻿using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis

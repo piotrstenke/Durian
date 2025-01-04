@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-using Durian.Analysis.Logging;
+﻿using Durian.Analysis.Logging;
 using Durian.TestServices;
 
 namespace Durian.Analysis.DefaultParam.Tests

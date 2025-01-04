@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 [JsonObject]
 internal sealed class PackageData

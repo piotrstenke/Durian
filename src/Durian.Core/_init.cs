@@ -1,6 +1,3 @@
-// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
 //
 // Original source: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/NullableAttributes.cs
 //

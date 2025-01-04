@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Analysis.DefaultParam
+﻿namespace Durian.Analysis.DefaultParam
 {
 	/// <summary>
 	/// Determines how a <c>DefaultParam</c> type is generated.

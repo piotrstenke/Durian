@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Analysis
+﻿namespace Durian.Analysis
 {
 	/// <summary>
 	/// <see cref="ISealable"/> that can be sealed only once and cannot be unsealed.

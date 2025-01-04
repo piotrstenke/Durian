@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-namespace Durian.Samples.InterfaceTargets
+﻿namespace Durian.Samples.InterfaceTargets
 {
 	// Success!
 	public class Class : IInterface

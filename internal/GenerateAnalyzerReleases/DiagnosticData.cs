@@ -1,7 +1,4 @@
-﻿// Copyright (c) Piotr Stenke. All rights reserved.
-// Licensed under the MIT license.
-
-internal readonly struct DiagnosticData
+﻿internal readonly struct DiagnosticData
 {
 	public readonly string Category { get; }
 
