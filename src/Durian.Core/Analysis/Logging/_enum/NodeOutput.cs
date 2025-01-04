@@ -1,28 +1,27 @@
-﻿namespace Durian.Analysis.Logging
+﻿namespace Durian.Analysis.Logging;
+
+/// <summary>
+/// Determines what to output when a node is being logged.
+/// </summary>
+public enum NodeOutput
 {
 	/// <summary>
-	/// Determines what to output when a node is being logged.
+	/// Uses the default value specified in configuration.
 	/// </summary>
-	public enum NodeOutput
-	{
-		/// <summary>
-		/// Uses the default value specified in configuration.
-		/// </summary>
-		Default,
+	Default,
 
-		/// <summary>
-		/// Outputs only the target node.
-		/// </summary>
-		Node,
+	/// <summary>
+	/// Outputs only the target node.
+	/// </summary>
+	Node,
 
-		/// <summary>
-		/// Outputs containing node of the node.
-		/// </summary>
-		Containing,
+	/// <summary>
+	/// Outputs containing node of the node.
+	/// </summary>
+	Containing,
 
-		/// <summary>
-		/// Outputs whole syntax tree associated with the node.
-		/// </summary>
-		SyntaxTree
-	}
+	/// <summary>
+	/// Outputs whole syntax tree associated with the node.
+	/// </summary>
+	SyntaxTree
 }

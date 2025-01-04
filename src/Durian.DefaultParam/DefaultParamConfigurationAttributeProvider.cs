@@ -1,61 +1,61 @@
-﻿namespace Durian.Analysis.DefaultParam
+﻿namespace Durian.Analysis.DefaultParam;
+
+/// <summary>
+/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.DefaultParamConfigurationAttribute</c> class.
+/// </summary>
+public sealed class DefaultParamConfigurationAttributeProvider : SourceTextProvider
 {
 	/// <summary>
-	/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.DefaultParamConfigurationAttribute</c> class.
+	/// Name of the 'ApplyNewModifierWhenPossible' property.
 	/// </summary>
-	public sealed class DefaultParamConfigurationAttributeProvider : SourceTextProvider
+	public const string ApplyNewModifierWhenPossible = "ApplyNewModifierWhenPossible";
+
+	/// <summary>
+	/// Full name of the provided type.
+	/// </summary>
+	public const string FullName = Namespace + "." + TypeName;
+
+	/// <summary>
+	/// Name of the 'MethodConvention' property.
+	/// </summary>
+	public const string MethodConvention = "MethodConvention";
+
+	/// <summary>
+	/// Namespace the provided type is located in.
+	/// </summary>
+	public const string Namespace = DurianStrings.ConfigurationNamespace;
+
+	/// <summary>
+	/// Name of the 'MethodConvention' property.
+	/// </summary>
+	public const string TargetNamespace = "TargetNamespace";
+
+	/// <summary>
+	/// Name of the 'TypeConvention' property.
+	/// </summary>
+	public const string TypeConvention = "TypeConvention";
+
+	/// <summary>
+	/// Name of the provided type.
+	/// </summary>
+	public const string TypeName = "DefaultParamConfigurationAttribute";
+
+	/// <inheritdoc/>
+	public override string GetFullName()
 	{
-		/// <summary>
-		/// Name of the 'ApplyNewModifierWhenPossible' property.
-		/// </summary>
-		public const string ApplyNewModifierWhenPossible = "ApplyNewModifierWhenPossible";
+		return FullName;
+	}
 
-		/// <summary>
-		/// Full name of the provided type.
-		/// </summary>
-		public const string FullName = Namespace + "." + TypeName;
+	/// <inheritdoc/>
+	public override string GetNamespace()
+	{
+		return Namespace;
+	}
 
-		/// <summary>
-		/// Name of the 'MethodConvention' property.
-		/// </summary>
-		public const string MethodConvention = "MethodConvention";
-
-		/// <summary>
-		/// Namespace the provided type is located in.
-		/// </summary>
-		public const string Namespace = DurianStrings.ConfigurationNamespace;
-
-		/// <summary>
-		/// Name of the 'MethodConvention' property.
-		/// </summary>
-		public const string TargetNamespace = "TargetNamespace";
-
-		/// <summary>
-		/// Name of the 'TypeConvention' property.
-		/// </summary>
-		public const string TypeConvention = "TypeConvention";
-
-		/// <summary>
-		/// Name of the provided type.
-		/// </summary>
-		public const string TypeName = "DefaultParamConfigurationAttribute";
-
-		/// <inheritdoc/>
-		public override string GetFullName()
-		{
-			return FullName;
-		}
-
-		/// <inheritdoc/>
-		public override string GetNamespace()
-		{
-			return Namespace;
-		}
-
-		/// <inheritdoc/>
-		public override string GetText()
-		{
-			return
+	/// <inheritdoc/>
+	public override string GetText()
+	{
+		return
 $@"using System;
 
 #nullable enable
@@ -98,12 +98,11 @@ namespace {Namespace}
 	}}
 }}
 ";
-		}
+	}
 
-		/// <inheritdoc/>
-		public override string GetTypeName()
-		{
-			return TypeName;
-		}
+	/// <inheritdoc/>
+	public override string GetTypeName()
+	{
+		return TypeName;
 	}
 }

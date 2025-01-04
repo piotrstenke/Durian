@@ -1,45 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Durian.Info
+namespace Durian.Info;
+
+/// <summary>
+/// Compares the <see cref="ModuleIdentity.Module"/> enum value of two <see cref="ModuleIdentity"/> instances.
+/// </summary>
+public sealed class ModuleEnumEqualityComparer : IEqualityComparer<ModuleIdentity>
 {
 	/// <summary>
-	/// Compares the <see cref="ModuleIdentity.Module"/> enum value of two <see cref="ModuleIdentity"/> instances.
+	/// Initializes a new instance of the <see cref="ModuleEnumEqualityComparer"/> class.
 	/// </summary>
-	public sealed class ModuleEnumEqualityComparer : IEqualityComparer<ModuleIdentity>
+	public ModuleEnumEqualityComparer()
 	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ModuleEnumEqualityComparer"/> class.
-		/// </summary>
-		public ModuleEnumEqualityComparer()
+	}
+
+	/// <inheritdoc/>
+	public bool Equals(ModuleIdentity? x, ModuleIdentity? y)
+	{
+		if (x is null)
 		{
+			return y is null;
 		}
 
-		/// <inheritdoc/>
-		public bool Equals(ModuleIdentity? x, ModuleIdentity? y)
+		if (y is null)
 		{
-			if (x is null)
-			{
-				return y is null;
-			}
-
-			if (y is null)
-			{
-				return false;
-			}
-
-			return x.Module == y.Module;
+			return false;
 		}
 
-		/// <inheritdoc/>
-		public int GetHashCode(ModuleIdentity obj)
-		{
-			if (obj is null)
-			{
-				throw new ArgumentNullException(nameof(obj));
-			}
+		return x.Module == y.Module;
+	}
 
-			return obj.Module.GetHashCode();
+	/// <inheritdoc/>
+	public int GetHashCode(ModuleIdentity obj)
+	{
+		if (obj is null)
+		{
+			throw new ArgumentNullException(nameof(obj));
 		}
+
+		return obj.Module.GetHashCode();
 	}
 }

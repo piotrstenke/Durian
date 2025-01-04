@@ -3,75 +3,74 @@ using Durian.Analysis.Logging;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Analysis.FriendClass
+namespace Durian.Analysis.FriendClass;
+
+/// <summary>
+/// Generates syntax tree of types required by the <c>FriendClass</c> module.
+/// </summary>
+[Generator(LanguageNames.CSharp)]
+[LoggingConfiguration(
+	SupportedLogs = GeneratorLogs.All,
+	LogDirectory = "FriendClass",
+	SupportsDiagnostics = true,
+	RelativeToGlobal = true,
+	EnableExceptions = true)]
+public sealed class FriendClassGenerator : DurianGeneratorBase
 {
 	/// <summary>
-	/// Generates syntax tree of types required by the <c>FriendClass</c> module.
+	/// Name of this source generator.
 	/// </summary>
-	[Generator(LanguageNames.CSharp)]
-	[LoggingConfiguration(
-		SupportedLogs = GeneratorLogs.All,
-		LogDirectory = "FriendClass",
-		SupportsDiagnostics = true,
-		RelativeToGlobal = true,
-		EnableExceptions = true)]
-	public sealed class FriendClassGenerator : DurianGeneratorBase
+	public override string GeneratorName => "FriendClass";
+
+	/// <summary>
+	/// Version of this source generator.
+	/// </summary>
+	public override string GeneratorVersion => "2.0.0";
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="FriendClassGenerator"/> class.
+	/// </summary>
+	public FriendClassGenerator()
 	{
-		/// <summary>
-		/// Name of this source generator.
-		/// </summary>
-		public override string GeneratorName => "FriendClass";
+	}
 
-		/// <summary>
-		/// Version of this source generator.
-		/// </summary>
-		public override string GeneratorVersion => "2.0.0";
+	/// <summary>
+	/// Initializes a new instance of the <see cref="FriendClassGenerator"/> class.
+	/// </summary>
+	/// <param name="context">Configures how this <see cref="FriendClassGenerator"/> is initialized.</param>
+	public FriendClassGenerator(in GeneratorLogCreationContext context) : base(in context)
+	{
+	}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FriendClassGenerator"/> class.
-		/// </summary>
-		public FriendClassGenerator()
+	/// <summary>
+	/// Initializes a new instance of the <see cref="FriendClassGenerator"/> class.
+	/// </summary>
+	/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
+	public FriendClassGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+	{
+	}
+
+	/// <summary>
+	/// Returns a collection of <see cref="ISourceTextProvider"/> used by this generator to create initial sources.
+	/// </summary>
+	public static IEnumerable<ISourceTextProvider> GetSourceProviders()
+	{
+		return new ISourceTextProvider[]
 		{
-		}
+			new FriendClassAttributeProvider(),
+			new FriendClassConfigurationAttributeProvider()
+		};
+	}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FriendClassGenerator"/> class.
-		/// </summary>
-		/// <param name="context">Configures how this <see cref="FriendClassGenerator"/> is initialized.</param>
-		public FriendClassGenerator(in GeneratorLogCreationContext context) : base(in context)
-		{
-		}
+	/// <inheritdoc/>
+	public override IEnumerable<ISourceTextProvider>? GetInitialSources()
+	{
+		return GetSourceProviders();
+	}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FriendClassGenerator"/> class.
-		/// </summary>
-		/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
-		public FriendClassGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
-		{
-		}
-
-		/// <summary>
-		/// Returns a collection of <see cref="ISourceTextProvider"/> used by this generator to create initial sources.
-		/// </summary>
-		public static IEnumerable<ISourceTextProvider> GetSourceProviders()
-		{
-			return new ISourceTextProvider[]
-			{
-				new FriendClassAttributeProvider(),
-				new FriendClassConfigurationAttributeProvider()
-			};
-		}
-
-		/// <inheritdoc/>
-		public override IEnumerable<ISourceTextProvider>? GetInitialSources()
-		{
-			return GetSourceProviders();
-		}
-
-		/// <inheritdoc/>
-		public override DurianModule[] GetRequiredModules()
-		{
-			return new DurianModule[] { DurianModule.FriendClass };
-		}
+	/// <inheritdoc/>
+	public override DurianModule[] GetRequiredModules()
+	{
+		return new DurianModule[] { DurianModule.FriendClass };
 	}
 }

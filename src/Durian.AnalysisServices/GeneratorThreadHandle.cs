@@ -1,112 +1,111 @@
 ﻿using System;
 
-namespace Durian.Analysis
+namespace Durian.Analysis;
+
+/// <summary>
+/// Contains data that helps identify a generator execution pass in multi-threaded environment.
+/// </summary>
+public readonly struct GeneratorThreadHandle : IEquatable<GeneratorThreadHandle>
 {
 	/// <summary>
-	/// Contains data that helps identify a generator execution pass in multi-threaded environment.
+	/// Id of target source generator.
 	/// </summary>
-	public readonly struct GeneratorThreadHandle : IEquatable<GeneratorThreadHandle>
+	public Guid GeneratorId { get; }
+
+	/// <summary>
+	/// Determines whether the current <see cref="ThreadId"/> represents id of the main thread.
+	/// </summary>
+	public bool IsMainThread => ThreadId == AnalysisUtilities.MainThreadId;
+
+	/// <summary>
+	/// Id of parent thread.
+	/// </summary>
+	public int SourceThreadId { get; }
+
+	/// <summary>
+	/// Id of target thread.
+	/// </summary>
+	public int ThreadId { get; }
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="GeneratorThreadHandle"/> structure.
+	/// </summary>
+	/// <param name="generatorId">Id of target source generator.</param>
+	/// <param name="threadId">Id of target thread.</param>
+	/// <param name="sourceThreadId">Id of parent thread.</param>
+	public GeneratorThreadHandle(Guid generatorId, int threadId, int sourceThreadId)
 	{
-		/// <summary>
-		/// Id of target source generator.
-		/// </summary>
-		public Guid GeneratorId { get; }
+		GeneratorId = generatorId;
+		ThreadId = threadId;
+		SourceThreadId = sourceThreadId;
+	}
 
-		/// <summary>
-		/// Determines whether the current <see cref="ThreadId"/> represents id of the main thread.
-		/// </summary>
-		public bool IsMainThread => ThreadId == AnalysisUtilities.MainThreadId;
+	/// <inheritdoc/>
+	public static bool operator !=(in GeneratorThreadHandle left, in GeneratorThreadHandle right)
+	{
+		return !(left == right);
+	}
 
-		/// <summary>
-		/// Id of parent thread.
-		/// </summary>
-		public int SourceThreadId { get; }
+	/// <inheritdoc/>
+	public static bool operator ==(in GeneratorThreadHandle left, in GeneratorThreadHandle right)
+	{
+		return left.Equals(right);
+	}
 
-		/// <summary>
-		/// Id of target thread.
-		/// </summary>
-		public int ThreadId { get; }
+	/// <inheritdoc cref="Deconstruct(out Guid, out int, out int, out bool)"/>
+	public void Deconstruct(out Guid generatorId, out int threadId, out int sourceThreadId)
+	{
+		generatorId = GeneratorId;
+		threadId = ThreadId;
+		sourceThreadId = SourceThreadId;
+	}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GeneratorThreadHandle"/> structure.
-		/// </summary>
-		/// <param name="generatorId">Id of target source generator.</param>
-		/// <param name="threadId">Id of target thread.</param>
-		/// <param name="sourceThreadId">Id of parent thread.</param>
-		public GeneratorThreadHandle(Guid generatorId, int threadId, int sourceThreadId)
-		{
-			GeneratorId = generatorId;
-			ThreadId = threadId;
-			SourceThreadId = sourceThreadId;
-		}
+	/// <summary>
+	/// Deconstructs the current object.
+	/// </summary>
+	/// <param name="generatorId">Id of target source generator.</param>
+	/// <param name="threadId">Id of target thread.</param>
+	/// <param name="sourceThreadId">Id of parent thread.</param>
+	/// <param name="isMainThread">Determines whether the current <see cref="ThreadId"/> represents id of the main thread.</param>
+	public void Deconstruct(out Guid generatorId, out int threadId, out int sourceThreadId, out bool isMainThread)
+	{
+		Deconstruct(out generatorId, out threadId, out sourceThreadId);
+		isMainThread = IsMainThread;
+	}
 
-		/// <inheritdoc/>
-		public static bool operator !=(in GeneratorThreadHandle left, in GeneratorThreadHandle right)
-		{
-			return !(left == right);
-		}
+	/// <inheritdoc/>
+	public override bool Equals(object obj)
+	{
+		return obj is GeneratorThreadHandle other && Equals(other);
+	}
 
-		/// <inheritdoc/>
-		public static bool operator ==(in GeneratorThreadHandle left, in GeneratorThreadHandle right)
-		{
-			return left.Equals(right);
-		}
+	/// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
+	public bool Equals(in GeneratorThreadHandle other)
+	{
+		return
+			other.GeneratorId == GeneratorId &&
+			other.ThreadId == ThreadId &&
+			other.SourceThreadId == SourceThreadId;
+	}
 
-		/// <inheritdoc cref="Deconstruct(out Guid, out int, out int, out bool)"/>
-		public void Deconstruct(out Guid generatorId, out int threadId, out int sourceThreadId)
-		{
-			generatorId = GeneratorId;
-			threadId = ThreadId;
-			sourceThreadId = SourceThreadId;
-		}
+	/// <inheritdoc/>
+	public override int GetHashCode()
+	{
+		int hashCode = 288908264;
+		hashCode = (hashCode * -1521134295) + GeneratorId.GetHashCode();
+		hashCode = (hashCode * -1521134295) + ThreadId.GetHashCode();
+		hashCode = (hashCode * -1521134295) + SourceThreadId.GetHashCode();
+		return hashCode;
+	}
 
-		/// <summary>
-		/// Deconstructs the current object.
-		/// </summary>
-		/// <param name="generatorId">Id of target source generator.</param>
-		/// <param name="threadId">Id of target thread.</param>
-		/// <param name="sourceThreadId">Id of parent thread.</param>
-		/// <param name="isMainThread">Determines whether the current <see cref="ThreadId"/> represents id of the main thread.</param>
-		public void Deconstruct(out Guid generatorId, out int threadId, out int sourceThreadId, out bool isMainThread)
-		{
-			Deconstruct(out generatorId, out threadId, out sourceThreadId);
-			isMainThread = IsMainThread;
-		}
+	/// <inheritdoc/>
+	public override string ToString()
+	{
+		return $"{GeneratorId}, {ThreadId}-{SourceThreadId}";
+	}
 
-		/// <inheritdoc/>
-		public override bool Equals(object obj)
-		{
-			return obj is GeneratorThreadHandle other && Equals(other);
-		}
-
-		/// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
-		public bool Equals(in GeneratorThreadHandle other)
-		{
-			return
-				other.GeneratorId == GeneratorId &&
-				other.ThreadId == ThreadId &&
-				other.SourceThreadId == SourceThreadId;
-		}
-
-		/// <inheritdoc/>
-		public override int GetHashCode()
-		{
-			int hashCode = 288908264;
-			hashCode = (hashCode * -1521134295) + GeneratorId.GetHashCode();
-			hashCode = (hashCode * -1521134295) + ThreadId.GetHashCode();
-			hashCode = (hashCode * -1521134295) + SourceThreadId.GetHashCode();
-			return hashCode;
-		}
-
-		/// <inheritdoc/>
-		public override string ToString()
-		{
-			return $"{GeneratorId}, {ThreadId}-{SourceThreadId}";
-		}
-
-		bool IEquatable<GeneratorThreadHandle>.Equals(GeneratorThreadHandle other)
-		{
-			return Equals(in other);
-		}
+	bool IEquatable<GeneratorThreadHandle>.Equals(GeneratorThreadHandle other)
+	{
+		return Equals(in other);
 	}
 }

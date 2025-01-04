@@ -1,14 +1,14 @@
 ﻿using Durian.TestServices;
 using Xunit;
 
-namespace Durian.Analysis.DefaultParam.Tests.Methods
+namespace Durian.Analysis.DefaultParam.Tests.Methods;
+
+public sealed class MethodInheritanceTests : DefaultParamGeneratorTest
 {
-	public sealed class MethodInheritanceTests : DefaultParamGeneratorTest
+	[Fact]
+	public void Error_When_AddedAttributeOnNonDefaultParamParameter()
 	{
-		[Fact]
-		public void Error_When_AddedAttributeOnNonDefaultParamParameter()
-		{
-			string input =
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -26,13 +26,13 @@ partial class Child : Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverriddenParameters.Id));
-		}
+		Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverriddenParameters.Id));
+	}
 
-		[Fact]
-		public void Error_When_HasAttributeWithDifferentValueThanBase()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasAttributeWithDifferentValueThanBase()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -51,13 +51,13 @@ partial class Child : Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase.Id));
-		}
+		Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase.Id));
+	}
 
-		[Fact]
-		public void Error_When_InheritsGeneratedGenericMethod()
-		{
-			string input =
+	[Fact]
+	public void Error_When_InheritsGeneratedGenericMethod()
+	{
+		string input =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Method<T, U>(T)")}
@@ -74,13 +74,13 @@ partial class Child : Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods.Id));
+	}
 
-		[Fact]
-		public void Error_When_InheritsGeneratedNonGenericMethod()
-		{
-			string input =
+	[Fact]
+	public void Error_When_InheritsGeneratedNonGenericMethod()
+	{
+		string input =
 @$"partial class Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Method<T, U>(T)")}
@@ -97,13 +97,13 @@ partial class Child : Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods.Id));
+	}
 
-		[Fact]
-		public void Generates_When_IsAbstractOverride()
-		{
-			string input =
+	[Fact]
+	public void Generates_When_IsAbstractOverride()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -120,20 +120,20 @@ partial abstract class Test : Parent
 }}
 ";
 
-			string expected =
+		string expected =
 $@"internal abstract partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	public abstract override void Method();
 }}";
 
-			Assert.True(RunGenerator(input, 1).Compare(expected));
-		}
+		Assert.True(RunGenerator(input, 1).Compare(expected));
+	}
 
-		[Fact]
-		public void GeneratesOverridesForVirtualDefaultParamMethod_When_HasBaseAttribute()
-		{
-			string input =
+	[Fact]
+	public void GeneratesOverridesForVirtualDefaultParamMethod_When_HasBaseAttribute()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -151,7 +151,7 @@ partial class Child : Parent
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
@@ -167,13 +167,13 @@ partial class Child : Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input, 1).Compare(expected));
-		}
+		Assert.True(RunGenerator(input, 1).Compare(expected));
+	}
 
-		[Fact]
-		public void GeneratesOverridesForVirtualDefaultParamMethod_When_HasNoBaseAttribute()
-		{
-			string input =
+	[Fact]
+	public void GeneratesOverridesForVirtualDefaultParamMethod_When_HasNoBaseAttribute()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -191,7 +191,7 @@ partial class Child : Parent
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
@@ -207,13 +207,13 @@ partial class Child : Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input, 1).Compare(expected));
-		}
+		Assert.True(RunGenerator(input, 1).Compare(expected));
+	}
 
-		[Fact]
-		public void GeneratesWithNew_When_ParentClassHasTheSameMethod_AndThisMethodHasNewModifier()
-		{
-			string input =
+	[Fact]
+	public void GeneratesWithNew_When_ParentClassHasTheSameMethod_AndThisMethodHasNewModifier()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -230,7 +230,7 @@ partial class Child : Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 @$"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
@@ -241,13 +241,13 @@ partial class Child : Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input, 1).Compare(expected));
-		}
+		Assert.True(RunGenerator(input, 1).Compare(expected));
+	}
 
-		[Fact]
-		public void RemovesNewModifier_WhenIsNotNecessary()
-		{
-			string input =
+	[Fact]
+	public void RemovesNewModifier_WhenIsNotNecessary()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 class Parent
@@ -264,7 +264,7 @@ partial class Test : Parent
 	}}
 }}";
 
-			string expected =
+		string expected =
 $@"internal partial class Test : Parent
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
@@ -274,13 +274,13 @@ $@"internal partial class Test : Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Warning_When_HasNoAttributeOfBaseMethod()
-		{
-			string input =
+	[Fact]
+	public void Warning_When_HasNoAttributeOfBaseMethod()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -297,7 +297,7 @@ partial class Child : Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
@@ -307,16 +307,16 @@ $@"internal partial class Child : Parent
 	}}
 }}
 ";
-			SingleGeneratorTestResult result = RunGenerator(input, 1);
+		SingleGeneratorTestResult result = RunGenerator(input, 1);
 
-			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity.Id));
-			Assert.True(result.Compare(expected));
-		}
+		Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity.Id));
+		Assert.True(result.Compare(expected));
+	}
 
-		[Fact]
-		public void Warning_When_HasNoAttributeOfBaseMethod_And_BaseMethodAlsoDoesNot()
-		{
-			string input =
+	[Fact]
+	public void Warning_When_HasNoAttributeOfBaseMethod_And_BaseMethodAlsoDoesNot()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Inner
@@ -341,7 +341,7 @@ partial class Child : Parent
 }}
 ";
 
-			string expected =
+		string expected =
 $@"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T>(T)")}
@@ -352,16 +352,16 @@ $@"internal partial class Child : Parent
 }}
 ";
 
-			SingleGeneratorTestResult result = RunGenerator(input, 2);
+		SingleGeneratorTestResult result = RunGenerator(input, 2);
 
-			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity.Id));
-			Assert.True(result.Compare(expected));
-		}
+		Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity.Id));
+		Assert.True(result.Compare(expected));
+	}
 
-		[Fact]
-		public void Warning_When_HasNoAttributeOfBaseMethod_And_HasMultipleDefaultParams_And_LastIsMissing()
-		{
-			string input =
+	[Fact]
+	public void Warning_When_HasNoAttributeOfBaseMethod_And_HasMultipleDefaultParams_And_LastIsMissing()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -379,7 +379,7 @@ partial class Child : Parent
 }}
 ";
 
-			string expected =
+		string expected =
 $@"internal partial class Child : Parent
 {{
 	{GetCodeGenerationAttributes("Child.Method<T, U>(T)")}
@@ -396,10 +396,9 @@ $@"internal partial class Child : Parent
 }}
 ";
 
-			SingleGeneratorTestResult result = RunGenerator(input, 1);
+		SingleGeneratorTestResult result = RunGenerator(input, 1);
 
-			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity.Id));
-			Assert.True(result.Compare(expected));
-		}
+		Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity.Id));
+		Assert.True(result.Compare(expected));
 	}
 }

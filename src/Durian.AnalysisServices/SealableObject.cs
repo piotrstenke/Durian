@@ -1,73 +1,72 @@
-﻿namespace Durian.Analysis
+﻿namespace Durian.Analysis;
+
+/// <inheritdoc cref="ISealable"/>
+public abstract class SealableObject : ISealable
 {
-	/// <inheritdoc cref="ISealable"/>
-	public abstract class SealableObject : ISealable
+	/// <inheritdoc/>
+	public bool IsSealed { get; private set; }
+
+	/// <inheritdoc/>
+	public virtual bool CanBeSealed => !IsSealed;
+
+	/// <inheritdoc/>
+	public virtual bool CanBeUnsealed => IsSealed;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="SealableObject"/> class.
+	/// </summary>
+	protected SealableObject()
 	{
-		/// <inheritdoc/>
-		public bool IsSealed { get; private set; }
+	}
 
-		/// <inheritdoc/>
-		public virtual bool CanBeSealed => !IsSealed;
-
-		/// <inheritdoc/>
-		public virtual bool CanBeUnsealed => IsSealed;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SealableObject"/> class.
-		/// </summary>
-		protected SealableObject()
+	/// <inheritdoc/>
+	public bool Seal()
+	{
+		if (IsSealed)
 		{
+			return false;
 		}
 
-		/// <inheritdoc/>
-		public bool Seal()
+		if (!CanBeSealed)
 		{
-			if (IsSealed)
-			{
-				return false;
-			}
-
-			if (!CanBeSealed)
-			{
-				throw new SealedObjectException(this, "Current state of the object does not allow it to be sealed");
-			}
-
-			IsSealed = SealCore();
-			return IsSealed;
+			throw new SealedObjectException(this, "Current state of the object does not allow it to be sealed");
 		}
 
-		/// <inheritdoc/>
-		public bool Unseal()
+		IsSealed = SealCore();
+		return IsSealed;
+	}
+
+	/// <inheritdoc/>
+	public bool Unseal()
+	{
+		if (!IsSealed)
 		{
-			if (!IsSealed)
-			{
-				return false;
-			}
-
-			if (!CanBeUnsealed)
-			{
-				throw new SealedObjectException(this, "Current state of the object does not allow it to be unsealed");
-			}
-
-			bool result = UnsealCore();
-			IsSealed = !result;
-			return result;
+			return false;
 		}
 
-		/// <summary>
-		/// Actually seals the object.
-		/// </summary>
-		protected virtual bool SealCore()
+		if (!CanBeUnsealed)
 		{
-			return true;
+			throw new SealedObjectException(this, "Current state of the object does not allow it to be unsealed");
 		}
 
-		/// <summary>
-		/// Actually unseals the object.
-		/// </summary>
-		protected virtual bool UnsealCore()
-		{
-			return true;
-		}
+		bool result = UnsealCore();
+		IsSealed = !result;
+		return result;
+	}
+
+	/// <summary>
+	/// Actually seals the object.
+	/// </summary>
+	protected virtual bool SealCore()
+	{
+		return true;
+	}
+
+	/// <summary>
+	/// Actually unseals the object.
+	/// </summary>
+	protected virtual bool UnsealCore()
+	{
+		return true;
 	}
 }

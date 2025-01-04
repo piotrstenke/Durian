@@ -6,112 +6,111 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Analysis.DefaultParam.CodeFixes
+namespace Durian.Analysis.DefaultParam.CodeFixes;
+
+/// <summary>
+/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor"/> diagnostic.
+/// </summary>
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ApplyCopyConventionCodeFix))]
+public sealed class ApplyCopyConventionCodeFix : DurianCodeFixBase
 {
+	/// <inheritdoc/>
+	public override string Id => Title + " [DefaultParam]";
+
+	/// <inheritdoc/>
+	public override string Title => "Apply DPTypeConvention.Copy";
+
 	/// <summary>
-	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor"/> diagnostic.
+	/// Creates a new instance of the <see cref="ApplyCopyConventionCodeFix"/> class.
 	/// </summary>
-	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ApplyCopyConventionCodeFix))]
-	public sealed class ApplyCopyConventionCodeFix : DurianCodeFixBase
+	public ApplyCopyConventionCodeFix()
 	{
-		/// <inheritdoc/>
-		public override string Id => Title + " [DefaultParam]";
+	}
 
-		/// <inheritdoc/>
-		public override string Title => "Apply DPTypeConvention.Copy";
+	/// <inheritdoc/>
+	public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+	{
+		CodeFixData<TypeDeclarationSyntax> data = await CodeFixData<TypeDeclarationSyntax>.FromAsync(context, true).ConfigureAwait(false);
 
-		/// <summary>
-		/// Creates a new instance of the <see cref="ApplyCopyConventionCodeFix"/> class.
-		/// </summary>
-		public ApplyCopyConventionCodeFix()
+		if (!data.Success || !data.HasNode || !data.HasSemanticModel)
 		{
+			return;
 		}
 
-		/// <inheritdoc/>
-		public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+		INamedTypeSymbol? attribute = data.SemanticModel.Compilation.GetTypeByMetadataName(DefaultParamConfigurationAttributeProvider.FullName);
+
+		if (attribute is null)
 		{
-			CodeFixData<TypeDeclarationSyntax> data = await CodeFixData<TypeDeclarationSyntax>.FromAsync(context, true).ConfigureAwait(false);
-
-			if (!data.Success || !data.HasNode || !data.HasSemanticModel)
-			{
-				return;
-			}
-
-			INamedTypeSymbol? attribute = data.SemanticModel.Compilation.GetTypeByMetadataName(DefaultParamConfigurationAttributeProvider.FullName);
-
-			if (attribute is null)
-			{
-				return;
-			}
-
-			CodeAction? action = GetCodeAction(in data, attribute);
-
-			if (action is null)
-			{
-				return;
-			}
-
-			context.RegisterCodeFix(action, data.Diagnostic);
+			return;
 		}
 
-		/// <inheritdoc/>
-		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
+		CodeAction? action = GetCodeAction(in data, attribute);
+
+		if (action is null)
 		{
-			return new DiagnosticDescriptor[]
-			{
-				DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor
-			};
+			return;
 		}
 
-		private static Task<Document> ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax> context, INamedTypeSymbol attribute)
+		context.RegisterCodeFix(action, data.Diagnostic);
+	}
+
+	/// <inheritdoc/>
+	protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
+	{
+		return new DiagnosticDescriptor[]
 		{
-			INamespaceSymbol? @namespace = (context.SemanticModel.GetSymbolInfo(context.Node).Symbol?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
+			DefaultParamDiagnostics.DUR0118_ApplyCopyTypeConventionOnStructOrSealedTypeOrTypeWithNoPublicCtor
+		};
+	}
 
-			NameSyntax attrName;
-			NameSyntax enumName;
+	private static Task<Document> ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax> context, INamedTypeSymbol attribute)
+	{
+		INamespaceSymbol? @namespace = (context.SemanticModel.GetSymbolInfo(context.Node).Symbol?.ContainingNamespace) ?? context.Compilation.GlobalNamespace;
 
-			if (context.SemanticModel.HasUsingDirective(context.Root.Usings, @namespace, attribute, context.CancellationToken))
-			{
-				attrName = SyntaxFactory.IdentifierName("DefaultParamConfiguration");
-				enumName = SyntaxFactory.IdentifierName(nameof(TypeConvention));
-			}
-			else
-			{
-				QualifiedNameSyntax n =
-					SyntaxFactory.QualifiedName(
-							SyntaxFactory.IdentifierName("Durian"),
-							SyntaxFactory.IdentifierName("Configuration"));
+		NameSyntax attrName;
+		NameSyntax enumName;
 
-				attrName = SyntaxFactory.QualifiedName(n, SyntaxFactory.IdentifierName("DefaultParamConfiguration"));
-				enumName = SyntaxFactory.QualifiedName(n, SyntaxFactory.IdentifierName(nameof(TypeConvention)));
-			}
+		if (context.SemanticModel.HasUsingDirective(context.Root.Usings, @namespace, attribute, context.CancellationToken))
+		{
+			attrName = SyntaxFactory.IdentifierName("DefaultParamConfiguration");
+			enumName = SyntaxFactory.IdentifierName(nameof(TypeConvention));
+		}
+		else
+		{
+			QualifiedNameSyntax n =
+				SyntaxFactory.QualifiedName(
+						SyntaxFactory.IdentifierName("Durian"),
+						SyntaxFactory.IdentifierName("Configuration"));
 
-			TypeDeclarationSyntax type = context.Node.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
-				SyntaxFactory.Attribute(attrName,
-					SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
-						SyntaxFactory.AttributeArgument(
-							SyntaxFactory.MemberAccessExpression(
-								SyntaxKind.SimpleMemberAccessExpression,
-								enumName,
-								SyntaxFactory.IdentifierName(nameof(TypeConvention.Copy))))
-						.WithNameEquals(
-							SyntaxFactory.NameEquals(
-								SyntaxFactory.IdentifierName(DefaultParamConfigurationAttributeProvider.TypeName),
-								SyntaxFactory.Token(SyntaxKind.EqualsToken).WithTrailingTrivia(SyntaxFactory.Space)))))))));
-
-			context.RegisterChange(context.Node, type);
-			return Task.FromResult(context.Document);
+			attrName = SyntaxFactory.QualifiedName(n, SyntaxFactory.IdentifierName("DefaultParamConfiguration"));
+			enumName = SyntaxFactory.QualifiedName(n, SyntaxFactory.IdentifierName(nameof(TypeConvention)));
 		}
 
-		private CodeAction GetCodeAction(in CodeFixData<TypeDeclarationSyntax> data, INamedTypeSymbol attribute)
-		{
-			Document document = data.Document!;
-			TypeDeclarationSyntax node = data.Node!;
-			CompilationUnitSyntax root = data.Root!;
-			Diagnostic diagnostic = data.Diagnostic!;
-			SemanticModel semanticModel = data.SemanticModel!;
+		TypeDeclarationSyntax type = context.Node.AddAttributeLists(SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
+			SyntaxFactory.Attribute(attrName,
+				SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
+					SyntaxFactory.AttributeArgument(
+						SyntaxFactory.MemberAccessExpression(
+							SyntaxKind.SimpleMemberAccessExpression,
+							enumName,
+							SyntaxFactory.IdentifierName(nameof(TypeConvention.Copy))))
+					.WithNameEquals(
+						SyntaxFactory.NameEquals(
+							SyntaxFactory.IdentifierName(DefaultParamConfigurationAttributeProvider.TypeName),
+							SyntaxFactory.Token(SyntaxKind.EqualsToken).WithTrailingTrivia(SyntaxFactory.Space)))))))));
 
-			return CodeAction.Create(Title, cancenllationToken => ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax>.From(diagnostic, document, root, node!, semanticModel, cancenllationToken), attribute), Id);
-		}
+		context.RegisterChange(context.Node, type);
+		return Task.FromResult(context.Document);
+	}
+
+	private CodeAction GetCodeAction(in CodeFixData<TypeDeclarationSyntax> data, INamedTypeSymbol attribute)
+	{
+		Document document = data.Document!;
+		TypeDeclarationSyntax node = data.Node!;
+		CompilationUnitSyntax root = data.Root!;
+		Diagnostic diagnostic = data.Diagnostic!;
+		SemanticModel semanticModel = data.SemanticModel!;
+
+		return CodeAction.Create(Title, cancenllationToken => ExecuteAsync(CodeFixExecutionContext<TypeDeclarationSyntax>.From(diagnostic, document, root, node!, semanticModel, cancenllationToken), attribute), Id);
 	}
 }

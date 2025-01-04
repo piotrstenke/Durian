@@ -1,18 +1,17 @@
-﻿namespace Durian.Analysis.SymbolContainers
+﻿namespace Durian.Analysis.SymbolContainers;
+
+/// <summary>
+/// Specifies order at which members should be returned.
+/// </summary>
+public enum ReturnOrder
 {
 	/// <summary>
-	/// Specifies order at which members should be returned.
+	/// Parent value is returned first, followed by its children.
 	/// </summary>
-	public enum ReturnOrder
-	{
-		/// <summary>
-		/// Parent value is returned first, followed by its children.
-		/// </summary>
-		ParentToChild = 0,
+	ParentToChild = 0,
 
-		/// <summary>
-		/// Parent value is returned last, proceeded by its children.
-		/// </summary>
-		ChildToParent = 1
-	}
+	/// <summary>
+	/// Parent value is returned last, proceeded by its children.
+	/// </summary>
+	ChildToParent = 1
 }

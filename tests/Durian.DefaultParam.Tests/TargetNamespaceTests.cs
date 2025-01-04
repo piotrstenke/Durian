@@ -1,13 +1,13 @@
 ﻿using Xunit;
 
-namespace Durian.Analysis.DefaultParam.Tests
+namespace Durian.Analysis.DefaultParam.Tests;
+
+public sealed class TargetNamespaceTests : DefaultParamGeneratorTest
 {
-	public sealed class TargetNamespaceTests : DefaultParamGeneratorTest
+	[Fact]
+	public void CanUseGlobalNamespace()
 	{
-		[Fact]
-		public void CanUseGlobalNamespace()
-		{
-			string input =
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -19,7 +19,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.ConfigurationNamespace};
 using Parent;
 
@@ -28,13 +28,13 @@ public class Test : Test<string>
 {{
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void IgnoresTargetNamespace_When_IsNestedMember()
-		{
-			string input =
+	[Fact]
+	public void IgnoresTargetNamespace_When_IsNestedMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -49,7 +49,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
@@ -63,13 +63,13 @@ namespace Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsNamedLikeKeyword_And_HasAtSign()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsNamedLikeKeyword_And_HasAtSign()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -81,7 +81,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.ConfigurationNamespace};
 using Parent;
 
@@ -93,13 +93,13 @@ namespace @int
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_ValueIsValid()
-		{
-			string input =
+	[Fact]
+	public void Success_When_ValueIsValid()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -111,7 +111,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.ConfigurationNamespace};
 using Parent;
 
@@ -123,13 +123,13 @@ namespace Durian
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_ValueIsValid_AndHasDot()
-		{
-			string input =
+	[Fact]
+	public void Success_When_ValueIsValid_AndHasDot()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -141,7 +141,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.ConfigurationNamespace};
 using Parent;
 
@@ -153,13 +153,13 @@ namespace Durian.Configuration
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void UsesGlobalValue()
-		{
-			string input =
+	[Fact]
+	public void UsesGlobalValue()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -171,7 +171,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using Parent;
 
 namespace Durian
@@ -182,13 +182,13 @@ namespace Durian
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void UsesParent_When_IsDurianGenerator()
-		{
-			string input =
+	[Fact]
+	public void UsesParent_When_IsDurianGenerator()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -200,7 +200,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
@@ -211,13 +211,13 @@ namespace Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void UsesParent_When_IsInvalidNamespaceIdentifier()
-		{
-			string input =
+	[Fact]
+	public void UsesParent_When_IsInvalidNamespaceIdentifier()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -229,7 +229,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
@@ -240,13 +240,13 @@ namespace Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void UsesParent_When_IsNamedLikeKeyword()
-		{
-			string input =
+	[Fact]
+	public void UsesParent_When_IsNamedLikeKeyword()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -258,7 +258,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
@@ -269,13 +269,13 @@ namespace Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void UsesParent_When_IsNull()
-		{
-			string input =
+	[Fact]
+	public void UsesParent_When_IsNull()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -287,7 +287,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
@@ -298,13 +298,13 @@ namespace Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void UsesParent_When_IsWhitespaceOrEmpty()
-		{
-			string input =
+	[Fact]
+	public void UsesParent_When_IsWhitespaceOrEmpty()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -316,7 +316,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.ConfigurationNamespace};
 
 namespace Parent
@@ -327,13 +327,13 @@ namespace Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void UsesParentByDefault()
-		{
-			string input =
+	[Fact]
+	public void UsesParentByDefault()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -344,7 +344,7 @@ namespace Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"namespace Parent
 {{
 	{GetCodeGenerationAttributes("Parent.Test<T>")}
@@ -353,7 +353,6 @@ $@"namespace Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
 	}
 }

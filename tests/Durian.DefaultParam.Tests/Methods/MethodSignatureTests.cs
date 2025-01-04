@@ -1,14 +1,14 @@
 ﻿using Durian.TestServices;
 using Xunit;
 
-namespace Durian.Analysis.DefaultParam.Tests.Methods
+namespace Durian.Analysis.DefaultParam.Tests.Methods;
+
+public sealed class MethodSignatureTests : DefaultParamGeneratorTest
 {
-	public sealed class MethodSignatureTests : DefaultParamGeneratorTest
+	[Fact]
+	public void Error_When_HasOnlyNonTypeArgumentParameters_And_SignatureAlreadyExists()
 	{
-		[Fact]
-		public void Error_When_HasOnlyNonTypeArgumentParameters_And_SignatureAlreadyExists()
-		{
-			string input =
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -22,13 +22,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+	}
 
-		[Fact]
-		public void Error_When_HasOnlyTypeArgumentParameters_And_GeneratedSignatureExists()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasOnlyTypeArgumentParameters_And_GeneratedSignatureExists()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -42,13 +42,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsParameterless_And_OtherParameterlessExists()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsParameterless_And_OtherParameterlessExists()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -62,13 +62,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsParameterless_And_OtherParameterlessExistsWithOtherReturnType()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsParameterless_And_OtherParameterlessExistsWithOtherReturnType()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -83,13 +83,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+	}
 
-		[Fact]
-		public void Error_When_NotAllTypeParametersAreDefaultParam_And_HasDefaultParamParameters()
-		{
-			string input =
+	[Fact]
+	public void Error_When_NotAllTypeParametersAreDefaultParam_And_HasDefaultParamParameters()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -103,13 +103,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+	}
 
-		[Fact]
-		public void Error_When_NotAllTypeParametersAreDefaultParam_And_HasNonDefaultParamParameters()
-		{
-			string input =
+	[Fact]
+	public void Error_When_NotAllTypeParametersAreDefaultParam_And_HasNonDefaultParamParameters()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -123,13 +123,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+	}
 
-		[Fact]
-		public void IgnoresBaseMethod()
-		{
-			string input =
+	[Fact]
+	public void IgnoresBaseMethod()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 class Parent
@@ -146,13 +146,13 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.False(RunGenerator(input).ContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
+		Assert.False(RunGenerator(input).ContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+	}
 
-		[Fact]
-		public void IgnoresMethodsGeneratedFromThisMethod()
-		{
-			string input =
+	[Fact]
+	public void IgnoresMethodsGeneratedFromThisMethod()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -162,13 +162,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.False(RunGenerator(input).ContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
+		Assert.False(RunGenerator(input).ContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
+	}
 
-		[Fact]
-		public void IgnoresMethodWhenHasNewModifier()
-		{
-			string input =
+	[Fact]
+	public void IgnoresMethodWhenHasNewModifier()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 class Parent
@@ -185,7 +185,6 @@ partial class Test : Parent
 	}}
 }}
 ";
-			Assert.False(RunGenerator(input).ContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
-		}
+		Assert.False(RunGenerator(input).ContainsDiagnostics(DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists.Id));
 	}
 }

@@ -2,26 +2,25 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Analysis.Data
+namespace Durian.Analysis.Data;
+
+/// <summary>
+/// Encapsulates data associated with a single <see cref="INamedTypeSymbol"/> representing an interface.
+/// </summary>
+public interface IInterfaceData : ITypeData, ISymbolOrMember<INamedTypeSymbol, IInterfaceData>
 {
 	/// <summary>
-	/// Encapsulates data associated with a single <see cref="INamedTypeSymbol"/> representing an interface.
+	/// Target <see cref="InterfaceDeclarationSyntax"/>.
 	/// </summary>
-	public interface IInterfaceData : ITypeData, ISymbolOrMember<INamedTypeSymbol, IInterfaceData>
-	{
-		/// <summary>
-		/// Target <see cref="InterfaceDeclarationSyntax"/>.
-		/// </summary>
-		new InterfaceDeclarationSyntax Declaration { get; }
+	new InterfaceDeclarationSyntax Declaration { get; }
 
-		/// <summary>
-		/// Members of the interface that are default-implemented.
-		/// </summary>
-		ISymbolContainer<ISymbol, IMemberData> DefaultImplementations { get; }
+	/// <summary>
+	/// Members of the interface that are default-implemented.
+	/// </summary>
+	ISymbolContainer<ISymbol, IMemberData> DefaultImplementations { get; }
 
-		/// <summary>
-		/// Creates a shallow copy of the current data.
-		/// </summary>
-		new IInterfaceData Clone();
-	}
+	/// <summary>
+	/// Creates a shallow copy of the current data.
+	/// </summary>
+	new IInterfaceData Clone();
 }

@@ -7,227 +7,226 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Durian.Info
+namespace Durian.Info;
+
+/// <summary>
+/// Factory class of <see cref="PackageIdentity"/>s for all available Durian packages.
+/// </summary>
+public static class PackageRepository
 {
 	/// <summary>
-	/// Factory class of <see cref="PackageIdentity"/>s for all available Durian packages.
+	/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.Main"/> package.
 	/// </summary>
-	public static class PackageRepository
+	public static PackageIdentity Main
 	{
-		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.Main"/> package.
-		/// </summary>
-		public static PackageIdentity Main
+		get
 		{
-			get
+			if(!IdentityPool.Packages.TryGetValue("Main", out PackageIdentity package))
 			{
-				if(!IdentityPool.Packages.TryGetValue("Main", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.Main,
-						version: "3.0.0",
-						type: PackageType.Unspecified,
-						modules: new DurianModule[]
-						{
-							DurianModule.Core
-						}
-					);
-				}
-
-				return package;
+				package = new(
+					enumValue: DurianPackage.Main,
+					version: "3.0.0",
+					type: PackageType.Unspecified,
+					modules: new DurianModule[]
+					{
+						DurianModule.Core
+					}
+				);
 			}
+
+			return package;
 		}
+	}
 
-		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.Core"/> package.
-		/// </summary>
-		public static PackageIdentity Core
+	/// <summary>
+	/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.Core"/> package.
+	/// </summary>
+	public static PackageIdentity Core
+	{
+		get
 		{
-			get
+			if(!IdentityPool.Packages.TryGetValue("Core", out PackageIdentity package))
 			{
-				if(!IdentityPool.Packages.TryGetValue("Core", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.Core,
-						version: "3.0.0",
-						type: PackageType.Library,
-						modules: new DurianModule[]
-						{
-							DurianModule.Core
-						}
-					);
-				}
-
-				return package;
+				package = new(
+					enumValue: DurianPackage.Core,
+					version: "3.0.0",
+					type: PackageType.Library,
+					modules: new DurianModule[]
+					{
+						DurianModule.Core
+					}
+				);
 			}
+
+			return package;
 		}
+	}
 
-		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.CoreAnalyzer"/> package.
-		/// </summary>
-		public static PackageIdentity CoreAnalyzer
+	/// <summary>
+	/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.CoreAnalyzer"/> package.
+	/// </summary>
+	public static PackageIdentity CoreAnalyzer
+	{
+		get
 		{
-			get
+			if(!IdentityPool.Packages.TryGetValue("CoreAnalyzer", out PackageIdentity package))
 			{
-				if(!IdentityPool.Packages.TryGetValue("CoreAnalyzer", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.CoreAnalyzer,
-						version: "3.0.0",
-						type: PackageType.Analyzer,
-						modules: new DurianModule[]
-						{
-							DurianModule.Core
-						}
-					);
-				}
-
-				return package;
+				package = new(
+					enumValue: DurianPackage.CoreAnalyzer,
+					version: "3.0.0",
+					type: PackageType.Analyzer,
+					modules: new DurianModule[]
+					{
+						DurianModule.Core
+					}
+				);
 			}
+
+			return package;
 		}
+	}
 
-		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.AnalysisServices"/> package.
-		/// </summary>
-		public static PackageIdentity AnalysisServices
+	/// <summary>
+	/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.AnalysisServices"/> package.
+	/// </summary>
+	public static PackageIdentity AnalysisServices
+	{
+		get
 		{
-			get
+			if(!IdentityPool.Packages.TryGetValue("AnalysisServices", out PackageIdentity package))
 			{
-				if(!IdentityPool.Packages.TryGetValue("AnalysisServices", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.AnalysisServices,
-						version: "3.0.0",
-						type: PackageType.Library,
-						modules: new DurianModule[]
-						{
-							DurianModule.Development
-						}
-					);
-				}
-
-				return package;
+				package = new(
+					enumValue: DurianPackage.AnalysisServices,
+					version: "3.0.0",
+					type: PackageType.Library,
+					modules: new DurianModule[]
+					{
+						DurianModule.Development
+					}
+				);
 			}
+
+			return package;
 		}
+	}
 
-		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.TestServices"/> package.
-		/// </summary>
-		public static PackageIdentity TestServices
+	/// <summary>
+	/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.TestServices"/> package.
+	/// </summary>
+	public static PackageIdentity TestServices
+	{
+		get
 		{
-			get
+			if(!IdentityPool.Packages.TryGetValue("TestServices", out PackageIdentity package))
 			{
-				if(!IdentityPool.Packages.TryGetValue("TestServices", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.TestServices,
-						version: "3.0.0",
-						type: PackageType.Library,
-						modules: new DurianModule[]
-						{
-							DurianModule.Development
-						}
-					);
-				}
-
-				return package;
+				package = new(
+					enumValue: DurianPackage.TestServices,
+					version: "3.0.0",
+					type: PackageType.Library,
+					modules: new DurianModule[]
+					{
+						DurianModule.Development
+					}
+				);
 			}
+
+			return package;
 		}
+	}
 
-		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.DefaultParam"/> package.
-		/// </summary>
-		public static PackageIdentity DefaultParam
+	/// <summary>
+	/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.DefaultParam"/> package.
+	/// </summary>
+	public static PackageIdentity DefaultParam
+	{
+		get
 		{
-			get
+			if(!IdentityPool.Packages.TryGetValue("DefaultParam", out PackageIdentity package))
 			{
-				if(!IdentityPool.Packages.TryGetValue("DefaultParam", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.DefaultParam,
-						version: "3.0.0",
-						type: PackageType.Analyzer | PackageType.CodeFixLibrary | PackageType.StaticGenerator | PackageType.SyntaxBasedGenerator,
-						modules: new DurianModule[]
-						{
-							DurianModule.DefaultParam
-						}
-					);
-				}
-
-				return package;
+				package = new(
+					enumValue: DurianPackage.DefaultParam,
+					version: "3.0.0",
+					type: PackageType.Analyzer | PackageType.CodeFixLibrary | PackageType.StaticGenerator | PackageType.SyntaxBasedGenerator,
+					modules: new DurianModule[]
+					{
+						DurianModule.DefaultParam
+					}
+				);
 			}
+
+			return package;
 		}
+	}
 
-		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.FriendClass"/> package.
-		/// </summary>
-		public static PackageIdentity FriendClass
+	/// <summary>
+	/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.FriendClass"/> package.
+	/// </summary>
+	public static PackageIdentity FriendClass
+	{
+		get
 		{
-			get
+			if(!IdentityPool.Packages.TryGetValue("FriendClass", out PackageIdentity package))
 			{
-				if(!IdentityPool.Packages.TryGetValue("FriendClass", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.FriendClass,
-						version: "2.0.0",
-						type: PackageType.Analyzer | PackageType.CodeFixLibrary | PackageType.StaticGenerator,
-						modules: new DurianModule[]
-						{
-							DurianModule.FriendClass
-						}
-					);
-				}
-
-				return package;
+				package = new(
+					enumValue: DurianPackage.FriendClass,
+					version: "2.0.0",
+					type: PackageType.Analyzer | PackageType.CodeFixLibrary | PackageType.StaticGenerator,
+					modules: new DurianModule[]
+					{
+						DurianModule.FriendClass
+					}
+				);
 			}
+
+			return package;
 		}
+	}
 
-		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.InterfaceTargets"/> package.
-		/// </summary>
-		public static PackageIdentity InterfaceTargets
+	/// <summary>
+	/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.InterfaceTargets"/> package.
+	/// </summary>
+	public static PackageIdentity InterfaceTargets
+	{
+		get
 		{
-			get
+			if(!IdentityPool.Packages.TryGetValue("InterfaceTargets", out PackageIdentity package))
 			{
-				if(!IdentityPool.Packages.TryGetValue("InterfaceTargets", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.InterfaceTargets,
-						version: "2.0.0",
-						type: PackageType.Analyzer | PackageType.StaticGenerator,
-						modules: new DurianModule[]
-						{
-							DurianModule.InterfaceTargets
-						}
-					);
-				}
-
-				return package;
+				package = new(
+					enumValue: DurianPackage.InterfaceTargets,
+					version: "2.0.0",
+					type: PackageType.Analyzer | PackageType.StaticGenerator,
+					modules: new DurianModule[]
+					{
+						DurianModule.InterfaceTargets
+					}
+				);
 			}
+
+			return package;
 		}
+	}
 
-		/// <summary>
-		/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.CopyFrom"/> package.
-		/// </summary>
-		public static PackageIdentity CopyFrom
+	/// <summary>
+	/// Returns a <see cref="PackageIdentity"/> for the <see cref="DurianPackage.CopyFrom"/> package.
+	/// </summary>
+	public static PackageIdentity CopyFrom
+	{
+		get
 		{
-			get
+			if(!IdentityPool.Packages.TryGetValue("CopyFrom", out PackageIdentity package))
 			{
-				if(!IdentityPool.Packages.TryGetValue("CopyFrom", out PackageIdentity package))
-				{
-					package = new(
-						enumValue: DurianPackage.CopyFrom,
-						version: "1.0.0",
-						type: PackageType.Analyzer | PackageType.StaticGenerator | PackageType.SyntaxBasedGenerator | PackageType.CodeFixLibrary,
-						modules: new DurianModule[]
-						{
-							DurianModule.CopyFrom
-						}
-					);
-				}
-
-				return package;
+				package = new(
+					enumValue: DurianPackage.CopyFrom,
+					version: "1.0.0",
+					type: PackageType.Analyzer | PackageType.StaticGenerator | PackageType.SyntaxBasedGenerator | PackageType.CodeFixLibrary,
+					modules: new DurianModule[]
+					{
+						DurianModule.CopyFrom
+					}
+				);
 			}
+
+			return package;
 		}
 	}
 }

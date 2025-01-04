@@ -5,188 +5,187 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using static Durian.Analysis.DurianDiagnostics;
 
-namespace Durian.Analysis
+namespace Durian.Analysis;
+
+/// <summary>
+/// Analyzer that checks if the current compilation references the <c>Durian.Core</c> package.
+/// </summary>
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
+public sealed class DependencyAnalyzer : DurianAnalyzer
 {
+	/// <inheritdoc/>
+	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+		DUR0001_ProjectMustReferenceDurianCore,
+		DUR0007_DoNotReferencePackageIfManagerIsPresent,
+		DUR0008_MultipleAnalyzers
+	);
+
 	/// <summary>
-	/// Analyzer that checks if the current compilation references the <c>Durian.Core</c> package.
+	/// Initializes a new instance of the <see cref="DependencyAnalyzer"/> class.
 	/// </summary>
-	[DiagnosticAnalyzer(LanguageNames.CSharp)]
-	public sealed class DependencyAnalyzer : DurianAnalyzer
+	public DependencyAnalyzer()
 	{
-		/// <inheritdoc/>
-		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
-			DUR0001_ProjectMustReferenceDurianCore,
-			DUR0007_DoNotReferencePackageIfManagerIsPresent,
-			DUR0008_MultipleAnalyzers
-		);
+	}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="DependencyAnalyzer"/> class.
-		/// </summary>
-		public DependencyAnalyzer()
+	/// <summary>
+	/// Analyzes the specified <paramref name="compilation"/>.
+	/// </summary>
+	/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
+	/// <param name="compilation"><see cref="Compilation"/> to analyze.</param>
+	public static bool Analyze(IDiagnosticReceiver diagnosticReceiver, Compilation compilation)
+	{
+		bool isValid = Analyze(compilation, out Diagnostic[] diagnostics);
+
+		foreach (Diagnostic diag in diagnostics)
 		{
+			diagnosticReceiver.ReportDiagnostic(diag);
 		}
 
-		/// <summary>
-		/// Analyzes the specified <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> that is used to report <see cref="Diagnostic"/>s.</param>
-		/// <param name="compilation"><see cref="Compilation"/> to analyze.</param>
-		public static bool Analyze(IDiagnosticReceiver diagnosticReceiver, Compilation compilation)
+		return isValid;
+	}
+
+	/// <summary>
+	/// Analyzes the specified <paramref name="compilation"/>.
+	/// </summary>
+	/// <param name="compilation"><see cref="Compilation"/> to analyze.</param>
+	public static bool Analyze(Compilation compilation)
+	{
+		bool hasManager = false;
+		bool hasCore = false;
+		bool hasAnalyzerPackage = false;
+
+		foreach (AssemblyIdentity assembly in compilation.ReferencedAssemblyNames)
 		{
-			bool isValid = Analyze(compilation, out Diagnostic[] diagnostics);
+			string name = assembly.Name;
 
-			foreach (Diagnostic diag in diagnostics)
+			if (IsDurianMain(name))
 			{
-				diagnosticReceiver.ReportDiagnostic(diag);
+				hasCore = true;
+				hasManager = true;
 			}
-
-			return isValid;
-		}
-
-		/// <summary>
-		/// Analyzes the specified <paramref name="compilation"/>.
-		/// </summary>
-		/// <param name="compilation"><see cref="Compilation"/> to analyze.</param>
-		public static bool Analyze(Compilation compilation)
-		{
-			bool hasManager = false;
-			bool hasCore = false;
-			bool hasAnalyzerPackage = false;
-
-			foreach (AssemblyIdentity assembly in compilation.ReferencedAssemblyNames)
+			else if (IsDurianCore(name))
 			{
-				string name = assembly.Name;
-
-				if (IsDurianMain(name))
-				{
-					hasCore = true;
-					hasManager = true;
-				}
-				else if (IsDurianCore(name))
-				{
-					hasCore = true;
-				}
-				else if (IsDurianAnalyzerPackage(name))
-				{
-					hasAnalyzerPackage = true;
-				}
-				else if (hasCore && hasAnalyzerPackage && hasManager)
-				{
-					break;
-				}
+				hasCore = true;
 			}
-
-			if (!hasCore)
+			else if (IsDurianAnalyzerPackage(name))
 			{
-				return false;
+				hasAnalyzerPackage = true;
 			}
-
-			if (hasManager && hasAnalyzerPackage)
+			else if (hasCore && hasAnalyzerPackage && hasManager)
 			{
-				return false;
-			}
-
-			return true;
-		}
-
-		/// <inheritdoc/>
-		public override void Register(IDurianAnalysisContext context)
-		{
-			context.RegisterCompilationAction(Analyze);
-		}
-
-		private static void Analyze(CompilationAnalysisContext context)
-		{
-			Analyze(context.Compilation, out Diagnostic[] diagnostics);
-
-			foreach (Diagnostic diag in diagnostics)
-			{
-				context.ReportDiagnostic(diag);
+				break;
 			}
 		}
 
-		private static bool Analyze(Compilation compilation, out Diagnostic[] diagnostics)
+		if (!hasCore)
 		{
-			bool hasManager = false;
-			bool hasCore = false;
-			List<string> analyzerAssemblies = new(8);
+			return false;
+		}
 
-			foreach (AssemblyIdentity assembly in compilation.ReferencedAssemblyNames)
+		if (hasManager && hasAnalyzerPackage)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	/// <inheritdoc/>
+	public override void Register(IDurianAnalysisContext context)
+	{
+		context.RegisterCompilationAction(Analyze);
+	}
+
+	private static void Analyze(CompilationAnalysisContext context)
+	{
+		Analyze(context.Compilation, out Diagnostic[] diagnostics);
+
+		foreach (Diagnostic diag in diagnostics)
+		{
+			context.ReportDiagnostic(diag);
+		}
+	}
+
+	private static bool Analyze(Compilation compilation, out Diagnostic[] diagnostics)
+	{
+		bool hasManager = false;
+		bool hasCore = false;
+		List<string> analyzerAssemblies = new(8);
+
+		foreach (AssemblyIdentity assembly in compilation.ReferencedAssemblyNames)
+		{
+			string name = assembly.Name;
+
+			if (!name.StartsWith("Durian"))
 			{
-				string name = assembly.Name;
-
-				if (!name.StartsWith("Durian"))
-				{
-					continue;
-				}
-
-				if (IsDurianMain(name))
-				{
-					hasManager = true;
-					hasCore = true;
-				}
-				else if (IsDurianCore(name))
-				{
-					hasCore = true;
-				}
-				else if (IsDurianAnalyzerPackage(name))
-				{
-					analyzerAssemblies.Add(name);
-				}
-				else if (hasManager && hasCore && analyzerAssemblies.Count >= GlobalInfo.NumAnalyzerPackages)
-				{
-					break;
-				}
+				continue;
 			}
 
-			List<Diagnostic> d = new(analyzerAssemblies.Count + 2);
-			bool isValid = true;
-
-			if (!hasCore)
+			if (IsDurianMain(name))
 			{
-				d.Add(Diagnostic.Create(DUR0001_ProjectMustReferenceDurianCore, Location.None));
+				hasManager = true;
+				hasCore = true;
+			}
+			else if (IsDurianCore(name))
+			{
+				hasCore = true;
+			}
+			else if (IsDurianAnalyzerPackage(name))
+			{
+				analyzerAssemblies.Add(name);
+			}
+			else if (hasManager && hasCore && analyzerAssemblies.Count >= GlobalInfo.NumAnalyzerPackages)
+			{
+				break;
+			}
+		}
+
+		List<Diagnostic> d = new(analyzerAssemblies.Count + 2);
+		bool isValid = true;
+
+		if (!hasCore)
+		{
+			d.Add(Diagnostic.Create(DUR0001_ProjectMustReferenceDurianCore, Location.None));
+			isValid = false;
+		}
+
+		if (analyzerAssemblies.Count > 0)
+		{
+			if (hasManager)
+			{
+				foreach (string a in analyzerAssemblies)
+				{
+					d.Add(Diagnostic.Create(DUR0007_DoNotReferencePackageIfManagerIsPresent, Location.None, a));
+				}
+
 				isValid = false;
 			}
-
-			if (analyzerAssemblies.Count > 0)
+			else if (analyzerAssemblies.Count > 1)
 			{
-				if (hasManager)
-				{
-					foreach (string a in analyzerAssemblies)
-					{
-						d.Add(Diagnostic.Create(DUR0007_DoNotReferencePackageIfManagerIsPresent, Location.None, a));
-					}
-
-					isValid = false;
-				}
-				else if (analyzerAssemblies.Count > 1)
-				{
-					d.Add(Diagnostic.Create(DUR0008_MultipleAnalyzers, Location.None));
-				}
+				d.Add(Diagnostic.Create(DUR0008_MultipleAnalyzers, Location.None));
 			}
-
-			diagnostics = d.ToArray();
-			return isValid;
 		}
 
-		private static bool IsDurianAnalyzerPackage(string assembly)
-		{
-			return
-				assembly == "Durian.Core.Analyzer" ||
-				assembly == "Durian.DefaultParam" ||
-				assembly == "Durian.InterfaceTargets" ||
-				assembly == "Durian.FriendClass";
-		}
+		diagnostics = d.ToArray();
+		return isValid;
+	}
 
-		private static bool IsDurianCore(string assembly)
-		{
-			return assembly == "Durian.Core";
-		}
+	private static bool IsDurianAnalyzerPackage(string assembly)
+	{
+		return
+			assembly == "Durian.Core.Analyzer" ||
+			assembly == "Durian.DefaultParam" ||
+			assembly == "Durian.InterfaceTargets" ||
+			assembly == "Durian.FriendClass";
+	}
 
-		private static bool IsDurianMain(string assembly)
-		{
-			return assembly == "Durian";
-		}
+	private static bool IsDurianCore(string assembly)
+	{
+		return assembly == "Durian.Core";
+	}
+
+	private static bool IsDurianMain(string assembly)
+	{
+		return assembly == "Durian";
 	}
 }

@@ -1,106 +1,105 @@
 ﻿using System.Collections;
 using Durian.Analysis.Data;
 
-namespace Durian.Analysis.SymbolContainers
+namespace Durian.Analysis.SymbolContainers;
+
+/// <summary>
+/// Contains optional data that can be passed to a <see cref="ISymbolContainer"/>.
+/// </summary>
+public struct SymbolContainerBuilder
 {
-	/// <summary>
-	/// Contains optional data that can be passed to a <see cref="ISymbolContainer"/>.
-	/// </summary>
-	public struct SymbolContainerBuilder
+	internal IEnumerable Collection { readonly get; set; }
+
+	internal ICompilationData? ParentCompilation { readonly get; set; }
+
+	internal ISymbolNameResolver? SymbolNameResolver { readonly get; set; }
+
+	internal SymbolContainerBuilder(IEnumerable collection)
 	{
-		internal IEnumerable Collection { readonly get; set; }
-
-		internal ICompilationData? ParentCompilation { readonly get; set; }
-
-		internal ISymbolNameResolver? SymbolNameResolver { readonly get; set; }
-
-		internal SymbolContainerBuilder(IEnumerable collection)
-		{
-			Collection = collection;
-			ParentCompilation = default;
-			SymbolNameResolver = default;
-		}
-
-		/// <summary>
-		/// Changes the type of object being built.
-		/// </summary>
-		/// <typeparam name="TNew">Type of container being built.</typeparam>
-		public readonly SymbolContainerBuilder<TNew> Cast<TNew>()
-			where TNew : ISymbolContainer, IBuilderReceiver<SymbolContainerBuilder>, new()
-		{
-			return new SymbolContainerBuilder<TNew>(Collection)
-			{
-				ParentCompilation = ParentCompilation,
-				SymbolNameResolver = SymbolNameResolver
-			};
-		}
+		Collection = collection;
+		ParentCompilation = default;
+		SymbolNameResolver = default;
 	}
 
 	/// <summary>
-	/// Contains optional data that can be passed to a <see cref="ISymbolContainer"/>.
+	/// Changes the type of object being built.
 	/// </summary>
-	/// <typeparam name="TContainer">Type of container being built.</typeparam>
-	public struct SymbolContainerBuilder<TContainer> : IBuilder<TContainer>
-		where TContainer : ISymbolContainer, IBuilderReceiver<SymbolContainerBuilder>, new()
+	/// <typeparam name="TNew">Type of container being built.</typeparam>
+	public readonly SymbolContainerBuilder<TNew> Cast<TNew>()
+		where TNew : ISymbolContainer, IBuilderReceiver<SymbolContainerBuilder>, new()
 	{
-		readonly bool IBuilder<TContainer>.IsValid => Collection is not null;
-
-		internal IEnumerable Collection { readonly get; set; }
-
-		internal ICompilationData? ParentCompilation { readonly get; set; }
-
-		internal ISymbolNameResolver? SymbolNameResolver { readonly get; set; }
-
-		internal SymbolContainerBuilder(IEnumerable collection)
+		return new SymbolContainerBuilder<TNew>(Collection)
 		{
-			Collection = collection;
-			ParentCompilation = default;
-			SymbolNameResolver = default;
-		}
+			ParentCompilation = ParentCompilation,
+			SymbolNameResolver = SymbolNameResolver
+		};
+	}
+}
 
-		/// <summary>
-		/// Implicitly converts an <see cref="SymbolContainerBuilder{T}"/> to a <typeparamref name="TContainer"/>.
-		/// </summary>
-		/// <param name="other"><see cref="SymbolContainerBuilder{T}"/> to convert.</param>
-		public static implicit operator TContainer(SymbolContainerBuilder<TContainer> other)
-		{
-			return other.Build();
-		}
+/// <summary>
+/// Contains optional data that can be passed to a <see cref="ISymbolContainer"/>.
+/// </summary>
+/// <typeparam name="TContainer">Type of container being built.</typeparam>
+public struct SymbolContainerBuilder<TContainer> : IBuilder<TContainer>
+	where TContainer : ISymbolContainer, IBuilderReceiver<SymbolContainerBuilder>, new()
+{
+	readonly bool IBuilder<TContainer>.IsValid => Collection is not null;
 
-		/// <summary>
-		/// Actually builds the objects.
-		/// </summary>
-		public readonly TContainer Build()
-		{
-			TContainer t = new();
-			t.Receive(NonGeneric());
-			return t;
-		}
+	internal IEnumerable Collection { readonly get; set; }
 
-		/// <summary>
-		/// Changes the type of object being built.
-		/// </summary>
-		/// <typeparam name="TNew">Type of container being built.</typeparam>
-		public readonly SymbolContainerBuilder<TNew> Cast<TNew>()
-			where TNew : ISymbolContainer, IBuilderReceiver<SymbolContainerBuilder>, new()
-		{
-			return new SymbolContainerBuilder<TNew>(Collection)
-			{
-				ParentCompilation = ParentCompilation,
-				SymbolNameResolver = SymbolNameResolver
-			};
-		}
+	internal ICompilationData? ParentCompilation { readonly get; set; }
 
-		/// <summary>
-		/// Makes the current builder non-generic.
-		/// </summary>
-		public readonly SymbolContainerBuilder NonGeneric()
+	internal ISymbolNameResolver? SymbolNameResolver { readonly get; set; }
+
+	internal SymbolContainerBuilder(IEnumerable collection)
+	{
+		Collection = collection;
+		ParentCompilation = default;
+		SymbolNameResolver = default;
+	}
+
+	/// <summary>
+	/// Implicitly converts an <see cref="SymbolContainerBuilder{T}"/> to a <typeparamref name="TContainer"/>.
+	/// </summary>
+	/// <param name="other"><see cref="SymbolContainerBuilder{T}"/> to convert.</param>
+	public static implicit operator TContainer(SymbolContainerBuilder<TContainer> other)
+	{
+		return other.Build();
+	}
+
+	/// <summary>
+	/// Actually builds the objects.
+	/// </summary>
+	public readonly TContainer Build()
+	{
+		TContainer t = new();
+		t.Receive(NonGeneric());
+		return t;
+	}
+
+	/// <summary>
+	/// Changes the type of object being built.
+	/// </summary>
+	/// <typeparam name="TNew">Type of container being built.</typeparam>
+	public readonly SymbolContainerBuilder<TNew> Cast<TNew>()
+		where TNew : ISymbolContainer, IBuilderReceiver<SymbolContainerBuilder>, new()
+	{
+		return new SymbolContainerBuilder<TNew>(Collection)
 		{
-			return new SymbolContainerBuilder(Collection)
-			{
-				ParentCompilation = ParentCompilation,
-				SymbolNameResolver = SymbolNameResolver
-			};
-		}
+			ParentCompilation = ParentCompilation,
+			SymbolNameResolver = SymbolNameResolver
+		};
+	}
+
+	/// <summary>
+	/// Makes the current builder non-generic.
+	/// </summary>
+	public readonly SymbolContainerBuilder NonGeneric()
+	{
+		return new SymbolContainerBuilder(Collection)
+		{
+			ParentCompilation = ParentCompilation,
+			SymbolNameResolver = SymbolNameResolver
+		};
 	}
 }

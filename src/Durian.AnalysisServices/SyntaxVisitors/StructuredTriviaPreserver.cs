@@ -1,29 +1,28 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Analysis.SyntaxVisitors
+namespace Durian.Analysis.SyntaxVisitors;
+
+/// <summary>
+/// Removes all syntax nodes except for structured trivia.
+/// </summary>
+public class StructuredTriviaPreserver : CSharpSyntaxRewriter
 {
 	/// <summary>
-	/// Removes all syntax nodes except for structured trivia.
+	/// Initializes a new instance of the <see cref="StructuredTriviaPreserver"/> class.
 	/// </summary>
-	public class StructuredTriviaPreserver : CSharpSyntaxRewriter
+	public StructuredTriviaPreserver()
 	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="StructuredTriviaPreserver"/> class.
-		/// </summary>
-		public StructuredTriviaPreserver()
+	}
+
+	/// <inheritdoc/>
+	public override SyntaxTrivia VisitTrivia(SyntaxTrivia trivia)
+	{
+		if (trivia.HasStructure)
 		{
+			return trivia;
 		}
 
-		/// <inheritdoc/>
-		public override SyntaxTrivia VisitTrivia(SyntaxTrivia trivia)
-		{
-			if (trivia.HasStructure)
-			{
-				return trivia;
-			}
-
-			return default;
-		}
+		return default;
 	}
 }

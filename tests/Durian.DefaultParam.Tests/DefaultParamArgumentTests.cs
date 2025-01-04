@@ -2,14 +2,14 @@
 using Xunit;
 using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 
-namespace Durian.Analysis.DefaultParam.Tests
+namespace Durian.Analysis.DefaultParam.Tests;
+
+public sealed class DefaultParamArgumentTests : DefaultParamGeneratorTest
 {
-	public sealed class DefaultParamArgumentTests : DefaultParamGeneratorTest
+	[Fact]
+	public void Error_When_IsArraySymbol_And_IsConstraint()
 	{
-		[Fact]
-		public void Error_When_IsArraySymbol_And_IsConstraint()
-		{
-			string input =
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -19,13 +19,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsDelegate_And_IsConstraint()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsDelegate_And_IsConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using System;
 
@@ -36,13 +36,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsFunctionPointer()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsFunctionPointer()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -52,13 +52,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsLessAccessible_And_IsChildOfParameter()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsLessAccessible_And_IsChildOfParameter()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 public partial class Test
@@ -72,13 +72,13 @@ public partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsLessAccessible_And_IsConstraint()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsLessAccessible_And_IsConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 public partial class Test
@@ -92,13 +92,13 @@ public partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsLessAccessible_And_IsParameter()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsLessAccessible_And_IsParameter()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 public partial class Test
@@ -112,13 +112,13 @@ public partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsLessAccessible_And_IsReturnType()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsLessAccessible_And_IsReturnType()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 public partial class Test
@@ -132,13 +132,13 @@ public partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0119_DefaultParamValueCannotBeLessAccessibleThanTargetMember.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsNull()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsNull()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -149,13 +149,13 @@ partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsObject_And_IsConstraint()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsObject_And_IsConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -165,13 +165,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsPointer()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsPointer()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -181,13 +181,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsRefStruct()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsRefStruct()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -197,13 +197,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsStaticClass()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsStaticClass()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -213,13 +213,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsSystemArray_And_IsConstraint()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsSystemArray_And_IsConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -229,13 +229,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsSystemValueType_And_IsConstraint()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsSystemValueType_And_IsConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -245,13 +245,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0120_TypeCannotBeUsedWithConstraint.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsSystemVoid()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsSystemVoid()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -262,13 +262,13 @@ partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsUnboundGenericType()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsUnboundGenericType()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -278,13 +278,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsVoid()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsVoid()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -295,7 +295,6 @@ partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0121_TypeIsNotValidDefaultParamValue.Id));
 	}
 }

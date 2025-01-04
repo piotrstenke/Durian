@@ -1,63 +1,63 @@
-﻿namespace Durian.Analysis.CopyFrom
+﻿namespace Durian.Analysis.CopyFrom;
+
+/// <summary>
+/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.PatternAttribute</c> class.
+/// </summary>
+public sealed class PatternAttributeProvider : SourceTextProvider
 {
 	/// <summary>
-	/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.PatternAttribute</c> class.
+	/// Full name of the provided type.
 	/// </summary>
-	public sealed class PatternAttributeProvider : SourceTextProvider
+	public const string FullName = Namespace + "." + TypeName;
+
+	/// <summary>
+	/// Namespace the provided type is located in.
+	/// </summary>
+	public const string Namespace = DurianStrings.MainNamespace;
+
+	/// <summary>
+	/// Name of the 'Order' property.
+	/// </summary>
+	public const string Order = "Order";
+
+	/// <summary>
+	/// Name of the 'Pattern' property.
+	/// </summary>
+	public const string Pattern = "Pattern";
+
+	/// <summary>
+	/// Name of the 'Replacement' property.
+	/// </summary>
+	public const string Replacement = "Replacement";
+
+	/// <summary>
+	/// Name of the provided type.
+	/// </summary>
+	public const string TypeName = "PatternAttribute";
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="PatternAttributeProvider"/> class.
+	/// </summary>
+	public PatternAttributeProvider()
 	{
-		/// <summary>
-		/// Full name of the provided type.
-		/// </summary>
-		public const string FullName = Namespace + "." + TypeName;
+	}
 
-		/// <summary>
-		/// Namespace the provided type is located in.
-		/// </summary>
-		public const string Namespace = DurianStrings.MainNamespace;
+	/// <inheritdoc/>
+	public override string GetFullName()
+	{
+		return FullName;
+	}
 
-		/// <summary>
-		/// Name of the 'Order' property.
-		/// </summary>
-		public const string Order = "Order";
+	/// <inheritdoc/>
+	public override string GetNamespace()
+	{
+		return Namespace;
+	}
 
-		/// <summary>
-		/// Name of the 'Pattern' property.
-		/// </summary>
-		public const string Pattern = "Pattern";
-
-		/// <summary>
-		/// Name of the 'Replacement' property.
-		/// </summary>
-		public const string Replacement = "Replacement";
-
-		/// <summary>
-		/// Name of the provided type.
-		/// </summary>
-		public const string TypeName = "PatternAttribute";
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PatternAttributeProvider"/> class.
-		/// </summary>
-		public PatternAttributeProvider()
-		{
-		}
-
-		/// <inheritdoc/>
-		public override string GetFullName()
-		{
-			return FullName;
-		}
-
-		/// <inheritdoc/>
-		public override string GetNamespace()
-		{
-			return Namespace;
-		}
-
-		/// <inheritdoc/>
-		public override string GetText()
-		{
-			return
+	/// <inheritdoc/>
+	public override string GetText()
+	{
+		return
 @$"using System;
 using System.Diagnostics;
 
@@ -100,12 +100,11 @@ namespace {Namespace}
 	}}
 }}
 ";
-		}
+	}
 
-		/// <inheritdoc/>
-		public override string GetTypeName()
-		{
-			return TypeName;
-		}
+	/// <inheritdoc/>
+	public override string GetTypeName()
+	{
+		return TypeName;
 	}
 }

@@ -7,132 +7,131 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Analysis.CodeFixes
+namespace Durian.Analysis.CodeFixes;
+
+/// <summary>
+/// Represents data that is used when creating a <see cref="CodeAction"/> for the code fix.
+/// </summary>
+/// <typeparam name="T">Type of <see cref="SyntaxNode"/> this <see cref="CodeFixData{T}"/> can store.</typeparam>
+public readonly struct CodeFixData<T> where T : SyntaxNode
 {
 	/// <summary>
-	/// Represents data that is used when creating a <see cref="CodeAction"/> for the code fix.
+	/// <see cref="System.Threading.CancellationToken"/> that specifies if the operation should be canceled.
 	/// </summary>
-	/// <typeparam name="T">Type of <see cref="SyntaxNode"/> this <see cref="CodeFixData{T}"/> can store.</typeparam>
-	public readonly struct CodeFixData<T> where T : SyntaxNode
+	public readonly CancellationToken CancellationToken { get; }
+
+	/// <summary>
+	/// <see cref="Microsoft.CodeAnalysis.Diagnostic"/> that the code fix is being proposed for.
+	/// </summary>
+	public readonly Diagnostic? Diagnostic { get; }
+
+	/// <summary>
+	/// <see cref="Microsoft.CodeAnalysis.Document"/> where the <see cref="Diagnostic"/> is to be found.
+	/// </summary>
+	public readonly Document? Document { get; }
+
+	/// <summary>
+	/// Determines whether this <see cref="CodeFixData{T}"/> contains a <see cref="SyntaxNode"/>.
+	/// </summary>
+	[MemberNotNullWhen(true, nameof(Node))]
+	public readonly bool HasNode => Node is not null;
+
+	/// <summary>
+	/// Determines whether this <see cref="CodeFixData{T}"/> contains a <see cref="Microsoft.CodeAnalysis.SemanticModel"/>.
+	/// </summary>
+	[MemberNotNullWhen(true, nameof(SemanticModel))]
+	public readonly bool HasSemanticModel => SemanticModel is not null;
+
+	/// <summary>
+	/// Target <see cref="SyntaxNode"/>.
+	/// </summary>
+	public readonly T? Node { get; }
+
+	/// <summary>
+	/// Root node of the analyzed tree.
+	/// </summary>
+	public readonly CompilationUnitSyntax? Root { get; }
+
+	/// <summary>
+	/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="Node"/>.
+	/// </summary>
+	public readonly SemanticModel? SemanticModel { get; }
+
+	/// <summary>
+	/// Determines whether this data was successfully retrieved.
+	/// </summary>
+	[MemberNotNullWhen(true, nameof(Root), nameof(Diagnostic), nameof(Document))]
+	public readonly bool Success { get; }
+
+	private CodeFixData(
+		Diagnostic diagnostic,
+		Document document,
+		SemanticModel? semanticModel,
+		CompilationUnitSyntax root,
+		T? node,
+		bool success,
+		CancellationToken cancellationToken
+	)
 	{
-		/// <summary>
-		/// <see cref="System.Threading.CancellationToken"/> that specifies if the operation should be canceled.
-		/// </summary>
-		public readonly CancellationToken CancellationToken { get; }
+		Diagnostic = diagnostic;
+		Document = document;
+		Root = root;
+		Node = node;
+		Success = success;
+		CancellationToken = cancellationToken;
+		SemanticModel = semanticModel;
+	}
 
-		/// <summary>
-		/// <see cref="Microsoft.CodeAnalysis.Diagnostic"/> that the code fix is being proposed for.
-		/// </summary>
-		public readonly Diagnostic? Diagnostic { get; }
+	/// <summary>
+	/// Creates a new <see cref="CodeFixData{T}"/> from the specified <paramref name="context"/>.
+	/// </summary>
+	/// <param name="context"><see cref="CodeFixContext"/> to create the <see cref="CodeFixData{T}"/> from.</param>
+	/// <param name="includeSemanticModel">Determines whether to include the <see cref="Microsoft.CodeAnalysis.SemanticModel"/> when creating this <see cref="CodeFixData{T}"/>.</param>
+	public static async Task<CodeFixData<T>> FromAsync(CodeFixContext context, bool includeSemanticModel = false)
+	{
+		Diagnostic? diagnostic = context.Diagnostics.FirstOrDefault();
 
-		/// <summary>
-		/// <see cref="Microsoft.CodeAnalysis.Document"/> where the <see cref="Diagnostic"/> is to be found.
-		/// </summary>
-		public readonly Document? Document { get; }
-
-		/// <summary>
-		/// Determines whether this <see cref="CodeFixData{T}"/> contains a <see cref="SyntaxNode"/>.
-		/// </summary>
-		[MemberNotNullWhen(true, nameof(Node))]
-		public readonly bool HasNode => Node is not null;
-
-		/// <summary>
-		/// Determines whether this <see cref="CodeFixData{T}"/> contains a <see cref="Microsoft.CodeAnalysis.SemanticModel"/>.
-		/// </summary>
-		[MemberNotNullWhen(true, nameof(SemanticModel))]
-		public readonly bool HasSemanticModel => SemanticModel is not null;
-
-		/// <summary>
-		/// Target <see cref="SyntaxNode"/>.
-		/// </summary>
-		public readonly T? Node { get; }
-
-		/// <summary>
-		/// Root node of the analyzed tree.
-		/// </summary>
-		public readonly CompilationUnitSyntax? Root { get; }
-
-		/// <summary>
-		/// <see cref="Microsoft.CodeAnalysis.SemanticModel"/> of the <see cref="Node"/>.
-		/// </summary>
-		public readonly SemanticModel? SemanticModel { get; }
-
-		/// <summary>
-		/// Determines whether this data was successfully retrieved.
-		/// </summary>
-		[MemberNotNullWhen(true, nameof(Root), nameof(Diagnostic), nameof(Document))]
-		public readonly bool Success { get; }
-
-		private CodeFixData(
-			Diagnostic diagnostic,
-			Document document,
-			SemanticModel? semanticModel,
-			CompilationUnitSyntax root,
-			T? node,
-			bool success,
-			CancellationToken cancellationToken
-		)
+		if (diagnostic is null)
 		{
-			Diagnostic = diagnostic;
-			Document = document;
-			Root = root;
-			Node = node;
-			Success = success;
-			CancellationToken = cancellationToken;
-			SemanticModel = semanticModel;
+			return default;
 		}
 
-		/// <summary>
-		/// Creates a new <see cref="CodeFixData{T}"/> from the specified <paramref name="context"/>.
-		/// </summary>
-		/// <param name="context"><see cref="CodeFixContext"/> to create the <see cref="CodeFixData{T}"/> from.</param>
-		/// <param name="includeSemanticModel">Determines whether to include the <see cref="Microsoft.CodeAnalysis.SemanticModel"/> when creating this <see cref="CodeFixData{T}"/>.</param>
-		public static async Task<CodeFixData<T>> FromAsync(CodeFixContext context, bool includeSemanticModel = false)
+		if (await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false) is not CompilationUnitSyntax root)
 		{
-			Diagnostic? diagnostic = context.Diagnostics.FirstOrDefault();
-
-			if (diagnostic is null)
-			{
-				return default;
-			}
-
-			if (await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false) is not CompilationUnitSyntax root)
-			{
-				return default;
-			}
-
-			SyntaxNode? parent = root.FindNode(diagnostic.Location.SourceSpan);
-			T? node;
-
-			if (parent is null)
-			{
-				node = null;
-			}
-			else
-			{
-				node = parent.FirstAncestorOrSelf<T>() ?? parent.DescendantNodes().OfType<T>().FirstOrDefault();
-			}
-
-			SemanticModel? semanticModel;
-
-			if (includeSemanticModel)
-			{
-				semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-			}
-			else
-			{
-				semanticModel = null;
-			}
-
-			return new CodeFixData<T>(
-				diagnostic,
-				context.Document,
-				semanticModel,
-				root,
-				node,
-				true,
-				context.CancellationToken
-			);
+			return default;
 		}
+
+		SyntaxNode? parent = root.FindNode(diagnostic.Location.SourceSpan);
+		T? node;
+
+		if (parent is null)
+		{
+			node = null;
+		}
+		else
+		{
+			node = parent.FirstAncestorOrSelf<T>() ?? parent.DescendantNodes().OfType<T>().FirstOrDefault();
+		}
+
+		SemanticModel? semanticModel;
+
+		if (includeSemanticModel)
+		{
+			semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+		}
+		else
+		{
+			semanticModel = null;
+		}
+
+		return new CodeFixData<T>(
+			diagnostic,
+			context.Document,
+			semanticModel,
+			root,
+			node,
+			true,
+			context.CancellationToken
+		);
 	}
 }

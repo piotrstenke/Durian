@@ -1,85 +1,84 @@
 ﻿using System;
 
-namespace Durian.Analysis.CopyFrom
+namespace Durian.Analysis.CopyFrom;
+
+/// <summary>
+/// Encapsulates data of a Regex pattern specified in a <c>Durian.PatternAttribute</c>.
+/// </summary>
+public readonly struct PatternData : IEquatable<PatternData>
 {
 	/// <summary>
-	/// Encapsulates data of a Regex pattern specified in a <c>Durian.PatternAttribute</c>.
+	/// Regex pattern to use.
 	/// </summary>
-	public readonly struct PatternData : IEquatable<PatternData>
+	public string Pattern { get; }
+
+	/// <summary>
+	/// Value to replace the matched values with.
+	/// </summary>
+	public string Replacement { get; }
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="PatternData"/> struct.
+	/// </summary>
+	/// <param name="pattern">Regex pattern to use.</param>
+	/// <param name="replacement">Value to replace the matched values with.</param>
+	public PatternData(string pattern, string replacement)
 	{
-		/// <summary>
-		/// Regex pattern to use.
-		/// </summary>
-		public string Pattern { get; }
+		Pattern = pattern;
+		Replacement = replacement;
+	}
 
-		/// <summary>
-		/// Value to replace the matched values with.
-		/// </summary>
-		public string Replacement { get; }
+	/// <inheritdoc/>
+	public static bool operator !=(PatternData left, PatternData right)
+	{
+		return !(left == right);
+	}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PatternData"/> struct.
-		/// </summary>
-		/// <param name="pattern">Regex pattern to use.</param>
-		/// <param name="replacement">Value to replace the matched values with.</param>
-		public PatternData(string pattern, string replacement)
-		{
-			Pattern = pattern;
-			Replacement = replacement;
-		}
+	/// <inheritdoc/>
+	public static bool operator ==(PatternData left, PatternData right)
+	{
+		return left.Equals(right);
+	}
 
-		/// <inheritdoc/>
-		public static bool operator !=(PatternData left, PatternData right)
-		{
-			return !(left == right);
-		}
+	/// <summary>
+	/// Deconstructs the current object.
+	/// </summary>
+	/// <param name="pattern">Regex pattern to use.</param>
+	/// <param name="replacement">Value to replace the matched values with.</param>
+	public void Deconstruct(out string pattern, out string replacement)
+	{
+		pattern = Pattern;
+		replacement = Replacement;
+	}
 
-		/// <inheritdoc/>
-		public static bool operator ==(PatternData left, PatternData right)
-		{
-			return left.Equals(right);
-		}
+	/// <inheritdoc/>
+	public override bool Equals(object? obj)
+	{
+		return
+			obj is PatternData data &&
+			Equals(data);
+	}
 
-		/// <summary>
-		/// Deconstructs the current object.
-		/// </summary>
-		/// <param name="pattern">Regex pattern to use.</param>
-		/// <param name="replacement">Value to replace the matched values with.</param>
-		public void Deconstruct(out string pattern, out string replacement)
-		{
-			pattern = Pattern;
-			replacement = Replacement;
-		}
+	/// <inheritdoc/>
+	public bool Equals(PatternData other)
+	{
+		return
+			Pattern == other.Pattern &&
+			Replacement == other.Replacement;
+	}
 
-		/// <inheritdoc/>
-		public override bool Equals(object? obj)
-		{
-			return
-				obj is PatternData data &&
-				Equals(data);
-		}
+	/// <inheritdoc/>
+	public override int GetHashCode()
+	{
+		int hashCode = -1155513704;
+		hashCode = (hashCode * -1521134295) + Pattern.GetHashCode();
+		hashCode = (hashCode * -1521134295) + Replacement.GetHashCode();
+		return hashCode;
+	}
 
-		/// <inheritdoc/>
-		public bool Equals(PatternData other)
-		{
-			return
-				Pattern == other.Pattern &&
-				Replacement == other.Replacement;
-		}
-
-		/// <inheritdoc/>
-		public override int GetHashCode()
-		{
-			int hashCode = -1155513704;
-			hashCode = (hashCode * -1521134295) + Pattern.GetHashCode();
-			hashCode = (hashCode * -1521134295) + Replacement.GetHashCode();
-			return hashCode;
-		}
-
-		/// <inheritdoc/>
-		public override string ToString()
-		{
-			return $"Pattern = \"{Pattern}\", Replacement = \"{Replacement}\"";
-		}
+	/// <inheritdoc/>
+	public override string ToString()
+	{
+		return $"Pattern = \"{Pattern}\", Replacement = \"{Replacement}\"";
 	}
 }

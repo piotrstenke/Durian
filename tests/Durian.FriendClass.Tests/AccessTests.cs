@@ -4,14 +4,14 @@ using Durian.TestServices;
 using Xunit;
 using static Durian.Analysis.FriendClass.FriendClassDiagnostics;
 
-namespace Durian.Analysis.FriendClass.Tests
+namespace Durian.Analysis.FriendClass.Tests;
+
+public class AccessTests : AnalyzerTest<FriendClassAccessAnalyzer>
 {
-	public class AccessTests : AnalyzerTest<FriendClassAccessAnalyzer>
+	[Fact]
+	public async Task Error_When_ChildCallsNotFriendConstructor()
 	{
-		[Fact]
-		public async Task Error_When_ChildCallsNotFriendConstructor()
-		{
-			string input =
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -33,13 +33,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_ChildCallsNotFriendMethod()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_ChildCallsNotFriendMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -62,13 +62,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_ChildCallsNotFriendPropertyOrField()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_ChildCallsNotFriendPropertyOrField()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -89,13 +89,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_ChildClassOfFriendTriesToAccessMember_And_DoesNotAllowChildrenOfFriends()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_ChildClassOfFriendTriesToAccessMember_And_DoesNotAllowChildrenOfFriends()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other), {FriendClassAttributeProvider.AllowFriendChildren} = false)]
@@ -116,13 +116,13 @@ class Child : Other
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0310_MemberCannotBeAccessedByChildClassOfFriend.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0310_MemberCannotBeAccessedByChildClassOfFriend.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_ChildClassTriesToAccessMember_And_DoesNotAllowChildrenAccessOfInternals()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_ChildClassTriesToAccessMember_And_DoesNotAllowChildrenAccessOfInternals()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -145,13 +145,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_ChildClassTriesToAccessMember_And_DoesNotAllowChildrenAccessOfInternals_And_UsesThisKeyword()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_ChildClassTriesToAccessMember_And_DoesNotAllowChildrenAccessOfInternals_And_UsesThisKeyword()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -174,13 +174,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_ChildTriesToAccessInnerClass()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_ChildTriesToAccessInnerClass()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -203,13 +203,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_HasInternalConstructor_And_ChildHasDefaultConstructor()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_HasInternalConstructor_And_ChildHasDefaultConstructor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -228,13 +228,13 @@ class Child : Test
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_HasInternalConstructor_And_ChildImplicitlyTriesToAccessParameterlessConstructor()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_HasInternalConstructor_And_ChildImplicitlyTriesToAccessParameterlessConstructor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -260,13 +260,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedInternalMember()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedInternalMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -294,13 +294,13 @@ class Child : Test
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedInternalMemberFromObject()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedInternalMemberFromObject()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -329,13 +329,13 @@ class Child : Test
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedInternalMemberWithBaseKeyword()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedInternalMemberWithBaseKeyword()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -363,13 +363,13 @@ class Child : Test
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedInternalMemberWithThisKeyword()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedInternalMemberWithThisKeyword()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -397,13 +397,13 @@ class Child : Test
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IncludeInherited_And_NotFriendTriesToAccessInstanceMemberReturnedFromMethod()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IncludeInherited_And_NotFriendTriesToAccessInstanceMemberReturnedFromMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -437,13 +437,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IncludesInherited_And_NotFriendTriesToAccessInheritedInternalMember()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IncludesInherited_And_NotFriendTriesToAccessInheritedInternalMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -472,13 +472,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IncludesInherited_And_NotFriendTriesToAccessInheritedInternalMember_And_UsesObjectInitializer()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IncludesInherited_And_NotFriendTriesToAccessInheritedInternalMember_And_UsesObjectInitializer()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -509,13 +509,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IncludesInherited_And_NotFriendTriesToAccessInheritedInternalMember_And_UsesPatternMatching()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IncludesInherited_And_NotFriendTriesToAccessInheritedInternalMember_And_UsesPatternMatching()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -547,13 +547,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IncludesInherited_And_NotFriendTriesToAccessInheritedInternalMember_And_UsesRecursivePatternMatching()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IncludesInherited_And_NotFriendTriesToAccessInheritedInternalMember_And_UsesRecursivePatternMatching()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -585,13 +585,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IncludesInherited_And_NotFriendTriesToAccessInheritedInternalMember_And_UsesWithExpression()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IncludesInherited_And_NotFriendTriesToAccessInheritedInternalMember_And_UsesWithExpression()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -620,13 +620,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IsRecord_And_HasInternalConstructor_And_ChildCallsConstructorInRecordDeclaration()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IsRecord_And_HasInternalConstructor_And_ChildCallsConstructorInRecordDeclaration()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -643,13 +643,13 @@ class Other
 
 record Child(string Name) : Test(Name);
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_IsRecord_And_HasInternalConstructor_And_ChildImplicitlyTriesToAccessParameterlessConstructor()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IsRecord_And_HasInternalConstructor_And_ChildImplicitlyTriesToAccessParameterlessConstructor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -666,13 +666,13 @@ class Other
 
 record Child(string Name) : Test;
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_NotFriendParentTriesToAccessChildMembers()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_NotFriendParentTriesToAccessChildMembers()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -697,13 +697,13 @@ class Other
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_NotFriendTriesToAccessInternalConstructor()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_NotFriendTriesToAccessInternalConstructor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -734,13 +734,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_NotFriendTriesToAccessInternalMember_And_UsesObjectInitializer()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_NotFriendTriesToAccessInternalMember_And_UsesObjectInitializer()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -765,13 +765,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_NotFriendTriesToAccessInternalMember_And_UsesWithExpression()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_NotFriendTriesToAccessInternalMember_And_UsesWithExpression()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -794,13 +794,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_NotFriendTriesToAccessProtectedInternalMember()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_NotFriendTriesToAccessProtectedInternalMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -822,13 +822,13 @@ class NotFriend
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_OverridesNotFriendEvent()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_OverridesNotFriendEvent()
+	{
+		string input =
 $@"using System;
 using {DurianStrings.MainNamespace};
 
@@ -851,13 +851,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_OverridesNotFriendIndexer()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_OverridesNotFriendIndexer()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -875,13 +875,13 @@ class Child : Test
 	internal override string this[int index] => null;
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_OverridesNotFriendMethod()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_OverridesNotFriendMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -903,13 +903,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_OverridesNotFriendProperty()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_OverridesNotFriendProperty()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -927,13 +927,13 @@ class Child : Test
 	internal override string Name {{ get; }}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0307_MemberCannotBeAccessedByChildClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_TriesToAccessInternalMember_And_IsNotFriend()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_TriesToAccessInternalMember_And_IsNotFriend()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Child))]
@@ -958,13 +958,13 @@ class Other
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_TriesToImplementInnerInterface()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_TriesToImplementInnerInterface()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -987,13 +987,13 @@ class Parent
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Error_When_TriesToInheritInnerClass()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_TriesToInheritInnerClass()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -1012,13 +1012,13 @@ class NotFriend : Test.Inner
 {{
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0302_MemberCannotBeAccessedOutsideOfFriendClass.Id);
+	}
 
-		[Fact]
-		public async Task Success_When_TriesToAccessInheritedInternalMember()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_TriesToAccessInheritedInternalMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -1043,13 +1043,13 @@ class Other
 }}
 ";
 
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_ChildClassOfFriendTriesToAccessMember_And_AllowChildrenOfFriends()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_ChildClassOfFriendTriesToAccessMember_And_AllowChildrenOfFriends()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other), {FriendClassAttributeProvider.AllowFriendChildren} = true)]
@@ -1074,13 +1074,13 @@ class Child : Other
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_ChildClassTriesToAccessMember_And_AllowChildrenAccessOfInternals()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_ChildClassTriesToAccessMember_And_AllowChildrenAccessOfInternals()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1107,13 +1107,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_FriendParentTriesToAccessChildMembers()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_FriendParentTriesToAccessChildMembers()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Parent))]
@@ -1134,13 +1134,13 @@ class Parent
 }}
 ";
 
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_HasMultipleFriendTypes()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_HasMultipleFriendTypes()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -1166,13 +1166,13 @@ class Another
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_IncludeInherited_And_AllowChildren_And_ChildTriesToAccessInheritedInternalMember()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_IncludeInherited_And_AllowChildren_And_ChildTriesToAccessInheritedInternalMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1199,13 +1199,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_IncludeInherited_And_FriendTriesToAccess()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_IncludeInherited_And_FriendTriesToAccess()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1232,13 +1232,13 @@ class Other
 }}
 ";
 
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedProtectedInternalMember()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedProtectedInternalMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1266,13 +1266,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_IncludeInherited_And_NotFriendChildTriesToAccessStaticMemberProperly()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_IncludeInherited_And_NotFriendChildTriesToAccessStaticMemberProperly()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1300,13 +1300,13 @@ class Child : Test
 }}
 ";
 
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_IncludeInherited_And_NotFriendParentTriesToAccessItsMembers()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_IncludeInherited_And_NotFriendParentTriesToAccessItsMembers()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1334,13 +1334,13 @@ class Other
 }}
 ";
 
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_IsFriendOfFriend()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_IsFriendOfFriend()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Child))]
@@ -1365,13 +1365,13 @@ class Child
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_NotFriendChildTriesToAccessInheritedProtectedInternalMember()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_NotFriendChildTriesToAccessInheritedProtectedInternalMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -1397,13 +1397,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_NotFriendChildTriesToAccessProtectedInternalMember()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_NotFriendChildTriesToAccessProtectedInternalMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -1425,13 +1425,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_NotFriendTriesToAccessInheritedInternalInstanceMember()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_NotFriendTriesToAccessInheritedInternalInstanceMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -1458,13 +1458,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_NotFriendTriesToAccessInheritedInternalMember_And_UsesObjectInitializer()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_NotFriendTriesToAccessInheritedInternalMember_And_UsesObjectInitializer()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -1493,13 +1493,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_TriesToAccessInnerClassGlobally()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_TriesToAccessInnerClassGlobally()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 using static Test.Inner;
@@ -1516,13 +1516,13 @@ class Other
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_TriesToAccessInternalMember_And_IsFriend()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_TriesToAccessInternalMember_And_IsFriend()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -1539,13 +1539,13 @@ class Other
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_TriesToAccessInternalMember_And_OuterTypeIsFriend()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_TriesToAccessInternalMember_And_OuterTypeIsFriend()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -1565,13 +1565,13 @@ class Other
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_TriesToAccessNotFriendMemberInDocComment()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_TriesToAccessNotFriendMemberInDocComment()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 using static Test.Inner;
@@ -1594,13 +1594,13 @@ class NotFriend
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Success_When_TriesToAccessInsideInterfaceDefaultImplementation()
-		{
-			string input =
+	[Fact]
+	public async Task Success_When_TriesToAccessInsideInterfaceDefaultImplementation()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1619,13 +1619,13 @@ interface IOther
 }}
 ";
 
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Warning_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedProtectedInternalStaticMember()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_IncludeInherited_And_NotFriendChildTriesToAccessInheritedProtectedInternalStaticMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1653,13 +1653,13 @@ class Child : Test
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
+	}
 
-		[Fact]
-		public async Task Warning_When_IncludeInherited_And_NotFriendTriesToAccessStaticMember()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_IncludeInherited_And_NotFriendTriesToAccessStaticMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1687,13 +1687,13 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
+	}
 
-		[Fact]
-		public async Task Warning_When_NotFriendTriesToAccessInheritedInternalStaticMember()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_NotFriendTriesToAccessInheritedInternalStaticMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 [{FriendClassAttributeProvider.TypeName}(typeof(Other))]
@@ -1719,12 +1719,11 @@ class NotFriend
 }}
 ";
 
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0314_DoNotAccessInheritedStaticMembers.Id);
+	}
 
-		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
-		{
-			return FriendClassGenerator.GetSourceProviders();
-		}
+	protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
+	{
+		return FriendClassGenerator.GetSourceProviders();
 	}
 }

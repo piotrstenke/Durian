@@ -1,21 +1,20 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Analysis.Data
+namespace Durian.Analysis.Data;
+
+/// <summary>
+/// Encapsulates data associated with a single <see cref="INamedTypeSymbol"/> representing a class.
+/// </summary>
+public interface IClassData : ITypeData, ISymbolOrMember<INamedTypeSymbol, IClassData>
 {
 	/// <summary>
-	/// Encapsulates data associated with a single <see cref="INamedTypeSymbol"/> representing a class.
+	/// Target <see cref="ClassDeclarationSyntax"/>.
 	/// </summary>
-	public interface IClassData : ITypeData, ISymbolOrMember<INamedTypeSymbol, IClassData>
-	{
-		/// <summary>
-		/// Target <see cref="ClassDeclarationSyntax"/>.
-		/// </summary>
-		new ClassDeclarationSyntax Declaration { get; }
+	new ClassDeclarationSyntax Declaration { get; }
 
-		/// <summary>
-		/// Creates a shallow copy of the current data.
-		/// </summary>
-		new IClassData Clone();
-	}
+	/// <summary>
+	/// Creates a shallow copy of the current data.
+	/// </summary>
+	new IClassData Clone();
 }

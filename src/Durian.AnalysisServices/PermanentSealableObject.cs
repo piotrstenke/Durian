@@ -1,53 +1,52 @@
-﻿namespace Durian.Analysis
+﻿namespace Durian.Analysis;
+
+/// <summary>
+/// <see cref="ISealable"/> that can be sealed only once and cannot be unsealed.
+/// </summary>
+public abstract class PermanentSealableObject : ISealable
 {
+	/// <inheritdoc/>
+	public bool IsSealed { get; private set; }
+
+	/// <inheritdoc/>
+	public virtual bool CanBeSealed => !IsSealed;
+
+	bool ISealable.CanBeUnsealed => false;
+
 	/// <summary>
-	/// <see cref="ISealable"/> that can be sealed only once and cannot be unsealed.
+	/// Initializes a new instance of the <see cref="PermanentSealableObject"/> class.
 	/// </summary>
-	public abstract class PermanentSealableObject : ISealable
+	protected PermanentSealableObject()
 	{
-		/// <inheritdoc/>
-		public bool IsSealed { get; private set; }
+	}
 
-		/// <inheritdoc/>
-		public virtual bool CanBeSealed => !IsSealed;
-
-		bool ISealable.CanBeUnsealed => false;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PermanentSealableObject"/> class.
-		/// </summary>
-		protected PermanentSealableObject()
-		{
-		}
-
-		/// <inheritdoc/>
-		public bool Seal()
-		{
-			if (IsSealed)
-			{
-				return false;
-			}
-
-			if (!CanBeSealed)
-			{
-				throw new SealedObjectException(this, "Current state of the object does not allow it to be sealed");
-			}
-
-			IsSealed = SealCore();
-			return IsSealed;
-		}
-
-		bool ISealable.Unseal()
+	/// <inheritdoc/>
+	public bool Seal()
+	{
+		if (IsSealed)
 		{
 			return false;
 		}
 
-		/// <summary>
-		/// Actually seals the object.
-		/// </summary>
-		protected virtual bool SealCore()
+		if (!CanBeSealed)
 		{
-			return true;
+			throw new SealedObjectException(this, "Current state of the object does not allow it to be sealed");
 		}
+
+		IsSealed = SealCore();
+		return IsSealed;
+	}
+
+	bool ISealable.Unseal()
+	{
+		return false;
+	}
+
+	/// <summary>
+	/// Actually seals the object.
+	/// </summary>
+	protected virtual bool SealCore()
+	{
+		return true;
 	}
 }

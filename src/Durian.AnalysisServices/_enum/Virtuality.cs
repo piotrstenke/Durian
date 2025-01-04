@@ -1,28 +1,27 @@
-﻿namespace Durian.Analysis
+﻿namespace Durian.Analysis;
+
+/// <summary>
+/// Specifies all possible steps of virtuality of a member.
+/// </summary>
+public enum Virtuality
 {
 	/// <summary>
-	/// Specifies all possible steps of virtuality of a member.
+	/// Member is not <see langword="virtual"/>.
 	/// </summary>
-	public enum Virtuality
-	{
-		/// <summary>
-		/// Member is not <see langword="virtual"/>.
-		/// </summary>
-		NotVirtual = 0,
+	NotVirtual = 0,
 
-		/// <summary>
-		/// The member is <see langword="sealed"/>.
-		/// </summary>
-		Sealed = 1,
+	/// <summary>
+	/// The member is <see langword="sealed"/>.
+	/// </summary>
+	Sealed = 1,
 
-		/// <summary>
-		/// The member is <see langword="virtual"/>.
-		/// </summary>
-		Virtual = 2,
+	/// <summary>
+	/// The member is <see langword="virtual"/>.
+	/// </summary>
+	Virtual = 2,
 
-		/// <summary>
-		/// The member is <see langword="abstract"/>.
-		/// </summary>
-		Abstract = 3
-	}
+	/// <summary>
+	/// The member is <see langword="abstract"/>.
+	/// </summary>
+	Abstract = 3
 }

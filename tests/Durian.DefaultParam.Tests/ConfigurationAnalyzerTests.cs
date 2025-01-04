@@ -7,14 +7,14 @@ using Microsoft.CodeAnalysis;
 using Xunit;
 using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 
-namespace Durian.Analysis.DefaultParam.Tests
+namespace Durian.Analysis.DefaultParam.Tests;
+
+public sealed class ConfigurationAnalyzerTests : AnalyzerTest<DefaultParamConfigurationAnalyzer>
 {
-	public sealed class ConfigurationAnalyzerTests : AnalyzerTest<DefaultParamConfigurationAnalyzer>
+	[Fact]
+	public async Task Error_When_ConfigurationIsOnLocalFunction()
 	{
-		[Fact]
-		public async Task Error_When_ConfigurationIsOnLocalFunction()
-		{
-			string input =
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -29,14 +29,14 @@ partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
+	}
 
-		[Fact]
-		public async Task Error_When_IsInheritOnSealedType()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IsInheritOnSealedType()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -45,14 +45,14 @@ public sealed class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
+	}
 
-		[Fact]
-		public async Task Error_When_IsInheritOnStaticType()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IsInheritOnStaticType()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -61,14 +61,14 @@ public static class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
+	}
 
-		[Fact]
-		public async Task Error_When_IsInheritOnStruct()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IsInheritOnStruct()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -77,14 +77,14 @@ public struct Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>(
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType.Id));
+	}
 
-		[Fact]
-		public async Task Error_When_IsInheritOnTypeWithNoAccessibleConstructors()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_IsInheritOnTypeWithNoAccessibleConstructors()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -96,14 +96,14 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0123_InheritTypeConventionCannotBeUsedOnTypeWithNoAccessibleConstructor.Id));
+	}
 
-		[Fact]
-		public async Task Error_When_MethodIsExplicitImplementation()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_MethodIsExplicitImplementation()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -120,14 +120,14 @@ class Test : ITest
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
+	}
 
-		[Fact]
-		public async Task Error_When_MethodIsInInterface()
-		{
-			string input =
+	[Fact]
+	public async Task Error_When_MethodIsInInterface()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -137,14 +137,14 @@ partial interface ITest
 	void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod.Id));
+	}
 
-		[Fact]
-		public async Task NoDiagnostics_When_IsDefaultParamDelegate()
-		{
-			string input =
+	[Fact]
+	public async Task NoDiagnostics_When_IsDefaultParamDelegate()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -154,13 +154,13 @@ partial class Test
 	public delegate void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoDiagnostics_When_IsDefaultParamMethod()
-		{
-			string input =
+	[Fact]
+	public async Task NoDiagnostics_When_IsDefaultParamMethod()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -172,13 +172,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoDiagnostics_When_IsDefaultParamType()
-		{
-			string input =
+	[Fact]
+	public async Task NoDiagnostics_When_IsDefaultParamType()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -187,13 +187,13 @@ partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoDiagnostics_When_MethodConventionOnMethod()
-		{
-			string input =
+	[Fact]
+	public async Task NoDiagnostics_When_MethodConventionOnMethod()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -205,13 +205,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoDiagnostics_When_TypeConventionOnType()
-		{
-			string input =
+	[Fact]
+	public async Task NoDiagnostics_When_TypeConventionOnType()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -220,13 +220,13 @@ partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoWarning_When_TargetNamespaceIsNamedLikeKeyword_And_HasAtSign()
-		{
-			string input =
+	[Fact]
+	public async Task NoWarning_When_TargetNamespaceIsNamedLikeKeyword_And_HasAtSign()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -235,13 +235,13 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoWarning_When_TargetNamespaceIsNull()
-		{
-			string input =
+	[Fact]
+	public async Task NoWarning_When_TargetNamespaceIsNull()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -250,13 +250,13 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoWarning_When_TargetNamespaceIsValid()
-		{
-			string input =
+	[Fact]
+	public async Task NoWarning_When_TargetNamespaceIsValid()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -265,13 +265,13 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoWarning_When_TargetNamespaceIsValid_And_HasDot()
-		{
-			string input =
+	[Fact]
+	public async Task NoWarning_When_TargetNamespaceIsValid_And_HasDot()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -280,13 +280,13 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Warning_When_ConfigurationIsOnNonDefaultParamDelegate()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_ConfigurationIsOnNonDefaultParamDelegate()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -296,14 +296,14 @@ partial class Test
 	public delegate void Method<T>();
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_ConfigurationIsOnNonDefaultParamMethod()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_ConfigurationIsOnNonDefaultParamMethod()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -315,14 +315,14 @@ partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_ConfigurationIsOnNonDefaultParamType()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_ConfigurationIsOnNonDefaultParamType()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -331,14 +331,14 @@ partial class Test<T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_IsNotChildType_And_UsesApplyNewModifierProperty()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_IsNotChildType_And_UsesApplyNewModifierProperty()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -347,14 +347,14 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0124_ApplyNewModifierShouldNotBeUsedWhenIsNotChildOfType.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_MethodConventionOnDelegate()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_MethodConventionOnDelegate()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -364,14 +364,14 @@ partial class Test
 	public delegate void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_MethodConventionOnType()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_MethodConventionOnType()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -380,14 +380,14 @@ partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_TargetNamespaceIsDefinedOnNestedMember()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_TargetNamespaceIsDefinedOnNestedMember()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -399,14 +399,14 @@ public class Parent
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0128_DoNotSpecifyTargetNamespaceForNestedMembers.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0128_DoNotSpecifyTargetNamespaceForNestedMembers.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_TargetNamespaceIsDurianGenerator()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_TargetNamespaceIsDurianGenerator()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -415,14 +415,14 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_TargetNamespaceIsNamedLikeKeyword()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_TargetNamespaceIsNamedLikeKeyword()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -431,14 +431,14 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_TargetNamespaceIsNotValidIdentifier()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_TargetNamespaceIsNotValidIdentifier()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -447,14 +447,14 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_TargetNamespaceIsWhitespaceOrEmpty()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_TargetNamespaceIsWhitespaceOrEmpty()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -463,14 +463,14 @@ public class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_TypeConventionOnDelegate()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_TypeConventionOnDelegate()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -480,14 +480,14 @@ partial class Test
 	public delegate void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>();
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_TypeConventionOnMethod()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_TypeConventionOnMethod()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -499,13 +499,12 @@ partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes.Id));
+	}
 
-		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
-		{
-			return DefaultParamGenerator.GetSourceProviders();
-		}
+	protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
+	{
+		return DefaultParamGenerator.GetSourceProviders();
 	}
 }

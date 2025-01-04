@@ -7,14 +7,14 @@ using Microsoft.CodeAnalysis;
 using Xunit;
 using static Durian.Analysis.DefaultParam.DefaultParamDiagnostics;
 
-namespace Durian.Analysis.DefaultParam.Tests
+namespace Durian.Analysis.DefaultParam.Tests;
+
+public sealed class ScopedConfigurationAnalyzerTests : AnalyzerTest<DefaultParamScopedConfigurationAnalyzer>
 {
-	public sealed class ScopedConfigurationAnalyzerTests : AnalyzerTest<DefaultParamScopedConfigurationAnalyzer>
+	[Fact]
+	public async Task NoWarning_When_HasScopedConfiguration_And_HasDefaultParamMembers()
 	{
-		[Fact]
-		public async Task NoWarning_When_HasScopedConfiguration_And_HasDefaultParamMembers()
-		{
-			string input =
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -26,13 +26,13 @@ public partial class Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoWarning_When_TargetNamespaceIsNamedLikeKeyword_And_HasAtSign()
-		{
-			string input =
+	[Fact]
+	public async Task NoWarning_When_TargetNamespaceIsNamedLikeKeyword_And_HasAtSign()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -44,13 +44,13 @@ public partial class Test
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoWarning_When_TargetNamespaceIsNull()
-		{
-			string input =
+	[Fact]
+	public async Task NoWarning_When_TargetNamespaceIsNull()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -62,13 +62,13 @@ public partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(strin
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoWarning_When_TargetNamespaceIsValid()
-		{
-			string input =
+	[Fact]
+	public async Task NoWarning_When_TargetNamespaceIsValid()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -80,13 +80,13 @@ public partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(strin
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task NoWarning_When_TargetNamespaceIsValid_And_HasDot()
-		{
-			string input =
+	[Fact]
+	public async Task NoWarning_When_TargetNamespaceIsValid_And_HasDot()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -98,13 +98,13 @@ public partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(strin
 	}}
 }}
 ";
-			Assert.Empty(await RunAnalyzer(input));
-		}
+		Assert.Empty(await RunAnalyzer(input));
+	}
 
-		[Fact]
-		public async Task Warning_When_HasScopedConfiguration_And_HasNoDefaultParamMembers()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_HasScopedConfiguration_And_HasNoDefaultParamMembers()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -113,14 +113,14 @@ public class Test
 {{
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0125_ScopedConfigurationShouldNotBePlacedOnATypeWithoutDefaultParamMembers.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_TargetNamespaceIsDurianGenerator()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_TargetNamespaceIsDurianGenerator()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -132,14 +132,14 @@ public partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_TargetNamespaceIsNamedLikeKeyword()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_TargetNamespaceIsNamedLikeKeyword()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -151,14 +151,14 @@ public partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_TargetNamespaceIsNotValidIdentifier()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_TargetNamespaceIsNotValidIdentifier()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -170,14 +170,14 @@ public partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
+	}
 
-		[Fact]
-		public async Task Warning_When_TargetNamespaceIsWhitespaceOrEmpty()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_TargetNamespaceIsWhitespaceOrEmpty()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -189,13 +189,12 @@ public partial class Test
 	}}
 }}
 ";
-			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
-		}
+		ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
+		Assert.True(diagnostics.Any(d => d.Id == DUR0127_InvalidTargetNamespace.Id));
+	}
 
-		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
-		{
-			return DefaultParamGenerator.GetSourceProviders();
-		}
+	protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
+	{
+		return DefaultParamGenerator.GetSourceProviders();
 	}
 }

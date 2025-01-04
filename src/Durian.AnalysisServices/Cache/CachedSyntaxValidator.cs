@@ -8,122 +8,121 @@ using Durian.Analysis.Filtration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Analysis.Cache
+namespace Durian.Analysis.Cache;
+
+/// <summary>
+/// <see cref="ISyntaxFilter"/> that validates the filtrated nodes.
+/// If the value associated with a <see cref="SyntaxNode"/> is present in the <see cref="CachedGeneratorExecutionContext{T}"/>, it is re-used.
+/// </summary>
+/// <typeparam name="TData">Type of cached values.</typeparam>
+/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
+public abstract class CachedSyntaxValidator<TData, TContext> : SyntaxValidator<TContext>, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>
+	where TData : class, IMemberData
+	where TContext : ISyntaxValidationContext
 {
 	/// <summary>
-	/// <see cref="ISyntaxFilter"/> that validates the filtrated nodes.
-	/// If the value associated with a <see cref="SyntaxNode"/> is present in the <see cref="CachedGeneratorExecutionContext{T}"/>, it is re-used.
+	/// Initializes a new instance of the <see cref="CachedSyntaxValidator{TData, TContext}"/> class.
 	/// </summary>
-	/// <typeparam name="TData">Type of cached values.</typeparam>
-	/// <typeparam name="TContext">Type of target <see cref="ISyntaxValidationContext"/>.</typeparam>
-	public abstract class CachedSyntaxValidator<TData, TContext> : SyntaxValidator<TContext>, ICachedGeneratorSyntaxFilterWithDiagnostics<TData>
-		where TData : class, IMemberData
-		where TContext : ISyntaxValidationContext
+	protected CachedSyntaxValidator()
 	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedSyntaxValidator{TData, TContext}"/> class.
-		/// </summary>
-		protected CachedSyntaxValidator()
+	}
+
+	/// <inheritdoc/>
+	public IEnumerable<IMemberData> Filtrate(ICachedGeneratorPassContext<TData> context)
+	{
+		if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<SyntaxNode> list)
 		{
+			return Array.Empty<TData>();
 		}
 
-		/// <inheritdoc/>
-		public IEnumerable<IMemberData> Filtrate(ICachedGeneratorPassContext<TData> context)
+		ref readonly CachedData<TData> cache = ref context.OriginalContext.GetCachedData();
+
+		IDiagnosticReceiver? diagnosticReceiver = context.GetDiagnosticReceiver();
+
+		if (diagnosticReceiver is null)
 		{
-			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<SyntaxNode> list)
-			{
-				return Array.Empty<TData>();
-			}
-
-			ref readonly CachedData<TData> cache = ref context.OriginalContext.GetCachedData();
-
-			IDiagnosticReceiver? diagnosticReceiver = context.GetDiagnosticReceiver();
-
-			if (diagnosticReceiver is null)
-			{
-				return Yield(new CachedFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, in cache));
-			}
-
-			if (diagnosticReceiver is INodeDiagnosticReceiver node)
-			{
-				return Yield(new CachedLoggableFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, node, context.FileNameProvider, in cache));
-			}
-
-			return Yield(new CachedFilterEnumeratorWithDiagnostics<TData, TContext>(context.TargetCompilation, list, this, diagnosticReceiver, in cache));
-
-			IEnumerable<IMemberData> Yield<TEnumerator>(TEnumerator enumerator) where TEnumerator : IFilterEnumerator<TContext>
-			{
-				while (enumerator.MoveNext(context.CancellationToken))
-				{
-					yield return enumerator.Current;
-				}
-			}
+			return Yield(new CachedFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, in cache));
 		}
 
-		/// <inheritdoc/>
-		public virtual IEnumerator<IMemberData> GetEnumerator(ICachedGeneratorPassContext<TData> context)
+		if (diagnosticReceiver is INodeDiagnosticReceiver node)
 		{
-			if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<SyntaxNode> list)
+			return Yield(new CachedLoggableFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, node, context.FileNameProvider, in cache));
+		}
+
+		return Yield(new CachedFilterEnumeratorWithDiagnostics<TData, TContext>(context.TargetCompilation, list, this, diagnosticReceiver, in cache));
+
+		IEnumerable<IMemberData> Yield<TEnumerator>(TEnumerator enumerator) where TEnumerator : IFilterEnumerator<TContext>
+		{
+			while (enumerator.MoveNext(context.CancellationToken))
 			{
-				return Enumerable.Empty<TData>().GetEnumerator();
+				yield return enumerator.Current;
 			}
-
-			ref readonly CachedData<TData> cache = ref context.OriginalContext.GetCachedData();
-
-			IDiagnosticReceiver? diagnosticReceiver = context.GetDiagnosticReceiver();
-
-			if (diagnosticReceiver is null)
-			{
-				return new CachedFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, in cache);
-			}
-
-			if (diagnosticReceiver is INodeDiagnosticReceiver node)
-			{
-				return new CachedLoggableFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, node, context.FileNameProvider, in cache);
-			}
-
-			return new CachedFilterEnumeratorWithDiagnostics<TData, TContext>(context.TargetCompilation, list, this, diagnosticReceiver, in cache);
 		}
 	}
 
-	/// <inheritdoc cref="CachedSyntaxValidator{TData}"/>
-	public abstract class CachedSyntaxValidator<TData> : CachedSyntaxValidator<TData, SyntaxValidationContext> where TData : class, IMemberData
+	/// <inheritdoc/>
+	public virtual IEnumerator<IMemberData> GetEnumerator(ICachedGeneratorPassContext<TData> context)
 	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="CachedSyntaxValidator{TData}"/> class.
-		/// </summary>
-		protected CachedSyntaxValidator()
+		if (GetCandidateNodes(context.SyntaxReceiver) is not IEnumerable<SyntaxNode> list)
 		{
+			return Enumerable.Empty<TData>().GetEnumerator();
 		}
 
-		/// <inheritdoc/>
-		public override bool TryGetContext(in PreValidationContext validationContext, [NotNullWhen(true)] out SyntaxValidationContext context)
+		ref readonly CachedData<TData> cache = ref context.OriginalContext.GetCachedData();
+
+		IDiagnosticReceiver? diagnosticReceiver = context.GetDiagnosticReceiver();
+
+		if (diagnosticReceiver is null)
 		{
-			SemanticModel semanticModel = validationContext.TargetCompilation.Compilation.GetSemanticModel(validationContext.Node.SyntaxTree);
-
-			if (semanticModel.GetDeclaredSymbol(validationContext.Node, validationContext.CancellationToken) is not ISymbol s)
-			{
-				context = default;
-				return false;
-			}
-
-			context = validationContext.ToSyntaxContext(semanticModel, s);
-			return true;
+			return new CachedFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, in cache);
 		}
+
+		if (diagnosticReceiver is INodeDiagnosticReceiver node)
+		{
+			return new CachedLoggableFilterEnumerator<TData, TContext>(context.TargetCompilation, list, this, node, context.FileNameProvider, in cache);
+		}
+
+		return new CachedFilterEnumeratorWithDiagnostics<TData, TContext>(context.TargetCompilation, list, this, diagnosticReceiver, in cache);
+	}
+}
+
+/// <inheritdoc cref="CachedSyntaxValidator{TData}"/>
+public abstract class CachedSyntaxValidator<TData> : CachedSyntaxValidator<TData, SyntaxValidationContext> where TData : class, IMemberData
+{
+	/// <summary>
+	/// Initializes a new instance of the <see cref="CachedSyntaxValidator{TData}"/> class.
+	/// </summary>
+	protected CachedSyntaxValidator()
+	{
+	}
+
+	/// <inheritdoc/>
+	public override bool TryGetContext(in PreValidationContext validationContext, [NotNullWhen(true)] out SyntaxValidationContext context)
+	{
+		SemanticModel semanticModel = validationContext.TargetCompilation.Compilation.GetSemanticModel(validationContext.Node.SyntaxTree);
+
+		if (semanticModel.GetDeclaredSymbol(validationContext.Node, validationContext.CancellationToken) is not ISymbol s)
+		{
+			context = default;
+			return false;
+		}
+
+		context = validationContext.ToSyntaxContext(semanticModel, s);
+		return true;
+	}
 
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 
-		/// <inheritdoc/>
-		[Obsolete("This method has no effect.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected sealed override bool TryCreateContext(
+	/// <inheritdoc/>
+	[Obsolete("This method has no effect.")]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	protected sealed override bool TryCreateContext(
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
-			in SyntaxValidationContext validationContext,
-			[NotNullWhen(true)] out SyntaxValidationContext context
-		)
-		{
-			context = validationContext;
-			return true;
-		}
+		in SyntaxValidationContext validationContext,
+		[NotNullWhen(true)] out SyntaxValidationContext context
+	)
+	{
+		context = validationContext;
+		return true;
 	}
 }

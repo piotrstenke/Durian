@@ -1,23 +1,22 @@
-﻿namespace Durian.Analysis
+﻿namespace Durian.Analysis;
+
+/// <summary>
+/// Defines available constructor initializer targets.
+/// </summary>
+public enum ConstructorInitializer
 {
 	/// <summary>
-	/// Defines available constructor initializer targets.
+	/// The constructor does not have an initializer.
 	/// </summary>
-	public enum ConstructorInitializer
-	{
-		/// <summary>
-		/// The constructor does not have an initializer.
-		/// </summary>
-		None = 0,
+	None = 0,
 
-		/// <summary>
-		/// The constructor uses the '<see langword="base"/>' initializer.
-		/// </summary>
-		Base = 1,
+	/// <summary>
+	/// The constructor uses the '<see langword="base"/>' initializer.
+	/// </summary>
+	Base = 1,
 
-		/// <summary>
-		/// The constructor uses the '<see langword="this"/>' initializer.
-		/// </summary>
-		This = 2
-	}
+	/// <summary>
+	/// The constructor uses the '<see langword="this"/>' initializer.
+	/// </summary>
+	This = 2
 }

@@ -2,14 +2,14 @@
 using Xunit;
 using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
 
-namespace Durian.Analysis.CopyFrom.Tests
+namespace Durian.Analysis.CopyFrom.Tests;
+
+public sealed class CopyFromMethodGeneratorTests : CopyFromGeneratorTest
 {
-	public sealed class CopyFromMethodGeneratorTests : CopyFromGeneratorTest
+	[Fact]
+	public void Error_When_AlreadyHasImplementation()
 	{
-		[Fact]
-		public void Error_When_AlreadyHasImplementation()
-		{
-			string input =
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -29,13 +29,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0211_MethodAlreadyHasImplementation));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0211_MethodAlreadyHasImplementation));
+	}
 
-		[Fact]
-		public void Error_When_ContainingTypeIsNotPartial()
-		{
-			string input =
+	[Fact]
+	public void Error_When_ContainingTypeIsNotPartial()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 class Test
@@ -48,13 +48,13 @@ class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0201_ContainingTypeMustBePartial));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0201_ContainingTypeMustBePartial));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromAbstractMethod()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromAbstractMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial abstract class Test
@@ -65,13 +65,13 @@ partial abstract class Test
 	abstract void Target();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromDelegate()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromDelegate()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -82,13 +82,13 @@ partial class Test
 	delegate void Target();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromExternMethod()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromExternMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial static class Test
@@ -99,13 +99,13 @@ partial static class Test
 	static extern void Target();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromIndexerAccessor_And_AccessorDoesNotExist()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromIndexerAccessor_And_AccessorDoesNotExist()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -119,13 +119,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromIndexerWithoutParamList()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromIndexerWithoutParamList()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -136,13 +136,13 @@ partial class Test
 	int this[int index] => 2;
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromInterfaceMethod()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromInterfaceMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial interface ITest
@@ -153,13 +153,13 @@ partial interface ITest
 	void Target();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromItself()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromItself()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -168,13 +168,13 @@ partial class Test
 	partial void Method();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromItselfOverriddenByChildType()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromItselfOverriddenByChildType()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -190,13 +190,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromItselfOverriddenByChildTypeWithTypeArguments()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromItselfOverriddenByChildTypeWithTypeArguments()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -212,13 +212,13 @@ class Child : Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromItselfWithTypeArguments()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromItselfWithTypeArguments()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -227,13 +227,13 @@ partial class Test
 	partial void Method<T>();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromNonMethodMember()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromNonMethodMember()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -244,13 +244,13 @@ partial class Test
 	string Target;
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromOverriddenMethod()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromOverriddenMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test : Parent
@@ -266,13 +266,13 @@ class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromOverriddenMethodWithTypeParameters()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromOverriddenMethodWithTypeParameters()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test : Parent
@@ -288,13 +288,13 @@ class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0207_MemberCannotCopyFromItselfOrItsParent));
+	}
 
-		[Fact]
-		public void Error_When_CopiesFromPartialMethodWithoutImplementation()
-		{
-			string input =
+	[Fact]
+	public void Error_When_CopiesFromPartialMethodWithoutImplementation()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -305,13 +305,13 @@ partial class Test
 	partial void Target();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
+	}
 
-		[Fact]
-		public void Error_When_HasDirectCircularDependency()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasDirectCircularDependency()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 partial class Test
 {{
@@ -321,13 +321,13 @@ partial class Test
 	partial void B();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0221_CircularDependency));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0221_CircularDependency));
+	}
 
-		[Fact]
-		public void Error_When_HasNestedCircularDependency()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasNestedCircularDependency()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 partial class Test
 {{
@@ -339,13 +339,13 @@ partial class Test
 	partial void C();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0221_CircularDependency));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0221_CircularDependency));
+	}
 
-		[Fact]
-		public void Error_When_HasReturnType_And_TargetIsEventProperty_AndUsesAddAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasReturnType_And_TargetIsEventProperty_AndUsesAddAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -360,13 +360,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_HasReturnType_And_TargetIsEventProperty_AndUsesRemoveAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasReturnType_And_TargetIsEventProperty_AndUsesRemoveAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -381,13 +381,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_HasReturnType_And_TargetIsImplementedPropertyWithoutGetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasReturnType_And_TargetIsImplementedPropertyWithoutGetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -402,13 +402,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_HasReturnType_And_TargetIsIndexerInitAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasReturnType_And_TargetIsIndexerInitAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -423,13 +423,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_HasReturnType_And_TargetIsIndexerSetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasReturnType_And_TargetIsIndexerSetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -444,13 +444,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_HasReturnType_And_TargetIsIndexerWithoutGetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasReturnType_And_TargetIsIndexerWithoutGetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -465,13 +465,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_HasReturnType_And_TargetIsInitAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasReturnType_And_TargetIsInitAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -486,13 +486,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_HasReturnType_And_TargetIsSetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasReturnType_And_TargetIsSetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -507,13 +507,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_HasReturnType_And_TargetIsVoid()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasReturnType_And_TargetIsVoid()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -527,13 +527,13 @@ partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0212_TargetDoesNotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_IsAbstractMethod()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsAbstractMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 abstract partial class Test
@@ -546,13 +546,13 @@ abstract partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsAddAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsAddAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -569,13 +569,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsConversionOperator()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsConversionOperator()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -588,13 +588,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsDestructor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsDestructor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -609,13 +609,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsExplicitInterfaceImplementation()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsExplicitInterfaceImplementation()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test : IA
@@ -635,13 +635,13 @@ interface IA
 	void Method();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsExternMethod()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsExternMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -654,13 +654,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsGetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsGetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -676,13 +676,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsInitAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsInitAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -698,13 +698,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsLambda()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsLambda()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -719,13 +719,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsLocalFunction()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsLocalFunction()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -743,13 +743,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsNotPartial()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsNotPartial()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -758,13 +758,13 @@ partial class Test
 	void Method();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0202_MemberMustBePartial));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0202_MemberMustBePartial));
+	}
 
-		[Fact]
-		public void Error_When_IsOperator()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsOperator()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -777,13 +777,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsPartialImplementation()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsPartialImplementation()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -798,13 +798,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0211_MethodAlreadyHasImplementation));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0211_MethodAlreadyHasImplementation));
+	}
 
-		[Fact]
-		public void Error_When_IsPartialImplementation_And_HasPartialDefinition()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsPartialImplementation_And_HasPartialDefinition()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -824,13 +824,13 @@ partial class Test
 	partial void Method();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0211_MethodAlreadyHasImplementation));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0211_MethodAlreadyHasImplementation));
+	}
 
-		[Fact]
-		public void Error_When_IsRemoveAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsRemoveAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -847,13 +847,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsSetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsSetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -869,13 +869,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0210_InvalidMethodKind));
+	}
 
-		[Fact]
-		public void Error_When_IsVoid_And_TargetHasReturnType()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsVoid_And_TargetHasReturnType()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -890,13 +890,13 @@ partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0213_TargetCannotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0213_TargetCannotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_IsVoid_And_TargetIsGetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsVoid_And_TargetIsGetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -911,13 +911,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0213_TargetCannotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0213_TargetCannotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_IsVoid_And_TargetIsImplementedPropertyWithoutSetOrInitAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsVoid_And_TargetIsImplementedPropertyWithoutSetOrInitAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -929,13 +929,13 @@ partial class Test
 	string Property => _property;
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0213_TargetCannotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0213_TargetCannotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_IsVoid_And_TargetIsIndexerGetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsVoid_And_TargetIsIndexerGetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -950,13 +950,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0213_TargetCannotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0213_TargetCannotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_IsVoid_And_TargetIsIndexerWithoutSetOrInitAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsVoid_And_TargetIsIndexerWithoutSetOrInitAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -971,13 +971,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0213_TargetCannotHaveReturnType));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0213_TargetCannotHaveReturnType));
+	}
 
-		[Fact]
-		public void Error_When_MemberDoesNotExist()
-		{
-			string input =
+	[Fact]
+	public void Error_When_MemberDoesNotExist()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -986,13 +986,13 @@ partial class Test
 	partial void Method();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_NoArguments_And_TargetIsAmbiguous()
-		{
-			string input =
+	[Fact]
+	public void Error_When_NoArguments_And_TargetIsAmbiguous()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1009,13 +1009,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0208_MemberConflict));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0208_MemberConflict));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsAutoProperty()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsAutoProperty()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1026,13 +1026,13 @@ partial class Test
 	string Property {{ get; set; }}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsAutoPropertyAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsAutoPropertyAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1043,13 +1043,13 @@ partial class Test
 	string Property {{ get; set; }}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsDestructor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsDestructor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1062,13 +1062,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsEventField()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsEventField()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1079,13 +1079,13 @@ partial class Test
 	event System.Action Event;
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsEventProperty_And_DoesNotSpecifyAccessor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsEventProperty_And_DoesNotSpecifyAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1100,13 +1100,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0204_WrongTargetMemberKind));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsExplicitConversionOperatorWithoutParamList()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsExplicitConversionOperatorWithoutParamList()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1117,13 +1117,13 @@ partial class Test
 	public static explicit operator int(Test t) => 2;
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsFunctionPointerSignature()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsFunctionPointerSignature()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1132,13 +1132,13 @@ partial class Test
 	partial void Method();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsGeneric_And_TypeArgumentIsNotValid()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsGeneric_And_TypeArgumentIsNotValid()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1151,13 +1151,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsGenericWithMultipleParameters_And_AtLeastOneArgumentIsNotValid()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsGenericWithMultipleParameters_And_AtLeastOneArgumentIsNotValid()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1170,13 +1170,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsGenericWithMultipleParameters_And_ParameterHasWrongName()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsGenericWithMultipleParameters_And_ParameterHasWrongName()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1189,13 +1189,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsImplementedPropertyAccessor_And_AccessorDoesNotExist()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsImplementedPropertyAccessor_And_AccessorDoesNotExist()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1207,13 +1207,13 @@ partial class Test
 	string Property => _property;
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsImplicit()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsImplicit()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial record Test
@@ -1222,13 +1222,13 @@ partial record Test
 	public partial bool Method();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsImplicitConstructor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsImplicitConstructor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1237,13 +1237,13 @@ partial class Test
 	partial void Method();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0209_CannotCopyFromMethodWithoutImplementation));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsImplicitConversionOperatorWithoutParamList()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsImplicitConversionOperatorWithoutParamList()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1254,13 +1254,13 @@ partial class Test
 	public static implicit operator int(Test t) => 2;
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsInDifferentAssembly()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsInDifferentAssembly()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1269,20 +1269,20 @@ partial class Test
 	partial void Method();
 }}
 ";
-			string external =
+		string external =
 $@"public class Other
 {{
 	public void Method()
 	{{
 	}}
 }}";
-			Assert.True(RunGeneratorWithDependency(input, external).FailedAndContainsDiagnostics(DUR0205_ImplementationNotAccessible));
-		}
+		Assert.True(RunGeneratorWithDependency(input, external).FailedAndContainsDiagnostics(DUR0205_ImplementationNotAccessible));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsLambda()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsLambda()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1297,13 +1297,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsNull()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsNull()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1312,13 +1312,13 @@ partial class Test
 	partial void Method();
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsOperator_And_HasNoParamList()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsOperator_And_HasNoParamList()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1329,13 +1329,13 @@ partial class Test
 	public static int operator +(Test a, Test b) => 2;
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsStaticConstructor()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsStaticConstructor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1348,13 +1348,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0203_MemberCannotBeResolved));
+	}
 
-		[Fact]
-		public void Error_When_TargetIsUnboundGeneric()
-		{
-			string input =
+	[Fact]
+	public void Error_When_TargetIsUnboundGeneric()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1367,13 +1367,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DUR0217_TypeParameterIsNotValid));
+	}
 
-		[Fact]
-		public void Success_When_AddsStaticUsingsAndAliases()
-		{
-			string input =
+	[Fact]
+	public void Success_When_AddsStaticUsingsAndAliases()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1387,7 +1387,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 using static System.Int32;
 using Ta = Target;
@@ -1401,13 +1401,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_AddsUsings()
-		{
-			string input =
+	[Fact]
+	public void Success_When_AddsUsings()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1429,7 +1429,7 @@ class Target
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 using System;
 
@@ -1442,13 +1442,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_AddsUsings_And_UsingAlreadyExistsBecauseOfCopyUsings()
-		{
-			string input =
+	[Fact]
+	public void Success_When_AddsUsings_And_UsingAlreadyExistsBecauseOfCopyUsings()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using System;
 
@@ -1463,7 +1463,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 using System;
 
@@ -1476,13 +1476,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_CopiesDocumentation()
-		{
-			string input =
+	[Fact]
+	public void Success_When_CopiesDocumentation()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1500,7 +1500,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"internal partial class Test
 {{
 	/// <summary>
@@ -1513,13 +1513,13 @@ $@"internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected, true));
-		}
+		Assert.True(RunGenerator(input).Compare(expected, true));
+	}
 
-		[Fact]
-		public void Success_When_CopiesDocumentation_And_HasPattern()
-		{
-			string input =
+	[Fact]
+	public void Success_When_CopiesDocumentation_And_HasPattern()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1538,7 +1538,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"internal partial class Test
 {{
 	/// <summary>
@@ -1551,13 +1551,13 @@ $@"internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected, true));
-		}
+		Assert.True(RunGenerator(input).Compare(expected, true));
+	}
 
-		[Fact]
-		public void Success_When_CopiesFromMethodWithAttributes_And_AllowsCopyFromAttributes()
-		{
-			string input =
+	[Fact]
+	public void Success_When_CopiesFromMethodWithAttributes_And_AllowsCopyFromAttributes()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1573,7 +1573,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"internal partial class Test
 {{
 	[System.Diagnostics.Conditional(""DEBUG"")]
@@ -1584,13 +1584,13 @@ $@"internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_CopiesFromMethodWithAttributes_And_AllowsCopyFromAttributes_And_HasPattern()
-		{
-			string input =
+	[Fact]
+	public void Success_When_CopiesFromMethodWithAttributes_And_AllowsCopyFromAttributes_And_HasPattern()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1607,7 +1607,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"internal partial class Test
 {{
 	[System.Diagnostics.Conditional(""RELEASE"")]
@@ -1618,13 +1618,13 @@ $@"internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_CopiesFromPartialMethodWithImplementation()
-		{
-			string input =
+	[Fact]
+	public void Success_When_CopiesFromPartialMethodWithImplementation()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1643,7 +1643,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -1655,13 +1655,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_CopiesFromPrivateMethod()
-		{
-			string input =
+	[Fact]
+	public void Success_When_CopiesFromPrivateMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1678,7 +1678,7 @@ class Other
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -1690,13 +1690,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_CopyUsingsIsFalse()
-		{
-			string input =
+	[Fact]
+	public void Success_When_CopyUsingsIsFalse()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1711,7 +1711,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
@@ -1721,13 +1721,13 @@ $@"internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_CopyUsingsIsFalse_And_AddsUsings()
-		{
-			string input =
+	[Fact]
+	public void Success_When_CopyUsingsIsFalse_And_AddsUsings()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -1742,7 +1742,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using System;
 
 internal partial class Test
@@ -1754,13 +1754,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasArglist()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasArglist()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1774,7 +1774,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -1786,13 +1786,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasCollidingMethodAndTypeName()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasCollidingMethodAndTypeName()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1810,7 +1810,7 @@ class Target
 {{
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -1822,13 +1822,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasMultipleCopyFromMethods()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasMultipleCopyFromMethods()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1850,7 +1850,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected1 =
+		string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -1862,7 +1862,7 @@ internal partial class Test
 	}}
 }}
 ";
-			string expected2 =
+		string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -1875,13 +1875,13 @@ internal partial class Test
 }}
 ";
 
-			Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
-		}
+		Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
+	}
 
-		[Fact]
-		public void Success_When_HasMultipleCopyFromMethods_And_SameTarget()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasMultipleCopyFromMethods_And_SameTarget()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1898,7 +1898,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected1 =
+		string expected1 =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -1910,7 +1910,7 @@ internal partial class Test
 	}}
 }}
 ";
-			string expected2 =
+		string expected2 =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -1923,13 +1923,13 @@ internal partial class Test
 }}
 ";
 
-			Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
-		}
+		Assert.True(RunGeneratorWithMultipleOutputs(input).Compare(expected1, expected2));
+	}
 
-		[Fact]
-		public void Success_When_HasMultiplePattern()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasMultiplePattern()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1945,7 +1945,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -1957,13 +1957,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasMultiplePattern_And_IsArrowExpression()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasMultiplePattern_And_IsArrowExpression()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -1976,7 +1976,7 @@ partial class Test
 	public int Target() => int.MaxValue;
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -1985,13 +1985,13 @@ internal partial class Test
 	public partial short Method() => short.MaxValue;
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasMultiplePatternWithOrder()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasMultiplePatternWithOrder()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2007,7 +2007,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2019,13 +2019,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasMultiplePatternWithOrder_And_IsArrowExpression()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasMultiplePatternWithOrder_And_IsArrowExpression()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2038,7 +2038,7 @@ partial class Test
 	public int Target() => int.MaxValue;
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2047,13 +2047,13 @@ internal partial class Test
 	public partial short Method() => short.MaxValue;
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasPattern()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasPattern()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2068,7 +2068,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2080,13 +2080,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasPattern_And_IsArrowExpression()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasPattern_And_IsArrowExpression()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2098,7 +2098,7 @@ partial class Test
 	public int Target() => int.MaxValue;
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2107,13 +2107,13 @@ internal partial class Test
 	public partial long Method() => long.MaxValue;
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasRefOutInParameters()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasRefOutInParameters()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2128,7 +2128,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2140,13 +2140,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasReturnType_And_TargetHasReturnType()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasReturnType_And_TargetHasReturnType()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2160,7 +2160,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2172,13 +2172,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasReturnType_And_TargetIsGetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasReturnType_And_TargetIsGetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2190,7 +2190,7 @@ partial class Test
 	string Property => _property;
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2199,13 +2199,13 @@ internal partial class Test
 	private partial string Method() => _property;
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasReturnType_And_TargetIsImplementedPropertyWithInitAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasReturnType_And_TargetIsImplementedPropertyWithInitAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2221,7 +2221,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2231,13 +2231,13 @@ internal partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasReturnType_And_TargetIsImplementedPropertyWithSetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasReturnType_And_TargetIsImplementedPropertyWithSetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2253,7 +2253,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2263,13 +2263,13 @@ internal partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasReturnType_And_TargetIsIndexerGetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasReturnType_And_TargetIsIndexerGetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2284,7 +2284,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2294,13 +2294,13 @@ internal partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasReturnType_And_TargetIsIndexerWithInitAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasReturnType_And_TargetIsIndexerWithInitAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2316,7 +2316,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2326,13 +2326,13 @@ internal partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_HasReturnType_And_TargetIsIndexerWithSetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasReturnType_And_TargetIsIndexerWithSetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2348,7 +2348,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2358,13 +2358,13 @@ internal partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IncludesAllNonStandardNodes()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IncludesAllNonStandardNodes()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -2379,7 +2379,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -2392,16 +2392,16 @@ internal partial class Test
 	}}
 }}
 ";
-			SingleGeneratorTestResult result = RunGenerator(input);
+		SingleGeneratorTestResult result = RunGenerator(input);
 
-			Assert.True(result.Compare(expected));
-			Assert.True(result.SucceededAndDoesNotContainDiagnostics(DUR0225_BaseTypeAlreadySpecified, DUR0226_CannotApplyBaseType));
-		}
+		Assert.True(result.Compare(expected));
+		Assert.True(result.SucceededAndDoesNotContainDiagnostics(DUR0225_BaseTypeAlreadySpecified, DUR0226_CannotApplyBaseType));
+	}
 
-		[Fact]
-		public void Success_When_IncludesAllNonStandardNodes_And_HasDocumentation()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IncludesAllNonStandardNodes_And_HasDocumentation()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -2422,7 +2422,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -2435,13 +2435,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected, true));
-		}
+		Assert.True(RunGenerator(input).Compare(expected, true));
+	}
 
-		[Fact]
-		public void Success_When_IsExtensionMethod()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsExtensionMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 static partial class Test
@@ -2455,7 +2455,7 @@ static partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal static partial class Test
@@ -2467,13 +2467,13 @@ internal static partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsGeneric()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsGeneric()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2487,7 +2487,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2500,13 +2500,13 @@ internal partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsGenericWithConstraints()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsGenericWithConstraints()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2524,7 +2524,7 @@ class T
 {{
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2537,13 +2537,13 @@ internal partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsVoid_And_TargetIsImplementedPropertyWithGetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsVoid_And_TargetIsImplementedPropertyWithGetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2559,7 +2559,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2568,13 +2568,13 @@ internal partial class Test
 	private partial void Method() => _property = value;
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsVoid_And_TargetIsIndexerInitAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsVoid_And_TargetIsIndexerInitAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2589,7 +2589,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2598,13 +2598,13 @@ internal partial class Test
 	private partial void Method() => _property = value;
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsVoid_And_TargetIsIndexerSetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsVoid_And_TargetIsIndexerSetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2619,7 +2619,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2628,13 +2628,13 @@ internal partial class Test
 	private partial void Method() => _property = value;
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsVoid_And_TargetIsIndexerWithGetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsVoid_And_TargetIsIndexerWithGetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2650,7 +2650,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2659,13 +2659,13 @@ internal partial class Test
 	private partial void Method() => _property = value;
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsVoid_And_TargetIsInitAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsVoid_And_TargetIsInitAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2680,7 +2680,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2689,13 +2689,13 @@ internal partial class Test
 	private partial void Method() => _property = value;
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsVoid_And_TargetIsSetAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsVoid_And_TargetIsSetAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2710,7 +2710,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2719,13 +2719,13 @@ internal partial class Test
 	private partial void Method() => _property = value;
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsVoid_And_TargetIsVoid()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsVoid_And_TargetIsVoid()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2739,7 +2739,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2751,13 +2751,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsAccessible_And_CurrentHasInheritDoc()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsAccessible_And_CurrentHasInheritDoc()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2773,7 +2773,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2785,13 +2785,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsArrowExpression()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsArrowExpression()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2802,7 +2802,7 @@ partial class Test
 	string Target() => string.Empty;
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2811,13 +2811,13 @@ internal partial class Test
 	private partial string Method() => string.Empty;
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsConstructor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsConstructor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2831,7 +2831,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2843,13 +2843,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsConstructorWithParameters()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsConstructorWithParameters()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2863,7 +2863,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2875,13 +2875,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsDefaultInterfaceImplementation()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsDefaultInterfaceImplementation()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial interface ITest
@@ -2895,7 +2895,7 @@ partial interface ITest
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial interface ITest
@@ -2907,13 +2907,13 @@ internal partial interface ITest
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsEventProperty_And_UsesAddAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsEventProperty_And_UsesAddAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2928,7 +2928,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2940,13 +2940,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsEventProperty_And_UsesRemoveAccessor()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsEventProperty_And_UsesRemoveAccessor()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2961,7 +2961,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -2973,13 +2973,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsExplicitConversionOperatorWithParamList()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsExplicitConversionOperatorWithParamList()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -2993,7 +2993,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3005,13 +3005,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsGeneric()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsGeneric()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3025,7 +3025,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3037,13 +3037,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsGenericWithMultipleParameters()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsGenericWithMultipleParameters()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3058,7 +3058,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3071,13 +3071,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsGenericWithMultipleParameters_And_OneBoundedParameter()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsGenericWithMultipleParameters_And_OneBoundedParameter()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3092,7 +3092,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3105,13 +3105,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsGenericWithMultipleParameters_And_WithParamList()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsGenericWithMultipleParameters_And_WithParamList()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3126,7 +3126,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3139,13 +3139,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsGenericWithMultipleParameters_And_WithParamList_And_OneBoundedParameter()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsGenericWithMultipleParameters_And_WithParamList_And_OneBoundedParameter()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3160,7 +3160,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3173,13 +3173,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsGenericWithParamList()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsGenericWithParamList()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3195,7 +3195,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3207,13 +3207,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsGenericWithParamList_And_OneBoundArgument()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsGenericWithParamList_And_OneBoundArgument()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3227,7 +3227,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3239,13 +3239,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsImplicitConversionOperatorWithParamList()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsImplicitConversionOperatorWithParamList()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3259,7 +3259,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3271,13 +3271,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsInAliasedType()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsInAliasedType()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using A = N2.Other;
 
@@ -3301,7 +3301,7 @@ namespace N2
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 using A = N2.Other;
 
@@ -3317,13 +3317,13 @@ namespace N1
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsInDifferentNamespace()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsInDifferentNamespace()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 namespace N1
@@ -3346,7 +3346,7 @@ namespace N2
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 namespace N1
@@ -3361,13 +3361,13 @@ namespace N1
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsInherited()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsInherited()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test : Parent
@@ -3384,7 +3384,7 @@ class Parent
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test : Parent
@@ -3396,13 +3396,13 @@ internal partial class Test : Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_TargetIsOperator()
-		{
-			string input =
+	[Fact]
+	public void Success_When_TargetIsOperator()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3416,7 +3416,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3428,13 +3428,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_UsesArgumentList()
-		{
-			string input =
+	[Fact]
+	public void Success_When_UsesArgumentList()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3453,7 +3453,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3465,13 +3465,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_UsesArgumentListWithMultipleParameters()
-		{
-			string input =
+	[Fact]
+	public void Success_When_UsesArgumentListWithMultipleParameters()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3490,7 +3490,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3502,13 +3502,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_UsesEmptyArgumentList()
-		{
-			string input =
+	[Fact]
+	public void Success_When_UsesEmptyArgumentList()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3522,7 +3522,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3534,13 +3534,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_UsesOverrideMethod()
-		{
-			string input =
+	[Fact]
+	public void Success_When_UsesOverrideMethod()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test : Parent
@@ -3559,7 +3559,7 @@ class Parent
 	public abstract void Target();
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test : Parent
@@ -3571,13 +3571,13 @@ internal partial class Test : Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Warning_When_AddsEquivalentUsing()
-		{
-			string input =
+	[Fact]
+	public void Warning_When_AddsEquivalentUsing()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3591,7 +3591,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 using System;
 
@@ -3604,16 +3604,16 @@ internal partial class Test
 	}}
 }}
 ";
-			SingleGeneratorTestResult runResult = RunGenerator(input);
+		SingleGeneratorTestResult runResult = RunGenerator(input);
 
-			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0220_UsingAlreadySpecified));
-			Assert.True(runResult.Compare(expected));
-		}
+		Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0220_UsingAlreadySpecified));
+		Assert.True(runResult.Compare(expected));
+	}
 
-		[Fact]
-		public void Warning_When_CopiesBaseInterfaces()
-		{
-			string input =
+	[Fact]
+	public void Warning_When_CopiesBaseInterfaces()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -3628,7 +3628,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
@@ -3638,16 +3638,16 @@ $@"internal partial class Test
 	}}
 }}
 ";
-			SingleGeneratorTestResult runResult = RunGenerator(input);
+		SingleGeneratorTestResult runResult = RunGenerator(input);
 
-			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0226_CannotApplyBaseType));
-			Assert.True(runResult.Compare(expected));
-		}
+		Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0226_CannotApplyBaseType));
+		Assert.True(runResult.Compare(expected));
+	}
 
-		[Fact]
-		public void Warning_When_CopiesBaseType()
-		{
-			string input =
+	[Fact]
+	public void Warning_When_CopiesBaseType()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -3662,7 +3662,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
@@ -3672,16 +3672,16 @@ $@"internal partial class Test
 	}}
 }}
 ";
-			SingleGeneratorTestResult runResult = RunGenerator(input);
+		SingleGeneratorTestResult runResult = RunGenerator(input);
 
-			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0226_CannotApplyBaseType));
-			Assert.True(runResult.Compare(expected));
-		}
+		Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0226_CannotApplyBaseType));
+		Assert.True(runResult.Compare(expected));
+	}
 
-		[Fact]
-		public void Warning_When_CopiesConstraints()
-		{
-			string input =
+	[Fact]
+	public void Warning_When_CopiesConstraints()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -3696,7 +3696,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target<T>()")}
@@ -3706,16 +3706,16 @@ $@"internal partial class Test
 	}}
 }}
 ";
-			SingleGeneratorTestResult runResult = RunGenerator(input);
+		SingleGeneratorTestResult runResult = RunGenerator(input);
 
-			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember));
-			Assert.True(runResult.Compare(expected));
-		}
+		Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0224_CannotCopyConstraintsForMethodOrNonGenericMember));
+		Assert.True(runResult.Compare(expected));
+	}
 
-		[Fact]
-		public void Warning_When_CopiesDocumentation_And_AlreadyHasDocumentation()
-		{
-			string input =
+	[Fact]
+	public void Warning_When_CopiesDocumentation_And_AlreadyHasDocumentation()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -3736,7 +3736,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Target()")}
@@ -3746,16 +3746,16 @@ $@"internal partial class Test
 	}}
 }}
 ";
-			SingleGeneratorTestResult runResult = RunGenerator(input);
+		SingleGeneratorTestResult runResult = RunGenerator(input);
 
-			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0222_MemberAlreadyHasDocumentation.Id));
-			Assert.True(runResult.Compare(expected, true));
-		}
+		Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0222_MemberAlreadyHasDocumentation.Id));
+		Assert.True(runResult.Compare(expected, true));
+	}
 
-		[Fact]
-		public void Warning_When_HasPattern_And_PatternIsNull()
-		{
-			string input =
+	[Fact]
+	public void Warning_When_HasPattern_And_PatternIsNull()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3769,7 +3769,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3781,16 +3781,16 @@ internal partial class Test
 	}}
 }}
 ";
-			SingleGeneratorTestResult runResult = RunGenerator(input);
+		SingleGeneratorTestResult runResult = RunGenerator(input);
 
-			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified));
-			Assert.True(runResult.Compare(expected));
-		}
+		Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified));
+		Assert.True(runResult.Compare(expected));
+	}
 
-		[Fact]
-		public void Warning_When_HasPattern_And_ReplacementIsNull()
-		{
-			string input =
+	[Fact]
+	public void Warning_When_HasPattern_And_ReplacementIsNull()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -3804,7 +3804,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 $@"using {DurianStrings.MainNamespace};
 
 internal partial class Test
@@ -3816,10 +3816,9 @@ internal partial class Test
 	}}
 }}
 ";
-			SingleGeneratorTestResult runResult = RunGenerator(input);
+		SingleGeneratorTestResult runResult = RunGenerator(input);
 
-			Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified));
-			Assert.True(runResult.Compare(expected));
-		}
+		Assert.True(runResult.SucceededAndContainsDiagnostics(DUR0214_InvalidPatternAttributeSpecified));
+		Assert.True(runResult.Compare(expected));
 	}
 }

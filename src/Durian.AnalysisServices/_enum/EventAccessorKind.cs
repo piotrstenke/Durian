@@ -1,23 +1,22 @@
-﻿namespace Durian.Analysis
+﻿namespace Durian.Analysis;
+
+/// <summary>
+/// Defines all possible event accessor kinds.
+/// </summary>
+public enum EventAccessorKind
 {
 	/// <summary>
-	/// Defines all possible event accessor kinds.
+	/// Member is not an accessor.
 	/// </summary>
-	public enum EventAccessorKind
-	{
-		/// <summary>
-		/// Member is not an accessor.
-		/// </summary>
-		None = 0,
+	None = 0,
 
-		/// <summary>
-		/// Represents the <see langword="add"/> accessor.
-		/// </summary>
-		Add = 1,
+	/// <summary>
+	/// Represents the <see langword="add"/> accessor.
+	/// </summary>
+	Add = 1,
 
-		/// <summary>
-		/// Represents the <see langword="remove"/> accessor.
-		/// </summary>
-		Remove = 2
-	}
+	/// <summary>
+	/// Represents the <see langword="remove"/> accessor.
+	/// </summary>
+	Remove = 2
 }

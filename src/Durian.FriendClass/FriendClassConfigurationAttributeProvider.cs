@@ -1,58 +1,58 @@
-﻿namespace Durian.Analysis.FriendClass
+﻿namespace Durian.Analysis.FriendClass;
+
+/// <summary>
+/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.Configuration.FriendClassConfigurationAttribute</c> class.
+/// </summary>
+public sealed class FriendClassConfigurationAttributeProvider : SourceTextProvider
 {
 	/// <summary>
-	/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.Configuration.FriendClassConfigurationAttribute</c> class.
+	/// Name of the 'AllowChildren' property.
 	/// </summary>
-	public sealed class FriendClassConfigurationAttributeProvider : SourceTextProvider
+	public const string AllowChildren = "AllowChildren";
+
+	/// <summary>
+	/// Full name of the provided type.
+	/// </summary>
+	public const string FullName = Namespace + "." + TypeName;
+
+	/// <summary>
+	/// Name of the 'IncludeInherited' property.
+	/// </summary>
+	public const string IncludeInherited = "IncludeInherited";
+
+	/// <summary>
+	/// Namespace the provided type is located in.
+	/// </summary>
+	public const string Namespace = DurianStrings.ConfigurationNamespace;
+
+	/// <summary>
+	/// Name of the provided type.
+	/// </summary>
+	public const string TypeName = "FriendClassConfigurationAttribute";
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="FriendClassAttributeProvider"/> class.
+	/// </summary>
+	public FriendClassConfigurationAttributeProvider()
 	{
-		/// <summary>
-		/// Name of the 'AllowChildren' property.
-		/// </summary>
-		public const string AllowChildren = "AllowChildren";
+	}
 
-		/// <summary>
-		/// Full name of the provided type.
-		/// </summary>
-		public const string FullName = Namespace + "." + TypeName;
+	/// <inheritdoc/>
+	public override string GetFullName()
+	{
+		return FullName;
+	}
 
-		/// <summary>
-		/// Name of the 'IncludeInherited' property.
-		/// </summary>
-		public const string IncludeInherited = "IncludeInherited";
+	/// <inheritdoc/>
+	public override string GetNamespace()
+	{
+		return Namespace;
+	}
 
-		/// <summary>
-		/// Namespace the provided type is located in.
-		/// </summary>
-		public const string Namespace = DurianStrings.ConfigurationNamespace;
-
-		/// <summary>
-		/// Name of the provided type.
-		/// </summary>
-		public const string TypeName = "FriendClassConfigurationAttribute";
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FriendClassAttributeProvider"/> class.
-		/// </summary>
-		public FriendClassConfigurationAttributeProvider()
-		{
-		}
-
-		/// <inheritdoc/>
-		public override string GetFullName()
-		{
-			return FullName;
-		}
-
-		/// <inheritdoc/>
-		public override string GetNamespace()
-		{
-			return Namespace;
-		}
-
-		/// <inheritdoc/>
-		public override string GetText()
-		{
-			return
+	/// <inheritdoc/>
+	public override string GetText()
+	{
+		return
 @$"using System;
 
 namespace {Namespace}
@@ -82,12 +82,11 @@ namespace {Namespace}
 	}}
 }}
 ";
-		}
+	}
 
-		/// <inheritdoc/>
-		public override string GetTypeName()
-		{
-			return TypeName;
-		}
+	/// <inheritdoc/>
+	public override string GetTypeName()
+	{
+		return TypeName;
 	}
 }

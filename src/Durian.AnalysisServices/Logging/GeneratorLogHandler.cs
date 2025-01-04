@@ -6,238 +6,237 @@ using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Analysis.Logging
+namespace Durian.Analysis.Logging;
+
+/// <inheritdoc cref="IGeneratorLogHandler"/>
+public class GeneratorLogHandler : IGeneratorLogHandler
 {
-	/// <inheritdoc cref="IGeneratorLogHandler"/>
-	public class GeneratorLogHandler : IGeneratorLogHandler
+	/// <inheritdoc/>
+	public LoggingConfiguration LoggingConfiguration { get; set; }
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="GeneratorLogHandler"/> class.
+	/// </summary>
+	public GeneratorLogHandler() : this(default)
 	{
-		/// <inheritdoc/>
-		public LoggingConfiguration LoggingConfiguration { get; set; }
+	}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GeneratorLogHandler"/> class.
-		/// </summary>
-		public GeneratorLogHandler() : this(default)
-		{
-		}
+	/// <summary>
+	/// Initializes a new instance of the <see cref="GeneratorLogHandler"/> class.
+	/// </summary>
+	/// <param name="configuration">Configures how logging is handled.</param>
+	public GeneratorLogHandler(LoggingConfiguration? configuration)
+	{
+		LoggingConfiguration = configuration ?? LoggingConfiguration.Default;
+	}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GeneratorLogHandler"/> class.
-		/// </summary>
-		/// <param name="configuration">Configures how logging is handled.</param>
-		public GeneratorLogHandler(LoggingConfiguration? configuration)
+	/// <inheritdoc/>
+	public void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics, NodeOutput nodeOutput = default)
+	{
+		if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Diagnostics) && diagnostics is not null)
 		{
-			LoggingConfiguration = configuration ?? LoggingConfiguration.Default;
-		}
+			Diagnostic[] array = diagnostics.ToArray();
 
-		/// <inheritdoc/>
-		public void LogDiagnostics(SyntaxNode node, string hintName, IEnumerable<Diagnostic> diagnostics, NodeOutput nodeOutput = default)
-		{
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Diagnostics) && diagnostics is not null)
+			if (array.Length > 0)
 			{
-				Diagnostic[] array = diagnostics.ToArray();
-
-				if (array.Length > 0)
-				{
-					LogDiagnostics_Internal(node, hintName, array, nodeOutput);
-				}
+				LogDiagnostics_Internal(node, hintName, array, nodeOutput);
 			}
 		}
+	}
 
-		/// <inheritdoc/>
-		public void LogException(Exception exception)
+	/// <inheritdoc/>
+	public void LogException(Exception exception)
+	{
+		if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
 		{
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
-			{
-				LogException_Internal(exception);
-			}
+			LogException_Internal(exception);
 		}
+	}
 
-		/// <inheritdoc/>
-		public void LogException(Exception exception, string source)
+	/// <inheritdoc/>
+	public void LogException(Exception exception, string source)
+	{
+		if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
 		{
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Exception) && exception is not null)
-			{
-				LogException_Internal(exception, source);
-			}
+			LogException_Internal(exception, source);
 		}
+	}
 
-		/// <inheritdoc/>
-		public void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput = default)
+	/// <inheritdoc/>
+	public void LogInputOutput(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput = default)
+	{
+		if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput) && !(input is null && output is null))
 		{
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.InputOutput) && !(input is null && output is null))
-			{
-				LogInputOutput_Internal(input!, output, hintName, nodeOutput);
-			}
+			LogInputOutput_Internal(input!, output, hintName, nodeOutput);
 		}
+	}
 
-		/// <inheritdoc/>
-		public void LogNode(SyntaxNode node, string hintName, NodeOutput nodeOutput = default)
+	/// <inheritdoc/>
+	public void LogNode(SyntaxNode node, string hintName, NodeOutput nodeOutput = default)
+	{
+		if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node) && node is not null)
 		{
-			if (LoggingConfiguration.EnableLogging && LoggingConfiguration.SupportedLogs.HasFlag(GeneratorLogs.Node) && node is not null)
-			{
-				LogNode_Internal(node, hintName, nodeOutput);
-			}
+			LogNode_Internal(node, hintName, nodeOutput);
 		}
+	}
 
-		internal void LogDiagnostics_Internal(SyntaxNode node, string hintName, Diagnostic[] diagnostics, NodeOutput nodeOutput)
+	internal void LogDiagnostics_Internal(SyntaxNode node, string hintName, Diagnostic[] diagnostics, NodeOutput nodeOutput)
+	{
+		StringBuilder sb = new();
+
+		if (node is not null)
 		{
-			StringBuilder sb = new();
-
-			if (node is not null)
-			{
-				AppendSection(sb, "input");
-				sb.AppendLine(GetNodeOutput(node, nodeOutput));
-			}
-
-			AppendSection(sb, "diagnostics");
-
-			foreach (Diagnostic diagnostic in diagnostics)
-			{
-				sb.AppendLine(diagnostic.ToString());
-			}
-
-			sb.AppendLine();
-
-			WriteToFile(hintName, sb, ".diag");
-		}
-
-		internal void LogException_Internal(Exception exception)
-		{
-			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
-			TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString() + "\n\n");
-		}
-
-		internal void LogException_Internal(Exception exception, string source)
-		{
-			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
-			TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", source + "::\n\n" + exception.ToString() + "\n\n");
-		}
-
-		internal void LogInputOutput_Internal(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput)
-		{
-			StringBuilder sb = new();
-
-			if (input is not null)
-			{
-				AppendSection(sb, "input");
-
-				sb.AppendLine(GetNodeOutput(input, nodeOutput));
-				sb.AppendLine();
-			}
-
-			if (output is not null)
-			{
-				AppendSection(sb, "output");
-				sb.AppendLine(GetNodeOutput(output, nodeOutput));
-			}
-
-			WriteToFile(hintName, sb, ".generated");
-		}
-
-		internal void LogNode_Internal(SyntaxNode node, string hintName, NodeOutput nodeOutput)
-		{
-			StringBuilder sb = new();
-
-			AppendSection(sb, "generated");
-
+			AppendSection(sb, "input");
 			sb.AppendLine(GetNodeOutput(node, nodeOutput));
-			sb.AppendLine();
-
-			WriteToFile(hintName, sb, ".generated");
 		}
 
-		private static void AppendSection(StringBuilder sb, string sectionName)
+		AppendSection(sb, "diagnostics");
+
+		foreach (Diagnostic diagnostic in diagnostics)
 		{
-			for (int i = 0; i < 100; i++)
-			{
-				sb.Append('-');
-			}
+			sb.AppendLine(diagnostic.ToString());
+		}
 
-			sb.AppendLine();
-			sb.Append(sectionName).AppendLine("::");
+		sb.AppendLine();
 
-			for (int i = 0; i < 100; i++)
-			{
-				sb.Append('-');
-			}
+		WriteToFile(hintName, sb, ".diag");
+	}
 
-			sb.AppendLine();
+	internal void LogException_Internal(Exception exception)
+	{
+		Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
+		TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", exception.ToString() + "\n\n");
+	}
+
+	internal void LogException_Internal(Exception exception, string source)
+	{
+		Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
+		TryAppendAllText(LoggingConfiguration.LogDirectory + "/exception.log", source + "::\n\n" + exception.ToString() + "\n\n");
+	}
+
+	internal void LogInputOutput_Internal(SyntaxNode input, SyntaxNode output, string hintName, NodeOutput nodeOutput)
+	{
+		StringBuilder sb = new();
+
+		if (input is not null)
+		{
+			AppendSection(sb, "input");
+
+			sb.AppendLine(GetNodeOutput(input, nodeOutput));
 			sb.AppendLine();
 		}
 
-		private static void TryAppendAllText(string file, string text)
+		if (output is not null)
 		{
-			try
-			{
-				File.AppendAllText(file, text);
-			}
-			catch (IOException e) when (e.GetType() == typeof(IOException))
-			{
-				Thread.Sleep(50);
+			AppendSection(sb, "output");
+			sb.AppendLine(GetNodeOutput(output, nodeOutput));
+		}
 
-				int numTries = 1;
+		WriteToFile(hintName, sb, ".generated");
+	}
 
-				while (true)
+	internal void LogNode_Internal(SyntaxNode node, string hintName, NodeOutput nodeOutput)
+	{
+		StringBuilder sb = new();
+
+		AppendSection(sb, "generated");
+
+		sb.AppendLine(GetNodeOutput(node, nodeOutput));
+		sb.AppendLine();
+
+		WriteToFile(hintName, sb, ".generated");
+	}
+
+	private static void AppendSection(StringBuilder sb, string sectionName)
+	{
+		for (int i = 0; i < 100; i++)
+		{
+			sb.Append('-');
+		}
+
+		sb.AppendLine();
+		sb.Append(sectionName).AppendLine("::");
+
+		for (int i = 0; i < 100; i++)
+		{
+			sb.Append('-');
+		}
+
+		sb.AppendLine();
+		sb.AppendLine();
+	}
+
+	private static void TryAppendAllText(string file, string text)
+	{
+		try
+		{
+			File.AppendAllText(file, text);
+		}
+		catch (IOException e) when (e.GetType() == typeof(IOException))
+		{
+			Thread.Sleep(50);
+
+			int numTries = 1;
+
+			while (true)
+			{
+				try
 				{
-					try
-					{
-						File.AppendAllText(file, text);
-					}
-					catch (IOException) when (numTries < 10)
-					{
-						numTries++;
-						Thread.Sleep(50);
-					}
+					File.AppendAllText(file, text);
+				}
+				catch (IOException) when (numTries < 10)
+				{
+					numTries++;
+					Thread.Sleep(50);
 				}
 			}
 		}
+	}
 
-		private static void TryWriteAllText(string file, string text)
+	private static void TryWriteAllText(string file, string text)
+	{
+		try
 		{
-			try
-			{
-				File.WriteAllText(file, text);
-			}
-			catch (IOException e) when (e.GetType() == typeof(IOException))
-			{
-				Thread.Sleep(50);
+			File.WriteAllText(file, text);
+		}
+		catch (IOException e) when (e.GetType() == typeof(IOException))
+		{
+			Thread.Sleep(50);
 
-				int numTries = 1;
+			int numTries = 1;
 
-				while (true)
+			while (true)
+			{
+				try
 				{
-					try
-					{
-						File.WriteAllText(file, text);
-					}
-					catch (IOException) when (numTries < 20)
-					{
-						numTries++;
-						Thread.Sleep(50);
-					}
+					File.WriteAllText(file, text);
+				}
+				catch (IOException) when (numTries < 20)
+				{
+					numTries++;
+					Thread.Sleep(50);
 				}
 			}
 		}
+	}
 
-		private string GetNodeOutput(SyntaxNode node, NodeOutput nodeOutput)
+	private string GetNodeOutput(SyntaxNode node, NodeOutput nodeOutput)
+	{
+		return nodeOutput switch
 		{
-			return nodeOutput switch
-			{
-				NodeOutput.Node => node.ToFullString(),
-				NodeOutput.Containing => node.Parent?.ToFullString() ?? node.ToFullString(),
-				NodeOutput.SyntaxTree => node.SyntaxTree.ToString(),
-				_ => GetNodeOutput(node, LoggingConfiguration.DefaultNodeOutput),
-			};
-		}
+			NodeOutput.Node => node.ToFullString(),
+			NodeOutput.Containing => node.Parent?.ToFullString() ?? node.ToFullString(),
+			NodeOutput.SyntaxTree => node.SyntaxTree.ToString(),
+			_ => GetNodeOutput(node, LoggingConfiguration.DefaultNodeOutput),
+		};
+	}
 
-		private void WriteToFile(string hintName, StringBuilder sb, string subDirectory)
-		{
-			string name = string.IsNullOrWhiteSpace(hintName) ? "generated" : hintName;
-			string path = LoggingConfiguration.LogDirectory + $"/{subDirectory}";
-			Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
-			Directory.CreateDirectory(path);
-			TryWriteAllText(path + $"/{name}.log", sb.ToString());
-		}
+	private void WriteToFile(string hintName, StringBuilder sb, string subDirectory)
+	{
+		string name = string.IsNullOrWhiteSpace(hintName) ? "generated" : hintName;
+		string path = LoggingConfiguration.LogDirectory + $"/{subDirectory}";
+		Directory.CreateDirectory(LoggingConfiguration.LogDirectory);
+		Directory.CreateDirectory(path);
+		TryWriteAllText(path + $"/{name}.log", sb.ToString());
 	}
 }

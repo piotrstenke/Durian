@@ -2,14 +2,14 @@
 using Durian.TestServices;
 using Xunit;
 
-namespace Durian.Analysis.DefaultParam.Tests.Types
+namespace Durian.Analysis.DefaultParam.Tests.Types;
+
+public sealed class TypeErrorTests : DefaultParamGeneratorTest
 {
-	public sealed class TypeErrorTests : DefaultParamGeneratorTest
+	[Fact]
+	public void Error_When_ContainingTypeIsDefaultParam()
 	{
-		[Fact]
-		public void Error_When_ContainingTypeIsDefaultParam()
-		{
-			string input =
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
@@ -20,13 +20,13 @@ partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string))]T>
 }}
 ";
 
-			Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested.Id));
-		}
+		Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0126_DefaultParamMembersCannotBeNested.Id));
+	}
 
-		[Fact]
-		public void Error_When_ContainingTypeIsNotPartial()
-		{
-			string input =
+	[Fact]
+	public void Error_When_ContainingTypeIsNotPartial()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 class Parent
@@ -36,13 +36,13 @@ class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
+	}
 
-		[Fact]
-		public void Error_When_DefaultParamArgumentIsInvalidForConstraint()
-		{
-			string input =
+	[Fact]
+	public void Error_When_DefaultParamArgumentIsInvalidForConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -52,13 +52,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
+	}
 
-		[Fact]
-		public void Error_When_DefaultParamAttributeIsNotLast()
-		{
-			string input =
+	[Fact]
+	public void Error_When_DefaultParamAttributeIsNotLast()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -68,13 +68,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
+	}
 
-		[Fact]
-		public void Error_When_HasDurianGeneratedAttribute()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasDurianGeneratedAttribute()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -85,13 +85,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
+	}
 
-		[Fact]
-		public void Error_When_HasGeneratedCodeAttribute()
-		{
-			string input =
+	[Fact]
+	public void Error_When_HasGeneratedCodeAttribute()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -102,26 +102,26 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0104_DefaultParamCannotBeAppliedWhenGenerationAttributesArePresent.Id));
+	}
 
-		[Fact]
-		public void Error_When_IsPartial()
-		{
-			string input =
+	[Fact]
+	public void Error_When_IsPartial()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test<[{DefaultParamAttributeProvider.TypeName}(typeof(string)]T>
 {{
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0122_DoNotUseDefaultParamOnPartialType.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0122_DoNotUseDefaultParamOnPartialType.Id));
+	}
 
-		[Fact]
-		public void Error_When_MemberExistsInTargetNamespace()
-		{
-			string input =
+	[Fact]
+	public void Error_When_MemberExistsInTargetNamespace()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -141,13 +141,13 @@ namespace N1
 }}
 ";
 
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
+	}
 
-		[Fact]
-		public void Error_When_MemberExistsInTargetNamespace_And_TargetsGlobalNamespace()
-		{
-			string input =
+	[Fact]
+	public void Error_When_MemberExistsInTargetNamespace_And_TargetsGlobalNamespace()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -164,13 +164,13 @@ namespace N1
 }}
 ";
 
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
+	}
 
-		[Fact]
-		public void Error_When_MemberExistsInTargetNamespace_And_TargetsParentNamespace()
-		{
-			string input =
+	[Fact]
+	public void Error_When_MemberExistsInTargetNamespace_And_TargetsParentNamespace()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -187,13 +187,13 @@ namespace N1
 }}
 ";
 
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0129_TargetNamespaceAlreadyContainsMemberWithName.Id));
+	}
 
-		[Fact]
-		public void Error_When_OneOfContainingTypesIsNotPartial()
-		{
-			string input =
+	[Fact]
+	public void Error_When_OneOfContainingTypesIsNotPartial()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 class Parent1
@@ -206,13 +206,13 @@ class Parent1
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0101_ContainingTypeMustBePartial.Id));
+	}
 
-		[Fact]
-		public void Error_When_OneOfDefaultParamArgumentsIsInvalidForConstraint()
-		{
-			string input =
+	[Fact]
+	public void Error_When_OneOfDefaultParamArgumentsIsInvalidForConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -222,13 +222,13 @@ partial class Parent
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0106_TargetTypeDoesNotSatisfyConstraint.Id));
+	}
 
-		[Fact]
-		public void Error_When_OneOfMultipleDefaultParamAttributeIsNotLast()
-		{
-			string input =
+	[Fact]
+	public void Error_When_OneOfMultipleDefaultParamAttributeIsNotLast()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Parent
@@ -239,7 +239,6 @@ partial class Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
-		}
+		Assert.True(RunGenerator(input).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0105_DefaultParamMustBeLast.Id));
 	}
 }

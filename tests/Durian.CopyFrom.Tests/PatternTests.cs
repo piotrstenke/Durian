@@ -4,14 +4,14 @@ using Durian.TestServices;
 using Xunit;
 using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
 
-namespace Durian.Analysis.CopyFrom.Tests
+namespace Durian.Analysis.CopyFrom.Tests;
+
+public sealed class PatternTests : AnalyzerTest<CopyFromAnalyzer>
 {
-	public sealed class PatternTests : AnalyzerTest<CopyFromAnalyzer>
+	[Fact]
+	public async Task Warning_When_HasPattern_And_PatternIsNull()
 	{
-		[Fact]
-		public async Task Warning_When_HasPattern_And_PatternIsNull()
-		{
-			string input =
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -24,13 +24,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0214_InvalidPatternAttributeSpecified.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0214_InvalidPatternAttributeSpecified.Id);
+	}
 
-		[Fact]
-		public async Task Warning_When_HasPattern_And_ReplacementIsNull()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_HasPattern_And_ReplacementIsNull()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -43,13 +43,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0214_InvalidPatternAttributeSpecified.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0214_InvalidPatternAttributeSpecified.Id);
+	}
 
-		[Fact]
-		public async Task Warning_When_PatternIsRedundant()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_PatternIsRedundant()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -58,13 +58,13 @@ partial class Test
 	partial void Method();
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0215_RedundantPatternAttribute.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0215_RedundantPatternAttribute.Id);
+	}
 
-		[Fact]
-		public async Task Warning_When_SamePatternAlreadySpecified()
-		{
-			string input =
+	[Fact]
+	public async Task Warning_When_SamePatternAlreadySpecified()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -75,12 +75,11 @@ partial class Test
 	partial void Method();
 }}
 ";
-			Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0216_EquivalentPatternAttribute.Id);
-		}
+		Assert.Contains(await RunAnalyzer(input), d => d.Id == DUR0216_EquivalentPatternAttribute.Id);
+	}
 
-		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
-		{
-			return CopyFromGenerator.GetSourceProviders();
-		}
+	protected override IEnumerable<ISourceTextProvider>? GetInitialSources()
+	{
+		return CopyFromGenerator.GetSourceProviders();
 	}
 }

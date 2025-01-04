@@ -1,86 +1,86 @@
-﻿namespace Durian.Analysis.CopyFrom
+﻿namespace Durian.Analysis.CopyFrom;
+
+/// <summary>
+/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.CopyFromIncludeNode</c> enum.
+/// </summary>
+public sealed class CopyFromAdditionalNodesProvider : SourceTextProvider
 {
 	/// <summary>
-	/// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.CopyFromIncludeNode</c> enum.
+	/// Name of the 'All' field.
 	/// </summary>
-	public sealed class CopyFromAdditionalNodesProvider : SourceTextProvider
+	public const string All = "All";
+
+	/// <summary>
+	/// Name of the 'Constraints' field.
+	/// </summary>
+	public const string Attributes = "Attributes";
+
+	/// <summary>
+	/// Name of the 'BaseInterfaces' field.
+	/// </summary>
+	public const string BaseInterfaces = "BaseInterfaces";
+
+	/// <summary>
+	/// Name of the 'BaseType' field.
+	/// </summary>
+	public const string BaseType = "BaseType";
+
+	/// <summary>
+	/// Name of the 'Constraints' field.
+	/// </summary>
+	public const string Constraints = "Constraints";
+
+	/// <summary>
+	/// Name of the 'Default' field.
+	/// </summary>
+	public const string Default = "Default";
+
+	/// <summary>
+	/// Name of the 'Documentation' field.
+	/// </summary>
+	public const string Documentation = "Documentation";
+
+	/// <summary>
+	/// Full name of the provided type.
+	/// </summary>
+	public const string FullName = Namespace + "." + TypeName;
+
+	/// <summary>
+	/// Namespace the provided type is located in.
+	/// </summary>
+	public const string Namespace = DurianStrings.ConfigurationNamespace;
+
+	/// <summary>
+	/// Name of the 'None' field.
+	/// </summary>
+	public const string None = "None";
+
+	/// <summary>
+	/// Name of the provided type.
+	/// </summary>
+	public const string TypeName = "CopyFromAddionalNodes";
+
+	/// <summary>
+	/// Name of the 'Usings' field.
+	/// </summary>
+	public const string Usings = "Usings";
+
+	/// <inheritdoc/>
+	public override string GetFullName()
 	{
-		/// <summary>
-		/// Name of the 'All' field.
-		/// </summary>
-		public const string All = "All";
+		return FullName;
+	}
 
-		/// <summary>
-		/// Name of the 'Constraints' field.
-		/// </summary>
-		public const string Attributes = "Attributes";
+	/// <inheritdoc/>
+	public override string GetNamespace()
+	{
+		return Namespace;
+	}
 
-		/// <summary>
-		/// Name of the 'BaseInterfaces' field.
-		/// </summary>
-		public const string BaseInterfaces = "BaseInterfaces";
-
-		/// <summary>
-		/// Name of the 'BaseType' field.
-		/// </summary>
-		public const string BaseType = "BaseType";
-
-		/// <summary>
-		/// Name of the 'Constraints' field.
-		/// </summary>
-		public const string Constraints = "Constraints";
-
-		/// <summary>
-		/// Name of the 'Default' field.
-		/// </summary>
-		public const string Default = "Default";
-
-		/// <summary>
-		/// Name of the 'Documentation' field.
-		/// </summary>
-		public const string Documentation = "Documentation";
-
-		/// <summary>
-		/// Full name of the provided type.
-		/// </summary>
-		public const string FullName = Namespace + "." + TypeName;
-
-		/// <summary>
-		/// Namespace the provided type is located in.
-		/// </summary>
-		public const string Namespace = DurianStrings.ConfigurationNamespace;
-
-		/// <summary>
-		/// Name of the 'None' field.
-		/// </summary>
-		public const string None = "None";
-
-		/// <summary>
-		/// Name of the provided type.
-		/// </summary>
-		public const string TypeName = "CopyFromAddionalNodes";
-
-		/// <summary>
-		/// Name of the 'Usings' field.
-		/// </summary>
-		public const string Usings = "Usings";
-
-		/// <inheritdoc/>
-		public override string GetFullName()
-		{
-			return FullName;
-		}
-
-		/// <inheritdoc/>
-		public override string GetNamespace()
-		{
-			return Namespace;
-		}
-
-		/// <inheritdoc/>
-		public override string GetText()
-		{
-			return
+	/// <inheritdoc/>
+	public override string GetText()
+	{
+		return
 $@"using System;
 
 namespace {Namespace}
@@ -138,12 +138,11 @@ namespace {Namespace}
 	}}
 }}
 ";
-		}
+	}
 
-		/// <inheritdoc/>
-		public override string GetTypeName()
-		{
-			return TypeName;
-		}
+	/// <inheritdoc/>
+	public override string GetTypeName()
+	{
+		return TypeName;
 	}
 }

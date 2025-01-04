@@ -2,220 +2,219 @@
 using System.IO;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Analysis.Logging
+namespace Durian.Analysis.Logging;
+
+/// <summary>
+/// Determines the behavior of the target <see cref="ISourceGenerator"/> when creating log files.
+/// </summary>
+/// <remarks>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references.</remarks>
+public sealed partial class LoggingConfiguration : IEquatable<LoggingConfiguration>, ICloneable
 {
+	private bool _enableDiagnostics;
+
+	private bool _enableLogging;
+
+	private string? _logDirectory;
+	private NodeOutput _nodeOutput;
+	private bool _supportsDiagnostics;
+
 	/// <summary>
-	/// Determines the behavior of the target <see cref="ISourceGenerator"/> when creating log files.
+	/// Determines what to output when a <see cref="SyntaxNode"/> is being logged and no other <see cref="NodeOutput"/> is specified.
 	/// </summary>
-	/// <remarks>This class implements the <see cref="IEquatable{T}"/> interface - two instances are compared by their values, not references.</remarks>
-	public sealed partial class LoggingConfiguration : IEquatable<LoggingConfiguration>, ICloneable
+	/// <exception cref="ArgumentException">Value cannot be equal to <see cref="NodeOutput.Default"/>. -or- Invalid <see cref="NodeOutput"/> value.</exception>
+	public NodeOutput DefaultNodeOutput
 	{
-		private bool _enableDiagnostics;
-
-		private bool _enableLogging;
-
-		private string? _logDirectory;
-		private NodeOutput _nodeOutput;
-		private bool _supportsDiagnostics;
-
-		/// <summary>
-		/// Determines what to output when a <see cref="SyntaxNode"/> is being logged and no other <see cref="NodeOutput"/> is specified.
-		/// </summary>
-		/// <exception cref="ArgumentException">Value cannot be equal to <see cref="NodeOutput.Default"/>. -or- Invalid <see cref="NodeOutput"/> value.</exception>
-		public NodeOutput DefaultNodeOutput
+		get => _nodeOutput;
+		set
 		{
-			get => _nodeOutput;
-			set
+			if (value == NodeOutput.Default)
 			{
-				if (value == NodeOutput.Default)
-				{
-					throw new ArgumentException($"{nameof(DefaultNodeOutput)} cannot be equal to {nameof(NodeOutput)}.{nameof(NodeOutput.Default)}", nameof(DefaultNodeOutput));
-				}
-
-				if (value is NodeOutput.Node or NodeOutput.Containing or NodeOutput.SyntaxTree)
-				{
-					_nodeOutput = value;
-				}
-				else
-				{
-					throw new ArgumentException($"Invalid '{nameof(NodeOutput)}' value", nameof(DefaultNodeOutput));
-				}
-			}
-		}
-
-		/// <summary>
-		/// Determines whether this <see cref="IDurianGenerator"/> allows to report any <see cref="Diagnostic"/>s during the current execution pass.
-		/// </summary>
-		/// <exception cref="InvalidOperationException"><see cref="EnableDiagnostics"/> cannot be set to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</exception>
-		public bool EnableDiagnostics
-		{
-			get => _enableDiagnostics;
-			set
-			{
-				if (value && !SupportsDiagnostics)
-				{
-					throw new InvalidOperationException($"{nameof(EnableDiagnostics)} cannot be set to true if {nameof(SupportsDiagnostics)} is false!");
-				}
-
-				_enableDiagnostics = value;
-			}
-		}
-
-		/// <summary>
-		/// Determines whether to allow the <see cref="ISourceGenerator"/> to throw <see cref="Exception"/>s.
-		/// </summary>
-		public bool EnableExceptions { get; set; }
-
-		/// <summary>
-		/// Determines whether to enable logging.
-		/// </summary>
-		/// <exception cref="InvalidOperationException"><see cref="EnableLogging"/> cannot be set to <see langword="true"/> if generator logging is globally disabled.</exception>
-		public bool EnableLogging
-		{
-			get => _enableLogging;
-			set
-			{
-				if (value && !IsGloballyEnabled)
-				{
-					throw new InvalidOperationException($"{nameof(EnableLogging)} cannot be set to true if generator logging is globally disabled!");
-				}
-
-				_enableLogging = value;
-			}
-		}
-
-		/// <summary>
-		/// The directory the source generator logs will be written to.
-		/// </summary>
-		/// <remarks>The input value gets converted to a full path.
-		/// <para>The default value is the physical <c>Documents</c> directory.</para></remarks>
-		/// <exception cref="ArgumentException"><see cref="LogDirectory"/> cannot be <see langword="null"/> or empty.</exception>
-		public string LogDirectory
-		{
-			get => _logDirectory ??= Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			set
-			{
-				if (string.IsNullOrWhiteSpace(value))
-				{
-					throw new ArgumentException($"{nameof(LogDirectory)} cannot be null or empty", nameof(LogDirectory));
-				}
-
-				_logDirectory = Path.GetFullPath(value);
-			}
-		}
-
-		/// <summary>
-		/// Types of logs this source generator can produce.
-		/// </summary>
-		public GeneratorLogs SupportedLogs { get; set; }
-
-		/// <summary>
-		/// Determines whether the <see cref="ISourceGenerator"/> supports reporting or logging <see cref="Diagnostic"/>s.
-		/// </summary>
-		public bool SupportsDiagnostics
-		{
-			get => _supportsDiagnostics;
-			set
-			{
-				if (!value)
-				{
-					_enableLogging = false;
-				}
-
-				_supportsDiagnostics = value;
-			}
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="LoggingConfiguration"/> class.
-		/// </summary>
-		public LoggingConfiguration()
-		{
-		}
-
-		/// <inheritdoc/>
-		public static bool operator !=(LoggingConfiguration? a, LoggingConfiguration? b)
-		{
-			return !(a == b);
-		}
-
-		/// <inheritdoc/>
-		public static bool operator ==(LoggingConfiguration? a, LoggingConfiguration? b)
-		{
-			if (ReferenceEquals(a, b))
-			{
-				return true;
+				throw new ArgumentException($"{nameof(DefaultNodeOutput)} cannot be equal to {nameof(NodeOutput)}.{nameof(NodeOutput.Default)}", nameof(DefaultNodeOutput));
 			}
 
-			if (a is null)
+			if (value is NodeOutput.Node or NodeOutput.Containing or NodeOutput.SyntaxTree)
 			{
-				return b is null;
+				_nodeOutput = value;
+			}
+			else
+			{
+				throw new ArgumentException($"Invalid '{nameof(NodeOutput)}' value", nameof(DefaultNodeOutput));
+			}
+		}
+	}
+
+	/// <summary>
+	/// Determines whether this <see cref="IDurianGenerator"/> allows to report any <see cref="Diagnostic"/>s during the current execution pass.
+	/// </summary>
+	/// <exception cref="InvalidOperationException"><see cref="EnableDiagnostics"/> cannot be set to <see langword="true"/> if <see cref="SupportsDiagnostics"/> is <see langword="false"/>.</exception>
+	public bool EnableDiagnostics
+	{
+		get => _enableDiagnostics;
+		set
+		{
+			if (value && !SupportsDiagnostics)
+			{
+				throw new InvalidOperationException($"{nameof(EnableDiagnostics)} cannot be set to true if {nameof(SupportsDiagnostics)} is false!");
 			}
 
-			if (b is null)
+			_enableDiagnostics = value;
+		}
+	}
+
+	/// <summary>
+	/// Determines whether to allow the <see cref="ISourceGenerator"/> to throw <see cref="Exception"/>s.
+	/// </summary>
+	public bool EnableExceptions { get; set; }
+
+	/// <summary>
+	/// Determines whether to enable logging.
+	/// </summary>
+	/// <exception cref="InvalidOperationException"><see cref="EnableLogging"/> cannot be set to <see langword="true"/> if generator logging is globally disabled.</exception>
+	public bool EnableLogging
+	{
+		get => _enableLogging;
+		set
+		{
+			if (value && !IsGloballyEnabled)
 			{
-				return false;
+				throw new InvalidOperationException($"{nameof(EnableLogging)} cannot be set to true if generator logging is globally disabled!");
 			}
 
-			return
-				a._supportsDiagnostics == b._supportsDiagnostics &&
-				a._enableLogging == b._enableLogging &&
-				a._enableDiagnostics == b._enableDiagnostics &&
-				a._logDirectory == b._logDirectory &&
-				a.EnableExceptions == b.EnableExceptions &&
-				a.SupportedLogs == b.SupportedLogs &&
-				a.DefaultNodeOutput == b.DefaultNodeOutput;
+			_enableLogging = value;
 		}
+	}
 
-		/// <inheritdoc cref="ICloneable.Clone"/>
-		public LoggingConfiguration Clone()
+	/// <summary>
+	/// The directory the source generator logs will be written to.
+	/// </summary>
+	/// <remarks>The input value gets converted to a full path.
+	/// <para>The default value is the physical <c>Documents</c> directory.</para></remarks>
+	/// <exception cref="ArgumentException"><see cref="LogDirectory"/> cannot be <see langword="null"/> or empty.</exception>
+	public string LogDirectory
+	{
+		get => _logDirectory ??= Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+		set
 		{
-			return new LoggingConfiguration()
+			if (string.IsNullOrWhiteSpace(value))
 			{
-				_enableDiagnostics = EnableDiagnostics,
-				_enableLogging = EnableLogging,
-				_supportsDiagnostics = SupportsDiagnostics,
-				SupportedLogs = SupportedLogs,
-				_logDirectory = LogDirectory,
-				EnableExceptions = EnableExceptions,
-				DefaultNodeOutput = DefaultNodeOutput
-			};
-		}
-
-		/// <inheritdoc/>
-		public override bool Equals(object obj)
-		{
-			if (obj is not LoggingConfiguration other)
-			{
-				return false;
+				throw new ArgumentException($"{nameof(LogDirectory)} cannot be null or empty", nameof(LogDirectory));
 			}
 
-			return other == this;
+			_logDirectory = Path.GetFullPath(value);
+		}
+	}
+
+	/// <summary>
+	/// Types of logs this source generator can produce.
+	/// </summary>
+	public GeneratorLogs SupportedLogs { get; set; }
+
+	/// <summary>
+	/// Determines whether the <see cref="ISourceGenerator"/> supports reporting or logging <see cref="Diagnostic"/>s.
+	/// </summary>
+	public bool SupportsDiagnostics
+	{
+		get => _supportsDiagnostics;
+		set
+		{
+			if (!value)
+			{
+				_enableLogging = false;
+			}
+
+			_supportsDiagnostics = value;
+		}
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="LoggingConfiguration"/> class.
+	/// </summary>
+	public LoggingConfiguration()
+	{
+	}
+
+	/// <inheritdoc/>
+	public static bool operator !=(LoggingConfiguration? a, LoggingConfiguration? b)
+	{
+		return !(a == b);
+	}
+
+	/// <inheritdoc/>
+	public static bool operator ==(LoggingConfiguration? a, LoggingConfiguration? b)
+	{
+		if (ReferenceEquals(a, b))
+		{
+			return true;
 		}
 
-		/// <inheritdoc/>
-		public bool Equals(LoggingConfiguration? other)
+		if (a is null)
 		{
-			return other == this;
+			return b is null;
 		}
 
-		/// <inheritdoc/>
-		public override int GetHashCode()
+		if (b is null)
 		{
-			int hashCode = -604981020;
-			hashCode = (hashCode * -1521134295) + LogDirectory.GetHashCode();
-			hashCode = (hashCode * -1521134295) + EnableLogging.GetHashCode();
-			hashCode = (hashCode * -1521134295) + EnableDiagnostics.GetHashCode();
-			hashCode = (hashCode * -1521134295) + SupportedLogs.GetHashCode();
-			hashCode = (hashCode * -1521134295) + SupportsDiagnostics.GetHashCode();
-			hashCode = (hashCode * -1521134295) + EnableExceptions.GetHashCode();
-			hashCode = (hashCode * -1521134295) + DefaultNodeOutput.GetHashCode();
-			return hashCode;
+			return false;
 		}
 
-		object ICloneable.Clone()
+		return
+			a._supportsDiagnostics == b._supportsDiagnostics &&
+			a._enableLogging == b._enableLogging &&
+			a._enableDiagnostics == b._enableDiagnostics &&
+			a._logDirectory == b._logDirectory &&
+			a.EnableExceptions == b.EnableExceptions &&
+			a.SupportedLogs == b.SupportedLogs &&
+			a.DefaultNodeOutput == b.DefaultNodeOutput;
+	}
+
+	/// <inheritdoc cref="ICloneable.Clone"/>
+	public LoggingConfiguration Clone()
+	{
+		return new LoggingConfiguration()
 		{
-			return Clone();
+			_enableDiagnostics = EnableDiagnostics,
+			_enableLogging = EnableLogging,
+			_supportsDiagnostics = SupportsDiagnostics,
+			SupportedLogs = SupportedLogs,
+			_logDirectory = LogDirectory,
+			EnableExceptions = EnableExceptions,
+			DefaultNodeOutput = DefaultNodeOutput
+		};
+	}
+
+	/// <inheritdoc/>
+	public override bool Equals(object obj)
+	{
+		if (obj is not LoggingConfiguration other)
+		{
+			return false;
 		}
+
+		return other == this;
+	}
+
+	/// <inheritdoc/>
+	public bool Equals(LoggingConfiguration? other)
+	{
+		return other == this;
+	}
+
+	/// <inheritdoc/>
+	public override int GetHashCode()
+	{
+		int hashCode = -604981020;
+		hashCode = (hashCode * -1521134295) + LogDirectory.GetHashCode();
+		hashCode = (hashCode * -1521134295) + EnableLogging.GetHashCode();
+		hashCode = (hashCode * -1521134295) + EnableDiagnostics.GetHashCode();
+		hashCode = (hashCode * -1521134295) + SupportedLogs.GetHashCode();
+		hashCode = (hashCode * -1521134295) + SupportsDiagnostics.GetHashCode();
+		hashCode = (hashCode * -1521134295) + EnableExceptions.GetHashCode();
+		hashCode = (hashCode * -1521134295) + DefaultNodeOutput.GetHashCode();
+		return hashCode;
+	}
+
+	object ICloneable.Clone()
+	{
+		return Clone();
 	}
 }

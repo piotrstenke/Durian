@@ -1,13 +1,13 @@
 using Xunit;
 
-namespace Durian.Analysis.DefaultParam.Tests.Methods
+namespace Durian.Analysis.DefaultParam.Tests.Methods;
+
+public sealed class BasicMethodTests : DefaultParamGeneratorTest
 {
-	public sealed class BasicMethodTests : DefaultParamGeneratorTest
+	[Fact]
+	public void DoesNotRemoveConstraintOfNonDefaultParam()
 	{
-		[Fact]
-		public void DoesNotRemoveConstraintOfNonDefaultParam()
-		{
-			string input =
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -19,7 +19,7 @@ partial class Test
 	}}
 }}
 ";
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>()")}
@@ -33,13 +33,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void GeneratesForAbstractMethod()
-		{
-			string input =
+	[Fact]
+	public void GeneratesForAbstractMethod()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using System.Collections;
 
@@ -48,20 +48,20 @@ partial abstract class Test
 	abstract void Method<[{DefaultParamAttributeProvider.TypeName}(typeof(int))]T>();
 }}
 ";
-			string expected =
+		string expected =
 @$"internal abstract partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
 	abstract void Method();
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void HandlesMethodWithMultipleTypeParameters_When_AllParametersAreDefaultParam()
-		{
-			string input =
+	[Fact]
+	public void HandlesMethodWithMultipleTypeParameters_When_AllParametersAreDefaultParam()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -75,7 +75,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U>(T)")}
@@ -91,13 +91,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void HandlesMethodWithMultipleTypeParameters_When_OnlySomeParametersAreDefaultParam()
-		{
-			string input =
+	[Fact]
+	public void HandlesMethodWithMultipleTypeParameters_When_OnlySomeParametersAreDefaultParam()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -111,7 +111,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U>(T)")}
@@ -121,13 +121,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void HandlesMethodWithOneTypeParameter()
-		{
-			string input =
+	[Fact]
+	public void HandlesMethodWithOneTypeParameter()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -138,7 +138,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
@@ -148,13 +148,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void PreservesModifiers()
-		{
-			string input =
+	[Fact]
+	public void PreservesModifiers()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -165,7 +165,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
@@ -175,13 +175,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void PreservesTargetAttributes()
-		{
-			string input =
+	[Fact]
+	public void PreservesTargetAttributes()
+	{
+		string input =
 @$"using System;
 using {DurianStrings.MainNamespace};
 
@@ -195,7 +195,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"using System;
 
 internal partial class Test
@@ -209,13 +209,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void ProperlyHandlesTypeParameterOfParentType()
-		{
-			string input =
+	[Fact]
+	public void ProperlyHandlesTypeParameterOfParentType()
+	{
+		string input =
 $@"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -229,7 +229,7 @@ partial class Test<TNumber> where TNumber : class
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test<TNumber> where TNumber : class
 {{
 	{GetCodeGenerationAttributes("Test<TNumber>.Method<T>(T, TNumber)")}
@@ -239,13 +239,13 @@ partial class Test<TNumber> where TNumber : class
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void RemovesConstraintsOfMultipleDefaultParams()
-		{
-			string input =
+	[Fact]
+	public void RemovesConstraintsOfMultipleDefaultParams()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -258,7 +258,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T, U, V>()")}
@@ -277,13 +277,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void RemovesConstraintsOfSingleDefaultParam()
-		{
-			string input =
+	[Fact]
+	public void RemovesConstraintsOfSingleDefaultParam()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -294,7 +294,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
@@ -305,13 +305,13 @@ partial class Test
 }}
 ";
 
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void ReplacesAllReferencesToTypeParameter()
-		{
-			string input =
+	[Fact]
+	public void ReplacesAllReferencesToTypeParameter()
+	{
+		string input =
 @$"using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -331,7 +331,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -348,13 +348,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void SkipsContainingTypeAttributes()
-		{
-			string input =
+	[Fact]
+	public void SkipsContainingTypeAttributes()
+	{
+		string input =
 @$"using System;
 using {DurianStrings.MainNamespace};
 
@@ -367,7 +367,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
@@ -377,13 +377,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void SkipsMethod_When_HasNoDefaultParamAttribute()
-		{
-			string input =
+	[Fact]
+	public void SkipsMethod_When_HasNoDefaultParamAttribute()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -394,13 +394,13 @@ partial class Test
 	}}
 }}";
 
-			Assert.False(RunGenerator(input).IsGenerated);
-		}
+		Assert.False(RunGenerator(input).IsGenerated);
+	}
 
-		[Fact]
-		public void Success_When_HasTwoDefaultParam_And_FirstIsConstraintOfSecond()
-		{
-			string input =
+	[Fact]
+	public void Success_When_HasTwoDefaultParam_And_FirstIsConstraintOfSecond()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using System.Collections;
 
@@ -413,7 +413,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"using System.Collections;
 
 internal partial class Test
@@ -431,13 +431,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsArray_And_IsNotConstraint()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsArray_And_IsNotConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -449,7 +449,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
@@ -459,13 +459,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsExtensionMethod()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsExtensionMethod()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial static class Test
@@ -477,7 +477,7 @@ partial static class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal static partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
@@ -487,13 +487,13 @@ partial static class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsGenericType()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsGenericType()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using {DurianStrings.ConfigurationNamespace};
 
@@ -507,7 +507,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"using System.Collections.Generic;
 
 internal partial class Test
@@ -519,13 +519,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsLessAccessible_And_IsNotPartOfSignature()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsLessAccessible_And_IsNotPartOfSignature()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -541,7 +541,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>()")}
@@ -551,13 +551,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsObject_And_IsNotConstraint()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsObject_And_IsNotConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -569,7 +569,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
@@ -579,13 +579,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsSystemArray_And_IsNotConstraint()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsSystemArray_And_IsNotConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -597,7 +597,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"using System;
 
 internal partial class Test
@@ -609,13 +609,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsSystemValueType_And_IsNotConstraint()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsSystemValueType_And_IsNotConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -627,7 +627,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"using System;
 
 internal partial class Test
@@ -639,13 +639,13 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void Success_When_IsValueType_And_IsNotConstraint()
-		{
-			string input =
+	[Fact]
+	public void Success_When_IsValueType_And_IsNotConstraint()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test
@@ -657,7 +657,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test
 {{
 	{GetCodeGenerationAttributes("Test.Method<T>(T)")}
@@ -667,13 +667,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void WritesAllContainingNamespacesAndTypes()
-		{
-			string input =
+	[Fact]
+	public void WritesAllContainingNamespacesAndTypes()
+	{
+		string input =
 @$"namespace N1
 {{
 	namespace N2
@@ -694,7 +694,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"namespace N1.N2
 {{
 	public partial interface Parent
@@ -713,13 +713,13 @@ partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void WritesMethod_When_IsInGenericType()
-		{
-			string input =
+	[Fact]
+	public void WritesMethod_When_IsInGenericType()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test<TNumber>
@@ -730,7 +730,7 @@ partial class Test<TNumber>
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test<TNumber>
 {{
 	{GetCodeGenerationAttributes("Test<TNumber>.Method<T>(T)")}
@@ -740,13 +740,13 @@ partial class Test<TNumber>
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void WritesMethod_When_IsInGenericTypeWithConstraints()
-		{
-			string input =
+	[Fact]
+	public void WritesMethod_When_IsInGenericTypeWithConstraints()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 
 partial class Test<TNumber> where TNumber : class
@@ -757,7 +757,7 @@ partial class Test<TNumber> where TNumber : class
 }}
 ";
 
-			string expected =
+		string expected =
 @$"internal partial class Test<TNumber> where TNumber : class
 {{
 	{GetCodeGenerationAttributes("Test<TNumber>.Method<T>(T)")}
@@ -767,13 +767,13 @@ partial class Test<TNumber> where TNumber : class
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
+	}
 
-		[Fact]
-		public void WritesSortedUsings()
-		{
-			string input =
+	[Fact]
+	public void WritesSortedUsings()
+	{
+		string input =
 @$"using {DurianStrings.MainNamespace};
 using System.Numerics;
 using System.Collections;
@@ -792,7 +792,7 @@ partial class Test
 }}
 ";
 
-			string expected =
+		string expected =
 @$"using System;
 using System.Collections;
 using System.Numerics;
@@ -808,7 +808,6 @@ internal partial class Test
 	}}
 }}
 ";
-			Assert.True(RunGenerator(input).Compare(expected));
-		}
+		Assert.True(RunGenerator(input).Compare(expected));
 	}
 }

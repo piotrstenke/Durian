@@ -9,206 +9,205 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
 
-namespace Durian.Analysis.CopyFrom
-{
-	public partial class CopyFromAnalyzer
-	{
-		internal static bool AnalyzePattern(
-			ISymbol symbol,
-			AttributeData patternAttribute,
-			HashSet<string> patterns,
-			bool hasAnyTarget,
-			bool hasTargetOnSameDeclaration,
-			[NotNullWhen(true)] out string? pattern,
-			[NotNullWhen(true)] out string? replacement,
-			out int order,
-			IDiagnosticReceiver diagnosticReceiver
-		)
-		{
-			Location? location = null;
-			bool isValid = true;
+namespace Durian.Analysis.CopyFrom;
 
-			if (hasAnyTarget)
-			{
-				if (!hasTargetOnSameDeclaration)
-				{
-					location = patternAttribute.GetLocation();
-					diagnosticReceiver.ReportDiagnostic(DUR0219_PatternOnDifferentDeclaration, location, symbol);
-					isValid = false;
-				}
-			}
-			else
+public partial class CopyFromAnalyzer
+{
+	internal static bool AnalyzePattern(
+		ISymbol symbol,
+		AttributeData patternAttribute,
+		HashSet<string> patterns,
+		bool hasAnyTarget,
+		bool hasTargetOnSameDeclaration,
+		[NotNullWhen(true)] out string? pattern,
+		[NotNullWhen(true)] out string? replacement,
+		out int order,
+		IDiagnosticReceiver diagnosticReceiver
+	)
+	{
+		Location? location = null;
+		bool isValid = true;
+
+		if (hasAnyTarget)
+		{
+			if (!hasTargetOnSameDeclaration)
 			{
 				location = patternAttribute.GetLocation();
-				diagnosticReceiver.ReportDiagnostic(DUR0215_RedundantPatternAttribute, location, symbol);
+				diagnosticReceiver.ReportDiagnostic(DUR0219_PatternOnDifferentDeclaration, location, symbol);
 				isValid = false;
 			}
+		}
+		else
+		{
+			location = patternAttribute.GetLocation();
+			diagnosticReceiver.ReportDiagnostic(DUR0215_RedundantPatternAttribute, location, symbol);
+			isValid = false;
+		}
 
-			if (HasValidRegexPattern(patternAttribute, out pattern, out replacement, out order))
+		if (HasValidRegexPattern(patternAttribute, out pattern, out replacement, out order))
+		{
+			if (!patterns.Add(pattern))
 			{
-				if (!patterns.Add(pattern))
-				{
-					diagnosticReceiver.ReportDiagnostic(DUR0216_EquivalentPatternAttribute, location ?? patternAttribute.GetLocation(), symbol);
-					isValid = false;
-				}
-			}
-			else
-			{
-				diagnosticReceiver.ReportDiagnostic(DUR0214_InvalidPatternAttributeSpecified, location ?? patternAttribute.GetLocation(), symbol);
+				diagnosticReceiver.ReportDiagnostic(DUR0216_EquivalentPatternAttribute, location ?? patternAttribute.GetLocation(), symbol);
 				isValid = false;
 			}
-
-			return isValid;
+		}
+		else
+		{
+			diagnosticReceiver.ReportDiagnostic(DUR0214_InvalidPatternAttributeSpecified, location ?? patternAttribute.GetLocation(), symbol);
+			isValid = false;
 		}
 
-		internal static Location? GetParentLocation(AttributeData attribute)
+		return isValid;
+	}
+
+	internal static Location? GetParentLocation(AttributeData attribute)
+	{
+		return attribute.ApplicationSyntaxReference?.GetSyntax()?.Parent?.Parent?.GetLocation();
+	}
+
+	internal static bool HasValidRegexPattern(
+		AttributeData attribute,
+		[NotNullWhen(true)] out string? pattern,
+		[NotNullWhen(true)] out string? replacement,
+		out int order
+	)
+	{
+		ImmutableArray<TypedConstant> arguments = attribute.ConstructorArguments;
+
+		if (arguments.Length < 2 || arguments[0].Value is not string p || string.IsNullOrEmpty(p) || arguments[1].Value is not string r)
 		{
-			return attribute.ApplicationSyntaxReference?.GetSyntax()?.Parent?.Parent?.GetLocation();
+			pattern = default;
+			replacement = default;
+			order = default;
+			return false;
 		}
 
-		internal static bool HasValidRegexPattern(
-			AttributeData attribute,
-			[NotNullWhen(true)] out string? pattern,
-			[NotNullWhen(true)] out string? replacement,
-			out int order
-		)
-		{
-			ImmutableArray<TypedConstant> arguments = attribute.ConstructorArguments;
+		pattern = p;
+		replacement = r;
+		order = attribute.GetNamedArgumentValue<int>(PatternAttributeProvider.Order);
 
-			if (arguments.Length < 2 || arguments[0].Value is not string p || string.IsNullOrEmpty(p) || arguments[1].Value is not string r)
+		return true;
+	}
+
+	internal static void ReportEquivalentPattern(IDiagnosticReceiver diagnosticReceiver, Location? location, ISymbol symbol)
+	{
+		diagnosticReceiver.ReportDiagnostic(DUR0216_EquivalentPatternAttribute, location, symbol);
+	}
+
+	internal static PatternData[]? SortByOrder(List<(int order, PatternData pattern)> patterns)
+	{
+		if (patterns.Count == 0)
+		{
+			return default;
+		}
+
+		PatternData[] array = new PatternData[patterns.Count];
+
+		patterns.Sort((a, b) =>
+		{
+			if (a.order == 0 || a.order < b.order)
 			{
-				pattern = default;
-				replacement = default;
-				order = default;
-				return false;
+				return -1;
+			}
+			else if (a.order == b.order)
+			{
+				return 0;
 			}
 
-			pattern = p;
-			replacement = r;
-			order = attribute.GetNamedArgumentValue<int>(PatternAttributeProvider.Order);
+			return 1;
+		});
 
-			return true;
+		for (int i = 0; i < patterns.Count; i++)
+		{
+			array[i] = patterns[i].pattern;
 		}
 
-		internal static void ReportEquivalentPattern(IDiagnosticReceiver diagnosticReceiver, Location? location, ISymbol symbol)
+		return array;
+	}
+
+	private static void AnalyzePattern(
+		ISymbol symbol,
+		CopyFromCompilationData compilation,
+		ImmutableArray<AttributeData> attributes,
+		bool hasTarget,
+		IDiagnosticReceiver diagnosticReceiver
+	)
+	{
+		AttributeData[] patternAttributes = GetAttributes(attributes, compilation.PatternAttribute!);
+
+		if (patternAttributes.Length == 0)
 		{
-			diagnosticReceiver.ReportDiagnostic(DUR0216_EquivalentPatternAttribute, location, symbol);
+			return;
 		}
 
-		internal static PatternData[]? SortByOrder(List<(int order, PatternData pattern)> patterns)
+		HashSet<string> set = new();
+
+		foreach (AttributeData pattern in patternAttributes)
 		{
-			if (patterns.Count == 0)
-			{
-				return default;
-			}
+			Location? location = GetParentLocation(pattern);
+			bool hasTargetOnCurrentDeclaration = location is not null && attributes.Any(attr => IsCopyFromAttribute(attr, compilation) && GetParentLocation(attr) == location);
 
-			PatternData[] array = new PatternData[patterns.Count];
+			AnalyzePattern(symbol, pattern, set, hasTarget, hasTargetOnCurrentDeclaration, out _, out _, out _, diagnosticReceiver);
+		}
+	}
 
-			patterns.Sort((a, b) =>
+	private static bool AnalyzePattern(
+		ISymbol symbol,
+		CopyFromCompilationData compilation,
+		AttributeSyntax attrSyntax,
+		IDiagnosticReceiver diagnosticReceiver
+	)
+	{
+		Location currentLocation = attrSyntax.GetLocation();
+		Location? declarationLocation = attrSyntax.Parent?.Parent?.GetLocation();
+
+		AttributeData? currentData = null;
+		HashSet<string> patterns = new();
+		bool hasAnyTarget = false;
+		bool hasTargetOnCurrentDeclaration = false;
+
+		foreach (AttributeData attribute in symbol.GetAttributes())
+		{
+			if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.PatternAttribute))
 			{
-				if (a.order == 0 || a.order < b.order)
+				if (currentData is null && attribute.GetLocation() == currentLocation)
 				{
-					return -1;
+					currentData = attribute;
 				}
-				else if (a.order == b.order)
+				else if (attribute.ConstructorArguments[0].Value is string pattern && !string.IsNullOrEmpty(pattern))
 				{
-					return 0;
+					patterns.Add(pattern);
 				}
 
-				return 1;
-			});
-
-			for (int i = 0; i < patterns.Count; i++)
-			{
-				array[i] = patterns[i].pattern;
+				continue;
 			}
 
-			return array;
-		}
-
-		private static void AnalyzePattern(
-			ISymbol symbol,
-			CopyFromCompilationData compilation,
-			ImmutableArray<AttributeData> attributes,
-			bool hasTarget,
-			IDiagnosticReceiver diagnosticReceiver
-		)
-		{
-			AttributeData[] patternAttributes = GetAttributes(attributes, compilation.PatternAttribute!);
-
-			if (patternAttributes.Length == 0)
+			if (!hasTargetOnCurrentDeclaration && IsCopyFromAttribute(attribute, compilation))
 			{
-				return;
-			}
+				hasAnyTarget = true;
 
-			HashSet<string> set = new();
-
-			foreach (AttributeData pattern in patternAttributes)
-			{
-				Location? location = GetParentLocation(pattern);
-				bool hasTargetOnCurrentDeclaration = location is not null && attributes.Any(attr => IsCopyFromAttribute(attr, compilation) && GetParentLocation(attr) == location);
-
-				AnalyzePattern(symbol, pattern, set, hasTarget, hasTargetOnCurrentDeclaration, out _, out _, out _, diagnosticReceiver);
+				if (declarationLocation is not null && GetParentLocation(attribute) == declarationLocation)
+				{
+					hasTargetOnCurrentDeclaration = true;
+				}
 			}
 		}
 
-		private static bool AnalyzePattern(
-			ISymbol symbol,
-			CopyFromCompilationData compilation,
-			AttributeSyntax attrSyntax,
-			IDiagnosticReceiver diagnosticReceiver
-		)
+		if (currentData is null)
 		{
-			Location currentLocation = attrSyntax.GetLocation();
-			Location? declarationLocation = attrSyntax.Parent?.Parent?.GetLocation();
-
-			AttributeData? currentData = null;
-			HashSet<string> patterns = new();
-			bool hasAnyTarget = false;
-			bool hasTargetOnCurrentDeclaration = false;
-
-			foreach (AttributeData attribute in symbol.GetAttributes())
-			{
-				if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.PatternAttribute))
-				{
-					if (currentData is null && attribute.GetLocation() == currentLocation)
-					{
-						currentData = attribute;
-					}
-					else if (attribute.ConstructorArguments[0].Value is string pattern && !string.IsNullOrEmpty(pattern))
-					{
-						patterns.Add(pattern);
-					}
-
-					continue;
-				}
-
-				if (!hasTargetOnCurrentDeclaration && IsCopyFromAttribute(attribute, compilation))
-				{
-					hasAnyTarget = true;
-
-					if (declarationLocation is not null && GetParentLocation(attribute) == declarationLocation)
-					{
-						hasTargetOnCurrentDeclaration = true;
-					}
-				}
-			}
-
-			if (currentData is null)
-			{
-				return false;
-			}
-
-			return AnalyzePattern(symbol, currentData, patterns, hasAnyTarget, hasTargetOnCurrentDeclaration, out _, out _, out _, diagnosticReceiver);
+			return false;
 		}
 
-		private static void AnalyzePatternAttribute(SyntaxNodeAnalysisContext context, CopyFromCompilationData compilation, AttributeSyntax attr, CSharpSyntaxNode member)
+		return AnalyzePattern(symbol, currentData, patterns, hasAnyTarget, hasTargetOnCurrentDeclaration, out _, out _, out _, diagnosticReceiver);
+	}
+
+	private static void AnalyzePatternAttribute(SyntaxNodeAnalysisContext context, CopyFromCompilationData compilation, AttributeSyntax attr, CSharpSyntaxNode member)
+	{
+		if (context.SemanticModel.GetDeclaredSymbol(member) is ISymbol symbol)
 		{
-			if (context.SemanticModel.GetDeclaredSymbol(member) is ISymbol symbol)
-			{
-				DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
-				AnalyzePattern(symbol, compilation, attr, diagnosticReceiver);
-			}
+			DiagnosticReceiver.Contextual<SyntaxNodeAnalysisContext> diagnosticReceiver = DiagnosticReceiver.Factory.SyntaxNode(context);
+			AnalyzePattern(symbol, compilation, attr, diagnosticReceiver);
 		}
 	}
 }
