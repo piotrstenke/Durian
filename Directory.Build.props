@@ -8,7 +8,7 @@
 	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	<Nullable>enable</Nullable>
-	<LangVersion>9</LangVersion>
+	<LangVersion>latest</LangVersion>
 	<PreferredUILang>en-US</PreferredUILang>
 	<NeutralLanguage>en</NeutralLanguage>
 	<NoWarn>RS2003</NoWarn>
