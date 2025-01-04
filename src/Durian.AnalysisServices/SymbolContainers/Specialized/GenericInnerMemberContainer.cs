@@ -38,10 +38,7 @@ namespace Durian.Analysis.SymbolContainers.Specialized
 		/// <inheritdoc/>
 		private protected override bool IsHandledExternally(int level)
 		{
-#pragma warning disable CS0618 // Type or member is obsolete
 			LeveledSymbolContainer<TParentSymbol, TParentData>.InnerContainer container = (ParentContainer.ResolveLevel(level) as LeveledSymbolContainer<TParentSymbol, TParentData>.InnerContainer)!;
-#pragma warning restore CS0618 // Type or member is obsolete
-
 			LeveledSymbolContainer<TParentSymbol, TParentData>.LevelEntry levelEntry = ParentContainer._levels[level];
 			List<ISymbolOrMember<TParentSymbol, TParentData>> baseList = ParentContainer._data;
 

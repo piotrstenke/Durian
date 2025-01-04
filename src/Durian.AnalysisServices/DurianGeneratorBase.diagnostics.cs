@@ -10,13 +10,8 @@ namespace Durian.Analysis
 	{
 		#region Diagnostics copied from Durian.Core.Analyzer
 
-#pragma warning disable IDE1006 // Naming Styles
-
 		private static readonly DiagnosticDescriptor DUR0001_ProjectMustReferenceDurianCore = new(
-#pragma warning restore IDE1006 // Naming Styles
-#pragma warning disable RS2008 // Enable analyzer release tracking
 			id: "DUR0001",
-#pragma warning restore RS2008 // Enable analyzer release tracking
 			title: "Projects with any Durian analyzer must reference the Durian.Core package",
 			messageFormat: "Projects with any Durian analyzer must reference the Durian.Core package",
 			category: "Durian",
@@ -25,13 +20,8 @@ namespace Durian.Analysis
 			isEnabledByDefault: true
 		);
 
-#pragma warning disable IDE1006 // Naming Styles
-
 		private static readonly DiagnosticDescriptor DUR0004_DurianModulesAreValidOnlyInCSharp = new(
-#pragma warning restore IDE1006 // Naming Styles
-#pragma warning disable RS2008 // Enable analyzer release tracking
 			id: "DUR0004",
-#pragma warning restore RS2008 // Enable analyzer release tracking
 			title: "Durian modules can be used only in C#",
 			messageFormat: "Durian modules can be used only in C#",
 			category: "Durian",
@@ -41,6 +31,5 @@ namespace Durian.Analysis
 		);
 
 		#endregion Diagnostics copied from Durian.Core.Analyzer
-
 	}
 }
