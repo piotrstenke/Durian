@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 
 internal static class Program
 {
+#pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
 	private static readonly Regex _categoryRegex = new(@"category\s*:\s*""\s*([\w.]+)\s*""", RegexOptions.Singleline);
 	private static readonly Regex _diagnosticAttributeRegex = new(@"\[assembly\s*:\s*DiagnosticFiles\s*\(\s*(.*?)\]", RegexOptions.Singleline);
 	private static readonly Regex _diagnosticAttributeValueRegex = new(@"\s*(?:nameof\s*\(\s*(\w+)\s*\)|"".*?"")", RegexOptions.Singleline);
@@ -15,6 +16,7 @@ internal static class Program
 	private static readonly Regex _packageRegex = new(@"DurianPackage\s*\.\s*(\w+)\s*,", RegexOptions.Singleline);
 	private static readonly Regex _severityRegex = new(@"defaultSeverity\s*:\s*DiagnosticSeverity\s*.\s*(\w+)", RegexOptions.Singleline);
 	private static readonly Regex _titleRegex = new(@"title\s*:\s*""\s*(.*?)\s*""", RegexOptions.Singleline);
+#pragma warning restore SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
 
 	internal static void Main(string[] args)
 	{
