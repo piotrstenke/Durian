@@ -19,7 +19,7 @@
 
 ##
 
-**Durian is a collection of Roslyn-based analyzers, source generators and utility libraries that bring many extensions to C#, with heavy emphasis on features that can be found in other existing languages. It's main goal is to make C# easier and more pleasant to use through reducing necessary boilerplate code, while at the same time providing additional layers of flexibility.**
+**Durian is a collection of Roslyn-based analyzers, source generators and utility libraries that greatly extend the default capabilities of C# by bringing new features found in other existing programing languages, such as Kotlin, Swift, Java, C++, and many more.**
 
 ## Table of Contents
 
@@ -34,11 +34,11 @@
 
 ## Current State
 
-Durian is at an early stage of its evolution - many core features are still missing, being either in early development or planning phase. As for now, three fully-fledged modules are ready - *DefaultParam*, *InterfaceTargets* and *FriendClass*.
+Durian is still very much in development - many planned features are still not implemented or implemented only partially. Features that are production-ready are listed in the [Features](#Features) section below.
 
 ## Features
 
-To see more about a specific feature, click on its name.
+If you seek more information about a specific feature, click on its name below.
 
 ### [DefaultParam](src/Durian.DefaultParam/README.md)
 *DefaultParam* allows to specify a default type for a generic parameter.
@@ -72,7 +72,7 @@ public class Program
 
 ### [InterfaceTargets](src/Durian.InterfaceTargets/README.md)
 
-*InterfaceTargets*, similar to how [System.AttributeUsageAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.attributeusageattribute) works, allows to specify what kinds of members an interface can be implemented by.
+*InterfaceTargets*, similar to how [System.AttributeUsageAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.attributeusageattribute) works, allows to specify what kinds of types an interface can be implemented by.
 
 ```csharp
 using Durian;
