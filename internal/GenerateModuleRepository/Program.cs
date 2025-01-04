@@ -8,12 +8,15 @@ using Newtonsoft.Json;
 
 internal static class Program
 {
+
+#pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
 	private static readonly Regex _diagnosticRegex = new(@"public\s*static\s*readonly\s*DiagnosticDescriptor\s*\w+\s*=\s*new\s*\w*\s*\(.*?\)\s*;", RegexOptions.Singleline);
 	private static readonly Regex _idRegex = new(@"id\s*:\s*""\s*(\w+)\s*""", RegexOptions.Singleline);
 	private static readonly Regex _titleRegex = new(@"title\s*:\s*""\s*(.*?)\s*""", RegexOptions.Singleline);
 	private static readonly Regex _severityRegex = new(@"defaultSeverity\s*:\s*DiagnosticSeverity\s*.\s*(\w+)", RegexOptions.Singleline);
 	private static readonly Regex _locationRegex = new(@"\[\s*WithoutLocation\s*\]");
 	private static readonly Regex _documentationRegex = new(@"helpLinkUri:\s*DocsPath\s*\+\s*\""\/(.*\.md)\""");
+#pragma warning restore SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
 
 	private static void Main(string[] args)
 	{
