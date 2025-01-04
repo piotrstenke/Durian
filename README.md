@@ -6,7 +6,7 @@
 		<img src="https://img.shields.io/nuget/dt/Durian?color=blue&style=flat-square" alt="Downloads"/>
 	</a> <br />
 	<a href="https://github.com/piotrstenke/Durian/actions">
-		<img src="https://img.shields.io/github/workflow/status/piotrstenke/Durian/.NET?style=flat-square" alt="Build"/>
+		<img src="https://img.shields.io/github/actions/workflow/status/piotrstenke/Durian/dotnet.yml" alt="Build"/>
 	</a>
 	<a href="https://github.com//piotrstenke/Durian/blob/master/LICENSE.md">
 		<img src="https://img.shields.io/github/license/piotrstenke/Durian?color=orange&style=flat-square" alt="License"/>
@@ -174,43 +174,6 @@ The following modules are still in active development and are yet to be released
 ## Experimental
 
 Experimental stage is a playground of sorts - modules included here are very early in development and there in no guarantee that they will be ever actually released.
-
-### [ConstExpr](src/Durian.ConstExpr/README.md)
-
-*ConstExpr* allows a method to be executed at compile-time, producing actual constants.
-
-```csharp
-using Durian;
-
-public static class Utility
-{
-	[ConstExpr]
-	public static int Sum(params int[] values)
-	{
-		int sum = 0;
-
-		for(int i = 0; i < values.Length; i++)
-		{
-			sum += values[i];
-		}
-
-		return sum;
-	}
-}
-
-[ConstExprSource("Utility.Sum", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, Name = "Sum_10")]
-public static partial class Constants
-{
-}
-
-// Generated
-
-public static partial class Constants
-{
-	public const int Sum_10 = 55;
-}
-
-```
 
 ##
 
