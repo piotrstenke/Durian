@@ -15,8 +15,8 @@ namespace Durian.Analysis.SyntaxVisitors
 		/// <summary>
 		/// Initializes a new instance of the <see cref="NodeRemover{T}"/> class.
 		/// </summary>
-		/// <param name="visitIntoStructedTrivia">Determines whether to visit nodes that are part of a structured trivia.</param>
-		public NodeRemover(bool visitIntoStructedTrivia = false) : base(visitIntoStructedTrivia)
+		/// <param name="visitIntoStructuredTrivia">Determines whether to visit nodes that are part of a structured trivia.</param>
+		public NodeRemover(bool visitIntoStructuredTrivia = false) : base(visitIntoStructuredTrivia)
 		{
 		}
 

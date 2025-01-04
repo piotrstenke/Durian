@@ -170,7 +170,7 @@ namespace Durian.Analysis
 			return !syntaxReceiver.IsEmpty();
 		}
 
-		private IGeneratorServiceContainer InitServices()
+		private GeneratorServiceContainer InitServices()
 		{
 			GeneratorServiceContainer services = new();
 			ConfigureServices(services);

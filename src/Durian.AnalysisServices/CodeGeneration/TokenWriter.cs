@@ -102,7 +102,7 @@ namespace Durian.Analysis.CodeGeneration
 		}
 
 		/// <summary>
-		/// Writes the close paren ')' token.
+		/// Writes the close parenthesis ')' token.
 		/// </summary>
 		public TokenWriter CloseParen()
 		{
@@ -228,7 +228,7 @@ namespace Durian.Analysis.CodeGeneration
 		}
 
 		/// <summary>
-		/// Writes the open paren '(' token.
+		/// Writes the open parenthesis '(' token.
 		/// </summary>
 		public TokenWriter OpenParen()
 		{

@@ -44,7 +44,7 @@ namespace Durian.Tests
 		}
 
 		[Fact]
-		public async Task Succcess_When_ReferencesDurianCore()
+		public async Task Success_When_ReferencesDurianCore()
 		{
 			CSharpCompilation compilation = RoslynUtilities.CreateBaseCompilation();
 			DependencyAnalyzer analyzer = new();

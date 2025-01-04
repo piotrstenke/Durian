@@ -128,7 +128,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void Error_When_IsExplicitlyDeclaratedInterfaceMethod()
+		public void Error_When_IsExplicitlyDeclaredInterfaceMethod()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -196,7 +196,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void Error_When_IsPartial_And_HasImplementation_And_AttributeIsDeclaradOnDefinitionPart()
+		public void Error_When_IsPartial_And_HasImplementation_And_AttributeIsDeclaredOnDefinitionPart()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -218,7 +218,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void Error_When_IsPartial_And_HasImplementation_And_AttributeIsDeclaradOnImplementationPart()
+		public void Error_When_IsPartial_And_HasImplementation_And_AttributeIsDeclaredOnImplementationPart()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};

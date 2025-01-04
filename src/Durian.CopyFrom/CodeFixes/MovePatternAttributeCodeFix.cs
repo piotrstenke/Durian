@@ -49,7 +49,7 @@ namespace Durian.Analysis.CopyFrom.CodeFixes
 			}
 
 			TypeDeclarationSyntax? target = type.DeclaringSyntaxReferences
-				.Select(async r => await r.GetSyntaxAsync(context.CancellationToken))
+				.Select(r => r.GetSyntaxAsync(context.CancellationToken).Result)
 				.OfType<TypeDeclarationSyntax>()
 				.FirstOrDefault(s => s.AttributeLists
 					.SelectMany(attr => attr.Attributes)

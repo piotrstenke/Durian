@@ -650,7 +650,7 @@ record Child(string Name) : Test(Name);
 		}
 
 		[Fact]
-		public async Task Error_When_IsRecord_And_HasInternalConstructor_And_ChildImpliciltyTriesToAccessParameterlessConstructor()
+		public async Task Error_When_IsRecord_And_HasInternalConstructor_And_ChildImplicitlyTriesToAccessParameterlessConstructor()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -1019,7 +1019,7 @@ class NotFriend : Test.Inner
 		}
 
 		[Fact]
-		public async Task Succes_When_TriesToAccessInheritedInternalMember()
+		public async Task Success_When_TriesToAccessInheritedInternalMember()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -1601,7 +1601,7 @@ class NotFriend
 		}
 
 		[Fact]
-		public async Task Sucess_When_TriesToAccessInsideInterfaceDefaultImplementation()
+		public async Task Success_When_TriesToAccessInsideInterfaceDefaultImplementation()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};

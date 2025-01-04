@@ -132,7 +132,7 @@ namespace Durian.Analysis.Filtration
 			return new FilterEnumerator<T>(Compilation, _nodes, Validator);
 		}
 
-		void IDisposable.Dispose()
+		readonly void IDisposable.Dispose()
 		{
 			// Do nothing.
 		}

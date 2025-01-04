@@ -813,7 +813,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 			{
 				if (!thisData.IsDefaultParam)
 				{
-					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity, thisData.Symbol);
+					diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity, thisData.Symbol);
 
 					// This diagnostic is only a warning, so the symbol is still valid.
 					return true;
@@ -827,7 +827,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 			}
 			else if (thisData.IsDefaultParam)
 			{
-				diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters, thisData.Location, thisData.Symbol);
+				diagnosticReceiver.ReportDiagnostic(DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverriddenParameters, thisData.Location, thisData.Symbol);
 				return false;
 			}
 
@@ -859,8 +859,8 @@ namespace Durian.Analysis.DefaultParam.Methods
 				DefaultParamDiagnostics.DUR0103_DefaultParamIsNotValidOnThisTypeOfMethod,
 				DefaultParamDiagnostics.DUR0107_DoNotOverrideGeneratedMethods,
 				DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase,
-				DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters,
-				DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity,
+				DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverriddenParameters,
+				DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity,
 				DefaultParamDiagnostics.DUR0114_MethodWithSignatureAlreadyExists,
 			};
 		}

@@ -418,9 +418,9 @@ namespace Durian.Analysis
 		}
 
 		/// <summary>
-		/// Writes nullability marker if the <paramref name="annotation"/> is equal to <see cref="Microsoft.CodeAnalysis.NullableAnnotation.Annotated"/>.
+		/// Writes nullability marker if the <paramref name="annotation"/> is equal to <see cref="NullableAnnotation.Annotated"/>.
 		/// </summary>
-		/// <param name="annotation"><see cref="Microsoft.CodeAnalysis.NullableAnnotation"/> to write.</param>
+		/// <param name="annotation"><see cref="NullableAnnotation"/> to write.</param>
 		public CodeBuilder Nullability(NullableAnnotation annotation)
 		{
 			InitBuilder();

@@ -1520,7 +1520,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns the <see cref="NumericLiteralSuffix"/> applied to the specified <paramref name="node"/>.
 		/// </summary>
 		/// <param name="node"><see cref="LiteralExpressionSyntax"/> to get the <see cref="NumericLiteralSuffix"/> applied to.</param>
-		public static NumericLiteralSuffix GetNumerixSuffix(this LiteralExpressionSyntax node)
+		public static NumericLiteralSuffix GetNumericSuffix(this LiteralExpressionSyntax node)
 		{
 			return node.Token.GetNumericSuffix();
 		}
@@ -3362,7 +3362,7 @@ namespace Durian.Analysis.Extensions
 		/// Determines whether the specified <paramref name="node"/> can have an explicit base type.
 		/// </summary>
 		/// <param name="node"><see cref="TypeDeclarationSyntax"/> to check whether can have an explicit base type.</param>
-		public static bool SupportsExlicitBaseType(this BaseTypeDeclarationSyntax node)
+		public static bool SupportsExplicitBaseType(this BaseTypeDeclarationSyntax node)
 		{
 			return node switch
 			{

@@ -119,7 +119,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Provides a diagnostic message indicating that the user should not add the <c>Durian.DefaultParamAttribute</c> on overridden type parameters that are not DefaultParam.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters = new(
+		public static readonly DiagnosticDescriptor DUR0109_DoNotAddDefaultParamAttributeOnOverriddenParameters = new(
 			id: "DUR0109",
 			title: "Do not add the DefaultParamAttribute on overridden type parameters that are not DefaultParam",
 			messageFormat: "'{0}': Do not add the DefaultParamAttribute on overridden type parameters that are not DefaultParam",
@@ -132,7 +132,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Provides a diagnostic message indicating that the <c>Durian.DefaultParamAttribute</c> of overridden type parameter should be added for clarity.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity = new(
+		public static readonly DiagnosticDescriptor DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity = new(
 			id: "DUR0110",
 			title: "DefaultParamAttribute of overridden type parameter should be added for clarity",
 			messageFormat: "'{0}': DefaultParamAttribute of overridden type parameter should be added for clarity",
@@ -158,7 +158,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <summary>
 		/// Provides a diagnostic message indicating that the <c>Durian.Configuration.DefaultParamConfigurationAttribute.TypeConvention</c> should not be used on members other than types.
 		/// </summary>
-		public static readonly DiagnosticDescriptor DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes = new(
+		public static readonly DiagnosticDescriptor DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes = new(
 			id: "DUR0112",
 			title: "TypeConvention property should not be used on members other than types",
 			messageFormat: "'{0}': TypeConvention property should not be used on members other than types",

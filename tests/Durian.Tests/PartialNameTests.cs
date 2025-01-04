@@ -27,7 +27,7 @@ partial class Test
 		}
 
 		[Fact]
-		public async Task Success_When_HasMutlipelPartialParts()
+		public async Task Success_When_HasMultiplePartialParts()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};

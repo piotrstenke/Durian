@@ -157,7 +157,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void Calls_When_GlobalyFalse_And_LocallyTrue()
+		public void Calls_When_GloballyFalse_And_LocallyTrue()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};

@@ -12,4 +12,4 @@ DUR0403 | Durian.InterfaceTargets | Error | Interface is accessible only through
 ### New Rules
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-----------------------------------------
-DUR0404 | Durian.InterfaceTargets | Warnning | Interface will never match target constraint. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/InterfaceTargets/DUR0404.md)]
+DUR0404 | Durian.InterfaceTargets | Warning | Interface will never match target constraint. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/InterfaceTargets/DUR0404.md)]

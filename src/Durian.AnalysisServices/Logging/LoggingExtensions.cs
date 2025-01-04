@@ -6,7 +6,7 @@ namespace Durian.Analysis.Logging
 	/// <summary>
 	/// Contains extension methods for better logging experience.
 	/// </summary>
-	public static class LoggingExtenions
+	public static class LoggingExtensions
 	{
 		/// <summary>
 		/// Sets data of the <paramref name="logHandler"/>'s <see cref="LoggingConfiguration"/> in accordance to the specified <paramref name="context"/>.

@@ -241,7 +241,7 @@ $@"internal partial interface IChild : IParent
 		}
 
 		[Fact]
-		public void DoesNotApplyNewModifer_When_GloballyTrue_And_InTypeFalse()
+		public void DoesNotApplyNewModifier_When_GloballyTrue_And_InTypeFalse()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -263,7 +263,7 @@ partial class Test : Parent
 		}
 
 		[Fact]
-		public void DoesNotApplyNewModifer_When_GloballyTrue_And_LocallyFalse()
+		public void DoesNotApplyNewModifier_When_GloballyTrue_And_LocallyFalse()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -285,7 +285,7 @@ partial class Test : Parent
 		}
 
 		[Fact]
-		public void DoesNotApplyNewModifer_When_InTypeTrue_LocallyFalse()
+		public void DoesNotApplyNewModifier_When_InTypeTrue_LocallyFalse()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};

@@ -462,7 +462,7 @@ public struct Test : ITest
 		}
 
 		[Fact]
-		public async Task Success_When_IsValidOnRecordClass_And_TargetIsRecorClass()
+		public async Task Success_When_IsValidOnRecordClass_And_TargetIsRecordClass()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};

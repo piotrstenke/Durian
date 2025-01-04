@@ -12,10 +12,10 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Durian.Analysis.DefaultParam.CodeFixes
 {
 	/// <summary>
-	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity"/> diagnostic.
+	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity"/> diagnostic.
 	/// </summary>
-	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ApplyAttributeValueOfOverridenMethodCodeFix))]
-	public sealed class ApplyAttributeValueOfOverridenMethodCodeFix : DurianCodeFixBase
+	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ApplyAttributeValueOfOverriddenMethodCodeFix))]
+	public sealed class ApplyAttributeValueOfOverriddenMethodCodeFix : DurianCodeFixBase
 	{
 		/// <inheritdoc/>
 		public override string Id => Title + " [DefaultParam]";
@@ -24,9 +24,9 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 		public override string Title => "Add missing DefaultParamAttribute";
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="ApplyAttributeValueOfOverridenMethodCodeFix"/> class.
+		/// Creates a new instance of the <see cref="ApplyAttributeValueOfOverriddenMethodCodeFix"/> class.
 		/// </summary>
-		public ApplyAttributeValueOfOverridenMethodCodeFix()
+		public ApplyAttributeValueOfOverriddenMethodCodeFix()
 		{
 		}
 
@@ -41,7 +41,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 			}
 
 			if (data.SemanticModel.GetDeclaredSymbol(data.Node, data.CancellationToken) is not ITypeParameterSymbol typeParameter ||
-				MakeValueOfOverridenAttributeEquivalentCodeFix.GetTargetType(data.Node, data.SemanticModel, typeParameter.Ordinal, data.CancellationToken) is not ITypeSymbol targetType)
+				MakeValueOfOverriddenAttributeEquivalentCodeFix.GetTargetType(data.Node, data.SemanticModel, typeParameter.Ordinal, data.CancellationToken) is not ITypeSymbol targetType)
 			{
 				return;
 			}
@@ -59,7 +59,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 		/// <inheritdoc/>
 		protected override DiagnosticDescriptor[] GetSupportedDiagnostics()
 		{
-			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity };
+			return new DiagnosticDescriptor[] { DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity };
 		}
 
 		private static Task<Document> ExecuteAsync(CodeFixExecutionContext<TypeParameterSyntax> context, ITypeSymbol targetType, INamedTypeSymbol attribute)
@@ -74,7 +74,7 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 
 			AttributeSyntax attr = context.Node.AttributeLists.Last().Attributes[0];
 
-			return Task.FromResult(MakeValueOfOverridenAttributeEquivalentCodeFix.Execute(context.WithNode(attr), targetType));
+			return Task.FromResult(MakeValueOfOverriddenAttributeEquivalentCodeFix.Execute(context.WithNode(attr), targetType));
 		}
 
 		private CodeAction? GetCodeAction(in CodeFixData<TypeParameterSyntax> data, ITypeSymbol targetType)

@@ -484,7 +484,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes.Id));
+			Assert.True(diagnostics.Any(d => d.Id == DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes.Id));
 		}
 
 		[Fact]
@@ -503,7 +503,7 @@ partial class Test
 }}
 ";
 			ImmutableArray<Diagnostic> diagnostics = await RunAnalyzer(input);
-			Assert.True(diagnostics.Any(d => d.Id == DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes.Id));
+			Assert.True(diagnostics.Any(d => d.Id == DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes.Id));
 		}
 
 		protected override IEnumerable<ISourceTextProvider>? GetInitialSources()

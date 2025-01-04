@@ -7,7 +7,7 @@ using static Durian.Analysis.CopyFrom.CopyFromDiagnostics;
 
 namespace Durian.Analysis.CopyFrom.Tests
 {
-	public sealed class CopyFromMethodGeneratatorTests : CopyFromGeneratorTest
+	public sealed class CopyFromMethodGeneratorTests : CopyFromGeneratorTest
 	{
 		[Fact]
 		public void Error_When_AlreadyHasImplementation()
@@ -175,7 +175,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void Error_When_CopiesFromItselfOverridenByChildType()
+		public void Error_When_CopiesFromItselfOverriddenByChildType()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -197,7 +197,7 @@ class Child : Test
 		}
 
 		[Fact]
-		public void Error_When_CopiesFromItselfOverridenByChildTypeWithTypeArguments()
+		public void Error_When_CopiesFromItselfOverriddenByChildTypeWithTypeArguments()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -273,7 +273,7 @@ class Parent
 		}
 
 		[Fact]
-		public void Error_When_CopiesFromOverriddenMethodWihtTypeParameters()
+		public void Error_When_CopiesFromOverriddenMethodWithTypeParameters()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -328,7 +328,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void Error_When_HasNestedCircularDepenency()
+		public void Error_When_HasNestedCircularDependency()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -993,7 +993,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void Error_When_NoArguments_And_TargetIsAmbigious()
+		public void Error_When_NoArguments_And_TargetIsAmbiguous()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -1177,7 +1177,7 @@ partial class Test
 		}
 
 		[Fact]
-		public void Error_When_TargetIsGenericWithMutlipleParameters_And_ParameterHasWrongName()
+		public void Error_When_TargetIsGenericWithMultipleParameters_And_ParameterHasWrongName()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -3044,7 +3044,7 @@ internal partial class Test
 		}
 
 		[Fact]
-		public void Success_When_TargetIsGenericWithMutlipleParameters()
+		public void Success_When_TargetIsGenericWithMultipleParameters()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -3078,7 +3078,7 @@ internal partial class Test
 		}
 
 		[Fact]
-		public void Success_When_TargetIsGenericWithMutlipleParameters_And_OneBoundedParameter()
+		public void Success_When_TargetIsGenericWithMultipleParameters_And_OneBoundedParameter()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -3112,7 +3112,7 @@ internal partial class Test
 		}
 
 		[Fact]
-		public void Success_When_TargetIsGenericWithMutlipleParameters_And_WithParamList()
+		public void Success_When_TargetIsGenericWithMultipleParameters_And_WithParamList()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -3146,7 +3146,7 @@ internal partial class Test
 		}
 
 		[Fact]
-		public void Success_When_TargetIsGenericWithMutlipleParameters_And_WithParamList_And_OneBoundedParameter()
+		public void Success_When_TargetIsGenericWithMultipleParameters_And_WithParamList_And_OneBoundedParameter()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};

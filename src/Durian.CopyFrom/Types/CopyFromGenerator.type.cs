@@ -32,7 +32,7 @@ namespace Durian.Analysis.CopyFrom
 			{
 				MemberDeclarationSyntax member = members[j];
 
-				if (TryGetMutlipleMembers(
+				if (TryGetMultipleMembers(
 					member,
 					semanticModel,
 					context,
@@ -199,7 +199,7 @@ namespace Durian.Analysis.CopyFrom
 			});
 		}
 
-		private static bool TryGetMutlipleMembers(
+		private static bool TryGetMultipleMembers(
 			MemberDeclarationSyntax member,
 			SemanticModel semanticModel,
 			CopyFromPassContext context,

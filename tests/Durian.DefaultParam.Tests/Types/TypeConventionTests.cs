@@ -203,7 +203,7 @@ partial class Parent
 		}
 
 		[Fact]
-		public void Inherits_When_GlobalyFalse_And_LocallyTrue()
+		public void Inherits_When_GloballyFalse_And_LocallyTrue()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};

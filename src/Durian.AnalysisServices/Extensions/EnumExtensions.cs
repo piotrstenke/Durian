@@ -984,7 +984,7 @@ namespace Durian.Analysis.Extensions
 		/// Returns the matching accessor kind of the specified <see cref="EventAccessorKind"/>.
 		/// </summary>
 		/// <param name="value"><see cref="EventAccessorKind"/> to get the matching accessor of.</param>
-		public static EventAccessorKind GetMachingAccessor(this EventAccessorKind value)
+		public static EventAccessorKind GetMatchingAccessor(this EventAccessorKind value)
 		{
 			return value switch
 			{
@@ -999,7 +999,7 @@ namespace Durian.Analysis.Extensions
 		/// </summary>
 		/// <param name="value"><see cref="PropertyAccessorKind"/> to get the matching accessor of.</param>
 		/// <param name="initOnly">Determines whether to return the <see langword="init"/> accessor instead of <see langword="set"/>.</param>
-		public static PropertyAccessorKind GetMachingAccessor(this PropertyAccessorKind value, bool initOnly = false)
+		public static PropertyAccessorKind GetMatchingAccessor(this PropertyAccessorKind value, bool initOnly = false)
 		{
 			return value switch
 			{

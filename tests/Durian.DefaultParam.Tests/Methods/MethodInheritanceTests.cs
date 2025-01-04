@@ -9,7 +9,7 @@ namespace Durian.Analysis.DefaultParam.Tests.Methods
 	public sealed class MethodInheritanceTests : DefaultParamGeneratorTest
 	{
 		[Fact]
-		public void Error_When_AddedAttributeOnNonDefautParamParameter()
+		public void Error_When_AddedAttributeOnNonDefaultParamParameter()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -29,7 +29,7 @@ partial class Child : Parent
 }}
 ";
 
-			Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverridenParameters.Id));
+			Assert.True(RunGenerator(input, 1).FailedAndContainsDiagnostics(DefaultParamDiagnostics.DUR0109_DoNotAddDefaultParamAttributeOnOverriddenParameters.Id));
 		}
 
 		[Fact]
@@ -312,7 +312,7 @@ $@"internal partial class Child : Parent
 ";
 			SingleGeneratorTestResult result = RunGenerator(input, 1);
 
-			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
+			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity.Id));
 			Assert.True(result.Compare(expected));
 		}
 
@@ -357,7 +357,7 @@ $@"internal partial class Child : Parent
 
 			SingleGeneratorTestResult result = RunGenerator(input, 2);
 
-			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
+			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity.Id));
 			Assert.True(result.Compare(expected));
 		}
 
@@ -401,7 +401,7 @@ $@"internal partial class Child : Parent
 
 			SingleGeneratorTestResult result = RunGenerator(input, 1);
 
-			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttribuetShouldBeAddedForClarity.Id));
+			Assert.True(result.SucceededAndContainsDiagnostics(DefaultParamDiagnostics.DUR0110_OverriddenDefaultParamAttributeShouldBeAddedForClarity.Id));
 			Assert.True(result.Compare(expected));
 		}
 	}

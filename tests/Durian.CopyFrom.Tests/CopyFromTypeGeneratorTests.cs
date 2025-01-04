@@ -223,7 +223,7 @@ partial class Other
 		}
 
 		[Fact]
-		public void Error_When_HasNestedCircularDepenency()
+		public void Error_When_HasNestedCircularDependency()
 		{
 			string input =
 @$"using {DurianStrings.MainNamespace};
@@ -338,7 +338,7 @@ class Other<T, U, V> where T : class where U : struct where V : T
 		}
 
 		[Fact]
-		public void Error_When_TargetIsGenericWithMutlipleParameters_And_ParameterHasWrongName()
+		public void Error_When_TargetIsGenericWithMultipleParameters_And_ParameterHasWrongName()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -1088,7 +1088,7 @@ internal partial class Test
 		}
 
 		[Fact]
-		public void Success_When_CopiesFromTypeWithAttribtes_And_AllowsCopyFromAttributes_And_HasPattern()
+		public void Success_When_CopiesFromTypeWithAttributes_And_AllowsCopyFromAttributes_And_HasPattern()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -2603,7 +2603,7 @@ internal partial class Test
 		}
 
 		[Fact]
-		public void Success_When_TargetIsGenericWithMutlipleParameters()
+		public void Success_When_TargetIsGenericWithMultipleParameters()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -2719,7 +2719,7 @@ internal partial class Test
 		}
 
 		[Fact]
-		public void Success_When_TargetIsGlobalNamespace_And_UsedGlobaKeyword()
+		public void Success_When_TargetIsGlobalNamespace_And_UsedGlobalKeyword()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -3369,7 +3369,7 @@ internal partial class Test
 		}
 
 		[Fact]
-		public void Suceess_When_TargetHasAllPossibleMemberTypes()
+		public void Success_When_TargetHasAllPossibleMemberTypes()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -3822,7 +3822,7 @@ $@"internal partial class Test
 		}
 
 		[Fact]
-		public void Warning_When_HasPattern_And_CopyFromIsOnDifferrentPartialDeclaration()
+		public void Warning_When_HasPattern_And_CopyFromIsOnDifferentPartialDeclaration()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};

@@ -13,8 +13,8 @@ namespace Durian.Analysis.FriendClass.CodeFixes
 	/// Code fox for the <see cref="DUR0303_DoNotUseFriendClassConfigurationAttributeOnTypesWithNoFriends"/>
 	/// and <see cref="DUR0313_ConfigurationIsRedundant"/> diagnostics.
 	/// </summary>
-	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveRedundantFriendClassConfigurationCodeFiX))]
-	public sealed class RemoveRedundantFriendClassConfigurationCodeFiX : RemoveNodeCodeFix<AttributeSyntax>
+	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveRedundantFriendClassConfigurationCodeFix))]
+	public sealed class RemoveRedundantFriendClassConfigurationCodeFix : RemoveNodeCodeFix<AttributeSyntax>
 	{
 		/// <inheritdoc/>
 		public override string Id => $"{Title} [{nameof(FriendClass)}]";
@@ -23,9 +23,9 @@ namespace Durian.Analysis.FriendClass.CodeFixes
 		public override string Title => $"Remove redundant {FriendClassConfigurationAttributeProvider.TypeName}";
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="RemoveRedundantFriendClassConfigurationCodeFiX"/> class.
+		/// Initializes a new instance of the <see cref="RemoveRedundantFriendClassConfigurationCodeFix"/> class.
 		/// </summary>
-		public RemoveRedundantFriendClassConfigurationCodeFiX()
+		public RemoveRedundantFriendClassConfigurationCodeFix()
 		{
 		}
 

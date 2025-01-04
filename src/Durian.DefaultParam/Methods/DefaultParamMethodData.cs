@@ -76,7 +76,7 @@ namespace Durian.Analysis.DefaultParam.Methods
 		public bool CallInsteadOfCopying { get; private set; }
 
 		/// <summary>
-		/// A <see cref="HashSet{T}"/> of indexes of type parameters with the <c>Durian.DefaultParamAttribute</c> applied for whom the <see langword="new"/> modifier should be applied.
+		/// A <see cref="HashSet{T}"/> of indices of type parameters with the <c>Durian.DefaultParamAttribute</c> applied for whom the <see langword="new"/> modifier should be applied.
 		/// </summary>
 		public HashSet<int>? NewModifierIndices { get; private set; }
 

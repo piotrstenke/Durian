@@ -16,8 +16,8 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 	/// <summary>
 	/// Code fox for the <see cref="DefaultParamDiagnostics.DUR0108_ValueOfOverriddenMethodMustBeTheSameAsBase"/> diagnostic.
 	/// </summary>
-	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakeValueOfOverridenAttributeEquivalentCodeFix))]
-	public sealed class MakeValueOfOverridenAttributeEquivalentCodeFix : DurianCodeFixBase
+	[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakeValueOfOverriddenAttributeEquivalentCodeFix))]
+	public sealed class MakeValueOfOverriddenAttributeEquivalentCodeFix : DurianCodeFixBase
 	{
 		/// <inheritdoc/>
 		public override string Id => Title + " [DefaultParam]";
@@ -26,9 +26,9 @@ namespace Durian.Analysis.DefaultParam.CodeFixes
 		public override string Title => "Make DefaultParam value the same as base method";
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="MakeValueOfOverridenAttributeEquivalentCodeFix"/> class.
+		/// Creates a new instance of the <see cref="MakeValueOfOverriddenAttributeEquivalentCodeFix"/> class.
 		/// </summary>
-		public MakeValueOfOverridenAttributeEquivalentCodeFix()
+		public MakeValueOfOverriddenAttributeEquivalentCodeFix()
 		{
 		}
 

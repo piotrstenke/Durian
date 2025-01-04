@@ -1545,7 +1545,7 @@ namespace Durian.Analysis
 		/// </summary>
 		/// <param name="type"><see cref="INamedTypeSymbol"/> to begin the declaration of.</param>
 		/// <param name="baseTypeList">Determines whether to also write the base types of the interface.</param>
-		/// <param name="constraints">Determines whether to also write the constraints of the inteface.</param>
+		/// <param name="constraints">Determines whether to also write the constraints of the interface.</param>
 		public CodeBuilder Interface(INamedTypeSymbol type, bool baseTypeList = true, bool constraints = true)
 		{
 			Indent();

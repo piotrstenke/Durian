@@ -22,7 +22,7 @@ namespace Durian.Analysis.DefaultParam
 		/// <inheritdoc/>
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
 			DUR0111_DefaultParamConfigurationAttributeCannotBeAppliedToMembersWithoutDefaultParamAttribute,
-			DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes,
+			DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes,
 			DUR0113_MethodConventionShouldNotBeUsedOnMembersOtherThanMethods,
 			DUR0115_DefaultParamConfigurationIsNotValidOnThisTypeOfMethod,
 			DUR0117_InheritTypeConventionCannotBeUsedOnStructOrSealedType,
@@ -95,7 +95,7 @@ namespace Durian.Analysis.DefaultParam
 
 				if (CheckArguments(arguments, DefaultParamConfigurationAttributeProvider.TypeConvention, out arg))
 				{
-					diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), symbol);
+					diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), symbol);
 				}
 			}
 		}
@@ -144,7 +144,7 @@ namespace Durian.Analysis.DefaultParam
 
 			if (CheckArguments(arguments, DefaultParamConfigurationAttributeProvider.TypeConvention, out AttributeArgumentSyntax? arg))
 			{
-				diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), method);
+				diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), method);
 			}
 		}
 
@@ -185,7 +185,7 @@ namespace Durian.Analysis.DefaultParam
 			{
 				if (CheckArguments(arguments, propertyName, out arg))
 				{
-					diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConvetionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), type);
+					diagnosticReceiver.ReportDiagnostic(DUR0112_TypeConventionShouldNotBeUsedOnMembersOtherThanTypes, arg.GetLocation(), type);
 				}
 			}
 			else if (type.TypeKind == TypeKind.Struct || type.IsSealed || type.IsStatic)

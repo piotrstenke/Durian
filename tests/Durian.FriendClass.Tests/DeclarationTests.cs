@@ -305,7 +305,7 @@ class Parent
 		}
 
 		[Fact]
-		public async Task Success_When_IncludeInherited_And_ParetIsInDifferentAssembly_And_HasInternalsAttribute()
+		public async Task Success_When_IncludeInherited_And_ParentIsInDifferentAssembly_And_HasInternalsAttribute()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -335,7 +335,7 @@ public class Parent
 		}
 
 		[Fact]
-		public async Task Success_When_IncludeInheriteed_And_HasNoInternalMembers_And_ParentOfParentHasInternalInstanceMembers()
+		public async Task Success_When_IncludeInherited_And_HasNoInternalMembers_And_ParentOfParentHasInternalInstanceMembers()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
@@ -648,7 +648,7 @@ class Parent
 		}
 
 		[Fact]
-		public async Task Warning_When_IncludeInherited_And_ParetIsInDifferentAssembly_And_HasNoInternalsAttribute()
+		public async Task Warning_When_IncludeInherited_And_ParentIsInDifferentAssembly_And_HasNoInternalsAttribute()
 		{
 			string input =
 $@"using {DurianStrings.MainNamespace};
